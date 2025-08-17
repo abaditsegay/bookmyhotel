@@ -113,6 +113,12 @@ public class HotelAdminController {
         return ResponseEntity.ok(newRoom);
     }
 
+    @GetMapping("/rooms/{roomId}")
+    public ResponseEntity<RoomDTO> getRoomById(@PathVariable Long roomId, Authentication auth) {
+        RoomDTO room = hotelAdminService.getRoomById(roomId, auth.getName());
+        return ResponseEntity.ok(room);
+    }
+
     @PutMapping("/rooms/{roomId}")
     public ResponseEntity<RoomDTO> updateRoom(
             @PathVariable Long roomId,
@@ -161,6 +167,20 @@ public class HotelAdminController {
         HotelDTO hotel = hotelAdminService.getMyHotel(auth.getName());
         Page<BookingResponse> bookings = hotelAdminService.getHotelBookings(hotel.getId(), page, size, search);
         return ResponseEntity.ok(bookings);
+    }
+
+    /**
+     * Get a specific booking by reservation ID
+     */
+    @GetMapping("/bookings/{reservationId}")
+    public ResponseEntity<BookingResponse> getBookingById(
+            @PathVariable Long reservationId,
+            Authentication auth) {
+        
+        // First get the hotel ID from the authenticated user
+        HotelDTO hotel = hotelAdminService.getMyHotel(auth.getName());
+        BookingResponse booking = hotelAdminService.getBookingById(reservationId, hotel.getId());
+        return ResponseEntity.ok(booking);
     }
 
     /**

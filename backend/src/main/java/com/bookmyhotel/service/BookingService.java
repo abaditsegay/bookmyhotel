@@ -20,16 +20,16 @@ import com.bookmyhotel.entity.ReservationStatus;
 import com.bookmyhotel.entity.Room;
 import com.bookmyhotel.entity.User;
 import com.bookmyhotel.entity.UserRole;
+import com.bookmyhotel.exception.BookingException;
+import com.bookmyhotel.exception.ResourceNotFoundException;
 import com.bookmyhotel.repository.ReservationRepository;
 import com.bookmyhotel.repository.RoomRepository;
 import com.bookmyhotel.repository.UserRepository;
+import com.bookmyhotel.tenant.TenantContext;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
 import com.stripe.model.PaymentIntent;
 import com.stripe.param.PaymentIntentCreateParams;
-import com.bookmyhotel.tenant.TenantContext;
-import com.bookmyhotel.exception.ResourceNotFoundException;
-import com.bookmyhotel.exception.BookingException;
 
 /**
  * Booking service

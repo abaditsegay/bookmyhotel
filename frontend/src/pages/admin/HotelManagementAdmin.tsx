@@ -34,7 +34,6 @@ import {
   LocationOn as LocationIcon,
   Star as StarIcon,
   Visibility as VisibilityIcon,
-  Edit as EditIcon,
   Block as BlockIcon,
   CheckCircle as CheckCircleIcon,
   Refresh as RefreshIcon,
@@ -321,9 +320,6 @@ const HotelManagementAdmin: React.FC = () => {
       </DialogContent>
       <DialogActions>
         <Button onClick={() => setDetailsDialogOpen(false)}>Close</Button>
-        <Button variant="contained" startIcon={<EditIcon />}>
-          Edit Hotel
-        </Button>
       </DialogActions>
     </Dialog>
   );
@@ -503,11 +499,6 @@ const HotelManagementAdmin: React.FC = () => {
                             onClick={() => handleViewDetails(hotel)}
                           >
                             <VisibilityIcon />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Edit Hotel">
-                          <IconButton size="small">
-                            <EditIcon />
                           </IconButton>
                         </Tooltip>
                         <Tooltip title={hotel.status === 'ACTIVE' ? 'Suspend' : 'Activate'}>

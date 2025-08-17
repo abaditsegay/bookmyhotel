@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Rooms API</title>
+</head>
+<body>
+    <h1>Rooms API Debug</h1>
+    <button onclick="testRoomsAPI()">Test Rooms API</button>
+    <div id="result"></div>
+
+    <script>
+        const token = "eyJhbGciOiJIUzUxMiJ9.eyJmaXJzdE5hbWUiOiJTYXJhaCIsImxhc3ROYW1lIjoiV2lsc29uIiwicm9sZXMiOlsiSE9URUxfQURNSU4iXSwidGVuYW50SWQiOiJkZWZhdWx0IiwidXNlcklkIjo5LCJlbWFpbCI6ImhvdGVsYWRtaW5AYm9va215aG90ZWwuY29tIiwic3ViIjoiaG90ZWxhZG1pbkBib29rbXlob3RlbC5jb20iLCJpYXQiOjE3NTU0NzMxNjIsImV4cCI6MTc1NTU1OTU2Mn0.4Gn55V0VmzGrDy6iTNDxIK5Ie-sbvR9coddqULGGoG01KVDRGrM4DEloUgUi0H_62-KleVtzTu9X2UqBiFJatg";
+
+        async function testRoomsAPI() {
+            try {
+                console.log('Testing rooms API...');
+                const response = await fetch('http://localhost:8080/api/hotel-admin/rooms?page=0&size=10', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('API error:', errorText);
+                    document.getElementById('result').innerHTML = `Error: ${response.status} - ${errorText}`;
+                    return;
+                }
+
+                const data = await response.json();
+                console.log('API response:', data);
+                document.getElementById('result').innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                console.error('Fetch error:', error);
+                document.getElementById('result').innerHTML = `Fetch error: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

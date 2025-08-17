@@ -93,12 +93,8 @@ public class UserManagementAdminController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<UserManagementResponse> getUserById(@PathVariable Long id) {
-        try {
-            UserManagementResponse user = userManagementService.getUserById(id);
-            return ResponseEntity.ok(user);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+        UserManagementResponse user = userManagementService.getUserById(id);
+        return ResponseEntity.ok(user);
     }
     
     /**
@@ -109,12 +105,8 @@ public class UserManagementAdminController {
             @PathVariable Long id,
             @Valid @RequestBody UpdateUserRequest request) {
         
-        try {
-            UserManagementResponse user = userManagementService.updateUser(id, request);
-            return ResponseEntity.ok(user);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
-        }
+        UserManagementResponse user = userManagementService.updateUser(id, request);
+        return ResponseEntity.ok(user);
     }
     
     /**
@@ -122,12 +114,8 @@ public class UserManagementAdminController {
      */
     @PostMapping("/{id}/toggle-status")
     public ResponseEntity<UserManagementResponse> toggleUserStatus(@PathVariable Long id) {
-        try {
-            UserManagementResponse user = userManagementService.toggleUserStatus(id);
-            return ResponseEntity.ok(user);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
-        }
+        UserManagementResponse user = userManagementService.toggleUserStatus(id);
+        return ResponseEntity.ok(user);
     }
     
     /**
@@ -138,12 +126,8 @@ public class UserManagementAdminController {
             @PathVariable Long id,
             @PathVariable UserRole role) {
         
-        try {
-            UserManagementResponse user = userManagementService.addRoleToUser(id, role);
-            return ResponseEntity.ok(user);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
-        }
+        UserManagementResponse user = userManagementService.addRoleToUser(id, role);
+        return ResponseEntity.ok(user);
     }
     
     /**
@@ -154,12 +138,8 @@ public class UserManagementAdminController {
             @PathVariable Long id,
             @PathVariable UserRole role) {
         
-        try {
-            UserManagementResponse user = userManagementService.removeRoleFromUser(id, role);
-            return ResponseEntity.ok(user);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
-        }
+        UserManagementResponse user = userManagementService.removeRoleFromUser(id, role);
+        return ResponseEntity.ok(user);
     }
     
     /**
@@ -167,12 +147,8 @@ public class UserManagementAdminController {
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        try {
-            userManagementService.deleteUser(id);
-            return ResponseEntity.ok().build();
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
-        }
+        userManagementService.deleteUser(id);
+        return ResponseEntity.ok().build();
     }
     
     /**
@@ -183,12 +159,8 @@ public class UserManagementAdminController {
             @PathVariable Long id,
             @RequestParam String newPassword) {
         
-        try {
-            userManagementService.resetUserPassword(id, newPassword);
-            return ResponseEntity.ok().build();
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
-        }
+        userManagementService.resetUserPassword(id, newPassword);
+        return ResponseEntity.ok().build();
     }
     
     /**

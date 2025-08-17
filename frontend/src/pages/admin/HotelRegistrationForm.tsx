@@ -22,6 +22,8 @@ import {
   Hotel,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { useAuthenticatedApi } from '../../hooks/useAuthenticatedApi';
+import { useTenant } from '../../contexts/TenantContext';
 
 interface HotelFormData {
   // Basic Information
@@ -52,6 +54,8 @@ interface HotelFormData {
 
 const HotelRegistrationForm: React.FC = () => {
   const navigate = useNavigate();
+  const { adminApiService } = useAuthenticatedApi();
+  const { tenantId } = useTenant();
   const [activeStep, setActiveStep] = useState(0);
   const [formData, setFormData] = useState<HotelFormData>({
     hotelName: '',
@@ -104,23 +108,36 @@ const HotelRegistrationForm: React.FC = () => {
   };
 
   const handleSubmit = async () => {
+    if (!adminApiService) return;
+    
     setLoading(true);
     setError('');
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Create hotel using real API
+      const createRequest = {
+        name: formData.hotelName,
+        description: formData.description,
+        address: formData.address,
+        city: formData.city,
+        country: formData.country,
+        phone: formData.phone,
+        email: formData.email,
+        tenantId: tenantId,
+      };
       
-      console.log('Hotel registration data:', formData);
+      await adminApiService.createHotel(createRequest);
+      console.log('Hotel registered successfully:', formData);
       setSuccess(true);
       
       // Redirect after success
       setTimeout(() => {
-        navigate('/admin/hotel-registrations');
+        navigate('/admin/dashboard');
       }, 2000);
       
-    } catch (err) {
-      setError('Failed to register hotel. Please try again.');
+    } catch (err: any) {
+      console.error('Error registering hotel:', err);
+      setError(err.message || 'Failed to register hotel. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -315,9 +332,9 @@ const HotelRegistrationForm: React.FC = () => {
           </Typography>
           <Button
             variant="contained"
-            onClick={() => navigate('/admin/hotel-registrations')}
+            onClick={() => navigate('/admin/dashboard')}
           >
-            View Registration Requests
+            Back to Dashboard
           </Button>
         </Paper>
       </Container>

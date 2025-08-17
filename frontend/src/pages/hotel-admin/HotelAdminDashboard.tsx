@@ -21,11 +21,10 @@ import {
   Pagination,
   TextField,
   InputAdornment,
-  Menu,
-  MenuItem,
   IconButton,
   CircularProgress,
   Alert,
+  Tooltip,
 } from '@mui/material';
 import {
   Hotel as HotelIcon,
@@ -36,10 +35,12 @@ import {
   Edit as EditIcon,
   Add as AddIcon,
   Search as SearchIcon,
-  MoreVert as MoreVertIcon,
+  Visibility as VisibilityIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
-import { hotelAdminApi, BookingResponse, BookingPage, BookingStats } from '../../services/hotelAdminApi';
+import { useNavigate } from 'react-router-dom';
+import { hotelAdminApi, BookingResponse, BookingStats } from '../../services/hotelAdminApi';
+import RoomManagement from './RoomManagement';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -69,6 +70,7 @@ function TabPanel(props: TabPanelProps) {
 
 const HotelAdminDashboard: React.FC = () => {
   const { user, token } = useAuth();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(0);
 
   // Booking state
@@ -86,7 +88,7 @@ const HotelAdminDashboard: React.FC = () => {
     setActiveTab(newValue);
     
     // Load bookings when Bookings tab (index 3) is selected
-    if (newValue === 3 && token) {
+    if (newValue === 3) {
       loadBookings();
       loadBookingStats();
     }
@@ -94,7 +96,10 @@ const HotelAdminDashboard: React.FC = () => {
 
   // Load bookings with current filters
   const loadBookings = async () => {
-    if (!token) return;
+    if (!token) {
+      setBookingsError('Authentication required');
+      return;
+    }
     
     setBookingsLoading(true);
     setBookingsError(null);
@@ -108,14 +113,20 @@ const HotelAdminDashboard: React.FC = () => {
       );
       
       if (result.success && result.data) {
-        setBookings(result.data.content);
-        setTotalBookings(result.data.totalElements);
-        setTotalBookingPages(result.data.totalPages);
+        setBookings(result.data.content || []);
+        setTotalBookings(result.data.totalElements || 0);
+        setTotalBookingPages(result.data.totalPages || 0);
       } else {
         setBookingsError(result.message || 'Failed to load bookings');
+        setBookings([]);
+        setTotalBookings(0);
+        setTotalBookingPages(0);
       }
     } catch (error) {
       setBookingsError('Failed to load bookings');
+      setBookings([]);
+      setTotalBookings(0);
+      setTotalBookingPages(0);
     } finally {
       setBookingsLoading(false);
     }
@@ -123,17 +134,30 @@ const HotelAdminDashboard: React.FC = () => {
 
   // Load booking statistics
   const loadBookingStats = async () => {
-    if (!token) return;
+    if (!token) {
+      console.warn('No token available for loading booking stats');
+      return;
+    }
     
     try {
       const result = await hotelAdminApi.getBookingStats(token);
       if (result.success && result.data) {
         setBookingStats(result.data);
+      } else {
+        console.error('Failed to load booking stats:', result.message);
       }
     } catch (error) {
       console.error('Failed to load booking stats:', error);
     }
   };
+
+  // Load initial data on component mount
+  React.useEffect(() => {
+    // Load bookings data on component mount for demo purposes
+    loadBookings();
+    loadBookingStats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Handle booking search
   const handleBookingSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -154,6 +178,12 @@ const HotelAdminDashboard: React.FC = () => {
     if (token) {
       loadBookings();
     }
+  };
+
+  // Handle view booking details
+  const handleViewBookingDetails = (booking: BookingResponse) => {
+    // Navigate to the booking details page using the booking ID
+    navigate(`/hotel-admin/bookings/${booking.reservationId}`);
   };
 
   // Get status chip color
@@ -372,25 +402,7 @@ const HotelAdminDashboard: React.FC = () => {
 
         <TabPanel value={activeTab} index={2}>
           {/* Room Management Tab */}
-          <Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-                Room Management
-              </Typography>
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={() => alert('Add Room - Coming Soon!')}
-              >
-                Add Room
-              </Button>
-            </Box>
-            <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'center', py: 8 }}>
-              Room management interface will be implemented here.
-              <br />
-              Features: Add/Edit/Remove rooms, Set pricing, Manage availability
-            </Typography>
-          </Box>
+          <RoomManagement />
         </TabPanel>
 
         <TabPanel value={activeTab} index={3}>
@@ -509,9 +521,16 @@ const HotelAdminDashboard: React.FC = () => {
                             />
                           </TableCell>
                           <TableCell>
-                            <IconButton size="small">
-                              <MoreVertIcon />
-                            </IconButton>
+                            <Box sx={{ display: 'flex', gap: 0.5 }}>
+                              <Tooltip title="View Details">
+                                <IconButton 
+                                  size="small"
+                                  onClick={() => handleViewBookingDetails(booking)}
+                                >
+                                  <VisibilityIcon />
+                                </IconButton>
+                              </Tooltip>
+                            </Box>
                           </TableCell>
                         </TableRow>
                       ))

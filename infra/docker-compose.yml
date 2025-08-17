@@ -20,46 +20,6 @@ services:
       timeout: 20s
       retries: 10
 
-  backend:
-    build:
-      context: ../backend
-      dockerfile: Dockerfile
-    container_name: bookmyhotel-backend
-    restart: unless-stopped
-    environment:
-      SPRING_PROFILES_ACTIVE: docker
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/bookmyhotel?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: password
-      APP_JWT_SECRET: your-very-long-secret-key-that-should-be-at-least-256-bits-long-for-security-in-production
-      STRIPE_API_KEY: ${STRIPE_API_KEY:-sk_test_your_stripe_secret_key}
-      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-whsec_your_webhook_secret}
-    ports:
-      - "8080:8080"
-    depends_on:
-      mysql:
-        condition: service_healthy
-    networks:
-      - bookmyhotel-network
-    volumes:
-      - ./backend/logs:/app/logs
-
-  frontend:
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
-    container_name: bookmyhotel-frontend
-    restart: unless-stopped
-    environment:
-      REACT_APP_API_URL: http://localhost:8080/api
-      REACT_APP_STRIPE_PUBLISHABLE_KEY: ${REACT_APP_STRIPE_PUBLISHABLE_KEY:-pk_test_your_stripe_publishable_key}
-    ports:
-      - "3000:3000"
-    depends_on:
-      - backend
-    networks:
-      - bookmyhotel-network
-
   # Development tools
   phpmyadmin:
     image: phpmyadmin/phpmyadmin:latest

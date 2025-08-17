@@ -37,6 +37,9 @@ public class HotelDTO {
     @Size(max = 100, message = "Email must not exceed 100 characters")
     private String email;
     
+    private String tenantId;
+    private Boolean isActive;
+    private Integer roomCount;
     private Integer totalRooms;
     private Integer availableRooms;
     private Integer totalStaff;
@@ -160,5 +163,29 @@ public class HotelDTO {
     
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+    
+    public String getTenantId() {
+        return tenantId;
+    }
+    
+    public void setTenantId(String tenantId) {
+        this.tenantId = tenantId;
+    }
+    
+    public Boolean getIsActive() {
+        return isActive;
+    }
+    
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
+    }
+    
+    public Integer getRoomCount() {
+        return roomCount;
+    }
+    
+    public void setRoomCount(Integer roomCount) {
+        this.roomCount = roomCount;
     }
 }

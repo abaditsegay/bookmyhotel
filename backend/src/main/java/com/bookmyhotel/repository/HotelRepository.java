@@ -65,4 +65,15 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
      * Find hotels by name
      */
     List<Hotel> findByNameContainingIgnoreCase(String name);
+    
+    /**
+     * Search hotels by name, description, address, city, or country
+     */
+    @Query("SELECT h FROM Hotel h WHERE " +
+           "LOWER(h.name) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+           "LOWER(h.description) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+           "LOWER(h.address) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+           "LOWER(h.city) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+           "LOWER(h.country) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")
+    org.springframework.data.domain.Page<Hotel> searchHotels(@Param("searchTerm") String searchTerm, org.springframework.data.domain.Pageable pageable);
 }

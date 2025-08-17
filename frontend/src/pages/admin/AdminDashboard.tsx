@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Container,
   Typography,
@@ -23,41 +23,120 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  CircularProgress,
 } from '@mui/material';
 import {
   Hotel,
   People,
   Add as AddIcon,
   PersonAdd as PersonAddIcon,
-  Edit as EditIcon,
   Visibility as ViewIcon,
   LocationOn as LocationIcon,
   Search as SearchIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
+import { adminApiService, UserManagementResponse, HotelDTO, PagedResponse } from '../../services/adminApi';
 
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
+  const { token } = useAuth();
   const [currentTab, setCurrentTab] = useState(0);
-  
-  // Hotel pagination and filtering state
+
+  // Hotel management state
+  const [hotels, setHotels] = useState<HotelDTO[]>([]);
   const [hotelPage, setHotelPage] = useState(0);
   const [hotelRowsPerPage, setHotelRowsPerPage] = useState(10);
   const [hotelSearchTerm, setHotelSearchTerm] = useState('');
   const [hotelStatusFilter, setHotelStatusFilter] = useState('');
-  
-  // User pagination and filtering state
+  const [hotelTotalElements, setHotelTotalElements] = useState(0);
+  const [hotelLoading, setHotelLoading] = useState(false);
+  const [hotelError, setHotelError] = useState<string | null>(null);
+
+  // User management state
+  const [users, setUsers] = useState<UserManagementResponse[]>([]);
   const [userPage, setUserPage] = useState(0);
   const [userRowsPerPage, setUserRowsPerPage] = useState(10);
   const [userSearchTerm, setUserSearchTerm] = useState('');
   const [userRoleFilter, setUserRoleFilter] = useState('');
   const [userStatusFilter, setUserStatusFilter] = useState('');
+  const [userTotalElements, setUserTotalElements] = useState(0);
+  const [userLoading, setUserLoading] = useState(false);
+  const [userError, setUserError] = useState<string | null>(null);
+
+  // Set token on component mount
+  useEffect(() => {
+    if (token) {
+      adminApiService.setToken(token);
+    }
+  }, [token]);
+
+  // Hotel management functions
+  const loadHotels = useCallback(async () => {
+    if (!token) {
+      setHotelError('Authentication required');
+      return;
+    }
+
+    setHotelLoading(true);
+    setHotelError(null);
+
+    try {
+      let result: PagedResponse<HotelDTO>;
+      
+      if (hotelSearchTerm.trim()) {
+        result = await adminApiService.searchHotels(hotelSearchTerm, hotelPage, hotelRowsPerPage);
+      } else {
+        result = await adminApiService.getHotels(hotelPage, hotelRowsPerPage);
+      }
+
+      setHotels(result.content || []);
+      setHotelTotalElements(result.totalElements || 0);
+    } catch (error) {
+      setHotelError('Failed to load hotels');
+      setHotels([]);
+      setHotelTotalElements(0);
+      console.error('Error loading hotels:', error);
+    } finally {
+      setHotelLoading(false);
+    }
+  }, [token, hotelSearchTerm, hotelPage, hotelRowsPerPage]);
+
+  const loadUsers = useCallback(async () => {
+    if (!token) {
+      setUserError('Authentication required');
+      return;
+    }
+
+    setUserLoading(true);
+    setUserError(null);
+
+    try {
+      let result: PagedResponse<UserManagementResponse>;
+      
+      if (userSearchTerm.trim()) {
+        result = await adminApiService.searchUsers(userSearchTerm, userPage, userRowsPerPage);
+      } else {
+        result = await adminApiService.getUsers(userPage, userRowsPerPage);
+      }
+
+      setUsers(result.content || []);
+      setUserTotalElements(result.totalElements || 0);
+    } catch (error) {
+      setUserError('Failed to load users');
+      setUsers([]);
+      setUserTotalElements(0);
+      console.error('Error loading users:', error);
+    } finally {
+      setUserLoading(false);
+    }
+  }, [token, userSearchTerm, userPage, userRowsPerPage]);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setCurrentTab(newValue);
   };
 
-  // Hotel filtering and pagination handlers
+  // Hotel pagination handlers
   const handleHotelChangePage = (event: unknown, newPage: number) => {
     setHotelPage(newPage);
   };
@@ -67,7 +146,7 @@ const AdminDashboard: React.FC = () => {
     setHotelPage(0);
   };
 
-  // User filtering and pagination handlers
+  // User pagination handlers  
   const handleUserChangePage = (event: unknown, newPage: number) => {
     setUserPage(newPage);
   };
@@ -77,248 +156,42 @@ const AdminDashboard: React.FC = () => {
     setUserPage(0);
   };
 
-  // Sample hotel data - Extended for pagination demo
-  const allSampleHotels = [
-    {
-      id: 1,
-      name: 'Grand Plaza Hotel',
-      location: 'New York, NY',
-      status: 'Active',
-      rooms: 150,
-      rating: 4.5,
-      registeredDate: '2024-01-15'
-    },
-    {
-      id: 2,
-      name: 'Ocean View Resort',
-      location: 'Miami, FL',
-      status: 'Active',
-      rooms: 200,
-      rating: 4.8,
-      registeredDate: '2024-02-20'
-    },
-    {
-      id: 3,
-      name: 'Mountain Lodge',
-      location: 'Denver, CO',
-      status: 'Pending',
-      rooms: 75,
-      rating: 4.2,
-      registeredDate: '2024-03-10'
-    },
-    {
-      id: 4,
-      name: 'City Center Inn',
-      location: 'Chicago, IL',
-      status: 'Active',
-      rooms: 120,
-      rating: 4.0,
-      registeredDate: '2024-01-28'
-    },
-    {
-      id: 5,
-      name: 'Seaside Paradise',
-      location: 'San Diego, CA',
-      status: 'Inactive',
-      rooms: 180,
-      rating: 4.6,
-      registeredDate: '2024-02-05'
-    },
-    {
-      id: 6,
-      name: 'Downtown Suites',
-      location: 'Seattle, WA',
-      status: 'Active',
-      rooms: 95,
-      rating: 4.3,
-      registeredDate: '2024-03-22'
-    },
-    {
-      id: 7,
-      name: 'Luxury Resort & Spa',
-      location: 'Las Vegas, NV',
-      status: 'Active',
-      rooms: 300,
-      rating: 4.9,
-      registeredDate: '2024-01-08'
-    },
-    {
-      id: 8,
-      name: 'Budget Inn Express',
-      location: 'Phoenix, AZ',
-      status: 'Pending',
-      rooms: 60,
-      rating: 3.8,
-      registeredDate: '2024-04-01'
-    },
-    {
-      id: 9,
-      name: 'Historic Boutique Hotel',
-      location: 'Boston, MA',
-      status: 'Active',
-      rooms: 85,
-      rating: 4.4,
-      registeredDate: '2024-02-14'
-    },
-    {
-      id: 10,
-      name: 'Riverside Lodge',
-      location: 'Portland, OR',
-      status: 'Inactive',
-      rooms: 110,
-      rating: 4.1,
-      registeredDate: '2024-03-05'
-    },
-    {
-      id: 11,
-      name: 'Metropolitan Hotel',
-      location: 'Atlanta, GA',
-      status: 'Active',
-      rooms: 175,
-      rating: 4.2,
-      registeredDate: '2024-01-20'
-    },
-    {
-      id: 12,
-      name: 'Coastal Resort',
-      location: 'San Francisco, CA',
-      status: 'Pending',
-      rooms: 140,
-      rating: 4.7,
-      registeredDate: '2024-04-15'
+  // Load data when tab changes
+  useEffect(() => {
+    if (currentTab === 0) {
+      loadHotels();
+    } else if (currentTab === 1) {
+      loadUsers();
     }
-  ];
+  }, [currentTab, hotelPage, hotelRowsPerPage, userPage, userRowsPerPage, loadHotels, loadUsers]);
 
-  // Sample user data - Extended for pagination demo
-  const allSampleUsers = [
-    {
-      id: 1,
-      firstName: 'John',
-      lastName: 'Doe',
-      email: 'john.doe@email.com',
-      role: 'HOTEL_MANAGER',
-      status: 'Active',
-      lastLogin: '2024-08-15',
-      createdDate: '2024-01-10'
-    },
-    {
-      id: 2,
-      firstName: 'Jane',
-      lastName: 'Smith',
-      email: 'jane.smith@email.com',
-      role: 'ADMIN',
-      status: 'Active',
-      lastLogin: '2024-08-16',
-      createdDate: '2024-02-05'
-    },
-    {
-      id: 3,
-      firstName: 'Mike',
-      lastName: 'Johnson',
-      email: 'mike.johnson@email.com',
-      role: 'GUEST',
-      status: 'Active',
-      lastLogin: '2024-08-14',
-      createdDate: '2024-03-12'
-    },
-    {
-      id: 4,
-      firstName: 'Sarah',
-      lastName: 'Wilson',
-      email: 'sarah.wilson@email.com',
-      role: 'HOTEL_MANAGER',
-      status: 'Inactive',
-      lastLogin: '2024-07-20',
-      createdDate: '2024-01-25'
-    },
-    {
-      id: 5,
-      firstName: 'David',
-      lastName: 'Brown',
-      email: 'david.brown@email.com',
-      role: 'GUEST',
-      status: 'Pending',
-      lastLogin: 'Never',
-      createdDate: '2024-08-16'
-    },
-    {
-      id: 6,
-      firstName: 'Emily',
-      lastName: 'Davis',
-      email: 'emily.davis@email.com',
-      role: 'HOTEL_STAFF',
-      status: 'Active',
-      lastLogin: '2024-08-16',
-      createdDate: '2024-02-18'
-    },
-    {
-      id: 7,
-      firstName: 'Robert',
-      lastName: 'Miller',
-      email: 'robert.miller@email.com',
-      role: 'ADMIN',
-      status: 'Active',
-      lastLogin: '2024-08-17',
-      createdDate: '2024-01-01'
-    },
-    {
-      id: 8,
-      firstName: 'Lisa',
-      lastName: 'Garcia',
-      email: 'lisa.garcia@email.com',
-      role: 'GUEST',
-      status: 'Active',
-      lastLogin: '2024-08-13',
-      createdDate: '2024-03-30'
-    },
-    {
-      id: 9,
-      firstName: 'Tom',
-      lastName: 'Anderson',
-      email: 'tom.anderson@email.com',
-      role: 'HOTEL_MANAGER',
-      status: 'Pending',
-      lastLogin: 'Never',
-      createdDate: '2024-04-10'
-    },
-    {
-      id: 10,
-      firstName: 'Maria',
-      lastName: 'Rodriguez',
-      email: 'maria.rodriguez@email.com',
-      role: 'HOTEL_STAFF',
-      status: 'Active',
-      lastLogin: '2024-08-15',
-      createdDate: '2024-02-25'
-    },
-    {
-      id: 11,
-      firstName: 'James',
-      lastName: 'Taylor',
-      email: 'james.taylor@email.com',
-      role: 'ADMIN',
-      status: 'Inactive',
-      lastLogin: '2024-07-05',
-      createdDate: '2024-01-15'
-    },
-    {
-      id: 12,
-      firstName: 'Anna',
-      lastName: 'White',
-      email: 'anna.white@email.com',
-      role: 'GUEST',
-      status: 'Active',
-      lastLogin: '2024-08-16',
-      createdDate: '2024-04-20'
-    }
-  ];
+  // Search handlers
+  const handleHotelSearch = () => {
+    setHotelPage(0);
+    loadHotels();
+  };
+
+  const handleUserSearch = () => {
+    setUserPage(0);
+    loadUsers();
+  };
+
+  // Navigation handlers
+  const handleViewHotel = (hotelId: number) => {
+    navigate(`/admin/hotels/${hotelId}`);
+  };
+
+  const handleViewUser = (userId: number) => {
+    navigate(`/admin/users/${userId}`);
+  };
 
   // Filter and paginate hotels
-  const filteredHotels = allSampleHotels.filter(hotel => {
+  const filteredHotels = hotels.filter(hotel => {
     const matchesSearch = hotel.name.toLowerCase().includes(hotelSearchTerm.toLowerCase()) ||
-                         hotel.location.toLowerCase().includes(hotelSearchTerm.toLowerCase());
-    const matchesStatus = hotelStatusFilter === '' || hotel.status === hotelStatusFilter;
-    return matchesSearch && matchesStatus;
+                         hotel.address.toLowerCase().includes(hotelSearchTerm.toLowerCase()) ||
+                         hotel.city.toLowerCase().includes(hotelSearchTerm.toLowerCase());
+    // Note: HotelDTO doesn't have status field, so we'll show all hotels for now
+    return matchesSearch;
   });
 
   const paginatedHotels = filteredHotels.slice(
@@ -327,32 +200,25 @@ const AdminDashboard: React.FC = () => {
   );
 
   // Filter and paginate users
-  const filteredUsers = allSampleUsers.filter(user => {
+  const filteredUsers = users.filter(user => {
     const matchesSearch = user.firstName.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
                          user.lastName.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
                          user.email.toLowerCase().includes(userSearchTerm.toLowerCase());
-    const matchesRole = userRoleFilter === '' || user.role === userRoleFilter;
-    const matchesStatus = userStatusFilter === '' || user.status === userStatusFilter;
+    const matchesRole = userRoleFilter === '' || user.roles.includes(userRoleFilter);
+    // Note: UserManagementResponse uses isActive boolean instead of status string
+    const matchesStatus = userStatusFilter === '' || 
+                         (userStatusFilter === 'Active' && user.isActive) ||
+                         (userStatusFilter === 'Inactive' && !user.isActive);
     return matchesSearch && matchesRole && matchesStatus;
   });
 
-  const paginatedUsers = filteredUsers.slice(
+    const paginatedUsers = filteredUsers.slice(
     userPage * userRowsPerPage,
     userPage * userRowsPerPage + userRowsPerPage
   );
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
-      {/* Header */}
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
-          System Administration Dashboard
-        </Typography>
-        <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
-          Manage hotels, users, and platform-wide settings
-        </Typography>
-      </Box>
-
       {/* Main Management Tabs */}
       <Paper sx={{ width: '100%', mb: 4 }}>
         <Tabs
@@ -441,7 +307,27 @@ const AdminDashboard: React.FC = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {paginatedHotels.map((hotel) => (
+                  {hotelLoading ? (
+                    <TableRow>
+                      <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+                        <CircularProgress size={40} />
+                        <Typography variant="body2" sx={{ mt: 2 }}>Loading hotels...</Typography>
+                      </TableCell>
+                    </TableRow>
+                  ) : hotelError ? (
+                    <TableRow>
+                      <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+                        <Typography variant="body2" color="error">{hotelError}</Typography>
+                      </TableCell>
+                    </TableRow>
+                  ) : paginatedHotels.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+                        <Typography variant="body2" color="text.secondary">No hotels found</Typography>
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    paginatedHotels.map((hotel) => (
                     <TableRow key={hotel.id} sx={{ '&:hover': { backgroundColor: 'grey.50' } }}>
                       <TableCell>
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -455,37 +341,31 @@ const AdminDashboard: React.FC = () => {
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
                           <LocationIcon sx={{ mr: 1, color: 'text.secondary', fontSize: 16 }} />
                           <Typography variant="body2">
-                            {hotel.location}
+                            {hotel.city}, {hotel.country}
                           </Typography>
                         </Box>
                       </TableCell>
                       <TableCell>
                         <Chip
-                          label={hotel.status}
+                          label="Active"
                           size="small"
-                          color={
-                            hotel.status === 'Active' 
-                              ? 'success' 
-                              : hotel.status === 'Pending' 
-                                ? 'warning' 
-                                : 'default'
-                          }
-                          variant={hotel.status === 'Inactive' ? 'outlined' : 'filled'}
+                          color="success"
+                          variant="filled"
                         />
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2">
-                          {hotel.rooms}
+                          {hotel.totalRooms || 'N/A'}
                         </Typography>
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2">
-                          ⭐ {hotel.rating}
+                          N/A
                         </Typography>
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2" color="text.secondary">
-                          {hotel.registeredDate}
+                          {hotel.createdAt ? new Date(hotel.createdAt).toLocaleDateString() : 'N/A'}
                         </Typography>
                       </TableCell>
                       <TableCell>
@@ -498,18 +378,12 @@ const AdminDashboard: React.FC = () => {
                               <ViewIcon fontSize="small" />
                             </IconButton>
                           </Tooltip>
-                          <Tooltip title="Edit Hotel">
-                            <IconButton
-                              size="small"
-                              onClick={() => navigate(`/admin/hotels/${hotel.id}/edit`)}
-                            >
-                              <EditIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
+
                         </Box>
                       </TableCell>
                     </TableRow>
-                  ))}
+                    ))
+                  )}
                 </TableBody>
               </Table>
               
@@ -608,7 +482,27 @@ const AdminDashboard: React.FC = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {paginatedUsers.map((user) => (
+                  {userLoading ? (
+                    <TableRow>
+                      <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+                        <CircularProgress size={40} />
+                        <Typography variant="body2" sx={{ mt: 2 }}>Loading users...</Typography>
+                      </TableCell>
+                    </TableRow>
+                  ) : userError ? (
+                    <TableRow>
+                      <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+                        <Typography variant="body2" color="error">{userError}</Typography>
+                      </TableCell>
+                    </TableRow>
+                  ) : paginatedUsers.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+                        <Typography variant="body2" color="text.secondary">No users found</Typography>
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    paginatedUsers.map((user) => (
                     <TableRow key={user.id} sx={{ '&:hover': { backgroundColor: 'grey.50' } }}>
                       <TableCell>
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -625,12 +519,12 @@ const AdminDashboard: React.FC = () => {
                       </TableCell>
                       <TableCell>
                         <Chip
-                          label={user.role}
+                          label={user.roles.length > 0 ? user.roles[0] : 'NO_ROLE'}
                           size="small"
                           color={
-                            user.role === 'ADMIN' 
+                            user.roles.includes('ADMIN') 
                               ? 'error' 
-                              : user.role === 'HOTEL_MANAGER'
+                              : user.roles.includes('HOTEL_MANAGER')
                                 ? 'info'
                                 : 'default'
                           }
@@ -639,26 +533,20 @@ const AdminDashboard: React.FC = () => {
                       </TableCell>
                       <TableCell>
                         <Chip
-                          label={user.status}
+                          label={user.isActive ? 'Active' : 'Inactive'}
                           size="small"
-                          color={
-                            user.status === 'Active' 
-                              ? 'success' 
-                              : user.status === 'Pending' 
-                                ? 'warning' 
-                                : 'default'
-                          }
-                          variant={user.status === 'Inactive' ? 'outlined' : 'filled'}
+                          color={user.isActive ? 'success' : 'default'}
+                          variant={user.isActive ? 'filled' : 'outlined'}
                         />
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2" color="text.secondary">
-                          {user.lastLogin}
+                          N/A
                         </Typography>
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2" color="text.secondary">
-                          {user.createdDate}
+                          {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
                         </Typography>
                       </TableCell>
                       <TableCell>
@@ -671,18 +559,12 @@ const AdminDashboard: React.FC = () => {
                               <ViewIcon fontSize="small" />
                             </IconButton>
                           </Tooltip>
-                          <Tooltip title="Edit User">
-                            <IconButton
-                              size="small"
-                              onClick={() => navigate(`/admin/users/${user.id}/edit`)}
-                            >
-                              <EditIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
+
                         </Box>
                       </TableCell>
                     </TableRow>
-                  ))}
+                    ))
+                  )}
                 </TableBody>
               </Table>
               

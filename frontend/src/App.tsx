@@ -20,7 +20,11 @@ import HotelRegistrationForm from './pages/admin/HotelRegistrationForm';
 import HotelManagementAdmin from './pages/admin/HotelManagementAdmin';
 import UserManagementAdmin from './pages/admin/UserManagementAdmin';
 import UserRegistrationForm from './pages/admin/UserRegistrationForm';
+import HotelViewEdit from './pages/admin/HotelViewEdit';
+import UserViewEdit from './pages/admin/UserViewEdit';
+import BookingViewEdit from './pages/admin/BookingViewEdit';
 import HotelAdminDashboard from './pages/hotel-admin/HotelAdminDashboard';
+import RoomManagement from './pages/hotel-admin/RoomManagement';
 
 // Home Page Router Component - redirects based on user role
 const HomePageRouter: React.FC = () => {
@@ -274,6 +278,16 @@ function App() {
             <HotelManagementAdmin />
           </ProtectedRoute>
         } />
+        <Route path="/admin/hotels/:id" element={
+          <ProtectedRoute requiredRole="ADMIN">
+            <HotelViewEdit />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/hotels/:id/edit" element={
+          <ProtectedRoute requiredRole="ADMIN">
+            <HotelViewEdit />
+          </ProtectedRoute>
+        } />
         <Route path="/admin/hotel-registrations" element={
           <ProtectedRoute requiredRole="ADMIN">
             <HotelRegistrationAdmin />
@@ -287,6 +301,16 @@ function App() {
         <Route path="/admin/users" element={
           <ProtectedRoute requiredRole="ADMIN">
             <UserManagementAdmin />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/users/:id" element={
+          <ProtectedRoute requiredRole="ADMIN">
+            <UserViewEdit />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/users/:id/edit" element={
+          <ProtectedRoute requiredRole="ADMIN">
+            <UserViewEdit />
           </ProtectedRoute>
         } />
         <Route path="/admin/add-user" element={
@@ -306,6 +330,16 @@ function App() {
             <HotelAdminDashboard />
           </ProtectedRoute>
         } />
+        <Route path="/hotel-admin/bookings/:id" element={
+          <ProtectedRoute requiredRole="FRONTDESK">
+            <BookingViewEdit />
+          </ProtectedRoute>
+        } />
+        <Route path="/hotel-admin/bookings/:id/edit" element={
+          <ProtectedRoute requiredRole="FRONTDESK">
+            <BookingViewEdit />
+          </ProtectedRoute>
+        } />
         <Route path="/hotel-admin/hotel" element={
           <ProtectedRoute requiredRole="HOTEL_ADMIN">
             <div>Hotel Management - Coming Soon</div>
@@ -318,7 +352,7 @@ function App() {
         } />
         <Route path="/hotel-admin/rooms" element={
           <ProtectedRoute requiredRole="HOTEL_ADMIN">
-            <div>Room Management - Coming Soon</div>
+            <RoomManagement />
           </ProtectedRoute>
         } />
       </Routes>

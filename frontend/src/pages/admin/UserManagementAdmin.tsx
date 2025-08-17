@@ -23,35 +23,26 @@ import {
   Card,
   CardContent,
   Autocomplete,
+  TablePagination,
+  CircularProgress,
+  Alert,
+  Snackbar,
 } from '@mui/material';
 import { 
   Refresh, 
-  Edit, 
   ToggleOn, 
   ToggleOff, 
   Lock,
-  Search 
+  Search,
+  Add 
 } from '@mui/icons-material';
-
-interface User {
-  id: number;
-  email: string;
-  firstName: string;
-  lastName: string;
-  phone?: string;
-  isActive: boolean;
-  roles: string[];
-  tenantId?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface UserStatistics {
-  total: number;
-  active: number;
-  inactive: number;
-  roleCounts: { [key: string]: number };
-}
+import { useAuthenticatedApi } from '../../hooks/useAuthenticatedApi';
+import { 
+  UserManagementResponse, 
+  UserStatistics, 
+  UpdateUserRequest, 
+  CreateUserRequest 
+} from '../../services/adminApi';
 
 const USER_ROLES = [
   'GUEST',
@@ -62,21 +53,25 @@ const USER_ROLES = [
   'HOTEL_MANAGER',
   'ADMIN'
 ];const UserManagementAdmin: React.FC = () => {
-  const [users, setUsers] = useState<User[]>([]);
+  const { adminApiService } = useAuthenticatedApi();
+  const [users, setUsers] = useState<UserManagementResponse[]>([]);
   const [statistics, setStatistics] = useState<UserStatistics | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [totalUsers, setTotalUsers] = useState(0);
   
   // Form state
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<UpdateUserRequest>({
     email: '',
     firstName: '',
     lastName: '',
     phone: '',
     isActive: true,
-    roles: [] as string[],
+    roles: [],
     tenantId: ''
   });
 
@@ -86,23 +81,25 @@ const USER_ROLES = [
       await fetchStatistics();
     };
     loadData();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [page, rowsPerPage]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      let url = '/api/admin/users';
+      setError(null);
+      
+      let response;
       if (searchTerm.trim()) {
-        url = `/api/admin/users/search?searchTerm=${encodeURIComponent(searchTerm)}`;
+        response = await adminApiService.searchUsers(searchTerm, page, rowsPerPage);
+      } else {
+        response = await adminApiService.getUsers(page, rowsPerPage);
       }
       
-      const response = await fetch(url);
-      if (response.ok) {
-        const data = await response.json();
-        setUsers(data.content || data);
-      }
+      setUsers(response.content);
+      setTotalUsers(response.totalElements);
     } catch (error) {
       console.error('Error fetching users:', error);
+      setError('Failed to fetch users. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -110,68 +107,28 @@ const USER_ROLES = [
 
   const fetchStatistics = async () => {
     try {
-      const response = await fetch('/api/admin/users/statistics');
-      if (response.ok) {
-        const data = await response.json();
-        setStatistics(data);
-      }
+      const data = await adminApiService.getUserStatistics();
+      setStatistics(data);
     } catch (error) {
       console.error('Error fetching statistics:', error);
     }
   };
 
   const handleSearch = () => {
+    setPage(0); // Reset to first page when searching
     fetchUsers();
-  };
-
-  const openEditDialog = (user: User) => {
-    setSelectedUser(user);
-    setFormData({
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      phone: user.phone || '',
-      isActive: user.isActive,
-      roles: user.roles,
-      tenantId: user.tenantId || ''
-    });
-    setDialogOpen(true);
-  };
-
-  const handleUpdateUser = async () => {
-    if (!selectedUser) return;
-
-    try {
-      const response = await fetch(`/api/admin/users/${selectedUser.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (response.ok) {
-        setDialogOpen(false);
-        fetchUsers();
-        fetchStatistics();
-      }
-    } catch (error) {
-      console.error('Error updating user:', error);
-    }
   };
 
   const handleToggleUserStatus = async (userId: number) => {
     try {
-      const response = await fetch(`/api/admin/users/${userId}/toggle-status`, {
-        method: 'POST',
-      });
-
-      if (response.ok) {
-        fetchUsers();
-        fetchStatistics();
-      }
+      setError(null);
+      await adminApiService.toggleUserStatus(userId);
+      setSuccess('User status updated successfully');
+      fetchUsers();
+      fetchStatistics();
     } catch (error) {
       console.error('Error toggling user status:', error);
+      setError('Failed to update user status. Please try again.');
     }
   };
 
@@ -180,15 +137,12 @@ const USER_ROLES = [
     if (!newPassword) return;
 
     try {
-      const response = await fetch(`/api/admin/users/${userId}/reset-password?newPassword=${encodeURIComponent(newPassword)}`, {
-        method: 'POST',
-      });
-
-      if (response.ok) {
-        alert('Password reset successfully');
-      }
+      setError(null);
+      await adminApiService.resetUserPassword(userId, newPassword);
+      setSuccess('Password reset successfully');
     } catch (error) {
       console.error('Error resetting password:', error);
+      setError('Failed to reset password. Please try again.');
     }
   };
 
@@ -295,6 +249,7 @@ const USER_ROLES = [
           startIcon={<Refresh />} 
           onClick={() => {
             setSearchTerm('');
+            setPage(0);
             fetchUsers();
           }}
           disabled={loading}
@@ -302,6 +257,13 @@ const USER_ROLES = [
           Refresh
         </Button>
       </Box>
+
+      {/* Loading indicator */}
+      {loading && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
+          <CircularProgress />
+        </Box>
+      )}
 
       {/* Users Table */}
       <TableContainer component={Paper}>
@@ -333,7 +295,7 @@ const USER_ROLES = [
                 <TableCell>{user.email}</TableCell>
                 <TableCell>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                    {user.roles.map((role) => (
+                    {user.roles.map((role: string) => (
                       <Chip 
                         key={role}
                         label={role} 
@@ -360,13 +322,6 @@ const USER_ROLES = [
                   <Box sx={{ display: 'flex', gap: 1 }}>
                     <Button
                       size="small"
-                      startIcon={<Edit />}
-                      onClick={() => openEditDialog(user)}
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      size="small"
                       color={user.isActive ? 'warning' : 'success'}
                       startIcon={user.isActive ? <ToggleOff /> : <ToggleOn />}
                       onClick={() => handleToggleUserStatus(user.id)}
@@ -389,8 +344,19 @@ const USER_ROLES = [
         </Table>
       </TableContainer>
 
+      {/* Pagination */}
+      <TablePagination
+        component="div"
+        count={totalUsers}
+        page={page}
+        onPageChange={(_, newPage) => setPage(newPage)}
+        rowsPerPage={rowsPerPage}
+        onRowsPerPageChange={(e) => setRowsPerPage(parseInt(e.target.value))}
+        rowsPerPageOptions={[5, 10, 25, 50]}
+      />
+
       {/* Edit User Dialog */}
-      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="md" fullWidth>
+      <Dialog open={false} onClose={() => {}} maxWidth="md" fullWidth>
         <DialogTitle>Edit User</DialogTitle>
         <DialogContent>
           <Box sx={{ mt: 2 }}>
@@ -476,12 +442,34 @@ const USER_ROLES = [
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleUpdateUser} variant="contained">
+          <Button onClick={() => {}}>Cancel</Button>
+          <Button onClick={() => console.log('Update functionality removed')} variant="contained">
             Update User
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Error Snackbar */}
+      <Snackbar 
+        open={!!error} 
+        autoHideDuration={6000} 
+        onClose={() => setError(null)}
+      >
+        <Alert onClose={() => setError(null)} severity="error">
+          {error}
+        </Alert>
+      </Snackbar>
+
+      {/* Success Snackbar */}
+      <Snackbar 
+        open={!!success} 
+        autoHideDuration={4000} 
+        onClose={() => setSuccess(null)}
+      >
+        <Alert onClose={() => setSuccess(null)} severity="success">
+          {success}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };

@@ -355,6 +355,24 @@ public class HotelAdminService {
     }
 
     /**
+     * Get room by ID
+     */
+    public RoomDTO getRoomById(Long roomId, String adminEmail) {
+        User admin = getUserByEmail(adminEmail);
+        Hotel hotel = admin.getHotel();
+        
+        Room room = roomRepository.findById(roomId)
+            .orElseThrow(() -> new RuntimeException("Room not found"));
+        
+        // Verify the room belongs to the same hotel
+        if (!room.getHotel().getId().equals(hotel.getId())) {
+            throw new RuntimeException("Room does not belong to your hotel");
+        }
+        
+        return convertToRoomDTO(room);
+    }
+
+    /**
      * Update room
      */
     public RoomDTO updateRoom(Long roomId, RoomDTO roomDTO, String adminEmail) {
@@ -577,6 +595,23 @@ public class HotelAdminService {
             .collect(Collectors.toList());
 
         return new PageImpl<>(bookingResponses, pageable, filteredReservations.size());
+    }
+
+    /**
+     * Get a specific booking by reservation ID for a hotel
+     */
+    @Transactional(readOnly = true)
+    public BookingResponse getBookingById(Long reservationId, Long hotelId) {
+        // Find the reservation
+        Reservation reservation = reservationRepository.findById(reservationId)
+            .orElseThrow(() -> new RuntimeException("Booking not found with id: " + reservationId));
+        
+        // Verify the reservation belongs to the specified hotel
+        if (!reservation.getRoom().getHotel().getId().equals(hotelId)) {
+            throw new RuntimeException("Booking does not belong to your hotel");
+        }
+        
+        return convertToBookingResponse(reservation);
     }
 
     /**
