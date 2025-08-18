@@ -23,7 +23,7 @@ import {
   Send,
   PersonAdd,
 } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 interface UserFormData {
   // Basic Information
@@ -52,6 +52,7 @@ interface UserFormData {
 
 const UserRegistrationForm: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [activeStep, setActiveStep] = useState(0);
   const [formData, setFormData] = useState<UserFormData>({
     firstName: '',
@@ -74,6 +75,16 @@ const UserRegistrationForm: React.FC = () => {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  
+  // Helper function to handle back navigation
+  const handleBackToAdmin = () => {
+    const returnTab = searchParams.get('returnTab');
+    if (returnTab) {
+      navigate(`/admin/dashboard?tab=${returnTab}`);
+    } else {
+      navigate('/admin/dashboard');
+    }
+  };
 
   const steps = [
     'Basic Information',
@@ -148,7 +159,7 @@ const UserRegistrationForm: React.FC = () => {
       
       // Redirect after success
       setTimeout(() => {
-        navigate('/admin');
+        handleBackToAdmin();
       }, 2000);
       
     } catch (err) {
@@ -361,7 +372,7 @@ const UserRegistrationForm: React.FC = () => {
           </Typography>
           <Button
             variant="contained"
-            onClick={() => navigate('/admin')}
+            onClick={handleBackToAdmin}
           >
             Back to Dashboard
           </Button>
@@ -376,7 +387,7 @@ const UserRegistrationForm: React.FC = () => {
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
         <Button
           startIcon={<ArrowBack />}
-          onClick={() => navigate('/admin')}
+          onClick={handleBackToAdmin}
           sx={{ mr: 2 }}
         >
           Back to Dashboard

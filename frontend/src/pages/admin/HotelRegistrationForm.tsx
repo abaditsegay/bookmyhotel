@@ -21,7 +21,7 @@ import {
   Send,
   Hotel,
 } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthenticatedApi } from '../../hooks/useAuthenticatedApi';
 import { useTenant } from '../../contexts/TenantContext';
 
@@ -54,6 +54,7 @@ interface HotelFormData {
 
 const HotelRegistrationForm: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { adminApiService } = useAuthenticatedApi();
   const { tenantId } = useTenant();
   const [activeStep, setActiveStep] = useState(0);
@@ -76,6 +77,16 @@ const HotelRegistrationForm: React.FC = () => {
   });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  
+  // Helper function to handle back navigation
+  const handleBackToAdmin = () => {
+    const returnTab = searchParams.get('returnTab');
+    if (returnTab) {
+      navigate(`/admin/dashboard?tab=${returnTab}`);
+    } else {
+      navigate('/admin/dashboard');
+    }
+  };
   const [error, setError] = useState('');
 
   const steps = [
@@ -132,7 +143,7 @@ const HotelRegistrationForm: React.FC = () => {
       
       // Redirect after success
       setTimeout(() => {
-        navigate('/admin/dashboard');
+        handleBackToAdmin();
       }, 2000);
       
     } catch (err: any) {
@@ -332,7 +343,7 @@ const HotelRegistrationForm: React.FC = () => {
           </Typography>
           <Button
             variant="contained"
-            onClick={() => navigate('/admin/dashboard')}
+            onClick={handleBackToAdmin}
           >
             Back to Dashboard
           </Button>
@@ -347,7 +358,7 @@ const HotelRegistrationForm: React.FC = () => {
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
         <Button
           startIcon={<ArrowBack />}
-          onClick={() => navigate('/admin')}
+          onClick={handleBackToAdmin}
           sx={{ mr: 2 }}
         >
           Back to Dashboard

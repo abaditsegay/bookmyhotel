@@ -50,7 +50,7 @@ const AdminDashboard: React.FC = () => {
     return isNaN(tab) || tab < 0 || tab > 1 ? 0 : tab; // Only 2 tabs (0-1)
   };
   
-  const [currentTab, setCurrentTab] = useState(getInitialTab);
+  const [currentTab, setCurrentTab] = useState(() => getInitialTab());
 
   // Hotel management state
   const [hotels, setHotels] = useState<HotelDTO[]>([]);
@@ -149,7 +149,9 @@ const AdminDashboard: React.FC = () => {
   // Sync tab state with URL parameter changes (for browser back/forward navigation)
   useEffect(() => {
     const currentTabFromUrl = getInitialTab();
+    console.log('AdminDashboard useEffect - currentTab:', currentTab, 'currentTabFromUrl:', currentTabFromUrl);
     if (currentTabFromUrl !== currentTab) {
+      console.log('AdminDashboard useEffect - updating tab from', currentTab, 'to', currentTabFromUrl);
       setCurrentTab(currentTabFromUrl);
     }
   }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -253,7 +255,7 @@ const AdminDashboard: React.FC = () => {
               <Button
                 variant="contained"
                 startIcon={<AddIcon />}
-                onClick={() => navigate('/admin/register-hotel')}
+                onClick={() => navigate(`/admin/register-hotel?returnTab=${currentTab}`)}
                 sx={{ height: 'fit-content' }}
               >
                 Register Hotel
@@ -414,7 +416,7 @@ const AdminDashboard: React.FC = () => {
               <Button
                 variant="contained"
                 startIcon={<PersonAddIcon />}
-                onClick={() => navigate('/admin/add-user')}
+                onClick={() => navigate(`/admin/add-user?returnTab=${currentTab}`)}
                 sx={{ height: 'fit-content' }}
               >
                 Add User
