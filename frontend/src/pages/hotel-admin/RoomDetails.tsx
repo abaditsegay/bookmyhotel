@@ -70,7 +70,7 @@ const RoomDetails: React.FC = () => {
         setError(null);
         
         const roomId = parseInt(id, 10);
-        if (!roomId) {
+        if (isNaN(roomId) || roomId <= 0) {
           setError('Invalid room ID');
           return;
         }
