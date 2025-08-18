@@ -33,12 +33,12 @@ import {
 } from '@mui/material';
 import {
   Search as SearchIcon,
-  Edit as EditIcon,
   Delete as DeleteIcon,
   Add as AddIcon,
   Visibility as ViewIcon,
   Refresh as RefreshIcon,
 } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import { hotelAdminApi, RoomResponse, RoomCreateRequest, RoomUpdateRequest } from '../../services/hotelAdminApi';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -50,6 +50,7 @@ interface RoomFilters {
 
 const RoomManagement: React.FC = () => {
   const { token } = useAuth();
+  const navigate = useNavigate();
   const [rooms, setRooms] = useState<RoomResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -148,47 +149,10 @@ const RoomManagement: React.FC = () => {
   };
 
   const handleViewRoom = async (roomId: number) => {
-    if (!token) return;
-    
-    try {
-      const response = await hotelAdminApi.getRoomById(token, roomId);
-      if (response.success && response.data) {
-        setSelectedRoom(response.data);
-        setViewDialogOpen(true);
-      } else {
-        setError(response.message || 'Failed to load room details');
-      }
-    } catch (err) {
-      console.error('Error loading room:', err);
-      setError('Failed to load room details.');
-    }
+    navigate(`/hotel-admin/rooms/${roomId}`);
   };
 
-  const handleEditRoom = async (roomId: number) => {
-    if (!token) return;
-    
-    try {
-      const response = await hotelAdminApi.getRoomById(token, roomId);
-      if (response.success && response.data) {
-        setSelectedRoom(response.data);
-        setEditForm({
-          roomNumber: response.data.roomNumber,
-          roomType: response.data.roomType,
-          pricePerNight: response.data.pricePerNight,
-          capacity: response.data.capacity,
-          description: response.data.description || '',
-        });
-        setEditDialogOpen(true);
-      } else {
-        setError(response.message || 'Failed to load room details');
-      }
-    } catch (err) {
-      console.error('Error loading room for edit:', err);
-      setError('Failed to load room details.');
-    }
-  };
-
-  const handleCreateRoom = async () => {
+    const handleCreateRoom = async () => {
     if (!token) return;
     
     try {
@@ -466,13 +430,6 @@ const RoomManagement: React.FC = () => {
                             title="View Details"
                           >
                             <ViewIcon />
-                          </IconButton>
-                          <IconButton
-                            size="small"
-                            onClick={() => handleEditRoom(room.id)}
-                            title="Edit Room"
-                          >
-                            <EditIcon />
                           </IconButton>
                           <IconButton
                             size="small"

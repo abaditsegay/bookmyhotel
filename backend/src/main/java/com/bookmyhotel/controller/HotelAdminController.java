@@ -67,6 +67,12 @@ public class HotelAdminController {
         return ResponseEntity.ok(newStaff);
     }
 
+    @GetMapping("/staff/{staffId}")
+    public ResponseEntity<UserDTO> getStaffMemberById(@PathVariable Long staffId, Authentication auth) {
+        UserDTO staff = hotelAdminService.getStaffMemberById(staffId, auth.getName());
+        return ResponseEntity.ok(staff);
+    }
+
     @PutMapping("/staff/{staffId}")
     public ResponseEntity<UserDTO> updateStaffMember(
             @PathVariable Long staffId,
@@ -206,5 +212,19 @@ public class HotelAdminController {
         HotelDTO hotel = hotelAdminService.getMyHotel(auth.getName());
         BookingResponse updated = hotelAdminService.updateBookingStatus(reservationId, status);
         return ResponseEntity.ok(updated);
+    }
+
+    /**
+     * Delete booking
+     */
+    @DeleteMapping("/bookings/{reservationId}")
+    public ResponseEntity<Void> deleteBooking(
+            @PathVariable Long reservationId,
+            Authentication auth) {
+        
+        // Get the hotel ID from the authenticated user
+        HotelDTO hotel = hotelAdminService.getMyHotel(auth.getName());
+        hotelAdminService.deleteBooking(reservationId, hotel.getId());
+        return ResponseEntity.noContent().build();
     }
 }

@@ -70,3 +70,23 @@ export interface SearchFilters {
   minPrice?: number;
   maxPrice?: number;
 }
+
+// Hotel admin types
+export interface Hotel {
+  id: number;
+  name: string;
+  description?: string;
+  address: string;
+  city?: string;
+  country?: string;
+  phone?: string;
+  email?: string;
+  tenantId?: string;
+  isActive?: boolean;
+  roomCount?: number;
+  totalRooms?: number;
+  availableRooms?: number;
+  totalStaff?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
