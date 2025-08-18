@@ -51,29 +51,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         localStorage.removeItem('auth_token');
         localStorage.removeItem('auth_user');
       }
-    } else {
-      // For development/testing: auto-login as hotel admin
-      const devToken = "eyJhbGciOiJIUzUxMiJ9.eyJmaXJzdE5hbWUiOiJTYXJhaCIsImxhc3ROYW1lIjoiV2lsc29uIiwicm9sZXMiOlsiSE9URUxfQURNSU4iXSwidGVuYW50SWQiOiJkZWZhdWx0IiwidXNlcklkIjo5LCJlbWFpbCI6ImhvdGVsYWRtaW5AYm9va215aG90ZWwuY29tIiwic3ViIjoiaG90ZWxhZG1pbkBib29rbXlob3RlbC5jb20iLCJpYXQiOjE3NTU0NzQ0ODEsImV4cCI6MTc1NTU2MDg4MX0.9Rb8RG0pwfs__vSB1HPUPqUZw9MCwRYNecSc0JYf25jee4390eD3ZLdzuCZv6nmAOeGIMJmbaJzrkpxFQP6O1w";
-      const devUser: User = {
-        id: "9",
-        email: "hoteladmin@bookmyhotel.com",
-        firstName: "Sarah",
-        lastName: "Wilson",
-        phone: "",
-        role: "HOTEL_ADMIN",
-        roles: ["HOTEL_ADMIN"],
-        hotelId: "1",
-        hotelName: "Grand Plaza Hotel",
-        createdAt: new Date().toISOString(),
-        lastLogin: new Date().toISOString(),
-        isActive: true
-      };
-      
-      setToken(devToken);
-      setUser(devUser);
-      localStorage.setItem('auth_token', devToken);
-      localStorage.setItem('auth_user', JSON.stringify(devUser));
-      console.log('Auto-logged in as hotel admin for development');
     }
   }, []);
 

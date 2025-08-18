@@ -87,6 +87,11 @@ const Navbar: React.FC = () => {
         return [...baseItems, { label: 'Dashboard', path: '/hotel-admin', icon: <DashboardIcon /> }];
       }
 
+      // For front desk staff, show front desk dashboard
+      if (user.role === 'FRONTDESK') {
+        return [...baseItems, { label: 'Front Desk', path: '/frontdesk', icon: <DashboardIcon /> }];
+      }
+
       // For regular users
       const userItems = [
         { label: 'Dashboard', path: '/dashboard', icon: <DashboardIcon /> },
@@ -223,7 +228,7 @@ const Navbar: React.FC = () => {
         <PersonIcon sx={{ mr: 1 }} />
         Profile
       </MenuItem>
-      {user?.role !== 'ADMIN' && (
+      {user?.role !== 'ADMIN' && user?.role !== 'HOTEL_ADMIN' && user?.role !== 'FRONTDESK' && (
         <MenuItem onClick={() => handleNavigation('/dashboard')}>
           <DashboardIcon sx={{ mr: 1 }} />
           Dashboard

@@ -28,99 +28,111 @@ import {
   MenuItem,
   Grid,
   Switch,
+  FormControlLabel,
+  Checkbox,
+  FormGroup,
 } from '@mui/material';
 import {
   Search as SearchIcon,
   Delete as DeleteIcon,
-  Add as AddIcon,
   Visibility as ViewIcon,
   Refresh as RefreshIcon,
+  PersonAdd as PersonAddIcon,
 } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
-import { hotelAdminApi, RoomResponse, RoomCreateRequest, RoomUpdateRequest } from '../../services/hotelAdminApi';
+import { hotelAdminApi, StaffResponse, StaffCreateRequest } from '../../services/hotelAdminApi';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
-interface RoomFilters {
-  roomNumber: string;
-  roomType: string;
+interface StaffFilters {
+  search: string;
+  role: string;
   status: string;
 }
 
-const RoomManagement: React.FC = () => {
+const StaffManagement: React.FC = () => {
   const { token } = useAuth();
   const navigate = useNavigate();
-  const [rooms, setRooms] = useState<RoomResponse[]>([]);
+  const [staff, setStaff] = useState<StaffResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalElements, setTotalElements] = useState(0);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filters, setFilters] = useState<RoomFilters>({
-    roomNumber: '',
-    roomType: '',
+  const [filters, setFilters] = useState<StaffFilters>({
+    search: '',
+    role: '',
     status: '',
   });
 
   // Dialog states
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [selectedRoom, setSelectedRoom] = useState<RoomResponse | null>(null);
+  const [selectedStaff, setSelectedStaff] = useState<StaffResponse | null>(null);
 
-  // Form states
-  const [roomForm, setRoomForm] = useState<RoomCreateRequest>({
-    roomNumber: '',
-    roomType: 'SINGLE',
-    pricePerNight: 0,
-    capacity: 1,
-    description: '',
+  // Form state
+  const [staffForm, setStaffForm] = useState<StaffCreateRequest>({
+    email: '',
+    password: '',
+    firstName: '',
+    lastName: '',
+    phone: '',
+    roles: ['FRONTDESK'],
   });
 
-  const roomTypes = ['SINGLE', 'DOUBLE', 'DELUXE', 'SUITE', 'PRESIDENTIAL'];
-  const roomStatuses = ['AVAILABLE', 'OCCUPIED', 'MAINTENANCE', 'OUT_OF_ORDER'];
+  const staffRoles = ['FRONTDESK', 'HOUSEKEEPING', 'HOTEL_ADMIN'];
+  const statusOptions = ['ALL', 'ACTIVE', 'INACTIVE'];
 
-  const loadRooms = useCallback(async () => {
+  const loadStaff = useCallback(async () => {
     if (!token) return;
     
     try {
       setLoading(true);
       setError(null);
       
-      const response = await hotelAdminApi.getHotelRooms(
+      const response = await hotelAdminApi.getHotelStaff(
         token,
         page,
         rowsPerPage,
-        searchTerm || undefined,
-        filters.roomNumber || undefined,
-        filters.roomType || undefined,
-        filters.status || undefined
+        filters.search || undefined,
+        filters.role || undefined
       );
       
       if (response.success && response.data) {
-        setRooms(response.data.content);
+        let filteredStaff = response.data.content;
+        
+        // Apply status filter if specified
+        if (filters.status && filters.status !== 'ALL') {
+          filteredStaff = filteredStaff.filter(member => 
+            filters.status === 'ACTIVE' ? member.isActive : !member.isActive
+          );
+        }
+        
+        setStaff(filteredStaff);
         setTotalElements(response.data.totalElements);
       } else {
-        setError(response.message || 'Failed to load rooms');
+        setError(response.message || 'Failed to load staff');
       }
     } catch (err) {
-      console.error('Error loading rooms:', err);
-      setError('Failed to load rooms. Please try again.');
+      console.error('Error loading staff:', err);
+      setError('Failed to load staff. Please try again.');
     } finally {
       setLoading(false);
     }
-  }, [token, page, rowsPerPage, searchTerm, filters]);
+  }, [token, page, rowsPerPage, filters]);
 
   useEffect(() => {
-    loadRooms();
-  }, [loadRooms]);
+    loadStaff();
+  }, [loadStaff]);
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value);
+    setFilters(prev => ({
+      ...prev,
+      search: event.target.value
+    }));
     setPage(0);
   };
 
-  const handleFilterChange = (filterName: keyof RoomFilters, value: string) => {
+  const handleFilterChange = (filterName: keyof StaffFilters, value: string) => {
     setFilters(prev => ({
       ...prev,
       [filterName]: value
@@ -137,92 +149,104 @@ const RoomManagement: React.FC = () => {
     setPage(0);
   };
 
-  const handleViewRoom = async (roomId: number) => {
-    navigate(`/hotel-admin/rooms/${roomId}`);
+  const handleViewStaff = (staffId: number) => {
+    navigate(`/hotel-admin/staff/${staffId}`);
   };
 
-    const handleCreateRoom = async () => {
+  const handleCreateStaff = async () => {
     if (!token) return;
     
     try {
       setLoading(true);
-      const response = await hotelAdminApi.createRoom(token, roomForm);
+      const response = await hotelAdminApi.createStaff(token, staffForm);
       if (response.success) {
         setCreateDialogOpen(false);
-        setRoomForm({
-          roomNumber: '',
-          roomType: 'SINGLE',
-          pricePerNight: 0,
-          capacity: 1,
-          description: '',
+        setStaffForm({
+          email: '',
+          password: '',
+          firstName: '',
+          lastName: '',
+          phone: '',
+          roles: ['FRONTDESK'],
         });
-        await loadRooms();
+        await loadStaff();
         setError(null);
       } else {
-        setError(response.message || 'Failed to create room. Please check the room number is unique.');
+        setError(response.message || 'Failed to create staff member. Please check the email is unique.');
       }
     } catch (err) {
-      console.error('Error creating room:', err);
-      setError('Failed to create room. Please check the room number is unique.');
+      console.error('Error creating staff:', err);
+      setError('Failed to create staff member. Please check the email is unique.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDeleteRoom = async () => {
-    if (!selectedRoom || !token) return;
+  const handleDeleteStaff = async () => {
+    if (!selectedStaff || !token) return;
     
     try {
       setLoading(true);
-      const response = await hotelAdminApi.deleteRoom(token, selectedRoom.id);
+      const response = await hotelAdminApi.deleteStaff(token, selectedStaff.id);
       if (response.success) {
         setDeleteDialogOpen(false);
-        setSelectedRoom(null);
-        await loadRooms();
+        setSelectedStaff(null);
+        await loadStaff();
         setError(null);
       } else {
-        setError(response.message || 'Failed to delete room. Room may have active bookings.');
+        setError(response.message || 'Failed to delete staff member.');
       }
     } catch (err) {
-      console.error('Error deleting room:', err);
-      setError('Failed to delete room. Room may have active bookings.');
+      console.error('Error deleting staff:', err);
+      setError('Failed to delete staff member.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleToggleAvailability = async (roomId: number, currentAvailability: boolean) => {
+  const handleToggleStaffStatus = async (staffId: number, currentStatus: boolean) => {
     if (!token) return;
     
     try {
       setLoading(true);
-      const response = await hotelAdminApi.toggleRoomAvailability(token, roomId, !currentAvailability);
+      const response = currentStatus 
+        ? await hotelAdminApi.deactivateStaff(token, staffId)
+        : await hotelAdminApi.activateStaff(token, staffId);
+        
       if (response.success) {
-        await loadRooms();
+        await loadStaff();
         setError(null);
       } else {
-        setError(response.message || 'Failed to update room availability');
+        setError(response.message || 'Failed to update staff status');
       }
     } catch (err) {
-      console.error('Error toggling room availability:', err);
-      setError('Failed to update room availability.');
+      console.error('Error toggling staff status:', err);
+      setError('Failed to update staff status.');
     } finally {
       setLoading(false);
     }
   };
 
-  const getStatusColor = (isAvailable: boolean) => {
-    return isAvailable ? 'success' : 'error';
+  const getStatusColor = (isActive: boolean) => {
+    return isActive ? 'success' : 'error';
   };
 
   const resetFilters = () => {
     setFilters({
-      roomNumber: '',
-      roomType: '',
+      search: '',
+      role: '',
       status: '',
     });
-    setSearchTerm('');
     setPage(0);
+  };
+
+  const handleRoleChange = (role: string, checked: boolean) => {
+    setStaffForm(prev => {
+      const roles = checked 
+        ? [...prev.roles, role]
+        : prev.roles.filter(r => r !== role);
+      return { ...prev, roles };
+    });
   };
 
   if (!token) {
@@ -240,14 +264,14 @@ const RoomManagement: React.FC = () => {
       <Box sx={{ py: 4 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Typography variant="h4" component="h1">
-            Room Management
+            Staff Management
           </Typography>
           <Button
             variant="contained"
-            startIcon={<AddIcon />}
+            startIcon={<PersonAddIcon />}
             onClick={() => setCreateDialogOpen(true)}
           >
-            Add New Room
+            Add New Staff
           </Button>
         </Box>
 
@@ -263,8 +287,8 @@ const RoomManagement: React.FC = () => {
             <Grid item xs={12} md={4}>
               <TextField
                 fullWidth
-                label="Search rooms..."
-                value={searchTerm}
+                label="Search staff..."
+                value={filters.search}
                 onChange={handleSearchChange}
                 InputProps={{
                   startAdornment: (
@@ -275,30 +299,22 @@ const RoomManagement: React.FC = () => {
                 }}
               />
             </Grid>
-            <Grid item xs={12} md={2}>
-              <TextField
-                fullWidth
-                label="Room Number"
-                value={filters.roomNumber}
-                onChange={(e) => handleFilterChange('roomNumber', e.target.value)}
-              />
-            </Grid>
-            <Grid item xs={12} md={2}>
+            <Grid item xs={12} md={3}>
               <FormControl fullWidth>
-                <InputLabel>Room Type</InputLabel>
+                <InputLabel>Role</InputLabel>
                 <Select
-                  value={filters.roomType}
-                  label="Room Type"
-                  onChange={(e) => handleFilterChange('roomType', e.target.value)}
+                  value={filters.role}
+                  label="Role"
+                  onChange={(e) => handleFilterChange('role', e.target.value)}
                 >
-                  <MenuItem value="">All Types</MenuItem>
-                  {roomTypes.map(type => (
-                    <MenuItem key={type} value={type}>{type}</MenuItem>
+                  <MenuItem value="">All Roles</MenuItem>
+                  {staffRoles.map(role => (
+                    <MenuItem key={role} value={role}>{role.replace('_', ' ')}</MenuItem>
                   ))}
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12} md={2}>
+            <Grid item xs={12} md={3}>
               <FormControl fullWidth>
                 <InputLabel>Status</InputLabel>
                 <Select
@@ -306,8 +322,7 @@ const RoomManagement: React.FC = () => {
                   label="Status"
                   onChange={(e) => handleFilterChange('status', e.target.value)}
                 >
-                  <MenuItem value="">All Statuses</MenuItem>
-                  {roomStatuses.map(status => (
+                  {statusOptions.map(status => (
                     <MenuItem key={status} value={status}>{status}</MenuItem>
                   ))}
                 </Select>
@@ -323,7 +338,7 @@ const RoomManagement: React.FC = () => {
                   Clear
                 </Button>
                 <IconButton
-                  onClick={loadRooms}
+                  onClick={loadStaff}
                   disabled={loading}
                 >
                   <RefreshIcon />
@@ -333,18 +348,18 @@ const RoomManagement: React.FC = () => {
           </Grid>
         </Paper>
 
-        {/* Rooms Table */}
+        {/* Staff Table */}
         <Paper>
           <TableContainer>
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Room Number</TableCell>
-                  <TableCell>Type</TableCell>
-                  <TableCell>Price/Night</TableCell>
-                  <TableCell>Capacity</TableCell>
+                  <TableCell>Name</TableCell>
+                  <TableCell>Email</TableCell>
+                  <TableCell>Phone</TableCell>
+                  <TableCell>Roles</TableCell>
                   <TableCell>Status</TableCell>
-                  <TableCell>Available</TableCell>
+                  <TableCell>Active</TableCell>
                   <TableCell align="center">Actions</TableCell>
                 </TableRow>
               </TableHead>
@@ -355,36 +370,47 @@ const RoomManagement: React.FC = () => {
                       <CircularProgress />
                     </TableCell>
                   </TableRow>
-                ) : rooms.length === 0 ? (
+                ) : staff.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} align="center">
                       <Typography variant="body2" color="text.secondary">
-                        No rooms found matching your criteria
+                        No staff members found matching your criteria
                       </Typography>
                     </TableCell>
                   </TableRow>
                 ) : (
-                  rooms.map((room) => (
-                    <TableRow key={room.id} hover>
+                  staff.map((member) => (
+                    <TableRow key={member.id} hover>
                       <TableCell>
                         <Typography variant="body2" fontWeight="medium">
-                          {room.roomNumber}
+                          {member.firstName} {member.lastName}
                         </Typography>
                       </TableCell>
-                      <TableCell>{room.roomType}</TableCell>
-                      <TableCell>${room.pricePerNight}</TableCell>
-                      <TableCell>{room.capacity}</TableCell>
+                      <TableCell>{member.email}</TableCell>
+                      <TableCell>{member.phone || 'N/A'}</TableCell>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                          {member.roles.map(role => (
+                            <Chip
+                              key={role}
+                              label={role.replace('_', ' ')}
+                              size="small"
+                              variant="outlined"
+                            />
+                          ))}
+                        </Box>
+                      </TableCell>
                       <TableCell>
                         <Chip
-                          label={room.isAvailable ? 'Available' : 'Unavailable'}
-                          color={getStatusColor(room.isAvailable) as any}
+                          label={member.isActive ? 'Active' : 'Inactive'}
+                          color={getStatusColor(member.isActive) as any}
                           size="small"
                         />
                       </TableCell>
                       <TableCell>
                         <Switch
-                          checked={room.isAvailable}
-                          onChange={() => handleToggleAvailability(room.id, room.isAvailable)}
+                          checked={member.isActive}
+                          onChange={() => handleToggleStaffStatus(member.id, member.isActive)}
                           disabled={loading}
                           size="small"
                         />
@@ -393,7 +419,7 @@ const RoomManagement: React.FC = () => {
                         <Box sx={{ display: 'flex', gap: 0.5 }}>
                           <IconButton
                             size="small"
-                            onClick={() => handleViewRoom(room.id)}
+                            onClick={() => handleViewStaff(member.id)}
                             title="View Details"
                           >
                             <ViewIcon />
@@ -401,10 +427,10 @@ const RoomManagement: React.FC = () => {
                           <IconButton
                             size="small"
                             onClick={() => {
-                              setSelectedRoom(room);
+                              setSelectedStaff(member);
                               setDeleteDialogOpen(true);
                             }}
-                            title="Delete Room"
+                            title="Delete Staff"
                             color="error"
                           >
                             <DeleteIcon />
@@ -428,81 +454,92 @@ const RoomManagement: React.FC = () => {
           />
         </Paper>
 
-        {/* Create Room Dialog */}
+        {/* Create Staff Dialog */}
         <Dialog
           open={createDialogOpen}
           onClose={() => setCreateDialogOpen(false)}
           maxWidth="md"
           fullWidth
         >
-          <DialogTitle>Add New Room</DialogTitle>
+          <DialogTitle>Add New Staff Member</DialogTitle>
           <DialogContent>
             <Grid container spacing={2} sx={{ mt: 1 }}>
               <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
-                  label="Room Number"
-                  value={roomForm.roomNumber}
-                  onChange={(e) => setRoomForm({ ...roomForm, roomNumber: e.target.value })}
+                  label="Email"
+                  type="email"
+                  value={staffForm.email}
+                  onChange={(e) => setStaffForm({ ...staffForm, email: e.target.value })}
                   required
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <FormControl fullWidth required>
-                  <InputLabel>Room Type</InputLabel>
-                  <Select
-                    value={roomForm.roomType}
-                    label="Room Type"
-                    onChange={(e) => setRoomForm({ ...roomForm, roomType: e.target.value as any })}
-                  >
-                    {roomTypes.map(type => (
-                      <MenuItem key={type} value={type}>{type}</MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Price per Night"
-                  type="number"
-                  value={roomForm.pricePerNight}
-                  onChange={(e) => setRoomForm({ ...roomForm, pricePerNight: parseFloat(e.target.value) })}
-                  required
-                  inputProps={{ min: 0, step: 0.01 }}
                 />
               </Grid>
               <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
-                  label="Capacity"
-                  type="number"
-                  value={roomForm.capacity}
-                  onChange={(e) => setRoomForm({ ...roomForm, capacity: parseInt(e.target.value) })}
+                  label="Password"
+                  type="password"
+                  value={staffForm.password}
+                  onChange={(e) => setStaffForm({ ...staffForm, password: e.target.value })}
                   required
-                  inputProps={{ min: 1, max: 10 }}
+                  helperText="Minimum 8 characters"
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  label="First Name"
+                  value={staffForm.firstName}
+                  onChange={(e) => setStaffForm({ ...staffForm, firstName: e.target.value })}
+                  required
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  label="Last Name"
+                  value={staffForm.lastName}
+                  onChange={(e) => setStaffForm({ ...staffForm, lastName: e.target.value })}
+                  required
                 />
               </Grid>
               <Grid item xs={12}>
                 <TextField
                   fullWidth
-                  label="Description"
-                  multiline
-                  rows={3}
-                  value={roomForm.description}
-                  onChange={(e) => setRoomForm({ ...roomForm, description: e.target.value })}
+                  label="Phone (Optional)"
+                  value={staffForm.phone}
+                  onChange={(e) => setStaffForm({ ...staffForm, phone: e.target.value })}
                 />
+              </Grid>
+              <Grid item xs={12}>
+                <Typography variant="subtitle2" gutterBottom>
+                  Roles *
+                </Typography>
+                <FormGroup row>
+                  {staffRoles.map(role => (
+                    <FormControlLabel
+                      key={role}
+                      control={
+                        <Checkbox
+                          checked={staffForm.roles.includes(role)}
+                          onChange={(e) => handleRoleChange(role, e.target.checked)}
+                        />
+                      }
+                      label={role.replace('_', ' ')}
+                    />
+                  ))}
+                </FormGroup>
               </Grid>
             </Grid>
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setCreateDialogOpen(false)}>Cancel</Button>
             <Button 
-              onClick={handleCreateRoom}
+              onClick={handleCreateStaff}
               variant="contained"
-              disabled={loading || !roomForm.roomNumber || !roomForm.pricePerNight}
+              disabled={loading || !staffForm.email || !staffForm.password || !staffForm.firstName || !staffForm.lastName || staffForm.roles.length === 0}
             >
-              Create Room
+              Create Staff
             </Button>
           </DialogActions>
         </Dialog>
@@ -515,14 +552,14 @@ const RoomManagement: React.FC = () => {
           <DialogTitle>Confirm Delete</DialogTitle>
           <DialogContent>
             <Typography>
-              Are you sure you want to delete room {selectedRoom?.roomNumber}? 
-              This action cannot be undone and will fail if the room has active bookings.
+              Are you sure you want to delete {selectedStaff?.firstName} {selectedStaff?.lastName}? 
+              This action cannot be undone and will deactivate the staff member.
             </Typography>
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
             <Button 
-              onClick={handleDeleteRoom}
+              onClick={handleDeleteStaff}
               variant="contained"
               color="error"
               disabled={loading}
@@ -536,4 +573,4 @@ const RoomManagement: React.FC = () => {
   );
 };
 
-export default RoomManagement;
+export default StaffManagement;

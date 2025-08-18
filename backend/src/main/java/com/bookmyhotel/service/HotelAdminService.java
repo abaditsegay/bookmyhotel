@@ -149,6 +149,28 @@ public class HotelAdminService {
     }
 
     /**
+     * Get a specific staff member by ID
+     */
+    public UserDTO getStaffMemberById(Long staffId, String adminEmail) {
+        User admin = getUserByEmail(adminEmail);
+        Hotel hotel = admin.getHotel();
+        
+        if (hotel == null) {
+            throw new RuntimeException("Hotel admin is not associated with any hotel");
+        }
+        
+        User staff = userRepository.findById(staffId)
+            .orElseThrow(() -> new RuntimeException("Staff member not found"));
+        
+        // Verify the staff member belongs to the same hotel
+        if (!staff.getHotel().getId().equals(hotel.getId())) {
+            throw new RuntimeException("Staff member not found in your hotel");
+        }
+        
+        return convertToUserDTO(staff);
+    }
+
+    /**
      * Add a new staff member
      */
     public UserDTO addStaffMember(UserDTO userDTO, String adminEmail) {
@@ -681,6 +703,27 @@ public class HotelAdminService {
         reservation = reservationRepository.save(reservation);
         
         return convertToBookingResponse(reservation);
+    }
+
+    /**
+     * Delete booking (reservation)
+     */
+    public void deleteBooking(Long reservationId, Long hotelId) {
+        // Find the reservation
+        Reservation reservation = reservationRepository.findById(reservationId)
+            .orElseThrow(() -> new RuntimeException("Booking not found with id: " + reservationId));
+        
+        // Verify the reservation belongs to the specified hotel
+        if (!reservation.getRoom().getHotel().getId().equals(hotelId)) {
+            throw new RuntimeException("Booking does not belong to your hotel");
+        }
+        
+        // Check if booking can be deleted (e.g., not checked in or active)
+        if (reservation.getStatus() == ReservationStatus.CHECKED_IN) {
+            throw new RuntimeException("Cannot delete a booking with checked-in status");
+        }
+        
+        reservationRepository.delete(reservation);
     }
 
     /**

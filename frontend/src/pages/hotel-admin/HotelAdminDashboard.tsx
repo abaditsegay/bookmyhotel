@@ -11,7 +11,6 @@ import {
   Chip,
   Divider,
   Paper,
-  Avatar,
   Table,
   TableBody,
   TableCell,
@@ -20,27 +19,26 @@ import {
   TableRow,
   Pagination,
   TextField,
-  InputAdornment,
-  IconButton,
   CircularProgress,
   Alert,
+  IconButton,
   Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
 import {
-  Hotel as HotelIcon,
-  People as PeopleIcon,
-  Room as RoomIcon,
-  Assessment as AssessmentIcon,
-  BookOnline as BookingIcon,
-  Edit as EditIcon,
-  Add as AddIcon,
-  Search as SearchIcon,
   Visibility as VisibilityIcon,
+  Delete as DeleteIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { hotelAdminApi, BookingResponse, BookingStats } from '../../services/hotelAdminApi';
+import { Hotel } from '../../types/hotel';
 import RoomManagement from './RoomManagement';
+import StaffManagement from './StaffManagement';
+import HotelEditDialog from '../../components/hotel/HotelEditDialog';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -79,10 +77,19 @@ const HotelAdminDashboard: React.FC = () => {
   const [bookingPage, setBookingPage] = useState(0);
   const [bookingSize] = useState(10);
   const [bookingSearch, setBookingSearch] = useState('');
-  const [totalBookings, setTotalBookings] = useState(0);
   const [totalBookingPages, setTotalBookingPages] = useState(0);
   const [bookingsLoading, setBookingsLoading] = useState(false);
   const [bookingsError, setBookingsError] = useState<string | null>(null);
+
+  // Delete booking dialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState<BookingResponse | null>(null);
+
+  // Hotel state
+  const [hotel, setHotel] = useState<Hotel | null>(null);
+  const [hotelLoading, setHotelLoading] = useState(false);
+  const [hotelError, setHotelError] = useState<string | null>(null);
+  const [hotelEditDialogOpen, setHotelEditDialogOpen] = useState(false);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
@@ -114,18 +121,15 @@ const HotelAdminDashboard: React.FC = () => {
       
       if (result.success && result.data) {
         setBookings(result.data.content || []);
-        setTotalBookings(result.data.totalElements || 0);
         setTotalBookingPages(result.data.totalPages || 0);
       } else {
         setBookingsError(result.message || 'Failed to load bookings');
         setBookings([]);
-        setTotalBookings(0);
         setTotalBookingPages(0);
       }
     } catch (error) {
       setBookingsError('Failed to load bookings');
       setBookings([]);
-      setTotalBookings(0);
       setTotalBookingPages(0);
     } finally {
       setBookingsLoading(false);
@@ -186,6 +190,28 @@ const HotelAdminDashboard: React.FC = () => {
     navigate(`/hotel-admin/bookings/${booking.reservationId}`);
   };
 
+  const handleDeleteBooking = async () => {
+    if (!selectedBooking || !token) return;
+    
+    try {
+      setBookingsLoading(true);
+      const response = await hotelAdminApi.deleteBooking(token, selectedBooking.reservationId);
+      if (response.success) {
+        setDeleteDialogOpen(false);
+        setSelectedBooking(null);
+        await loadBookings();
+        setBookingsError(null);
+      } else {
+        setBookingsError(response.message || 'Failed to delete booking');
+      }
+    } catch (err) {
+      console.error('Error deleting booking:', err);
+      setBookingsError('Failed to delete booking');
+    } finally {
+      setBookingsLoading(false);
+    }
+  };
+
   // Get status chip color
   const getStatusColor = (status: string): "default" | "primary" | "secondary" | "error" | "info" | "success" | "warning" => {
     switch (status.toLowerCase()) {
@@ -215,16 +241,72 @@ const HotelAdminDashboard: React.FC = () => {
     });
   };
 
-  // Load initial data when component mounts
+  // Load hotel data
+  const loadHotelData = async () => {
+    if (!token) {
+      setHotelError('Authentication required');
+      return;
+    }
+    
+    setHotelLoading(true);
+    setHotelError(null);
+    
+    try {
+      const result = await hotelAdminApi.getMyHotel(token);
+      if (result.success && result.data) {
+        setHotel(result.data);
+      } else {
+        setHotelError(result.message || 'Failed to load hotel data');
+      }
+    } catch (err) {
+      console.error('Error loading hotel data:', err);
+      setHotelError('Failed to load hotel data');
+    } finally {
+      setHotelLoading(false);
+    }
+  };
+
+  // Update hotel data
+  const handleHotelUpdate = async (hotelData: Partial<Hotel>) => {
+    if (!token) {
+      throw new Error('Authentication required');
+    }
+
+    const result = await hotelAdminApi.updateMyHotel(token, hotelData);
+    if (result.success && result.data) {
+      setHotel(result.data);
+    } else {
+      throw new Error(result.message || 'Failed to update hotel');
+    }
+  };
+
+  // Open hotel edit dialog
+  const handleEditHotel = () => {
+    setHotelEditDialogOpen(true);
+  };
+
+  // Load initial data when component mounts or tab changes
   useEffect(() => {
+    // Load hotel data when Hotel Details tab (index 0) is selected
+    if (activeTab === 0 && token) {
+      loadHotelData();
+    }
+    // Load bookings when Bookings tab (index 3) is selected
     if (activeTab === 3 && token) {
       loadBookings();
       loadBookingStats();
     }
   }, [activeTab, token, bookingPage, bookingSize]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Mock data for demonstration
-  const hotelData = {
+  // Mock data for demonstration - will be replaced with real data from hotel state
+  const hotelData = hotel ? {
+    name: hotel.name || user?.hotelName || 'Grand Plaza Hotel',
+    totalRooms: hotel.totalRooms || 120,
+    availableRooms: hotel.availableRooms || 89,
+    occupiedRooms: (hotel.totalRooms || 120) - (hotel.availableRooms || 89),
+    totalStaff: hotel.totalStaff || 25,
+    activeStaff: 23, // This would need to come from staff API
+  } : {
     name: user?.hotelName || 'Grand Plaza Hotel',
     totalRooms: 120,
     availableRooms: 89,
@@ -237,25 +319,21 @@ const HotelAdminDashboard: React.FC = () => {
     {
       title: 'Total Rooms',
       value: hotelData.totalRooms,
-      icon: <RoomIcon sx={{ fontSize: 40 }} />,
       color: 'primary',
     },
     {
       title: 'Available Rooms',
       value: hotelData.availableRooms,
-      icon: <RoomIcon sx={{ fontSize: 40 }} />,
       color: 'success',
     },
     {
       title: 'Occupied Rooms',
       value: hotelData.occupiedRooms,
-      icon: <RoomIcon sx={{ fontSize: 40 }} />,
       color: 'warning',
     },
     {
       title: 'Total Staff',
       value: hotelData.totalStaff,
-      icon: <PeopleIcon sx={{ fontSize: 40 }} />,
       color: 'info',
     },
   ];
@@ -263,47 +341,19 @@ const HotelAdminDashboard: React.FC = () => {
   return (
     <Box sx={{ p: 3 }}>
       {/* Header */}
-      <Paper sx={{ p: 3, mb: 3, background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)', color: 'white' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Avatar sx={{ bgcolor: 'rgba(255,255,255,0.2)', width: 60, height: 60 }}>
-              <HotelIcon sx={{ fontSize: 30 }} />
-            </Avatar>
-            <Box>
-              <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1 }}>
-                {hotelData.name}
-              </Typography>
-              <Typography variant="h6" sx={{ opacity: 0.9 }}>
-                Hotel Administrator Dashboard
-              </Typography>
-              <Chip 
-                label={`Welcome, ${user?.firstName} ${user?.lastName}`} 
-                size="small" 
-                sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: 'white', mt: 1 }}
-              />
-            </Box>
-          </Box>
-          <Box sx={{ textAlign: 'center' }}>
-            <Typography variant="h6" sx={{ opacity: 0.9 }}>
-              Occupancy Rate
-            </Typography>
-            <Typography variant="h3" sx={{ fontWeight: 'bold' }}>
-              {Math.round((hotelData.occupiedRooms / hotelData.totalRooms) * 100)}%
-            </Typography>
-          </Box>
-        </Box>
-      </Paper>
+      <Box sx={{ mb: 3 }}>
+        <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 2 }}>
+          {hotelData.name}
+        </Typography>
+      </Box>
 
       {/* Statistics Cards */}
-      <Grid container spacing={3} sx={{ mb: 3 }}>
+      <Grid container spacing={2} sx={{ mb: 3 }}>
         {stats.map((stat, index) => (
-          <Grid item xs={12} sm={6} md={3} key={index}>
+          <Grid item xs={6} sm={3} key={index}>
             <Card sx={{ height: '100%' }}>
-              <CardContent sx={{ textAlign: 'center', p: 3 }}>
-                <Box sx={{ color: `${stat.color}.main`, mb: 2 }}>
-                  {stat.icon}
-                </Box>
-                <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1 }}>
+              <CardContent sx={{ textAlign: 'center', p: 2 }}>
+                <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1, color: `${stat.color}.main` }}>
                   {stat.value}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
@@ -319,85 +369,105 @@ const HotelAdminDashboard: React.FC = () => {
       <Card>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
           <Tabs value={activeTab} onChange={handleTabChange} aria-label="hotel admin tabs">
-            <Tab icon={<HotelIcon />} label="Hotel Details" />
-            <Tab icon={<PeopleIcon />} label="Staff Management" />
-            <Tab icon={<RoomIcon />} label="Room Management" />
-            <Tab icon={<BookingIcon />} label="Bookings" />
-            <Tab icon={<AssessmentIcon />} label="Reports" />
+            <Tab label="Hotel Details" />
+            <Tab label="Staff Management" />
+            <Tab label="Room Management" />
+            <Tab label="Bookings" />
+            <Tab label="Reports" />
           </Tabs>
         </Box>
 
         <TabPanel value={activeTab} index={0}>
           {/* Hotel Details Tab */}
           <Box>
-            <Box sx={{ display: 'flex', justifyContent: 'between', alignItems: 'center', mb: 3 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
               <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
                 Hotel Information
               </Typography>
               <Button
                 variant="contained"
-                startIcon={<EditIcon />}
-                onClick={() => alert('Edit Hotel Details - Coming Soon!')}
+                onClick={handleEditHotel}
+                disabled={hotelLoading}
               >
                 Edit Hotel Details
               </Button>
             </Box>
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
-                <Typography variant="h6" gutterBottom>Basic Information</Typography>
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="body2" color="text.secondary">Hotel Name</Typography>
-                  <Typography variant="body1">{hotelData.name}</Typography>
-                </Box>
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="body2" color="text.secondary">Address</Typography>
-                  <Typography variant="body1">123 Main Street, City, Country</Typography>
-                </Box>
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="body2" color="text.secondary">Contact</Typography>
-                  <Typography variant="body1">+1 (555) 123-4567</Typography>
-                </Box>
+            
+            {/* Show loading or error states */}
+            {hotelLoading && (
+              <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+                <CircularProgress />
+              </Box>
+            )}
+            
+            {hotelError && (
+              <Alert severity="error" sx={{ mb: 3 }}>
+                {hotelError}
+              </Alert>
+            )}
+            
+            {!hotelLoading && !hotelError && (
+              <Grid container spacing={3}>
+                <Grid item xs={12} md={6}>
+                  <Typography variant="h6" gutterBottom>Basic Information</Typography>
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="body2" color="text.secondary">Hotel Name</Typography>
+                    <Typography variant="body1">{hotel?.name || hotelData.name}</Typography>
+                  </Box>
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="body2" color="text.secondary">Description</Typography>
+                    <Typography variant="body1">{hotel?.description || 'No description available'}</Typography>
+                  </Box>
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="body2" color="text.secondary">Address</Typography>
+                    <Typography variant="body1">
+                      {hotel?.address || 'Address not set'}
+                      {hotel?.city && `, ${hotel.city}`}
+                      {hotel?.country && `, ${hotel.country}`}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="body2" color="text.secondary">Phone</Typography>
+                    <Typography variant="body1">{hotel?.phone || 'Phone not set'}</Typography>
+                  </Box>
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="body2" color="text.secondary">Email</Typography>
+                    <Typography variant="body1">{hotel?.email || 'Email not set'}</Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <Typography variant="h6" gutterBottom>Statistics</Typography>
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="body2" color="text.secondary">Total Rooms</Typography>
+                    <Typography variant="body1">{hotelData.totalRooms} rooms</Typography>
+                  </Box>
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="body2" color="text.secondary">Current Occupancy</Typography>
+                    <Typography variant="body1">{hotelData.occupiedRooms} / {hotelData.totalRooms} rooms</Typography>
+                  </Box>
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="body2" color="text.secondary">Staff Members</Typography>
+                    <Typography variant="body1">{hotelData.totalStaff} staff members</Typography>
+                  </Box>
+                  {hotel?.isActive !== undefined && (
+                    <Box sx={{ mb: 2 }}>
+                      <Typography variant="body2" color="text.secondary">Status</Typography>
+                      <Chip 
+                        label={hotel.isActive ? 'Active' : 'Inactive'} 
+                        color={hotel.isActive ? 'success' : 'error'} 
+                        size="small"
+                      />
+                    </Box>
+                  )}
+                </Grid>
               </Grid>
-              <Grid item xs={12} md={6}>
-                <Typography variant="h6" gutterBottom>Statistics</Typography>
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="body2" color="text.secondary">Total Rooms</Typography>
-                  <Typography variant="body1">{hotelData.totalRooms} rooms</Typography>
-                </Box>
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="body2" color="text.secondary">Current Occupancy</Typography>
-                  <Typography variant="body1">{hotelData.occupiedRooms} / {hotelData.totalRooms} rooms</Typography>
-                </Box>
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="body2" color="text.secondary">Staff Members</Typography>
-                  <Typography variant="body1">{hotelData.totalStaff} staff members</Typography>
-                </Box>
-              </Grid>
-            </Grid>
+            )}
           </Box>
         </TabPanel>
 
         <TabPanel value={activeTab} index={1}>
           {/* Staff Management Tab */}
-          <Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-                Staff Management
-              </Typography>
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={() => alert('Add Staff Member - Coming Soon!')}
-              >
-                Add Staff Member
-              </Button>
-            </Box>
-            <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'center', py: 8 }}>
-              Staff management interface will be implemented here.
-              <br />
-              Features: Add/Edit/Remove staff, Manage roles (Front Desk, Housekeeping, Hotel Admin)
-            </Typography>
-          </Box>
+          <StaffManagement />
         </TabPanel>
 
         <TabPanel value={activeTab} index={2}>
@@ -444,13 +514,6 @@ const HotelAdminDashboard: React.FC = () => {
                 value={bookingSearch}
                 onChange={handleBookingSearch}
                 onKeyPress={(e) => e.key === 'Enter' && handleSearchSubmit()}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon />
-                    </InputAdornment>
-                  ),
-                }}
               />
               <Button 
                 variant="contained" 
@@ -530,6 +593,18 @@ const HotelAdminDashboard: React.FC = () => {
                                   <VisibilityIcon />
                                 </IconButton>
                               </Tooltip>
+                              <Tooltip title="Delete Booking">
+                                <IconButton 
+                                  size="small"
+                                  onClick={() => {
+                                    setSelectedBooking(booking);
+                                    setDeleteDialogOpen(true);
+                                  }}
+                                  color="error"
+                                >
+                                  <DeleteIcon />
+                                </IconButton>
+                              </Tooltip>
                             </Box>
                           </TableCell>
                         </TableRow>
@@ -560,11 +635,222 @@ const HotelAdminDashboard: React.FC = () => {
             <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 3 }}>
               Reports & Analytics
             </Typography>
-            <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'center', py: 8 }}>
-              Reports and analytics dashboard will be implemented here.
-              <br />
-              Features: Occupancy reports, Revenue analytics, Staff performance metrics
-            </Typography>
+            
+            {/* Report Type Selection */}
+            <Grid container spacing={3} sx={{ mb: 4 }}>
+              <Grid item xs={12} md={4}>
+                <Card>
+                  <CardContent>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
+                      Daily Occupancy Report
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                      Today's room occupancy and revenue
+                    </Typography>
+                    <Box sx={{ mb: 2 }}>
+                      <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+                        74%
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        89 of 120 rooms occupied
+                      </Typography>
+                    </Box>
+                    <Typography variant="body2">
+                      <strong>Revenue:</strong> $12,450
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>Check-ins:</strong> 15
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>Check-outs:</strong> 12
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              
+              <Grid item xs={12} md={4}>
+                <Card>
+                  <CardContent>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
+                      Monthly Occupancy Report
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                      Current month performance
+                    </Typography>
+                    <Box sx={{ mb: 2 }}>
+                      <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'success.main' }}>
+                        78%
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Average occupancy this month
+                      </Typography>
+                    </Box>
+                    <Typography variant="body2">
+                      <strong>Total Revenue:</strong> $287,340
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>Total Bookings:</strong> 342
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>Avg Daily Rate:</strong> $165
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              
+              <Grid item xs={12} md={4}>
+                <Card>
+                  <CardContent>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
+                      Yearly Occupancy Report
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                      Year-to-date performance
+                    </Typography>
+                    <Box sx={{ mb: 2 }}>
+                      <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'info.main' }}>
+                        72%
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Average occupancy this year
+                      </Typography>
+                    </Box>
+                    <Typography variant="body2">
+                      <strong>YTD Revenue:</strong> $2,156,780
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>Total Bookings:</strong> 2,847
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>Avg Daily Rate:</strong> $158
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
+
+            {/* Detailed Reports Table */}
+            <Card sx={{ mb: 3 }}>
+              <CardContent>
+                <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3 }}>
+                  Monthly Breakdown
+                </Typography>
+                <TableContainer>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell><strong>Month</strong></TableCell>
+                        <TableCell><strong>Occupancy Rate</strong></TableCell>
+                        <TableCell><strong>Total Rooms Sold</strong></TableCell>
+                        <TableCell><strong>Revenue</strong></TableCell>
+                        <TableCell><strong>Avg Daily Rate</strong></TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {[
+                        { month: 'January 2025', occupancy: '68%', roomsSold: 2108, revenue: '$312,450', adr: '$148' },
+                        { month: 'February 2025', occupancy: '72%', roomsSold: 2016, revenue: '$298,780', adr: '$148' },
+                        { month: 'March 2025', occupancy: '75%', roomsSold: 2325, revenue: '$365,120', adr: '$157' },
+                        { month: 'April 2025', occupancy: '78%', roomsSold: 2340, revenue: '$378,450', adr: '$162' },
+                        { month: 'May 2025', occupancy: '82%', roomsSold: 2542, revenue: '$425,680', adr: '$167' },
+                        { month: 'June 2025', occupancy: '85%', roomsSold: 2550, revenue: '$445,500', adr: '$175' },
+                        { month: 'July 2025', occupancy: '88%', roomsSold: 2728, revenue: '$486,720', adr: '$178' },
+                        { month: 'August 2025', occupancy: '78%', roomsSold: 2419, revenue: '$387,040', adr: '$160' },
+                      ].map((row, index) => (
+                        <TableRow key={index}>
+                          <TableCell>{row.month}</TableCell>
+                          <TableCell>
+                            <Chip 
+                              label={row.occupancy} 
+                              color={parseInt(row.occupancy) >= 80 ? 'success' : parseInt(row.occupancy) >= 70 ? 'warning' : 'error'}
+                              size="small"
+                            />
+                          </TableCell>
+                          <TableCell>{row.roomsSold.toLocaleString()}</TableCell>
+                          <TableCell>{row.revenue}</TableCell>
+                          <TableCell>{row.adr}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </CardContent>
+            </Card>
+
+            {/* Additional Analytics */}
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={6}>
+                <Card>
+                  <CardContent>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3 }}>
+                      Room Type Performance
+                    </Typography>
+                    <Box sx={{ mb: 2 }}>
+                      <Typography variant="body2" sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span>Standard Rooms</span>
+                        <span><strong>85% occupancy</strong></span>
+                      </Typography>
+                      <Box sx={{ width: '100%', bgcolor: 'grey.200', borderRadius: 1, mt: 0.5 }}>
+                        <Box sx={{ width: '85%', bgcolor: 'success.main', height: 6, borderRadius: 1 }} />
+                      </Box>
+                    </Box>
+                    <Box sx={{ mb: 2 }}>
+                      <Typography variant="body2" sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span>Deluxe Rooms</span>
+                        <span><strong>78% occupancy</strong></span>
+                      </Typography>
+                      <Box sx={{ width: '100%', bgcolor: 'grey.200', borderRadius: 1, mt: 0.5 }}>
+                        <Box sx={{ width: '78%', bgcolor: 'warning.main', height: 6, borderRadius: 1 }} />
+                      </Box>
+                    </Box>
+                    <Box sx={{ mb: 2 }}>
+                      <Typography variant="body2" sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span>Suite Rooms</span>
+                        <span><strong>65% occupancy</strong></span>
+                      </Typography>
+                      <Box sx={{ width: '100%', bgcolor: 'grey.200', borderRadius: 1, mt: 0.5 }}>
+                        <Box sx={{ width: '65%', bgcolor: 'info.main', height: 6, borderRadius: 1 }} />
+                      </Box>
+                    </Box>
+                    <Box>
+                      <Typography variant="body2" sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span>Premium Suites</span>
+                        <span><strong>58% occupancy</strong></span>
+                      </Typography>
+                      <Box sx={{ width: '100%', bgcolor: 'grey.200', borderRadius: 1, mt: 0.5 }}>
+                        <Box sx={{ width: '58%', bgcolor: 'error.main', height: 6, borderRadius: 1 }} />
+                      </Box>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+              
+              <Grid item xs={12} md={6}>
+                <Card>
+                  <CardContent>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3 }}>
+                      Key Metrics
+                    </Typography>
+                    <Box sx={{ mb: 2 }}>
+                      <Typography variant="body2" color="text.secondary">Average Length of Stay</Typography>
+                      <Typography variant="h6" sx={{ fontWeight: 'bold' }}>2.4 nights</Typography>
+                    </Box>
+                    <Box sx={{ mb: 2 }}>
+                      <Typography variant="body2" color="text.secondary">Revenue per Available Room (RevPAR)</Typography>
+                      <Typography variant="h6" sx={{ fontWeight: 'bold' }}>$117</Typography>
+                    </Box>
+                    <Box sx={{ mb: 2 }}>
+                      <Typography variant="body2" color="text.secondary">Cancellation Rate</Typography>
+                      <Typography variant="h6" sx={{ fontWeight: 'bold' }}>8.5%</Typography>
+                    </Box>
+                    <Box>
+                      <Typography variant="body2" color="text.secondary">No-Show Rate</Typography>
+                      <Typography variant="h6" sx={{ fontWeight: 'bold' }}>3.2%</Typography>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
           </Box>
         </TabPanel>
       </Card>
@@ -576,6 +862,40 @@ const HotelAdminDashboard: React.FC = () => {
           Hotel Administrator Panel • BookMyHotel System • {new Date().getFullYear()}
         </Typography>
       </Box>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+      >
+        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to delete booking {selectedBooking?.confirmationNumber}? 
+            This action cannot be undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+          <Button 
+            onClick={handleDeleteBooking}
+            color="error"
+            variant="contained"
+          >
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Hotel Edit Dialog */}
+      <HotelEditDialog
+        open={hotelEditDialogOpen}
+        onClose={() => setHotelEditDialogOpen(false)}
+        onSave={handleHotelUpdate}
+        hotel={hotel}
+        loading={hotelLoading}
+        error={hotelError || undefined}
+      />
     </Box>
   );
 };
