@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bookmyhotel.dto.BookingRequest;
@@ -65,5 +66,27 @@ public class BookingController {
     public ResponseEntity<List<BookingResponse>> getUserBookings(@PathVariable Long userId) {
         List<BookingResponse> bookings = bookingService.getUserBookings(userId);
         return ResponseEntity.ok(bookings);
+    }
+    
+    /**
+     * Search booking by confirmation number
+     */
+    @GetMapping("/search")
+    public ResponseEntity<BookingResponse> searchBooking(
+            @RequestParam(required = false) String confirmationNumber,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) String lastName) {
+        
+        BookingResponse response;
+        if (confirmationNumber != null && !confirmationNumber.trim().isEmpty()) {
+            response = bookingService.findByConfirmationNumber(confirmationNumber.trim());
+        } else if (email != null && lastName != null && 
+                   !email.trim().isEmpty() && !lastName.trim().isEmpty()) {
+            response = bookingService.findByEmailAndLastName(email.trim(), lastName.trim());
+        } else {
+            return ResponseEntity.badRequest().build();
+        }
+        
+        return ResponseEntity.ok(response);
     }
 }

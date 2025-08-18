@@ -1,0 +1,276 @@
+package com.bookmyhotel.service;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.bookmyhotel.controller.FrontDeskController.FrontDeskStats;
+import com.bookmyhotel.dto.BookingResponse;
+import com.bookmyhotel.entity.Reservation;
+import com.bookmyhotel.entity.ReservationStatus;
+import com.bookmyhotel.entity.Room;
+import com.bookmyhotel.entity.RoomStatus;
+import com.bookmyhotel.entity.User;
+import com.bookmyhotel.exception.ResourceNotFoundException;
+import com.bookmyhotel.repository.ReservationRepository;
+import com.bookmyhotel.repository.RoomRepository;
+
+/**
+ * Front desk service for managing bookings and guest services
+ */
+@Service
+@Transactional
+public class FrontDeskService {
+    
+    @Autowired
+    private ReservationRepository reservationRepository;
+    
+    @Autowired
+    private RoomRepository roomRepository;
+    
+    @Autowired
+    private BookingService bookingService;
+    
+    /**
+     * Get today's arrivals
+     */
+    @Transactional(readOnly = true)
+    public List<BookingResponse> getTodaysArrivals() {
+        LocalDate today = LocalDate.now();
+        List<Reservation> arrivals = reservationRepository.findUpcomingCheckIns(today);
+        
+        return arrivals.stream()
+            .map(this::convertToBookingResponse)
+            .toList();
+    }
+    
+    /**
+     * Get today's departures
+     */
+    @Transactional(readOnly = true)
+    public List<BookingResponse> getTodaysDepartures() {
+        LocalDate today = LocalDate.now();
+        List<Reservation> departures = reservationRepository.findUpcomingCheckOuts(today);
+        
+        return departures.stream()
+            .map(this::convertToBookingResponse)
+            .toList();
+    }
+    
+    /**
+     * Get all current guests (checked in)
+     */
+    @Transactional(readOnly = true)
+    public List<BookingResponse> getCurrentGuests() {
+        List<Reservation> currentGuests = reservationRepository.findByStatus("CHECKED_IN");
+        
+        return currentGuests.stream()
+            .map(this::convertToBookingResponse)
+            .toList();
+    }
+    
+    /**
+     * Check in a guest
+     */
+    public BookingResponse checkInGuest(Long reservationId) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+            .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
+        
+        // Validate that check-in is allowed
+        if (reservation.getStatus() != ReservationStatus.CONFIRMED) {
+            throw new IllegalStateException("Only confirmed reservations can be checked in");
+        }
+        
+        if (reservation.getCheckInDate().isAfter(LocalDate.now().plusDays(1))) {
+            throw new IllegalStateException("Cannot check in more than 1 day early");
+        }
+        
+        // Update reservation status
+        reservation.setStatus(ReservationStatus.CHECKED_IN);
+        reservation.setActualCheckInTime(LocalDateTime.now());
+        
+        // Update room status to occupied
+        Room room = reservation.getRoom();
+        room.setStatus(RoomStatus.OCCUPIED);
+        roomRepository.save(room);
+        
+        reservation = reservationRepository.save(reservation);
+        
+        return convertToBookingResponse(reservation);
+    }
+    
+    /**
+     * Check out a guest
+     */
+    public BookingResponse checkOutGuest(Long reservationId) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+            .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
+        
+        // Validate that check-out is allowed
+        if (reservation.getStatus() != ReservationStatus.CHECKED_IN) {
+            throw new IllegalStateException("Only checked-in guests can be checked out");
+        }
+        
+        // Update reservation status
+        reservation.setStatus(ReservationStatus.CHECKED_OUT);
+        reservation.setActualCheckOutTime(LocalDateTime.now());
+        
+        // Update room status to need cleaning
+        Room room = reservation.getRoom();
+        room.setStatus(RoomStatus.MAINTENANCE); // Assuming rooms need cleaning after checkout
+        roomRepository.save(room);
+        
+        reservation = reservationRepository.save(reservation);
+        
+        return convertToBookingResponse(reservation);
+    }
+    
+    /**
+     * Mark guest as no-show
+     */
+    public BookingResponse markNoShow(Long reservationId) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+            .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
+        
+        // Validate that no-show marking is allowed
+        if (reservation.getStatus() != ReservationStatus.CONFIRMED) {
+            throw new IllegalStateException("Only confirmed reservations can be marked as no-show");
+        }
+        
+        // Check if it's past the check-in date
+        if (reservation.getCheckInDate().isAfter(LocalDate.now())) {
+            throw new IllegalStateException("Cannot mark as no-show before check-in date");
+        }
+        
+        // Update reservation status
+        reservation.setStatus(ReservationStatus.NO_SHOW);
+        
+        // Make room available again
+        Room room = reservation.getRoom();
+        room.setStatus(RoomStatus.AVAILABLE);
+        roomRepository.save(room);
+        
+        reservation = reservationRepository.save(reservation);
+        
+        return convertToBookingResponse(reservation);
+    }
+    
+    /**
+     * Cancel booking
+     */
+    public BookingResponse cancelBooking(Long reservationId, String reason) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+            .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
+        
+        // Validate that cancellation is allowed
+        if (reservation.getStatus() == ReservationStatus.CHECKED_OUT) {
+            throw new IllegalStateException("Cannot cancel a completed reservation");
+        }
+        
+        // Update reservation status
+        reservation.setStatus(ReservationStatus.CANCELLED);
+        if (reason != null && !reason.trim().isEmpty()) {
+            reservation.setCancellationReason(reason.trim());
+        }
+        reservation.setCancelledAt(LocalDateTime.now());
+        
+        // Make room available again if not already checked in
+        if (reservation.getStatus() != ReservationStatus.CHECKED_IN) {
+            Room room = reservation.getRoom();
+            room.setStatus(RoomStatus.AVAILABLE);
+            roomRepository.save(room);
+        }
+        
+        reservation = reservationRepository.save(reservation);
+        
+        return convertToBookingResponse(reservation);
+    }
+    
+    /**
+     * Search bookings by various criteria
+     */
+    @Transactional(readOnly = true)
+    public List<BookingResponse> searchBookings(String guestName, String roomNumber, 
+                                               String confirmationNumber, LocalDate checkInDate,
+                                               ReservationStatus status) {
+        
+        // For now, implement basic search - this can be enhanced with custom queries
+        List<Reservation> allReservations = reservationRepository.findAll();
+        
+        return allReservations.stream()
+            .filter(reservation -> {
+                if (guestName != null && !guestName.trim().isEmpty()) {
+                    User guest = reservation.getGuest();
+                    String fullName = (guest.getFirstName() + " " + guest.getLastName()).toLowerCase();
+                    return fullName.contains(guestName.toLowerCase().trim());
+                }
+                return true;
+            })
+            .filter(reservation -> {
+                if (roomNumber != null && !roomNumber.trim().isEmpty()) {
+                    return reservation.getRoom().getRoomNumber()
+                        .toLowerCase().contains(roomNumber.toLowerCase().trim());
+                }
+                return true;
+            })
+            .filter(reservation -> {
+                if (confirmationNumber != null && !confirmationNumber.trim().isEmpty()) {
+                    return reservation.getConfirmationNumber()
+                        .toLowerCase().contains(confirmationNumber.toLowerCase().trim());
+                }
+                return true;
+            })
+            .filter(reservation -> {
+                if (checkInDate != null) {
+                    return reservation.getCheckInDate().equals(checkInDate);
+                }
+                return true;
+            })
+            .filter(reservation -> {
+                if (status != null) {
+                    return reservation.getStatus() == status;
+                }
+                return true;
+            })
+            .map(this::convertToBookingResponse)
+            .toList();
+    }
+    
+    /**
+     * Get front desk statistics
+     */
+    @Transactional(readOnly = true)
+    public FrontDeskStats getFrontDeskStats() {
+        LocalDate today = LocalDate.now();
+        
+        long todaysArrivals = reservationRepository.findUpcomingCheckIns(today).size();
+        long todaysDepartures = reservationRepository.findUpcomingCheckOuts(today).size();
+        long currentOccupancy = reservationRepository.findByStatus("CHECKED_IN").size();
+        
+        long totalRooms = roomRepository.count();
+        long availableRooms = roomRepository.countByStatus(RoomStatus.AVAILABLE);
+        long roomsOutOfOrder = roomRepository.countByStatus(RoomStatus.OUT_OF_ORDER);
+        long roomsUnderMaintenance = roomRepository.countByStatus(RoomStatus.MAINTENANCE);
+        
+        return new FrontDeskStats(
+            todaysArrivals,
+            todaysDepartures,
+            currentOccupancy,
+            availableRooms,
+            roomsOutOfOrder,
+            roomsUnderMaintenance
+        );
+    }
+    
+    /**
+     * Convert reservation to booking response
+     */
+    private BookingResponse convertToBookingResponse(Reservation reservation) {
+        // Delegate to BookingService for consistent conversion
+        return bookingService.convertToBookingResponse(reservation);
+    }
+}

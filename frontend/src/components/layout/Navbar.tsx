@@ -27,10 +27,12 @@ import {
   Logout as LogoutIcon,
   Login as LoginIcon,
   Business as BusinessIcon,
+  Search as SearchIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTenant } from '../../contexts/TenantContext';
+import BookingSearchModal from '../booking/BookingSearchModal';
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
@@ -43,6 +45,7 @@ const Navbar: React.FC = () => {
   
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [bookingSearchOpen, setBookingSearchOpen] = useState(false);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -52,10 +55,20 @@ const Navbar: React.FC = () => {
     setAnchorEl(null);
   };
 
-  const handleNavigation = (path: string) => {
-    navigate(path);
+  const handleNavigation = (path?: string) => {
+    if (path) {
+      navigate(path);
+    }
     setMobileDrawerOpen(false);
     handleMenuClose();
+  };
+
+  const handleItemClick = (item: { path?: string; action?: () => void }) => {
+    if (item.action) {
+      item.action();
+    } else if (item.path) {
+      handleNavigation(item.path);
+    }
   };
 
   const handleLogout = () => {
@@ -70,7 +83,13 @@ const Navbar: React.FC = () => {
 
   // Navigation items based on user role
   const getNavigationItems = () => {
-    const baseItems: { label: string; path: string; icon: React.ReactNode }[] = [];
+    const baseItems: { label: string; path?: string; icon: React.ReactNode; action?: () => void }[] = [
+      { 
+        label: 'Find Booking', 
+        icon: <SearchIcon />, 
+        action: () => setBookingSearchOpen(true) 
+      }
+    ];
 
     if (user) {
       // For admin, show minimal navigation - only dashboard (which will be admin landing)
@@ -111,16 +130,16 @@ const Navbar: React.FC = () => {
   // Desktop Navigation
   const DesktopNavigation = () => (
     <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1 }}>
-      {navigationItems.map((item) => (
+      {navigationItems.map((item, index) => (
         <Button
-          key={item.path}
+          key={item.path || index}
           color="inherit"
-          onClick={() => handleNavigation(item.path)}
+          onClick={() => handleItemClick(item)}
           startIcon={item.icon}
           sx={{
             mx: 0.5,
             borderRadius: 2,
-            backgroundColor: isActivePath(item.path) ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
+            backgroundColor: item.path && isActivePath(item.path) ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
             '&:hover': {
               backgroundColor: 'rgba(255, 255, 255, 0.1)',
             },
@@ -160,27 +179,27 @@ const Navbar: React.FC = () => {
       </Box>
       <Divider />
       <List>
-        {navigationItems.map((item) => (
+        {navigationItems.map((item, index) => (
           <ListItem
-            key={item.path}
-            onClick={() => handleNavigation(item.path)}
+            key={item.path || index}
+            onClick={() => handleItemClick(item)}
             sx={{
               cursor: 'pointer',
-              backgroundColor: isActivePath(item.path) ? theme.palette.action.selected : 'transparent',
+              backgroundColor: item.path && isActivePath(item.path) ? theme.palette.action.selected : 'transparent',
               '&:hover': {
                 backgroundColor: theme.palette.action.hover,
               },
             }}
           >
-            <ListItemIcon sx={{ color: isActivePath(item.path) ? theme.palette.primary.main : 'inherit' }}>
+            <ListItemIcon sx={{ color: item.path && isActivePath(item.path) ? theme.palette.primary.main : 'inherit' }}>
               {item.icon}
             </ListItemIcon>
             <ListItemText 
               primary={item.label}
               sx={{ 
                 '& .MuiListItemText-primary': {
-                  fontWeight: isActivePath(item.path) ? 600 : 400,
-                  color: isActivePath(item.path) ? theme.palette.primary.main : 'inherit',
+                  fontWeight: item.path && isActivePath(item.path) ? 600 : 400,
+                  color: item.path && isActivePath(item.path) ? theme.palette.primary.main : 'inherit',
                 }
               }}
             />
@@ -350,6 +369,12 @@ const Navbar: React.FC = () => {
 
       {/* Mobile Drawer */}
       <MobileDrawer />
+
+      {/* Booking Search Modal */}
+      <BookingSearchModal 
+        open={bookingSearchOpen} 
+        onClose={() => setBookingSearchOpen(false)} 
+      />
     </>
   );
 };

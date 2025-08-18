@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.bookmyhotel.entity.Reservation;
+import com.bookmyhotel.entity.User;
 
 /**
  * Reservation repository
@@ -73,4 +74,14 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     @Query(value = "SELECT CONCAT('BK', LPAD(CAST(COALESCE(MAX(id), 0) + 1 AS CHAR), 8, '0')) FROM reservations", 
            nativeQuery = true)
     String generateConfirmationNumber();
+    
+    /**
+     * Find reservation by confirmation number
+     */
+    Optional<Reservation> findByConfirmationNumber(String confirmationNumber);
+    
+    /**
+     * Find reservations by user ordered by creation date
+     */
+    List<Reservation> findByGuestOrderByCreatedAtDesc(User guest);
 }

@@ -49,6 +49,11 @@ public class Room extends TenantEntity {
     @Column(name = "room_type", nullable = false, length = 20)
     private RoomType roomType;
     
+    @NotNull(message = "Room status is required")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 20)
+    private RoomStatus status = RoomStatus.AVAILABLE;
+    
     @Positive(message = "Price per night must be positive")
     @Column(name = "price_per_night", nullable = false, precision = 10, scale = 2)
     private BigDecimal pricePerNight;
@@ -104,6 +109,14 @@ public class Room extends TenantEntity {
     
     public void setRoomType(RoomType roomType) {
         this.roomType = roomType;
+    }
+    
+    public RoomStatus getStatus() {
+        return status;
+    }
+    
+    public void setStatus(RoomStatus status) {
+        this.status = status;
     }
     
     public BigDecimal getPricePerNight() {

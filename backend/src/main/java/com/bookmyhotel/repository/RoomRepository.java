@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import com.bookmyhotel.entity.Hotel;
 import com.bookmyhotel.entity.Room;
+import com.bookmyhotel.entity.RoomStatus;
 
 /**
  * Room repository
@@ -85,4 +86,9 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
      * Count available rooms
      */
     long countByIsAvailable(Boolean isAvailable);
+    
+    /**
+     * Count rooms by status
+     */
+    long countByStatus(RoomStatus status);
 }

@@ -97,6 +97,11 @@ public class BookingService {
             // Save reservation
             reservation = reservationRepository.save(reservation);
             
+            // Generate and set confirmation number
+            String confirmationNumber = generateConfirmationNumber(reservation.getId());
+            reservation.setConfirmationNumber(confirmationNumber);
+            reservation = reservationRepository.save(reservation);
+            
             // Convert to response DTO
             return convertToBookingResponse(reservation);
         } finally {
@@ -214,6 +219,9 @@ public class BookingService {
         reservation.setSpecialRequests(request.getSpecialRequests());
         reservation.setStatus(ReservationStatus.PENDING);
         
+        // Set guest name for easier front desk operations
+        reservation.setGuestName(guest.getFirstName() + " " + guest.getLastName());
+        
         return reservation;
     }
     
@@ -242,11 +250,11 @@ public class BookingService {
     /**
      * Convert Reservation to BookingResponse DTO
      */
-    private BookingResponse convertToBookingResponse(Reservation reservation) {
+    public BookingResponse convertToBookingResponse(Reservation reservation) {
         BookingResponse response = new BookingResponse();
         response.setReservationId(reservation.getId());
         response.setStatus(reservation.getStatus().name());
-        response.setConfirmationNumber(generateConfirmationNumber(reservation.getId()));
+        response.setConfirmationNumber(reservation.getConfirmationNumber());
         response.setCheckInDate(reservation.getCheckInDate());
         response.setCheckOutDate(reservation.getCheckOutDate());
         response.setTotalAmount(reservation.getTotalAmount());
@@ -298,5 +306,37 @@ public class BookingService {
         if (fullName == null) return "";
         String[] parts = fullName.trim().split("\\s+");
         return parts.length > 1 ? String.join(" ", java.util.Arrays.copyOfRange(parts, 1, parts.length)) : "";
+    }
+    
+    /**
+     * Find booking by confirmation number
+     */
+    public BookingResponse findByConfirmationNumber(String confirmationNumber) {
+        Reservation reservation = reservationRepository.findByConfirmationNumber(confirmationNumber)
+            .orElseThrow(() -> new ResourceNotFoundException("Booking not found with confirmation number: " + confirmationNumber));
+        
+        return convertToBookingResponse(reservation);
+    }
+    
+    /**
+     * Find booking by email and last name
+     */
+    public BookingResponse findByEmailAndLastName(String email, String lastName) {
+        // Find user by email
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new ResourceNotFoundException("No booking found for the provided email and last name"));
+        
+        // Find the most recent reservation for this user with matching last name
+        List<Reservation> userReservations = reservationRepository.findByGuestOrderByCreatedAtDesc(user);
+        
+        Reservation matchingReservation = userReservations.stream()
+            .filter(reservation -> {
+                String reservationLastName = user.getLastName();
+                return reservationLastName != null && reservationLastName.equalsIgnoreCase(lastName);
+            })
+            .findFirst()
+            .orElseThrow(() -> new ResourceNotFoundException("No booking found for the provided email and last name"));
+            
+        return convertToBookingResponse(matchingReservation);
     }
 }

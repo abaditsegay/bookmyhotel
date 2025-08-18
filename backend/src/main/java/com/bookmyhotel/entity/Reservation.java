@@ -2,6 +2,7 @@ package com.bookmyhotel.entity;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -61,6 +62,24 @@ public class Reservation extends TenantEntity {
     
     @Column(name = "payment_intent_id", length = 100)
     private String paymentIntentId;
+    
+    @Column(name = "confirmation_number", length = 20, unique = true)
+    private String confirmationNumber;
+    
+    @Column(name = "guest_name", length = 100)
+    private String guestName;
+    
+    @Column(name = "actual_check_in_time")
+    private LocalDateTime actualCheckInTime;
+    
+    @Column(name = "actual_check_out_time")
+    private LocalDateTime actualCheckOutTime;
+    
+    @Column(name = "cancellation_reason", length = 500)
+    private String cancellationReason;
+    
+    @Column(name = "cancelled_at")
+    private LocalDateTime cancelledAt;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id", nullable = false)
@@ -150,5 +169,53 @@ public class Reservation extends TenantEntity {
     
     public void setGuest(User guest) {
         this.guest = guest;
+    }
+    
+    public String getConfirmationNumber() {
+        return confirmationNumber;
+    }
+    
+    public void setConfirmationNumber(String confirmationNumber) {
+        this.confirmationNumber = confirmationNumber;
+    }
+    
+    public String getGuestName() {
+        return guestName;
+    }
+    
+    public void setGuestName(String guestName) {
+        this.guestName = guestName;
+    }
+    
+    public LocalDateTime getActualCheckInTime() {
+        return actualCheckInTime;
+    }
+    
+    public void setActualCheckInTime(LocalDateTime actualCheckInTime) {
+        this.actualCheckInTime = actualCheckInTime;
+    }
+    
+    public LocalDateTime getActualCheckOutTime() {
+        return actualCheckOutTime;
+    }
+    
+    public void setActualCheckOutTime(LocalDateTime actualCheckOutTime) {
+        this.actualCheckOutTime = actualCheckOutTime;
+    }
+    
+    public String getCancellationReason() {
+        return cancellationReason;
+    }
+    
+    public void setCancellationReason(String cancellationReason) {
+        this.cancellationReason = cancellationReason;
+    }
+    
+    public LocalDateTime getCancelledAt() {
+        return cancelledAt;
+    }
+    
+    public void setCancelledAt(LocalDateTime cancelledAt) {
+        this.cancelledAt = cancelledAt;
     }
 }

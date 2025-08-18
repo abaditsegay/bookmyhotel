@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { hotelApiService } from '../services/hotelApi';
 import { adminApiService } from '../services/adminApi';
-import { frontDeskApi } from '../services/frontDeskApi';
 
 /**
  * Hook to automatically set the authentication token in API services
@@ -15,8 +14,8 @@ export const useAuthenticatedApi = () => {
     // Update the token in the API services whenever it changes
     hotelApiService.setToken(token);
     adminApiService.setToken(token);
-    frontDeskApi.setToken(token);
+    // frontDeskApiService doesn't have a setToken method - it uses token as parameter
   }, [token]);
 
-  return { hotelApiService, adminApiService, frontDeskApi };
+  return { hotelApiService, adminApiService };
 };
