@@ -135,7 +135,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
 
           {room && (
             <Paper elevation={1} sx={{ p: 2, mb: 3, bgcolor: 'grey.50' }}>
-              <Typography variant="h6" gutterBottom>
+              <Typography variant="h6" component="div" gutterBottom>
                 Room Details
               </Typography>
               <Grid container spacing={2}>
@@ -159,7 +159,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
                       <Typography variant="body2">
                         <strong>Nights:</strong> {nights}
                       </Typography>
-                      <Typography variant="h6" color="primary.main">
+                      <Typography variant="h6" component="div" color="primary.main">
                         <strong>Total: ${totalAmount}</strong>
                       </Typography>
                     </>
@@ -221,7 +221,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
 
               <Grid item xs={12}>
                 <Divider sx={{ my: 1 }} />
-                <Typography variant="h6" gutterBottom>
+                <Typography variant="h6" component="div" gutterBottom>
                   Guest Information
                 </Typography>
               </Grid>
