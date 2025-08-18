@@ -406,7 +406,10 @@ const RoomDetails: React.FC = () => {
                     label="Capacity"
                     type="number"
                     value={isEditing ? currentEditData.capacity : currentRoom.capacity}
-                    onChange={(e) => handleInputChange('capacity', parseInt(e.target.value))}
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value, 10);
+                      handleInputChange('capacity', isNaN(value) ? 1 : value);
+                    }}
                     disabled={!isEditing}
                     variant={isEditing ? 'outlined' : 'filled'}
                     inputProps={{ min: 1, max: 10 }}
