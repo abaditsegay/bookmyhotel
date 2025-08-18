@@ -217,39 +217,11 @@ const HomePage: React.FC = () => {
 };
 
 // Placeholder Components for Routes
-const HotelsPage: React.FC = () => (
+const PlaceholderPage: React.FC<{ title: string; message: string }> = ({ title, message }) => (
   <Box sx={{ textAlign: 'center', py: 8 }}>
-    <HotelIcon sx={{ fontSize: 80, color: 'primary.main', mb: 2 }} />
-    <Typography variant="h4" gutterBottom>Hotels</Typography>
+    <Typography variant="h4" gutterBottom>{title}</Typography>
     <Typography variant="body1" color="text.secondary">
-      Browse and discover amazing hotels. Coming soon!
-    </Typography>
-  </Box>
-);
-
-const SearchPage: React.FC = () => (
-  <Box sx={{ textAlign: 'center', py: 8 }}>
-    <Typography variant="h4" gutterBottom>Legacy Search</Typography>
-    <Typography variant="body1" color="text.secondary">
-      This page has been replaced. Please use the new Hotel Search.
-    </Typography>
-  </Box>
-);
-
-const RegisterPage: React.FC = () => (
-  <Box sx={{ textAlign: 'center', py: 8 }}>
-    <Typography variant="h4" gutterBottom>Register</Typography>
-    <Typography variant="body1" color="text.secondary">
-      User registration coming soon!
-    </Typography>
-  </Box>
-);
-
-const DashboardPage: React.FC = () => (
-  <Box sx={{ textAlign: 'center', py: 8 }}>
-    <Typography variant="h4" gutterBottom>Dashboard</Typography>
-    <Typography variant="body1" color="text.secondary">
-      User dashboard coming soon!
+      {message}
     </Typography>
   </Box>
 );
@@ -260,14 +232,39 @@ function App() {
       <Routes>
         <Route path="/" element={<HomePageRouter />} />
         <Route path="/home" element={<HomePage />} />
-        <Route path="/hotels" element={<HotelsPage />} />
+        <Route path="/hotels" element={
+          <PlaceholderPage 
+            title="Hotels" 
+            message="Browse and discover amazing hotels. Feature coming soon!" 
+          />
+        } />
         <Route path="/hotels/search" element={<HotelSearchPage />} />
         <Route path="/search-results" element={<SearchResultsPage />} />
-        <Route path="/search" element={<SearchPage />} />
+        <Route path="/search" element={
+          <PlaceholderPage 
+            title="Legacy Search" 
+            message="This page has been replaced. Please use the new Hotel Search." 
+          />
+        } />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/bookings" element={<DashboardPage />} />
+        <Route path="/register" element={
+          <PlaceholderPage 
+            title="Register" 
+            message="User registration feature coming soon!" 
+          />
+        } />
+        <Route path="/dashboard" element={
+          <PlaceholderPage 
+            title="Dashboard" 
+            message="User dashboard coming soon!" 
+          />
+        } />
+        <Route path="/bookings" element={
+          <PlaceholderPage 
+            title="Bookings" 
+            message="User bookings dashboard coming soon!" 
+          />
+        } />
         <Route path="/profile" element={
           <ProtectedRoute>
             <ProfilePage />
@@ -354,7 +351,10 @@ function App() {
         } />
         <Route path="/hotel-admin/hotel" element={
           <ProtectedRoute requiredRole="HOTEL_ADMIN">
-            <div>Hotel Management - Coming Soon</div>
+            <PlaceholderPage 
+              title="Hotel Management" 
+              message="Hotel settings and configuration coming soon!" 
+            />
           </ProtectedRoute>
         } />
         <Route path="/hotel-admin/staff" element={

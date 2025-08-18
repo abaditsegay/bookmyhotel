@@ -49,7 +49,6 @@ const AdminDashboard: React.FC = () => {
   const [hotelRowsPerPage, setHotelRowsPerPage] = useState(10);
   const [hotelSearchTerm, setHotelSearchTerm] = useState('');
   const [hotelStatusFilter, setHotelStatusFilter] = useState('');
-  const [hotelTotalElements, setHotelTotalElements] = useState(0);
   const [hotelLoading, setHotelLoading] = useState(false);
   const [hotelError, setHotelError] = useState<string | null>(null);
 
@@ -60,7 +59,6 @@ const AdminDashboard: React.FC = () => {
   const [userSearchTerm, setUserSearchTerm] = useState('');
   const [userRoleFilter, setUserRoleFilter] = useState('');
   const [userStatusFilter, setUserStatusFilter] = useState('');
-  const [userTotalElements, setUserTotalElements] = useState(0);
   const [userLoading, setUserLoading] = useState(false);
   const [userError, setUserError] = useState<string | null>(null);
 
@@ -91,11 +89,9 @@ const AdminDashboard: React.FC = () => {
       }
 
       setHotels(result.content || []);
-      setHotelTotalElements(result.totalElements || 0);
     } catch (error) {
       setHotelError('Failed to load hotels');
       setHotels([]);
-      setHotelTotalElements(0);
       console.error('Error loading hotels:', error);
     } finally {
       setHotelLoading(false);
@@ -121,11 +117,9 @@ const AdminDashboard: React.FC = () => {
       }
 
       setUsers(result.content || []);
-      setUserTotalElements(result.totalElements || 0);
     } catch (error) {
       setUserError('Failed to load users');
       setUsers([]);
-      setUserTotalElements(0);
       console.error('Error loading users:', error);
     } finally {
       setUserLoading(false);
@@ -166,25 +160,6 @@ const AdminDashboard: React.FC = () => {
   }, [currentTab, hotelPage, hotelRowsPerPage, userPage, userRowsPerPage, loadHotels, loadUsers]);
 
   // Search handlers
-  const handleHotelSearch = () => {
-    setHotelPage(0);
-    loadHotels();
-  };
-
-  const handleUserSearch = () => {
-    setUserPage(0);
-    loadUsers();
-  };
-
-  // Navigation handlers
-  const handleViewHotel = (hotelId: number) => {
-    navigate(`/admin/hotels/${hotelId}`);
-  };
-
-  const handleViewUser = (userId: number) => {
-    navigate(`/admin/users/${userId}`);
-  };
-
   // Filter and paginate hotels
   const filteredHotels = hotels.filter(hotel => {
     const matchesSearch = hotel.name.toLowerCase().includes(hotelSearchTerm.toLowerCase()) ||

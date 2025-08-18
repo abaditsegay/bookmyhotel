@@ -34,14 +34,12 @@ import {
   ToggleOff, 
   Lock,
   Search,
-  Add 
 } from '@mui/icons-material';
 import { useAuthenticatedApi } from '../../hooks/useAuthenticatedApi';
 import { 
   UserManagementResponse, 
   UserStatistics, 
   UpdateUserRequest, 
-  CreateUserRequest 
 } from '../../services/adminApi';
 
 const USER_ROLES = [

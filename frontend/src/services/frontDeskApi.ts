@@ -224,4 +224,3 @@ class FrontDeskApiService {
 }
 
 export const frontDeskApi = new FrontDeskApiService();
-export default frontDeskApi;

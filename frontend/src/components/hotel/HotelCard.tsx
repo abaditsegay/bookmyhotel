@@ -5,11 +5,9 @@ import {
   CardActions,
   Typography,
   Button,
-  Chip,
   Box,
   Grid,
   Divider,
-  Rating,
 } from '@mui/material';
 import {
   LocationOn as LocationIcon,
