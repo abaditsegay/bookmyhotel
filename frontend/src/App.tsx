@@ -12,6 +12,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import { useAuth } from './contexts/AuthContext';
 import HotelSearchPage from './pages/HotelSearchPage';
 import SearchResultsPage from './pages/SearchResultsPage';
+import BookingPage from './pages/BookingPage';
 import LoginPage from './pages/LoginPage';
 import ProfilePage from './pages/ProfilePage';
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -240,6 +241,7 @@ function App() {
         } />
         <Route path="/hotels/search" element={<HotelSearchPage />} />
         <Route path="/search-results" element={<SearchResultsPage />} />
+        <Route path="/booking" element={<BookingPage />} />
         <Route path="/search" element={
           <PlaceholderPage 
             title="Legacy Search" 

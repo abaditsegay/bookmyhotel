@@ -19,19 +19,14 @@ import {
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import HotelDetailsCard from '../components/hotel/HotelDetailsCard';
-import BookingForm from '../components/booking/BookingForm';
-import { useAuthenticatedApi } from '../hooks/useAuthenticatedApi';
 import { 
   HotelSearchRequest, 
   HotelSearchResult,
-  BookingRequest,
-  AvailableRoom 
 } from '../types/hotel';
 
 const SearchResultsPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { hotelApiService } = useAuthenticatedApi();
   
   // State from search parameters
   const [searchRequest, setSearchRequest] = useState<HotelSearchRequest | null>(null);
@@ -39,17 +34,16 @@ const SearchResultsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   
-  // Booking form state
-  const [bookingFormOpen, setBookingFormOpen] = useState(false);
-  const [selectedRoom, setSelectedRoom] = useState<AvailableRoom | null>(null);
-  const [selectedHotelName, setSelectedHotelName] = useState('');
-  
   // Success/error feedback
   const [successMessage, setSuccessMessage] = useState('');
 
   // Extract search parameters from location state or URL
   useEffect(() => {
-    const state = location.state as { searchRequest?: HotelSearchRequest; hotels?: HotelSearchResult[] };
+    const state = location.state as { 
+      searchRequest?: HotelSearchRequest; 
+      hotels?: HotelSearchResult[];
+      successMessage?: string;
+    };
     
     if (state?.searchRequest && state?.hotels) {
       // If we have data passed from the search page
@@ -59,6 +53,11 @@ const SearchResultsPage: React.FC = () => {
     } else {
       // If no data, redirect back to search
       navigate('/');
+    }
+
+    // Handle success message from booking
+    if (state?.successMessage) {
+      setSuccessMessage(state.successMessage);
     }
   }, [location, navigate]);
 
@@ -72,32 +71,15 @@ const SearchResultsPage: React.FC = () => {
       return;
     }
 
-    setSelectedRoom(room);
-    setSelectedHotelName(hotel.name);
-    setBookingFormOpen(true);
-  };
-
-  const handleBookingSubmit = async (bookingRequest: BookingRequest) => {
-    try {
-      const result = await hotelApiService.createBooking(bookingRequest);
-      setSuccessMessage(`Booking confirmed! Confirmation number: ${result.confirmationNumber}`);
-      setBookingFormOpen(false);
-      
-      // Optionally refresh search results to update availability
-      if (searchRequest) {
-        setLoading(true);
-        try {
-          const refreshedResults = await hotelApiService.searchHotels(searchRequest);
-          setHotels(refreshedResults);
-        } catch (err) {
-          console.error('Failed to refresh results:', err);
-        } finally {
-          setLoading(false);
-        }
+    // Navigate to booking page with room and hotel data
+    navigate('/booking', {
+      state: {
+        room,
+        hotelName: hotel.name,
+        hotelId: hotel.id,
+        searchRequest
       }
-    } catch (err) {
-      throw err; // Let the form handle the error
-    }
+    });
   };
 
   const handleCloseSuccess = () => {
@@ -230,18 +212,6 @@ const SearchResultsPage: React.FC = () => {
           </Typography>
         </Paper>
       )}
-
-      {/* Booking Form Dialog */}
-      <BookingForm
-        open={bookingFormOpen}
-        onClose={() => setBookingFormOpen(false)}
-        onSubmit={handleBookingSubmit}
-        room={selectedRoom}
-        hotelName={selectedHotelName}
-        defaultCheckIn={searchRequest ? new Date(searchRequest.checkInDate) : undefined}
-        defaultCheckOut={searchRequest ? new Date(searchRequest.checkOutDate) : undefined}
-        defaultGuests={searchRequest?.guests}
-      />
 
       {/* Success Snackbar */}
       <Snackbar
