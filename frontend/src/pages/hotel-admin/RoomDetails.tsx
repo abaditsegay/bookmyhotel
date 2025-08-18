@@ -387,7 +387,10 @@ const RoomDetails: React.FC = () => {
                     label="Price per Night"
                     type="number"
                     value={isEditing ? currentEditData.pricePerNight : currentRoom.pricePerNight}
-                    onChange={(e) => handleInputChange('pricePerNight', parseFloat(e.target.value))}
+                    onChange={(e) => {
+                      const value = parseFloat(e.target.value);
+                      handleInputChange('pricePerNight', isNaN(value) ? 0 : value);
+                    }}
                     disabled={!isEditing}
                     variant={isEditing ? 'outlined' : 'filled'}
                     inputProps={{ min: 0, step: 0.01 }}
