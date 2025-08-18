@@ -357,6 +357,7 @@ public class HotelAdminService {
     /**
      * Get room by ID
      */
+    @Transactional(readOnly = true)
     public RoomDTO getRoomById(Long roomId, String adminEmail) {
         User admin = getUserByEmail(adminEmail);
         Hotel hotel = admin.getHotel();

@@ -25,6 +25,7 @@ import UserViewEdit from './pages/admin/UserViewEdit';
 import BookingViewEdit from './pages/admin/BookingViewEdit';
 import HotelAdminDashboard from './pages/hotel-admin/HotelAdminDashboard';
 import RoomManagement from './pages/hotel-admin/RoomManagement';
+import RoomDetails from './pages/hotel-admin/RoomDetails';
 
 // Home Page Router Component - redirects based on user role
 const HomePageRouter: React.FC = () => {
@@ -353,6 +354,11 @@ function App() {
         <Route path="/hotel-admin/rooms" element={
           <ProtectedRoute requiredRole="HOTEL_ADMIN">
             <RoomManagement />
+          </ProtectedRoute>
+        } />
+        <Route path="/hotel-admin/rooms/:id" element={
+          <ProtectedRoute requiredRole="HOTEL_ADMIN">
+            <RoomDetails />
           </ProtectedRoute>
         } />
       </Routes>

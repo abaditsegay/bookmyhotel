@@ -53,7 +53,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     } else {
       // For development/testing: auto-login as hotel admin
-      const devToken = "eyJhbGciOiJIUzUxMiJ9.eyJmaXJzdE5hbWUiOiJTYXJhaCIsImxhc3ROYW1lIjoiV2lsc29uIiwicm9sZXMiOlsiSE9URUxfQURNSU4iXSwidGVuYW50SWQiOiJkZWZhdWx0IiwidXNlcklkIjo5LCJlbWFpbCI6ImhvdGVsYWRtaW5AYm9va215aG90ZWwuY29tIiwic3ViIjoiaG90ZWxhZG1pbkBib29rbXlob3RlbC5jb20iLCJpYXQiOjE3NTU0NzMzOTUsImV4cCI6MTc1NTU1OTc5NX0.cdZOeZlEFBijavweCpnYZ4npvn7Zlxoqc8W-jbA8f8oPdh_lKi3H9f-QQ_4YUOBODhXSIc8c35mrMVxMW796NA";
+      const devToken = "eyJhbGciOiJIUzUxMiJ9.eyJmaXJzdE5hbWUiOiJTYXJhaCIsImxhc3ROYW1lIjoiV2lsc29uIiwicm9sZXMiOlsiSE9URUxfQURNSU4iXSwidGVuYW50SWQiOiJkZWZhdWx0IiwidXNlcklkIjo5LCJlbWFpbCI6ImhvdGVsYWRtaW5AYm9va215aG90ZWwuY29tIiwic3ViIjoiaG90ZWxhZG1pbkBib29rbXlob3RlbC5jb20iLCJpYXQiOjE3NTU0NzQ0ODEsImV4cCI6MTc1NTU2MDg4MX0.9Rb8RG0pwfs__vSB1HPUPqUZw9MCwRYNecSc0JYf25jee4390eD3ZLdzuCZv6nmAOeGIMJmbaJzrkpxFQP6O1w";
       const devUser: User = {
         id: "9",
         email: "hoteladmin@bookmyhotel.com",
