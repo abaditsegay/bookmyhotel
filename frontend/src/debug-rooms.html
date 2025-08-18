@@ -9,7 +9,8 @@
     <div id="result"></div>
 
     <script>
-        const token = "eyJhbGciOiJIUzUxMiJ9.eyJmaXJzdE5hbWUiOiJTYXJhaCIsImxhc3ROYW1lIjoiV2lsc29uIiwicm9sZXMiOlsiSE9URUxfQURNSU4iXSwidGVuYW50SWQiOiJkZWZhdWx0IiwidXNlcklkIjo5LCJlbWFpbCI6ImhvdGVsYWRtaW5AYm9va215aG90ZWwuY29tIiwic3ViIjoiaG90ZWxhZG1pbkBib29rbXlob3RlbC5jb20iLCJpYXQiOjE3NTU0NzMxNjIsImV4cCI6MTc1NTU1OTU2Mn0.4Gn55V0VmzGrDy6iTNDxIK5Ie-sbvR9coddqULGGoG01KVDRGrM4DEloUgUi0H_62-KleVtzTu9X2UqBiFJatg";
+        // For debugging purposes, use proper authentication instead of hardcoded tokens
+        const token = localStorage.getItem('auth_token') || prompt('Enter your JWT token:');
 
         async function testRoomsAPI() {
             try {

@@ -129,6 +129,18 @@ const LoginPage: React.FC = () => {
                   hoteladmin@bookmyhotel.com / password
                 </Typography>
               </Button>
+
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => fillSampleUser('frontdesk1@grandplaza.com', 'password')}
+                sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
+              >
+                <Typography variant="body2" fontWeight="bold">Front Desk Staff</Typography>
+                <Typography variant="caption" color="textSecondary">
+                  frontdesk1@grandplaza.com / password
+                </Typography>
+              </Button>
             </Box>
 
             <Typography variant="body2" color="textSecondary" align="center" sx={{ mt: 2 }}>

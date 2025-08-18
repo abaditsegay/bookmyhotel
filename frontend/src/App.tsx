@@ -28,6 +28,7 @@ import RoomManagement from './pages/hotel-admin/RoomManagement';
 import RoomViewEdit from './pages/hotel-admin/RoomViewEdit';
 import StaffManagement from './pages/hotel-admin/StaffManagement';
 import StaffDetails from './pages/hotel-admin/StaffDetails';
+import FrontDeskDashboard from './pages/frontdesk/FrontDeskDashboard';
 
 // Home Page Router Component - redirects based on user role
 const HomePageRouter: React.FC = () => {
@@ -35,13 +36,17 @@ const HomePageRouter: React.FC = () => {
   
   // If user is authenticated, check their roles
   if (isAuthenticated && user?.roles) {
-    // Priority order: ADMIN (system admin) > HOTEL_ADMIN
+    // Priority order: ADMIN (system admin) > HOTEL_ADMIN > FRONTDESK
     if (user.roles.includes('ADMIN')) {
       return <Navigate to="/admin/dashboard" replace />;
     }
     
     if (user.roles.includes('HOTEL_ADMIN')) {
       return <Navigate to="/hotel-admin/dashboard" replace />;
+    }
+    
+    if (user.roles.includes('FRONTDESK')) {
+      return <Navigate to="/frontdesk/dashboard" replace />;
     }
     
     // Legacy role handling for backward compatibility
@@ -51,6 +56,10 @@ const HomePageRouter: React.FC = () => {
     
     if (user.role === 'HOTEL_ADMIN') {
       return <Navigate to="/hotel-admin/dashboard" replace />;
+    }
+    
+    if (user.role === 'FRONTDESK') {
+      return <Navigate to="/frontdesk/dashboard" replace />;
     }
   }
   
@@ -366,6 +375,18 @@ function App() {
         <Route path="/hotel-admin/rooms/:id" element={
           <ProtectedRoute requiredRole="HOTEL_ADMIN">
             <RoomViewEdit />
+          </ProtectedRoute>
+        } />
+        
+        {/* Front Desk Routes */}
+        <Route path="/frontdesk" element={
+          <ProtectedRoute requiredRole="FRONTDESK">
+            <Navigate to="/frontdesk/dashboard" replace />
+          </ProtectedRoute>
+        } />
+        <Route path="/frontdesk/dashboard" element={
+          <ProtectedRoute requiredRole="FRONTDESK">
+            <FrontDeskDashboard />
           </ProtectedRoute>
         } />
       </Routes>
