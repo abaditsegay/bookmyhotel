@@ -25,7 +25,7 @@ import {
   Save as SaveIcon,
   Cancel as CancelIcon,
 } from '@mui/icons-material';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { hotelAdminApi } from '../../services/hotelAdminApi';
 
@@ -52,6 +52,8 @@ interface BookingData {
 const BookingViewEdit: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const location = useLocation();
   const { token } = useAuth();
   
   const [booking, setBooking] = useState<BookingData | null>(null);
@@ -189,7 +191,19 @@ const BookingViewEdit: React.FC = () => {
   };
 
   const handleBack = () => {
-    navigate('/hotel-admin/dashboard');
+    const returnTab = searchParams.get('returnTab');
+    
+    // Determine the correct dashboard based on current path
+    if (location.pathname.startsWith('/hotel-admin')) {
+      if (returnTab) {
+        navigate(`/hotel-admin/dashboard?tab=${returnTab}`);
+      } else {
+        navigate('/hotel-admin/dashboard');
+      }
+    } else {
+      // For admin context
+      navigate('/admin');
+    }
   };
 
   const formatDate = (dateString: string) => {

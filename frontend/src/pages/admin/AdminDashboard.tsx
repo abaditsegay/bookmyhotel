@@ -34,14 +34,23 @@ import {
   LocationOn as LocationIcon,
   Search as SearchIcon,
 } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { adminApiService, UserManagementResponse, HotelDTO, PagedResponse } from '../../services/adminApi';
 
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
   const { token } = useAuth();
-  const [currentTab, setCurrentTab] = useState(0);
+  const [searchParams, setSearchParams] = useSearchParams();
+  
+  // Get initial tab from URL parameter, default to 0 if not present
+  const getInitialTab = () => {
+    const tabParam = searchParams.get('tab');
+    const tab = tabParam ? parseInt(tabParam, 10) : 0;
+    return isNaN(tab) || tab < 0 || tab > 1 ? 0 : tab; // Only 2 tabs (0-1)
+  };
+  
+  const [currentTab, setCurrentTab] = useState(getInitialTab);
 
   // Hotel management state
   const [hotels, setHotels] = useState<HotelDTO[]>([]);
@@ -128,7 +137,22 @@ const AdminDashboard: React.FC = () => {
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setCurrentTab(newValue);
+    
+    // Update URL parameter to persist tab state
+    setSearchParams(prev => {
+      const newParams = new URLSearchParams(prev);
+      newParams.set('tab', newValue.toString());
+      return newParams;
+    });
   };
+
+  // Sync tab state with URL parameter changes (for browser back/forward navigation)
+  useEffect(() => {
+    const currentTabFromUrl = getInitialTab();
+    if (currentTabFromUrl !== currentTab) {
+      setCurrentTab(currentTabFromUrl);
+    }
+  }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Hotel pagination handlers
   const handleHotelChangePage = (event: unknown, newPage: number) => {
@@ -348,7 +372,7 @@ const AdminDashboard: React.FC = () => {
                           <Tooltip title="View Details">
                             <IconButton
                               size="small"
-                              onClick={() => navigate(`/admin/hotels/${hotel.id}`)}
+                              onClick={() => navigate(`/admin/hotels/${hotel.id}?returnTab=${currentTab}`)}
                             >
                               <ViewIcon fontSize="small" />
                             </IconButton>
@@ -529,7 +553,7 @@ const AdminDashboard: React.FC = () => {
                           <Tooltip title="View Details">
                             <IconButton
                               size="small"
-                              onClick={() => navigate(`/admin/users/${user.id}`)}
+                              onClick={() => navigate(`/admin/users/${user.id}?returnTab=${currentTab}`)}
                             >
                               <ViewIcon fontSize="small" />
                             </IconButton>

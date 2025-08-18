@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Container,
   Typography,
@@ -52,6 +52,7 @@ interface UserData {
 const UserViewEdit: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { adminApiService } = useAuthenticatedApi();
   
   const [user, setUser] = useState<UserData | null>(null);
@@ -146,6 +147,15 @@ const UserViewEdit: React.FC = () => {
     }
   };
 
+  const handleBackToAdmin = () => {
+    const returnTab = searchParams.get('returnTab');
+    if (returnTab) {
+      navigate(`/admin/dashboard?tab=${returnTab}`);
+    } else {
+      navigate('/admin/dashboard');
+    }
+  };
+
   const handleInputChange = (field: keyof UserData, value: any) => {
     if (editedUser) {
       setEditedUser({
@@ -180,7 +190,7 @@ const UserViewEdit: React.FC = () => {
         </Alert>
         <Button
           startIcon={<ArrowBackIcon />}
-          onClick={() => navigate('/admin/dashboard')}
+          onClick={handleBackToAdmin}
         >
           Back to Dashboard
         </Button>
@@ -197,7 +207,7 @@ const UserViewEdit: React.FC = () => {
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <Button
             startIcon={<ArrowBackIcon />}
-            onClick={() => navigate('/admin/dashboard')}
+            onClick={handleBackToAdmin}
             sx={{ mr: 2 }}
           >
             Back to Dashboard

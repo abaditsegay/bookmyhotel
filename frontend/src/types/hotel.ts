@@ -40,10 +40,22 @@ export interface BookingRequest {
   checkOutDate: string;
   guests: number;
   specialRequests?: string;
-  paymentMethodId?: string;
   guestName: string;
   guestEmail: string;
   guestPhone?: string;
+  
+  // Payment information (optional for backward compatibility)
+  paymentMethod?: 'credit_card' | 'mobile_money';
+  
+  // Credit card fields
+  creditCardNumber?: string;
+  expiryDate?: string;
+  cvv?: string;
+  cardholderName?: string;
+  
+  // Mobile money fields
+  mobileNumber?: string;
+  transferReceiptNumber?: string;
 }
 
 export interface BookingResponse {

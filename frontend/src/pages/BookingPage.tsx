@@ -13,9 +13,18 @@ import {
   Link,
   IconButton,
   Card,
+  FormControl,
+  FormLabel,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
+  InputAdornment,
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
+  CreditCard as CreditCardIcon,
+  PhoneAndroid as PhoneIcon,
+  Lock as LockIcon,
 } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -52,6 +61,16 @@ const BookingPage: React.FC = () => {
   const [guestEmail, setGuestEmail] = useState('');
   const [guestPhone, setGuestPhone] = useState('');
   const [specialRequests, setSpecialRequests] = useState('');
+  
+  // Payment state
+  const [paymentMethod, setPaymentMethod] = useState<'credit_card' | 'mobile_money'>('credit_card');
+  const [creditCardNumber, setCreditCardNumber] = useState('');
+  const [expiryDate, setExpiryDate] = useState('');
+  const [cvv, setCvv] = useState('');
+  const [cardholderName, setCardholderName] = useState('');
+  const [mobileNumber, setMobileNumber] = useState('');
+  const [transferReceiptNumber, setTransferReceiptNumber] = useState('');
+  
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -99,6 +118,42 @@ const BookingPage: React.FC = () => {
       return;
     }
 
+    // Payment validation
+    if (paymentMethod === 'credit_card') {
+      if (!creditCardNumber || !expiryDate || !cvv || !cardholderName) {
+        setError('Please fill in all credit card details');
+        return;
+      }
+      // Basic credit card number validation (16 digits)
+      const cardNumberOnly = creditCardNumber.replace(/\s/g, '');
+      if (!/^\d{16}$/.test(cardNumberOnly)) {
+        setError('Please enter a valid 16-digit credit card number');
+        return;
+      }
+      // Basic CVV validation (3-4 digits)
+      if (!/^\d{3,4}$/.test(cvv)) {
+        setError('Please enter a valid CVV (3-4 digits)');
+        return;
+      }
+      // Basic expiry date validation (MM/YY format)
+      if (!/^\d{2}\/\d{2}$/.test(expiryDate)) {
+        setError('Please enter expiry date in MM/YY format');
+        return;
+      }
+    }
+
+    if (paymentMethod === 'mobile_money') {
+      if (!mobileNumber || !transferReceiptNumber) {
+        setError('Please provide mobile number and transfer receipt number');
+        return;
+      }
+      // Basic mobile number validation
+      if (!/^\+?\d{10,15}$/.test(mobileNumber.replace(/\s/g, ''))) {
+        setError('Please enter a valid mobile number');
+        return;
+      }
+    }
+
     setLoading(true);
 
     try {
@@ -111,6 +166,19 @@ const BookingPage: React.FC = () => {
         guestName: guestName.trim(),
         guestEmail: guestEmail.trim(),
         guestPhone: guestPhone.trim() || undefined,
+        paymentMethod,
+        // Credit card details
+        ...(paymentMethod === 'credit_card' && {
+          creditCardNumber: creditCardNumber.replace(/\s/g, ''),
+          expiryDate,
+          cvv,
+          cardholderName: cardholderName.trim(),
+        }),
+        // Mobile money details
+        ...(paymentMethod === 'mobile_money' && {
+          mobileNumber: mobileNumber.trim(),
+          transferReceiptNumber: transferReceiptNumber.trim(),
+        }),
       };
 
       const result = await hotelApiService.createBooking(bookingRequest);
@@ -333,6 +401,190 @@ const BookingPage: React.FC = () => {
                   placeholder="Any special requests or preferences..."
                 />
               </Grid>
+
+              {/* Payment Section */}
+              <Grid item xs={12}>
+                <Divider sx={{ my: 2 }} />
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                  <LockIcon sx={{ mr: 1, color: 'success.main' }} />
+                  <Typography variant="h6" component="div">
+                    Secure Payment Information
+                  </Typography>
+                </Box>
+              </Grid>
+
+              {/* Payment Method Selection */}
+              <Grid item xs={12}>
+                <FormControl component="fieldset">
+                  <FormLabel component="legend" sx={{ fontWeight: 'bold', color: 'text.primary' }}>
+                    Payment Method
+                  </FormLabel>
+                  <RadioGroup
+                    row
+                    value={paymentMethod}
+                    onChange={(e) => setPaymentMethod(e.target.value as 'credit_card' | 'mobile_money')}
+                    sx={{ mt: 1 }}
+                  >
+                    <FormControlLabel
+                      value="credit_card"
+                      control={<Radio />}
+                      label={
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <CreditCardIcon sx={{ mr: 1 }} />
+                          Credit Card
+                        </Box>
+                      }
+                    />
+                    <FormControlLabel
+                      value="mobile_money"
+                      control={<Radio />}
+                      label={
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <PhoneIcon sx={{ mr: 1 }} />
+                          Mobile Money Transfer
+                        </Box>
+                      }
+                    />
+                  </RadioGroup>
+                </FormControl>
+              </Grid>
+
+              {/* Credit Card Form */}
+              {paymentMethod === 'credit_card' && (
+                <>
+                  <Grid item xs={12}>
+                    <Paper sx={{ p: 2, bgcolor: 'grey.50', border: '1px solid', borderColor: 'grey.200' }}>
+                      <Typography variant="subtitle2" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
+                        <CreditCardIcon sx={{ mr: 1 }} />
+                        Credit Card Details
+                      </Typography>
+                      <Grid container spacing={2}>
+                        <Grid item xs={12}>
+                          <TextField
+                            label="Cardholder Name"
+                            value={cardholderName}
+                            onChange={(e) => setCardholderName(e.target.value)}
+                            fullWidth
+                            required
+                            placeholder="John Doe"
+                          />
+                        </Grid>
+                        <Grid item xs={12}>
+                          <TextField
+                            label="Card Number"
+                            value={creditCardNumber}
+                            onChange={(e) => {
+                              // Format card number with spaces
+                              const value = e.target.value.replace(/\s/g, '').replace(/(.{4})/g, '$1 ').trim();
+                              if (value.replace(/\s/g, '').length <= 16) {
+                                setCreditCardNumber(value);
+                              }
+                            }}
+                            fullWidth
+                            required
+                            placeholder="1234 5678 9012 3456"
+                            InputProps={{
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <CreditCardIcon color="action" />
+                                </InputAdornment>
+                              ),
+                            }}
+                          />
+                        </Grid>
+                        <Grid item xs={6}>
+                          <TextField
+                            label="Expiry Date"
+                            value={expiryDate}
+                            onChange={(e) => {
+                              // Format expiry date MM/YY
+                              let value = e.target.value.replace(/\D/g, '');
+                              if (value.length >= 2) {
+                                value = value.substring(0, 2) + '/' + value.substring(2, 4);
+                              }
+                              setExpiryDate(value);
+                            }}
+                            fullWidth
+                            required
+                            placeholder="MM/YY"
+                            inputProps={{ maxLength: 5 }}
+                          />
+                        </Grid>
+                        <Grid item xs={6}>
+                          <TextField
+                            label="CVV"
+                            value={cvv}
+                            onChange={(e) => {
+                              const value = e.target.value.replace(/\D/g, '');
+                              if (value.length <= 4) {
+                                setCvv(value);
+                              }
+                            }}
+                            fullWidth
+                            required
+                            placeholder="123"
+                            type="password"
+                            inputProps={{ maxLength: 4 }}
+                          />
+                        </Grid>
+                      </Grid>
+                    </Paper>
+                  </Grid>
+                </>
+              )}
+
+              {/* Mobile Money Form */}
+              {paymentMethod === 'mobile_money' && (
+                <>
+                  <Grid item xs={12}>
+                    <Paper sx={{ p: 2, bgcolor: 'grey.50', border: '1px solid', borderColor: 'grey.200' }}>
+                      <Typography variant="subtitle2" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
+                        <PhoneIcon sx={{ mr: 1 }} />
+                        Mobile Money Transfer Details
+                      </Typography>
+                      <Grid container spacing={2}>
+                        <Grid item xs={12}>
+                          <Alert severity="info" sx={{ mb: 2 }}>
+                            Please complete the mobile money transfer to our account and provide the details below.
+                          </Alert>
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <TextField
+                            label="Mobile Number"
+                            value={mobileNumber}
+                            onChange={(e) => setMobileNumber(e.target.value)}
+                            fullWidth
+                            required
+                            placeholder="+1234567890"
+                            InputProps={{
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <PhoneIcon color="action" />
+                                </InputAdornment>
+                              ),
+                            }}
+                          />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <TextField
+                            label="Transfer Receipt Number"
+                            value={transferReceiptNumber}
+                            onChange={(e) => setTransferReceiptNumber(e.target.value)}
+                            fullWidth
+                            required
+                            placeholder="Receipt/Transaction ID"
+                          />
+                        </Grid>
+                        <Grid item xs={12}>
+                          <Typography variant="body2" color="text.secondary">
+                            <strong>Amount to Transfer:</strong> ${totalAmount}
+                          </Typography>
+                        </Grid>
+                      </Grid>
+                    </Paper>
+                  </Grid>
+                </>
+              )}
             </Grid>
           </Card>
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Container,
   Typography,
@@ -63,6 +63,7 @@ interface HotelData {
 const HotelViewEdit: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { adminApiService } = useAuthenticatedApi();
   const { tenantId } = useTenant();
   
@@ -160,6 +161,15 @@ const HotelViewEdit: React.FC = () => {
     }
   };
 
+  const handleBackToAdmin = () => {
+    const returnTab = searchParams.get('returnTab');
+    if (returnTab) {
+      navigate(`/admin/dashboard?tab=${returnTab}`);
+    } else {
+      navigate('/admin/dashboard');
+    }
+  };
+
   const handleInputChange = (field: keyof HotelData, value: any) => {
     if (editedHotel) {
       setEditedHotel({
@@ -185,7 +195,7 @@ const HotelViewEdit: React.FC = () => {
         </Alert>
         <Button
           startIcon={<ArrowBackIcon />}
-          onClick={() => navigate('/admin/dashboard')}
+          onClick={handleBackToAdmin}
         >
           Back to Dashboard
         </Button>
@@ -202,7 +212,7 @@ const HotelViewEdit: React.FC = () => {
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <Button
             startIcon={<ArrowBackIcon />}
-            onClick={() => navigate('/admin/dashboard')}
+            onClick={handleBackToAdmin}
             sx={{ mr: 2 }}
           >
             Back to Dashboard

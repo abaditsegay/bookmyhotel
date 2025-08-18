@@ -48,7 +48,11 @@ interface RoomFilters {
   status: string;
 }
 
-const RoomManagement: React.FC = () => {
+interface RoomManagementProps {
+  onNavigateToRoom?: (roomId: number) => void;
+}
+
+const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => {
   const { token } = useAuth();
   const navigate = useNavigate();
   const [rooms, setRooms] = useState<RoomResponse[]>([]);
@@ -149,7 +153,11 @@ const RoomManagement: React.FC = () => {
   };
 
   const handleViewRoom = async (roomId: number) => {
-    navigate(`/hotel-admin/rooms/${roomId}`);
+    if (onNavigateToRoom) {
+      onNavigateToRoom(roomId);
+    } else {
+      navigate(`/hotel-admin/rooms/${roomId}`);
+    }
   };
 
     const handleCreateRoom = async () => {

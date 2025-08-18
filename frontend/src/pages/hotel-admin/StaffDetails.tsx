@@ -25,13 +25,14 @@ import {
   Save as SaveIcon,
   Cancel as CancelIcon,
 } from '@mui/icons-material';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { hotelAdminApi, StaffResponse } from '../../services/hotelAdminApi';
 
 const StaffDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { token } = useAuth();
   
   const [staff, setStaff] = useState<StaffResponse | null>(null);
@@ -168,7 +169,12 @@ const StaffDetails: React.FC = () => {
   };
 
   const handleBack = () => {
-    navigate('/hotel-admin/dashboard');
+    const returnTab = searchParams.get('returnTab');
+    if (returnTab) {
+      navigate(`/hotel-admin/dashboard?tab=${returnTab}`);
+    } else {
+      navigate('/hotel-admin/dashboard');
+    }
   };
 
   const formatDate = (dateString: string) => {

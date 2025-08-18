@@ -49,7 +49,11 @@ interface StaffFilters {
   status: string;
 }
 
-const StaffManagement: React.FC = () => {
+interface StaffManagementProps {
+  onNavigateToStaff?: (staffId: number) => void;
+}
+
+const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) => {
   const { token } = useAuth();
   const navigate = useNavigate();
   const [staff, setStaff] = useState<StaffResponse[]>([]);
@@ -150,7 +154,11 @@ const StaffManagement: React.FC = () => {
   };
 
   const handleViewStaff = (staffId: number) => {
-    navigate(`/hotel-admin/staff/${staffId}`);
+    if (onNavigateToStaff) {
+      onNavigateToStaff(staffId);
+    } else {
+      navigate(`/hotel-admin/staff/${staffId}`);
+    }
   };
 
   const handleCreateStaff = async () => {

@@ -33,7 +33,7 @@ import {
   Delete as DeleteIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { hotelAdminApi, BookingResponse, BookingStats } from '../../services/hotelAdminApi';
 import { Hotel } from '../../types/hotel';
 import RoomManagement from './RoomManagement';
@@ -69,7 +69,16 @@ function TabPanel(props: TabPanelProps) {
 const HotelAdminDashboard: React.FC = () => {
   const { user, token } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState(0);
+  const [searchParams, setSearchParams] = useSearchParams();
+  
+  // Get initial tab from URL parameter, default to 0 if not present
+  const getInitialTab = () => {
+    const tabParam = searchParams.get('tab');
+    const tab = tabParam ? parseInt(tabParam, 10) : 0;
+    return isNaN(tab) || tab < 0 || tab > 4 ? 0 : tab;
+  };
+  
+  const [activeTab, setActiveTab] = useState(getInitialTab);
 
   // Booking state
   const [bookings, setBookings] = useState<BookingResponse[]>([]);
@@ -93,6 +102,13 @@ const HotelAdminDashboard: React.FC = () => {
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
+    
+    // Update URL parameter to persist tab state
+    setSearchParams(prev => {
+      const newParams = new URLSearchParams(prev);
+      newParams.set('tab', newValue.toString());
+      return newParams;
+    });
     
     // Load bookings when Bookings tab (index 3) is selected
     if (newValue === 3) {
@@ -186,8 +202,17 @@ const HotelAdminDashboard: React.FC = () => {
 
   // Handle view booking details
   const handleViewBookingDetails = (booking: BookingResponse) => {
-    // Navigate to the booking details page using the booking ID
-    navigate(`/hotel-admin/bookings/${booking.reservationId}`);
+    // Navigate to the booking details page with current tab preserved
+    navigate(`/hotel-admin/bookings/${booking.reservationId}?returnTab=${activeTab}`);
+  };
+
+  // Navigation handlers for child components
+  const handleRoomNavigation = (roomId: number) => {
+    navigate(`/hotel-admin/rooms/${roomId}?returnTab=${activeTab}`);
+  };
+
+  const handleStaffNavigation = (staffId: number) => {
+    navigate(`/hotel-admin/staff/${staffId}?returnTab=${activeTab}`);
   };
 
   const handleDeleteBooking = async () => {
@@ -298,6 +323,14 @@ const HotelAdminDashboard: React.FC = () => {
     }
   }, [activeTab, token, bookingPage, bookingSize]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Sync tab state with URL parameter changes (for browser back/forward navigation)
+  useEffect(() => {
+    const currentTab = getInitialTab();
+    if (currentTab !== activeTab) {
+      setActiveTab(currentTab);
+    }
+  }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Mock data for demonstration - will be replaced with real data from hotel state
   const hotelData = hotel ? {
     name: hotel.name || user?.hotelName || 'Grand Plaza Hotel',
@@ -369,9 +402,9 @@ const HotelAdminDashboard: React.FC = () => {
       <Card>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
           <Tabs value={activeTab} onChange={handleTabChange} aria-label="hotel admin tabs">
-            <Tab label="Hotel Details" />
-            <Tab label="Staff Management" />
-            <Tab label="Room Management" />
+            <Tab label="Hotel Detail" />
+            <Tab label="Staff" />
+            <Tab label="Rooms" />
             <Tab label="Bookings" />
             <Tab label="Reports" />
           </Tabs>
@@ -442,10 +475,6 @@ const HotelAdminDashboard: React.FC = () => {
                     <Typography variant="body1">{hotelData.totalRooms} rooms</Typography>
                   </Box>
                   <Box sx={{ mb: 2 }}>
-                    <Typography variant="body2" color="text.secondary">Current Occupancy</Typography>
-                    <Typography variant="body1">{hotelData.occupiedRooms} / {hotelData.totalRooms} rooms</Typography>
-                  </Box>
-                  <Box sx={{ mb: 2 }}>
                     <Typography variant="body2" color="text.secondary">Staff Members</Typography>
                     <Typography variant="body1">{hotelData.totalStaff} staff members</Typography>
                   </Box>
@@ -467,12 +496,12 @@ const HotelAdminDashboard: React.FC = () => {
 
         <TabPanel value={activeTab} index={1}>
           {/* Staff Management Tab */}
-          <StaffManagement />
+          <StaffManagement onNavigateToStaff={handleStaffNavigation} />
         </TabPanel>
 
         <TabPanel value={activeTab} index={2}>
           {/* Room Management Tab */}
-          <RoomManagement />
+          <RoomManagement onNavigateToRoom={handleRoomNavigation} />
         </TabPanel>
 
         <TabPanel value={activeTab} index={3}>

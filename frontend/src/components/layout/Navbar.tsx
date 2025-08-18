@@ -17,7 +17,6 @@ import {
   Divider,
   useTheme,
   useMediaQuery,
-  Badge,
   Chip,
 } from '@mui/material';
 import {
@@ -27,8 +26,6 @@ import {
   Dashboard as DashboardIcon,
   Logout as LogoutIcon,
   Login as LoginIcon,
-  PersonAdd as PersonAddIcon,
-  Notifications as NotificationsIcon,
   Business as BusinessIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -46,7 +43,6 @@ const Navbar: React.FC = () => {
   
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
-  const [notificationCount] = useState(3); // Mock notification count
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -313,60 +309,40 @@ const Navbar: React.FC = () => {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {user ? (
               <>
-                {/* Notifications */}
-                <IconButton color="inherit">
-                  <Badge badgeContent={notificationCount} color="error">
-                    <NotificationsIcon />
-                  </Badge>
-                </IconButton>
-
                 {/* User Avatar & Menu */}
-                <IconButton onClick={handleMenuOpen} sx={{ p: 0.5 }}>
-                  <Avatar 
-                    sx={{ 
-                      width: 36, 
-                      height: 36,
-                      backgroundColor: theme.palette.secondary.main,
-                      fontSize: '0.9rem',
-                      fontWeight: 'bold',
-                    }}
-                  >
-                    {user.firstName?.[0] || user.email?.[0] || 'U'}
-                  </Avatar>
-                </IconButton>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Typography variant="body2" sx={{ color: 'white', fontWeight: 500 }}>
+                    {user.firstName || user.email?.split('@')[0] || 'User'}
+                  </Typography>
+                  <IconButton onClick={handleMenuOpen} sx={{ p: 0.5 }}>
+                    <Avatar 
+                      sx={{ 
+                        width: 36, 
+                        height: 36,
+                        backgroundColor: theme.palette.secondary.main,
+                        fontSize: '0.9rem',
+                        fontWeight: 'bold',
+                      }}
+                    >
+                      {user.firstName?.[0] || user.email?.[0] || 'U'}
+                    </Avatar>
+                  </IconButton>
+                </Box>
                 <UserMenu />
               </>
             ) : (
               /* Guest Actions */
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                <Button
-                  color="inherit"
-                  onClick={() => handleNavigation('/login')}
-                  startIcon={<LoginIcon />}
-                  sx={{
-                    borderRadius: 2,
-                    '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
-                  }}
-                >
-                  {!isMobile && 'Login'}
-                </Button>
-                <Button
-                  color="inherit"
-                  variant="outlined"
-                  onClick={() => handleNavigation('/register')}
-                  startIcon={<PersonAddIcon />}
-                  sx={{
-                    borderRadius: 2,
-                    borderColor: 'rgba(255, 255, 255, 0.5)',
-                    '&:hover': { 
-                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                      borderColor: 'rgba(255, 255, 255, 0.8)',
-                    },
-                  }}
-                >
-                  {!isMobile && 'Sign Up'}
-                </Button>
-              </Box>
+              <Button
+                color="inherit"
+                onClick={() => handleNavigation('/login')}
+                startIcon={<LoginIcon />}
+                sx={{
+                  borderRadius: 2,
+                  '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
+                }}
+              >
+                {!isMobile && 'Login'}
+              </Button>
             )}
           </Box>
         </Toolbar>

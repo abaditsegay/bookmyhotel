@@ -27,13 +27,14 @@ import {
   Save as SaveIcon,
   Cancel as CancelIcon,
 } from '@mui/icons-material';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { hotelAdminApi, RoomResponse } from '../../services/hotelAdminApi';
 
 const RoomViewEdit: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { token } = useAuth();
   
   const [room, setRoom] = useState<RoomResponse | null>(null);
@@ -144,7 +145,12 @@ const RoomViewEdit: React.FC = () => {
   };
 
   const handleBack = () => {
-    navigate('/hotel-admin/dashboard');
+    const returnTab = searchParams.get('returnTab');
+    if (returnTab) {
+      navigate(`/hotel-admin/dashboard?tab=${returnTab}`);
+    } else {
+      navigate('/hotel-admin/dashboard');
+    }
   };
 
   const formatCurrency = (amount: number) => {
