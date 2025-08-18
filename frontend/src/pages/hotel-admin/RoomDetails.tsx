@@ -69,7 +69,7 @@ const RoomDetails: React.FC = () => {
         setLoading(true);
         setError(null);
         
-        const roomId = parseInt(id);
+        const roomId = parseInt(id, 10);
         if (!roomId) {
           setError('Invalid room ID');
           return;
