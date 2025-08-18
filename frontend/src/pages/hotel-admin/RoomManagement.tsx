@@ -27,8 +27,6 @@ import {
   Select,
   MenuItem,
   Grid,
-  Card,
-  CardContent,
   Switch,
 } from '@mui/material';
 import {
@@ -41,6 +39,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { hotelAdminApi, RoomResponse, RoomCreateRequest, RoomUpdateRequest } from '../../services/hotelAdminApi';
 import { useAuth } from '../../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface RoomFilters {
   roomNumber: string;
@@ -65,8 +64,6 @@ const RoomManagement: React.FC = () => {
   });
 
   // Dialog states
-  const [viewDialogOpen, setViewDialogOpen] = useState(false);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<RoomResponse | null>(null);
@@ -74,21 +71,13 @@ const RoomManagement: React.FC = () => {
   // Form states
   const [roomForm, setRoomForm] = useState<RoomCreateRequest>({
     roomNumber: '',
-    roomType: 'STANDARD',
+    roomType: 'SINGLE',
     pricePerNight: 0,
     capacity: 1,
     description: '',
   });
 
-  const [editForm, setEditForm] = useState<RoomUpdateRequest>({
-    roomNumber: '',
-    roomType: 'STANDARD',
-    pricePerNight: 0,
-    capacity: 1,
-    description: '',
-  });
-
-  const roomTypes = ['STANDARD', 'DELUXE', 'SUITE', 'EXECUTIVE', 'PRESIDENTIAL'];
+  const roomTypes = ['SINGLE', 'DOUBLE', 'DELUXE', 'SUITE', 'PRESIDENTIAL'];
   const roomStatuses = ['AVAILABLE', 'OCCUPIED', 'MAINTENANCE', 'OUT_OF_ORDER'];
 
   const loadRooms = useCallback(async () => {
@@ -162,7 +151,7 @@ const RoomManagement: React.FC = () => {
         setCreateDialogOpen(false);
         setRoomForm({
           roomNumber: '',
-          roomType: 'STANDARD',
+          roomType: 'SINGLE',
           pricePerNight: 0,
           capacity: 1,
           description: '',
@@ -175,28 +164,6 @@ const RoomManagement: React.FC = () => {
     } catch (err) {
       console.error('Error creating room:', err);
       setError('Failed to create room. Please check the room number is unique.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleUpdateRoom = async () => {
-    if (!selectedRoom || !token) return;
-    
-    try {
-      setLoading(true);
-      const response = await hotelAdminApi.updateRoom(token, selectedRoom.id, editForm);
-      if (response.success) {
-        setEditDialogOpen(false);
-        setSelectedRoom(null);
-        await loadRooms();
-        setError(null);
-      } else {
-        setError(response.message || 'Failed to update room');
-      }
-    } catch (err) {
-      console.error('Error updating room:', err);
-      setError('Failed to update room. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -461,61 +428,6 @@ const RoomManagement: React.FC = () => {
           />
         </Paper>
 
-        {/* View Room Dialog */}
-        <Dialog
-          open={viewDialogOpen}
-          onClose={() => setViewDialogOpen(false)}
-          maxWidth="md"
-          fullWidth
-        >
-          <DialogTitle>Room Details</DialogTitle>
-          <DialogContent>
-            {selectedRoom && (
-              <Card>
-                <CardContent>
-                  <Grid container spacing={2}>
-                    <Grid item xs={12} md={6}>
-                      <Typography variant="h6" gutterBottom>
-                        Room {selectedRoom.roomNumber}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" gutterBottom>
-                        Type: {selectedRoom.roomType}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" gutterBottom>
-                        Price per Night: ${selectedRoom.pricePerNight}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" gutterBottom>
-                        Capacity: {selectedRoom.capacity} guests
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" gutterBottom>
-                        Status: <Chip 
-                          label={selectedRoom.isAvailable ? 'Available' : 'Unavailable'} 
-                          color={getStatusColor(selectedRoom.isAvailable) as any} 
-                          size="small" 
-                        />
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" gutterBottom>
-                        Available: {selectedRoom.isAvailable ? 'Yes' : 'No'}
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={12} md={6}>
-                      <Typography variant="subtitle2" gutterBottom>
-                        Description:
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {selectedRoom.description || 'No description available'}
-                      </Typography>
-                    </Grid>
-                  </Grid>
-                </CardContent>
-              </Card>
-            )}
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setViewDialogOpen(false)}>Close</Button>
-          </DialogActions>
-        </Dialog>
-
         {/* Create Room Dialog */}
         <Dialog
           open={createDialogOpen}
@@ -591,87 +503,6 @@ const RoomManagement: React.FC = () => {
               disabled={loading || !roomForm.roomNumber || !roomForm.pricePerNight}
             >
               Create Room
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        {/* Edit Room Dialog */}
-        <Dialog
-          open={editDialogOpen}
-          onClose={() => setEditDialogOpen(false)}
-          maxWidth="md"
-          fullWidth
-        >
-          <DialogTitle>Edit Room</DialogTitle>
-          <DialogContent>
-            {selectedRoom && (
-              <Grid container spacing={2} sx={{ mt: 1 }}>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Room Number"
-                    value={selectedRoom.roomNumber}
-                    disabled
-                    helperText="Room number cannot be changed"
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <FormControl fullWidth required>
-                    <InputLabel>Room Type</InputLabel>
-                    <Select
-                      value={editForm.roomType}
-                      label="Room Type"
-                      onChange={(e) => setEditForm({ ...editForm, roomType: e.target.value as any })}
-                    >
-                      {roomTypes.map(type => (
-                        <MenuItem key={type} value={type}>{type}</MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Price per Night"
-                    type="number"
-                    value={editForm.pricePerNight}
-                    onChange={(e) => setEditForm({ ...editForm, pricePerNight: parseFloat(e.target.value) })}
-                    required
-                    inputProps={{ min: 0, step: 0.01 }}
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Capacity"
-                    type="number"
-                    value={editForm.capacity}
-                    onChange={(e) => setEditForm({ ...editForm, capacity: parseInt(e.target.value) })}
-                    required
-                    inputProps={{ min: 1, max: 10 }}
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Description"
-                    multiline
-                    rows={3}
-                    value={editForm.description}
-                    onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                  />
-                </Grid>
-              </Grid>
-            )}
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
-            <Button 
-              onClick={handleUpdateRoom}
-              variant="contained"
-              disabled={loading || !editForm.pricePerNight}
-            >
-              Update Room
             </Button>
           </DialogActions>
         </Dialog>
