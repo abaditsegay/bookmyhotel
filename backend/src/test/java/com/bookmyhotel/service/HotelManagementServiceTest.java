@@ -1,19 +1,22 @@
 package com.bookmyhotel.service;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import static org.mockito.ArgumentMatchers.any;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -25,7 +28,6 @@ import com.bookmyhotel.dto.RoomDTO;
 import com.bookmyhotel.entity.Hotel;
 import com.bookmyhotel.entity.Room;
 import com.bookmyhotel.entity.User;
-import com.bookmyhotel.entity.UserRole;
 import com.bookmyhotel.exception.ResourceNotFoundException;
 import com.bookmyhotel.repository.HotelRepository;
 import com.bookmyhotel.repository.RoomRepository;
