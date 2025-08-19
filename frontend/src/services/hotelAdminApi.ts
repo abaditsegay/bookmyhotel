@@ -618,14 +618,27 @@ export const hotelAdminApi = {
     staffData: StaffCreateRequest
   ): Promise<{ success: boolean; data?: StaffResponse; message?: string }> => {
     try {
+      // Transform frontend data to backend UserDTO format
+      const userDTO = {
+        email: staffData.email,
+        password: staffData.password,
+        firstName: staffData.firstName,
+        lastName: staffData.lastName,
+        phone: staffData.phone || '',
+        isActive: true,
+        roles: staffData.roles // Backend will handle string to enum conversion
+      };
+
       const response = await fetch(`${API_BASE_URL}/api/hotel-admin/staff`, {
         method: 'POST',
         headers: getAuthHeaders(token),
-        body: JSON.stringify(staffData),
+        body: JSON.stringify(userDTO),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('Staff creation error response:', errorData);
+        console.error('Request body was:', userDTO);
         throw new Error(errorData.message || 'Failed to create staff member');
       }
 
