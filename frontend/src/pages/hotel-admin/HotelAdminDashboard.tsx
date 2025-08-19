@@ -17,7 +17,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Pagination,
+  TablePagination,
   TextField,
   CircularProgress,
   Alert,
@@ -84,9 +84,9 @@ const HotelAdminDashboard: React.FC = () => {
   const [bookings, setBookings] = useState<BookingResponse[]>([]);
   const [bookingStats, setBookingStats] = useState<BookingStats | null>(null);
   const [bookingPage, setBookingPage] = useState(0);
-  const [bookingSize] = useState(5);
+  const [bookingSize, setBookingSize] = useState(5); // Make mutable for TablePagination
   const [bookingSearch, setBookingSearch] = useState('');
-  const [totalBookingPages, setTotalBookingPages] = useState(0);
+  const [totalBookingElements, setTotalBookingElements] = useState(0); // Add for TablePagination
   const [bookingsLoading, setBookingsLoading] = useState(false);
   const [bookingsError, setBookingsError] = useState<string | null>(null);
 
@@ -154,16 +154,16 @@ const HotelAdminDashboard: React.FC = () => {
         // Calculate pages if not provided or if we have content but no pagination info
         const calculatedPages = totalPages > 0 ? totalPages : Math.ceil(Math.max(totalElements, result.data.content?.length || 0) / bookingSize);
         console.log('Final Total Pages:', calculatedPages);
-        setTotalBookingPages(calculatedPages);
+        setTotalBookingElements(totalElements);
       } else {
         setBookingsError(result.message || 'Failed to load bookings');
         setBookings([]);
-        setTotalBookingPages(0);
+        setTotalBookingElements(0);
       }
     } catch (error) {
       setBookingsError('Failed to load bookings');
       setBookings([]);
-      setTotalBookingPages(0);
+      setTotalBookingElements(0);
     } finally {
       setBookingsLoading(false);
     }
@@ -210,9 +210,16 @@ const HotelAdminDashboard: React.FC = () => {
   };
 
   // Handle booking page change
-  const handleBookingPageChange = (event: React.ChangeEvent<unknown>, value: number) => {
-    setBookingPage(value - 1); // MUI Pagination is 1-based, API is 0-based
+  const handleBookingPageChange = (event: React.ChangeEvent<unknown> | null, newPage: number) => {
+    setBookingPage(newPage);
     // Don't call loadBookings here as useEffect will handle it
+  };
+
+  // Handle rows per page change for bookings
+  const handleBookingRowsPerPageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newSize = parseInt(event.target.value, 10);
+    setBookingSize(newSize);
+    setBookingPage(0); // Reset to first page
   };
 
   // Handle view booking details
@@ -577,104 +584,97 @@ const HotelAdminDashboard: React.FC = () => {
 
             {/* Bookings Table */}
             {!bookingsLoading && (
-              <TableContainer component={Paper}>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Confirmation #</TableCell>
-                      <TableCell>Guest</TableCell>
-                      <TableCell>Room</TableCell>
-                      <TableCell>Check-in</TableCell>
-                      <TableCell>Check-out</TableCell>
-                      <TableCell>Amount</TableCell>
-                      <TableCell>Status</TableCell>
-                      <TableCell>Actions</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {bookings.length === 0 ? (
+              <>
+                <TableContainer component={Paper}>
+                  <Table>
+                    <TableHead>
                       <TableRow>
-                        <TableCell colSpan={8} align="center">
-                          <Typography variant="body2" color="text.secondary" sx={{ py: 4 }}>
-                            {bookingSearch ? 'No bookings found matching your search.' : 'No bookings found.'}
-                          </Typography>
-                        </TableCell>
+                        <TableCell>Confirmation #</TableCell>
+                        <TableCell>Guest</TableCell>
+                        <TableCell>Room</TableCell>
+                        <TableCell>Check-in</TableCell>
+                        <TableCell>Check-out</TableCell>
+                        <TableCell>Amount</TableCell>
+                        <TableCell>Status</TableCell>
+                        <TableCell>Actions</TableCell>
                       </TableRow>
-                    ) : (
-                      bookings.map((booking) => (
-                        <TableRow key={booking.reservationId}>
-                          <TableCell>{booking.confirmationNumber}</TableCell>
-                          <TableCell>
-                            <Box>
-                              <Typography variant="body2" fontWeight="bold">
-                                {booking.guestName}
-                              </Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                {booking.guestEmail}
-                              </Typography>
-                            </Box>
-                          </TableCell>
-                          <TableCell>
-                            {booking.roomNumber} - {booking.roomType}
-                          </TableCell>
-                          <TableCell>{formatDate(booking.checkInDate)}</TableCell>
-                          <TableCell>{formatDate(booking.checkOutDate)}</TableCell>
-                          <TableCell>{formatCurrency(booking.totalAmount)}</TableCell>
-                          <TableCell>
-                            <Chip 
-                              label={booking.status.replace('_', ' ')} 
-                              color={getStatusColor(booking.status)} 
-                              size="small" 
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Box sx={{ display: 'flex', gap: 0.5 }}>
-                              <Tooltip title="View Details">
-                                <IconButton 
-                                  size="small"
-                                  onClick={() => handleViewBookingDetails(booking)}
-                                >
-                                  <VisibilityIcon />
-                                </IconButton>
-                              </Tooltip>
-                              <Tooltip title="Delete Booking">
-                                <IconButton 
-                                  size="small"
-                                  onClick={() => {
-                                    setSelectedBooking(booking);
-                                    setDeleteDialogOpen(true);
-                                  }}
-                                  color="error"
-                                >
-                                  <DeleteIcon />
-                                </IconButton>
-                              </Tooltip>
-                            </Box>
+                    </TableHead>
+                    <TableBody>
+                      {bookings.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={8} align="center">
+                            <Typography variant="body2" color="text.secondary" sx={{ py: 4 }}>
+                              {bookingSearch ? 'No bookings found matching your search.' : 'No bookings found.'}
+                            </Typography>
                           </TableCell>
                         </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            )}
-
-            {/* Pagination */}
-            {!bookingsLoading && bookings.length > 0 && (
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 3 }}>
-                <Typography variant="body2" color="text.secondary">
-                  Page {bookingPage + 1} of {Math.max(totalBookingPages, 1)} • {bookings.length} bookings on this page
-                </Typography>
-                <Pagination 
-                  count={Math.max(totalBookingPages, 1)} 
-                  page={bookingPage + 1} // MUI Pagination is 1-based
-                  onChange={handleBookingPageChange}
-                  color="primary"
-                  size="small"
-                  showFirstButton
-                  showLastButton
+                      ) : (
+                        bookings.map((booking) => (
+                          <TableRow key={booking.reservationId}>
+                            <TableCell>{booking.confirmationNumber}</TableCell>
+                            <TableCell>
+                              <Box>
+                                <Typography variant="body2" fontWeight="bold">
+                                  {booking.guestName}
+                                </Typography>
+                                <Typography variant="caption" color="text.secondary">
+                                  {booking.guestEmail}
+                                </Typography>
+                              </Box>
+                            </TableCell>
+                            <TableCell>
+                              {booking.roomNumber} - {booking.roomType}
+                            </TableCell>
+                            <TableCell>{formatDate(booking.checkInDate)}</TableCell>
+                            <TableCell>{formatDate(booking.checkOutDate)}</TableCell>
+                            <TableCell>{formatCurrency(booking.totalAmount)}</TableCell>
+                            <TableCell>
+                              <Chip 
+                                label={booking.status.replace('_', ' ')} 
+                                color={getStatusColor(booking.status)} 
+                                size="small" 
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Box sx={{ display: 'flex', gap: 0.5 }}>
+                                <Tooltip title="View Details">
+                                  <IconButton 
+                                    size="small"
+                                    onClick={() => handleViewBookingDetails(booking)}
+                                  >
+                                    <VisibilityIcon />
+                                  </IconButton>
+                                </Tooltip>
+                                <Tooltip title="Delete Booking">
+                                  <IconButton 
+                                    size="small"
+                                    onClick={() => {
+                                      setSelectedBooking(booking);
+                                      setDeleteDialogOpen(true);
+                                    }}
+                                    color="error"
+                                  >
+                                    <DeleteIcon />
+                                  </IconButton>
+                                </Tooltip>
+                              </Box>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+                <TablePagination
+                  component="div"
+                  count={totalBookingElements}
+                  rowsPerPage={bookingSize}
+                  page={bookingPage}
+                  onPageChange={handleBookingPageChange}
+                  onRowsPerPageChange={handleBookingRowsPerPageChange}
+                  rowsPerPageOptions={[5, 10, 25]}
                 />
-              </Box>
+              </>
             )}
           </Box>
         </TabPanel>

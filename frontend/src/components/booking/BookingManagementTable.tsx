@@ -423,14 +423,13 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
           
           {/* Table Pagination */}
           <TablePagination
-            rowsPerPageOptions={[5, 10, 25, 50]}
+            rowsPerPageOptions={[5, 10, 25]}
             component="div"
             count={totalElements}
             rowsPerPage={size}
             page={page}
             onPageChange={handlePageChange}
             onRowsPerPageChange={handleRowsPerPageChange}
-            labelRowsPerPage="Bookings per page:"
           />
         </TableContainer>
       </Card>
