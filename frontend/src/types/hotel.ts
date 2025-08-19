@@ -40,8 +40,8 @@ export interface BookingRequest {
   checkOutDate: string;
   guests: number;
   specialRequests?: string;
-  guestName: string;
-  guestEmail: string;
+  guestName?: string;
+  guestEmail?: string;
   guestPhone?: string;
   
   // Payment information (optional for backward compatibility)

@@ -53,8 +53,8 @@ public class HotelSearchService {
      * Get hotel details by ID
      */
     public HotelSearchResult getHotelDetails(Long hotelId, HotelSearchRequest request) {
-        Hotel hotel = hotelRepository.findById(hotelId)
-            .orElseThrow(() -> new RuntimeException("Hotel not found with id: " + hotelId));
+        Hotel hotel = hotelRepository.findByIdAndIsActiveTrue(hotelId)
+            .orElseThrow(() -> new RuntimeException("Hotel not found or not available"));
         
         return convertToSearchResult(hotel, request);
     }

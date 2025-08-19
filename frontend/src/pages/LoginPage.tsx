@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Button, Card, CardContent, Container, TextField, Typography, Alert, Divider, Chip } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -10,6 +10,11 @@ const LoginPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Get redirect info from location state
+  const redirectTo = location.state?.redirectTo;
+  const bookingData = location.state?.bookingData;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,8 +24,13 @@ const LoginPage: React.FC = () => {
     try {
       const success = await login(email, password);
       if (success) {
-        // Navigate to home page, which will redirect based on user role
-        navigate('/');
+        // Check if there's a redirect with booking data
+        if (redirectTo && bookingData) {
+          navigate(redirectTo, { state: bookingData });
+        } else {
+          // Navigate to home page, which will redirect based on user role
+          navigate('/');
+        }
       } else {
         setError('Invalid email or password');
       }
@@ -49,12 +59,21 @@ const LoginPage: React.FC = () => {
         }}
       >
         <Card sx={{ width: '100%', maxWidth: 400 }}>
-          <CardContent sx={{ p: 4 }}>
+                    <CardContent sx={{ p: 4 }}>
             <Typography variant="h4" component="h1" gutterBottom align="center">
               BookMyHotel
             </Typography>
-            <Typography variant="h6" component="h2" gutterBottom align="center" color="textSecondary">
-              Admin Login
+            
+            {bookingData && (
+              <Alert severity="info" sx={{ mb: 3 }}>
+                <Typography variant="body2">
+                  Sign in to complete your booking for <strong>{bookingData.hotelName}</strong>
+                </Typography>
+              </Alert>
+            )}
+
+            <Typography variant="h5" component="h2" gutterBottom align="center">
+              Sign In{bookingData ? ' to Book' : ''}
             </Typography>
 
             {error && (
@@ -133,12 +152,36 @@ const LoginPage: React.FC = () => {
               <Button
                 variant="outlined"
                 size="small"
+                onClick={() => fillSampleUser('admin@downtownbusiness.com', 'password')}
+                sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
+              >
+                <Typography variant="body2" fontWeight="bold">Downtown Business Hotel Admin</Typography>
+                <Typography variant="caption" color="textSecondary">
+                  admin@downtownbusiness.com / password
+                </Typography>
+              </Button>
+
+              <Button
+                variant="outlined"
+                size="small"
                 onClick={() => fillSampleUser('frontdesk1@grandplaza.com', 'password')}
                 sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
               >
                 <Typography variant="body2" fontWeight="bold">Front Desk Staff</Typography>
                 <Typography variant="caption" color="textSecondary">
                   frontdesk1@grandplaza.com / password
+                </Typography>
+              </Button>
+
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => fillSampleUser('guest@test.com', 'password')}
+                sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
+              >
+                <Typography variant="body2" fontWeight="bold">Guest User</Typography>
+                <Typography variant="caption" color="textSecondary">
+                  guest@test.com / password
                 </Typography>
               </Button>
             </Box>

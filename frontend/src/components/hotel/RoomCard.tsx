@@ -17,7 +17,7 @@ import { AvailableRoom } from '../../types/hotel';
 interface RoomCardProps {
   room: AvailableRoom;
   hotelId: number;
-  onBookRoom: (hotelId: number, roomId: number) => void;
+  onBookRoom: (hotelId: number, roomId: number, asGuest?: boolean) => void;
 }
 
 // Mock room images based on room type
@@ -142,21 +142,36 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
           </Box>
         </Box>
 
-        {/* Book Button */}
-        <Button
-          fullWidth
-          variant="contained"
-          color="primary"
-          onClick={() => onBookRoom(hotelId, room.id)}
-          sx={{ 
-            mt: 'auto',
-            borderRadius: 2,
-            textTransform: 'none',
-            fontWeight: 'bold',
-          }}
-        >
-          Book This Room
-        </Button>
+        {/* Book Buttons */}
+        <Box sx={{ mt: 'auto' }}>
+          <Button
+            fullWidth
+            variant="contained"
+            color="primary"
+            onClick={() => onBookRoom(hotelId, room.id)}
+            sx={{ 
+              borderRadius: 2,
+              textTransform: 'none',
+              fontWeight: 'bold',
+              mb: 1,
+            }}
+          >
+            Sign in to Book
+          </Button>
+          <Button
+            fullWidth
+            variant="outlined"
+            color="primary"
+            onClick={() => onBookRoom(hotelId, room.id, true)} // true indicates guest booking
+            sx={{ 
+              borderRadius: 2,
+              textTransform: 'none',
+              fontWeight: 'bold',
+            }}
+          >
+            Book as Guest
+          </Button>
+        </Box>
       </CardContent>
     </Card>
   );

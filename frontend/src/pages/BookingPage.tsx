@@ -31,6 +31,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs, { Dayjs } from 'dayjs';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { useAuthenticatedApi } from '../hooks/useAuthenticatedApi';
 import { BookingRequest, AvailableRoom, HotelSearchRequest } from '../types/hotel';
 
@@ -39,17 +40,19 @@ interface BookingPageState {
   hotelName: string;
   hotelId: number;
   searchRequest?: HotelSearchRequest;
+  asGuest?: boolean;
 }
 
 const BookingPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user, isAuthenticated } = useAuth();
   const { hotelApiService } = useAuthenticatedApi();
   
   // Get data from navigation state
   const bookingData = location.state as BookingPageState;
   
-  // Form state
+  // Form state - pre-populate with user data if available
   const [checkInDate, setCheckInDate] = useState<Dayjs | null>(
     bookingData?.searchRequest?.checkInDate ? dayjs(bookingData.searchRequest.checkInDate) : dayjs()
   );
@@ -57,9 +60,9 @@ const BookingPage: React.FC = () => {
     bookingData?.searchRequest?.checkOutDate ? dayjs(bookingData.searchRequest.checkOutDate) : dayjs().add(1, 'day')
   );
   const [guests, setGuests] = useState(bookingData?.searchRequest?.guests || 1);
-  const [guestName, setGuestName] = useState('');
-  const [guestEmail, setGuestEmail] = useState('');
-  const [guestPhone, setGuestPhone] = useState('');
+  const [guestName, setGuestName] = useState(user ? `${user.firstName} ${user.lastName}` : '');
+  const [guestEmail, setGuestEmail] = useState(user?.email || '');
+  const [guestPhone, setGuestPhone] = useState(user?.phone || '');
   const [specialRequests, setSpecialRequests] = useState('');
   
   // Payment state
@@ -74,14 +77,26 @@ const BookingPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Redirect if no booking data
+  // Redirect if no booking data or not authenticated (unless booking as guest)
   useEffect(() => {
     if (!bookingData?.room) {
       navigate('/search-results');
+      return;
     }
-  }, [bookingData, navigate]);
+    
+    // Only redirect to auth if not authenticated AND not booking as guest
+    if (!isAuthenticated && !bookingData.asGuest) {
+      navigate('/guest-auth', {
+        state: {
+          from: '/booking',
+          bookingData
+        }
+      });
+    }
+  }, [bookingData, isAuthenticated, navigate]);
 
-  if (!bookingData?.room) {
+  // Allow access if authenticated OR booking as guest
+  if (!bookingData?.room || (!isAuthenticated && !bookingData.asGuest)) {
     return null; // Will redirect
   }
 
@@ -107,15 +122,18 @@ const BookingPage: React.FC = () => {
       return;
     }
 
-    if (!guestName.trim() || !guestEmail.trim()) {
-      setError('Please provide guest name and email');
-      return;
-    }
+    // Validate guest information for non-authenticated users
+    if (!isAuthenticated) {
+      if (!guestName.trim() || !guestEmail.trim()) {
+        setError('Please provide guest name and email');
+        return;
+      }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(guestEmail)) {
-      setError('Please provide a valid email address');
-      return;
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(guestEmail)) {
+        setError('Please provide a valid email address');
+        return;
+      }
     }
 
     // Payment validation
@@ -157,37 +175,23 @@ const BookingPage: React.FC = () => {
     setLoading(true);
 
     try {
-      const bookingRequest: BookingRequest = {
+      const bookingRequest = {
         roomId: room.id,
         checkInDate: checkInDate.format('YYYY-MM-DD'),
         checkOutDate: checkOutDate.format('YYYY-MM-DD'),
-        guests,
+        guests: guests,
         specialRequests: specialRequests.trim() || undefined,
-        guestName: guestName.trim(),
-        guestEmail: guestEmail.trim(),
-        guestPhone: guestPhone.trim() || undefined,
-        paymentMethod,
-        // Credit card details
-        ...(paymentMethod === 'credit_card' && {
-          creditCardNumber: creditCardNumber.replace(/\s/g, ''),
-          expiryDate,
-          cvv,
-          cardholderName: cardholderName.trim(),
-        }),
-        // Mobile money details
-        ...(paymentMethod === 'mobile_money' && {
-          mobileNumber: mobileNumber.trim(),
-          transferReceiptNumber: transferReceiptNumber.trim(),
-        }),
-      };
-
-      const result = await hotelApiService.createBooking(bookingRequest);
+        paymentMethodId: paymentMethod === 'credit_card' ? 'card_payment' : undefined,
+        // Include guest information for non-authenticated users
+        guestName: !isAuthenticated ? guestName.trim() : undefined,
+        guestEmail: !isAuthenticated ? guestEmail.trim() : undefined,
+        guestPhone: !isAuthenticated ? (guestPhone.trim() || undefined) : undefined,
+      };      const result = await hotelApiService.createBooking(bookingRequest);
       
-      // Navigate to confirmation page or back to results with success message
-      navigate('/search-results', { 
+      // Navigate to confirmation page with booking details
+      navigate(`/booking-confirmation/${result.reservationId}`, { 
         state: { 
-          successMessage: `Booking confirmed! Confirmation number: ${result.confirmationNumber}`,
-          searchRequest: bookingData.searchRequest 
+          booking: result
         }
       });
     } catch (err) {
@@ -359,36 +363,57 @@ const BookingPage: React.FC = () => {
                 </Typography>
               </Grid>
 
-              {/* Guest Details */}
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label="Full Name"
-                  value={guestName}
-                  onChange={(e) => setGuestName(e.target.value)}
-                  fullWidth
-                  required
-                />
-              </Grid>
+              {isAuthenticated ? (
+                // Display authenticated user information
+                <Grid item xs={12}>
+                  <Card variant="outlined" sx={{ p: 2, backgroundColor: '#f5f5f5' }}>
+                    <Typography variant="body1" gutterBottom>
+                      <strong>Name:</strong> {user?.firstName} {user?.lastName}
+                    </Typography>
+                    <Typography variant="body1" gutterBottom>
+                      <strong>Email:</strong> {user?.email}
+                    </Typography>
+                    {user?.phone && (
+                      <Typography variant="body1">
+                        <strong>Phone:</strong> {user.phone}
+                      </Typography>
+                    )}
+                  </Card>
+                </Grid>
+              ) : (
+                // Guest input fields for non-authenticated users
+                <>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      label="Full Name"
+                      value={guestName}
+                      onChange={(e) => setGuestName(e.target.value)}
+                      fullWidth
+                      required
+                    />
+                  </Grid>
 
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label="Email Address"
-                  type="email"
-                  value={guestEmail}
-                  onChange={(e) => setGuestEmail(e.target.value)}
-                  fullWidth
-                  required
-                />
-              </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      label="Email Address"
+                      type="email"
+                      value={guestEmail}
+                      onChange={(e) => setGuestEmail(e.target.value)}
+                      fullWidth
+                      required
+                    />
+                  </Grid>
 
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label="Phone Number"
-                  value={guestPhone}
-                  onChange={(e) => setGuestPhone(e.target.value)}
-                  fullWidth
-                />
-              </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      label="Phone Number"
+                      value={guestPhone}
+                      onChange={(e) => setGuestPhone(e.target.value)}
+                      fullWidth
+                    />
+                  </Grid>
+                </>
+              )}
 
               <Grid item xs={12}>
                 <TextField

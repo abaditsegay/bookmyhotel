@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test PDF Download</title>
+</head>
+<body>
+    <h1>Test PDF Download</h1>
+    <button onclick="downloadPDF()">Download Booking PDF (ID: 28)</button>
+    
+    <div id="result"></div>
+    
+    <script>
+        async function downloadPDF() {
+            try {
+                const response = await fetch('http://localhost:8080/api/bookings/28/pdf', {
+                    method: 'GET',
+                    headers: {
+                        'X-Tenant-ID': 'hotel1'
+                    }
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = 'booking-confirmation-28.pdf';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.getElementById('result').innerHTML = '<p style="color: green;">✅ PDF download successful!</p>';
+                } else {
+                    document.getElementById('result').innerHTML = `<p style="color: red;">❌ Download failed: ${response.status} ${response.statusText}</p>`;
+                }
+            } catch (error) {
+                document.getElementById('result').innerHTML = `<p style="color: red;">❌ Error: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

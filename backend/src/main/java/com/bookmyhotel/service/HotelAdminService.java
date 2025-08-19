@@ -522,6 +522,7 @@ public class HotelAdminService {
         dto.setCountry(hotel.getCountry());
         dto.setPhone(hotel.getPhone());
         dto.setEmail(hotel.getEmail());
+        dto.setIsActive(hotel.getIsActive());
         dto.setCreatedAt(hotel.getCreatedAt());
         dto.setUpdatedAt(hotel.getUpdatedAt());
         

@@ -20,7 +20,7 @@ import { HotelSearchResult } from '../../types/hotel';
 interface HotelCardProps {
   hotel: HotelSearchResult;
   onViewDetails: (hotelId: number) => void;
-  onBookRoom: (hotelId: number, roomId: number) => void;
+  onBookRoom: (hotelId: number, roomId: number, asGuest?: boolean) => void;
 }
 
 const HotelCard: React.FC<HotelCardProps> = ({ hotel, onViewDetails, onBookRoom }) => {
@@ -159,7 +159,7 @@ const HotelCard: React.FC<HotelCardProps> = ({ hotel, onViewDetails, onBookRoom 
               fullWidth 
               variant="contained" 
               disabled={!hasAvailableRooms}
-              onClick={() => hasAvailableRooms && onBookRoom(hotel.id, hotel.availableRooms[0].id)}
+              onClick={() => hasAvailableRooms && onBookRoom(hotel.id, hotel.availableRooms[0].id, false)}
               size="small"
             >
               {hasAvailableRooms ? 'Book Now' : 'Unavailable'}

@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+
+name: bookmyhotel
+metadata:
+  template: bookmyhotel@0.0.1-beta
+
+services:
+  backend:
+    project: ./backend
+    language: java
+    host: containerapp
+    docker:
+      path: ./Dockerfile
+      context: ./
+
+infra:
+  provider: bicep
+  path: infra
+
+pipeline:
+  provider: github-actions
+
+variables:
+  - name: JWT_SECRET_KEY
+    type: secret
+  - name: STRIPE_SECRET_KEY  
+    type: secret
+  - name: MAIL_USERNAME
+    type: secret
+  - name: MAIL_PASSWORD
+    type: secret
+  - name: MYSQL_ADMIN_PASSWORD
+    type: secret

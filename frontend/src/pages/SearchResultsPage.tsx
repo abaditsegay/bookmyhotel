@@ -61,7 +61,7 @@ const SearchResultsPage: React.FC = () => {
     }
   }, [location, navigate]);
 
-  const handleBookRoom = async (hotelId: number, roomId: number) => {
+  const handleBookRoom = async (hotelId: number, roomId: number, asGuest: boolean = false) => {
     // Find the selected room and hotel
     const hotel = hotels.find(h => h.id === hotelId);
     const room = hotel?.availableRooms.find(r => r.id === roomId);
@@ -71,15 +71,28 @@ const SearchResultsPage: React.FC = () => {
       return;
     }
 
-    // Navigate to booking page with room and hotel data
-    navigate('/booking', {
-      state: {
-        room,
-        hotelName: hotel.name,
-        hotelId: hotel.id,
-        searchRequest
-      }
-    });
+    const bookingData = {
+      room,
+      hotelName: hotel.name,
+      hotelId: hotel.id,
+      searchRequest,
+      asGuest // Add flag to indicate guest booking
+    };
+
+    if (asGuest) {
+      // Navigate directly to booking page for guest booking
+      navigate('/booking', {
+        state: bookingData
+      });
+    } else {
+      // Navigate to login page first for authenticated booking
+      navigate('/login', {
+        state: { 
+          redirectTo: '/booking',
+          bookingData: bookingData
+        }
+      });
+    }
   };
 
   const handleCloseSuccess = () => {

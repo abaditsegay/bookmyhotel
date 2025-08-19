@@ -2,6 +2,7 @@ package com.bookmyhotel.repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -20,7 +21,8 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
      * Find hotels by location (city or country)
      */
     @Query("SELECT DISTINCT h FROM Hotel h WHERE " +
-           "(:location IS NULL OR LOWER(h.city) LIKE LOWER(CONCAT('%', :location, '%')) OR " +
+           "h.isActive = true " +
+           "AND (:location IS NULL OR LOWER(h.city) LIKE LOWER(CONCAT('%', :location, '%')) OR " +
            "LOWER(h.country) LIKE LOWER(CONCAT('%', :location, '%')))")
     List<Hotel> findByLocation(@Param("location") String location);
     
@@ -29,7 +31,8 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
      */
     @Query("SELECT DISTINCT h FROM Hotel h " +
            "JOIN h.rooms r " +
-           "WHERE (:location IS NULL OR LOWER(h.city) LIKE LOWER(CONCAT('%', :location, '%')) OR " +
+           "WHERE h.isActive = true " +
+           "AND (:location IS NULL OR LOWER(h.city) LIKE LOWER(CONCAT('%', :location, '%')) OR " +
            "LOWER(h.country) LIKE LOWER(CONCAT('%', :location, '%'))) " +
            "AND r.isAvailable = true " +
            "AND r.capacity >= :guests " +
@@ -54,26 +57,57 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
     /**
      * Find hotels by city
      */
-    List<Hotel> findByCityContainingIgnoreCase(String city);
+    List<Hotel> findByCityContainingIgnoreCaseAndIsActiveTrue(String city);
     
     /**
      * Find hotels by country
      */
-    List<Hotel> findByCountryContainingIgnoreCase(String country);
+    List<Hotel> findByCountryContainingIgnoreCaseAndIsActiveTrue(String country);
     
     /**
      * Find hotels by name
      */
+    List<Hotel> findByNameContainingIgnoreCaseAndIsActiveTrue(String name);
+    
+    /**
+     * Find active hotels by city (legacy method)
+     */
+    List<Hotel> findByCityContainingIgnoreCase(String city);
+    
+    /**
+     * Find active hotels by country (legacy method)
+     */
+    List<Hotel> findByCountryContainingIgnoreCase(String country);
+    
+    /**
+     * Find active hotels by name (legacy method)
+     */
     List<Hotel> findByNameContainingIgnoreCase(String name);
+    
+    /**
+     * Find active hotel by ID
+     */
+    Optional<Hotel> findByIdAndIsActiveTrue(Long id);
+    
+    /**
+     * Count active hotels
+     */
+    long countByIsActiveTrue();
+    
+    /**
+     * Count inactive hotels
+     */
+    long countByIsActiveFalse();
     
     /**
      * Search hotels by name, description, address, city, or country
      */
     @Query("SELECT h FROM Hotel h WHERE " +
-           "LOWER(h.name) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+           "h.isActive = true " +
+           "AND (LOWER(h.name) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
            "LOWER(h.description) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
            "LOWER(h.address) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
            "LOWER(h.city) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
-           "LOWER(h.country) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")
+           "LOWER(h.country) LIKE LOWER(CONCAT('%', :searchTerm, '%')))")
     org.springframework.data.domain.Page<Hotel> searchHotels(@Param("searchTerm") String searchTerm, org.springframework.data.domain.Pageable pageable);
 }

@@ -13,7 +13,10 @@ import { useAuth } from './contexts/AuthContext';
 import HotelSearchPage from './pages/HotelSearchPage';
 import SearchResultsPage from './pages/SearchResultsPage';
 import BookingPage from './pages/BookingPage';
+import BookingConfirmationPage from './pages/BookingConfirmationPage';
+import BookingSearchPage from './pages/BookingSearchPage';
 import LoginPage from './pages/LoginPage';
+import GuestAuthPage from './pages/GuestAuthPage';
 import ProfilePage from './pages/ProfilePage';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import HotelRegistrationAdmin from './pages/admin/HotelRegistrationAdmin';
@@ -30,6 +33,7 @@ import RoomViewEdit from './pages/hotel-admin/RoomViewEdit';
 import StaffManagement from './pages/hotel-admin/StaffManagement';
 import StaffDetails from './pages/hotel-admin/StaffDetails';
 import FrontDeskDashboard from './pages/frontdesk/FrontDeskDashboard';
+import BookingManagementPage from './pages/BookingManagementPage';
 
 // Home Page Router Component - redirects based on user role
 const HomePageRouter: React.FC = () => {
@@ -242,6 +246,9 @@ function App() {
         <Route path="/hotels/search" element={<HotelSearchPage />} />
         <Route path="/search-results" element={<SearchResultsPage />} />
         <Route path="/booking" element={<BookingPage />} />
+        <Route path="/booking-confirmation/:reservationId" element={<BookingConfirmationPage />} />
+        <Route path="/booking-management" element={<BookingManagementPage />} />
+        <Route path="/booking-search" element={<BookingSearchPage />} />
         <Route path="/search" element={
           <PlaceholderPage 
             title="Legacy Search" 
@@ -249,6 +256,7 @@ function App() {
           />
         } />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/guest-auth" element={<GuestAuthPage />} />
         <Route path="/register" element={
           <PlaceholderPage 
             title="Register" 

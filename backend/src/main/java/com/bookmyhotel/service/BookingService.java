@@ -25,7 +25,6 @@ import com.bookmyhotel.exception.ResourceNotFoundException;
 import com.bookmyhotel.repository.ReservationRepository;
 import com.bookmyhotel.repository.RoomRepository;
 import com.bookmyhotel.repository.UserRepository;
-import com.bookmyhotel.tenant.TenantContext;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
 import com.stripe.model.PaymentIntent;
@@ -49,20 +48,29 @@ public class BookingService {
     
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private EmailService emailService;
+
+    @Autowired
+    private PdfService pdfService;
+    
+    @Autowired
+    private BookingTokenService bookingTokenService;
     
     @Value("${stripe.api.key:}")
     private String stripeApiKey;
     
+    @Value("${app.url:http://localhost:3000}")
+    private String frontendUrl;
+    
     /**
      * Create a new booking
      */
-    public BookingResponse createBooking(BookingRequest request) {
+    public BookingResponse createBooking(BookingRequest request, String userEmail) {
         try {
-            // Set tenant context for guest bookings
-            TenantContext.setTenantId("guest");
-            
             // Validate booking request
-            validateBookingRequest(request);
+            validateBookingRequest(request, userEmail == null);
             
             // Get room details
             Room room = roomRepository.findById(request.getRoomId())
@@ -73,14 +81,22 @@ public class BookingService {
                 throw new BookingException("Room is not available for the selected dates");
             }
             
-            // Get or create guest user
-            User guest = getOrCreateGuest(request);
+            // Get or create user (authenticated or guest)
+            User user;
+            if (userEmail != null) {
+                // Authenticated user
+                user = userRepository.findByEmail(userEmail)
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userEmail));
+            } else {
+                // Anonymous guest - create or get guest user
+                user = getOrCreateGuest(request);
+            }
             
             // Calculate total amount
             BigDecimal totalAmount = calculateTotalAmount(room, request);
             
             // Create reservation
-            Reservation reservation = createReservation(request, room, guest, totalAmount);
+            Reservation reservation = createReservation(request, room, user, totalAmount);
             
             // Process payment if payment method provided
             if (request.getPaymentMethodId() != null) {
@@ -94,19 +110,44 @@ public class BookingService {
                 }
             }
             
+            // Generate a temporary confirmation number before first save
+            // We'll update it with the actual ID-based number after save
+            String tempConfirmationNumber = "TEMP" + String.format("%08d", (int)(System.currentTimeMillis() % 100000000));
+            reservation.setConfirmationNumber(tempConfirmationNumber);
+            
             // Save reservation
             reservation = reservationRepository.save(reservation);
             
-            // Generate and set confirmation number
+            // Generate and set final confirmation number using the actual ID
             String confirmationNumber = generateConfirmationNumber(reservation.getId());
             reservation.setConfirmationNumber(confirmationNumber);
             reservation = reservationRepository.save(reservation);
             
-            // Convert to response DTO
-            return convertToBookingResponse(reservation);
-        } finally {
-            // Clear tenant context
-            TenantContext.clear();
+            // Convert to response DTO first (before email)
+            BookingResponse bookingResponse = convertToBookingResponse(reservation);
+            
+            // Generate management URL for anonymous guests
+            if (userEmail == null) {
+                String managementUrl = bookingTokenService.generateManagementUrl(
+                    reservation.getId(), 
+                    user.getEmail(), 
+                    frontendUrl
+                );
+                bookingResponse.setManagementUrl(managementUrl);
+            }
+            
+            // Send booking confirmation email automatically (separate transaction)
+            try {
+                emailService.sendBookingConfirmationEmail(bookingResponse, user.getEmail(), true);
+            } catch (Exception e) {
+                // Log email sending failure but don't fail the booking
+                System.err.println("Failed to send booking confirmation email: " + e.getMessage());
+                e.printStackTrace();
+            }
+            
+            return bookingResponse;
+        } catch (Exception e) {
+            throw e;
         }
     }
     
@@ -134,6 +175,8 @@ public class BookingService {
         }
         
         reservation.setStatus(ReservationStatus.CANCELLED);
+        reservation.setCancelledAt(LocalDateTime.now());
+        reservation.setCancellationReason("Cancelled by guest");
         reservation = reservationRepository.save(reservation);
         
         // Process refund if needed
@@ -158,7 +201,7 @@ public class BookingService {
     /**
      * Validate booking request
      */
-    private void validateBookingRequest(BookingRequest request) {
+    private void validateBookingRequest(BookingRequest request, boolean isAnonymousBooking) {
         if (request.getCheckInDate().isAfter(request.getCheckOutDate())) {
             throw new BookingException("Check-in date must be before check-out date");
         }
@@ -169,6 +212,16 @@ public class BookingService {
         
         if (request.getGuests() == null || request.getGuests() <= 0) {
             throw new BookingException("Number of guests must be greater than 0");
+        }
+        
+        // For anonymous bookings, guest information is required
+        if (isAnonymousBooking) {
+            if (request.getGuestName() == null || request.getGuestName().trim().isEmpty()) {
+                throw new BookingException("Guest name is required for anonymous bookings");
+            }
+            if (request.getGuestEmail() == null || request.getGuestEmail().trim().isEmpty()) {
+                throw new BookingException("Guest email is required for anonymous bookings");
+            }
         }
     }
     
@@ -218,9 +271,10 @@ public class BookingService {
         reservation.setTotalAmount(totalAmount);
         reservation.setSpecialRequests(request.getSpecialRequests());
         reservation.setStatus(ReservationStatus.PENDING);
+        reservation.setTenantId(guest.getTenantId()); // Set tenant_id from the guest user
         
-        // Set guest name for easier front desk operations
-        reservation.setGuestName(guest.getFirstName() + " " + guest.getLastName());
+        // Set guest name from the booking request for this specific reservation
+        reservation.setGuestName(request.getGuestName());
         
         return reservation;
     }
@@ -268,9 +322,9 @@ public class BookingService {
         response.setHotelName(room.getHotel().getName());
         response.setHotelAddress(room.getHotel().getAddress());
         
-        // Guest details
+        // Guest details - use the guest name from the reservation (specific to this booking)
         User guest = reservation.getGuest();
-        response.setGuestName(guest.getFirstName() + " " + guest.getLastName());
+        response.setGuestName(reservation.getGuestName());
         response.setGuestEmail(guest.getEmail());
         
         // Payment status
@@ -338,5 +392,21 @@ public class BookingService {
             .orElseThrow(() -> new ResourceNotFoundException("No booking found for the provided email and last name"));
             
         return convertToBookingResponse(matchingReservation);
+    }
+    
+    /**
+     * Send booking confirmation email
+     */
+    public void sendBookingConfirmationEmail(Long reservationId, String emailAddress, boolean includeItinerary) {
+        BookingResponse booking = getBooking(reservationId);
+        emailService.sendBookingConfirmationEmail(booking, emailAddress, includeItinerary);
+    }
+    
+    /**
+     * Generate booking confirmation PDF
+     */
+    public byte[] generateBookingConfirmationPdf(Long reservationId) {
+        BookingResponse booking = getBooking(reservationId);
+        return pdfService.generateBookingConfirmationPdf(booking);
     }
 }

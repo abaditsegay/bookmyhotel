@@ -105,6 +105,58 @@ class HotelApiService {
   async getUserBookings(userId: number): Promise<BookingResponse[]> {
     return this.fetchApi<BookingResponse[]>(`/bookings/user/${userId}`);
   }
+
+  // Email booking confirmation
+  async sendBookingEmail(reservationId: number, emailAddress: string, includeItinerary: boolean = true): Promise<void> {
+    await this.fetchApi<void>(`/bookings/${reservationId}/email`, {
+      method: 'POST',
+      body: JSON.stringify({
+        emailAddress,
+        includeItinerary
+      }),
+    });
+  }
+
+  // Download booking PDF
+  async downloadBookingPDF(reservationId: number): Promise<void> {
+    const headers: Record<string, string> = {};
+    
+    // Add Authorization header if token is available
+    if (this.token) {
+      headers['Authorization'] = `Bearer ${this.token}`;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/bookings/${reservationId}/pdf`, {
+      method: 'GET',
+      headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(`PDF Download Error: ${response.status} ${response.statusText}`);
+    }
+
+    // Create blob and download
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `booking-confirmation-${reservationId}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  }
+
+  // Search booking by confirmation number or email/name
+  async searchBooking(confirmationNumber?: string, email?: string, lastName?: string): Promise<BookingResponse> {
+    const params = new URLSearchParams();
+    if (confirmationNumber) params.append('confirmationNumber', confirmationNumber);
+    if (email) params.append('email', email);
+    if (lastName) params.append('lastName', lastName);
+
+    const query = params.toString() ? `?${params.toString()}` : '';
+    return this.fetchApi<BookingResponse>(`/bookings/search${query}`);
+  }
 }
 
 export const hotelApiService = new HotelApiService();

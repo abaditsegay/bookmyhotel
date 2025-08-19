@@ -1,10 +1,15 @@
 package com.bookmyhotel.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,8 +41,9 @@ public class BookingController {
      * Create a new booking
      */
     @PostMapping
-    public ResponseEntity<BookingResponse> createBooking(@Valid @RequestBody BookingRequest request) {
-        BookingResponse response = bookingService.createBooking(request);
+    public ResponseEntity<BookingResponse> createBooking(@Valid @RequestBody BookingRequest request, Authentication auth) {
+        String userEmail = (auth != null) ? auth.getName() : null;
+        BookingResponse response = bookingService.createBooking(request, userEmail);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
     
@@ -88,5 +94,54 @@ public class BookingController {
         }
         
         return ResponseEntity.ok(response);
+    }
+    
+    /**
+     * Send booking confirmation email
+     */
+    @PostMapping("/{reservationId}/email")
+    public ResponseEntity<Map<String, String>> sendBookingEmail(
+            @PathVariable Long reservationId,
+            @RequestBody Map<String, Object> emailRequest) {
+        
+        String emailAddress = (String) emailRequest.get("emailAddress");
+        Boolean includeItinerary = (Boolean) emailRequest.getOrDefault("includeItinerary", true);
+        
+        try {
+            bookingService.sendBookingConfirmationEmail(reservationId, emailAddress, includeItinerary);
+            
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Booking confirmation email sent successfully");
+            response.put("emailAddress", emailAddress);
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Failed to send email: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+    
+    /**
+     * Download booking confirmation PDF
+     */
+    @GetMapping("/{reservationId}/pdf")
+    public ResponseEntity<byte[]> downloadBookingPdf(@PathVariable Long reservationId) {
+        try {
+            byte[] pdfContent = bookingService.generateBookingConfirmationPdf(reservationId);
+            
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            headers.setContentDispositionFormData("attachment", 
+                String.format("booking-confirmation-%d.pdf", reservationId));
+            headers.setContentLength(pdfContent.length);
+            
+            return ResponseEntity.ok()
+                .headers(headers)
+                .body(pdfContent);
+                
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 }

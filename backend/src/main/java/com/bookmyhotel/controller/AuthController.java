@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.bookmyhotel.dto.auth.LoginRequest;
 import com.bookmyhotel.dto.auth.LoginResponse;
+import com.bookmyhotel.dto.auth.RegisterRequest;
+import com.bookmyhotel.exception.ResourceAlreadyExistsException;
 import com.bookmyhotel.service.AuthService;
 
 import jakarta.validation.Valid;
@@ -26,6 +28,23 @@ public class AuthController {
     
     @Autowired
     private AuthService authService;
+    
+    /**
+     * User registration endpoint for guest users
+     */
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest registerRequest) {
+        try {
+            LoginResponse response = authService.register(registerRequest);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (ResourceAlreadyExistsException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("User with this email already exists");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Registration failed: " + e.getMessage());
+        }
+    }
     
     /**
      * User login endpoint

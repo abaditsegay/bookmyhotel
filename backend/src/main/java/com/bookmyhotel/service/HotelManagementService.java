@@ -105,8 +105,9 @@ public class HotelManagementService {
         Hotel hotel = hotelRepository.findById(hotelId)
                 .orElseThrow(() -> new ResourceNotFoundException("Hotel not found with id: " + hotelId));
         
-        // For now, we'll do a hard delete since we don't have isActive field
-        hotelRepository.delete(hotel);
+        // Soft delete by setting inactive
+        hotel.setIsActive(false);
+        hotelRepository.save(hotel);
     }
     
     /**
@@ -116,7 +117,10 @@ public class HotelManagementService {
         Hotel hotel = hotelRepository.findById(hotelId)
                 .orElseThrow(() -> new ResourceNotFoundException("Hotel not found with id: " + hotelId));
         
-        // For now, just return the hotel as is since we don't have isActive field
+        // Toggle the active status
+        hotel.setIsActive(!Boolean.TRUE.equals(hotel.getIsActive()));
+        hotel = hotelRepository.save(hotel);
+        
         return convertToDTO(hotel);
     }
     
@@ -191,8 +195,8 @@ public class HotelManagementService {
     public HotelStatistics getHotelStatistics() {
         HotelStatistics stats = new HotelStatistics();
         stats.setTotalHotels(hotelRepository.count());
-        stats.setActiveHotels(hotelRepository.count()); // All hotels are considered active for now
-        stats.setInactiveHotels(0);
+        stats.setActiveHotels(hotelRepository.countByIsActiveTrue());
+        stats.setInactiveHotels(hotelRepository.countByIsActiveFalse());
         stats.setTotalRooms(roomRepository.count());
         stats.setActiveRooms(roomRepository.countByIsAvailable(true));
         
@@ -229,7 +233,7 @@ public class HotelManagementService {
         dto.setCountry(hotel.getCountry());
         dto.setPhone(hotel.getPhone());
         dto.setEmail(hotel.getEmail());
-        dto.setIsActive(true); // Default to active since we don't have this field in entity yet
+        dto.setIsActive(hotel.getIsActive());
         dto.setTenantId(hotel.getTenantId());
         dto.setCreatedAt(hotel.getCreatedAt());
         dto.setUpdatedAt(hotel.getUpdatedAt());
@@ -273,6 +277,9 @@ public class HotelManagementService {
         hotel.setPhone(dto.getPhone());
         hotel.setEmail(dto.getEmail());
         hotel.setTenantId(dto.getTenantId());
+        if (dto.getIsActive() != null) {
+            hotel.setIsActive(dto.getIsActive());
+        }
     }
     
     /**

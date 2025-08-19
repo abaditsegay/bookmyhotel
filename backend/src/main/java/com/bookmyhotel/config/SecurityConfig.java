@@ -37,7 +37,13 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/hotels/**").permitAll()
                 .requestMatchers("/api/bookings/webhook/**").permitAll()
-                .requestMatchers("/api/bookings").permitAll() // Allow guest bookings
+                .requestMatchers("/api/bookings/*/pdf").permitAll() // Allow PDF downloads for guests
+                .requestMatchers("/api/bookings/*/email").permitAll() // Allow email sending for guests
+                .requestMatchers("/api/bookings/search").permitAll() // Allow booking search for guests
+                .requestMatchers("/api/bookings/*").permitAll() // Allow getting booking details for guests
+                .requestMatchers("/api/bookings").permitAll() // Allow guest bookings (POST)
+                .requestMatchers("/api/booking-management/**").permitAll() // Allow guest booking management via tokens
+                .requestMatchers("/test/**").permitAll() // Allow test endpoints (temporary)
                 .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/swagger-ui/**").permitAll()
                 .requestMatchers("/v3/api-docs/**").permitAll()
@@ -45,7 +51,6 @@ public class SecurityConfig {
                 .requestMatchers("/webjars/**").permitAll()
                 .requestMatchers("/error").permitAll()
                 // Protected endpoints - authentication required
-                .requestMatchers("/api/bookings/**").authenticated() // Other booking operations require auth
                 .requestMatchers("/api/admin/users/**").hasRole("ADMIN")
                 .requestMatchers("/api/admin/hotel-registrations/**").hasRole("ADMIN")
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")

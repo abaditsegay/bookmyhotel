@@ -1,0 +1,10 @@
+{
+  "resourceGroup": "rg",
+  "containerAppEnvironment": "cae",
+  "logAnalyticsWorkspace": "law",
+  "containerRegistry": "cr",
+  "managedIdentity": "id",
+  "mysqlServer": "mysql",
+  "storageAccount": "st",
+  "containerApp": "ca"
+}

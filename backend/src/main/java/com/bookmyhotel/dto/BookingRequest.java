@@ -29,11 +29,9 @@ public class BookingRequest {
     // Payment information
     private String paymentMethodId; // Stripe payment method ID
     
-    // Guest information
-    @NotNull(message = "Guest name is required")
+    // Guest information (required for anonymous bookings, optional for authenticated users)
     private String guestName;
     
-    @NotNull(message = "Guest email is required")
     private String guestEmail;
     
     private String guestPhone;

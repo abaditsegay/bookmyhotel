@@ -30,6 +30,9 @@ public class BookingResponse {
     private String guestName;
     private String guestEmail;
     
+    // Management URL for anonymous guests
+    private String managementUrl;
+    
     // Constructors
     public BookingResponse() {}
     
@@ -166,5 +169,13 @@ public class BookingResponse {
     
     public void setGuestEmail(String guestEmail) {
         this.guestEmail = guestEmail;
+    }
+    
+    public String getManagementUrl() {
+        return managementUrl;
+    }
+    
+    public void setManagementUrl(String managementUrl) {
+        this.managementUrl = managementUrl;
     }
 }

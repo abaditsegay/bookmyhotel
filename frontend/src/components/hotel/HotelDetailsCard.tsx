@@ -24,7 +24,7 @@ import RoomCard from './RoomCard';
 
 interface HotelDetailsCardProps {
   hotel: HotelSearchResult;
-  onBookRoom: (hotelId: number, roomId: number) => void;
+  onBookRoom: (hotelId: number, roomId: number, asGuest?: boolean) => void;
   defaultExpanded?: boolean;
 }
 

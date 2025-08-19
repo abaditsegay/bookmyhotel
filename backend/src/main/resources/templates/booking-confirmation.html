@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Confirmation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            background-color: #1976d2;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+            margin: -20px -20px 20px -20px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .confirmation-details {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .confirmation-number {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1976d2;
+        }
+        .booking-info {
+            margin: 20px 0;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        .label {
+            font-weight: bold;
+            color: #666;
+        }
+        .value {
+            color: #333;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .important-info {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #666;
+            font-size: 14px;
+        }
+        .button {
+            display: inline-block;
+            background-color: #1976d2;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 6px;
+            margin: 10px 5px;
+        }
+        .button:hover {
+            background-color: #1565c0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎉 Booking Confirmed!</h1>
+            <p>Your reservation has been successfully created</p>
+        </div>
+
+        <div class="confirmation-details">
+            <div class="confirmation-number">
+                Reservation ID: <span th:text="${booking.reservationId}"></span>
+            </div>
+            <div class="confirmation-number">
+                Confirmation Number: <span th:text="${booking.confirmationNumber}"></span>
+            </div>
+        </div>
+
+        <div class="booking-info">
+            <h3>Booking Details</h3>
+            
+            <div class="info-row">
+                <span class="label">Guest Name:</span>
+                <span class="value" th:text="${booking.guestName}"></span>
+            </div>
+            
+            <div class="info-row">
+                <span class="label">Email:</span>
+                <span class="value" th:text="${booking.guestEmail}"></span>
+            </div>
+            
+            <div class="info-row">
+                <span class="label">Hotel:</span>
+                <span class="value" th:text="${booking.hotelName}"></span>
+            </div>
+            
+            <div class="info-row">
+                <span class="label">Address:</span>
+                <span class="value" th:text="${booking.hotelAddress}"></span>
+            </div>
+            
+            <div class="info-row">
+                <span class="label">Room:</span>
+                <span class="value" th:text="${booking.roomNumber + ' (' + booking.roomType + ')'}"></span>
+            </div>
+            
+            <div class="info-row">
+                <span class="label">Check-in:</span>
+                <span class="value" th:text="${formattedCheckInDate}"></span>
+            </div>
+            
+            <div class="info-row">
+                <span class="label">Check-out:</span>
+                <span class="value" th:text="${formattedCheckOutDate}"></span>
+            </div>
+            
+            <div class="info-row">
+                <span class="label">Nights:</span>
+                <span class="value" th:text="${nights}"></span>
+            </div>
+            
+            <div class="info-row">
+                <span class="label">Rate per night:</span>
+                <span class="value" th:text="'$' + ${booking.pricePerNight}"></span>
+            </div>
+            
+            <div class="info-row">
+                <span class="label">Total Amount:</span>
+                <span class="value" th:text="'$' + ${booking.totalAmount}"></span>
+            </div>
+            
+            <div class="info-row">
+                <span class="label">Status:</span>
+                <span class="status-badge" th:style="'background-color: ' + ${statusColor}" th:text="${booking.status}"></span>
+            </div>
+            
+            <div class="info-row">
+                <span class="label">Payment Status:</span>
+                <span class="status-badge" th:style="'background-color: ' + ${paymentStatusColor}" th:text="${booking.paymentStatus}"></span>
+            </div>
+        </div>
+
+        <div class="important-info">
+            <h4>Important Information:</h4>
+            <ul>
+                <li>Please bring a valid ID for check-in</li>
+                <li>Check-in time: 3:00 PM | Check-out time: 11:00 AM</li>
+                <li>For any changes or cancellations, please contact the hotel directly</li>
+                <li>Keep your reservation ID and confirmation number for reference</li>
+            </ul>
+        </div>
+
+        <div style="text-align: center;">
+            <a th:href="${bookingUrl}" class="button">View Booking Online</a>
+        </div>
+
+        <div class="footer">
+            <p>Thank you for choosing <span th:text="${appName}"></span>!</p>
+            <p>This is an automated email. Please do not reply to this message.</p>
+            <p>If you have any questions, please contact the hotel directly.</p>
+        </div>
+    </div>
+</body>
+</html>

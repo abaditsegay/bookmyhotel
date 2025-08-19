@@ -1,0 +1,33 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "environmentName": {
+      "value": "dev"
+    },
+    "location": {
+      "value": "East US"
+    },
+    "backendImage": {
+      "value": "nginx:latest"
+    },
+    "frontendUrl": {
+      "value": "https://localhost:3000"
+    },
+    "jwtSecretKey": {
+      "value": "your-jwt-secret-key-here-make-it-long-and-secure"
+    },
+    "stripeSecretKey": {
+      "value": "sk_test_your_stripe_secret_key_here"
+    },
+    "mailUsername": {
+      "value": "your-email@gmail.com"
+    },
+    "mailPassword": {
+      "value": "your-app-password-here"
+    },
+    "mysqlAdminPassword": {
+      "value": "BookMyHotel@2024!"
+    }
+  }
+}
