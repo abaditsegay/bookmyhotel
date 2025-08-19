@@ -195,9 +195,7 @@ const HotelAdminDashboard: React.FC = () => {
   // Handle booking page change
   const handleBookingPageChange = (event: React.ChangeEvent<unknown>, value: number) => {
     setBookingPage(value - 1); // MUI Pagination is 1-based, API is 0-based
-    if (token) {
-      loadBookings();
-    }
+    // Don't call loadBookings here as useEffect will handle it
   };
 
   // Handle view booking details
@@ -321,7 +319,7 @@ const HotelAdminDashboard: React.FC = () => {
       loadBookings();
       loadBookingStats();
     }
-  }, [activeTab, token, bookingPage, bookingSize]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [activeTab, token, bookingPage]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Sync tab state with URL parameter changes (for browser back/forward navigation)
   useEffect(() => {
@@ -645,13 +643,19 @@ const HotelAdminDashboard: React.FC = () => {
             )}
 
             {/* Pagination */}
-            {!bookingsLoading && totalBookingPages > 1 && (
-              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+            {!bookingsLoading && bookings.length > 0 && totalBookingPages > 0 && (
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 3 }}>
+                <Typography variant="body2" color="text.secondary">
+                  Page {bookingPage + 1} of {totalBookingPages} • {bookings.length} bookings on this page
+                </Typography>
                 <Pagination 
                   count={totalBookingPages} 
                   page={bookingPage + 1} // MUI Pagination is 1-based
                   onChange={handleBookingPageChange}
-                  color="primary" 
+                  color="primary"
+                  size="small"
+                  showFirstButton
+                  showLastButton
                 />
               </Box>
             )}
