@@ -22,12 +22,11 @@ interface TenantProviderProps {
 }
 
 export const TenantProvider: React.FC<TenantProviderProps> = ({ children }) => {
-  const [tenantId, setTenantIdState] = useState<string>('default');
+  const [tenantId, setTenantIdState] = useState<string>('07fac8ae-7c91-11f0-8a72-6abc1ea96c43'); // Default to Grand Plaza
   const [tenant, setTenant] = useState<Tenant | null>(null);
   
   // Mock available tenants - in real app, this would come from an API
   const availableTenants: Tenant[] = useMemo(() => [
-    { id: 'default', name: 'Default Tenant', subdomain: 'default' },
     { id: '07fac8ae-7c91-11f0-8a72-6abc1ea96c43', name: 'Grand Plaza Hotel', subdomain: 'grandplaza' },
     { id: 'f60a5bc4-7c91-11f0-8a72-6abc1ea96c43', name: 'Downtown Business Hotel', subdomain: 'downtown' },
     { id: 'f60a5c04-7c91-11f0-8a72-6abc1ea96c43', name: 'Seaside Resort', subdomain: 'seaside' },
