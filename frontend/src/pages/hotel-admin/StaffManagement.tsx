@@ -103,8 +103,17 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
       );
       
       if (response.success && response.data) {
+        console.log('Staff API Response:', response.data);
+        console.log('Page Object:', response.data.page);
+        
         setStaff(response.data.content);
-        setTotalElements(response.data.totalElements || 0);
+        
+        // Extract pagination info from the page object
+        const pageInfo = response.data.page || {};
+        const totalElements = pageInfo.totalElements || 0;
+        
+        console.log('Total Elements from page object:', totalElements);
+        setTotalElements(totalElements);
       } else {
         setError(response.message || 'Failed to load staff');
         setTotalElements(0);

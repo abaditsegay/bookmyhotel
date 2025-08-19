@@ -56,10 +56,12 @@ export interface RoomResponse {
 
 export interface RoomPage {
   content: RoomResponse[];
-  totalElements: number;
-  totalPages: number;
-  number: number;
-  size: number;
+  page: {
+    totalElements: number;
+    totalPages: number;
+    number: number;
+    size: number;
+  };
 }
 
 export interface RoomCreateRequest {
@@ -96,10 +98,12 @@ export interface StaffResponse {
 
 export interface StaffPage {
   content: StaffResponse[];
-  totalElements: number;
-  totalPages: number;
-  number: number;
-  size: number;
+  page: {
+    totalElements: number;
+    totalPages: number;
+    number: number;
+    size: number;
+  };
 }
 
 export interface StaffCreateRequest {
@@ -325,8 +329,20 @@ export const hotelAdminApi = {
         throw new Error(errorData.message || 'Failed to fetch rooms');
       }
 
-      const data = await response.json();
-      return { success: true, data };
+      const backendData = await response.json();
+      
+      // Transform backend response to match expected structure
+      const transformedData: RoomPage = {
+        content: backendData.content || [],
+        page: {
+          totalElements: backendData.page?.totalElements || backendData.totalElements || 0,
+          totalPages: backendData.page?.totalPages || backendData.totalPages || 0,
+          size: backendData.page?.size || backendData.size || size,
+          number: backendData.page?.number || backendData.number || page,
+        },
+      };
+      
+      return { success: true, data: transformedData };
     } catch (error) {
       console.error('Rooms fetch error:', error);
       return { 
@@ -531,10 +547,12 @@ export const hotelAdminApi = {
           updatedAt: user.updatedAt || new Date().toISOString(),
           lastLogin: user.lastLogin || undefined,
         })),
-        totalElements: backendData.totalElements || 0,
-        totalPages: backendData.totalPages || 0,
-        size: backendData.size || size,
-        number: backendData.number || page,
+        page: {
+          totalElements: backendData.page?.totalElements || backendData.totalElements || 0,
+          totalPages: backendData.page?.totalPages || backendData.totalPages || 0,
+          size: backendData.page?.size || backendData.size || size,
+          number: backendData.page?.number || backendData.number || page,
+        },
       };
       
       return { success: true, data: transformedData };
