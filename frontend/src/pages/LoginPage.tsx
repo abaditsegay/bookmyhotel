@@ -58,7 +58,7 @@ const LoginPage: React.FC = () => {
           py: 4,
         }}
       >
-        <Card sx={{ width: '100%', maxWidth: 400 }}>
+        <Card sx={{ width: '100%', maxWidth: 450, maxHeight: '90vh', overflow: 'auto' }}>
                     <CardContent sx={{ p: 4 }}>
             <Typography variant="h4" component="h1" gutterBottom align="center">
               BookMyHotel
@@ -182,6 +182,91 @@ const LoginPage: React.FC = () => {
                 <Typography variant="body2" fontWeight="bold">Guest User</Typography>
                 <Typography variant="caption" color="textSecondary">
                   guest@test.com / password
+                </Typography>
+              </Button>
+            </Box>
+
+            {/* New Luxury Hotel Group Users */}
+            <Divider sx={{ my: 2 }}>
+              <Chip label="Luxury Hotel Group - New Tenant" size="small" color="secondary" />
+            </Divider>
+            
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Button
+                variant="outlined"
+                size="small"
+                color="secondary"
+                onClick={() => fillSampleUser('admin@royalpalace.com', 'password')}
+                sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
+              >
+                <Typography variant="body2" fontWeight="bold">Royal Palace Hotel Admin</Typography>
+                <Typography variant="caption" color="textSecondary">
+                  Victoria Sterling - admin@royalpalace.com / password
+                </Typography>
+              </Button>
+
+              <Button
+                variant="outlined"
+                size="small"
+                color="secondary"
+                onClick={() => fillSampleUser('frontdesk@royalpalace.com', 'password')}
+                sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
+              >
+                <Typography variant="body2" fontWeight="bold">Royal Palace Front Desk</Typography>
+                <Typography variant="caption" color="textSecondary">
+                  James Butler - frontdesk@royalpalace.com / password
+                </Typography>
+              </Button>
+
+              <Button
+                variant="outlined"
+                size="small"
+                color="secondary"
+                onClick={() => fillSampleUser('admin@diamondresort.com', 'password')}
+                sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
+              >
+                <Typography variant="body2" fontWeight="bold">Diamond Resort Admin</Typography>
+                <Typography variant="caption" color="textSecondary">
+                  Sophia Diamond - admin@diamondresort.com / password
+                </Typography>
+              </Button>
+
+              <Button
+                variant="outlined"
+                size="small"
+                color="secondary"
+                onClick={() => fillSampleUser('frontdesk@diamondresort.com', 'password')}
+                sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
+              >
+                <Typography variant="body2" fontWeight="bold">Diamond Resort Front Desk</Typography>
+                <Typography variant="caption" color="textSecondary">
+                  Michael Concierge - frontdesk@diamondresort.com / password
+                </Typography>
+              </Button>
+
+              <Button
+                variant="outlined"
+                size="small"
+                color="secondary"
+                onClick={() => fillSampleUser('guest1@luxury.com', 'password')}
+                sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
+              >
+                <Typography variant="body2" fontWeight="bold">Luxury Guest 1</Typography>
+                <Typography variant="caption" color="textSecondary">
+                  Elizabeth Windsor - guest1@luxury.com / password
+                </Typography>
+              </Button>
+
+              <Button
+                variant="outlined"
+                size="small"
+                color="secondary"
+                onClick={() => fillSampleUser('guest2@luxury.com', 'password')}
+                sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
+              >
+                <Typography variant="body2" fontWeight="bold">Luxury Guest 2</Typography>
+                <Typography variant="caption" color="textSecondary">
+                  William Rothschild - guest2@luxury.com / password
                 </Typography>
               </Button>
             </Box>
