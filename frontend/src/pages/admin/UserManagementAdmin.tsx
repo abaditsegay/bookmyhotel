@@ -345,7 +345,7 @@ const USER_ROLES = [
       {/* Pagination */}
       <TablePagination
         component="div"
-        count={totalUsers}
+        count={totalUsers || 0}
         page={page}
         onPageChange={(_, newPage) => setPage(newPage)}
         rowsPerPage={rowsPerPage}

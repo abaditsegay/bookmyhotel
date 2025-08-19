@@ -114,13 +114,15 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
       
       if (response.success && response.data) {
         setRooms(response.data.content);
-        setTotalElements(response.data.totalElements);
+        setTotalElements(response.data.totalElements || 0);
       } else {
         setError(response.message || 'Failed to load rooms');
+        setTotalElements(0);
       }
     } catch (err) {
       console.error('Error loading rooms:', err);
       setError('Failed to load rooms. Please try again.');
+      setTotalElements(0);
     } finally {
       setLoading(false);
     }
@@ -461,7 +463,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
           <TablePagination
             rowsPerPageOptions={[5, 10, 25]}
             component="div"
-            count={totalElements}
+            count={totalElements || 0}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handlePageChange}

@@ -92,9 +92,9 @@ const AdminDashboard: React.FC = () => {
       let result: PagedResponse<HotelDTO>;
       
       if (hotelSearchTerm.trim()) {
-        result = await adminApiService.searchHotels(hotelSearchTerm, hotelPage, hotelRowsPerPage);
+        result = await adminApiService.searchHotels(hotelSearchTerm, 0, 1000); // Load many results for client-side filtering
       } else {
-        result = await adminApiService.getHotels(hotelPage, hotelRowsPerPage);
+        result = await adminApiService.getHotels(0, 1000); // Load many results for client-side pagination
       }
 
       setHotels(result.content || []);
@@ -105,7 +105,7 @@ const AdminDashboard: React.FC = () => {
     } finally {
       setHotelLoading(false);
     }
-  }, [token, hotelSearchTerm, hotelPage, hotelRowsPerPage]);
+  }, [token, hotelSearchTerm]);
 
   const loadUsers = useCallback(async () => {
     if (!token) {
@@ -120,9 +120,9 @@ const AdminDashboard: React.FC = () => {
       let result: PagedResponse<UserManagementResponse>;
       
       if (userSearchTerm.trim()) {
-        result = await adminApiService.searchUsers(userSearchTerm, userPage, userRowsPerPage);
+        result = await adminApiService.searchUsers(userSearchTerm, 0, 1000); // Load many results for client-side filtering
       } else {
-        result = await adminApiService.getUsers(userPage, userRowsPerPage);
+        result = await adminApiService.getUsers(0, 1000); // Load many results for client-side pagination
       }
 
       setUsers(result.content || []);
@@ -133,7 +133,7 @@ const AdminDashboard: React.FC = () => {
     } finally {
       setUserLoading(false);
     }
-  }, [token, userSearchTerm, userPage, userRowsPerPage]);
+  }, [token, userSearchTerm]);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setCurrentTab(newValue);
@@ -183,7 +183,7 @@ const AdminDashboard: React.FC = () => {
     } else if (currentTab === 1) {
       loadUsers();
     }
-  }, [currentTab, hotelPage, hotelRowsPerPage, userPage, userRowsPerPage, loadHotels, loadUsers]);
+  }, [currentTab, loadHotels, loadUsers]);
 
   // Search handlers
   // Filter and paginate hotels

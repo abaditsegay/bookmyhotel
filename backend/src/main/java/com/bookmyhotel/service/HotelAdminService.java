@@ -3,6 +3,7 @@ package com.bookmyhotel.service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -99,7 +100,7 @@ public class HotelAdminService {
     /**
      * Get hotel staff with filtering
      */
-    public Page<UserDTO> getHotelStaff(String adminEmail, int page, int size, String search, String role) {
+    public Page<UserDTO> getHotelStaff(String adminEmail, int page, int size, String search, String role, String status) {
         User admin = getUserByEmail(adminEmail);
         Hotel hotel = admin.getHotel();
         
@@ -132,14 +133,27 @@ public class HotelAdminService {
                     matches = matches && user.getRoles().contains(targetRole);
                 }
                 
+                // Status filter
+                if (status != null && !status.trim().isEmpty() && !status.equalsIgnoreCase("ALL")) {
+                    boolean isActive = status.equalsIgnoreCase("ACTIVE");
+                    matches = matches && user.getIsActive().equals(isActive);
+                }
+                
                 return matches;
             })
             .collect(Collectors.toList());
         
-        // Manual pagination
+        // Manual pagination with bounds checking
         int start = page * size;
         int end = Math.min(start + size, filteredStaff.size());
-        List<User> pageContent = filteredStaff.subList(start, end);
+        
+        List<User> pageContent;
+        if (start >= filteredStaff.size()) {
+            // If start index is beyond available data, return empty list
+            pageContent = new ArrayList<>();
+        } else {
+            pageContent = filteredStaff.subList(start, end);
+        }
         
         List<UserDTO> userDTOs = pageContent.stream()
             .map(this::convertToUserDTO)
@@ -331,10 +345,17 @@ public class HotelAdminService {
             })
             .collect(Collectors.toList());
         
-        // Manual pagination
+        // Manual pagination with bounds checking
         int start = page * size;
         int end = Math.min(start + size, filteredRooms.size());
-        List<Room> pageContent = filteredRooms.subList(start, end);
+        
+        List<Room> pageContent;
+        if (start >= filteredRooms.size()) {
+            // If start index is beyond available data, return empty list
+            pageContent = new ArrayList<>();
+        } else {
+            pageContent = filteredRooms.subList(start, end);
+        }
         
         List<RoomDTO> roomDTOs = pageContent.stream()
             .map(this::convertToRoomDTO)
@@ -608,10 +629,17 @@ public class HotelAdminService {
         // Sort by check-in date descending
         filteredReservations.sort((r1, r2) -> r2.getCheckInDate().compareTo(r1.getCheckInDate()));
 
-        // Apply pagination
+        // Apply pagination with bounds checking
         int start = (int) pageable.getOffset();
         int end = Math.min((start + pageable.getPageSize()), filteredReservations.size());
-        List<Reservation> pageContent = filteredReservations.subList(start, end);
+        
+        List<Reservation> pageContent;
+        if (start >= filteredReservations.size()) {
+            // If start index is beyond available data, return empty list
+            pageContent = new ArrayList<>();
+        } else {
+            pageContent = filteredReservations.subList(start, end);
+        }
 
         List<BookingResponse> bookingResponses = pageContent.stream()
             .map(this::convertToBookingResponse)

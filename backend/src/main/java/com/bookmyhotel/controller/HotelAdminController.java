@@ -56,8 +56,9 @@ public class HotelAdminController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String role,
+            @RequestParam(required = false) String status,
             Authentication auth) {
-        Page<UserDTO> staff = hotelAdminService.getHotelStaff(auth.getName(), page, size, search, role);
+        Page<UserDTO> staff = hotelAdminService.getHotelStaff(auth.getName(), page, size, search, role, status);
         return ResponseEntity.ok(staff);
     }
 

@@ -60,6 +60,12 @@ public class EmailService {
      * Send booking confirmation email via Microsoft Graph OAuth2
      */
     public void sendBookingConfirmationEmail(BookingResponse booking, String emailAddress, boolean includeItinerary) {
+        // Check if Microsoft Graph is configured
+        if (!microsoftGraphEmailService.isConfigured()) {
+            logger.warn("Microsoft Graph OAuth2 is not configured. Cannot send booking confirmation email to: {}", emailAddress);
+            throw new IllegalStateException("Email service is not configured. Microsoft Graph OAuth2 credentials are required.");
+        }
+        
         try {
             logger.info("Sending booking confirmation email to: {} via Microsoft Graph OAuth2", emailAddress);
             
@@ -74,6 +80,9 @@ public class EmailService {
             // Send email via Microsoft Graph
             microsoftGraphEmailService.sendEmail(emailAddress, subject, htmlContent);
             
+        } catch (IllegalStateException e) {
+            // Re-throw IllegalStateException to be handled by controller
+            throw e;
         } catch (Exception e) {
             logger.error("Failed to send booking confirmation email via Microsoft Graph", e);
             throw new RuntimeException("Failed to send booking confirmation email", e);
@@ -84,6 +93,12 @@ public class EmailService {
      * Send booking update notification email
      */
     public void sendBookingUpdateEmail(BookingResponse booking, String updateType, String reason) {
+        // Check if Microsoft Graph is configured
+        if (!microsoftGraphEmailService.isConfigured()) {
+            logger.warn("Microsoft Graph OAuth2 is not configured. Cannot send booking update email to: {}", booking.getGuestEmail());
+            throw new IllegalStateException("Email service is not configured. Microsoft Graph OAuth2 credentials are required.");
+        }
+        
         try {
             Map<String, Object> templateData = prepareBookingEmailData(booking, false);
             templateData.put("updateType", updateType);
@@ -96,6 +111,7 @@ public class EmailService {
             microsoftGraphEmailService.sendEmail(booking.getGuestEmail(), subject, htmlContent);
             
         } catch (Exception e) {
+            logger.error("Failed to send booking update email via Microsoft Graph", e);
             throw new RuntimeException("Failed to send booking update email", e);
         }
     }
@@ -104,6 +120,12 @@ public class EmailService {
      * Send welcome email to new hotel admin user
      */
     public void sendHotelAdminWelcomeEmail(String email, String firstName, String hotelName, String tempPassword) {
+        // Check if Microsoft Graph is configured
+        if (!microsoftGraphEmailService.isConfigured()) {
+            logger.warn("Microsoft Graph OAuth2 is not configured. Cannot send welcome email to: {}", email);
+            throw new IllegalStateException("Email service is not configured. Microsoft Graph OAuth2 credentials are required.");
+        }
+        
         try {
             Map<String, Object> templateData = new HashMap<>();
             templateData.put("firstName", firstName);
@@ -117,6 +139,7 @@ public class EmailService {
             microsoftGraphEmailService.sendEmail(email, subject, htmlContent);
             
         } catch (Exception e) {
+            logger.error("Failed to send hotel admin welcome email via Microsoft Graph", e);
             throw new RuntimeException("Failed to send hotel admin welcome email", e);
         }
     }

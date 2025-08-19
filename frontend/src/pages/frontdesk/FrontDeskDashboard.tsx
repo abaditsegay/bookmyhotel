@@ -99,67 +99,24 @@ const FrontDeskDashboard: React.FC = () => {
   const [housekeepingPage, setHousekeepingPage] = useState(0);
   const [rowsPerPage] = useState(10);
 
-  // Mock data for bookings
+  // TODO: Replace with real API calls to fetch bookings
   useEffect(() => {
-    const mockBookings: Booking[] = [
-      {
-        id: 'BK001',
-        guestName: 'John Smith',
-        roomNumber: '101',
-        roomType: 'Standard',
-        checkIn: '2025-08-17',
-        checkOut: '2025-08-20',
-        status: 'arriving',
-        nights: 3,
-        adults: 2,
-        children: 0,
-        totalAmount: 450,
-        paymentStatus: 'paid'
-      },
-      {
-        id: 'BK002',
-        guestName: 'Emily Johnson',
-        roomNumber: '205',
-        roomType: 'Deluxe',
-        checkIn: '2025-08-16',
-        checkOut: '2025-08-18',
-        status: 'checked-in',
-        nights: 2,
-        adults: 1,
-        children: 1,
-        totalAmount: 320,
-        paymentStatus: 'paid'
-      },
-      {
-        id: 'BK003',
-        guestName: 'Michael Brown',
-        roomNumber: '304',
-        roomType: 'Suite',
-        checkIn: '2025-08-17',
-        checkOut: '2025-08-17',
-        status: 'checked-out',
-        nights: 1,
-        adults: 2,
-        children: 0,
-        totalAmount: 250,
-        paymentStatus: 'paid'
-      },
-      {
-        id: 'BK004',
-        guestName: 'Sarah Davis',
-        roomNumber: '102',
-        roomType: 'Standard',
-        checkIn: '2025-08-17',
-        checkOut: '2025-08-19',
-        status: 'arriving',
-        nights: 2,
-        adults: 1,
-        children: 0,
-        totalAmount: 300,
-        paymentStatus: 'pending'
-      }
-    ];
-    setBookings(mockBookings);
+    // Load bookings from API when implemented
+    const loadBookings = async () => {
+      // Placeholder for API call
+      setBookings([]);
+    };
+    loadBookings();
+  }, []);
+
+  // TODO: Replace with real API calls to fetch housekeeping tasks
+  useEffect(() => {
+    // Load housekeeping tasks from API when implemented
+    const loadHousekeepingTasks = async () => {
+      // Placeholder for API call
+      setHousekeepingTasks([]);
+    };
+    loadHousekeepingTasks();
   }, []);
 
   // Mock data for housekeeping

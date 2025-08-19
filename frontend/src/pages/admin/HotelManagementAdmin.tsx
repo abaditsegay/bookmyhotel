@@ -50,8 +50,10 @@ const HotelManagementAdmin: React.FC = () => {
   const [selectedHotel, setSelectedHotel] = useState<HotelDTO | null>(null);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(10); // Changed back to 10 for testing
   const [totalHotels, setTotalHotels] = useState(0);
+
+  console.log('Component render - State:', { page, rowsPerPage, totalHotels });
 
   // Set token in API service when component mounts
   useEffect(() => {
@@ -72,14 +74,32 @@ const HotelManagementAdmin: React.FC = () => {
     try {
       let result: PagedResponse<HotelDTO>;
       
+      console.log('Making API call with:', { searchTerm: searchTerm.trim(), page, rowsPerPage });
+      
       if (searchTerm.trim()) {
         result = await adminApiService.searchHotels(searchTerm, page, rowsPerPage);
       } else {
         result = await adminApiService.getHotels(page, rowsPerPage);
       }
 
+      console.log('API Response:', result);
+      console.log('API Response structure:');
+      console.log('- content:', result.content?.length);
+      console.log('- totalElements:', result.totalElements);
+      console.log('- totalPages:', result.totalPages);
+      console.log('- number (current page):', result.number);
+      console.log('- size:', result.size);
+      console.log('- first:', result.first);
+      console.log('- last:', result.last);
+      
       setHotels(result.content || []);
-      setTotalHotels(result.totalElements || 0);
+      
+      // Handle Spring Boot Page structure
+      const totalCount = result.totalElements || 0;
+      console.log('Setting total hotels count:', totalCount);
+      console.log('Current page state:', page);
+      console.log('Current rowsPerPage state:', rowsPerPage);
+      setTotalHotels(totalCount);
     } catch (error) {
       console.error('Error loading hotels:', error);
       setError('Failed to load hotels. Please try again.');
@@ -356,14 +376,40 @@ const HotelManagementAdmin: React.FC = () => {
             </Table>
           </TableContainer>
 
+          {/* Debug information */}
+          <Box sx={{ p: 2, bgcolor: 'grey.100', fontSize: '12px' }}>
+            <Typography variant="caption">
+              Debug: page={page}, rowsPerPage={rowsPerPage}, totalHotels={totalHotels}, 
+              hotels.length={hotels.length}, totalPages={Math.ceil(totalHotels / rowsPerPage)}
+            </Typography>
+          </Box>
+
           <TablePagination
             component="div"
-            count={totalHotels}
+            count={totalHotels || 0}
             page={page}
-            onPageChange={(_, newPage) => setPage(newPage)}
+            onPageChange={(event, newPage) => {
+              console.log('=== PAGINATION DEBUG ===');
+              console.log('Current page:', page);
+              console.log('New page:', newPage);
+              console.log('Total hotels:', totalHotels);
+              console.log('Rows per page:', rowsPerPage);
+              console.log('Total pages calculated:', Math.ceil(totalHotels / rowsPerPage));
+              console.log('Is next button disabled?', page >= Math.ceil(totalHotels / rowsPerPage) - 1);
+              console.log('Is prev button disabled?', page <= 0);
+              console.log('========================');
+              setPage(newPage);
+            }}
             rowsPerPage={rowsPerPage}
-            onRowsPerPageChange={(e) => setRowsPerPage(parseInt(e.target.value))}
+            onRowsPerPageChange={(event) => {
+              const newRowsPerPage = parseInt(event.target.value, 10);
+              console.log('Rows per page change:', newRowsPerPage);
+              setRowsPerPage(newRowsPerPage);
+              setPage(0); // Reset to first page when changing page size
+            }}
             rowsPerPageOptions={[5, 10, 25, 50]}
+            showFirstButton
+            showLastButton
           />
         </CardContent>
       </Card>

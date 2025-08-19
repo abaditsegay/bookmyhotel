@@ -115,6 +115,12 @@ public class BookingController {
             response.put("emailAddress", emailAddress);
             
             return ResponseEntity.ok(response);
+        } catch (IllegalStateException e) {
+            // Handle case when email service is not configured
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Email service is currently unavailable");
+            errorResponse.put("details", "Microsoft Graph OAuth2 configuration is required");
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(errorResponse);
         } catch (Exception e) {
             Map<String, String> errorResponse = new HashMap<>();
             errorResponse.put("error", "Failed to send email: " + e.getMessage());

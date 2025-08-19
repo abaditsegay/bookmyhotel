@@ -98,27 +98,21 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
         page,
         rowsPerPage,
         filters.search || undefined,
-        filters.role || undefined
+        filters.role || undefined,
+        filters.status || undefined
       );
       
       if (response.success && response.data) {
-        let filteredStaff = response.data.content;
-        
-        // Apply status filter if specified
-        if (filters.status && filters.status !== 'ALL') {
-          filteredStaff = filteredStaff.filter(member => 
-            filters.status === 'ACTIVE' ? member.isActive : !member.isActive
-          );
-        }
-        
-        setStaff(filteredStaff);
-        setTotalElements(response.data.totalElements);
+        setStaff(response.data.content);
+        setTotalElements(response.data.totalElements || 0);
       } else {
         setError(response.message || 'Failed to load staff');
+        setTotalElements(0);
       }
     } catch (err) {
       console.error('Error loading staff:', err);
       setError('Failed to load staff. Please try again.');
+      setTotalElements(0);
     } finally {
       setLoading(false);
     }
@@ -454,7 +448,7 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
           <TablePagination
             rowsPerPageOptions={[5, 10, 25]}
             component="div"
-            count={totalElements}
+            count={totalElements || 0}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handlePageChange}

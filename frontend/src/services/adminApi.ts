@@ -181,12 +181,6 @@ class AdminApiService {
 // Type definitions for API responses
 export interface PagedResponse<T> {
   content: T[];
-  page: {
-    number: number;
-    size: number;
-    totalElements: number;
-    totalPages: number;
-  };
   totalPages: number;
   totalElements: number;
   first: boolean;
@@ -194,6 +188,24 @@ export interface PagedResponse<T> {
   numberOfElements: number;
   size: number;
   number: number;
+  pageable: {
+    sort: {
+      sorted: boolean;
+      unsorted: boolean;
+      empty: boolean;
+    };
+    pageNumber: number;
+    pageSize: number;
+    offset: number;
+    paged: boolean;
+    unpaged: boolean;
+  };
+  sort: {
+    sorted: boolean;
+    unsorted: boolean;
+    empty: boolean;
+  };
+  empty: boolean;
 }
 
 export interface UserManagementResponse {
