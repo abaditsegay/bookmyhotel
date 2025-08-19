@@ -167,6 +167,22 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
   const handleCreateStaff = async () => {
     if (!token) return;
     
+    // Validate form data before submitting
+    if (!staffForm.email || !staffForm.password || !staffForm.firstName || !staffForm.lastName) {
+      setError('Please fill in all required fields.');
+      return;
+    }
+    
+    if (staffForm.password.length < 8) {
+      setError('Password must be at least 8 characters long.');
+      return;
+    }
+    
+    if (staffForm.roles.length === 0) {
+      setError('Please select at least one role.');
+      return;
+    }
+    
     try {
       setLoading(true);
       const response = await hotelAdminApi.createStaff(token, staffForm);
@@ -493,7 +509,12 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
                   value={staffForm.password}
                   onChange={(e) => setStaffForm({ ...staffForm, password: e.target.value })}
                   required
-                  helperText="Minimum 8 characters"
+                  error={staffForm.password.length > 0 && staffForm.password.length < 8}
+                  helperText={
+                    staffForm.password.length > 0 && staffForm.password.length < 8 
+                      ? "Password must be at least 8 characters" 
+                      : "Minimum 8 characters required"
+                  }
                 />
               </Grid>
               <Grid item xs={12} md={6}>
@@ -548,7 +569,15 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
             <Button 
               onClick={handleCreateStaff}
               variant="contained"
-              disabled={loading || !staffForm.email || !staffForm.password || !staffForm.firstName || !staffForm.lastName || staffForm.roles.length === 0}
+              disabled={
+                loading || 
+                !staffForm.email || 
+                !staffForm.password || 
+                staffForm.password.length < 8 ||
+                !staffForm.firstName || 
+                !staffForm.lastName || 
+                staffForm.roles.length === 0
+              }
             >
               Create Staff
             </Button>

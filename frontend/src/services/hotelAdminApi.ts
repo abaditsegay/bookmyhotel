@@ -640,9 +640,32 @@ export const hotelAdminApi = {
         console.error('Staff creation error response:', errorData);
         console.error('Request body was:', userDTO);
         
-        // Provide specific error message for email already exists
+        // Handle specific error cases
         if (errorData.error === 'User with this email already exists') {
           throw new Error('A user with this email address already exists. Please use a different email.');
+        }
+        
+        // Handle validation errors (password, field requirements, etc.)
+        if (errorData.password) {
+          throw new Error(`Password error: ${errorData.password}`);
+        }
+        
+        if (errorData.email) {
+          throw new Error(`Email error: ${errorData.email}`);
+        }
+        
+        if (errorData.firstName) {
+          throw new Error(`First name error: ${errorData.firstName}`);
+        }
+        
+        if (errorData.lastName) {
+          throw new Error(`Last name error: ${errorData.lastName}`);
+        }
+        
+        // Handle general validation errors
+        if (typeof errorData === 'object' && Object.keys(errorData).length > 0) {
+          const firstError = Object.values(errorData)[0];
+          throw new Error(typeof firstError === 'string' ? firstError : 'Validation error occurred');
         }
         
         throw new Error(errorData.message || errorData.error || 'Failed to create staff member');

@@ -26,7 +26,9 @@ import {
   DialogActions,
   Divider,
   LinearProgress,
+  Snackbar,
   Alert,
+  Chip,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -35,6 +37,8 @@ import {
   Visibility as VisibilityIcon,
   Refresh as RefreshIcon,
   FilterList as FilterListIcon,
+  ToggleOn as ToggleOnIcon,
+  ToggleOff as ToggleOffIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -52,6 +56,7 @@ const HotelManagementAdmin: React.FC = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10); // Changed back to 10 for testing
   const [totalHotels, setTotalHotels] = useState(0);
+  const [success, setSuccess] = useState<string | null>(null);
 
   console.log('Component render - State:', { page, rowsPerPage, totalHotels });
 
@@ -124,6 +129,17 @@ const HotelManagementAdmin: React.FC = () => {
   const handleViewDetails = (hotel: HotelDTO) => {
     setSelectedHotel(hotel);
     setDetailsDialogOpen(true);
+  };
+
+  const handleToggleHotelStatus = async (hotelId: number) => {
+    try {
+      await adminApiService.toggleHotelStatus(hotelId);
+      setSuccess('Hotel status updated successfully');
+      await loadHotelsData(); // Refresh the list
+    } catch (error) {
+      console.error('Error toggling hotel status:', error);
+      setError('Failed to update hotel status');
+    }
   };
 
   const HotelDetailsDialog = () => (
@@ -327,9 +343,17 @@ const HotelManagementAdmin: React.FC = () => {
                           <HotelIcon />
                         </Avatar>
                         <Box>
-                          <Typography variant="subtitle2" fontWeight="bold">
-                            {hotel.name}
-                          </Typography>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Typography variant="subtitle2" fontWeight="bold">
+                              {hotel.name}
+                            </Typography>
+                            <Chip
+                              size="small"
+                              label={hotel.isActive ? "Active" : "Inactive"}
+                              color={hotel.isActive ? "success" : "error"}
+                              variant="outlined"
+                            />
+                          </Box>
                           <Typography variant="body2" color="text.secondary">
                             {hotel.tenantId || 'No tenant ID'}
                           </Typography>
@@ -366,6 +390,15 @@ const HotelManagementAdmin: React.FC = () => {
                             onClick={() => handleViewDetails(hotel)}
                           >
                             <VisibilityIcon />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title={hotel.isActive ? "Deactivate Hotel" : "Activate Hotel"}>
+                          <IconButton
+                            size="small"
+                            color={hotel.isActive ? "success" : "error"}
+                            onClick={() => handleToggleHotelStatus(hotel.id)}
+                          >
+                            {hotel.isActive ? <ToggleOnIcon /> : <ToggleOffIcon />}
                           </IconButton>
                         </Tooltip>
                       </Box>
@@ -415,6 +448,17 @@ const HotelManagementAdmin: React.FC = () => {
       </Card>
 
       <HotelDetailsDialog />
+
+      {/* Success Snackbar */}
+      <Snackbar
+        open={Boolean(success)}
+        autoHideDuration={6000}
+        onClose={() => setSuccess(null)}
+      >
+        <Alert severity="success" onClose={() => setSuccess(null)}>
+          {success}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };

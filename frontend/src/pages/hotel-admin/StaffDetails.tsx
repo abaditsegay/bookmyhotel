@@ -42,7 +42,7 @@ const StaffDetails: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const availableRoles = ['FRONT_DESK', 'HOUSEKEEPING', 'MAINTENANCE', 'MANAGER', 'CONCIERGE'];
+  const availableRoles = ['FRONTDESK', 'HOUSEKEEPING', 'HOTEL_ADMIN'];
 
   useEffect(() => {
     const loadStaff = async () => {

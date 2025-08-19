@@ -152,6 +152,12 @@ class AdminApiService {
     });
   }
 
+  async toggleHotelStatus(hotelId: number): Promise<HotelDTO> {
+    return this.fetchApi<HotelDTO>(`/admin/hotels/${hotelId}/toggle-status`, {
+      method: 'POST',
+    });
+  }
+
   // Room Management Methods
   async getHotelRooms(hotelId: number): Promise<RoomDTO[]> {
     return this.fetchApi<RoomDTO[]>(`/admin/hotels/${hotelId}/rooms`);
@@ -260,6 +266,7 @@ export interface HotelDTO {
   tenantId?: string;
   totalRooms?: number;
   availableRooms?: number;
+  isActive?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
