@@ -27,12 +27,10 @@ import {
   Logout as LogoutIcon,
   Login as LoginIcon,
   Business as BusinessIcon,
-  Search as SearchIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTenant } from '../../contexts/TenantContext';
-import BookingSearchModal from '../booking/BookingSearchModal';
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
@@ -45,7 +43,6 @@ const Navbar: React.FC = () => {
   
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
-  const [bookingSearchOpen, setBookingSearchOpen] = useState(false);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -83,18 +80,12 @@ const Navbar: React.FC = () => {
 
   // Navigation items based on user role
   const getNavigationItems = () => {
-    const baseItems: { label: string; path?: string; icon: React.ReactNode; action?: () => void }[] = [
-      { 
-        label: 'Find Booking', 
-        icon: <SearchIcon />, 
-        action: () => setBookingSearchOpen(true) 
-      }
-    ];
+    const baseItems: { label: string; path?: string; icon: React.ReactNode; action?: () => void }[] = [];
 
     if (user) {
-      // For admin, show minimal navigation - only dashboard (which will be admin landing)
+      // For admin, show minimal navigation without dashboard
       if (user.role === 'ADMIN') {
-        return [...baseItems, { label: 'Dashboard', path: '/admin', icon: <DashboardIcon /> }];
+        return [...baseItems, { label: 'Profile', path: '/profile', icon: <PersonIcon /> }];
       }
 
       // For hotel admin, show hotel admin dashboard
@@ -379,12 +370,6 @@ const Navbar: React.FC = () => {
 
       {/* Mobile Drawer */}
       <MobileDrawer />
-
-      {/* Booking Search Modal */}
-      <BookingSearchModal 
-        open={bookingSearchOpen} 
-        onClose={() => setBookingSearchOpen(false)} 
-      />
     </>
   );
 };
