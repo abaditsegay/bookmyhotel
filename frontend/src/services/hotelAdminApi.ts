@@ -639,7 +639,13 @@ export const hotelAdminApi = {
         const errorData = await response.json();
         console.error('Staff creation error response:', errorData);
         console.error('Request body was:', userDTO);
-        throw new Error(errorData.message || 'Failed to create staff member');
+        
+        // Provide specific error message for email already exists
+        if (errorData.error === 'User with this email already exists') {
+          throw new Error('A user with this email address already exists. Please use a different email.');
+        }
+        
+        throw new Error(errorData.message || errorData.error || 'Failed to create staff member');
       }
 
       const user = await response.json();
