@@ -61,6 +61,7 @@ class HotelManagementServiceTest {
         testHotel.setCity("Test City");
         testHotel.setCountry("Test Country");
         testHotel.setDescription("Test Description");
+        testHotel.setIsActive(true); // Set hotel as initially active
         
         testRoom = new Room();
         testRoom.setId(1L);
@@ -148,11 +149,14 @@ class HotelManagementServiceTest {
     @Test
     void deleteHotel_Success() {
         when(hotelRepository.findById(1L)).thenReturn(Optional.of(testHotel));
+        when(hotelRepository.save(any(Hotel.class))).thenReturn(testHotel);
         
         hotelManagementService.deleteHotel(1L);
         
         verify(hotelRepository).findById(1L);
-        verify(hotelRepository).delete(testHotel);
+        verify(hotelRepository).save(testHotel);
+        // Verify that the hotel is marked as inactive (soft delete)
+        assertFalse(testHotel.getIsActive());
     }
     
     @Test
