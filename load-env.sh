@@ -7,20 +7,19 @@ echo "🏨 BookMyHotel - Loading OAuth2 Configuration"
 echo "============================================="
 echo ""
 
-# Export OAuth2 environment variables (replace with your actual values)
-export MICROSOFT_GRAPH_CLIENT_ID="your-client-id-here"
-export MICROSOFT_GRAPH_TENANT_ID="your-tenant-id-here"
-export MICROSOFT_GRAPH_CLIENT_SECRET="your-client-secret-here"
-export APP_EMAIL_FROM="noreply@yourdomain.com"
+# Check if .env file exists
+if [ ! -f ".env" ]; then
+    echo "❌ Error: .env file not found!"
+    echo "Please create a .env file with your configuration values."
+    echo "You can copy .env.example as a template."
+    exit 1
+fi
 
-# Export database configuration
-export SPRING_DATASOURCE_URL="jdbc:mysql://localhost:3307/bookmyhotel?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true"
-export SPRING_DATASOURCE_USERNAME="root"
-export SPRING_DATASOURCE_PASSWORD="password"
-
-# Export other configurations (replace with your actual secret)
-export JWT_SECRET_KEY="your-jwt-secret-key-here-should-be-at-least-512-bits-long"
-export APP_FRONTEND_URL="http://localhost:3000"
+# Load environment variables from .env file
+echo "📁 Loading environment variables from .env file..."
+set -a  # automatically export all variables
+source .env
+set +a  # stop automatically exporting
 
 echo "✅ Environment variables loaded successfully!"
 echo ""
@@ -28,5 +27,9 @@ echo "📋 Microsoft Graph OAuth2 Configuration:"
 echo "   Client ID: $MICROSOFT_GRAPH_CLIENT_ID"
 echo "   Tenant ID: $MICROSOFT_GRAPH_TENANT_ID"
 echo "   Email From: $APP_EMAIL_FROM"
+echo ""
+echo "🗄️  Database Configuration:"
+echo "   URL: $SPRING_DATASOURCE_URL"
+echo "   Username: $SPRING_DATASOURCE_USERNAME"
 echo ""
 echo "🚀 Ready to start Spring Boot application with OAuth2 email support!"
