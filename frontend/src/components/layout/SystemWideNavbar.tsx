@@ -13,7 +13,6 @@ import {
 } from '@mui/material';
 import {
   AccountCircle,
-  Dashboard,
   Hotel,
   People,
   Settings,
@@ -50,11 +49,6 @@ export const SystemWideNavbar: React.FC = () => {
 
   const handleProfile = () => {
     navigate('/profile');
-    handleClose();
-  };
-
-  const handleDashboard = () => {
-    navigate('/system-dashboard');
     handleClose();
   };
 
@@ -100,13 +94,6 @@ export const SystemWideNavbar: React.FC = () => {
           <Box sx={{ display: 'flex', gap: 1, mr: 2 }}>
             <Button 
               color="inherit" 
-              startIcon={<Dashboard />}
-              onClick={handleDashboard}
-            >
-              Dashboard
-            </Button>
-            <Button 
-              color="inherit" 
               startIcon={<Hotel />}
               onClick={() => navigate('/system/hotels')}
             >
@@ -138,13 +125,6 @@ export const SystemWideNavbar: React.FC = () => {
               onClick={() => navigate('/search')}
             >
               Search Hotels
-            </Button>
-            <Button 
-              color="inherit" 
-              startIcon={<Dashboard />}
-              onClick={() => navigate('/my-bookings')}
-            >
-              My Bookings
             </Button>
           </Box>
         )}
