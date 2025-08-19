@@ -182,6 +182,62 @@ class AdminApiService {
       method: 'DELETE',
     });
   }
+
+  // Tenant Management Methods
+  async getTenants(page: number = 0, size: number = 10, search?: string, isActive?: boolean): Promise<PagedResponse<TenantDTO>> {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      size: size.toString(),
+    });
+    
+    if (search) {
+      params.append('search', search);
+    }
+    
+    if (isActive !== undefined) {
+      params.append('isActive', isActive.toString());
+    }
+    
+    return this.fetchApi<PagedResponse<TenantDTO>>(`/admin/tenants?${params.toString()}`);
+  }
+
+  async getTenantById(tenantId: string): Promise<TenantDTO> {
+    return this.fetchApi<TenantDTO>(`/admin/tenants/${tenantId}`);
+  }
+
+  async createTenant(request: CreateTenantRequest): Promise<TenantDTO> {
+    return this.fetchApi<TenantDTO>('/admin/tenants', {
+      method: 'POST',
+      body: JSON.stringify(request),
+    });
+  }
+
+  async updateTenant(tenantId: string, request: UpdateTenantRequest): Promise<TenantDTO> {
+    return this.fetchApi<TenantDTO>(`/admin/tenants/${tenantId}`, {
+      method: 'PUT',
+      body: JSON.stringify(request),
+    });
+  }
+
+  async toggleTenantStatus(tenantId: string): Promise<TenantDTO> {
+    return this.fetchApi<TenantDTO>(`/admin/tenants/${tenantId}/toggle-status`, {
+      method: 'POST',
+    });
+  }
+
+  async deleteTenant(tenantId: string): Promise<void> {
+    return this.fetchApi<void>(`/admin/tenants/${tenantId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async getTenantStatistics(): Promise<TenantStatistics> {
+    return this.fetchApi<TenantStatistics>('/admin/tenants/statistics');
+  }
+
+  async getActiveTenants(): Promise<TenantDTO[]> {
+    return this.fetchApi<TenantDTO[]>('/admin/tenants/active');
+  }
 }
 
 // Type definitions for API responses
@@ -323,6 +379,39 @@ export interface UpdateRoomRequest {
   capacity: number;
   pricePerNight: number;
   isAvailable: boolean;
+}
+
+export interface TenantDTO {
+  id: number;
+  tenantId: string;
+  name: string;
+  subdomain: string;
+  description?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  totalUsers?: number;
+  totalHotels?: number;
+}
+
+export interface CreateTenantRequest {
+  name: string;
+  subdomain: string;
+  description?: string;
+}
+
+export interface UpdateTenantRequest {
+  name: string;
+  subdomain: string;
+  description?: string;
+}
+
+export interface TenantStatistics {
+  totalTenants: number;
+  activeTenants: number;
+  inactiveTenants: number;
+  totalUsers: number;
+  totalHotels: number;
 }
 
 export const adminApiService = new AdminApiService();

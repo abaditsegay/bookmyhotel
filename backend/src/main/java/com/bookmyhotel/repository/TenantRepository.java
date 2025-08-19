@@ -1,12 +1,13 @@
 package com.bookmyhotel.repository;
 
-import com.bookmyhotel.entity.Tenant;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-import java.util.Optional;
+import com.bookmyhotel.entity.Tenant;
 
 /**
  * Repository for Tenant entity

@@ -22,6 +22,7 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import HotelRegistrationAdmin from './pages/admin/HotelRegistrationAdmin';
 import HotelRegistrationForm from './pages/admin/HotelRegistrationForm';
 import HotelManagementAdmin from './pages/admin/HotelManagementAdmin';
+import TenantManagementAdmin from './pages/admin/TenantManagementAdmin';
 import UserManagementAdmin from './pages/admin/UserManagementAdmin';
 import UserRegistrationForm from './pages/admin/UserRegistrationForm';
 import HotelViewEdit from './pages/admin/HotelViewEdit';
@@ -306,6 +307,11 @@ function App() {
               title="System Hotel Management" 
               message="Global hotel management interface coming soon!" 
             />
+          </ProtectedRoute>
+        } />
+        <Route path="/system/tenants" element={
+          <ProtectedRoute requiredRole="ADMIN">
+            <TenantManagementAdmin />
           </ProtectedRoute>
         } />
         <Route path="/system/users" element={
