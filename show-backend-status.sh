@@ -1,0 +1,77 @@
+#!/bin/bash
+set -e
+
+echo "🎉 BookMyHotel Backend is Successfully Deployed Locally!"
+echo "================================================================"
+echo ""
+echo "✅ Services Status:"
+docker-compose -f infra/docker-compose.yml ps
+
+echo ""
+echo "🌐 Available Endpoints:"
+echo "   📊 Health Check:      http://localhost:8080/actuator/health"
+echo "   🔧 Actuator Metrics:  http://localhost:8080/actuator/metrics"
+echo "   📈 Prometheus:        http://localhost:8080/actuator/prometheus"
+echo "   🏨 Hotels API:        http://localhost:8080/api/hotels"
+echo "   📝 Reservations API:  http://localhost:8080/api/reservations"
+echo "   👤 Users API:         http://localhost:8080/api/users"
+echo "   🏢 Tenants API:       http://localhost:8080/api/tenants"
+
+echo ""
+echo "🗄️  Database Access:"
+echo "   📍 Host:              localhost:3307"
+echo "   👤 Username:          root"
+echo "   🔑 Password:          password"
+echo "   🏦 Database:          bookmyhotel"
+
+echo ""
+echo "🧪 Test Commands:"
+echo "   🏥 Health Check:      curl http://localhost:8080/actuator/health"
+echo "   📊 Metrics:           curl http://localhost:8080/actuator/metrics"
+echo "   🔒 API Test:          curl http://localhost:8080/api/tenants"
+
+echo ""
+echo "🛠️  Management Commands:"
+echo "   📋 View Logs:         docker-compose -f infra/docker-compose.yml logs -f backend"
+echo "   🔄 Restart Backend:   docker-compose -f infra/docker-compose.yml restart backend"
+echo "   🛑 Stop Services:     docker-compose -f infra/docker-compose.yml down"
+echo "   🐛 Debug Shell:       docker-compose -f infra/docker-compose.yml exec backend sh"
+
+echo ""
+echo "🏨 Available Tenants (from V19 migration):"
+echo "   🏨 Grand Plaza Hotels (f47ac10b-58cc-4372-a567-0e02b2c3d479)"
+echo "   🏖️  Coastal Resorts (a1b2c3d4-e5f6-4a5b-8c9d-1e2f3a4b5c6d)"
+echo "   🏙️  Urban Suites (b2c3d4e5-f6a7-4b6c-9d0e-2f3a4b5c6d7e)"
+
+echo ""
+echo "👥 Test Users (password for all: 'password'):"
+echo "   🏨 Hotel Admin:       admin@grandplaza.com"
+echo "   🎪 Front Desk:        frontdesk@grandplaza.com"
+echo "   👤 Guest:             guest1@grandplaza.com"
+
+echo ""
+echo "📊 Database Information:"
+echo "   📈 Applied Migrations: V1 through V19"
+echo "   🏨 Sample Hotels:      Available with rooms and bookings"
+echo "   👥 Test Users:         Available across multiple tenants"
+echo "   📝 Sample Data:        Hotels, rooms, users, and reservations"
+
+echo ""
+echo "⚠️  Configuration Notes:"
+echo "   📧 Email Service:      Not configured (optional)"
+echo "   💳 Stripe Payments:    Not configured (optional)"
+echo "   🔑 JWT Secret:         Using default development key"
+echo "   🐳 Container Logs:     Available in /app/logs volume"
+
+echo ""
+echo "🎯 Next Steps:"
+echo "   1. Start your frontend: cd frontend && npm start"
+echo "   2. Open your browser:   http://localhost:3000"
+echo "   3. Use test credentials above to login"
+echo "   4. Test multi-tenant functionality"
+
+echo ""
+echo "✅ Backend deployment completed successfully!"
+echo "   Backend API: http://localhost:8080"
+echo "   Database:    localhost:3307"
+echo ""

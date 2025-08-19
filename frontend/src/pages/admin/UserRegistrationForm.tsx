@@ -17,6 +17,7 @@ import {
   StepLabel,
   FormControlLabel,
   Switch,
+  IconButton,
 } from '@mui/material';
 import {
   ArrowBack,
@@ -370,12 +371,9 @@ const UserRegistrationForm: React.FC = () => {
           <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
             {formData.firstName} {formData.lastName} has been successfully registered as a {formData.role.toLowerCase()}.
           </Typography>
-          <Button
-            variant="contained"
-            onClick={handleBackToAdmin}
-          >
-            Back to Dashboard
-          </Button>
+          <IconButton onClick={handleBackToAdmin} sx={{ mr: 1 }}>
+            <ArrowBack />
+          </IconButton>
         </Paper>
       </Container>
     );
@@ -385,13 +383,9 @@ const UserRegistrationForm: React.FC = () => {
     <Container maxWidth="lg" sx={{ py: 4 }}>
       {/* Header */}
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
-        <Button
-          startIcon={<ArrowBack />}
-          onClick={handleBackToAdmin}
-          sx={{ mr: 2 }}
-        >
-          Back to Dashboard
-        </Button>
+        <IconButton onClick={handleBackToAdmin} sx={{ mr: 1 }}>
+          <ArrowBack />
+        </IconButton>
         <Box>
           <Typography variant="h4" component="h1" gutterBottom>
             Add New User

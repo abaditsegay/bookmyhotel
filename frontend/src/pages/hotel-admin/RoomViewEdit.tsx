@@ -182,13 +182,9 @@ const RoomViewEdit: React.FC = () => {
           <Alert severity="error" sx={{ mb: 2 }}>
             {error}
           </Alert>
-          <Button
-            variant="contained"
-            startIcon={<ArrowBackIcon />}
-            onClick={handleBack}
-          >
-            Back to Dashboard
-          </Button>
+          <IconButton onClick={handleBack} sx={{ mr: 1 }}>
+            <ArrowBackIcon />
+          </IconButton>
         </Box>
       </Container>
     );
@@ -201,13 +197,9 @@ const RoomViewEdit: React.FC = () => {
           <Alert severity="info" sx={{ mb: 2 }}>
             Room not found
           </Alert>
-          <Button
-            variant="contained"
-            startIcon={<ArrowBackIcon />}
-            onClick={handleBack}
-          >
-            Back to Dashboard
-          </Button>
+          <IconButton onClick={handleBack} sx={{ mr: 1 }}>
+            <ArrowBackIcon />
+          </IconButton>
         </Box>
       </Container>
     );

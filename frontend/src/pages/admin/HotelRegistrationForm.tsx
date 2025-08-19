@@ -15,6 +15,7 @@ import {
   Stepper,
   Step,
   StepLabel,
+  IconButton,
 } from '@mui/material';
 import {
   ArrowBack,
@@ -341,12 +342,9 @@ const HotelRegistrationForm: React.FC = () => {
           <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
             The hotel "{formData.hotelName}" has been registered and is now pending review.
           </Typography>
-          <Button
-            variant="contained"
-            onClick={handleBackToAdmin}
-          >
-            Back to Dashboard
-          </Button>
+          <IconButton onClick={handleBackToAdmin} sx={{ mr: 1 }}>
+            <ArrowBack />
+          </IconButton>
         </Paper>
       </Container>
     );
@@ -356,13 +354,9 @@ const HotelRegistrationForm: React.FC = () => {
     <Container maxWidth="lg" sx={{ py: 4 }}>
       {/* Header */}
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
-        <Button
-          startIcon={<ArrowBack />}
-          onClick={handleBackToAdmin}
-          sx={{ mr: 2 }}
-        >
-          Back to Dashboard
-        </Button>
+        <IconButton onClick={handleBackToAdmin} sx={{ mr: 1 }}>
+          <ArrowBack />
+        </IconButton>
         <Box>
           <Typography variant="h4" component="h1" gutterBottom>
             Register New Hotel

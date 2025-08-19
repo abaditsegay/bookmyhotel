@@ -332,12 +332,15 @@ const HotelAdminDashboard: React.FC = () => {
     setHotelEditDialogOpen(true);
   };
 
-  // Load initial data when component mounts or tab changes
+  // Load hotel data on initial mount
   useEffect(() => {
-    // Load hotel data when Hotel Details tab (index 0) is selected
-    if (activeTab === 0 && token) {
+    if (token) {
       loadHotelData();
     }
+  }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Load initial data when component mounts or tab changes
+  useEffect(() => {
     // Load bookings when Bookings tab (index 3) is selected
     if (activeTab === 3 && token) {
       loadBookings();
@@ -355,14 +358,14 @@ const HotelAdminDashboard: React.FC = () => {
 
   // Mock data for demonstration - will be replaced with real data from hotel state
   const hotelData = hotel ? {
-    name: hotel.name || user?.hotelName || 'Grand Plaza Hotel',
+    name: hotel.name || user?.hotelName || 'Loading...',
     totalRooms: hotel.totalRooms || 120,
     availableRooms: hotel.availableRooms || 89,
     occupiedRooms: (hotel.totalRooms || 120) - (hotel.availableRooms || 89),
     totalStaff: hotel.totalStaff || 25,
     activeStaff: 23, // This would need to come from staff API
   } : {
-    name: user?.hotelName || 'Grand Plaza Hotel',
+    name: user?.hotelName || (hotelLoading ? 'Loading hotel...' : 'Hotel information not available'),
     totalRooms: 120,
     availableRooms: 89,
     occupiedRooms: 31,
