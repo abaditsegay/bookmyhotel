@@ -3,7 +3,6 @@ import {
   Container,
   Typography,
   Box,
-  Paper,
   TextField,
   Button,
   Card,
@@ -14,6 +13,7 @@ import {
   Alert,
   CircularProgress,
   Collapse,
+  Paper,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -88,6 +88,7 @@ const BookingSearchPage: React.FC = () => {
     switch (status.toLowerCase()) {
       case 'paid': return 'success';
       case 'pending': return 'warning';
+      case 'pay_at_frontdesk': return 'info';
       case 'failed': return 'error';
       case 'refunded': return 'info';
       default: return 'default';

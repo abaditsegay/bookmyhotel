@@ -100,13 +100,20 @@ public class BookingService {
             
             // Process payment if payment method provided
             if (request.getPaymentMethodId() != null) {
-                try {
-                    String paymentIntentId = processPayment(totalAmount, request.getPaymentMethodId());
-                    reservation.setPaymentIntentId(paymentIntentId);
+                if ("pay_at_frontdesk".equals(request.getPaymentMethodId())) {
+                    // For pay at front desk, mark reservation as confirmed but payment as pending
                     reservation.setStatus(ReservationStatus.CONFIRMED);
-                } catch (StripeException e) {
-                    reservation.setStatus(ReservationStatus.PENDING);
-                    throw new BookingException("Payment processing failed: " + e.getMessage(), e);
+                    // No payment intent ID set, so payment status will be "PENDING"
+                } else {
+                    // Handle other payment methods (e.g., credit card via Stripe)
+                    try {
+                        String paymentIntentId = processPayment(totalAmount, request.getPaymentMethodId());
+                        reservation.setPaymentIntentId(paymentIntentId);
+                        reservation.setStatus(ReservationStatus.CONFIRMED);
+                    } catch (StripeException e) {
+                        reservation.setStatus(ReservationStatus.PENDING);
+                        throw new BookingException("Payment processing failed: " + e.getMessage(), e);
+                    }
                 }
             }
             
@@ -272,6 +279,7 @@ public class BookingService {
         reservation.setSpecialRequests(request.getSpecialRequests());
         reservation.setStatus(ReservationStatus.PENDING);
         reservation.setTenantId(guest.getTenantId()); // Set tenant_id from the guest user
+        reservation.setPaymentMethod(request.getPaymentMethodId()); // Store the payment method
         
         // Set guest name from the booking request for this specific reservation
         reservation.setGuestName(request.getGuestName());
@@ -327,9 +335,11 @@ public class BookingService {
         response.setGuestName(reservation.getGuestName());
         response.setGuestEmail(guest.getEmail());
         
-        // Payment status
+        // Payment status - now using the stored payment method for better accuracy
         if (reservation.getPaymentIntentId() != null) {
             response.setPaymentStatus("PAID");
+        } else if ("pay_at_frontdesk".equals(reservation.getPaymentMethod())) {
+            response.setPaymentStatus("PAY_AT_FRONTDESK");
         } else {
             response.setPaymentStatus("PENDING");
         }

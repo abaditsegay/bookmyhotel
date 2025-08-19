@@ -25,9 +25,9 @@ import {
   Save as SaveIcon,
   Cancel as CancelIcon,
 } from '@mui/icons-material';
-import { useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { hotelAdminApi } from '../../services/hotelAdminApi';
+import { frontDeskApiService } from '../../services/frontDeskApi';
 
 // Map BookingResponse from API to display format
 interface BookingData {
@@ -49,11 +49,10 @@ interface BookingData {
   paymentIntentId?: string;
 }
 
-const BookingViewEdit: React.FC = () => {
+const FrontDeskBookingDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const location = useLocation();
   const { token } = useAuth();
   
   const [booking, setBooking] = useState<BookingData | null>(null);
@@ -83,27 +82,28 @@ const BookingViewEdit: React.FC = () => {
 
         console.log('Loading booking with reservation ID:', reservationId);
         
-        const result = await hotelAdminApi.getBookingById(token, reservationId);
+        const result = await frontDeskApiService.getBookingById(token, reservationId);
         
         if (result.success && result.data) {
-          // Map API response to display format
+          // Map API response to display format - handle different response structures
+          const responseData = result.data as any;
           const mappedBooking: BookingData = {
-            reservationId: result.data.reservationId,
-            confirmationNumber: result.data.confirmationNumber,
-            guestName: result.data.guestName,
-            guestEmail: result.data.guestEmail,
-            hotelName: result.data.hotelName,
-            hotelAddress: result.data.hotelAddress,
-            roomNumber: result.data.roomNumber,
-            roomType: result.data.roomType,
-            checkInDate: result.data.checkInDate,
-            checkOutDate: result.data.checkOutDate,
-            totalAmount: result.data.totalAmount,
-            pricePerNight: result.data.pricePerNight,
-            status: result.data.status,
-            createdAt: result.data.createdAt,
-            paymentStatus: result.data.paymentStatus,
-            paymentIntentId: result.data.paymentIntentId
+            reservationId: responseData.reservationId || responseData.id,
+            confirmationNumber: responseData.confirmationNumber,
+            guestName: responseData.guestName,
+            guestEmail: responseData.guestEmail,
+            hotelName: responseData.hotelName,
+            hotelAddress: responseData.hotelAddress,
+            roomNumber: responseData.roomNumber,
+            roomType: responseData.roomType,
+            checkInDate: responseData.checkInDate,
+            checkOutDate: responseData.checkOutDate,
+            totalAmount: responseData.totalAmount,
+            pricePerNight: responseData.pricePerNight,
+            status: responseData.status,
+            createdAt: responseData.createdAt,
+            paymentStatus: responseData.paymentStatus,
+            paymentIntentId: responseData.paymentIntentId
           };
           
           console.log('Found booking:', mappedBooking);
@@ -141,31 +141,32 @@ const BookingViewEdit: React.FC = () => {
     try {
       // Update booking status via API if status changed
       if (booking && editedBooking.status !== booking.status) {
-        const result = await hotelAdminApi.updateBookingStatus(
+        const result = await frontDeskApiService.updateBookingStatus(
           token, 
           editedBooking.reservationId, 
           editedBooking.status
         );
         
         if (result.success && result.data) {
-          // Update local state with API response
+          // Update local state with API response - handle different response structures
+          const responseData = result.data as any;
           const updatedBooking: BookingData = {
-            reservationId: result.data.reservationId,
-            confirmationNumber: result.data.confirmationNumber,
-            guestName: result.data.guestName,
-            guestEmail: result.data.guestEmail,
-            hotelName: result.data.hotelName,
-            hotelAddress: result.data.hotelAddress,
-            roomNumber: result.data.roomNumber,
-            roomType: result.data.roomType,
-            checkInDate: result.data.checkInDate,
-            checkOutDate: result.data.checkOutDate,
-            totalAmount: result.data.totalAmount,
-            pricePerNight: result.data.pricePerNight,
-            status: result.data.status,
-            createdAt: result.data.createdAt,
-            paymentStatus: result.data.paymentStatus,
-            paymentIntentId: result.data.paymentIntentId
+            reservationId: responseData.reservationId || responseData.id,
+            confirmationNumber: responseData.confirmationNumber,
+            guestName: responseData.guestName,
+            guestEmail: responseData.guestEmail,
+            hotelName: responseData.hotelName,
+            hotelAddress: responseData.hotelAddress,
+            roomNumber: responseData.roomNumber,
+            roomType: responseData.roomType,
+            checkInDate: responseData.checkInDate,
+            checkOutDate: responseData.checkOutDate,
+            totalAmount: responseData.totalAmount,
+            pricePerNight: responseData.pricePerNight,
+            status: responseData.status,
+            createdAt: responseData.createdAt,
+            paymentStatus: responseData.paymentStatus,
+            paymentIntentId: responseData.paymentIntentId
           };
           
           setBooking(updatedBooking);
@@ -193,16 +194,11 @@ const BookingViewEdit: React.FC = () => {
   const handleBack = () => {
     const returnTab = searchParams.get('returnTab');
     
-    // Determine the correct dashboard based on current path
-    if (location.pathname.startsWith('/hotel-admin')) {
-      if (returnTab) {
-        navigate(`/hotel-admin/dashboard?tab=${returnTab}`);
-      } else {
-        navigate('/hotel-admin/dashboard');
-      }
+    // Navigate back to front desk dashboard
+    if (returnTab) {
+      navigate(`/frontdesk/dashboard?tab=${returnTab}`);
     } else {
-      // For admin context
-      navigate('/admin');
+      navigate('/frontdesk/dashboard');
     }
   };
 
@@ -220,8 +216,10 @@ const BookingViewEdit: React.FC = () => {
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'confirmed': return 'success';
-      case 'checked in': return 'info';
-      case 'checked out': return 'default';
+      case 'checked in': 
+      case 'checked_in': return 'info';
+      case 'checked out': 
+      case 'checked_out': return 'default';
       case 'cancelled': return 'error';
       case 'pending': return 'warning';
       default: return 'default';
@@ -400,11 +398,11 @@ const BookingViewEdit: React.FC = () => {
                           value={currentBooking?.status || ''}
                           onChange={(e) => handleFieldChange('status', e.target.value)}
                         >
-                          <MenuItem value="Confirmed">Confirmed</MenuItem>
-                          <MenuItem value="Checked In">Checked In</MenuItem>
-                          <MenuItem value="Checked Out">Checked Out</MenuItem>
-                          <MenuItem value="Cancelled">Cancelled</MenuItem>
-                          <MenuItem value="Pending">Pending</MenuItem>
+                          <MenuItem value="CONFIRMED">Confirmed</MenuItem>
+                          <MenuItem value="CHECKED_IN">Checked In</MenuItem>
+                          <MenuItem value="CHECKED_OUT">Checked Out</MenuItem>
+                          <MenuItem value="CANCELLED">Cancelled</MenuItem>
+                          <MenuItem value="PENDING">Pending</MenuItem>
                         </Select>
                       </FormControl>
                     ) : (
@@ -413,7 +411,7 @@ const BookingViewEdit: React.FC = () => {
                           Status
                         </Typography>
                         <Chip
-                          label={currentBooking?.status}
+                          label={currentBooking?.status?.replace('_', ' ')}
                           color={getStatusColor(currentBooking?.status || '') as any}
                           variant="filled"
                         />
@@ -604,4 +602,4 @@ const BookingViewEdit: React.FC = () => {
   );
 };
 
-export default BookingViewEdit;
+export default FrontDeskBookingDetails;

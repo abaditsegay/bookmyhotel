@@ -25,6 +25,7 @@ import {
   CreditCard as CreditCardIcon,
   PhoneAndroid as PhoneIcon,
   Lock as LockIcon,
+  Hotel as HotelIcon,
 } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -33,7 +34,7 @@ import dayjs, { Dayjs } from 'dayjs';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useAuthenticatedApi } from '../hooks/useAuthenticatedApi';
-import { BookingRequest, AvailableRoom, HotelSearchRequest } from '../types/hotel';
+import { AvailableRoom, HotelSearchRequest } from '../types/hotel';
 
 interface BookingPageState {
   room: AvailableRoom;
@@ -66,7 +67,7 @@ const BookingPage: React.FC = () => {
   const [specialRequests, setSpecialRequests] = useState('');
   
   // Payment state
-  const [paymentMethod, setPaymentMethod] = useState<'credit_card' | 'mobile_money'>('credit_card');
+  const [paymentMethod, setPaymentMethod] = useState<'credit_card' | 'mobile_money' | 'pay_at_frontdesk'>('credit_card');
   const [creditCardNumber, setCreditCardNumber] = useState('');
   const [expiryDate, setExpiryDate] = useState('');
   const [cvv, setCvv] = useState('');
@@ -181,7 +182,8 @@ const BookingPage: React.FC = () => {
         checkOutDate: checkOutDate.format('YYYY-MM-DD'),
         guests: guests,
         specialRequests: specialRequests.trim() || undefined,
-        paymentMethodId: paymentMethod === 'credit_card' ? 'card_payment' : undefined,
+        paymentMethodId: paymentMethod === 'credit_card' ? 'card_payment' : 
+                        paymentMethod === 'pay_at_frontdesk' ? 'pay_at_frontdesk' : undefined,
         // Include guest information for non-authenticated users
         guestName: !isAuthenticated ? guestName.trim() : undefined,
         guestEmail: !isAuthenticated ? guestEmail.trim() : undefined,
@@ -447,7 +449,7 @@ const BookingPage: React.FC = () => {
                   <RadioGroup
                     row
                     value={paymentMethod}
-                    onChange={(e) => setPaymentMethod(e.target.value as 'credit_card' | 'mobile_money')}
+                    onChange={(e) => setPaymentMethod(e.target.value as 'credit_card' | 'mobile_money' | 'pay_at_frontdesk')}
                     sx={{ mt: 1 }}
                   >
                     <FormControlLabel
@@ -467,6 +469,16 @@ const BookingPage: React.FC = () => {
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
                           <PhoneIcon sx={{ mr: 1 }} />
                           Mobile Money Transfer
+                        </Box>
+                      }
+                    />
+                    <FormControlLabel
+                      value="pay_at_frontdesk"
+                      control={<Radio />}
+                      label={
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <HotelIcon sx={{ mr: 1 }} />
+                          Pay at Front Desk
                         </Box>
                       }
                     />
@@ -606,6 +618,34 @@ const BookingPage: React.FC = () => {
                           </Typography>
                         </Grid>
                       </Grid>
+                    </Paper>
+                  </Grid>
+                </>
+              )}
+
+              {/* Pay at Front Desk Information */}
+              {paymentMethod === 'pay_at_frontdesk' && (
+                <>
+                  <Grid item xs={12}>
+                    <Paper sx={{ p: 2, bgcolor: 'info.light', border: '1px solid', borderColor: 'info.main', color: 'info.contrastText' }}>
+                      <Typography variant="subtitle2" gutterBottom sx={{ display: 'flex', alignItems: 'center', fontWeight: 'bold' }}>
+                        <HotelIcon sx={{ mr: 1 }} />
+                        Pay at Front Desk
+                      </Typography>
+                      <Alert severity="info" sx={{ mb: 2 }}>
+                        Your reservation will be confirmed and you can pay when you arrive at the hotel.
+                      </Alert>
+                      <Box sx={{ mt: 2 }}>
+                        <Typography variant="body2" sx={{ mb: 1 }}>
+                          <strong>Important Information:</strong>
+                        </Typography>
+                        <Typography variant="body2" component="ul" sx={{ pl: 2, mb: 2 }}>
+                          <li>Payment is due upon check-in at the front desk</li>
+                          <li>Accepted payment methods: Cash, Credit Card, Debit Card</li>
+                          <li>Please bring a valid ID for check-in</li>
+                          <li>Total amount due: <strong>${totalAmount}</strong></li>
+                        </Typography>
+                      </Box>
                     </Paper>
                   </Grid>
                 </>

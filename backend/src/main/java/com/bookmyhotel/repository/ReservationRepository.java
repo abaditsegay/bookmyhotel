@@ -4,12 +4,15 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.bookmyhotel.entity.Reservation;
+import com.bookmyhotel.entity.ReservationStatus;
 import com.bookmyhotel.entity.User;
 
 /**
@@ -26,7 +29,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     /**
      * Find reservations by status
      */
-    List<Reservation> findByStatus(String status);
+    List<Reservation> findByStatus(ReservationStatus status);
     
     /**
      * Find reservation by payment intent ID
@@ -57,7 +60,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
      */
     @Query("SELECT r FROM Reservation r " +
            "WHERE r.checkInDate = :date " +
-           "AND r.status = 'CONFIRMED'")
+           "AND r.status = com.bookmyhotel.entity.ReservationStatus.CONFIRMED")
     List<Reservation> findUpcomingCheckIns(@Param("date") LocalDate date);
     
     /**
@@ -65,7 +68,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
      */
     @Query("SELECT r FROM Reservation r " +
            "WHERE r.checkOutDate = :date " +
-           "AND r.status = 'CHECKED_IN'")
+           "AND r.status = com.bookmyhotel.entity.ReservationStatus.CHECKED_IN")
     List<Reservation> findUpcomingCheckOuts(@Param("date") LocalDate date);
     
     /**
@@ -84,4 +87,14 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
      * Find reservations by user ordered by creation date
      */
     List<Reservation> findByGuestOrderByCreatedAtDesc(User guest);
+    
+    /**
+     * Search reservations by guest name, room number, or confirmation number with pagination
+     */
+    @Query("SELECT r FROM Reservation r " +
+           "WHERE LOWER(CONCAT(r.guest.firstName, ' ', r.guest.lastName)) LIKE LOWER(CONCAT('%', :search, '%')) " +
+           "OR LOWER(r.room.roomNumber) LIKE LOWER(CONCAT('%', :search, '%')) " +
+           "OR LOWER(r.confirmationNumber) LIKE LOWER(CONCAT('%', :search, '%')) " +
+           "ORDER BY r.checkInDate DESC")
+    Page<Reservation> findByGuestNameOrRoomNumberOrConfirmationNumber(@Param("search") String search, Pageable pageable);
 }

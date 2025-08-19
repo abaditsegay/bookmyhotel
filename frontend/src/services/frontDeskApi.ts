@@ -32,20 +32,165 @@ export interface FrontDeskStats {
   roomsUnderMaintenance: number;
 }
 
-const getAuthHeaders = (token: string) => ({
+export interface BookingPage {
+  content: FrontDeskBooking[];
+  pageable: {
+    pageNumber: number;
+    pageSize: number;
+  };
+  totalElements: number;
+  totalPages: number;
+  first: boolean;
+  last: boolean;
+  numberOfElements: number;
+  empty: boolean;
+}
+
+const getAuthHeaders = (token: string, tenantId: string = 'default') => ({
   'Content-Type': 'application/json',
   'Authorization': `Bearer ${token}`,
+  'X-Tenant-ID': tenantId,
 });
 
 export const frontDeskApiService = {
   /**
+   * Get all bookings with pagination and search
+   */
+  getAllBookings: async (
+    token: string,
+    page: number = 0, 
+    size: number = 10, 
+    search?: string,
+    tenantId: string = 'default'
+  ): Promise<{ success: boolean; data?: BookingPage; message?: string }> => {
+    try {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        size: size.toString(),
+      });
+      
+      if (search && search.trim()) {
+        params.append('search', search.trim());
+      }
+
+      const response = await fetch(`${API_BASE_URL}/front-desk/bookings?${params.toString()}`, {
+        method: 'GET',
+        headers: getAuthHeaders(token, tenantId),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to fetch bookings');
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      console.error('Bookings fetch error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to fetch bookings' 
+      };
+    }
+  },
+
+  /**
+   * Get a single booking by reservation ID
+   */
+  getBookingById: async (token: string, reservationId: number, tenantId: string = 'default'): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/front-desk/bookings/${reservationId}`, {
+        method: 'GET',
+        headers: getAuthHeaders(token, tenantId),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to fetch booking');
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      console.error('Booking fetch error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to fetch booking' 
+      };
+    }
+  },
+
+  /**
+   * Update booking status
+   */
+  updateBookingStatus: async (
+    token: string,
+    reservationId: number, 
+    status: string,
+    tenantId: string = 'default'
+  ): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/front-desk/bookings/${reservationId}/status?status=${status}`,
+        {
+          method: 'PUT',
+          headers: getAuthHeaders(token, tenantId),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update booking status');
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      console.error('Booking status update error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to update booking status' 
+      };
+    }
+  },
+
+  /**
+   * Delete booking
+   */
+  deleteBooking: async (
+    token: string,
+    reservationId: number,
+    tenantId: string = 'default'
+  ): Promise<{ success: boolean; message?: string }> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/front-desk/bookings/${reservationId}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(token, tenantId),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to delete booking');
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error('Booking delete error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to delete booking' 
+      };
+    }
+  },
+
+  /**
    * Get today's arrivals
    */
-  getTodaysArrivals: async (token: string): Promise<{ success: boolean; data?: FrontDeskBooking[]; message?: string }> => {
+  getTodaysArrivals: async (token: string, tenantId: string = 'default'): Promise<{ success: boolean; data?: FrontDeskBooking[]; message?: string }> => {
     try {
       const response = await fetch(`${API_BASE_URL}/front-desk/arrivals`, {
         method: 'GET',
-        headers: getAuthHeaders(token),
+        headers: getAuthHeaders(token, tenantId),
       });
 
       if (!response.ok) {
@@ -67,11 +212,11 @@ export const frontDeskApiService = {
   /**
    * Get today's departures
    */
-  getTodaysDepartures: async (token: string): Promise<{ success: boolean; data?: FrontDeskBooking[]; message?: string }> => {
+  getTodaysDepartures: async (token: string, tenantId: string = 'default'): Promise<{ success: boolean; data?: FrontDeskBooking[]; message?: string }> => {
     try {
       const response = await fetch(`${API_BASE_URL}/front-desk/departures`, {
         method: 'GET',
-        headers: getAuthHeaders(token),
+        headers: getAuthHeaders(token, tenantId),
       });
 
       if (!response.ok) {
@@ -93,11 +238,11 @@ export const frontDeskApiService = {
   /**
    * Get current guests (checked in)
    */
-  getCurrentGuests: async (token: string): Promise<{ success: boolean; data?: FrontDeskBooking[]; message?: string }> => {
+  getCurrentGuests: async (token: string, tenantId: string = 'default'): Promise<{ success: boolean; data?: FrontDeskBooking[]; message?: string }> => {
     try {
       const response = await fetch(`${API_BASE_URL}/front-desk/current-guests`, {
         method: 'GET',
-        headers: getAuthHeaders(token),
+        headers: getAuthHeaders(token, tenantId),
       });
 
       if (!response.ok) {
@@ -119,11 +264,11 @@ export const frontDeskApiService = {
   /**
    * Check in a guest
    */
-  checkInGuest: async (token: string, reservationId: number): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {
+  checkInGuest: async (token: string, reservationId: number, tenantId: string = 'default'): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {
     try {
       const response = await fetch(`${API_BASE_URL}/front-desk/checkin/${reservationId}`, {
         method: 'PUT',
-        headers: getAuthHeaders(token),
+        headers: getAuthHeaders(token, tenantId),
       });
 
       if (!response.ok) {
@@ -145,11 +290,11 @@ export const frontDeskApiService = {
   /**
    * Check out a guest
    */
-  checkOutGuest: async (token: string, reservationId: number): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {
+  checkOutGuest: async (token: string, reservationId: number, tenantId: string = 'default'): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {
     try {
       const response = await fetch(`${API_BASE_URL}/front-desk/checkout/${reservationId}`, {
         method: 'PUT',
-        headers: getAuthHeaders(token),
+        headers: getAuthHeaders(token, tenantId),
       });
 
       if (!response.ok) {
@@ -171,11 +316,11 @@ export const frontDeskApiService = {
   /**
    * Mark guest as no-show
    */
-  markNoShow: async (token: string, reservationId: number): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {
+  markNoShow: async (token: string, reservationId: number, tenantId: string = 'default'): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {
     try {
       const response = await fetch(`${API_BASE_URL}/front-desk/no-show/${reservationId}`, {
         method: 'PUT',
-        headers: getAuthHeaders(token),
+        headers: getAuthHeaders(token, tenantId),
       });
 
       if (!response.ok) {
@@ -197,7 +342,7 @@ export const frontDeskApiService = {
   /**
    * Cancel booking
    */
-  cancelBooking: async (token: string, reservationId: number, reason?: string): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {
+  cancelBooking: async (token: string, reservationId: number, reason?: string, tenantId: string = 'default'): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {
     try {
       const url = new URL(`${API_BASE_URL}/front-desk/cancel/${reservationId}`);
       if (reason) {
@@ -206,7 +351,7 @@ export const frontDeskApiService = {
 
       const response = await fetch(url.toString(), {
         method: 'PUT',
-        headers: getAuthHeaders(token),
+        headers: getAuthHeaders(token, tenantId),
       });
 
       if (!response.ok) {
@@ -236,7 +381,8 @@ export const frontDeskApiService = {
       confirmationNumber?: string;
       checkInDate?: string;
       status?: string;
-    }
+    },
+    tenantId: string = 'default'
   ): Promise<{ success: boolean; data?: FrontDeskBooking[]; message?: string }> => {
     try {
       const url = new URL(`${API_BASE_URL}/front-desk/search`);
@@ -249,7 +395,7 @@ export const frontDeskApiService = {
 
       const response = await fetch(url.toString(), {
         method: 'GET',
-        headers: getAuthHeaders(token),
+        headers: getAuthHeaders(token, tenantId),
       });
 
       if (!response.ok) {
@@ -271,11 +417,11 @@ export const frontDeskApiService = {
   /**
    * Get front desk statistics
    */
-  getFrontDeskStats: async (token: string): Promise<{ success: boolean; data?: FrontDeskStats; message?: string }> => {
+  getFrontDeskStats: async (token: string, tenantId: string = 'default'): Promise<{ success: boolean; data?: FrontDeskStats; message?: string }> => {
     try {
       const response = await fetch(`${API_BASE_URL}/front-desk/stats`, {
         method: 'GET',
-        headers: getAuthHeaders(token),
+        headers: getAuthHeaders(token, tenantId),
       });
 
       if (!response.ok) {

@@ -2,14 +2,21 @@ package com.bookmyhotel.controller;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -29,6 +36,53 @@ public class FrontDeskController {
     @Autowired
     private FrontDeskService frontDeskService;
     
+    /**
+     * Get all bookings with pagination and search
+     */
+    @GetMapping("/bookings")
+    @PreAuthorize("hasRole('FRONT_DESK') or hasRole('HOTEL_ADMIN')")
+    public ResponseEntity<Page<BookingResponse>> getAllBookings(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String search) {
+        
+        Pageable pageable = PageRequest.of(page, size, Sort.by("checkInDate").descending());
+        Page<BookingResponse> bookings = frontDeskService.getAllBookings(pageable, search);
+        return ResponseEntity.ok(bookings);
+    }
+
+    /**
+     * Get a single booking by reservation ID
+     */
+    @GetMapping("/bookings/{reservationId}")
+    @PreAuthorize("hasRole('FRONT_DESK') or hasRole('HOTEL_ADMIN')")
+    public ResponseEntity<BookingResponse> getBookingById(@PathVariable Long reservationId) {
+        BookingResponse booking = frontDeskService.getBookingById(reservationId);
+        return ResponseEntity.ok(booking);
+    }
+
+    /**
+     * Update booking status
+     */
+    @PutMapping("/bookings/{reservationId}/status")
+    @PreAuthorize("hasRole('FRONT_DESK') or hasRole('HOTEL_ADMIN')")
+    public ResponseEntity<BookingResponse> updateBookingStatus(
+            @PathVariable Long reservationId,
+            @RequestParam String status) {
+        BookingResponse response = frontDeskService.updateBookingStatus(reservationId, status);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Delete booking
+     */
+    @DeleteMapping("/bookings/{reservationId}")
+    @PreAuthorize("hasRole('FRONT_DESK') or hasRole('HOTEL_ADMIN')")
+    public ResponseEntity<Void> deleteBooking(@PathVariable Long reservationId) {
+        frontDeskService.deleteBooking(reservationId);
+        return ResponseEntity.ok().build();
+    }
+
     /**
      * Get today's arrivals
      */

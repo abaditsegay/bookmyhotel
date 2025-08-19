@@ -63,6 +63,9 @@ public class Reservation extends TenantEntity {
     @Column(name = "payment_intent_id", length = 100)
     private String paymentIntentId;
     
+    @Column(name = "payment_method", length = 50)
+    private String paymentMethod;
+    
     @Column(name = "confirmation_number", length = 20, unique = true)
     private String confirmationNumber;
     
@@ -153,6 +156,14 @@ public class Reservation extends TenantEntity {
     
     public void setPaymentIntentId(String paymentIntentId) {
         this.paymentIntentId = paymentIntentId;
+    }
+    
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+    
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
     }
     
     public Room getRoom() {

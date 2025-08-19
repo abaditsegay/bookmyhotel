@@ -33,6 +33,7 @@ import RoomViewEdit from './pages/hotel-admin/RoomViewEdit';
 import StaffManagement from './pages/hotel-admin/StaffManagement';
 import StaffDetails from './pages/hotel-admin/StaffDetails';
 import FrontDeskDashboard from './pages/frontdesk/FrontDeskDashboard';
+import FrontDeskBookingDetails from './pages/frontdesk/FrontDeskBookingDetails';
 import BookingManagementPage from './pages/BookingManagementPage';
 
 // Home Page Router Component - redirects based on user role
@@ -350,12 +351,12 @@ function App() {
           </ProtectedRoute>
         } />
         <Route path="/hotel-admin/bookings/:id" element={
-          <ProtectedRoute requiredRole="FRONTDESK">
+          <ProtectedRoute requiredRole="HOTEL_ADMIN">
             <BookingViewEdit />
           </ProtectedRoute>
         } />
         <Route path="/hotel-admin/bookings/:id/edit" element={
-          <ProtectedRoute requiredRole="FRONTDESK">
+          <ProtectedRoute requiredRole="HOTEL_ADMIN">
             <BookingViewEdit />
           </ProtectedRoute>
         } />
@@ -397,6 +398,16 @@ function App() {
         <Route path="/frontdesk/dashboard" element={
           <ProtectedRoute requiredRole="FRONTDESK">
             <FrontDeskDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/frontdesk/bookings/:id" element={
+          <ProtectedRoute requiredRole="FRONTDESK">
+            <FrontDeskBookingDetails />
+          </ProtectedRoute>
+        } />
+        <Route path="/frontdesk/bookings/:id/edit" element={
+          <ProtectedRoute requiredRole="FRONTDESK">
+            <FrontDeskBookingDetails />
           </ProtectedRoute>
         } />
       </Routes>

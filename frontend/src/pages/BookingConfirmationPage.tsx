@@ -129,9 +129,21 @@ const BookingConfirmationPage: React.FC = () => {
     switch (status.toLowerCase()) {
       case 'paid': return 'success';
       case 'pending': return 'warning';
+      case 'pay_at_frontdesk': return 'info';
       case 'failed': return 'error';
       case 'refunded': return 'info';
       default: return 'default';
+    }
+  };
+
+  const formatPaymentStatus = (status: string) => {
+    switch (status.toUpperCase()) {
+      case 'PAY_AT_FRONTDESK': return 'Pay at Front Desk';
+      case 'PAID': return 'Paid';
+      case 'PENDING': return 'Pending';
+      case 'FAILED': return 'Failed';
+      case 'REFUNDED': return 'Refunded';
+      default: return status;
     }
   };
 
@@ -264,7 +276,7 @@ const BookingConfirmationPage: React.FC = () => {
               variant="filled"
             />
             <Chip
-              label={booking.paymentStatus}
+              label={formatPaymentStatus(booking.paymentStatus)}
               color={getPaymentStatusColor(booking.paymentStatus) as any}
               variant="outlined"
               size="small"
@@ -389,7 +401,7 @@ const BookingConfirmationPage: React.FC = () => {
                 <strong>Duration:</strong> {nights} night{nights !== 1 ? 's' : ''}
               </Typography>
               <Typography variant="body1">
-                <strong>Payment:</strong> {booking.paymentStatus}
+                <strong>Payment:</strong> {formatPaymentStatus(booking.paymentStatus)}
               </Typography>
             </Box>
           </Grid>

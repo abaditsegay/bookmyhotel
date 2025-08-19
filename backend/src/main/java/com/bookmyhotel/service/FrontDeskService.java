@@ -5,6 +5,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,6 +39,101 @@ public class FrontDeskService {
     private BookingService bookingService;
     
     /**
+     * Get all bookings with pagination and search
+     */
+    @Transactional(readOnly = true)
+    public Page<BookingResponse> getAllBookings(Pageable pageable, String search) {
+        Page<Reservation> reservations;
+        
+        if (search != null && !search.trim().isEmpty()) {
+            // Implement search across multiple fields
+            reservations = reservationRepository.findByGuestNameOrRoomNumberOrConfirmationNumber(
+                search.trim(), pageable);
+        } else {
+            reservations = reservationRepository.findAll(pageable);
+        }
+        
+        List<BookingResponse> bookingResponses = reservations.getContent().stream()
+            .map(this::convertToBookingResponse)
+            .toList();
+        
+        return new PageImpl<>(bookingResponses, pageable, reservations.getTotalElements());
+    }
+
+    /**
+     * Get a single booking by reservation ID
+     */
+    @Transactional(readOnly = true)
+    public BookingResponse getBookingById(Long reservationId) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+            .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
+        
+        return convertToBookingResponse(reservation);
+    }
+
+    /**
+     * Update booking status
+     */
+    public BookingResponse updateBookingStatus(Long reservationId, String status) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+            .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
+        
+        try {
+            ReservationStatus newStatus = ReservationStatus.valueOf(status.toUpperCase());
+            reservation.setStatus(newStatus);
+            
+            // Update room status based on reservation status
+            Room room = reservation.getRoom();
+            switch (newStatus) {
+                case CHECKED_IN:
+                    room.setStatus(RoomStatus.OCCUPIED);
+                    reservation.setActualCheckInTime(LocalDateTime.now());
+                    break;
+                case CHECKED_OUT:
+                    room.setStatus(RoomStatus.MAINTENANCE);
+                    reservation.setActualCheckOutTime(LocalDateTime.now());
+                    break;
+                case CANCELLED:
+                case NO_SHOW:
+                    room.setStatus(RoomStatus.AVAILABLE);
+                    break;
+                default:
+                    // For other statuses, keep room status as is
+                    break;
+            }
+            
+            roomRepository.save(room);
+            reservation = reservationRepository.save(reservation);
+            
+            return convertToBookingResponse(reservation);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid reservation status: " + status);
+        }
+    }
+
+    /**
+     * Delete booking
+     */
+    public void deleteBooking(Long reservationId) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+            .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
+        
+        // Only allow deletion if not checked in
+        if (reservation.getStatus() == ReservationStatus.CHECKED_IN) {
+            throw new IllegalStateException("Cannot delete an active (checked-in) reservation");
+        }
+        
+        // Make room available if it was reserved
+        if (reservation.getStatus() == ReservationStatus.CONFIRMED) {
+            Room room = reservation.getRoom();
+            room.setStatus(RoomStatus.AVAILABLE);
+            roomRepository.save(room);
+        }
+        
+        reservationRepository.delete(reservation);
+    }
+
+    /**
      * Get today's arrivals
      */
     @Transactional(readOnly = true)
@@ -66,7 +164,7 @@ public class FrontDeskService {
      */
     @Transactional(readOnly = true)
     public List<BookingResponse> getCurrentGuests() {
-        List<Reservation> currentGuests = reservationRepository.findByStatus("CHECKED_IN");
+        List<Reservation> currentGuests = reservationRepository.findByStatus(ReservationStatus.CHECKED_IN);
         
         return currentGuests.stream()
             .map(this::convertToBookingResponse)
@@ -249,7 +347,7 @@ public class FrontDeskService {
         
         long todaysArrivals = reservationRepository.findUpcomingCheckIns(today).size();
         long todaysDepartures = reservationRepository.findUpcomingCheckOuts(today).size();
-        long currentOccupancy = reservationRepository.findByStatus("CHECKED_IN").size();
+        long currentOccupancy = reservationRepository.findByStatus(ReservationStatus.CHECKED_IN).size();
         
         long totalRooms = roomRepository.count();
         long availableRooms = roomRepository.countByStatus(RoomStatus.AVAILABLE);

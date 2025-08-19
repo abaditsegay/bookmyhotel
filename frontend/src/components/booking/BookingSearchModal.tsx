@@ -106,6 +106,7 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
     switch (status.toLowerCase()) {
       case 'paid': return 'success';
       case 'pending': return 'warning';
+      case 'pay_at_frontdesk': return 'info';
       case 'failed': return 'error';
       case 'refunded': return 'info';
       default: return 'default';

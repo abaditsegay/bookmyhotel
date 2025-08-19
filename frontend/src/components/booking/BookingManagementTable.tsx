@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -22,8 +23,7 @@ import {
   Tooltip,
   TextField,
   InputAdornment,
-  CircularProgress,
-  Grid
+  CircularProgress
 } from '@mui/material';
 import {
   Visibility as VisibilityIcon,
@@ -38,6 +38,7 @@ import {
 import { useTenant } from '../../contexts/TenantContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { hotelAdminApi } from '../../services/hotelAdminApi';
+import { frontDeskApiService } from '../../services/frontDeskApi';
 
 interface Booking {
   reservationId: number;
@@ -62,6 +63,7 @@ interface BookingManagementTableProps {
   showActions?: boolean;
   showCheckInOut?: boolean;
   onBookingAction?: (booking: Booking, action: string) => void;
+  currentTab?: number;
 }
 
 const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
@@ -69,10 +71,12 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
   title = 'Booking Management',
   showActions = true,
   showCheckInOut = false,
-  onBookingAction
+  onBookingAction,
+  currentTab = 0
 }) => {
   const { tenant } = useTenant();
   const { token } = useAuth();
+  const navigate = useNavigate();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
@@ -80,7 +84,6 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
   const [totalElements, setTotalElements] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
-  const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [snackbar, setSnackbar] = useState({ 
     open: false, 
@@ -90,7 +93,9 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
 
   // Load bookings based on mode
   const loadBookings = React.useCallback(async (customPage?: number, customSize?: number, customSearch?: string) => {
-    if (!tenant || !token) return;
+    if (!token) return;
+    // Front desk mode doesn't need tenant check
+    if (mode === 'hotel-admin' && !tenant) return;
     
     setLoading(true);
     try {
@@ -98,19 +103,34 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
       const sizeToUse = customSize !== undefined ? customSize : size;
       const searchToUse = customSearch !== undefined ? customSearch : searchTerm;
 
-      let result;
-      // Use hotel admin API for both modes - in the future, front desk could have its own endpoint
-      result = await hotelAdminApi.getHotelBookings(
-        token,
-        pageToUse,
-        sizeToUse,
-        searchToUse
-      );
+      let result: any;
+      if (mode === 'front-desk') {
+        // Use front desk API
+        result = await frontDeskApiService.getAllBookings(
+          token,
+          pageToUse,
+          sizeToUse,
+          searchToUse
+        );
+      } else {
+        // Use hotel admin API
+        result = await hotelAdminApi.getHotelBookings(
+          token,
+          pageToUse,
+          sizeToUse,
+          searchToUse
+        );
+      }
 
       if (result.success && result.data) {
-        // hotelAdminApi returns BookingPage object
         setBookings(result.data.content || []);
-        setTotalElements(result.data.page?.totalElements || 0);
+        if (mode === 'front-desk') {
+          // frontDeskApiService returns BookingPage with totalElements directly
+          setTotalElements(result.data.totalElements || 0);
+        } else {
+          // hotelAdminApi returns BookingPage object with nested page info
+          setTotalElements(result.data.page?.totalElements || 0);
+        }
       } else {
         throw new Error(result.message || 'Failed to load bookings');
       }
@@ -124,7 +144,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [tenant, token, page, size, searchTerm]);
+  }, [tenant, token, page, size, searchTerm, mode]);
 
   // Load bookings on component mount and tenant change
   useEffect(() => {
@@ -159,8 +179,12 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
 
   // Handle view booking details
   const handleViewBookingDetails = (booking: Booking) => {
-    setSelectedBooking(booking);
-    setDetailsDialogOpen(true);
+    // Navigate to the appropriate booking details page based on mode
+    if (mode === 'front-desk') {
+      navigate(`/frontdesk/bookings/${booking.reservationId}?returnTab=${currentTab}`);
+    } else {
+      navigate(`/hotel-admin/bookings/${booking.reservationId}?returnTab=${currentTab}`);
+    }
   };
 
   // Handle delete booking
@@ -168,7 +192,11 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
     if (!selectedBooking || !token) return;
 
     try {
-      await hotelAdminApi.deleteBooking(token, selectedBooking.reservationId);
+      if (mode === 'front-desk') {
+        await frontDeskApiService.deleteBooking(token, selectedBooking.reservationId);
+      } else {
+        await hotelAdminApi.deleteBooking(token, selectedBooking.reservationId);
+      }
       setSnackbar({
         open: true,
         message: 'Booking deleted successfully',
@@ -187,9 +215,33 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
   };
 
   // Handle check-in/out actions
-  const handleBookingAction = (booking: Booking, action: string) => {
+  const handleBookingAction = async (booking: Booking, action: string) => {
     if (onBookingAction) {
       onBookingAction(booking, action);
+    }
+    
+    // For front-desk mode, also make API calls to update status
+    if (mode === 'front-desk' && token) {
+      try {
+        let newStatus = '';
+        if (action === 'check-in') {
+          newStatus = 'CHECKED_IN';
+        } else if (action === 'check-out') {
+          newStatus = 'CHECKED_OUT';
+        }
+        
+        if (newStatus) {
+          await frontDeskApiService.updateBookingStatus(token, booking.reservationId, newStatus);
+        }
+      } catch (error) {
+        console.error('Error updating booking status:', error);
+        setSnackbar({
+          open: true,
+          message: 'Failed to update booking status',
+          severity: 'error'
+        });
+        return; // Don't update local state if API call failed
+      }
     }
     
     // Update local state optimistically
@@ -373,7 +425,9 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                                   <IconButton 
                                     size="small" 
                                     color="success"
-                                    onClick={() => handleBookingAction(booking, 'check-in')}
+                                    onClick={() => {
+                                      handleBookingAction(booking, 'check-in');
+                                    }}
                                   >
                                     <CheckInIcon />
                                   </IconButton>
@@ -384,7 +438,9 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                                   <IconButton 
                                     size="small" 
                                     color="warning"
-                                    onClick={() => handleBookingAction(booking, 'check-out')}
+                                    onClick={() => {
+                                      handleBookingAction(booking, 'check-out');
+                                    }}
                                   >
                                     <CheckOutIcon />
                                   </IconButton>
@@ -398,7 +454,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                             </>
                           )}
                           
-                          {mode === 'hotel-admin' && (
+                          {(mode === 'hotel-admin' || mode === 'front-desk') && (
                             <Tooltip title="Delete Booking">
                               <IconButton 
                                 size="small"
@@ -433,87 +489,6 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
           />
         </TableContainer>
       </Card>
-
-      {/* Booking Details Dialog */}
-      <Dialog open={detailsDialogOpen} onClose={() => setDetailsDialogOpen(false)} maxWidth="md" fullWidth>
-        <DialogTitle>Booking Details - {selectedBooking?.confirmationNumber}</DialogTitle>
-        <DialogContent>
-          {selectedBooking && (
-            <Grid container spacing={2} sx={{ mt: 1 }}>
-              <Grid item xs={12} md={6}>
-                <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>Guest Information</Typography>
-                <Typography><strong>Name:</strong> {selectedBooking.guestName}</Typography>
-                <Typography><strong>Email:</strong> {selectedBooking.guestEmail}</Typography>
-                {selectedBooking.adults && (
-                  <Typography><strong>Adults:</strong> {selectedBooking.adults}</Typography>
-                )}
-                {selectedBooking.children && (
-                  <Typography><strong>Children:</strong> {selectedBooking.children}</Typography>
-                )}
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>Booking Details</Typography>
-                <Typography><strong>Room:</strong> {selectedBooking.roomNumber} ({selectedBooking.roomType})</Typography>
-                <Typography><strong>Check-in:</strong> {formatDate(selectedBooking.checkInDate)}</Typography>
-                <Typography><strong>Check-out:</strong> {formatDate(selectedBooking.checkOutDate)}</Typography>
-                {selectedBooking.nights && (
-                  <Typography><strong>Nights:</strong> {selectedBooking.nights}</Typography>
-                )}
-                <Typography><strong>Total Amount:</strong> {formatCurrency(selectedBooking.totalAmount)}</Typography>
-                <Typography><strong>Status:</strong> 
-                  <Chip 
-                    label={selectedBooking.status.replace('_', ' ')} 
-                    color={getStatusColor(selectedBooking.status)} 
-                    size="small"
-                    sx={{ ml: 1 }}
-                  />
-                </Typography>
-                {selectedBooking.paymentStatus && (
-                  <Typography><strong>Payment Status:</strong> 
-                    <Chip 
-                      label={selectedBooking.paymentStatus} 
-                      color={selectedBooking.paymentStatus === 'paid' ? 'success' : 'warning'} 
-                      size="small"
-                      sx={{ ml: 1 }}
-                    />
-                  </Typography>
-                )}
-              </Grid>
-            </Grid>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDetailsDialogOpen(false)}>Close</Button>
-          {showCheckInOut && selectedBooking && (
-            <>
-              {(selectedBooking.status === 'confirmed' || selectedBooking.status === 'arriving') && (
-                <Button 
-                  variant="contained" 
-                  color="success"
-                  onClick={() => {
-                    handleBookingAction(selectedBooking, 'check-in');
-                    setDetailsDialogOpen(false);
-                  }}
-                >
-                  Check In
-                </Button>
-              )}
-              {(selectedBooking.status === 'checked-in' || selectedBooking.status === 'checked_in') && (
-                <Button 
-                  variant="contained" 
-                  color="warning"
-                  onClick={() => {
-                    handleBookingAction(selectedBooking, 'check-out');
-                    setDetailsDialogOpen(false);
-                  }}
-                >
-                  Check Out
-                </Button>
-              )}
-            </>
-          )}
-        </DialogActions>
-      </Dialog>
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
