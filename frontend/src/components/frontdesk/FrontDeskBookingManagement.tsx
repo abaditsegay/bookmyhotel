@@ -62,13 +62,17 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
   const loadBookings = async () => {
     if (!token) return;
     
+    console.log('Loading bookings with params:', { page, size, search, tenantId });
     setLoading(true);
     setError(null);
     
     try {
       const result = await frontDeskApiService.getAllBookings(token, page, size, search, tenantId);
       
+      console.log('API response:', result);
+      
       if (result.success && result.data) {
+        console.log('Setting bookings:', result.data.content.length, 'items, total:', result.data.page?.totalElements);
         setBookings(result.data.content);
         setTotalElements(result.data.page?.totalElements || 0);
       } else {
@@ -77,6 +81,7 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
         setTotalElements(0);
       }
     } catch (error) {
+      console.error('Load bookings error:', error);
       setError('Failed to load bookings');
       setBookings([]);
       setTotalElements(0);
@@ -88,12 +93,17 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
   // Load bookings on component mount and when dependencies change
   useEffect(() => {
     loadBookings();
-  }, [token, page, size, tenantId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [token, page, size, search, tenantId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Handle search
   const handleSearchSubmit = () => {
-    setPage(0); // Reset to first page
-    loadBookings();
+    if (page === 0) {
+      // If already on page 0, trigger reload manually
+      loadBookings();
+    } else {
+      // Reset to first page - this will trigger useEffect to reload
+      setPage(0);
+    }
   };
 
   const handleSearchKeyPress = (e: React.KeyboardEvent) => {
@@ -104,12 +114,14 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
 
   // Handle page change
   const handlePageChange = (event: React.ChangeEvent<unknown> | null, newPage: number) => {
+    console.log('Page change requested:', newPage);
     setPage(newPage);
   };
 
   // Handle rows per page change
   const handleRowsPerPageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newSize = parseInt(event.target.value, 10);
+    console.log('Rows per page change:', newSize);
     setSize(newSize);
     setPage(0);
   };

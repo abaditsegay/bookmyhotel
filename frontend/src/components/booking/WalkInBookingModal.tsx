@@ -1,0 +1,586 @@
+import React, { useState, useEffect } from 'react';
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  TextField,
+  Grid,
+  Typography,
+  MenuItem,
+  Box,
+  Stepper,
+  Step,
+  StepLabel,
+  Alert,
+  Card,
+  CardContent,
+  Chip,
+  Divider,
+  FormControl,
+  InputLabel,
+  Select,
+} from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { format, addDays } from 'date-fns';
+import { useAuth } from '../../contexts/AuthContext';
+import { useTenant } from '../../contexts/TenantContext';
+import { hotelApiService } from '../../services/hotelApi';
+
+// Define interfaces for walk-in booking
+interface WalkInGuestInfo {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+}
+
+interface AvailableRoom {
+  id: number;
+  roomNumber: string;
+  roomType: string;
+  pricePerNight: number;
+  capacity: number;
+  description?: string;
+}
+
+interface WalkInBookingModalProps {
+  open: boolean;
+  onClose: () => void;
+  onSuccess: (bookingData: any) => void;
+}
+
+const steps = ['Guest Information', 'Room Selection', 'Confirmation'];
+
+const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
+  open,
+  onClose,
+  onSuccess,
+}) => {
+  console.log('WalkInBookingModal render - open:', open); // Debug log
+  
+  const { token } = useAuth();
+  const { tenantId } = useTenant();
+  
+  const [activeStep, setActiveStep] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Guest information
+  const [guestInfo, setGuestInfo] = useState<WalkInGuestInfo>({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+  });
+  
+  // Booking details
+  const [checkInDate, setCheckInDate] = useState<Date>(new Date());
+  const [checkOutDate, setCheckOutDate] = useState<Date>(addDays(new Date(), 1));
+  const [guests, setGuests] = useState<number>(1);
+  const [specialRequests, setSpecialRequests] = useState<string>('');
+  
+  // Available rooms
+  const [availableRooms, setAvailableRooms] = useState<AvailableRoom[]>([]);
+  const [selectedRoom, setSelectedRoom] = useState<AvailableRoom | null>(null);
+  const [roomsLoading, setRoomsLoading] = useState(false);
+  
+  // Hotel information (we'll need to get this from the backend)
+  const [hotelId, setHotelId] = useState<number | null>(null);
+
+  // Reset form when modal opens
+  useEffect(() => {
+    const loadHotelInfo = async () => {
+      if (!token) return;
+      
+      try {
+        // Set token and tenant ID for hotel API service
+        hotelApiService.setToken(token);
+        hotelApiService.setTenantId(tenantId);
+        
+        // Fetch the actual hotel information from the backend
+        try {
+          const response = await fetch('/api/front-desk/hotel', {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'X-Tenant-ID': tenantId
+            }
+          });
+          
+          if (response.ok) {
+            const hotelData = await response.json();
+            setHotelId(hotelData.id);
+            console.log('Loaded hotel info:', hotelData); // Debug log
+          } else {
+            const errorText = await response.text();
+            console.error('Failed to fetch hotel information:', response.status, errorText);
+            throw new Error(`Failed to fetch hotel information: ${response.status}`);
+          }
+        } catch (hotelError) {
+          console.error('Failed to fetch hotel information:', hotelError);
+          setError('Failed to load hotel information. Please ensure you are logged in as a front desk user.');
+          return;
+        }
+      } catch (error) {
+        console.error('Failed to load hotel info:', error);
+        setError('Failed to load hotel information');
+      }
+    };
+
+    if (open) {
+      setActiveStep(0);
+      setGuestInfo({
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+      });
+      setCheckInDate(new Date());
+      setCheckOutDate(addDays(new Date(), 1));
+      setGuests(1);
+      setSpecialRequests('');
+      setSelectedRoom(null);
+      setAvailableRooms([]);
+      setError(null);
+      
+      // Get hotel ID from user context - we'll need to add this to the front desk API
+      loadHotelInfo();
+    }
+  }, [open, token, tenantId]);
+
+  // Load available rooms when dates/guests change and we're on step 1
+  useEffect(() => {
+    const loadAvailableRooms = async () => {
+      if (!hotelId || !token) {
+        console.log('Cannot load rooms - missing hotelId or token:', { hotelId, hasToken: !!token });
+        return;
+      }
+      
+      setRoomsLoading(true);
+      setError(null);
+      
+      try {
+        console.log('Loading available rooms for:', {
+          hotelId,
+          checkIn: format(checkInDate, 'yyyy-MM-dd'),
+          checkOut: format(checkOutDate, 'yyyy-MM-dd'),
+          guests
+        });
+        
+        const rooms = await hotelApiService.getAvailableRooms(
+          hotelId,
+          format(checkInDate, 'yyyy-MM-dd'),
+          format(checkOutDate, 'yyyy-MM-dd'),
+          guests
+        );
+        
+        console.log('Available rooms loaded:', rooms);
+        setAvailableRooms(rooms);
+        setSelectedRoom(null);
+      } catch (error) {
+        console.error('Failed to load available rooms:', error);
+        setError('Failed to load available rooms. Please try again.');
+        setAvailableRooms([]);
+      } finally {
+        setRoomsLoading(false);
+      }
+    };
+
+    if (activeStep === 1 && hotelId && checkInDate && checkOutDate) {
+      loadAvailableRooms();
+    }
+  }, [activeStep, hotelId, checkInDate, checkOutDate, guests, token]);
+
+  const handleNext = () => {
+    if (activeStep === 0) {
+      // Validate guest information
+      if (!guestInfo.firstName || !guestInfo.lastName || !guestInfo.email || !guestInfo.phone) {
+        setError('Please fill in all guest information fields');
+        return;
+      }
+      if (!guestInfo.email.includes('@')) {
+        setError('Please enter a valid email address');
+        return;
+      }
+    } else if (activeStep === 1) {
+      // Validate room selection
+      if (!selectedRoom) {
+        setError('Please select a room');
+        return;
+      }
+    }
+    
+    setError(null);
+    setActiveStep((prevStep) => prevStep + 1);
+  };
+
+  const handleBack = () => {
+    setError(null);
+    setActiveStep((prevStep) => prevStep - 1);
+  };
+
+  const handleCreateBooking = async () => {
+    if (!selectedRoom || !token) return;
+    
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const bookingRequest = {
+        roomId: selectedRoom.id,
+        checkInDate: format(checkInDate, 'yyyy-MM-dd'),
+        checkOutDate: format(checkOutDate, 'yyyy-MM-dd'),
+        guests: guests,
+        specialRequests: specialRequests || undefined,
+        paymentMethodId: 'pay_at_frontdesk', // Special indicator for front desk payments
+        guestName: `${guestInfo.firstName} ${guestInfo.lastName}`,
+        guestEmail: guestInfo.email,
+        guestPhone: guestInfo.phone,
+      };
+
+      const response = await hotelApiService.createBooking(bookingRequest);
+      
+      if (response) {
+        onSuccess(response);
+        onClose();
+      }
+    } catch (error) {
+      console.error('Failed to create walk-in booking:', error);
+      setError('Failed to create booking. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const calculateTotalAmount = () => {
+    if (!selectedRoom) return 0;
+    
+    const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24));
+    return selectedRoom.pricePerNight * nights;
+  };
+
+  const renderStepContent = () => {
+    switch (activeStep) {
+      case 0:
+        return (
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <Typography variant="h6" gutterBottom>
+                Guest Information
+              </Typography>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="First Name"
+                value={guestInfo.firstName}
+                onChange={(e) => setGuestInfo({ ...guestInfo, firstName: e.target.value })}
+                required
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Last Name"
+                value={guestInfo.lastName}
+                onChange={(e) => setGuestInfo({ ...guestInfo, lastName: e.target.value })}
+                required
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Email"
+                type="email"
+                value={guestInfo.email}
+                onChange={(e) => setGuestInfo({ ...guestInfo, email: e.target.value })}
+                required
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Phone"
+                value={guestInfo.phone}
+                onChange={(e) => setGuestInfo({ ...guestInfo, phone: e.target.value })}
+                required
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <Divider sx={{ my: 2 }} />
+              <Typography variant="h6" gutterBottom>
+                Stay Details
+              </Typography>
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <LocalizationProvider dateAdapter={AdapterDateFns}>
+                <DatePicker
+                  label="Check-in Date"
+                  value={checkInDate}
+                  onChange={(newValue) => newValue && setCheckInDate(newValue)}
+                  minDate={new Date()}
+                  slotProps={{ textField: { fullWidth: true } }}
+                />
+              </LocalizationProvider>
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <LocalizationProvider dateAdapter={AdapterDateFns}>
+                <DatePicker
+                  label="Check-out Date"
+                  value={checkOutDate}
+                  onChange={(newValue) => newValue && setCheckOutDate(newValue)}
+                  minDate={addDays(checkInDate, 1)}
+                  slotProps={{ textField: { fullWidth: true } }}
+                />
+              </LocalizationProvider>
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <FormControl fullWidth>
+                <InputLabel>Number of Guests</InputLabel>
+                <Select
+                  value={guests}
+                  label="Number of Guests"
+                  onChange={(e) => setGuests(Number(e.target.value))}
+                >
+                  {[1, 2, 3, 4, 5, 6].map((num) => (
+                    <MenuItem key={num} value={num}>
+                      {num} Guest{num !== 1 ? 's' : ''}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+          </Grid>
+        );
+        
+      case 1:
+        return (
+          <Box>
+            <Typography variant="h6" gutterBottom>
+              Available Rooms
+            </Typography>
+            <Typography variant="body2" color="text.secondary" gutterBottom>
+              {format(checkInDate, 'MMM dd, yyyy')} - {format(checkOutDate, 'MMM dd, yyyy')} • {guests} Guest{guests !== 1 ? 's' : ''}
+            </Typography>
+            
+            {roomsLoading ? (
+              <Typography>Loading available rooms...</Typography>
+            ) : availableRooms.length === 0 ? (
+              <Alert severity="warning">
+                No rooms available for the selected dates. Please try different dates.
+              </Alert>
+            ) : (
+              <Grid container spacing={2} sx={{ mt: 1 }}>
+                {availableRooms.map((room) => (
+                  <Grid item xs={12} sm={6} md={4} key={room.id}>
+                    <Card 
+                      sx={{ 
+                        cursor: 'pointer',
+                        border: selectedRoom?.id === room.id ? '2px solid' : '1px solid',
+                        borderColor: selectedRoom?.id === room.id ? 'primary.main' : 'divider',
+                      }}
+                      onClick={() => setSelectedRoom(room)}
+                    >
+                      <CardContent>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                          <Typography variant="h6">
+                            Room {room.roomNumber}
+                          </Typography>
+                          <Chip label={room.roomType} size="small" />
+                        </Box>
+                        <Typography variant="body2" color="text.secondary" gutterBottom>
+                          Capacity: {room.capacity} guest{room.capacity !== 1 ? 's' : ''}
+                        </Typography>
+                        {room.description && (
+                          <Typography variant="body2" color="text.secondary" gutterBottom>
+                            {room.description}
+                          </Typography>
+                        )}
+                        <Typography variant="h6" color="primary.main">
+                          ${room.pricePerNight}/night
+                        </Typography>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
+            )}
+            
+            {selectedRoom && (
+              <Box sx={{ mt: 2 }}>
+                <TextField
+                  fullWidth
+                  label="Special Requests (Optional)"
+                  multiline
+                  rows={3}
+                  value={specialRequests}
+                  onChange={(e) => setSpecialRequests(e.target.value)}
+                  placeholder="Any special requests or notes for the guest stay..."
+                />
+              </Box>
+            )}
+          </Box>
+        );
+        
+      case 2:
+        return (
+          <Box>
+            <Typography variant="h6" gutterBottom>
+              Booking Confirmation
+            </Typography>
+            
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <Card>
+                  <CardContent>
+                    <Typography variant="subtitle1" gutterBottom>
+                      Guest Information
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>Name:</strong> {guestInfo.firstName} {guestInfo.lastName}
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>Email:</strong> {guestInfo.email}
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>Phone:</strong> {guestInfo.phone}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              
+              <Grid item xs={12} sm={6}>
+                <Card>
+                  <CardContent>
+                    <Typography variant="subtitle1" gutterBottom>
+                      Stay Details
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>Room:</strong> {selectedRoom?.roomNumber} ({selectedRoom?.roomType})
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>Check-in:</strong> {format(checkInDate, 'MMM dd, yyyy')}
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>Check-out:</strong> {format(checkOutDate, 'MMM dd, yyyy')}
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>Guests:</strong> {guests}
+                    </Typography>
+                    {specialRequests && (
+                      <Typography variant="body2">
+                        <strong>Special Requests:</strong> {specialRequests}
+                      </Typography>
+                    )}
+                  </CardContent>
+                </Card>
+              </Grid>
+              
+              <Grid item xs={12}>
+                <Card>
+                  <CardContent>
+                    <Typography variant="subtitle1" gutterBottom>
+                      Pricing Summary
+                    </Typography>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                      <Typography variant="body2">
+                        ${selectedRoom?.pricePerNight}/night × {Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24))} night{Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)) !== 1 ? 's' : ''}
+                      </Typography>
+                      <Typography variant="body2">
+                        ${calculateTotalAmount()}
+                      </Typography>
+                    </Box>
+                    <Divider />
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
+                      <Typography variant="h6">
+                        Total Amount
+                      </Typography>
+                      <Typography variant="h6" color="primary.main">
+                        ${calculateTotalAmount()}
+                      </Typography>
+                    </Box>
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                      Payment will be processed at the front desk
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
+          </Box>
+        );
+        
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <Dialog 
+      open={open} 
+      onClose={onClose} 
+      maxWidth="md" 
+      fullWidth
+      PaperProps={{
+        sx: { minHeight: '70vh' }
+      }}
+    >
+      <DialogTitle>
+        Walk-in Guest Booking
+        <Box sx={{ mt: 2 }}>
+          <Stepper activeStep={activeStep} alternativeLabel>
+            {steps.map((label) => (
+              <Step key={label}>
+                <StepLabel>{label}</StepLabel>
+              </Step>
+            ))}
+          </Stepper>
+        </Box>
+      </DialogTitle>
+      
+      <DialogContent>
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
+        
+        {renderStepContent()}
+      </DialogContent>
+      
+      <DialogActions sx={{ px: 3, pb: 2 }}>
+        <Button onClick={onClose} disabled={loading}>
+          Cancel
+        </Button>
+        
+        {activeStep > 0 && (
+          <Button onClick={handleBack} disabled={loading}>
+            Back
+          </Button>
+        )}
+        
+        {activeStep < steps.length - 1 ? (
+          <Button 
+            variant="contained" 
+            onClick={handleNext}
+            disabled={loading || (activeStep === 1 && (!selectedRoom || roomsLoading))}
+          >
+            Next
+          </Button>
+        ) : (
+          <Button 
+            variant="contained" 
+            onClick={handleCreateBooking}
+            disabled={loading || !selectedRoom}
+          >
+            {loading ? 'Creating Booking...' : 'Create Booking'}
+          </Button>
+        )}
+      </DialogActions>
+    </Dialog>
+  );
+};
+
+export default WalkInBookingModal;

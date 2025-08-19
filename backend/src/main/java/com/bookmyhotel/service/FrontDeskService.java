@@ -13,12 +13,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.bookmyhotel.controller.FrontDeskController.FrontDeskStats;
 import com.bookmyhotel.dto.BookingResponse;
+import com.bookmyhotel.dto.HotelDTO;
+import com.bookmyhotel.entity.Hotel;
 import com.bookmyhotel.entity.Reservation;
 import com.bookmyhotel.entity.ReservationStatus;
 import com.bookmyhotel.entity.Room;
 import com.bookmyhotel.entity.RoomStatus;
 import com.bookmyhotel.entity.User;
 import com.bookmyhotel.exception.ResourceNotFoundException;
+import com.bookmyhotel.repository.HotelRepository;
 import com.bookmyhotel.repository.ReservationRepository;
 import com.bookmyhotel.repository.RoomRepository;
 import com.bookmyhotel.tenant.TenantContext;
@@ -35,6 +38,9 @@ public class FrontDeskService {
     
     @Autowired
     private RoomRepository roomRepository;
+
+    @Autowired
+    private HotelRepository hotelRepository;
     
     @Autowired
     private BookingService bookingService;
@@ -49,21 +55,31 @@ public class FrontDeskService {
             throw new IllegalStateException("Tenant context is not set");
         }
         
-        Page<Reservation> reservations;
+        // For now, get all reservations and do basic filtering
+        // In the future, we can add more sophisticated search with tenant-aware queries
+        List<Reservation> allReservations = reservationRepository.findAll();
         
-        if (search != null && !search.trim().isEmpty()) {
-            // Implement search across multiple fields with tenant filtering
-            reservations = reservationRepository.findByGuestNameOrRoomNumberOrConfirmationNumberAndTenantId(
-                search.trim(), tenantId, pageable);
-        } else {
-            reservations = reservationRepository.findByTenantId(tenantId, pageable);
-        }
+        // Filter by tenant and search term
+        List<Reservation> filteredReservations = allReservations.stream()
+            .filter(reservation -> tenantId.equals(reservation.getTenantId()))
+            .filter(reservation -> search == null || search.trim().isEmpty() || 
+                    reservation.getGuest().getFirstName().toLowerCase().contains(search.toLowerCase()) ||
+                    reservation.getGuest().getLastName().toLowerCase().contains(search.toLowerCase()) ||
+                    reservation.getRoom().getRoomNumber().toLowerCase().contains(search.toLowerCase()) ||
+                    reservation.getConfirmationNumber().toLowerCase().contains(search.toLowerCase()))
+            .toList();
         
-        List<BookingResponse> bookingResponses = reservations.getContent().stream()
+        // Apply manual pagination
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), filteredReservations.size());
+        List<Reservation> pagedReservations = start < filteredReservations.size() ? 
+            filteredReservations.subList(start, end) : List.of();
+        
+        List<BookingResponse> bookingResponses = pagedReservations.stream()
             .map(this::convertToBookingResponse)
             .toList();
         
-        return new PageImpl<>(bookingResponses, pageable, reservations.getTotalElements());
+        return new PageImpl<>(bookingResponses, pageable, filteredReservations.size());
     }
 
     /**
@@ -388,6 +404,56 @@ public class FrontDeskService {
             roomsOutOfOrder,
             roomsUnderMaintenance
         );
+    }
+
+    /**
+     * Get hotel information for the current tenant
+     */
+    @Transactional(readOnly = true)
+    public HotelDTO getHotelInfo() {
+        String tenantId = TenantContext.getTenantId();
+        if (tenantId == null || tenantId.trim().isEmpty()) {
+            throw new IllegalStateException("Tenant context is not set");
+        }
+        
+        // For now, get the first hotel for the tenant
+        // In a multi-hotel system, this would need to be more specific
+        List<Hotel> hotels = hotelRepository.findByTenantId(tenantId);
+        if (hotels.isEmpty()) {
+            throw new ResourceNotFoundException("No hotel found for tenant: " + tenantId);
+        }
+        
+        Hotel hotel = hotels.get(0); // Get the first hotel for this tenant
+        return convertToHotelDTO(hotel);
+    }
+    
+    /**
+     * Convert Hotel entity to HotelDTO
+     */
+    private HotelDTO convertToHotelDTO(Hotel hotel) {
+        HotelDTO dto = new HotelDTO();
+        dto.setId(hotel.getId());
+        dto.setName(hotel.getName());
+        dto.setDescription(hotel.getDescription());
+        dto.setAddress(hotel.getAddress());
+        dto.setCity(hotel.getCity());
+        dto.setCountry(hotel.getCountry());
+        dto.setPhone(hotel.getPhone());
+        dto.setEmail(hotel.getEmail());
+        dto.setTenantId(hotel.getTenantId());
+        dto.setIsActive(hotel.getIsActive());
+        dto.setCreatedAt(hotel.getCreatedAt());
+        dto.setUpdatedAt(hotel.getUpdatedAt());
+        
+        // Add room count
+        if (hotel.getRooms() != null) {
+            dto.setRoomCount(hotel.getRooms().size());
+        } else {
+            long roomCount = roomRepository.countByHotelId(hotel.getId());
+            dto.setRoomCount((int) roomCount);
+        }
+        
+        return dto;
     }
     
     /**

@@ -110,4 +110,14 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
            "LOWER(h.city) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
            "LOWER(h.country) LIKE LOWER(CONCAT('%', :searchTerm, '%')))")
     org.springframework.data.domain.Page<Hotel> searchHotels(@Param("searchTerm") String searchTerm, org.springframework.data.domain.Pageable pageable);
+    
+    /**
+     * Find hotels by tenant ID
+     */
+    List<Hotel> findByTenantId(String tenantId);
+    
+    /**
+     * Find active hotels by tenant ID
+     */
+    List<Hotel> findByTenantIdAndIsActiveTrue(String tenantId);
 }

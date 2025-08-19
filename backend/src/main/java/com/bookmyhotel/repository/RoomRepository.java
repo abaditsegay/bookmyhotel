@@ -83,6 +83,11 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     long countByHotel(Hotel hotel);
     
     /**
+     * Count rooms by hotel ID
+     */
+    long countByHotelId(Long hotelId);
+    
+    /**
      * Count available rooms
      */
     long countByIsAvailable(Boolean isAvailable);

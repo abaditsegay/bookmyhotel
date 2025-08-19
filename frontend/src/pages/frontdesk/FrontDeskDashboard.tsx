@@ -18,6 +18,7 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import { frontDeskApiService, FrontDeskStats } from '../../services/frontDeskApi';
 import BookingManagementTable from '../../components/booking/BookingManagementTable';
+import WalkInBookingModal from '../../components/booking/WalkInBookingModal';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -48,6 +49,7 @@ const FrontDeskDashboard: React.FC = () => {
   const initialTab = parseInt(searchParams.get('tab') || '0', 10);
   const [activeTab, setActiveTab] = useState(Math.max(0, Math.min(initialTab, 1))); // Ensure tab is 0 or 1
   const [stats, setStats] = useState<FrontDeskStats | null>(null);
+  const [walkInModalOpen, setWalkInModalOpen] = useState(false);
 
   // Update URL when tab changes
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -76,6 +78,15 @@ const FrontDeskDashboard: React.FC = () => {
 
   const handleRefresh = () => {
     loadStats();
+  };
+
+  const handleWalkInSuccess = (bookingData: any) => {
+    console.log('Walk-in booking created successfully:', bookingData);
+    // Refresh stats and possibly switch to booking management tab
+    loadStats();
+    // Optionally switch to booking management tab to see the new booking
+    setActiveTab(1);
+    setSearchParams({ tab: '1' });
   };
 
   const todayStats = stats || {
@@ -196,6 +207,10 @@ const FrontDeskDashboard: React.FC = () => {
             <Button 
               variant="contained" 
               startIcon={<AddGuestIcon />}
+              onClick={() => {
+                console.log('Walk-in booking button clicked!'); // Debug log
+                setWalkInModalOpen(true);
+              }}
             >
               Walk-in Guest
             </Button>
@@ -252,6 +267,13 @@ const FrontDeskDashboard: React.FC = () => {
           </CardContent>
         </Card>
       </TabPanel>
+
+      {/* Walk-in Booking Modal */}
+      <WalkInBookingModal
+        open={walkInModalOpen}
+        onClose={() => setWalkInModalOpen(false)}
+        onSuccess={handleWalkInSuccess}
+      />
     </Box>
   );
 };

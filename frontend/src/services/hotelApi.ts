@@ -12,9 +12,14 @@ const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api
 
 class HotelApiService {
   private token: string | null = null;
+  private tenantId: string | null = null;
 
   setToken(token: string | null) {
     this.token = token;
+  }
+
+  setTenantId(tenantId: string | null) {
+    this.tenantId = tenantId;
   }
 
   private async fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> {
@@ -30,6 +35,11 @@ class HotelApiService {
     // Add Authorization header if token is available
     if (this.token) {
       headers['Authorization'] = `Bearer ${this.token}`;
+    }
+
+    // Add tenant ID header if available
+    if (this.tenantId) {
+      headers['X-Tenant-ID'] = this.tenantId;
     }
 
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {

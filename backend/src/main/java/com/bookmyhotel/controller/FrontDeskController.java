@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bookmyhotel.dto.BookingResponse;
+import com.bookmyhotel.dto.HotelDTO;
 import com.bookmyhotel.entity.ReservationStatus;
 import com.bookmyhotel.service.FrontDeskService;
 
@@ -180,6 +181,16 @@ public class FrontDeskController {
     public ResponseEntity<FrontDeskStats> getFrontDeskStats() {
         FrontDeskStats stats = frontDeskService.getFrontDeskStats();
         return ResponseEntity.ok(stats);
+    }
+
+    /**
+     * Get hotel information for the front desk
+     */
+    @GetMapping("/hotel")
+    @PreAuthorize("hasRole('FRONT_DESK') or hasRole('HOTEL_ADMIN')")
+    public ResponseEntity<HotelDTO> getHotelInfo() {
+        HotelDTO hotel = frontDeskService.getHotelInfo();
+        return ResponseEntity.ok(hotel);
     }
     
     /**
