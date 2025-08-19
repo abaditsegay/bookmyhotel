@@ -49,6 +49,13 @@ export const SystemDashboardPage: React.FC = () => {
 
   const adminQuickActions = [
     {
+      title: 'Manage Tenants',
+      description: 'Manage tenant organizations and configurations',
+      icon: <Business />,
+      action: () => navigate('/system/tenants'),
+      color: 'info' as const,
+    },
+    {
       title: 'Manage Hotels',
       description: 'View and manage all hotels in the system',
       icon: <Hotel />,
@@ -62,20 +69,13 @@ export const SystemDashboardPage: React.FC = () => {
       action: () => navigate('/system/users'),
       color: 'secondary' as const,
     },
-    {
-      title: 'Manage Tenants',
-      description: 'Manage tenant organizations and configurations',
-      icon: <Business />,
-      action: () => navigate('/system/tenants'),
-      color: 'info' as const,
-    },
-    {
-      title: 'System Analytics',
-      description: 'View platform-wide statistics and insights',
-      icon: <Analytics />,
-      action: () => navigate('/system/analytics'),
-      color: 'success' as const,
-    },
+    // {
+    //   title: 'System Analytics',
+    //   description: 'View platform-wide statistics and insights',
+    //   icon: <Analytics />,
+    //   action: () => navigate('/system/analytics'),
+    //   color: 'success' as const,
+    // },
     {
       title: 'System Settings',
       description: 'Configure global system settings',
