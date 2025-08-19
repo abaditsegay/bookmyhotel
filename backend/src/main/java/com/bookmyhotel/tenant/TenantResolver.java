@@ -1,10 +1,12 @@
 package com.bookmyhotel.tenant;
 
-import com.bookmyhotel.entity.Tenant;
-import com.bookmyhotel.service.TenantService;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.bookmyhotel.entity.Tenant;
+import com.bookmyhotel.service.TenantService;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Resolves tenant from request (subdomain or header) and creates tenants with

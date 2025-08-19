@@ -63,6 +63,7 @@ interface BookingManagementTableProps {
   showActions?: boolean;
   showCheckInOut?: boolean;
   onBookingAction?: (booking: Booking, action: string) => void;
+  onWalkInRequest?: () => void;
   currentTab?: number;
 }
 
@@ -72,6 +73,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
   showActions = true,
   showCheckInOut = false,
   onBookingAction,
+  onWalkInRequest,
   currentTab = 0
 }) => {
   const { tenant } = useTenant();
@@ -91,52 +93,36 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
     severity: 'success' as 'success' | 'error' 
   });
 
-  // Load bookings based on mode
-  const loadBookings = React.useCallback(async (customPage?: number, customSize?: number, customSearch?: string) => {
+  // Manual refresh function (used by refresh button)
+  const loadBookings = React.useCallback(async () => {
     if (!token) return;
     // Front desk mode doesn't need tenant check
     if (mode === 'hotel-admin' && !tenant) return;
     
-    console.log('BookingManagementTable: Loading bookings with params:', { 
-      mode, 
-      pageToUse: customPage !== undefined ? customPage : page,
-      sizeToUse: customSize !== undefined ? customSize : size,
-      searchToUse: customSearch !== undefined ? customSearch : searchTerm,
-      tenant: tenant?.id
-    });
+    console.log('BookingManagementTable: Manual refresh triggered');
     
     setLoading(true);
     try {
-      const pageToUse = customPage !== undefined ? customPage : page;
-      const sizeToUse = customSize !== undefined ? customSize : size;
-      const searchToUse = customSearch !== undefined ? customSearch : searchTerm;
-
       let result: any;
       if (mode === 'front-desk') {
-        // Use front desk API with tenant ID
         result = await frontDeskApiService.getAllBookings(
           token,
-          pageToUse,
-          sizeToUse,
-          searchToUse,
+          page,
+          size,
+          searchTerm,
           tenant?.id || 'default'
         );
       } else {
-        // Use hotel admin API
         result = await hotelAdminApi.getHotelBookings(
           token,
-          pageToUse,
-          sizeToUse,
-          searchToUse
+          page,
+          size,
+          searchTerm
         );
       }
 
-      console.log('BookingManagementTable: API response:', result);
-
       if (result.success && result.data) {
-        console.log('BookingManagementTable: Setting bookings:', result.data.content?.length, 'items, total:', result.data.page?.totalElements);
         setBookings(result.data.content || []);
-        // Both front-desk and hotel-admin APIs now return the same structure with page object
         setTotalElements(result.data.page?.totalElements || 0);
       } else {
         throw new Error(result.message || 'Failed to load bookings');
@@ -151,33 +137,85 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [tenant, token, page, size, searchTerm, mode]);
+  }, [token, mode, page, size, searchTerm, tenant]);
 
-  // Load bookings on component mount and when page/size changes
+  // Centralized booking loading logic
   useEffect(() => {
-    console.log('BookingManagementTable: useEffect triggered - loading bookings');
-    if (mode === 'front-desk' || tenant) {
-      loadBookings();
-    }
-  }, [page, size, tenant, token, mode]); // Removed loadBookings from dependency array
+    const loadData = async () => {
+      if (!token) return;
+      // Front desk mode doesn't need tenant check
+      if (mode === 'hotel-admin' && !tenant) return;
+      
+      console.log('BookingManagementTable: Loading bookings with params:', { 
+        mode, 
+        page,
+        size,
+        searchTerm,
+        tenant: tenant?.id
+      });
+      
+      setLoading(true);
+      try {
+        let result: any;
+        if (mode === 'front-desk') {
+          // Use front desk API with tenant ID
+          result = await frontDeskApiService.getAllBookings(
+            token,
+            page,
+            size,
+            searchTerm,
+            tenant?.id || 'default'
+          );
+        } else {
+          // Use hotel admin API
+          result = await hotelAdminApi.getHotelBookings(
+            token,
+            page,
+            size,
+            searchTerm
+          );
+        }
 
-  // Handle search with debounce
+        console.log('BookingManagementTable: API response:', result);
+
+        if (result.success && result.data) {
+          console.log('BookingManagementTable: Setting bookings:', result.data.content?.length, 'items, total:', result.data.page?.totalElements);
+          setBookings(result.data.content || []);
+          setTotalElements(result.data.page?.totalElements || 0);
+        } else {
+          throw new Error(result.message || 'Failed to load bookings');
+        }
+      } catch (error) {
+        console.error('Error loading bookings:', error);
+        setSnackbar({
+          open: true,
+          message: 'Failed to load bookings',
+          severity: 'error'
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    console.log('BookingManagementTable: useEffect triggered - loading bookings');
+    loadData();
+  }, [page, size, token, mode, searchTerm, tenant]);
+
+  // Handle search with debounce - only reset page when search changes
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      console.log('BookingManagementTable: Search effect triggered, resetting page to 0');
-      if (page === 0) {
-        // If already on page 0, manually trigger reload
-        if (mode === 'front-desk' || tenant) {
-          loadBookings();
+      console.log('BookingManagementTable: Search term changed, resetting page to 0 if needed');
+      setPage(prevPage => {
+        if (prevPage !== 0) {
+          console.log('BookingManagementTable: Resetting page from', prevPage, 'to 0');
+          return 0;
         }
-      } else {
-        // Reset page to 0, which will trigger the main useEffect above
-        setPage(0);
-      }
+        return prevPage;
+      });
     }, 500);
 
     return () => clearTimeout(timeoutId);
-  }, [searchTerm]); // Removed tenant and loadBookings from dependency array
+  }, [searchTerm]);
 
   // Handle page change
   const handlePageChange = (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
@@ -339,6 +377,11 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
             <Button 
               variant="contained" 
               startIcon={<AddGuestIcon />}
+              onClick={() => {
+                console.log('Walk-in Guest button clicked in BookingManagementTable'); // Debug log
+                onWalkInRequest?.();
+              }}
+              disabled={!onWalkInRequest}
             >
               Walk-in Guest
             </Button>

@@ -51,6 +51,11 @@ const FrontDeskDashboard: React.FC = () => {
   const [stats, setStats] = useState<FrontDeskStats | null>(null);
   const [walkInModalOpen, setWalkInModalOpen] = useState(false);
 
+  // Debug modal state changes
+  useEffect(() => {
+    console.log('FrontDeskDashboard - walkInModalOpen state changed:', walkInModalOpen);
+  }, [walkInModalOpen]);
+
   // Update URL when tab changes
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
@@ -82,6 +87,8 @@ const FrontDeskDashboard: React.FC = () => {
 
   const handleWalkInSuccess = (bookingData: any) => {
     console.log('Walk-in booking created successfully:', bookingData);
+    // Close modal first
+    setWalkInModalOpen(false);
     // Refresh stats and possibly switch to booking management tab
     loadStats();
     // Optionally switch to booking management tab to see the new booking
@@ -240,6 +247,10 @@ const FrontDeskDashboard: React.FC = () => {
             // Handle booking actions like check-in/check-out
             handleRefresh();
           }}
+          onWalkInRequest={() => {
+            console.log('Walk-in booking requested from BookingManagementTable'); // Debug log
+            setWalkInModalOpen(true);
+          }}
         />
       </TabPanel>
 
@@ -270,8 +281,12 @@ const FrontDeskDashboard: React.FC = () => {
 
       {/* Walk-in Booking Modal */}
       <WalkInBookingModal
+        key={walkInModalOpen ? 'modal-open' : 'modal-closed'} // Force re-render
         open={walkInModalOpen}
-        onClose={() => setWalkInModalOpen(false)}
+        onClose={() => {
+          console.log('Closing walk-in modal'); // Debug log
+          setWalkInModalOpen(false);
+        }}
         onSuccess={handleWalkInSuccess}
       />
     </Box>
