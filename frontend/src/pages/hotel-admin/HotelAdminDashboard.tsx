@@ -137,14 +137,23 @@ const HotelAdminDashboard: React.FC = () => {
       
       if (result.success && result.data) {
         console.log('Booking API Response:', result.data);
-        console.log('Total Pages:', result.data.totalPages);
-        console.log('Total Elements:', result.data.totalElements);
-        console.log('Current Page:', result.data.number);
+        console.log('Page Object:', result.data.page);
+        
         setBookings(result.data.content || []);
-        const totalPages = result.data.totalPages || 0;
-        // If we have more than the page size but no totalPages, calculate it
-        const calculatedPages = totalPages > 0 ? totalPages : Math.ceil((result.data.totalElements || result.data.content?.length || 0) / bookingSize);
-        console.log('Calculated Total Pages:', calculatedPages);
+        
+        // Extract pagination info from the page object
+        const pageInfo = result.data.page || {};
+        const totalPages = pageInfo.totalPages || 0;
+        const totalElements = pageInfo.totalElements || 0;
+        const currentPageNumber = pageInfo.number || 0;
+        
+        console.log('Total Pages from page object:', totalPages);
+        console.log('Total Elements from page object:', totalElements);
+        console.log('Current Page from page object:', currentPageNumber);
+        
+        // Calculate pages if not provided or if we have content but no pagination info
+        const calculatedPages = totalPages > 0 ? totalPages : Math.ceil(Math.max(totalElements, result.data.content?.length || 0) / bookingSize);
+        console.log('Final Total Pages:', calculatedPages);
         setTotalBookingPages(calculatedPages);
       } else {
         setBookingsError(result.message || 'Failed to load bookings');

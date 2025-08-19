@@ -23,10 +23,12 @@ export interface BookingResponse {
 
 export interface BookingPage {
   content: BookingResponse[];
-  totalElements: number;
-  totalPages: number;
-  number: number;
-  size: number;
+  page: {
+    totalElements: number;
+    totalPages: number;
+    number: number;
+    size: number;
+  };
 }
 
 export interface BookingStats {
