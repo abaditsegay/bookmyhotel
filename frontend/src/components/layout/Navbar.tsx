@@ -78,6 +78,13 @@ const Navbar: React.FC = () => {
     setMobileDrawerOpen(!mobileDrawerOpen);
   };
 
+  // Helper function to determine if hotel name should be shown
+  const shouldShowHotelName = () => {
+    // Hide hotel name for system admin and guest users
+    if (!user) return true; // Show for anonymous users
+    return user.role !== 'ADMIN' && user.role !== 'GUEST';
+  };
+
   // Navigation items based on user role
   const getNavigationItems = () => {
     const baseItems: { label: string; path?: string; icon: React.ReactNode; action?: () => void }[] = [];
@@ -163,7 +170,7 @@ const Navbar: React.FC = () => {
         <Typography variant="h6" sx={{ color: theme.palette.primary.main, fontWeight: 'bold' }}>
           🏨 BookMyHotel
         </Typography>
-        {tenant && (
+        {tenant && shouldShowHotelName() && (
           <Chip
             label={tenant.name}
             size="small"
@@ -307,7 +314,7 @@ const Navbar: React.FC = () => {
             </Box>
 
             {/* Tenant Badge */}
-            {tenant && !isMobile && (
+            {tenant && !isMobile && shouldShowHotelName() && (
               <Chip
                 label={tenant.name}
                 size="small"
