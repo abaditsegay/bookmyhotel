@@ -34,12 +34,12 @@ export interface FrontDeskStats {
 
 export interface BookingPage {
   content: FrontDeskBooking[];
-  pageable: {
-    pageNumber: number;
-    pageSize: number;
+  page: {
+    size: number;
+    number: number;
+    totalElements: number;
+    totalPages: number;
   };
-  totalElements: number;
-  totalPages: number;
   first: boolean;
   last: boolean;
   numberOfElements: number;

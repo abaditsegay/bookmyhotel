@@ -9,7 +9,7 @@ import { loadStripe } from '@stripe/stripe-js';
 import App from './App';
 import theme from './theme/theme';
 import { AuthProvider } from './contexts/AuthContext';
-import { TenantProvider } from './contexts/TenantContext';
+import { TenantProvider, useTenant } from './contexts/TenantContext';
 import './index.css';
 
 // Initialize Stripe only if we have a publishable key
@@ -26,6 +26,17 @@ const queryClient = new QueryClient({
   },
 });
 
+// Component to connect Auth and Tenant contexts
+const AppWithProviders: React.FC = () => {
+  const { updateTenantFromToken } = useTenant();
+
+  return (
+    <AuthProvider onTokenChange={updateTenantFromToken}>
+      <App />
+    </AuthProvider>
+  );
+};
+
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
@@ -39,16 +50,12 @@ root.render(
           {stripePromise ? (
             <Elements stripe={stripePromise}>
               <TenantProvider>
-                <AuthProvider>
-                  <App />
-                </AuthProvider>
+                <AppWithProviders />
               </TenantProvider>
             </Elements>
           ) : (
             <TenantProvider>
-              <AuthProvider>
-                <App />
-              </AuthProvider>
+              <AppWithProviders />
             </TenantProvider>
           )}
         </ThemeProvider>

@@ -70,7 +70,7 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
       
       if (result.success && result.data) {
         setBookings(result.data.content);
-        setTotalElements(result.data.totalElements);
+        setTotalElements(result.data.page?.totalElements || 0);
       } else {
         setError(result.message || 'Failed to load bookings');
         setBookings([]);

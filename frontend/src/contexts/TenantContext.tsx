@@ -1,4 +1,5 @@
-import React, { createContext, useContext, ReactNode, useState, useEffect, useMemo } from 'react';
+import React, { createContext, useContext, ReactNode, useState, useEffect, useMemo, useCallback } from 'react';
+import { getTenantIdFromToken } from '../utils/jwtUtils';
 
 interface Tenant {
   id: string;
@@ -11,6 +12,7 @@ interface TenantContextType {
   tenant: Tenant | null;
   setTenantId: (tenantId: string) => void;
   availableTenants: Tenant[];
+  updateTenantFromToken: (token: string) => void;
 }
 
 const TenantContext = createContext<TenantContextType | undefined>(undefined);
@@ -26,28 +28,46 @@ export const TenantProvider: React.FC<TenantProviderProps> = ({ children }) => {
   // Mock available tenants - in real app, this would come from an API
   const availableTenants: Tenant[] = useMemo(() => [
     { id: 'default', name: 'Default Tenant', subdomain: 'default' },
-    { id: 'hotel-chain-1', name: 'Luxury Hotels Inc.', subdomain: 'luxury' },
-    { id: 'hotel-chain-2', name: 'Budget Stay Corp.', subdomain: 'budget' },
+    { id: '07fac8ae-7c91-11f0-8a72-6abc1ea96c43', name: 'Grand Plaza Hotel', subdomain: 'grandplaza' },
+    { id: 'f60a5bc4-7c91-11f0-8a72-6abc1ea96c43', name: 'Downtown Business Hotel', subdomain: 'downtown' },
+    { id: 'f60a5c04-7c91-11f0-8a72-6abc1ea96c43', name: 'Seaside Resort', subdomain: 'seaside' },
   ], []);
 
-  const setTenantId = (newTenantId: string) => {
+  const setTenantId = useCallback((newTenantId: string) => {
     setTenantIdState(newTenantId);
     const foundTenant = availableTenants.find(t => t.id === newTenantId);
     setTenant(foundTenant || null);
-  };
+  }, [availableTenants]);
+
+  const updateTenantFromToken = useCallback((token: string) => {
+    const extractedTenantId = getTenantIdFromToken(token);
+    if (extractedTenantId) {
+      console.log('Extracted tenant ID from JWT:', extractedTenantId);
+      setTenantId(extractedTenantId);
+    } else {
+      console.warn('Could not extract tenant ID from JWT token');
+    }
+  }, [setTenantId]);
 
   // Initialize tenant on mount
   useEffect(() => {
-    // In a real app, you'd detect tenant from subdomain or header
-    const currentTenant = availableTenants.find(t => t.id === tenantId);
-    setTenant(currentTenant || null);
-  }, [tenantId, availableTenants]);
+    // Check if there's a saved token in localStorage and extract tenant from it
+    const savedToken = localStorage.getItem('auth_token');
+    if (savedToken) {
+      const extractedTenantId = getTenantIdFromToken(savedToken);
+      if (extractedTenantId) {
+        console.log('Extracted tenant ID from JWT:', extractedTenantId);
+        setTenantId(extractedTenantId);
+      }
+    }
+  }, [setTenantId]);
 
   const value: TenantContextType = {
     tenantId,
     tenant,
     setTenantId,
     availableTenants,
+    updateTenantFromToken,
   };
 
   return (

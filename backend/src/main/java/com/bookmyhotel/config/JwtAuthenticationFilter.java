@@ -53,7 +53,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // Set tenant context from JWT token if available
         if (tenantId != null && !tenantId.trim().isEmpty()) {
+            logger.warn("🔍 DEBUG: JwtAuthenticationFilter - Setting tenant ID: " + tenantId);
             TenantContext.setTenantId(tenantId);
+            logger.warn("✅ DEBUG: JwtAuthenticationFilter - Tenant ID set in context: " + TenantContext.getTenantId());
+        } else {
+            logger.warn("❌ DEBUG: JwtAuthenticationFilter - No tenant ID found in JWT or tenantId is empty");
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {

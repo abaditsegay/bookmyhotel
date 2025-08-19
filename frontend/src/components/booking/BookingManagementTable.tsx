@@ -124,13 +124,8 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
 
       if (result.success && result.data) {
         setBookings(result.data.content || []);
-        if (mode === 'front-desk') {
-          // frontDeskApiService returns BookingPage with totalElements directly
-          setTotalElements(result.data.totalElements || 0);
-        } else {
-          // hotelAdminApi returns BookingPage object with nested page info
-          setTotalElements(result.data.page?.totalElements || 0);
-        }
+        // Both front-desk and hotel-admin APIs now return the same structure with page object
+        setTotalElements(result.data.page?.totalElements || 0);
       } else {
         throw new Error(result.message || 'Failed to load bookings');
       }

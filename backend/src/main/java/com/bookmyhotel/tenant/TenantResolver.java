@@ -19,13 +19,21 @@ public class TenantResolver {
     private TenantService tenantService;
 
     /**
-     * Resolve tenant from subdomain or header and return GUID-based tenant ID
-     * Priority: Header > Subdomain > Default
+     * Resolve tenant from JWT (if already set), header, subdomain, or default
+     * Priority: JWT (already in context) > Header > Subdomain > Default
      */
     public String resolveTenant(HttpServletRequest request) {
+        // First check if tenant is already set from JWT authentication
+        String existingTenantId = TenantContext.getTenantId();
+        System.out.println("DEBUG: TenantResolver - Existing tenant ID from context: " + existingTenantId);
+        if (existingTenantId != null && !existingTenantId.trim().isEmpty()) {
+            System.out.println("DEBUG: TenantResolver - Using existing tenant ID: " + existingTenantId);
+            return existingTenantId;
+        }
+
         String tenantIdentifier = null;
 
-        // First try header
+        // Then try header
         String tenantFromHeader = request.getHeader(TENANT_HEADER);
         if (tenantFromHeader != null && !tenantFromHeader.trim().isEmpty()) {
             tenantIdentifier = tenantFromHeader.trim();

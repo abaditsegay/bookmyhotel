@@ -23,15 +23,17 @@ interface AuthContextType {
   logout: () => void;
   updateProfile: (updates: Partial<User>) => Promise<boolean>;
   isAuthenticated: boolean;
+  onTokenChange?: (token: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 interface AuthProviderProps {
   children: ReactNode;
+  onTokenChange?: (token: string) => void;
 }
 
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenChange }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
   const [token, setToken] = useState<string | null>(null);
@@ -46,13 +48,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setToken(savedToken);
         setUser(JSON.parse(savedUser));
         console.log('Restored auth state from localStorage');
+        
+        // Notify parent component of token change
+        onTokenChange?.(savedToken);
       } catch (error) {
         console.error('Failed to restore auth state:', error);
         localStorage.removeItem('auth_token');
         localStorage.removeItem('auth_user');
       }
     }
-  }, []);
+  }, [onTokenChange]);
 
   const login = async (email: string, password: string): Promise<boolean> => {
     setLoading(true);
@@ -101,6 +106,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Persist to localStorage
       localStorage.setItem('auth_token', loginData.token);
       localStorage.setItem('auth_user', JSON.stringify(user));
+      
+      // Notify parent component of token change
+      onTokenChange?.(loginData.token);
       
       return true;
     } catch (error) {
@@ -155,6 +163,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     logout,
     updateProfile,
     isAuthenticated: !!user,
+    onTokenChange,
   };
 
   return (
