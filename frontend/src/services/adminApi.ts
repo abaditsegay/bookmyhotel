@@ -279,7 +279,7 @@ export interface CreateHotelRequest {
   country: string;
   phone?: string;
   email?: string;
-  tenantId: string;
+  tenantId: string | null;
 }
 
 export interface UpdateHotelRequest {
@@ -290,7 +290,7 @@ export interface UpdateHotelRequest {
   country: string;
   phone?: string;
   email?: string;
-  tenantId: string;
+  tenantId: string | null;
 }
 
 export interface HotelStatistics {

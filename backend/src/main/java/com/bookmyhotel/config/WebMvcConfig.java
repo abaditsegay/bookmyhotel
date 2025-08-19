@@ -18,10 +18,20 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Autowired
     private TenantInterceptor tenantInterceptor;
+    
+    @Autowired
+    private TenantFilterInterceptor tenantFilterInterceptor;
 
     @Override
     public void addInterceptors(@org.springframework.lang.NonNull InterceptorRegistry registry) {
+        // Add tenant context resolution interceptor (runs first)
         registry.addInterceptor(tenantInterceptor)
-                .addPathPatterns("/**"); // Apply to all paths
+                .addPathPatterns("/**") // Apply to all paths
+                .order(1);
+        
+        // Add tenant filter interceptor (runs after tenant context is set)
+        registry.addInterceptor(tenantFilterInterceptor)
+                .addPathPatterns("/**") // Apply to all paths
+                .order(2);
     }
 }

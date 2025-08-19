@@ -1,6 +1,6 @@
 package com.bookmyhotel.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.MappedSuperclass;
 
 /**
  * Base entity for system-wide entities (not tenant-bound)

@@ -8,11 +8,15 @@ interface User {
   phone?: string;
   role: 'ADMIN' | 'HOTEL_ADMIN' | 'HOTEL_MANAGER' | 'FRONTDESK' | 'HOUSEKEEPING' | 'GUEST';
   roles: string[]; // Support multiple roles
+  tenantId?: string | null; // null for system-wide users
   hotelId?: string;
   hotelName?: string;
   createdAt?: string;
   lastLogin?: string;
   isActive?: boolean;
+  // Helper properties
+  isSystemWide?: boolean; // true if tenantId is null
+  isTenantBound?: boolean; // true if tenantId is not null
 }
 
 interface AuthContextType {
@@ -93,11 +97,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
         phone: '', // Backend doesn't provide phone in login response
         role: Array.isArray(loginData.roles) ? loginData.roles[0] : loginData.roles, // Take first role if multiple
         roles: Array.isArray(loginData.roles) ? loginData.roles : [loginData.roles], // Store all roles
+        tenantId: loginData.tenantId || null, // Support null for system-wide users
         hotelId: loginData.hotelId?.toString(),
         hotelName: loginData.hotelName,
         createdAt: new Date().toISOString(),
         lastLogin: new Date().toISOString(),
         isActive: true,
+        // Helper properties
+        isSystemWide: !loginData.tenantId, // true if tenantId is null/undefined
+        isTenantBound: !!loginData.tenantId, // true if tenantId exists
       };
 
       setUser(user);

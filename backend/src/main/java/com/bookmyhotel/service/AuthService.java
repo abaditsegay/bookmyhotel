@@ -33,7 +33,7 @@ public class AuthService {
     private JwtUtil jwtUtil;
     
     /**
-     * Register a new guest user
+     * Register a new guest user (system-wide)
      */
     public LoginResponse register(RegisterRequest registerRequest) {
         // Check if user already exists
@@ -41,7 +41,7 @@ public class AuthService {
             throw new ResourceAlreadyExistsException("User with email " + registerRequest.getEmail() + " already exists");
         }
         
-        // Create new user with GUEST role
+        // Create new user with GUEST role (system-wide)
         User user = new User();
         user.setEmail(registerRequest.getEmail());
         user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
@@ -50,7 +50,7 @@ public class AuthService {
         user.setPhone(registerRequest.getPhone());
         user.setIsActive(true);
         user.setRoles(Set.of(UserRole.GUEST));
-        user.setTenantId("guest"); // Set tenant_id for guest users
+        // Do NOT set tenant_id - GUEST users are system-wide (tenant_id = null)
         
         // Save the user
         user = userRepository.save(user);

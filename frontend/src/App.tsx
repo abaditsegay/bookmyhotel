@@ -35,6 +35,7 @@ import StaffDetails from './pages/hotel-admin/StaffDetails';
 import FrontDeskDashboard from './pages/frontdesk/FrontDeskDashboard';
 import FrontDeskBookingDetails from './pages/frontdesk/FrontDeskBookingDetails';
 import BookingManagementPage from './pages/BookingManagementPage';
+import { SystemDashboardPage } from './pages/SystemDashboardPage';
 
 // Home Page Router Component - redirects based on user role
 const HomePageRouter: React.FC = () => {
@@ -42,8 +43,19 @@ const HomePageRouter: React.FC = () => {
   
   // If user is authenticated, check their roles
   if (isAuthenticated && user?.roles) {
+    // Check if user is system-wide (no tenant binding)
+    if (user.isSystemWide) {
+      if (user.roles.includes('ADMIN')) {
+        return <Navigate to="/system-dashboard" replace />;
+      }
+      if (user.roles.includes('GUEST')) {
+        return <Navigate to="/system-dashboard" replace />;
+      }
+    }
+    
+    // For tenant-bound users
     // Priority order: ADMIN (system admin) > HOTEL_ADMIN > FRONTDESK
-    if (user.roles.includes('ADMIN')) {
+    if (user.roles.includes('ADMIN') && !user.isSystemWide) {
       return <Navigate to="/admin/dashboard" replace />;
     }
     
@@ -56,7 +68,7 @@ const HomePageRouter: React.FC = () => {
     }
     
     // Legacy role handling for backward compatibility
-    if (user.role === 'ADMIN') {
+    if (user.role === 'ADMIN' && !user.isSystemWide) {
       return <Navigate to="/admin/dashboard" replace />;
     }
     
@@ -279,6 +291,53 @@ function App() {
         <Route path="/profile" element={
           <ProtectedRoute>
             <ProfilePage />
+          </ProtectedRoute>
+        } />
+        
+        {/* System-Wide User Routes */}
+        <Route path="/system-dashboard" element={
+          <ProtectedRoute>
+            <SystemDashboardPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/system/hotels" element={
+          <ProtectedRoute requiredRole="ADMIN">
+            <PlaceholderPage 
+              title="System Hotel Management" 
+              message="Global hotel management interface coming soon!" 
+            />
+          </ProtectedRoute>
+        } />
+        <Route path="/system/users" element={
+          <ProtectedRoute requiredRole="ADMIN">
+            <PlaceholderPage 
+              title="System User Management" 
+              message="Global user management interface coming soon!" 
+            />
+          </ProtectedRoute>
+        } />
+        <Route path="/system/analytics" element={
+          <ProtectedRoute requiredRole="ADMIN">
+            <PlaceholderPage 
+              title="System Analytics" 
+              message="Platform-wide analytics dashboard coming soon!" 
+            />
+          </ProtectedRoute>
+        } />
+        <Route path="/system/settings" element={
+          <ProtectedRoute requiredRole="ADMIN">
+            <PlaceholderPage 
+              title="System Settings" 
+              message="Global system configuration coming soon!" 
+            />
+          </ProtectedRoute>
+        } />
+        <Route path="/my-bookings" element={
+          <ProtectedRoute>
+            <PlaceholderPage 
+              title="My Bookings" 
+              message="Your booking history across all hotels coming soon!" 
+            />
           </ProtectedRoute>
         } />
         

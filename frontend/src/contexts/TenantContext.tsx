@@ -8,11 +8,12 @@ interface Tenant {
 }
 
 interface TenantContextType {
-  tenantId: string;
+  tenantId: string | null; // Can be null for system-wide users
   tenant: Tenant | null;
-  setTenantId: (tenantId: string) => void;
+  setTenantId: (tenantId: string | null) => void;
   availableTenants: Tenant[];
   updateTenantFromToken: (token: string) => void;
+  isSystemWideContext: boolean; // True when no tenant is set (system-wide user)
 }
 
 const TenantContext = createContext<TenantContextType | undefined>(undefined);
@@ -22,7 +23,7 @@ interface TenantProviderProps {
 }
 
 export const TenantProvider: React.FC<TenantProviderProps> = ({ children }) => {
-  const [tenantId, setTenantIdState] = useState<string>('07fac8ae-7c91-11f0-8a72-6abc1ea96c43'); // Default to Grand Plaza
+  const [tenantId, setTenantIdState] = useState<string | null>(null); // Start with null for anonymous users
   const [tenant, setTenant] = useState<Tenant | null>(null);
   
   // Mock available tenants - in real app, this would come from an API
@@ -33,19 +34,26 @@ export const TenantProvider: React.FC<TenantProviderProps> = ({ children }) => {
     { id: 'a1b2c3d4-5e6f-7g8h-9i0j-k1l2m3n4o5p6', name: 'Luxury Hotel Group', subdomain: 'luxury' },
   ], []);
 
-  const setTenantId = useCallback((newTenantId: string) => {
+  const setTenantId = useCallback((newTenantId: string | null) => {
     setTenantIdState(newTenantId);
-    const foundTenant = availableTenants.find(t => t.id === newTenantId);
-    setTenant(foundTenant || null);
+    if (newTenantId) {
+      const foundTenant = availableTenants.find(t => t.id === newTenantId);
+      setTenant(foundTenant || null);
+    } else {
+      // System-wide user - no tenant context
+      setTenant(null);
+    }
   }, [availableTenants]);
 
   const updateTenantFromToken = useCallback((token: string) => {
     const extractedTenantId = getTenantIdFromToken(token);
-    if (extractedTenantId) {
-      console.log('Extracted tenant ID from JWT:', extractedTenantId);
-      setTenantId(extractedTenantId);
-    } else {
-      console.warn('Could not extract tenant ID from JWT token');
+    console.log('Extracted tenant ID from JWT:', extractedTenantId);
+    
+    // For system-wide users, extractedTenantId will be null
+    setTenantId(extractedTenantId);
+    
+    if (extractedTenantId === null) {
+      console.log('System-wide user detected - no tenant context');
     }
   }, [setTenantId]);
 
@@ -55,10 +63,8 @@ export const TenantProvider: React.FC<TenantProviderProps> = ({ children }) => {
     const savedToken = localStorage.getItem('auth_token');
     if (savedToken) {
       const extractedTenantId = getTenantIdFromToken(savedToken);
-      if (extractedTenantId) {
-        console.log('Extracted tenant ID from JWT:', extractedTenantId);
-        setTenantId(extractedTenantId);
-      }
+      console.log('Extracted tenant ID from JWT during initialization:', extractedTenantId);
+      setTenantId(extractedTenantId); // This can be null for system-wide users
     }
   }, [setTenantId]);
 
@@ -68,6 +74,7 @@ export const TenantProvider: React.FC<TenantProviderProps> = ({ children }) => {
     setTenantId,
     availableTenants,
     updateTenantFromToken,
+    isSystemWideContext: tenantId === null,
   };
 
   return (

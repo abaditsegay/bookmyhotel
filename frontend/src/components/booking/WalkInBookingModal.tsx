@@ -103,11 +103,16 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
         
         // Fetch the actual hotel information from the backend
         try {
+          const headers: Record<string, string> = {
+            'Authorization': `Bearer ${token}`,
+          };
+          
+          if (tenantId) {
+            headers['X-Tenant-ID'] = tenantId;
+          }
+          
           const response = await fetch('/api/front-desk/hotel', {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'X-Tenant-ID': tenantId
-            }
+            headers
           });
           
           if (response.ok) {

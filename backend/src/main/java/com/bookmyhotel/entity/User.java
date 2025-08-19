@@ -119,22 +119,14 @@ public class User extends BaseEntity implements UserDetails {
      * All other roles are tenant-bound
      */
     public boolean isTenantBoundUser() {
-        if (roles == null || roles.isEmpty()) {
-            return false; // Default to system-wide if no roles
-        }
-        
-        // System-wide roles
-        Set<UserRole> systemWideRoles = Set.of(UserRole.GUEST, UserRole.ADMIN);
-        
-        // If user has any system-wide role, they are not tenant-bound
-        return roles.stream().noneMatch(systemWideRoles::contains);
+        return this.tenantId != null;
     }
     
     /**
      * Checks if this user is a system-wide user (not bound to any tenant)
      */
     public boolean isSystemWideUser() {
-        return !isTenantBoundUser();
+        return this.tenantId == null;
     }
     
     // UserDetails implementation

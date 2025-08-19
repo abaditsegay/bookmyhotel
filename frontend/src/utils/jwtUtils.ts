@@ -4,7 +4,7 @@ export interface JwtPayload {
   firstName: string;
   lastName: string;
   roles: string[];
-  tenantId: string;
+  tenantId: string | null; // Can be null for system-wide users
   userId: number;
   iat: number;
   exp: number;
@@ -48,5 +48,16 @@ export const isTokenExpired = (token: string): boolean => {
 
 export const getTenantIdFromToken = (token: string): string | null => {
   const payload = decodeJwtToken(token);
-  return payload?.tenantId || null;
+  // Return null if payload doesn't exist, or return the actual tenantId value (which can be null for system-wide users)
+  return payload ? payload.tenantId : null;
+};
+
+export const isSystemWideUser = (token: string): boolean => {
+  const payload = decodeJwtToken(token);
+  return payload ? payload.tenantId === null : false;
+};
+
+export const isTenantBoundUser = (token: string): boolean => {
+  const payload = decodeJwtToken(token);
+  return payload ? payload.tenantId !== null : false;
 };

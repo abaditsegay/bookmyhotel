@@ -1,10 +1,15 @@
 package com.bookmyhotel.entity;
 
-import com.bookmyhotel.tenant.TenantContext;
-import jakarta.persistence.*;
 import org.hibernate.annotations.Filter;
 import org.hibernate.annotations.FilterDef;
 import org.hibernate.annotations.ParamDef;
+
+import com.bookmyhotel.tenant.TenantContext;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 
 /**
  * Base entity for tenant-scoped entities
