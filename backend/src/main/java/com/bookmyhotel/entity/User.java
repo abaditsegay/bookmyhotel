@@ -8,6 +8,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.bookmyhotel.tenant.TenantContext;
+
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -21,6 +23,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -28,6 +32,8 @@ import jakarta.validation.constraints.Size;
 
 /**
  * User entity for authentication and authorization
+ * Supports both tenant-bound users (HOTEL_ADMIN, FRONTDESK, etc.) 
+ * and system-wide users (GUEST, ADMIN)
  */
 @Entity
 @Table(name = "users",
@@ -35,11 +41,15 @@ import jakarta.validation.constraints.Size;
            @Index(name = "idx_user_tenant", columnList = "tenant_id"),
            @Index(name = "idx_user_email", columnList = "email", unique = true)
        })
-public class User extends TenantEntity implements UserDetails {
+public class User extends BaseEntity implements UserDetails {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    
+    // Tenant ID - nullable for system-wide users (GUEST, ADMIN)
+    @Column(name = "tenant_id", length = 50)
+    private String tenantId;
     
     @NotBlank(message = "Email is required")
     @Email(message = "Email should be valid")
@@ -87,6 +97,46 @@ public class User extends TenantEntity implements UserDetails {
         this.lastName = lastName;
     }
     
+    // Lifecycle methods for tenant management
+    @PrePersist
+    public void prePersist() {
+        super.prePersist(); // Call BaseEntity's prePersist
+        
+        // Only set tenant_id for tenant-bound roles
+        if (this.tenantId == null && isTenantBoundUser()) {
+            this.tenantId = TenantContext.getTenantId();
+        }
+    }
+    
+    @PreUpdate
+    public void preUpdate() {
+        super.preUpdate(); // Call BaseEntity's preUpdate
+    }
+    
+    /**
+     * Determines if this user should be bound to a tenant
+     * GUEST and ADMIN users are system-wide (not tenant-bound)
+     * All other roles are tenant-bound
+     */
+    public boolean isTenantBoundUser() {
+        if (roles == null || roles.isEmpty()) {
+            return false; // Default to system-wide if no roles
+        }
+        
+        // System-wide roles
+        Set<UserRole> systemWideRoles = Set.of(UserRole.GUEST, UserRole.ADMIN);
+        
+        // If user has any system-wide role, they are not tenant-bound
+        return roles.stream().noneMatch(systemWideRoles::contains);
+    }
+    
+    /**
+     * Checks if this user is a system-wide user (not bound to any tenant)
+     */
+    public boolean isSystemWideUser() {
+        return !isTenantBoundUser();
+    }
+    
     // UserDetails implementation
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -129,6 +179,14 @@ public class User extends TenantEntity implements UserDetails {
         this.id = id;
     }
     
+    public String getTenantId() {
+        return tenantId;
+    }
+    
+    public void setTenantId(String tenantId) {
+        this.tenantId = tenantId;
+    }
+    
     public String getEmail() {
         return email;
     }
@@ -137,6 +195,7 @@ public class User extends TenantEntity implements UserDetails {
         this.email = email;
     }
     
+    @Override
     public String getPassword() {
         return password;
     }

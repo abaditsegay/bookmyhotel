@@ -31,9 +31,31 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByEmail(String email);
     
     /**
-     * Find users by tenant ID
+     * Find users by tenant ID (for tenant-bound users)
      */
     Page<User> findByTenantId(String tenantId, Pageable pageable);
+    
+    /**
+     * Find system-wide users (where tenant_id is null)
+     */
+    Page<User> findByTenantIdIsNull(Pageable pageable);
+    
+    /**
+     * Find all tenant-bound users (where tenant_id is not null)
+     */
+    Page<User> findByTenantIdIsNotNull(Pageable pageable);
+    
+    /**
+     * Find system-wide users by role
+     */
+    @Query("SELECT u FROM User u WHERE u.tenantId IS NULL AND EXISTS (SELECT 1 FROM u.roles r WHERE r = :role)")
+    List<User> findSystemWideUsersByRole(@Param("role") UserRole role);
+    
+    /**
+     * Find tenant-bound users by role and tenant
+     */
+    @Query("SELECT u FROM User u WHERE u.tenantId = :tenantId AND EXISTS (SELECT 1 FROM u.roles r WHERE r = :role)")
+    List<User> findTenantBoundUsersByRole(@Param("tenantId") String tenantId, @Param("role") UserRole role);
     
     /**
      * Find users by role
