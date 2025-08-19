@@ -6,6 +6,16 @@ set -e
 echo "🏨 BookMyHotel Local Deployment Script"
 echo "======================================"
 
+# Load environment variables if .env file exists
+if [ -f ".env" ]; then
+    echo "📋 Loading environment variables from .env file..."
+    export $(grep -v '^#' .env | xargs)
+    echo "✅ Environment variables loaded"
+else
+    echo "⚠️  No .env file found. Copy .env.example to .env and configure your credentials."
+    echo "   Some features like email service may not work without proper configuration."
+fi
+
 # Check if Docker is running
 if ! docker info > /dev/null 2>&1; then
     echo "❌ Docker is not running. Please start Docker first."

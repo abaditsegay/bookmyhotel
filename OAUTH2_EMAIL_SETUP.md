@@ -6,10 +6,54 @@ The OAuth2 email integration with Office 365 has been successfully configured fo
 
 ## What Was Implemented
 
+## Environment Variables Setup
+
+### Required Environment Variables
+
+Set the following environment variables with your Azure AD application credentials:
+
+```bash
+export MICROSOFT_GRAPH_CLIENT_ID="your-azure-ad-client-id"
+export MICROSOFT_GRAPH_TENANT_ID="your-azure-ad-tenant-id"  
+export MICROSOFT_GRAPH_CLIENT_SECRET="your-azure-ad-client-secret"
+export APP_EMAIL_FROM="your-sender-email@your-domain.com"
+```
+
+### Development Setup
+
+For local development, you can set these in your IDE or create a `.env` file:
+
+```env
+MICROSOFT_GRAPH_CLIENT_ID=your-azure-ad-client-id
+MICROSOFT_GRAPH_TENANT_ID=your-azure-ad-tenant-id
+MICROSOFT_GRAPH_CLIENT_SECRET=your-azure-ad-client-secret
+APP_EMAIL_FROM=noreply@your-domain.com
+```
+
+### Production Setup (Azure)
+
+In Azure App Service, set these as Application Settings:
+- `MICROSOFT_GRAPH_CLIENT_ID`
+- `MICROSOFT_GRAPH_TENANT_ID`
+- `MICROSOFT_GRAPH_CLIENT_SECRET`
+- `APP_EMAIL_FROM`
+
+### Docker Setup
+
+For Docker deployments, pass these as environment variables:
+
+```bash
+docker run -e MICROSOFT_GRAPH_CLIENT_ID="your-client-id" \
+           -e MICROSOFT_GRAPH_TENANT_ID="your-tenant-id" \
+           -e MICROSOFT_GRAPH_CLIENT_SECRET="your-client-secret" \
+           -e APP_EMAIL_FROM="noreply@your-domain.com" \
+           your-app-image
+```
+
 ### 1. OAuth2 Configuration
-- **Client ID**: `YOUR_AZURE_AD_CLIENT_ID`
-- **Tenant ID**: `YOUR_AZURE_AD_TENANT_ID`
-- **Client Secret**: `YOUR_AZURE_AD_CLIENT_SECRET`
+- **Client ID**: Set in `MICROSOFT_GRAPH_CLIENT_ID` environment variable
+- **Tenant ID**: Set in `MICROSOFT_GRAPH_TENANT_ID` environment variable
+- **Client Secret**: Set in `MICROSOFT_GRAPH_CLIENT_SECRET` environment variable
 - **Scopes**: `https://graph.microsoft.com/.default`
 
 ### 2. Email Service Enhancement
@@ -23,9 +67,10 @@ The `EmailService` class has been enhanced with:
 Added to `application.properties`:
 ```properties
 # Microsoft Graph OAuth2 Configuration
-microsoft.graph.client-id=YOUR_AZURE_AD_CLIENT_ID
-microsoft.graph.tenant-id=YOUR_AZURE_AD_TENANT_ID
-microsoft.graph.client-secret=YOUR_AZURE_AD_CLIENT_SECRET
+# These should be set as environment variables:
+microsoft.graph.client-id=${MICROSOFT_GRAPH_CLIENT_ID}
+microsoft.graph.tenant-id=${MICROSOFT_GRAPH_TENANT_ID}
+microsoft.graph.client-secret=${MICROSOFT_GRAPH_CLIENT_SECRET}
 microsoft.graph.scopes=https://graph.microsoft.com/.default
 ```
 

@@ -2,12 +2,15 @@ package com.bookmyhotel.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+
+import com.bookmyhotel.config.MicrosoftGraphConfig;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,16 +21,10 @@ public class MicrosoftGraphEmailService {
 
     private static final Logger logger = LoggerFactory.getLogger(MicrosoftGraphEmailService.class);
     
-    @Value("${microsoft.graph.client-id}")
-    private String clientId;
+    @Autowired
+    private MicrosoftGraphConfig microsoftGraphConfig;
     
-    @Value("${microsoft.graph.client-secret}")
-    private String clientSecret;
-    
-    @Value("${microsoft.graph.tenant-id}")
-    private String tenantId;
-    
-    @Value("${app.email.from}")
+    @Value("${app.email.from:noreply@bookmyhotel.com}")
     private String fromEmail;
 
     private final WebClient webClient;
@@ -38,16 +35,28 @@ public class MicrosoftGraphEmailService {
         this.webClient = WebClient.builder().build();
     }
 
+    /**
+     * Check if Microsoft Graph is properly configured
+     */
+    public boolean isConfigured() {
+        return microsoftGraphConfig.isConfigured();
+    }
+
     private String getAccessToken() {
+        if (!isConfigured()) {
+            throw new IllegalStateException("Microsoft Graph OAuth2 is not configured. Please set environment variables: MICROSOFT_GRAPH_CLIENT_ID, MICROSOFT_GRAPH_TENANT_ID, MICROSOFT_GRAPH_CLIENT_SECRET");
+        }
+
         if (accessToken == null || System.currentTimeMillis() >= tokenExpiryTime) {
             try {
                 Map<String, String> tokenRequest = new HashMap<>();
-                tokenRequest.put("client_id", clientId);
-                tokenRequest.put("client_secret", clientSecret);
-                tokenRequest.put("scope", "https://graph.microsoft.com/.default");
+                tokenRequest.put("client_id", microsoftGraphConfig.getClientId());
+                tokenRequest.put("client_secret", microsoftGraphConfig.getClientSecret());
+                tokenRequest.put("scope", microsoftGraphConfig.getScopes());
                 tokenRequest.put("grant_type", "client_credentials");
 
-                String tokenEndpoint = String.format("https://login.microsoftonline.com/%s/oauth2/v2.0/token", tenantId);
+                String tokenEndpoint = String.format("https://login.microsoftonline.com/%s/oauth2/v2.0/token", 
+                                                   microsoftGraphConfig.getTenantId());
 
                 Map<String, Object> tokenResponse = webClient.post()
                     .uri(tokenEndpoint)
@@ -74,6 +83,11 @@ public class MicrosoftGraphEmailService {
     }
 
     public void sendEmail(String to, String subject, String htmlContent) {
+        if (!isConfigured()) {
+            logger.warn("Microsoft Graph OAuth2 is not configured. Cannot send email via Microsoft Graph API.");
+            throw new IllegalStateException("Microsoft Graph OAuth2 is not configured. Email service unavailable.");
+        }
+
         try {
             String token = getAccessToken();
             
