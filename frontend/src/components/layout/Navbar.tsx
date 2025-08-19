@@ -41,7 +41,7 @@ const Navbar: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
   const { user, logout } = useAuth();
-  const { tenantId } = useTenant();
+  const { tenant } = useTenant();
   
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
@@ -107,14 +107,18 @@ const Navbar: React.FC = () => {
         return [...baseItems, { label: 'Front Desk', path: '/frontdesk', icon: <DashboardIcon /> }];
       }
 
-      // For regular users
-      const userItems = [
-        { label: 'Dashboard', path: '/dashboard', icon: <DashboardIcon /> },
-        { label: 'My Bookings', path: '/bookings', icon: <BusinessIcon /> },
-        { label: 'Profile', path: '/profile', icon: <PersonIcon /> },
-      ];
+            // For guests and customers, show dashboard and bookings
+      if (user.role === 'GUEST') {
+        const guestItems = [
+          { label: 'Dashboard', path: '/dashboard', icon: <DashboardIcon /> },
+          { label: 'My Bookings', path: '/bookings', icon: <BusinessIcon /> },
+          { label: 'Profile', path: '/profile', icon: <PersonIcon /> },
+        ];
+        return [...baseItems, ...guestItems];
+      }
 
-      return [...baseItems, ...userItems];
+      // For other roles (like HOUSEKEEPING, HOTEL_MANAGER), only show profile
+      return [...baseItems, { label: 'Profile', path: '/profile', icon: <PersonIcon /> }];
     }
 
     return baseItems;
@@ -168,9 +172,9 @@ const Navbar: React.FC = () => {
         <Typography variant="h6" sx={{ color: theme.palette.primary.main, fontWeight: 'bold' }}>
           🏨 BookMyHotel
         </Typography>
-        {tenantId !== 'default' && (
+        {tenant && (
           <Chip
-            label={`Tenant: ${tenantId}`}
+            label={tenant.name}
             size="small"
             color="secondary"
             sx={{ mt: 1 }}
@@ -243,11 +247,17 @@ const Navbar: React.FC = () => {
         <PersonIcon sx={{ mr: 1 }} />
         Profile
       </MenuItem>
-      {user?.role !== 'ADMIN' && user?.role !== 'HOTEL_ADMIN' && user?.role !== 'FRONTDESK' && (
-        <MenuItem onClick={() => handleNavigation('/dashboard')}>
-          <DashboardIcon sx={{ mr: 1 }} />
-          Dashboard
-        </MenuItem>
+      {user?.role === 'GUEST' && (
+        <>
+          <MenuItem onClick={() => handleNavigation('/dashboard')}>
+            <DashboardIcon sx={{ mr: 1 }} />
+            Dashboard
+          </MenuItem>
+          <MenuItem onClick={() => handleNavigation('/bookings')}>
+            <BusinessIcon sx={{ mr: 1 }} />
+            My Bookings
+          </MenuItem>
+        </>
       )}
       <Divider />
       <MenuItem onClick={handleLogout}>
@@ -306,9 +316,9 @@ const Navbar: React.FC = () => {
             </Box>
 
             {/* Tenant Badge */}
-            {tenantId !== 'default' && !isMobile && (
+            {tenant && !isMobile && (
               <Chip
-                label={`Tenant: ${tenantId}`}
+                label={tenant.name}
                 size="small"
                 variant="outlined"
                 sx={{ 

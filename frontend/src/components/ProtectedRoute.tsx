@@ -7,11 +7,16 @@ interface ProtectedRouteProps {
   requiredRole?: 'ADMIN' | 'HOTEL_ADMIN' | 'HOTEL_MANAGER' | 'FRONTDESK' | 'HOUSEKEEPING' | 'GUEST';
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole = 'GUEST' }) => {
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole }) => {
   const { isAuthenticated, user } = useAuth();
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
+  }
+
+  // If no requiredRole is specified, just check authentication
+  if (!requiredRole) {
+    return <>{children}</>;
   }
 
   // Define role hierarchy - higher roles can access lower role functionality
@@ -26,12 +31,17 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole 
 
   // Check if user has the required role or a higher role
   const hasRequiredRole = () => {
-    if (!user?.roles) return false;
+    if (!user) return false;
     
     const requiredRoleLevel = roleHierarchy[requiredRole] || 0;
     
+    // Get user roles - prefer roles array, fallback to single role property
+    const userRoles = user.roles && user.roles.length > 0 ? user.roles : (user.role ? [user.role] : []);
+    
+    if (userRoles.length === 0) return false;
+    
     // Check if any of the user's roles meets the requirement
-    return user.roles.some(role => {
+    return userRoles.some(role => {
       const userRoleLevel = roleHierarchy[role] || 0;
       return userRoleLevel >= requiredRoleLevel;
     });
