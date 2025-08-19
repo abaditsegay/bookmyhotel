@@ -21,6 +21,7 @@ import com.bookmyhotel.entity.User;
 import com.bookmyhotel.exception.ResourceNotFoundException;
 import com.bookmyhotel.repository.ReservationRepository;
 import com.bookmyhotel.repository.RoomRepository;
+import com.bookmyhotel.tenant.TenantContext;
 
 /**
  * Front desk service for managing bookings and guest services
@@ -43,14 +44,19 @@ public class FrontDeskService {
      */
     @Transactional(readOnly = true)
     public Page<BookingResponse> getAllBookings(Pageable pageable, String search) {
+        String tenantId = TenantContext.getTenantId();
+        if (tenantId == null || tenantId.trim().isEmpty()) {
+            throw new IllegalStateException("Tenant context is not set");
+        }
+        
         Page<Reservation> reservations;
         
         if (search != null && !search.trim().isEmpty()) {
-            // Implement search across multiple fields
-            reservations = reservationRepository.findByGuestNameOrRoomNumberOrConfirmationNumber(
-                search.trim(), pageable);
+            // Implement search across multiple fields with tenant filtering
+            reservations = reservationRepository.findByGuestNameOrRoomNumberOrConfirmationNumberAndTenantId(
+                search.trim(), tenantId, pageable);
         } else {
-            reservations = reservationRepository.findAll(pageable);
+            reservations = reservationRepository.findByTenantId(tenantId, pageable);
         }
         
         List<BookingResponse> bookingResponses = reservations.getContent().stream()
@@ -138,8 +144,13 @@ public class FrontDeskService {
      */
     @Transactional(readOnly = true)
     public List<BookingResponse> getTodaysArrivals() {
+        String tenantId = TenantContext.getTenantId();
+        if (tenantId == null || tenantId.trim().isEmpty()) {
+            throw new IllegalStateException("Tenant context is not set");
+        }
+        
         LocalDate today = LocalDate.now();
-        List<Reservation> arrivals = reservationRepository.findUpcomingCheckIns(today);
+        List<Reservation> arrivals = reservationRepository.findUpcomingCheckInsByTenantId(today, tenantId);
         
         return arrivals.stream()
             .map(this::convertToBookingResponse)
@@ -151,8 +162,13 @@ public class FrontDeskService {
      */
     @Transactional(readOnly = true)
     public List<BookingResponse> getTodaysDepartures() {
+        String tenantId = TenantContext.getTenantId();
+        if (tenantId == null || tenantId.trim().isEmpty()) {
+            throw new IllegalStateException("Tenant context is not set");
+        }
+        
         LocalDate today = LocalDate.now();
-        List<Reservation> departures = reservationRepository.findUpcomingCheckOuts(today);
+        List<Reservation> departures = reservationRepository.findUpcomingCheckOutsByTenantId(today, tenantId);
         
         return departures.stream()
             .map(this::convertToBookingResponse)
@@ -164,7 +180,12 @@ public class FrontDeskService {
      */
     @Transactional(readOnly = true)
     public List<BookingResponse> getCurrentGuests() {
-        List<Reservation> currentGuests = reservationRepository.findByStatus(ReservationStatus.CHECKED_IN);
+        String tenantId = TenantContext.getTenantId();
+        if (tenantId == null || tenantId.trim().isEmpty()) {
+            throw new IllegalStateException("Tenant context is not set");
+        }
+        
+        List<Reservation> currentGuests = reservationRepository.findByStatusAndTenantId(ReservationStatus.CHECKED_IN, tenantId);
         
         return currentGuests.stream()
             .map(this::convertToBookingResponse)
@@ -343,11 +364,16 @@ public class FrontDeskService {
      */
     @Transactional(readOnly = true)
     public FrontDeskStats getFrontDeskStats() {
+        String tenantId = TenantContext.getTenantId();
+        if (tenantId == null || tenantId.trim().isEmpty()) {
+            throw new IllegalStateException("Tenant context is not set");
+        }
+        
         LocalDate today = LocalDate.now();
         
-        long todaysArrivals = reservationRepository.findUpcomingCheckIns(today).size();
-        long todaysDepartures = reservationRepository.findUpcomingCheckOuts(today).size();
-        long currentOccupancy = reservationRepository.findByStatus(ReservationStatus.CHECKED_IN).size();
+        long todaysArrivals = reservationRepository.findUpcomingCheckInsByTenantId(today, tenantId).size();
+        long todaysDepartures = reservationRepository.findUpcomingCheckOutsByTenantId(today, tenantId).size();
+        long currentOccupancy = reservationRepository.findByStatusAndTenantId(ReservationStatus.CHECKED_IN, tenantId).size();
         
         long totalRooms = roomRepository.count();
         long availableRooms = roomRepository.countByStatus(RoomStatus.AVAILABLE);

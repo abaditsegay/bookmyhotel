@@ -32,6 +32,12 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     List<Reservation> findByStatus(ReservationStatus status);
     
     /**
+     * Find reservations by status and tenant
+     */
+    @Query("SELECT r FROM Reservation r WHERE r.status = :status AND r.room.hotel.tenantId = :tenantId")
+    List<Reservation> findByStatusAndTenantId(@Param("status") ReservationStatus status, @Param("tenantId") String tenantId);
+    
+    /**
      * Find reservation by payment intent ID
      */
     Optional<Reservation> findByPaymentIntentId(String paymentIntentId);
@@ -64,12 +70,30 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     List<Reservation> findUpcomingCheckIns(@Param("date") LocalDate date);
     
     /**
+     * Find upcoming check-ins by tenant
+     */
+    @Query("SELECT r FROM Reservation r " +
+           "WHERE r.checkInDate = :date " +
+           "AND r.status = com.bookmyhotel.entity.ReservationStatus.CONFIRMED " +
+           "AND r.room.hotel.tenantId = :tenantId")
+    List<Reservation> findUpcomingCheckInsByTenantId(@Param("date") LocalDate date, @Param("tenantId") String tenantId);
+    
+    /**
      * Find upcoming check-outs
      */
     @Query("SELECT r FROM Reservation r " +
            "WHERE r.checkOutDate = :date " +
            "AND r.status = com.bookmyhotel.entity.ReservationStatus.CHECKED_IN")
     List<Reservation> findUpcomingCheckOuts(@Param("date") LocalDate date);
+    
+    /**
+     * Find upcoming check-outs by tenant
+     */
+    @Query("SELECT r FROM Reservation r " +
+           "WHERE r.checkOutDate = :date " +
+           "AND r.status = com.bookmyhotel.entity.ReservationStatus.CHECKED_IN " +
+           "AND r.room.hotel.tenantId = :tenantId")
+    List<Reservation> findUpcomingCheckOutsByTenantId(@Param("date") LocalDate date, @Param("tenantId") String tenantId);
     
     /**
      * Generate confirmation number
@@ -97,4 +121,21 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
            "OR LOWER(r.confirmationNumber) LIKE LOWER(CONCAT('%', :search, '%')) " +
            "ORDER BY r.checkInDate DESC")
     Page<Reservation> findByGuestNameOrRoomNumberOrConfirmationNumber(@Param("search") String search, Pageable pageable);
+    
+    /**
+     * Search reservations by guest name, room number, or confirmation number with pagination and tenant filtering
+     */
+    @Query("SELECT r FROM Reservation r " +
+           "WHERE (LOWER(CONCAT(r.guest.firstName, ' ', r.guest.lastName)) LIKE LOWER(CONCAT('%', :search, '%')) " +
+           "OR LOWER(r.room.roomNumber) LIKE LOWER(CONCAT('%', :search, '%')) " +
+           "OR LOWER(r.confirmationNumber) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+           "AND r.room.hotel.tenantId = :tenantId " +
+           "ORDER BY r.checkInDate DESC")
+    Page<Reservation> findByGuestNameOrRoomNumberOrConfirmationNumberAndTenantId(@Param("search") String search, @Param("tenantId") String tenantId, Pageable pageable);
+    
+    /**
+     * Find all reservations by tenant with pagination
+     */
+    @Query("SELECT r FROM Reservation r WHERE r.room.hotel.tenantId = :tenantId ORDER BY r.checkInDate DESC")
+    Page<Reservation> findByTenantId(@Param("tenantId") String tenantId, Pageable pageable);
 }

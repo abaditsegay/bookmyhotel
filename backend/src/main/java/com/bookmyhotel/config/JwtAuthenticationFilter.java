@@ -11,6 +11,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.bookmyhotel.tenant.TenantContext;
 import com.bookmyhotel.util.JwtUtil;
 
 import jakarta.servlet.FilterChain;
@@ -38,14 +39,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String username = null;
         String jwt = null;
+        String tenantId = null;
 
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             jwt = authorizationHeader.substring(7);
             try {
                 username = jwtUtil.extractUsername(jwt);
+                tenantId = jwtUtil.extractTenantId(jwt); // Extract tenant ID from JWT
             } catch (Exception e) {
                 logger.warn("JWT token extraction failed: " + e.getMessage());
             }
+        }
+
+        // Set tenant context from JWT token if available
+        if (tenantId != null && !tenantId.trim().isEmpty()) {
+            TenantContext.setTenantId(tenantId);
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {

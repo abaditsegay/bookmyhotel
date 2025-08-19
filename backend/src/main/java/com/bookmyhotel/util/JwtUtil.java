@@ -72,6 +72,13 @@ public class JwtUtil {
     }
     
     /**
+     * Extract tenant ID from token
+     */
+    public String extractTenantId(String token) {
+        return extractClaim(token, claims -> (String) claims.get("tenantId"));
+    }
+    
+    /**
      * Extract expiration date from token
      */
     public Date extractExpiration(String token) {
