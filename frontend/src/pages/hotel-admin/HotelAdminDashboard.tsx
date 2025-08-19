@@ -84,7 +84,7 @@ const HotelAdminDashboard: React.FC = () => {
   const [bookings, setBookings] = useState<BookingResponse[]>([]);
   const [bookingStats, setBookingStats] = useState<BookingStats | null>(null);
   const [bookingPage, setBookingPage] = useState(0);
-  const [bookingSize] = useState(10);
+  const [bookingSize] = useState(5);
   const [bookingSearch, setBookingSearch] = useState('');
   const [totalBookingPages, setTotalBookingPages] = useState(0);
   const [bookingsLoading, setBookingsLoading] = useState(false);
@@ -136,8 +136,16 @@ const HotelAdminDashboard: React.FC = () => {
       );
       
       if (result.success && result.data) {
+        console.log('Booking API Response:', result.data);
+        console.log('Total Pages:', result.data.totalPages);
+        console.log('Total Elements:', result.data.totalElements);
+        console.log('Current Page:', result.data.number);
         setBookings(result.data.content || []);
-        setTotalBookingPages(result.data.totalPages || 0);
+        const totalPages = result.data.totalPages || 0;
+        // If we have more than the page size but no totalPages, calculate it
+        const calculatedPages = totalPages > 0 ? totalPages : Math.ceil((result.data.totalElements || result.data.content?.length || 0) / bookingSize);
+        console.log('Calculated Total Pages:', calculatedPages);
+        setTotalBookingPages(calculatedPages);
       } else {
         setBookingsError(result.message || 'Failed to load bookings');
         setBookings([]);
@@ -643,13 +651,13 @@ const HotelAdminDashboard: React.FC = () => {
             )}
 
             {/* Pagination */}
-            {!bookingsLoading && bookings.length > 0 && totalBookingPages > 0 && (
+            {!bookingsLoading && bookings.length > 0 && (
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 3 }}>
                 <Typography variant="body2" color="text.secondary">
-                  Page {bookingPage + 1} of {totalBookingPages} • {bookings.length} bookings on this page
+                  Page {bookingPage + 1} of {Math.max(totalBookingPages, 1)} • {bookings.length} bookings on this page
                 </Typography>
                 <Pagination 
-                  count={totalBookingPages} 
+                  count={Math.max(totalBookingPages, 1)} 
                   page={bookingPage + 1} // MUI Pagination is 1-based
                   onChange={handleBookingPageChange}
                   color="primary"
