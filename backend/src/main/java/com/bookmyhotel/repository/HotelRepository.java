@@ -120,4 +120,9 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
      * Find active hotels by tenant ID
      */
     List<Hotel> findByTenantIdAndIsActiveTrue(String tenantId);
+    
+    /**
+     * Count hotels by tenant ID
+     */
+    long countByTenantId(String tenantId);
 }

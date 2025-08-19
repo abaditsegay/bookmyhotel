@@ -92,4 +92,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u FROM User u WHERE u.hotel = :hotel AND EXISTS (SELECT 1 FROM u.roles r WHERE r IN :roles)")
     List<User> findByHotelAndRolesContaining(@Param("hotel") Hotel hotel, @Param("roles") List<UserRole> roles);
     
+    /**
+     * Count users by tenant ID
+     */
+    long countByTenantId(String tenantId);
+    
 }

@@ -2,15 +2,17 @@ package com.bookmyhotel.repository;
 
 import com.bookmyhotel.entity.Tenant;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
  * Repository for Tenant entity
  */
 @Repository
-public interface TenantRepository extends JpaRepository<Tenant, Long> {
+public interface TenantRepository extends JpaRepository<Tenant, Long>, JpaSpecificationExecutor<Tenant> {
 
     /**
      * Find tenant by tenant ID
@@ -21,6 +23,11 @@ public interface TenantRepository extends JpaRepository<Tenant, Long> {
      * Find tenant by name
      */
     Optional<Tenant> findByName(String name);
+
+    /**
+     * Find tenant by subdomain
+     */
+    Optional<Tenant> findBySubdomain(String subdomain);
 
     /**
      * Check if tenant exists by tenant ID
@@ -36,4 +43,14 @@ public interface TenantRepository extends JpaRepository<Tenant, Long> {
      * Find active tenant by tenant ID
      */
     Optional<Tenant> findByTenantIdAndIsActiveTrue(String tenantId);
+
+    /**
+     * Find all active tenants ordered by name
+     */
+    List<Tenant> findByIsActiveTrueOrderByName();
+
+    /**
+     * Count active tenants
+     */
+    long countByIsActiveTrue();
 }

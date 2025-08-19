@@ -24,7 +24,8 @@ import {
   Settings,
   Security,
   Analytics,
-  AdminPanelSettings
+  AdminPanelSettings,
+  Business
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -60,6 +61,13 @@ export const SystemDashboardPage: React.FC = () => {
       icon: <People />,
       action: () => navigate('/system/users'),
       color: 'secondary' as const,
+    },
+    {
+      title: 'Manage Tenants',
+      description: 'Manage tenant organizations and configurations',
+      icon: <Business />,
+      action: () => navigate('/system/tenants'),
+      color: 'info' as const,
     },
     {
       title: 'System Analytics',
