@@ -43,7 +43,6 @@ import {
   Add as AddIcon,
   Check as CheckIcon,
   Close as CloseIcon,
-  RateReview as ReviewIcon,
   Refresh as RefreshIcon
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
@@ -71,7 +70,7 @@ interface HotelRegistration {
   numberOfRooms?: number;
   checkInTime?: string;
   checkOutTime?: string;
-  status: 'PENDING' | 'UNDER_REVIEW' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
   submittedAt: string;
   reviewedAt?: string;
   reviewedBy?: number;
@@ -119,6 +118,7 @@ const HotelManagementAdmin: React.FC = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [registerDialogOpen, setRegisterDialogOpen] = useState(false);
   const [registrationViewDialogOpen, setRegistrationViewDialogOpen] = useState(false);
+  const [registrationEditMode, setRegistrationEditMode] = useState(false);
   const [approveDialogOpen, setApproveDialogOpen] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
 
@@ -133,6 +133,27 @@ const HotelManagementAdmin: React.FC = () => {
 
   // Registration form state
   const [registrationForm, setRegistrationForm] = useState({
+    hotelName: '',
+    description: '',
+    address: '',
+    city: '',
+    state: '',
+    country: '',
+    zipCode: '',
+    phone: '',
+    contactEmail: '',
+    contactPerson: '',
+    licenseNumber: '',
+    taxId: '',
+    websiteUrl: '',
+    facilityAmenities: '',
+    numberOfRooms: '',
+    checkInTime: '15:00',
+    checkOutTime: '11:00'
+  });
+
+  // Edit registration form state
+  const [editRegistrationForm, setEditRegistrationForm] = useState({
     hotelName: '',
     description: '',
     address: '',
@@ -366,7 +387,111 @@ const HotelManagementAdmin: React.FC = () => {
 
   const viewRegistration = (registration: HotelRegistration) => {
     setSelectedRegistration(registration);
+    setRegistrationEditMode(false);
+    // Initialize edit form with registration data
+    setEditRegistrationForm({
+      hotelName: registration.hotelName || '',
+      description: registration.description || '',
+      address: registration.address || '',
+      city: registration.city || '',
+      state: registration.state || '',
+      country: registration.country || '',
+      zipCode: registration.zipCode || '',
+      phone: registration.phone || '',
+      contactEmail: registration.contactEmail || '',
+      contactPerson: registration.contactPerson || '',
+      licenseNumber: registration.licenseNumber || '',
+      taxId: registration.taxId || '',
+      websiteUrl: registration.websiteUrl || '',
+      facilityAmenities: registration.facilityAmenities || '',
+      numberOfRooms: registration.numberOfRooms?.toString() || '',
+      checkInTime: registration.checkInTime || '15:00',
+      checkOutTime: registration.checkOutTime || '11:00'
+    });
     setRegistrationViewDialogOpen(true);
+  };
+
+  const handleEditRegistrationFormChange = (field: string, value: string) => {
+    setEditRegistrationForm(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleSaveRegistrationEdit = async () => {
+    if (!selectedRegistration) return;
+
+    try {
+      const response = await fetch(`/api/admin/hotel-registrations/${selectedRegistration.id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          hotelName: editRegistrationForm.hotelName,
+          description: editRegistrationForm.description,
+          address: editRegistrationForm.address,
+          city: editRegistrationForm.city,
+          state: editRegistrationForm.state,
+          country: editRegistrationForm.country,
+          zipCode: editRegistrationForm.zipCode,
+          phone: editRegistrationForm.phone,
+          contactEmail: editRegistrationForm.contactEmail,
+          contactPerson: editRegistrationForm.contactPerson,
+          licenseNumber: editRegistrationForm.licenseNumber,
+          taxId: editRegistrationForm.taxId,
+          websiteUrl: editRegistrationForm.websiteUrl,
+          facilityAmenities: editRegistrationForm.facilityAmenities,
+          numberOfRooms: editRegistrationForm.numberOfRooms ? parseInt(editRegistrationForm.numberOfRooms) : null,
+          checkInTime: editRegistrationForm.checkInTime,
+          checkOutTime: editRegistrationForm.checkOutTime
+        })
+      });
+
+      if (response.ok) {
+        setRegistrationEditMode(false);
+        setSuccess('Hotel registration updated successfully');
+        setTimeout(() => setSuccess(null), 3000);
+        loadRegistrations(); // Refresh the list
+        
+        // Update the selected registration with new data
+        const updatedRegistration = await response.json();
+        setSelectedRegistration(updatedRegistration);
+      } else {
+        throw new Error('Failed to update registration');
+      }
+    } catch (err) {
+      console.error('Error updating registration:', err);
+      setError('Failed to update hotel registration. Please try again.');
+      setTimeout(() => setError(null), 3000);
+    }
+  };
+
+  const handleCancelRegistrationEdit = () => {
+    setRegistrationEditMode(false);
+    // Reset form to original values
+    if (selectedRegistration) {
+      setEditRegistrationForm({
+        hotelName: selectedRegistration.hotelName || '',
+        description: selectedRegistration.description || '',
+        address: selectedRegistration.address || '',
+        city: selectedRegistration.city || '',
+        state: selectedRegistration.state || '',
+        country: selectedRegistration.country || '',
+        zipCode: selectedRegistration.zipCode || '',
+        phone: selectedRegistration.phone || '',
+        contactEmail: selectedRegistration.contactEmail || '',
+        contactPerson: selectedRegistration.contactPerson || '',
+        licenseNumber: selectedRegistration.licenseNumber || '',
+        taxId: selectedRegistration.taxId || '',
+        websiteUrl: selectedRegistration.websiteUrl || '',
+        facilityAmenities: selectedRegistration.facilityAmenities || '',
+        numberOfRooms: selectedRegistration.numberOfRooms?.toString() || '',
+        checkInTime: selectedRegistration.checkInTime || '15:00',
+        checkOutTime: selectedRegistration.checkOutTime || '11:00'
+      });
+    }
   };
 
   const openApprovalDialog = (registration: HotelRegistration) => {
@@ -382,29 +507,7 @@ const HotelManagementAdmin: React.FC = () => {
     setRejectDialogOpen(true);
   };
 
-  const handleMarkUnderReview = async (registrationId: number) => {
-    try {
-      const response = await fetch(`/api/admin/hotel-registrations/${registrationId}/under-review`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
 
-      if (response.ok) {
-        setSuccess('Registration marked as under review');
-        setTimeout(() => setSuccess(null), 3000);
-        loadRegistrations();
-        loadRegistrationStatistics();
-      } else {
-        throw new Error('Failed to mark as under review');
-      }
-    } catch (err) {
-      console.error('Error marking as under review:', err);
-      setError('Failed to mark registration as under review. Please try again.');
-    }
-  };
 
   const handleApproveRegistration = async () => {
     if (!selectedRegistration || !tenantId.trim()) {
@@ -431,11 +534,6 @@ const HotelManagementAdmin: React.FC = () => {
       loadRegistrations();
       loadRegistrationStatistics();
       loadHotels(); // Refresh hotels list to show the newly created hotel
-      
-      // Optionally switch to "Existing Hotels" tab to show the new hotel
-      setTimeout(() => {
-        setActiveTab(0); // Switch to Existing Hotels tab
-      }, 1000);
     } catch (err) {
       console.error('Error approving registration:', err);
       setError('Failed to approve registration. Please try again.');
@@ -796,7 +894,7 @@ const HotelManagementAdmin: React.FC = () => {
             {/* Registration Statistics */}
             {registrationStats && (
               <Grid container spacing={3} sx={{ mb: 4 }}>
-                <Grid item xs={12} sm={6} md={2.4}>
+                <Grid item xs={12} sm={6} md={3}>
                   <Card>
                     <CardContent>
                       <Typography color="textSecondary" gutterBottom>
@@ -808,7 +906,7 @@ const HotelManagementAdmin: React.FC = () => {
                     </CardContent>
                   </Card>
                 </Grid>
-                <Grid item xs={12} sm={6} md={2.4}>
+                <Grid item xs={12} sm={6} md={3}>
                   <Card>
                     <CardContent>
                       <Typography color="textSecondary" gutterBottom>
@@ -820,19 +918,7 @@ const HotelManagementAdmin: React.FC = () => {
                     </CardContent>
                   </Card>
                 </Grid>
-                <Grid item xs={12} sm={6} md={2.4}>
-                  <Card>
-                    <CardContent>
-                      <Typography color="textSecondary" gutterBottom>
-                        Under Review
-                      </Typography>
-                      <Typography variant="h4" color="info.main">
-                        {registrationStats.underReview}
-                      </Typography>
-                    </CardContent>
-                  </Card>
-                </Grid>
-                <Grid item xs={12} sm={6} md={2.4}>
+                <Grid item xs={12} sm={6} md={3}>
                   <Card>
                     <CardContent>
                       <Typography color="textSecondary" gutterBottom>
@@ -844,7 +930,7 @@ const HotelManagementAdmin: React.FC = () => {
                     </CardContent>
                   </Card>
                 </Grid>
-                <Grid item xs={12} sm={6} md={2.4}>
+                <Grid item xs={12} sm={6} md={3}>
                   <Card>
                     <CardContent>
                       <Typography color="textSecondary" gutterBottom>
@@ -910,15 +996,6 @@ const HotelManagementAdmin: React.FC = () => {
                             <>
                               <Button
                                 size="small"
-                                startIcon={<ReviewIcon />}
-                                onClick={() => handleMarkUnderReview(registration.id)}
-                                variant="outlined"
-                                color="info"
-                              >
-                                Under Review
-                              </Button>
-                              <Button
-                                size="small"
                                 startIcon={<CheckIcon />}
                                 onClick={() => openApprovalDialog(registration)}
                                 variant="contained"
@@ -937,29 +1014,7 @@ const HotelManagementAdmin: React.FC = () => {
                               </Button>
                             </>
                           )}
-                          
-                          {registration.status === 'UNDER_REVIEW' && (
-                            <>
-                              <Button
-                                size="small"
-                                startIcon={<CheckIcon />}
-                                onClick={() => openApprovalDialog(registration)}
-                                variant="contained"
-                                color="success"
-                              >
-                                Approve
-                              </Button>
-                              <Button
-                                size="small"
-                                startIcon={<CloseIcon />}
-                                onClick={() => openRejectionDialog(registration)}
-                                variant="contained"
-                                color="error"
-                              >
-                                Reject
-                              </Button>
-                            </>
-                          )}
+
                         </Box>
                       </TableCell>
                     </TableRow>
@@ -1141,7 +1196,21 @@ const HotelManagementAdmin: React.FC = () => {
 
         {/* Registration View Dialog */}
         <Dialog open={registrationViewDialogOpen} onClose={() => setRegistrationViewDialogOpen(false)} maxWidth="md" fullWidth>
-          <DialogTitle>Hotel Registration Details</DialogTitle>
+          <DialogTitle>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span>Hotel Registration Details</span>
+              {selectedRegistration?.status === 'PENDING' && !registrationEditMode && (
+                <Button
+                  startIcon={<EditIcon />}
+                  onClick={() => setRegistrationEditMode(true)}
+                  variant="outlined"
+                  size="small"
+                >
+                  Edit
+                </Button>
+              )}
+            </Box>
+          </DialogTitle>
           <DialogContent>
             {selectedRegistration && (
               <Grid container spacing={2} sx={{ mt: 1 }}>
@@ -1149,9 +1218,11 @@ const HotelManagementAdmin: React.FC = () => {
                   <TextField
                     label="Hotel Name"
                     fullWidth
-                    value={selectedRegistration.hotelName}
-                    disabled
-                    variant="filled"
+                    value={registrationEditMode ? editRegistrationForm.hotelName : selectedRegistration.hotelName}
+                    disabled={!registrationEditMode}
+                    variant={registrationEditMode ? "outlined" : "filled"}
+                    onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('hotelName', e.target.value) : undefined}
+                    required={registrationEditMode}
                   />
                 </Grid>
                 
@@ -1159,9 +1230,11 @@ const HotelManagementAdmin: React.FC = () => {
                   <TextField
                     label="Contact Person"
                     fullWidth
-                    value={selectedRegistration.contactPerson}
-                    disabled
-                    variant="filled"
+                    value={registrationEditMode ? editRegistrationForm.contactPerson : selectedRegistration.contactPerson}
+                    disabled={!registrationEditMode}
+                    variant={registrationEditMode ? "outlined" : "filled"}
+                    onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('contactPerson', e.target.value) : undefined}
+                    required={registrationEditMode}
                   />
                 </Grid>
                 
@@ -1171,9 +1244,10 @@ const HotelManagementAdmin: React.FC = () => {
                     multiline
                     rows={3}
                     fullWidth
-                    value={selectedRegistration.description}
-                    disabled
-                    variant="filled"
+                    value={registrationEditMode ? editRegistrationForm.description : selectedRegistration.description}
+                    disabled={!registrationEditMode}
+                    variant={registrationEditMode ? "outlined" : "filled"}
+                    onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('description', e.target.value) : undefined}
                   />
                 </Grid>
                 
@@ -1181,9 +1255,11 @@ const HotelManagementAdmin: React.FC = () => {
                   <TextField
                     label="Address"
                     fullWidth
-                    value={selectedRegistration.address}
-                    disabled
-                    variant="filled"
+                    value={registrationEditMode ? editRegistrationForm.address : selectedRegistration.address}
+                    disabled={!registrationEditMode}
+                    variant={registrationEditMode ? "outlined" : "filled"}
+                    onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('address', e.target.value) : undefined}
+                    required={registrationEditMode}
                   />
                 </Grid>
                 
@@ -1191,9 +1267,11 @@ const HotelManagementAdmin: React.FC = () => {
                   <TextField
                     label="City"
                     fullWidth
-                    value={selectedRegistration.city}
-                    disabled
-                    variant="filled"
+                    value={registrationEditMode ? editRegistrationForm.city : selectedRegistration.city}
+                    disabled={!registrationEditMode}
+                    variant={registrationEditMode ? "outlined" : "filled"}
+                    onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('city', e.target.value) : undefined}
+                    required={registrationEditMode}
                   />
                 </Grid>
                 
@@ -1201,9 +1279,33 @@ const HotelManagementAdmin: React.FC = () => {
                   <TextField
                     label="Country"
                     fullWidth
-                    value={selectedRegistration.country}
-                    disabled
-                    variant="filled"
+                    value={registrationEditMode ? editRegistrationForm.country : selectedRegistration.country}
+                    disabled={!registrationEditMode}
+                    variant={registrationEditMode ? "outlined" : "filled"}
+                    onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('country', e.target.value) : undefined}
+                    required={registrationEditMode}
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="State"
+                    fullWidth
+                    value={registrationEditMode ? editRegistrationForm.state : (selectedRegistration.state || '')}
+                    disabled={!registrationEditMode}
+                    variant={registrationEditMode ? "outlined" : "filled"}
+                    onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('state', e.target.value) : undefined}
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="Zip Code"
+                    fullWidth
+                    value={registrationEditMode ? editRegistrationForm.zipCode : (selectedRegistration.zipCode || '')}
+                    disabled={!registrationEditMode}
+                    variant={registrationEditMode ? "outlined" : "filled"}
+                    onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('zipCode', e.target.value) : undefined}
                   />
                 </Grid>
                 
@@ -1211,9 +1313,11 @@ const HotelManagementAdmin: React.FC = () => {
                   <TextField
                     label="Phone"
                     fullWidth
-                    value={selectedRegistration.phone}
-                    disabled
-                    variant="filled"
+                    value={registrationEditMode ? editRegistrationForm.phone : selectedRegistration.phone}
+                    disabled={!registrationEditMode}
+                    variant={registrationEditMode ? "outlined" : "filled"}
+                    onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('phone', e.target.value) : undefined}
+                    required={registrationEditMode}
                   />
                 </Grid>
 
@@ -1221,119 +1325,137 @@ const HotelManagementAdmin: React.FC = () => {
                   <TextField
                     label="Contact Email"
                     fullWidth
-                    value={selectedRegistration.contactEmail}
-                    disabled
-                    variant="filled"
+                    value={registrationEditMode ? editRegistrationForm.contactEmail : selectedRegistration.contactEmail}
+                    disabled={!registrationEditMode}
+                    variant={registrationEditMode ? "outlined" : "filled"}
+                    onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('contactEmail', e.target.value) : undefined}
+                    required={registrationEditMode}
+                    type="email"
                   />
                 </Grid>
 
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    label="Status"
-                    fullWidth
-                    value={selectedRegistration.status}
-                    disabled
-                    variant="filled"
-                  />
-                </Grid>
+                {!registrationEditMode && (
+                  <>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Status"
+                        fullWidth
+                        value={selectedRegistration.status}
+                        disabled
+                        variant="filled"
+                      />
+                    </Grid>
 
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    label="Submitted At"
-                    fullWidth
-                    value={formatDate(selectedRegistration.submittedAt)}
-                    disabled
-                    variant="filled"
-                  />
-                </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Submitted At"
+                        fullWidth
+                        value={formatDate(selectedRegistration.submittedAt)}
+                        disabled
+                        variant="filled"
+                      />
+                    </Grid>
+                  </>
+                )}
 
-                {selectedRegistration.licenseNumber && (
+                {(selectedRegistration.licenseNumber || registrationEditMode) && (
                   <Grid item xs={12} sm={6}>
                     <TextField
                       label="License Number"
                       fullWidth
-                      value={selectedRegistration.licenseNumber}
-                      disabled
-                      variant="filled"
+                      value={registrationEditMode ? editRegistrationForm.licenseNumber : (selectedRegistration.licenseNumber || '')}
+                      disabled={!registrationEditMode}
+                      variant={registrationEditMode ? "outlined" : "filled"}
+                      onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('licenseNumber', e.target.value) : undefined}
                     />
                   </Grid>
                 )}
 
-                {selectedRegistration.taxId && (
+                {(selectedRegistration.taxId || registrationEditMode) && (
                   <Grid item xs={12} sm={6}>
                     <TextField
                       label="Tax ID"
                       fullWidth
-                      value={selectedRegistration.taxId}
-                      disabled
-                      variant="filled"
+                      value={registrationEditMode ? editRegistrationForm.taxId : (selectedRegistration.taxId || '')}
+                      disabled={!registrationEditMode}
+                      variant={registrationEditMode ? "outlined" : "filled"}
+                      onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('taxId', e.target.value) : undefined}
                     />
                   </Grid>
                 )}
 
-                {selectedRegistration.websiteUrl && (
+                {(selectedRegistration.websiteUrl || registrationEditMode) && (
                   <Grid item xs={12}>
                     <TextField
                       label="Website URL"
                       fullWidth
-                      value={selectedRegistration.websiteUrl}
-                      disabled
-                      variant="filled"
+                      value={registrationEditMode ? editRegistrationForm.websiteUrl : (selectedRegistration.websiteUrl || '')}
+                      disabled={!registrationEditMode}
+                      variant={registrationEditMode ? "outlined" : "filled"}
+                      onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('websiteUrl', e.target.value) : undefined}
                     />
                   </Grid>
                 )}
 
-                {selectedRegistration.facilityAmenities && (
+                {(selectedRegistration.facilityAmenities || registrationEditMode) && (
                   <Grid item xs={12}>
                     <TextField
                       label="Facility Amenities"
                       multiline
                       rows={2}
                       fullWidth
-                      value={selectedRegistration.facilityAmenities}
-                      disabled
-                      variant="filled"
+                      value={registrationEditMode ? editRegistrationForm.facilityAmenities : (selectedRegistration.facilityAmenities || '')}
+                      disabled={!registrationEditMode}
+                      variant={registrationEditMode ? "outlined" : "filled"}
+                      onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('facilityAmenities', e.target.value) : undefined}
+                      placeholder={registrationEditMode ? "WiFi, Pool, Spa, Restaurant, etc." : undefined}
                     />
                   </Grid>
                 )}
 
-                {selectedRegistration.numberOfRooms && (
+                {(selectedRegistration.numberOfRooms || registrationEditMode) && (
                   <Grid item xs={12} sm={4}>
                     <TextField
                       label="Number of Rooms"
                       fullWidth
-                      value={selectedRegistration.numberOfRooms}
-                      disabled
-                      variant="filled"
+                      value={registrationEditMode ? editRegistrationForm.numberOfRooms : (selectedRegistration.numberOfRooms?.toString() || '')}
+                      disabled={!registrationEditMode}
+                      variant={registrationEditMode ? "outlined" : "filled"}
+                      onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('numberOfRooms', e.target.value) : undefined}
+                      type="number"
                     />
                   </Grid>
                 )}
 
-                {selectedRegistration.checkInTime && (
+                {(selectedRegistration.checkInTime || registrationEditMode) && (
                   <Grid item xs={12} sm={4}>
                     <TextField
                       label="Check-in Time"
                       fullWidth
-                      value={selectedRegistration.checkInTime}
-                      disabled
-                      variant="filled"
+                      value={registrationEditMode ? editRegistrationForm.checkInTime : (selectedRegistration.checkInTime || '')}
+                      disabled={!registrationEditMode}
+                      variant={registrationEditMode ? "outlined" : "filled"}
+                      onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('checkInTime', e.target.value) : undefined}
+                      type="time"
                     />
                   </Grid>
                 )}
 
-                {selectedRegistration.checkOutTime && (
+                {(selectedRegistration.checkOutTime || registrationEditMode) && (
                   <Grid item xs={12} sm={4}>
                     <TextField
                       label="Check-out Time"
                       fullWidth
-                      value={selectedRegistration.checkOutTime}
-                      disabled
-                      variant="filled"
+                      value={registrationEditMode ? editRegistrationForm.checkOutTime : (selectedRegistration.checkOutTime || '')}
+                      disabled={!registrationEditMode}
+                      variant={registrationEditMode ? "outlined" : "filled"}
+                      onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('checkOutTime', e.target.value) : undefined}
+                      type="time"
                     />
                   </Grid>
                 )}
 
-                {selectedRegistration.reviewedAt && (
+                {!registrationEditMode && selectedRegistration.reviewedAt && (
                   <Grid item xs={12} sm={6}>
                     <TextField
                       label="Reviewed At"
@@ -1345,7 +1467,7 @@ const HotelManagementAdmin: React.FC = () => {
                   </Grid>
                 )}
 
-                {selectedRegistration.reviewComments && (
+                {!registrationEditMode && selectedRegistration.reviewComments && (
                   <Grid item xs={12}>
                     <TextField
                       label="Review Comments"
@@ -1359,7 +1481,7 @@ const HotelManagementAdmin: React.FC = () => {
                   </Grid>
                 )}
 
-                {selectedRegistration.approvedHotelId && (
+                {!registrationEditMode && selectedRegistration.approvedHotelId && (
                   <Grid item xs={12} sm={6}>
                     <TextField
                       label="Created Hotel ID"
@@ -1371,7 +1493,7 @@ const HotelManagementAdmin: React.FC = () => {
                   </Grid>
                 )}
 
-                {selectedRegistration.tenantId && (
+                {!registrationEditMode && selectedRegistration.tenantId && (
                   <Grid item xs={12} sm={6}>
                     <TextField
                       label="Tenant ID"
@@ -1386,7 +1508,20 @@ const HotelManagementAdmin: React.FC = () => {
             )}
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setRegistrationViewDialogOpen(false)}>Close</Button>
+            {registrationEditMode ? (
+              <>
+                <Button onClick={handleCancelRegistrationEdit}>Cancel</Button>
+                <Button 
+                  variant="contained" 
+                  onClick={handleSaveRegistrationEdit}
+                  disabled={!editRegistrationForm.hotelName || !editRegistrationForm.contactPerson || !editRegistrationForm.contactEmail}
+                >
+                  Save Changes
+                </Button>
+              </>
+            ) : (
+              <Button onClick={() => setRegistrationViewDialogOpen(false)}>Close</Button>
+            )}
           </DialogActions>
         </Dialog>
 

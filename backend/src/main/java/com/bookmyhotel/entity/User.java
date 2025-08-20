@@ -100,12 +100,22 @@ public class User extends BaseEntity implements UserDetails {
     // Lifecycle methods for tenant management
     @PrePersist
     public void prePersist() {
-        super.prePersist(); // Call BaseEntity's prePersist
+        System.err.println("🚨🚨🚨 USER PRE_PERSIST: STARTING prePersist() method 🚨🚨🚨");
+        System.err.println("🚨🚨🚨 USER PRE_PERSIST: User email = " + this.email + " 🚨🚨🚨");
+        System.err.println("🚨🚨🚨 USER PRE_PERSIST: User roles = " + this.roles + " 🚨🚨🚨");
+        System.err.println("🚨🚨🚨 USER PRE_PERSIST: Current tenant_id before logic = " + this.tenantId + " 🚨🚨🚨");
+        System.err.println("🚨🚨🚨 USER PRE_PERSIST: TenantContext.getTenantId() = " + TenantContext.getTenantId() + " 🚨🚨🚨");
         
-        // Only set tenant_id for tenant-bound roles
-        if (this.tenantId == null && isTenantBoundUser()) {
+        if (isTenantBoundUser()) {
+            System.err.println("🚨🚨🚨 USER PRE_PERSIST: User is TENANT BOUND, setting tenant ID 🚨🚨🚨");
             this.tenantId = TenantContext.getTenantId();
+        } else {
+            System.err.println("🚨🚨🚨 USER PRE_PERSIST: User is NOT tenant bound (guest/admin), keeping tenant_id as null 🚨🚨🚨");
+            // Explicitly set to null for guest users
+            this.tenantId = null;
         }
+        System.err.println("🚨🚨🚨 USER PRE_PERSIST: Final tenant_id = " + this.tenantId + " 🚨🚨🚨");
+        System.err.println("🚨🚨🚨 USER PRE_PERSIST: ENDING prePersist() method 🚨🚨🚨");
     }
     
     @PreUpdate
@@ -119,7 +129,11 @@ public class User extends BaseEntity implements UserDetails {
      * All other roles are tenant-bound
      */
     public boolean isTenantBoundUser() {
-        return this.tenantId != null;
+        // Check if user has system-wide roles (GUEST or ADMIN)
+        if (roles != null) {
+            return !roles.contains(UserRole.GUEST) && !roles.contains(UserRole.ADMIN);
+        }
+        return false; // If no roles, not tenant-bound
     }
     
     /**

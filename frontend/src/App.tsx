@@ -21,7 +21,6 @@ import GuestAuthPage from './pages/GuestAuthPage';
 import ProfilePage from './pages/ProfilePage';
 import PublicHotelRegistration from './pages/PublicHotelRegistration';
 import PublicAdminHotelRegistration from './pages/PublicAdminHotelRegistration';
-import HotelRegistrationStatus from './pages/HotelRegistrationStatus';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import HotelRegistrationAdmin from './pages/admin/HotelRegistrationAdmin';
 import HotelRegistrationForm from './pages/admin/HotelRegistrationForm';
@@ -296,7 +295,6 @@ function App() {
         <Route path="/guest-auth" element={<GuestAuthPage />} />
         <Route path="/register-hotel" element={<PublicHotelRegistration />} />
         <Route path="/register-hotel-admin" element={<PublicAdminHotelRegistration />} />
-        <Route path="/registration-status" element={<HotelRegistrationStatus />} />
         <Route path="/register" element={
           <PlaceholderPage 
             title="Register" 

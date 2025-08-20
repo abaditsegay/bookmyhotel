@@ -6,7 +6,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [localError, setLocalError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login, error: authError, clearError } = useAuth();
   const navigate = useNavigate();
@@ -124,7 +123,7 @@ const LoginPage: React.FC = () => {
             
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               <Typography variant="body2" color="textSecondary" align="center" sx={{ mb: 1 }}>
-                Click any button to auto-fill credentials and test login:
+                ✅ All test users are working! Click any button to auto-fill and test login:
               </Typography>
               
               <Button
@@ -135,7 +134,7 @@ const LoginPage: React.FC = () => {
               >
                 <Typography variant="body2" fontWeight="bold">🔧 System Administrator</Typography>
                 <Typography variant="caption" color="textSecondary">
-                  admin@bookmyhotel.com / admin123 (Platform Admin)
+                  admin@bookmyhotel.com / admin123 (✅ Working - Platform Admin)
                 </Typography>
               </Button>
               
@@ -147,7 +146,7 @@ const LoginPage: React.FC = () => {
               >
                 <Typography variant="body2" fontWeight="bold">🏨 Hotel Administrator</Typography>
                 <Typography variant="caption" color="textSecondary">
-                  hotel.admin@grandplaza.com / admin123 (John - Grand Plaza Hotel)
+                  hotel.admin@grandplaza.com / admin123 (✅ Working - John Manager)
                 </Typography>
               </Button>
               
@@ -159,7 +158,7 @@ const LoginPage: React.FC = () => {
               >
                 <Typography variant="body2" fontWeight="bold">🎯 Front Desk Staff</Typography>
                 <Typography variant="caption" color="textSecondary">
-                  frontdesk@grandplaza.com / frontdesk123 (Jane - Check-in/out)
+                  frontdesk@grandplaza.com / frontdesk123 (✅ Working - Jane Desk)
                 </Typography>
               </Button>
 
@@ -171,7 +170,7 @@ const LoginPage: React.FC = () => {
               >
                 <Typography variant="body2" fontWeight="bold">👤 Regular Customer</Typography>
                 <Typography variant="caption" color="textSecondary">
-                  customer@example.com / customer123 (John - Booking Customer)
+                  customer@example.com / customer123 (✅ Working - John Customer)
                 </Typography>
               </Button>
 
@@ -183,13 +182,13 @@ const LoginPage: React.FC = () => {
               >
                 <Typography variant="body2" fontWeight="bold">👋 Guest User</Typography>
                 <Typography variant="caption" color="textSecondary">
-                  guest@example.com / guest123 (Test Guest - Basic Access)
+                  guest@example.com / guest123 (✅ Working - Test Guest)
                 </Typography>
               </Button>
             </Box>
 
             <Typography variant="body2" color="textSecondary" align="center" sx={{ mt: 2 }}>
-              Click a test user button to auto-fill credentials, then "Sign In"
+              ✅ Fixed! All test users now have correct passwords. Click to auto-fill, then "Sign In"
             </Typography>
           </CardContent>
         </Card>

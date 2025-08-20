@@ -28,7 +28,6 @@ import {
   Login as LoginIcon,
   Business as BusinessIcon,
   AppRegistration as RegisterIcon,
-  TrackChanges as StatusIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -102,11 +101,6 @@ const Navbar: React.FC = () => {
         label: 'Register Hotel', 
         path: '/register-hotel-admin', 
         icon: <RegisterIcon /> 
-      });
-      baseItems.push({ 
-        label: 'Registration Status', 
-        path: '/registration-status', 
-        icon: <StatusIcon /> 
       });
     }
 

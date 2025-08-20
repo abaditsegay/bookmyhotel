@@ -171,15 +171,8 @@ const PublicAdminHotelRegistration: React.FC = () => {
               <Button 
                 variant="contained" 
                 onClick={() => navigate('/')}
-                sx={{ mr: 2 }}
               >
                 Return to Home
-              </Button>
-              <Button 
-                variant="outlined" 
-                onClick={() => navigate('/registration-status')}
-              >
-                Check Registration Status
               </Button>
             </Box>
           </CardContent>

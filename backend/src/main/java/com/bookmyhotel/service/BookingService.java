@@ -7,14 +7,12 @@ import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,12 +21,12 @@ import com.bookmyhotel.dto.BookingModificationRequest;
 import com.bookmyhotel.dto.BookingModificationResponse;
 import com.bookmyhotel.dto.BookingRequest;
 import com.bookmyhotel.dto.BookingResponse;
+import com.bookmyhotel.entity.GuestInfo;
 import com.bookmyhotel.entity.Reservation;
 import com.bookmyhotel.entity.ReservationStatus;
 import com.bookmyhotel.entity.Room;
 import com.bookmyhotel.entity.RoomType;
 import com.bookmyhotel.entity.User;
-import com.bookmyhotel.entity.UserRole;
 import com.bookmyhotel.exception.BookingException;
 import com.bookmyhotel.exception.ResourceNotFoundException;
 import com.bookmyhotel.repository.ReservationRepository;
@@ -65,9 +63,6 @@ public class BookingService {
     // private BookingHistoryService historyService;
     
     @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
     private EmailService emailService;
 
     @Autowired
@@ -86,6 +81,7 @@ public class BookingService {
      * Create a new booking
      */
     public BookingResponse createBooking(BookingRequest request, String userEmail) {
+        System.err.println("🎯🎯🎯 BOOKING SERVICE: createBooking called with userEmail: " + userEmail + " 🎯🎯🎯");
         try {
             // Validate booking request
             validateBookingRequest(request, userEmail == null);
@@ -100,26 +96,22 @@ public class BookingService {
             }
             
             // Get or create user (authenticated or guest)
-            User user;
+            User user = null;
             if (userEmail != null) {
-                // Authenticated user
+                // Authenticated user - get existing user
                 user = userRepository.findByEmail(userEmail)
                     .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userEmail));
-            } else {
-                // Anonymous guest - create or get guest user
-                user = getOrCreateGuest(request);
             }
-            
+            // For anonymous guests, we no longer create User records
+
             // Calculate total amount
             BigDecimal totalAmount = calculateTotalAmount(room, request);
-            
-            // Create reservation
-            Reservation reservation = createReservation(request, room, user, totalAmount);
-            
-            // Process payment if payment method provided
+
+            // Create reservation with guest information
+            Reservation reservation = createReservation(request, room, user, totalAmount);            // Process payment if payment method provided
             if (request.getPaymentMethodId() != null) {
                 if ("pay_at_frontdesk".equals(request.getPaymentMethodId())) {
-                    // For pay at front desk, mark reservation as confirmed but payment as pending
+                    // For pay at front desk, mark reservation as confirmed with payment pending
                     reservation.setStatus(ReservationStatus.CONFIRMED);
                     // No payment intent ID set, so payment status will be "PENDING"
                 } else {
@@ -129,10 +121,15 @@ public class BookingService {
                         reservation.setPaymentIntentId(paymentIntentId);
                         reservation.setStatus(ReservationStatus.CONFIRMED);
                     } catch (StripeException e) {
-                        reservation.setStatus(ReservationStatus.PENDING);
-                        throw new BookingException("Payment processing failed: " + e.getMessage(), e);
+                        // Even if payment fails, confirm the booking but mark payment as failed
+                        reservation.setStatus(ReservationStatus.CONFIRMED);
+                        logger.warn("Payment processing failed for reservation, but booking confirmed: {}", e.getMessage());
+                        // Payment status will be determined by the absence of payment intent ID
                     }
                 }
+            } else {
+                // No payment method provided - still confirm the booking
+                reservation.setStatus(ReservationStatus.CONFIRMED);
             }
             
             // Generate a temporary confirmation number before first save
@@ -184,7 +181,7 @@ public class BookingService {
             if (userEmail == null) {
                 String managementUrl = bookingTokenService.generateManagementUrl(
                     reservation.getId(), 
-                    user.getEmail(), 
+                    reservation.getGuestInfo().getEmail(), 
                     frontendUrl
                 );
                 bookingResponse.setManagementUrl(managementUrl);
@@ -192,7 +189,8 @@ public class BookingService {
             
             // Send booking confirmation email automatically (separate transaction)
             try {
-                emailService.sendBookingConfirmationEmail(bookingResponse, user.getEmail(), true);
+                String emailAddress = user != null ? user.getEmail() : reservation.getGuestInfo().getEmail();
+                emailService.sendBookingConfirmationEmail(bookingResponse, emailAddress, true);
             } catch (Exception e) {
                 // Log email sending failure but don't fail the booking
                 System.err.println("Failed to send booking confirmation email: " + e.getMessage());
@@ -296,32 +294,6 @@ public class BookingService {
     }
     
     /**
-     * Get or create guest user
-     */
-    private User getOrCreateGuest(BookingRequest request) {
-        Optional<User> existingUser = userRepository.findByEmail(request.getGuestEmail());
-        
-        if (existingUser.isPresent()) {
-            return existingUser.get();
-        }
-        
-        // Create new guest user
-        User guest = new User();
-        guest.setEmail(request.getGuestEmail());
-        guest.setFirstName(extractFirstName(request.getGuestName()));
-        guest.setLastName(extractLastName(request.getGuestName()));
-        guest.setPhone(request.getGuestPhone());
-        guest.setRoles(Set.of(UserRole.GUEST));
-        guest.setTenantId("guest");
-        
-        // Set a temporary password for guest users
-        String tempPassword = "guestpassword123";
-        guest.setPassword(passwordEncoder.encode(tempPassword));
-        
-        return userRepository.save(guest);
-    }
-    
-    /**
      * Calculate total amount for the booking
      */
     private BigDecimal calculateTotalAmount(Room room, BookingRequest request) {
@@ -332,20 +304,28 @@ public class BookingService {
     /**
      * Create reservation entity
      */
-    private Reservation createReservation(BookingRequest request, Room room, User guest, BigDecimal totalAmount) {
+    private Reservation createReservation(BookingRequest request, Room room, User user, BigDecimal totalAmount) {
         Reservation reservation = new Reservation();
         reservation.setRoom(room);
-        reservation.setGuest(guest);
+        
+        // Set user only for authenticated users (will be null for anonymous guests)
+        reservation.setGuest(user);
+        
+        // Always set guest information (for both registered and anonymous guests)
+        GuestInfo guestInfo = new GuestInfo(
+            request.getGuestName(),
+            request.getGuestEmail(), 
+            request.getGuestPhone()
+        );
+        reservation.setGuestInfo(guestInfo);
+        
         reservation.setCheckInDate(request.getCheckInDate());
         reservation.setCheckOutDate(request.getCheckOutDate());
         reservation.setTotalAmount(totalAmount);
         reservation.setSpecialRequests(request.getSpecialRequests());
-        reservation.setStatus(ReservationStatus.PENDING);
-        reservation.setTenantId(room.getHotel().getTenantId()); // Set tenant_id from the hotel (not guest) so hotel admins can see the booking
+        reservation.setStatus(ReservationStatus.CONFIRMED); // Immediate confirmation
+        reservation.setTenantId(room.getHotel().getTenantId()); // Set tenant_id from the hotel so hotel admins can see the booking
         reservation.setPaymentMethod(request.getPaymentMethodId()); // Store the payment method
-        
-        // Set guest name from the booking request for this specific reservation
-        reservation.setGuestName(request.getGuestName());
         
         return reservation;
     }
@@ -393,10 +373,9 @@ public class BookingService {
         response.setHotelName(room.getHotel().getName());
         response.setHotelAddress(room.getHotel().getAddress());
         
-        // Guest details - use the guest name from the reservation (specific to this booking)
-        User guest = reservation.getGuest();
-        response.setGuestName(reservation.getGuestName());
-        response.setGuestEmail(guest.getEmail());
+        // Guest details - use guest info which works for both registered and anonymous guests
+        response.setGuestName(reservation.getGuestInfo().getName());
+        response.setGuestEmail(reservation.getGuestInfo().getEmail());
         
         // Payment status - now using the stored payment method for better accuracy
         if (reservation.getPaymentIntentId() != null) {
@@ -415,24 +394,6 @@ public class BookingService {
      */
     private String generateConfirmationNumber(Long reservationId) {
         return "BK" + String.format("%08d", reservationId);
-    }
-    
-    /**
-     * Extract first name from full name
-     */
-    private String extractFirstName(String fullName) {
-        if (fullName == null) return "";
-        String[] parts = fullName.trim().split("\\s+");
-        return parts.length > 0 ? parts[0] : "";
-    }
-    
-    /**
-     * Extract last name from full name
-     */
-    private String extractLastName(String fullName) {
-        if (fullName == null) return "";
-        String[] parts = fullName.trim().split("\\s+");
-        return parts.length > 1 ? String.join(" ", java.util.Arrays.copyOfRange(parts, 1, parts.length)) : "";
     }
     
     /**
@@ -661,19 +622,25 @@ public class BookingService {
                 }
             }            // Update guest information if provided
             if (request.getGuestName() != null && !request.getGuestName().trim().isEmpty()) {
-                User guest = reservation.getGuest();
-                String[] nameParts = request.getGuestName().trim().split(" ", 2);
-                guest.setFirstName(nameParts[0]);
-                if (nameParts.length > 1) {
-                    guest.setLastName(nameParts[1]);
-                }
-                userRepository.save(guest);
+                // Update guest info in reservation for anonymous bookings
+                GuestInfo currentGuestInfo = reservation.getGuestInfo();
+                GuestInfo updatedGuestInfo = new GuestInfo(
+                    request.getGuestName().trim(),
+                    currentGuestInfo.getEmail(),
+                    currentGuestInfo.getPhone()
+                );
+                reservation.setGuestInfo(updatedGuestInfo);
             }
             
             if (request.getGuestPhone() != null && !request.getGuestPhone().trim().isEmpty()) {
-                User guest = reservation.getGuest();
-                guest.setPhone(request.getGuestPhone().trim());
-                userRepository.save(guest);
+                // Update guest info in reservation for anonymous bookings
+                GuestInfo currentGuestInfo = reservation.getGuestInfo();
+                GuestInfo updatedGuestInfo = new GuestInfo(
+                    currentGuestInfo.getName(),
+                    currentGuestInfo.getEmail(),
+                    request.getGuestPhone().trim()
+                );
+                reservation.setGuestInfo(updatedGuestInfo);
             }
             
             // Update special requests

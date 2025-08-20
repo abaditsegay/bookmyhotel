@@ -2,7 +2,6 @@ package com.bookmyhotel.dto;
 
 import java.time.LocalDate;
 
-import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
@@ -18,7 +17,6 @@ public class BookingRequest {
     private LocalDate checkInDate;
     
     @NotNull(message = "Check-out date is required")
-    @Future(message = "Check-out date must be in the future")
     private LocalDate checkOutDate;
     
     @Positive(message = "Number of guests must be positive")

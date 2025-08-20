@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Confirmation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.5;
+            background: #f5f7fa;
+            color: #2d3748;
+        }
+        
+        .email-wrapper {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            text-align: center;
+            padding: 60px 20px 40px;
+            position: relative;
+        }
+        
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 20px;
+            background: white;
+            border-radius: 20px 20px 0 0;
+        }
+        
+        .check-icon {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+        
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+            font-weight: 400;
+        }
+        
+        .content {
+            padding: 20px;
+        }
+        
+        .confirmation-card {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 16px;
+            text-align: center;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.2);
+        }
+        
+        .conf-label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+        
+        .conf-number {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            font-family: 'SF Mono', Monaco, monospace;
+            letter-spacing: 2px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            margin-right: 16px;
+        }
+        
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a202c;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 12px 0;
+            border-bottom: 1px solid #f7fafc;
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        
+        .info-label {
+            font-size: 14px;
+            color: #64748b;
+            font-weight: 500;
+            flex: 1;
+        }
+        
+        .info-value {
+            font-size: 14px;
+            color: #1e293b;
+            font-weight: 600;
+            text-align: right;
+            flex: 1;
+        }
+        
+        .hotel-feature {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 16px 0;
+        }
+        
+        .hotel-name {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 8px;
+        }
+        
+        .hotel-address {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 16px;
+        }
+        
+        .room-badge {
+            display: inline-flex;
+            align-items: center;
+            background: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .room-icon {
+            margin-right: 8px;
+            font-size: 16px;
+        }
+        
+        .room-text {
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .total-section {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 16px 0;
+        }
+        
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .total-row:last-child {
+            margin-bottom: 0;
+            padding-top: 12px;
+            border-top: 1px solid rgba(180, 83, 9, 0.2);
+            font-weight: 700;
+            font-size: 16px;
+        }
+        
+        .total-label {
+            color: #92400e;
+            font-weight: 500;
+        }
+        
+        .total-value {
+            color: #92400e;
+            font-weight: 600;
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 20px 0;
+        }
+        
+        .status-item {
+            text-align: center;
+            padding: 20px 16px;
+            border-radius: 12px;
+            border: 2px solid;
+        }
+        
+        .status-confirmed {
+            background: #ecfdf5;
+            border-color: #10b981;
+            color: #065f46;
+        }
+        
+        .status-pending {
+            background: #fef3c7;
+            border-color: #f59e0b;
+            color: #92400e;
+        }
+        
+        .status-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            font-weight: 600;
+            opacity: 0.8;
+        }
+        
+        .status-value {
+            font-size: 14px;
+            font-weight: 700;
+        }
+        
+        .alert-card {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-left: 4px solid #ef4444;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .alert-title {
+            display: flex;
+            align-items: center;
+            font-size: 16px;
+            font-weight: 600;
+            color: #dc2626;
+            margin-bottom: 12px;
+        }
+        
+        .alert-icon {
+            margin-right: 8px;
+        }
+        
+        .alert-list {
+            list-style: none;
+            margin: 0;
+        }
+        
+        .alert-list li {
+            padding: 6px 0;
+            color: #991b1b;
+            font-size: 14px;
+            position: relative;
+            padding-left: 20px;
+        }
+        
+        .alert-list li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: #ef4444;
+            font-weight: bold;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin: 30px 0;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 16px;
+            border-radius: 12px;
+            text-decoration: none;
+            text-align: center;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: #4f46e5;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .btn-secondary:hover {
+            background: #f8fafc;
+        }
+        
+        .footer {
+            background: #1f2937;
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+        
+        .footer-logo {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .footer p {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-bottom: 8px;
+            line-height: 1.6;
+        }
+        
+        .footer-highlight {
+            color: #a78bfa;
+        }
+        
+        @media (max-width: 480px) {
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .status-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .info-row {
+                flex-direction: column;
+                gap: 4px;
+            }
+            
+            .info-value {
+                text-align: left;
+            }
+            
+            .content {
+                padding: 16px;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-wrapper">
+        <div class="header">
+            <div class="check-icon">✓</div>
+            <h1>You're All Set!</h1>
+            <p>Your booking has been confirmed successfully</p>
+        </div>
+
+        <div class="content">
+            <div class="confirmation-card">
+                <div class="conf-label">Confirmation Code</div>
+                <div class="conf-number" th:text="${booking.confirmationNumber}"></div>
+                <div class="conf-label">Booking Reference</div>
+                <div class="conf-number" th:text="${booking.reservationId}"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">👤</div>
+                    <h3 class="card-title">Guest Details</h3>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Name</span>
+                    <span class="info-value" th:text="${booking.guestName}"></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Email</span>
+                    <span class="info-value" th:text="${booking.guestEmail}"></span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">🏨</div>
+                    <h3 class="card-title">Accommodation</h3>
+                </div>
+                <div class="hotel-feature">
+                    <div class="hotel-name" th:text="${booking.hotelName}"></div>
+                    <div class="hotel-address" th:text="${booking.hotelAddress}"></div>
+                    <div class="room-badge">
+                        <span class="room-icon">🛏️</span>
+                        <span class="room-text"><span th:text="${booking.roomType}"></span> - Room <span th:text="${booking.roomNumber}"></span></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">📅</div>
+                    <h3 class="card-title">Stay Information</h3>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Check-in Date</span>
+                    <span class="info-value" th:text="${formattedCheckInDate}"></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Check-out Date</span>
+                    <span class="info-value" th:text="${formattedCheckOutDate}"></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Duration</span>
+                    <span class="info-value"><span th:text="${nights}"></span> nights</span>
+                </div>
+                
+                <div class="total-section">
+                    <div class="total-row">
+                        <span class="total-label">Room Rate (per night)</span>
+                        <span class="total-value" th:text="'$' + ${booking.pricePerNight}"></span>
+                    </div>
+                    <div class="total-row">
+                        <span class="total-label">Total for <span th:text="${nights}"></span> nights</span>
+                        <span class="total-value" th:text="'$' + ${booking.totalAmount}"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="status-grid">
+                <div class="status-item status-confirmed">
+                    <div class="status-title">Booking Status</div>
+                    <div class="status-value" th:text="${booking.status}"></div>
+                </div>
+                <div class="status-item status-pending">
+                    <div class="status-title">Payment Status</div>
+                    <div class="status-value" th:text="${booking.paymentStatus}"></div>
+                </div>
+            </div>
+
+            <div class="alert-card">
+                <div class="alert-title">
+                    <span class="alert-icon">📋</span>
+                    Before You Arrive
+                </div>
+                <ul class="alert-list">
+                    <li>Bring a valid government-issued photo ID</li>
+                    <li>Check-in is available from 3:00 PM</li>
+                    <li>Check-out must be completed by 11:00 AM</li>
+                    <li>Contact the hotel for special requests or changes</li>
+                </ul>
+            </div>
+
+            <div class="button-group">
+                <a th:href="${bookingUrl}" class="btn btn-primary">View Booking</a>
+                <a href="#" class="btn btn-secondary">Contact Hotel</a>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div class="footer-logo" th:text="${appName}"></div>
+            <p>Thank you for choosing us for your stay!</p>
+            <p>This is an automated confirmation email.</p>
+            <p>For support, please contact the hotel directly.</p>
+            <p class="footer-highlight">Wishing you a pleasant stay! 🌟</p>
+        </div>
+    </div>
+</body>
+</html>

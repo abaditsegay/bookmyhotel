@@ -8,7 +8,6 @@ import {
   CardActions,
   Button,
   Box,
-  Chip,
   Paper,
   List,
   ListItem,
@@ -22,8 +21,6 @@ import {
   People,
   TrendingUp,
   Settings,
-  Security,
-  Analytics,
   AdminPanelSettings,
   Business
 } from '@mui/icons-material';
@@ -114,32 +111,20 @@ export const SystemDashboardPage: React.FC = () => {
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       {/* Header */}
-      <Box sx={{ mb: 4 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-          <AdminPanelSettings sx={{ mr: 2, fontSize: 32, color: 'primary.main' }} />
-          <Typography variant="h3" component="h1" fontWeight="bold">
-            {isSystemAdmin ? 'System Administration' : 'Global Guest Portal'}
-          </Typography>
+      <Box sx={{ mb: 4 }}>        
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <AdminPanelSettings sx={{ mr: 2, fontSize: 32, color: 'primary.main' }} />
+            <Typography variant="h6" color="text.primary" sx={{ fontWeight: 'bold' }}>
+              Welcome {user.firstName || user.email}
+            </Typography>
+          </Box>
+          <Box sx={{ textAlign: 'right' }}>
+            <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold' }}>
+              {isSystemAdmin ? 'System Administrator' : 'Global Guest'}
+            </Typography>
+          </Box>
         </Box>
-        
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-          <Typography variant="h6" color="text.secondary">
-            Welcome back, {user.firstName || user.email}
-          </Typography>
-          <Chip 
-            label={isSystemAdmin ? "System Administrator" : "Global Guest"}
-            color={isSystemAdmin ? "error" : "primary"}
-            variant="filled"
-            icon={isSystemAdmin ? <Security /> : <Dashboard />}
-          />
-        </Box>
-
-        <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 600 }}>
-          {isSystemAdmin 
-            ? 'Manage and monitor the entire BookMyHotel platform from this central dashboard.'
-            : 'Search and book hotels across our entire network of partner properties.'
-          }
-        </Typography>
       </Box>
 
       {/* Quick Actions Grid */}
@@ -210,11 +195,21 @@ export const SystemDashboardPage: React.FC = () => {
               <List dense>
                 <ListItem>
                   <ListItemIcon>
+                    <Business sx={{ color: 'info.main' }} />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary="Tenant Management" 
+                    secondary="Create and manage tenant organizations"
+                  />
+                </ListItem>
+                <Divider />
+                <ListItem>
+                  <ListItemIcon>
                     <Hotel sx={{ color: 'primary.main' }} />
                   </ListItemIcon>
                   <ListItemText 
-                    primary="Total Hotels" 
-                    secondary="Manage properties across the platform"
+                    primary="Hotel Registration Approval" 
+                    secondary="Review and approve/reject hotel registrations"
                   />
                 </ListItem>
                 <Divider />
@@ -223,18 +218,18 @@ export const SystemDashboardPage: React.FC = () => {
                     <People sx={{ color: 'secondary.main' }} />
                   </ListItemIcon>
                   <ListItemText 
-                    primary="User Management" 
-                    secondary="System-wide and tenant user administration"
+                    primary="User Administration" 
+                    secondary="Manage system users and permissions"
                   />
                 </ListItem>
                 <Divider />
                 <ListItem>
                   <ListItemIcon>
-                    <Analytics sx={{ color: 'success.main' }} />
+                    <Settings sx={{ color: 'warning.main' }} />
                   </ListItemIcon>
                   <ListItemText 
-                    primary="Platform Analytics" 
-                    secondary="Performance metrics and insights"
+                    primary="Global Configuration" 
+                    secondary="Configure system-wide settings and parameters"
                   />
                 </ListItem>
               </List>
@@ -251,24 +246,48 @@ export const SystemDashboardPage: React.FC = () => {
             <List dense>
               <ListItem>
                 <ListItemText 
-                  primary={isSystemAdmin ? "System Login" : "Account Login"}
-                  secondary={`Logged in at ${new Date().toLocaleString()}`}
+                  primary={isSystemAdmin ? "System Administration Login" : "Account Login"}
+                  secondary={`Accessed at ${new Date().toLocaleString()}`}
                 />
               </ListItem>
               <Divider />
-              <ListItem>
-                <ListItemText 
-                  primary={isSystemAdmin ? "Dashboard Access" : "Portal Access"}
-                  secondary="Accessed system dashboard"
-                />
-              </ListItem>
+              {isSystemAdmin && (
+                <>
+                  <ListItem>
+                    <ListItemText 
+                      primary="Hotel Registration Review"
+                      secondary="Available hotel registrations pending approval"
+                    />
+                  </ListItem>
+                  <Divider />
+                  <ListItem>
+                    <ListItemText 
+                      primary="Tenant Management"
+                      secondary="Active tenant organizations available for management"
+                    />
+                  </ListItem>
+                  <Divider />
+                  <ListItem>
+                    <ListItemText 
+                      primary="System Configuration"
+                      secondary="Global settings and user permissions ready for review"
+                    />
+                  </ListItem>
+                </>
+              )}
               {isSystemGuest && (
                 <>
-                  <Divider />
                   <ListItem>
                     <ListItemText 
                       primary="Hotel Search Available"
                       secondary="Browse our network of partner hotels"
+                    />
+                  </ListItem>
+                  <Divider />
+                  <ListItem>
+                    <ListItemText 
+                      primary="Booking Management"
+                      secondary="View and manage your reservation history"
                     />
                   </ListItem>
                 </>

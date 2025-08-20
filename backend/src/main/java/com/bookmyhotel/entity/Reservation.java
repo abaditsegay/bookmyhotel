@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -16,7 +17,7 @@ import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.Future;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
@@ -43,7 +44,6 @@ public class Reservation extends TenantEntity {
     private LocalDate checkInDate;
     
     @NotNull(message = "Check-out date is required")
-    @Future(message = "Check-out date must be in the future")
     @Column(name = "check_out_date", nullable = false)
     private LocalDate checkOutDate;
     
@@ -68,32 +68,35 @@ public class Reservation extends TenantEntity {
     
     @Column(name = "confirmation_number", length = 20, unique = true)
     private String confirmationNumber;
-    
-    @Column(name = "guest_name", length = 100)
-    private String guestName;
-    
+
     @Column(name = "actual_check_in_time")
     private LocalDateTime actualCheckInTime;
-    
+
     @Column(name = "actual_check_out_time")
     private LocalDateTime actualCheckOutTime;
-    
+
     @Column(name = "cancellation_reason", length = 500)
     private String cancellationReason;
-    
+
     @Column(name = "cancelled_at")
     private LocalDateTime cancelledAt;
-    
+
     @Column(name = "promotional_code", length = 50)
     private String promotionalCode;
-    
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id", nullable = false)
     private Room room;
-    
+
+    // Optional: Only set for registered users, null for anonymous guests
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "guest_id", nullable = false)
+    @JoinColumn(name = "guest_id", nullable = true)
     private User guest;
+
+    // Guest information for all bookings (both registered and anonymous)
+    @Valid
+    @Embedded
+    private GuestInfo guestInfo;
     
     // Constructors
     public Reservation() {}
@@ -193,14 +196,6 @@ public class Reservation extends TenantEntity {
         this.confirmationNumber = confirmationNumber;
     }
     
-    public String getGuestName() {
-        return guestName;
-    }
-    
-    public void setGuestName(String guestName) {
-        this.guestName = guestName;
-    }
-    
     public LocalDateTime getActualCheckInTime() {
         return actualCheckInTime;
     }
@@ -239,5 +234,13 @@ public class Reservation extends TenantEntity {
     
     public void setPromotionalCode(String promotionalCode) {
         this.promotionalCode = promotionalCode;
+    }
+    
+    public GuestInfo getGuestInfo() {
+        return guestInfo;
+    }
+    
+    public void setGuestInfo(GuestInfo guestInfo) {
+        this.guestInfo = guestInfo;
     }
 }

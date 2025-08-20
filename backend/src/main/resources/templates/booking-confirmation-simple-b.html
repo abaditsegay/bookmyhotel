@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Confirmation</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.4;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            background-color: #ffffff;
+        }
+        
+        .container {
+            max-width: 650px;
+            margin: 0 auto;
+            border: 1px solid #e0e0e0;
+            padding: 0;
+        }
+        
+        .header {
+            background: #f8f9fa;
+            padding: 25px;
+            text-align: center;
+            border-bottom: 3px solid #28a745;
+        }
+        
+        .header h1 {
+            margin: 0;
+            color: #28a745;
+            font-size: 22px;
+            font-weight: 600;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .confirmation-id {
+            text-align: center;
+            background: #e8f5e9;
+            padding: 20px;
+            margin: -30px -30px 25px -30px;
+            border-bottom: 1px solid #c8e6c9;
+        }
+        
+        .confirmation-id h2 {
+            margin: 0;
+            color: #1b5e20;
+            font-size: 18px;
+            font-weight: normal;
+        }
+        
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .info-table th {
+            background: #f5f5f5;
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #555;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .info-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .info-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .label-col {
+            width: 35%;
+            font-weight: 500;
+            color: #666;
+            background: #fafafa;
+        }
+        
+        .value-col {
+            background: white;
+        }
+        
+        .price-row {
+            background: #fff3e0 !important;
+        }
+        
+        .price-row td {
+            font-weight: 600;
+            color: #e65100;
+        }
+        
+        .status-confirmed {
+            color: #2e7d32;
+            font-weight: 600;
+        }
+        
+        .status-pending {
+            color: #f57c00;
+            font-weight: 600;
+        }
+        
+        .notes {
+            background: #f8f9fa;
+            border-left: 4px solid #6c757d;
+            padding: 20px;
+            margin: 25px 0;
+        }
+        
+        .notes h4 {
+            margin: 0 0 12px 0;
+            color: #495057;
+            font-size: 16px;
+        }
+        
+        .notes p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #6c757d;
+        }
+        
+        .footer {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            margin: 30px -30px -30px -30px;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .footer p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Booking Confirmation</h1>
+        </div>
+        
+        <div class="content">
+            <div class="confirmation-id">
+                <h2>Confirmation: <span th:text="${booking.confirmationNumber}"></span></h2>
+            </div>
+
+            <table class="info-table">
+                <tr>
+                    <th colspan="2">Guest Details</th>
+                </tr>
+                <tr>
+                    <td class="label-col">Guest Name</td>
+                    <td class="value-col" th:text="${booking.guestName}"></td>
+                </tr>
+                <tr>
+                    <td class="label-col">Email Address</td>
+                    <td class="value-col" th:text="${booking.guestEmail}"></td>
+                </tr>
+                <tr>
+                    <td class="label-col">Reservation ID</td>
+                    <td class="value-col" th:text="${booking.reservationId}"></td>
+                </tr>
+            </table>
+
+            <table class="info-table">
+                <tr>
+                    <th colspan="2">Hotel Information</th>
+                </tr>
+                <tr>
+                    <td class="label-col">Hotel Name</td>
+                    <td class="value-col" th:text="${booking.hotelName}"></td>
+                </tr>
+                <tr>
+                    <td class="label-col">Address</td>
+                    <td class="value-col" th:text="${booking.hotelAddress}"></td>
+                </tr>
+                <tr>
+                    <td class="label-col">Room Type</td>
+                    <td class="value-col" th:text="${booking.roomType}"></td>
+                </tr>
+                <tr>
+                    <td class="label-col">Room Number</td>
+                    <td class="value-col" th:text="${booking.roomNumber}"></td>
+                </tr>
+            </table>
+
+            <table class="info-table">
+                <tr>
+                    <th colspan="2">Stay Information</th>
+                </tr>
+                <tr>
+                    <td class="label-col">Check-in</td>
+                    <td class="value-col" th:text="${formattedCheckInDate}"></td>
+                </tr>
+                <tr>
+                    <td class="label-col">Check-out</td>
+                    <td class="value-col" th:text="${formattedCheckOutDate}"></td>
+                </tr>
+                <tr>
+                    <td class="label-col">Duration</td>
+                    <td class="value-col" th:text="${nights} + ' nights'"></td>
+                </tr>
+                <tr>
+                    <td class="label-col">Rate per Night</td>
+                    <td class="value-col" th:text="'$' + ${booking.pricePerNight}"></td>
+                </tr>
+                <tr class="price-row">
+                    <td class="label-col">Total Amount</td>
+                    <td class="value-col" th:text="'$' + ${booking.totalAmount}"></td>
+                </tr>
+            </table>
+
+            <table class="info-table">
+                <tr>
+                    <th colspan="2">Status</th>
+                </tr>
+                <tr>
+                    <td class="label-col">Booking Status</td>
+                    <td class="value-col status-confirmed" th:text="${booking.status}"></td>
+                </tr>
+                <tr>
+                    <td class="label-col">Payment Status</td>
+                    <td class="value-col status-pending" th:text="${booking.paymentStatus}"></td>
+                </tr>
+            </table>
+
+            <div class="notes">
+                <h4>Check-in Information</h4>
+                <p>• Check-in time: 3:00 PM</p>
+                <p>• Check-out time: 11:00 AM</p>
+                <p>• Valid photo ID required at check-in</p>
+                <p>• Print or show this confirmation at the front desk</p>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p><strong>Thank you for your booking!</strong></p>
+            <p th:text="${appName}"></p>
+        </div>
+    </div>
+</body>
+</html>

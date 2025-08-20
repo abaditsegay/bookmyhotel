@@ -86,20 +86,19 @@ const FindBookingPage: React.FC = () => {
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
       {/* Header */}
-      <Box sx={{ mb: 4 }}>
-        <IconButton
-          onClick={() => navigate('/')}
-          sx={{ mb: 2 }}
-          aria-label="back to home"
-        >
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
+        <IconButton onClick={() => navigate('/')} sx={{ mr: 1 }}>
           <ArrowBackIcon />
         </IconButton>
-        <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
-          Find Your Booking
-        </Typography>
-        <Typography variant="h6" color="text.secondary">
-          Look up your reservation using your confirmation number or booking details
-        </Typography>
+        <Box sx={{ flexGrow: 1 }}>
+          <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
+            Find Your Booking
+          </Typography>
+          <Typography variant="h6" color="text.secondary">
+            Look up your reservation using your confirmation number or booking details
+          </Typography>
+        </Box>
+        <SearchIcon sx={{ fontSize: 40, color: 'primary.main' }} />
       </Box>
 
       {/* Search Form */}
