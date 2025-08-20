@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.bookmyhotel.dto.admin.CreateUserRequest;
 import com.bookmyhotel.dto.admin.UpdateUserRequest;
 import com.bookmyhotel.dto.admin.UserManagementResponse;
 import com.bookmyhotel.entity.UserRole;
@@ -94,6 +95,15 @@ public class UserManagementAdminController {
     @GetMapping("/{id}")
     public ResponseEntity<UserManagementResponse> getUserById(@PathVariable Long id) {
         UserManagementResponse user = userManagementService.getUserById(id);
+        return ResponseEntity.ok(user);
+    }
+    
+    /**
+     * Create a new user
+     */
+    @PostMapping
+    public ResponseEntity<UserManagementResponse> createUser(@Valid @RequestBody CreateUserRequest request) {
+        UserManagementResponse user = userManagementService.createUser(request);
         return ResponseEntity.ok(user);
     }
     

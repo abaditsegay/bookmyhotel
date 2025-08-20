@@ -147,7 +147,7 @@ const LoginPage: React.FC = () => {
               >
                 <Typography variant="body2" fontWeight="bold">Grand Plaza Hotel Admin</Typography>
                 <Typography variant="caption" color="textSecondary">
-                  admin@grandplaza.com / password
+                  admin@grandplaza.com / password (Hotel-level admin)
                 </Typography>
               </Button>
               

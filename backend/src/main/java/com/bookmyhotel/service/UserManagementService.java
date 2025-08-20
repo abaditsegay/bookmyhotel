@@ -11,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.bookmyhotel.dto.admin.CreateUserRequest;
 import com.bookmyhotel.dto.admin.UpdateUserRequest;
 import com.bookmyhotel.dto.admin.UserManagementResponse;
 import com.bookmyhotel.entity.User;
@@ -70,6 +71,31 @@ public class UserManagementService {
     public UserManagementResponse getUserById(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+        return convertToResponse(user);
+    }
+    
+    /**
+     * Create a new user
+     */
+    public UserManagementResponse createUser(CreateUserRequest request) {
+        // Check if email already exists
+        java.util.Optional<User> existingUser = userRepository.findByEmail(request.getEmail());
+        if (existingUser.isPresent()) {
+            throw new RuntimeException("Email already exists: " + request.getEmail());
+        }
+        
+        User user = new User();
+        user.setEmail(request.getEmail());
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setPhone(request.getPhone());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRoles(request.getRoles());
+        user.setTenantId(request.getTenantId());
+        user.setIsActive(true); // New users are active by default
+        
+        user = userRepository.save(user);
+        
         return convertToResponse(user);
     }
     

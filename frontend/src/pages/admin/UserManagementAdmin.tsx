@@ -75,6 +75,7 @@ const UserManagementAdmin: React.FC = () => {
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [passwordResetDialogOpen, setPasswordResetDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserManagementResponse | null>(null);
+  const [createError, setCreateError] = useState<string | null>(null);
 
   // Form state
   const [userForm, setUserForm] = useState<CreateUserRequest>({
@@ -97,7 +98,7 @@ const UserManagementAdmin: React.FC = () => {
 
   const [newPassword, setNewPassword] = useState('');
 
-  const roleOptions = ['SYSTEM_ADMIN', 'TENANT_ADMIN', 'HOTEL_ADMIN', 'FRONT_DESK_STAFF', 'CUSTOMER'];
+  const roleOptions = ['ADMIN', 'HOTEL_MANAGER', 'HOTEL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'CUSTOMER', 'GUEST'];
   const statusOptions = ['ALL', 'ACTIVE', 'INACTIVE'];
 
   // Set token in API service when component mounts
@@ -160,6 +161,7 @@ const UserManagementAdmin: React.FC = () => {
 
   const handleCreateUser = async () => {
     try {
+      setCreateError(null); // Clear any previous errors
       await adminApiService.createUser(userForm);
       setCreateDialogOpen(false);
       setUserForm({
@@ -173,7 +175,26 @@ const UserManagementAdmin: React.FC = () => {
       loadUsers();
     } catch (err) {
       console.error('Error creating user:', err);
-      setError('Failed to create user');
+      
+      // Extract meaningful error message from API response
+      if (err instanceof Error) {
+        const errorMessage = err.message;
+        if (errorMessage.includes('Email already exists')) {
+          setCreateError('This email address is already registered. Please use a different email.');
+        } else if (errorMessage.includes('400')) {
+          // Extract the actual error message from the API response
+          const match = errorMessage.match(/{"error":"(.+?)"}/);
+          if (match) {
+            setCreateError(match[1]);
+          } else {
+            setCreateError('Invalid input data. Please check all fields and try again.');
+          }
+        } else {
+          setCreateError('Failed to create user. Please try again.');
+        }
+      } else {
+        setCreateError('An unexpected error occurred. Please try again.');
+      }
     }
   };
 
@@ -260,11 +281,13 @@ const UserManagementAdmin: React.FC = () => {
 
   const getRoleColor = (role: string) => {
     switch (role) {
-      case 'SYSTEM_ADMIN': return 'error';
-      case 'TENANT_ADMIN': return 'warning';
+      case 'ADMIN': return 'error';
+      case 'HOTEL_MANAGER': return 'warning';
       case 'HOTEL_ADMIN': return 'info';
-      case 'FRONT_DESK_STAFF': return 'success';
+      case 'FRONTDESK': return 'success';
+      case 'HOUSEKEEPING': return 'primary';
       case 'CUSTOMER': return 'default';
+      case 'GUEST': return 'secondary';
       default: return 'default';
     }
   };
@@ -460,7 +483,15 @@ const UserManagementAdmin: React.FC = () => {
       </Paper>
 
       {/* Create User Dialog */}
-      <Dialog open={createDialogOpen} onClose={() => setCreateDialogOpen(false)} maxWidth="md" fullWidth>
+      <Dialog 
+        open={createDialogOpen} 
+        onClose={() => {
+          setCreateDialogOpen(false);
+          setCreateError(null);
+        }} 
+        maxWidth="md" 
+        fullWidth
+      >
         <DialogTitle>Add New User</DialogTitle>
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 1 }}>
@@ -529,8 +560,18 @@ const UserManagementAdmin: React.FC = () => {
             </Grid>
           </Grid>
         </DialogContent>
+        {createError && (
+          <Box sx={{ px: 3, pb: 1 }}>
+            <Alert severity="error" onClose={() => setCreateError(null)}>
+              {createError}
+            </Alert>
+          </Box>
+        )}
         <DialogActions>
-          <Button onClick={() => setCreateDialogOpen(false)}>Cancel</Button>
+          <Button onClick={() => {
+            setCreateDialogOpen(false);
+            setCreateError(null);
+          }}>Cancel</Button>
           <Button onClick={handleCreateUser} variant="contained">
             Create User
           </Button>
