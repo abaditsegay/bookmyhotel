@@ -1,6 +1,7 @@
 package com.bookmyhotel.service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -13,6 +14,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.bookmyhotel.dto.BookingCancellationRequest;
+import com.bookmyhotel.dto.BookingModificationRequest;
+import com.bookmyhotel.dto.BookingModificationResponse;
 import com.bookmyhotel.dto.BookingRequest;
 import com.bookmyhotel.dto.BookingResponse;
 import com.bookmyhotel.entity.Reservation;
@@ -443,6 +447,253 @@ public class BookingService {
     public void sendBookingConfirmationEmail(Long reservationId, String emailAddress, boolean includeItinerary) {
         BookingResponse booking = getBooking(reservationId);
         emailService.sendBookingConfirmationEmail(booking, emailAddress, includeItinerary);
+    }
+    
+    /**
+     * Modify an existing booking (for guests)
+     */
+    public BookingModificationResponse modifyBooking(BookingModificationRequest request) {
+        try {
+            // Find booking using public search to work across tenants
+            BookingResponse existingBooking = findByConfirmationNumberPublic(request.getConfirmationNumber());
+            
+            // Verify guest email matches
+            if (!existingBooking.getGuestEmail().equalsIgnoreCase(request.getGuestEmail())) {
+                return new BookingModificationResponse(false, "Invalid guest email for this booking");
+            }
+            
+            // Get the reservation entity
+            Reservation reservation = reservationRepository.findByConfirmationNumberPublic(request.getConfirmationNumber())
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
+            
+            // Check if booking can be modified (not checked in, not cancelled)
+            if (reservation.getStatus() == ReservationStatus.CHECKED_IN || 
+                reservation.getStatus() == ReservationStatus.CHECKED_OUT ||
+                reservation.getStatus() == ReservationStatus.CANCELLED) {
+                return new BookingModificationResponse(false, "This booking cannot be modified in its current status");
+            }
+            
+            // Check modification window (e.g., at least 24 hours before check-in)
+            if (reservation.getCheckInDate().isBefore(LocalDate.now().plusDays(1))) {
+                return new BookingModificationResponse(false, "Modifications must be made at least 24 hours before check-in");
+            }
+            
+            BigDecimal additionalCharges = BigDecimal.ZERO;
+            BigDecimal refundAmount = BigDecimal.ZERO;
+            
+            // Handle date modifications
+            if (request.getNewCheckInDate() != null || request.getNewCheckOutDate() != null) {
+                LocalDate newCheckIn = request.getNewCheckInDate() != null ? 
+                    request.getNewCheckInDate() : reservation.getCheckInDate();
+                LocalDate newCheckOut = request.getNewCheckOutDate() != null ? 
+                    request.getNewCheckOutDate() : reservation.getCheckOutDate();
+                
+                // Validate new dates
+                if (newCheckOut.isBefore(newCheckIn) || newCheckOut.equals(newCheckIn)) {
+                    return new BookingModificationResponse(false, "Check-out date must be after check-in date");
+                }
+                
+                if (newCheckIn.isBefore(LocalDate.now())) {
+                    return new BookingModificationResponse(false, "Check-in date cannot be in the past");
+                }
+                
+                // Check room availability for new dates
+                if (!isRoomAvailableForModification(reservation.getRoom().getId(), newCheckIn, newCheckOut, reservation.getId())) {
+                    return new BookingModificationResponse(false, "Room is not available for the new dates");
+                }
+                
+                // Calculate price difference
+                long oldNights = ChronoUnit.DAYS.between(reservation.getCheckInDate(), reservation.getCheckOutDate());
+                long newNights = ChronoUnit.DAYS.between(newCheckIn, newCheckOut);
+                BigDecimal priceDifference = reservation.getRoom().getPricePerNight()
+                    .multiply(BigDecimal.valueOf(newNights - oldNights));
+                
+                if (priceDifference.compareTo(BigDecimal.ZERO) > 0) {
+                    additionalCharges = priceDifference;
+                } else if (priceDifference.compareTo(BigDecimal.ZERO) < 0) {
+                    refundAmount = priceDifference.abs();
+                }
+                
+                // Update dates
+                reservation.setCheckInDate(newCheckIn);
+                reservation.setCheckOutDate(newCheckOut);
+                reservation.setTotalAmount(reservation.getRoom().getPricePerNight().multiply(BigDecimal.valueOf(newNights)));
+            }
+            
+            // Handle room changes
+            if (request.getNewRoomId() != null && !request.getNewRoomId().equals(reservation.getRoom().getId())) {
+                Room newRoom = roomRepository.findById(request.getNewRoomId())
+                    .orElseThrow(() -> new ResourceNotFoundException("New room not found"));
+                
+                // Check if new room is available
+                if (!isRoomAvailableForModification(request.getNewRoomId(), 
+                    reservation.getCheckInDate(), reservation.getCheckOutDate(), reservation.getId())) {
+                    return new BookingModificationResponse(false, "Selected room is not available for your dates");
+                }
+                
+                // Calculate price difference for room upgrade/downgrade
+                long nights = ChronoUnit.DAYS.between(reservation.getCheckInDate(), reservation.getCheckOutDate());
+                BigDecimal oldRoomTotal = reservation.getRoom().getPricePerNight().multiply(BigDecimal.valueOf(nights));
+                BigDecimal newRoomTotal = newRoom.getPricePerNight().multiply(BigDecimal.valueOf(nights));
+                BigDecimal roomPriceDifference = newRoomTotal.subtract(oldRoomTotal);
+                
+                if (roomPriceDifference.compareTo(BigDecimal.ZERO) > 0) {
+                    additionalCharges = additionalCharges.add(roomPriceDifference);
+                } else if (roomPriceDifference.compareTo(BigDecimal.ZERO) < 0) {
+                    refundAmount = refundAmount.add(roomPriceDifference.abs());
+                }
+                
+                // Update room and total amount
+                reservation.setRoom(newRoom);
+                reservation.setTotalAmount(newRoomTotal);
+            }
+            
+            // Update guest information if provided
+            if (request.getGuestName() != null && !request.getGuestName().trim().isEmpty()) {
+                User guest = reservation.getGuest();
+                String[] nameParts = request.getGuestName().trim().split(" ", 2);
+                guest.setFirstName(nameParts[0]);
+                if (nameParts.length > 1) {
+                    guest.setLastName(nameParts[1]);
+                }
+                userRepository.save(guest);
+            }
+            
+            if (request.getGuestPhone() != null && !request.getGuestPhone().trim().isEmpty()) {
+                User guest = reservation.getGuest();
+                guest.setPhone(request.getGuestPhone().trim());
+                userRepository.save(guest);
+            }
+            
+            // Update special requests
+            if (request.getNewSpecialRequests() != null) {
+                reservation.setSpecialRequests(request.getNewSpecialRequests());
+            }
+            
+            // Update modification timestamp
+            reservation.setUpdatedAt(LocalDateTime.now());
+            
+            // Save the updated reservation
+            reservation = reservationRepository.save(reservation);
+            
+            // Create response
+            BookingModificationResponse response = new BookingModificationResponse(true, "Booking successfully modified");
+            response.setUpdatedBooking(convertToBookingResponse(reservation));
+            response.setAdditionalCharges(additionalCharges);
+            response.setRefundAmount(refundAmount);
+            
+            // Handle payment processing if there are additional charges
+            if (additionalCharges.compareTo(BigDecimal.ZERO) > 0) {
+                // For now, we'll mark as pending payment - in a real system you'd process payment here
+                response.setMessage("Booking modified. Additional payment of $" + additionalCharges + " is required.");
+            } else if (refundAmount.compareTo(BigDecimal.ZERO) > 0) {
+                // Process refund - in a real system you'd process the refund here
+                response.setMessage("Booking modified. Refund of $" + refundAmount + " will be processed.");
+            }
+            
+            return response;
+            
+        } catch (Exception e) {
+            return new BookingModificationResponse(false, "Failed to modify booking: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Cancel a booking (for guests)
+     */
+    public BookingModificationResponse cancelBooking(BookingCancellationRequest request) {
+        try {
+            // Find booking using public search to work across tenants
+            BookingResponse existingBooking = findByConfirmationNumberPublic(request.getConfirmationNumber());
+            
+            // Verify guest email matches
+            if (!existingBooking.getGuestEmail().equalsIgnoreCase(request.getGuestEmail())) {
+                return new BookingModificationResponse(false, "Invalid guest email for this booking");
+            }
+            
+            // Get the reservation entity
+            Reservation reservation = reservationRepository.findByConfirmationNumberPublic(request.getConfirmationNumber())
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
+            
+            // Check if booking can be cancelled
+            if (reservation.getStatus() == ReservationStatus.CHECKED_IN || 
+                reservation.getStatus() == ReservationStatus.CHECKED_OUT ||
+                reservation.getStatus() == ReservationStatus.CANCELLED) {
+                return new BookingModificationResponse(false, "This booking cannot be cancelled in its current status");
+            }
+            
+            // Calculate refund based on cancellation policy
+            BigDecimal refundAmount = calculateCancellationRefund(reservation);
+            
+            // Update reservation status
+            reservation.setStatus(ReservationStatus.CANCELLED);
+            reservation.setUpdatedAt(LocalDateTime.now());
+            
+            // Save cancellation reason if provided
+            if (request.getCancellationReason() != null && !request.getCancellationReason().trim().isEmpty()) {
+                reservation.setSpecialRequests(
+                    (reservation.getSpecialRequests() != null ? reservation.getSpecialRequests() + "\n" : "") +
+                    "Cancellation reason: " + request.getCancellationReason().trim()
+                );
+            }
+            
+            // Save the updated reservation
+            reservation = reservationRepository.save(reservation);
+            
+            // Create response
+            BookingModificationResponse response = new BookingModificationResponse(true, "Booking successfully cancelled");
+            response.setUpdatedBooking(convertToBookingResponse(reservation));
+            response.setRefundAmount(refundAmount);
+            
+            if (refundAmount.compareTo(BigDecimal.ZERO) > 0) {
+                response.setMessage("Booking cancelled. Refund of $" + refundAmount + " will be processed within 3-5 business days.");
+            } else {
+                response.setMessage("Booking cancelled. No refund applicable based on cancellation policy.");
+            }
+            
+            return response;
+            
+        } catch (Exception e) {
+            return new BookingModificationResponse(false, "Failed to cancel booking: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Check if room is available for modification (excluding current reservation)
+     */
+    private boolean isRoomAvailableForModification(Long roomId, LocalDate checkIn, LocalDate checkOut, Long excludeReservationId) {
+        List<Reservation> conflictingReservations = reservationRepository.findConflictingReservationsExcluding(
+            roomId, checkIn, checkOut, excludeReservationId, 
+            Set.of(ReservationStatus.CONFIRMED, ReservationStatus.CHECKED_IN)
+        );
+        return conflictingReservations.isEmpty();
+    }
+    
+    /**
+     * Calculate refund amount based on cancellation policy
+     */
+    private BigDecimal calculateCancellationRefund(Reservation reservation) {
+        LocalDate now = LocalDate.now();
+        LocalDate checkInDate = reservation.getCheckInDate();
+        long daysUntilCheckIn = ChronoUnit.DAYS.between(now, checkInDate);
+        
+        BigDecimal totalAmount = reservation.getTotalAmount();
+        
+        // Cancellation policy:
+        // - More than 7 days: 100% refund
+        // - 3-7 days: 50% refund  
+        // - 1-2 days: 25% refund
+        // - Same day or past: No refund
+        
+        if (daysUntilCheckIn > 7) {
+            return totalAmount; // 100% refund
+        } else if (daysUntilCheckIn >= 3) {
+            return totalAmount.multiply(BigDecimal.valueOf(0.5)); // 50% refund
+        } else if (daysUntilCheckIn >= 1) {
+            return totalAmount.multiply(BigDecimal.valueOf(0.25)); // 25% refund
+        } else {
+            return BigDecimal.ZERO; // No refund
+        }
     }
     
     /**

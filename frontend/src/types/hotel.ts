@@ -102,3 +102,37 @@ export interface Hotel {
   createdAt?: string;
   updatedAt?: string;
 }
+
+// Booking modification and cancellation types
+export interface BookingModificationRequest {
+  confirmationNumber: string;
+  guestEmail: string;
+  newCheckInDate?: string;
+  newCheckOutDate?: string;
+  newRoomId?: number;
+  newSpecialRequests?: string;
+  guestName?: string;
+  guestPhone?: string;
+  reason?: string;
+}
+
+export interface BookingModificationResponse {
+  success: boolean;
+  message: string;
+  updatedBooking?: BookingResponse;
+  additionalCharges?: number;
+  refundAmount?: number;
+}
+
+export interface BookingCancellationRequest {
+  confirmationNumber: string;
+  guestEmail: string;
+  cancellationReason?: string;
+}
+
+export interface BookingCancellationResponse {
+  success: boolean;
+  message: string;
+  refundAmount?: number;
+  cancellationFee?: number;
+}

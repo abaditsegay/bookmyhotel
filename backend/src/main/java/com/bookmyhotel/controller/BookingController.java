@@ -15,11 +15,15 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.bookmyhotel.dto.BookingCancellationRequest;
+import com.bookmyhotel.dto.BookingModificationRequest;
+import com.bookmyhotel.dto.BookingModificationResponse;
 import com.bookmyhotel.dto.BookingRequest;
 import com.bookmyhotel.dto.BookingResponse;
 import com.bookmyhotel.service.BookingService;
@@ -150,6 +154,38 @@ public class BookingController {
                 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
+    /**
+     * Modify an existing booking (for guests)
+     */
+    @PutMapping("/modify")
+    public ResponseEntity<BookingModificationResponse> modifyBooking(
+            @Valid @RequestBody BookingModificationRequest request) {
+        
+        BookingModificationResponse response = bookingService.modifyBooking(request);
+        
+        if (response.isSuccess()) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+    
+    /**
+     * Cancel a booking (for guests)
+     */
+    @PostMapping("/cancel")
+    public ResponseEntity<BookingModificationResponse> cancelBooking(
+            @Valid @RequestBody BookingCancellationRequest request) {
+        
+        BookingModificationResponse response = bookingService.cancelBooking(request);
+        
+        if (response.isSuccess()) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.badRequest().body(response);
         }
     }
 }

@@ -118,9 +118,9 @@ public class BookingManagementController {
                 return ResponseEntity.badRequest().body("Token does not match booking guest");
             }
 
-            // Cancel the booking
-            bookingService.cancelBooking(reservationId);
-            return ResponseEntity.ok("Booking cancelled successfully");
+            // Cancel the booking and get updated booking data
+            BookingResponse cancelledBooking = bookingService.cancelBooking(reservationId);
+            return ResponseEntity.ok(cancelledBooking);
             
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error cancelling booking: " + e.getMessage());

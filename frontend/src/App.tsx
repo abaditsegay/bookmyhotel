@@ -37,6 +37,7 @@ import StaffDetails from './pages/hotel-admin/StaffDetails';
 import FrontDeskDashboard from './pages/frontdesk/FrontDeskDashboard';
 import FrontDeskBookingDetails from './pages/frontdesk/FrontDeskBookingDetails';
 import BookingManagementPage from './pages/BookingManagementPage';
+import GuestBookingManagementPage from './pages/GuestBookingManagementPage';
 import { SystemDashboardPage } from './pages/SystemDashboardPage';
 
 // Home Page Router Component - redirects based on user role
@@ -264,6 +265,7 @@ function App() {
         <Route path="/booking" element={<BookingPage />} />
         <Route path="/booking-confirmation/:reservationId" element={<BookingConfirmationPage />} />
         <Route path="/booking-management" element={<BookingManagementPage />} />
+        <Route path="/guest-booking-management" element={<GuestBookingManagementPage />} />
         <Route path="/booking-search" element={<BookingSearchPage />} />
         <Route path="/search" element={
           <PlaceholderPage 

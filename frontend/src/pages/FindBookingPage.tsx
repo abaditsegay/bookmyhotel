@@ -11,6 +11,7 @@ import {
   Card,
   CardContent,
   Divider,
+  IconButton,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -72,9 +73,8 @@ const FindBookingPage: React.FC = () => {
 
   const handleViewBooking = () => {
     if (booking) {
-      // Navigate to booking confirmation with booking data in state
-      // This avoids requiring authentication for viewing guest bookings
-      navigate(`/booking-confirmation/${booking.reservationId}`, {
+      // Navigate to guest booking management page with booking data
+      navigate('/guest-booking-management', {
         state: { 
           booking,
           fromSearch: true // Flag to indicate this came from search
@@ -87,13 +87,13 @@ const FindBookingPage: React.FC = () => {
     <Container maxWidth="md" sx={{ py: 4 }}>
       {/* Header */}
       <Box sx={{ mb: 4 }}>
-        <Button
-          startIcon={<ArrowBackIcon />}
+        <IconButton
           onClick={() => navigate('/')}
           sx={{ mb: 2 }}
+          aria-label="back to home"
         >
-          Back to Home
-        </Button>
+          <ArrowBackIcon />
+        </IconButton>
         <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
           Find Your Booking
         </Typography>
@@ -262,7 +262,7 @@ const FindBookingPage: React.FC = () => {
               onClick={handleViewBooking}
               sx={{ mt: 2 }}
             >
-              View Full Booking Details
+              Manage Booking
             </Button>
           </CardContent>
         </Card>

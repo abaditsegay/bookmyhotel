@@ -3,6 +3,7 @@ package com.bookmyhotel.repository;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -123,6 +124,21 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
      * Find reservations by guest and order by creation date descending
      */
     List<Reservation> findByGuestOrderByCreatedAtDesc(User guest);
+    
+    /**
+     * Find conflicting reservations excluding a specific reservation (for modifications)
+     */
+    @Query("SELECT r FROM Reservation r WHERE r.room.id = :roomId " +
+           "AND r.id != :excludeReservationId " +
+           "AND r.status IN :statuses " +
+           "AND ((r.checkInDate <= :checkOut AND r.checkOutDate > :checkIn))")
+    List<Reservation> findConflictingReservationsExcluding(
+        @Param("roomId") Long roomId,
+        @Param("checkIn") LocalDate checkIn,
+        @Param("checkOut") LocalDate checkOut,
+        @Param("excludeReservationId") Long excludeReservationId,
+        @Param("statuses") Set<ReservationStatus> statuses
+    );
     
     /**
      * Search reservations by guest name, room number, or confirmation number with pagination

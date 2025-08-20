@@ -259,13 +259,12 @@ const FrontDeskBookingDetails: React.FC = () => {
           <Alert severity="error" sx={{ mb: 2 }}>
             {error}
           </Alert>
-          <Button
-            variant="contained"
-            startIcon={<ArrowBackIcon />}
+          <IconButton
             onClick={handleBack}
+            aria-label="back to dashboard"
           >
-            Back to Dashboard
-          </Button>
+            <ArrowBackIcon />
+          </IconButton>
         </Box>
       </Container>
     );
@@ -278,13 +277,12 @@ const FrontDeskBookingDetails: React.FC = () => {
           <Alert severity="info" sx={{ mb: 2 }}>
             Booking not found
           </Alert>
-          <Button
-            variant="contained"
-            startIcon={<ArrowBackIcon />}
+          <IconButton
             onClick={handleBack}
+            aria-label="back to dashboard"
           >
-            Back to Dashboard
-          </Button>
+            <ArrowBackIcon />
+          </IconButton>
         </Box>
       </Container>
     );

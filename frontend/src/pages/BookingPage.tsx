@@ -676,14 +676,7 @@ const BookingPage: React.FC = () => {
           </Card>
 
           {/* Actions */}
-          <Box sx={{ mt: 4, display: 'flex', justifyContent: 'space-between' }}>
-            <Button
-              variant="outlined"
-              onClick={handleBackToResults}
-              size="large"
-            >
-              Back to Results
-            </Button>
+          <Box sx={{ mt: 4, display: 'flex', justifyContent: 'flex-end' }}>
             <Button
               type="submit"
               variant="contained"

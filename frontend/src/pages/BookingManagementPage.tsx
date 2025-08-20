@@ -79,10 +79,14 @@ const BookingManagementPage: React.FC = () => {
         throw new Error(errorText || 'Failed to cancel booking');
       }
 
+      // Get the updated booking data from the response
+      const updatedBooking = await response.json();
+
       setCancelDialogOpen(false);
       setError(null);
-      // Refresh booking to show cancelled status
-      await fetchBooking();
+      
+      // Update the local booking state with the cancelled booking data
+      setBooking(updatedBooking);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to cancel booking');
     }

@@ -5,7 +5,11 @@ import {
   HotelSearchResult, 
   BookingRequest, 
   BookingResponse,
-  AvailableRoom 
+  AvailableRoom,
+  BookingModificationRequest,
+  BookingModificationResponse,
+  BookingCancellationRequest,
+  BookingCancellationResponse
 } from '../types/hotel';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
@@ -186,6 +190,22 @@ class HotelApiService {
 
     const query = params.toString() ? `?${params.toString()}` : '';
     return this.fetchApi<BookingResponse>(`/bookings/search${query}`);
+  }
+
+  // Booking modification
+  async modifyBooking(modificationRequest: BookingModificationRequest): Promise<BookingModificationResponse> {
+    return this.fetchApi<BookingModificationResponse>('/bookings/modify', {
+      method: 'PUT',
+      body: JSON.stringify(modificationRequest),
+    });
+  }
+
+  // Booking cancellation
+  async cancelBookingGuest(cancellationRequest: BookingCancellationRequest): Promise<BookingCancellationResponse> {
+    return this.fetchApi<BookingCancellationResponse>('/bookings/cancel', {
+      method: 'POST',
+      body: JSON.stringify(cancellationRequest),
+    });
   }
 }
 
