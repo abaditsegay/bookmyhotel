@@ -13,12 +13,7 @@ import com.bookmyhotel.entity.Tenant;
  * Repository for Tenant entity
  */
 @Repository
-public interface TenantRepository extends JpaRepository<Tenant, Long>, JpaSpecificationExecutor<Tenant> {
-
-    /**
-     * Find tenant by tenant ID
-     */
-    Optional<Tenant> findByTenantId(String tenantId);
+public interface TenantRepository extends JpaRepository<Tenant, String>, JpaSpecificationExecutor<Tenant> {
 
     /**
      * Find tenant by name
@@ -31,19 +26,14 @@ public interface TenantRepository extends JpaRepository<Tenant, Long>, JpaSpecif
     Optional<Tenant> findBySubdomain(String subdomain);
 
     /**
-     * Check if tenant exists by tenant ID
-     */
-    boolean existsByTenantId(String tenantId);
-
-    /**
      * Check if tenant exists by name
      */
     boolean existsByName(String name);
 
     /**
-     * Find active tenant by tenant ID
+     * Find active tenant by ID
      */
-    Optional<Tenant> findByTenantIdAndIsActiveTrue(String tenantId);
+    Optional<Tenant> findByIdAndIsActiveTrue(String id);
 
     /**
      * Find all active tenants ordered by name

@@ -24,6 +24,8 @@ public class BookingModificationRequest {
     
     private Long newRoomId; // For room type changes
     
+    private String newRoomType; // For room type changes by name
+    
     private String newSpecialRequests;
     
     private String guestName;
@@ -80,6 +82,14 @@ public class BookingModificationRequest {
     
     public void setNewRoomId(Long newRoomId) {
         this.newRoomId = newRoomId;
+    }
+    
+    public String getNewRoomType() {
+        return newRoomType;
+    }
+    
+    public void setNewRoomType(String newRoomType) {
+        this.newRoomType = newRoomType;
     }
     
     public String getNewSpecialRequests() {

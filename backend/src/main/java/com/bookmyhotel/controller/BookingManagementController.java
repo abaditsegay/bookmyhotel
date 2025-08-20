@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.bookmyhotel.dto.BookingModificationRequest;
+import com.bookmyhotel.dto.BookingModificationResponse;
 import com.bookmyhotel.dto.BookingResponse;
 import com.bookmyhotel.service.BookingService;
 import com.bookmyhotel.service.BookingTokenService;
@@ -68,10 +70,9 @@ public class BookingManagementController {
 
     /**
      * Update booking details using a booking token
-     * Note: For now, this returns a message that updates are not supported
      */
     @PutMapping
-    public ResponseEntity<?> updateBookingByToken(@RequestParam(required = false) String token, @RequestBody BookingResponse updatedBooking) {
+    public ResponseEntity<?> updateBookingByToken(@RequestParam(required = false) String token, @RequestBody BookingModificationRequest modificationRequest) {
         try {
             if (token == null || token.trim().isEmpty()) {
                 return ResponseEntity.badRequest().body("Token parameter is required");
@@ -83,8 +84,29 @@ public class BookingManagementController {
                 return ResponseEntity.badRequest().body("Invalid or expired booking token");
             }
 
-            // For now, booking updates are not supported via token access
-            return ResponseEntity.badRequest().body("Booking updates are not currently supported. Please contact customer service for assistance.");
+            String guestEmail = bookingTokenService.getGuestEmailFromToken(token);
+            if (guestEmail == null) {
+                return ResponseEntity.badRequest().body("Invalid token format");
+            }
+
+            // Get current booking to extract confirmation number and verify guest email
+            BookingResponse currentBooking = bookingService.getBooking(reservationId);
+            if (!guestEmail.equals(currentBooking.getGuestEmail())) {
+                return ResponseEntity.badRequest().body("Token does not match booking guest");
+            }
+
+            // Set the confirmation number and guest email from the token/booking data
+            modificationRequest.setConfirmationNumber(currentBooking.getConfirmationNumber());
+            modificationRequest.setGuestEmail(guestEmail);
+
+            // Call the existing modify booking service
+            BookingModificationResponse response = bookingService.modifyBooking(modificationRequest);
+            
+            if (response.isSuccess()) {
+                return ResponseEntity.ok(response);
+            } else {
+                return ResponseEntity.badRequest().body(response.getMessage());
+            }
             
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error updating booking: " + e.getMessage());

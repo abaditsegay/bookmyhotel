@@ -1,13 +1,14 @@
 package com.bookmyhotel.service;
 
-import com.bookmyhotel.entity.Tenant;
-import com.bookmyhotel.repository.TenantRepository;
+import java.util.Optional;
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
-import java.util.UUID;
+import com.bookmyhotel.entity.Tenant;
+import com.bookmyhotel.repository.TenantRepository;
 
 /**
  * Service for managing tenants
@@ -24,13 +25,13 @@ public class TenantService {
      * This method will create a new tenant with a GUID if it doesn't exist
      */
     public Tenant getOrCreateTenant(String tenantIdentifier) {
-        // Check if tenant already exists
-        Optional<Tenant> existingTenant = tenantRepository.findByTenantId(tenantIdentifier);
+        // Check if tenant already exists by name first
+        Optional<Tenant> existingTenant = tenantRepository.findByName(tenantIdentifier);
         if (existingTenant.isPresent()) {
             return existingTenant.get();
         }
 
-        // Create new tenant with GUID
+        // Create new tenant with GUID as ID
         String tenantId = UUID.randomUUID().toString();
         Tenant newTenant = new Tenant(tenantId, tenantIdentifier);
         newTenant.setDescription("Auto-created tenant for: " + tenantIdentifier);
@@ -58,7 +59,7 @@ public class TenantService {
      */
     @Transactional(readOnly = true)
     public Optional<Tenant> getTenantById(String tenantId) {
-        return tenantRepository.findByTenantId(tenantId);
+        return tenantRepository.findById(tenantId);
     }
 
     /**
@@ -73,7 +74,7 @@ public class TenantService {
      * Update tenant status
      */
     public Tenant updateTenantStatus(String tenantId, boolean isActive) {
-        Tenant tenant = tenantRepository.findByTenantId(tenantId)
+        Tenant tenant = tenantRepository.findById(tenantId)
                 .orElseThrow(() -> new RuntimeException("Tenant not found: " + tenantId));
 
         tenant.setIsActive(isActive);

@@ -238,6 +238,48 @@ class AdminApiService {
   async getActiveTenants(): Promise<TenantDTO[]> {
     return this.fetchApi<TenantDTO[]>('/admin/tenants/active');
   }
+
+  // Hotel Registration Management Methods
+  async getHotelRegistrations(page: number = 0, size: number = 10): Promise<PagedResponse<HotelRegistrationResponse>> {
+    return this.fetchApi<PagedResponse<HotelRegistrationResponse>>(`/admin/hotel-registrations?page=${page}&size=${size}`);
+  }
+
+  async getHotelRegistrationsByStatus(status: string, page: number = 0, size: number = 10): Promise<PagedResponse<HotelRegistrationResponse>> {
+    return this.fetchApi<PagedResponse<HotelRegistrationResponse>>(`/admin/hotel-registrations/status/${status}?page=${page}&size=${size}`);
+  }
+
+  async getHotelRegistrationById(id: number): Promise<HotelRegistrationResponse> {
+    return this.fetchApi<HotelRegistrationResponse>(`/admin/hotel-registrations/${id}`);
+  }
+
+  async approveHotelRegistration(id: number, request: ApproveRegistrationRequest): Promise<HotelRegistrationResponse> {
+    return this.fetchApi<HotelRegistrationResponse>(`/admin/hotel-registrations/${id}/approve`, {
+      method: 'POST',
+      body: JSON.stringify(request),
+    });
+  }
+
+  async rejectHotelRegistration(id: number, request: RejectRegistrationRequest): Promise<HotelRegistrationResponse> {
+    return this.fetchApi<HotelRegistrationResponse>(`/admin/hotel-registrations/${id}/reject`, {
+      method: 'POST',
+      body: JSON.stringify(request),
+    });
+  }
+
+  async markHotelRegistrationUnderReview(id: number, request: UnderReviewRequest): Promise<HotelRegistrationResponse> {
+    return this.fetchApi<HotelRegistrationResponse>(`/admin/hotel-registrations/${id}/under-review`, {
+      method: 'POST',
+      body: JSON.stringify(request),
+    });
+  }
+
+  async getHotelRegistrationStatistics(): Promise<HotelRegistrationStatistics> {
+    return this.fetchApi<HotelRegistrationStatistics>('/admin/hotel-registrations/statistics');
+  }
+
+  async searchHotelRegistrations(searchTerm: string, page: number = 0, size: number = 10): Promise<PagedResponse<HotelRegistrationResponse>> {
+    return this.fetchApi<PagedResponse<HotelRegistrationResponse>>(`/admin/hotel-registrations/search?searchTerm=${encodeURIComponent(searchTerm)}&page=${page}&size=${size}`);
+  }
 }
 
 // Type definitions for API responses
@@ -393,6 +435,55 @@ export interface TenantStatistics {
   inactiveTenants: number;
   totalUsers: number;
   totalHotels: number;
+}
+
+export interface HotelRegistrationResponse {
+  id: number;
+  hotelName: string;
+  description?: string;
+  address: string;
+  city: string;
+  state?: string;
+  country: string;
+  zipCode?: string;
+  phone?: string;
+  contactEmail: string;
+  contactPerson: string;
+  licenseNumber?: string;
+  taxId?: string;
+  websiteUrl?: string;
+  facilityAmenities?: string;
+  numberOfRooms?: number;
+  checkInTime?: string;
+  checkOutTime?: string;
+  status: 'PENDING' | 'UNDER_REVIEW' | 'APPROVED' | 'REJECTED';
+  submittedAt: string;
+  reviewedAt?: string;
+  reviewedBy?: number;
+  reviewComments?: string;
+  tenantId?: string;
+}
+
+export interface ApproveRegistrationRequest {
+  comments?: string;
+  tenantId: string;
+}
+
+export interface RejectRegistrationRequest {
+  reason: string;
+  comments?: string;
+}
+
+export interface UnderReviewRequest {
+  comments?: string;
+}
+
+export interface HotelRegistrationStatistics {
+  totalRegistrations: number;
+  pendingRegistrations: number;
+  underReviewRegistrations: number;
+  approvedRegistrations: number;
+  rejectedRegistrations: number;
 }
 
 export const adminApiService = new AdminApiService();

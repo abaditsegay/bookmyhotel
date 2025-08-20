@@ -6,8 +6,8 @@ import java.time.LocalDateTime;
  * DTO for Tenant entity
  */
 public class TenantDTO {
-    private Long id;
-    private String tenantId;
+    private String id;  // Changed to String to match UUID primary key
+    private String tenantId;  // Deprecated but kept for backward compatibility
     private String name;
     private String subdomain;
     private String description;
@@ -22,7 +22,7 @@ public class TenantDTO {
     // Constructors
     public TenantDTO() {}
 
-    public TenantDTO(Long id, String tenantId, String name, String subdomain, String description, 
+    public TenantDTO(String id, String tenantId, String name, String subdomain, String description, 
                      Boolean isActive, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.tenantId = tenantId;
@@ -35,11 +35,11 @@ public class TenantDTO {
     }
 
     // Getters and Setters
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 

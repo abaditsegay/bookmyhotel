@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Container,
   Paper,
@@ -30,7 +30,6 @@ import {
   Person as PersonIcon
 } from '@mui/icons-material';
 import { bookingApiService } from '../services/bookingApi';
-import { useAuthenticatedApi } from '../hooks/useAuthenticatedApi';
 
 interface BookingData {
   reservationId: number;
@@ -54,13 +53,15 @@ interface BookingData {
 const GuestBookingManagementPage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { hotelApiService } = useAuthenticatedApi();
+  const [searchParams] = useSearchParams();
   
   const initialBooking: BookingData = location.state?.booking;
-  const [booking, setBooking] = useState<BookingData>(initialBooking);
+  const token = searchParams.get('token');
+  
+  const [booking, setBooking] = useState<BookingData | null>(initialBooking);
+  const [loading, setLoading] = useState(!initialBooking); // Only load if no initial booking
   const [modifyDialogOpen, setModifyDialogOpen] = useState(false);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   
@@ -72,24 +73,64 @@ const GuestBookingManagementPage: React.FC = () => {
     modificationReason: ''
   });
   
-  // Cost preview state
-  const [costPreview, setCostPreview] = useState<{
-    originalCost: number;
-    newCost: number;
-    additionalCost: number;
-    modificationFee: number;
-  } | null>(null);
-  
-  const [previewLoading, setPreviewLoading] = useState(false);
-  
   // Cancellation form state
   const [cancellationReason, setCancellationReason] = useState('');
+
+  // Fetch booking data from token (for email links)
+  const fetchBookingFromToken = useCallback(async () => {
+    if (!token) return;
+    
+    try {
+      setLoading(true);
+      setErrorMessage('');
+      
+      const response = await fetch(`/api/booking-management?token=${token}`);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Failed to load booking');
+      }
+
+      const bookingData = await response.json();
+      setBooking(bookingData);
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : 'Failed to load booking');
+    } finally {
+      setLoading(false);
+    }
+  }, [token]);
+
+  // Load booking data on component mount
+  useEffect(() => {
+    if (token && !initialBooking) {
+      // Load from token if no initial booking data
+      fetchBookingFromToken();
+    } else if (!token && !initialBooking) {
+      // No token and no initial data - redirect to find booking
+      setErrorMessage('No booking information available. Please search for your booking first.');
+      setLoading(false);
+    } else {
+      // Already have booking data from navigation state
+      setLoading(false);
+    }
+  }, [token, initialBooking, fetchBookingFromToken]);
+
+  if (loading) {
+    return (
+      <Container maxWidth="md" sx={{ py: 4, textAlign: 'center' }}>
+        <CircularProgress />
+        <Typography variant="h6" sx={{ mt: 2 }}>
+          Loading your booking...
+        </Typography>
+      </Container>
+    );
+  }
 
   if (!booking) {
     return (
       <Container maxWidth="md" sx={{ py: 4 }}>
         <Alert severity="error" sx={{ mb: 3 }}>
-          No booking information available. Please search for your booking first.
+          {errorMessage || 'No booking information available. Please search for your booking first.'}
         </Alert>
         <Box sx={{ textAlign: 'center' }}>
           <Button
@@ -156,27 +197,66 @@ const GuestBookingManagementPage: React.FC = () => {
         newCheckInDate: modificationData.newCheckInDate !== booking.checkInDate ? modificationData.newCheckInDate : undefined,
         newCheckOutDate: modificationData.newCheckOutDate !== booking.checkOutDate ? modificationData.newCheckOutDate : undefined,
         newRoomType: modificationData.newRoomType !== booking.roomType ? modificationData.newRoomType : undefined,
-        modificationReason: modificationData.modificationReason
+        reason: modificationData.modificationReason
       };
       
-      const response = await bookingApiService.modifyBooking(modificationRequest);
+      let response;
       
-      if (response.success) {
-        setSuccessMessage(response.message || 'Booking modified successfully');
-        setModifyDialogOpen(false);
+      if (token) {
+        // Modify via token (from email link)
+        const apiResponse = await fetch(`/api/booking-management?token=${token}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(modificationRequest),
+        });
         
-        // Update booking state with the modified booking data
-        if (response.data?.updatedBooking) {
-          setBooking({
-            ...booking,
-            checkInDate: response.data.updatedBooking.checkInDate,
-            checkOutDate: response.data.updatedBooking.checkOutDate,
-            roomType: response.data.updatedBooking.roomType,
-            totalAmount: response.data.updatedBooking.totalAmount
-          });
+        if (!apiResponse.ok) {
+          const errorText = await apiResponse.text();
+          throw new Error(errorText || 'Failed to modify booking');
+        }
+        
+        response = await apiResponse.json();
+        
+        if (response.success) {
+          setSuccessMessage(response.message || 'Booking modified successfully');
+          setModifyDialogOpen(false);
+          
+          // Update booking state with the modified booking data
+          if (response.updatedBooking) {
+            setBooking({
+              ...booking,
+              checkInDate: response.updatedBooking.checkInDate,
+              checkOutDate: response.updatedBooking.checkOutDate,
+              roomType: response.updatedBooking.roomType,
+              totalAmount: response.updatedBooking.totalAmount
+            });
+          }
+        } else {
+          setErrorMessage(response.message || 'Failed to modify booking');
         }
       } else {
-        setErrorMessage(response.message || 'Failed to modify booking');
+        // Modify via booking API (from search)
+        response = await bookingApiService.modifyBooking(modificationRequest);
+        
+        if (response.success) {
+          setSuccessMessage(response.message || 'Booking modified successfully');
+          setModifyDialogOpen(false);
+          
+          // Update booking state with the modified booking data
+          if (response.data?.updatedBooking) {
+            setBooking({
+              ...booking,
+              checkInDate: response.data.updatedBooking.checkInDate,
+              checkOutDate: response.data.updatedBooking.checkOutDate,
+              roomType: response.data.updatedBooking.roomType,
+              totalAmount: response.data.updatedBooking.totalAmount
+            });
+          }
+        } else {
+          setErrorMessage(response.message || 'Failed to modify booking');
+        }
       }
     } catch (error) {
       setErrorMessage('An error occurred while modifying the booking');
@@ -190,32 +270,61 @@ const GuestBookingManagementPage: React.FC = () => {
       setLoading(true);
       setErrorMessage('');
       
-      const cancellationRequest = {
-        confirmationNumber: booking.confirmationNumber,
-        guestEmail: booking.guestEmail,
-        cancellationReason: ''
-      };
+      let response;
       
-      const response = await bookingApiService.cancelBooking(
-        cancellationRequest.confirmationNumber,
-        cancellationRequest.guestEmail,
-        cancellationRequest.cancellationReason
-      );
-      
-      if (response.success) {
-        setSuccessMessage(response.message || 'Booking cancelled successfully');
-        setCancelDialogOpen(false);
-        
-        // Update booking state to reflect cancellation
-        setBooking({
-          ...booking,
-          status: 'Cancelled'
+      if (token) {
+        // Cancel via token (from email link)
+        response = await fetch(`/api/booking-management?token=${token}`, {
+          method: 'DELETE',
         });
-        
-        // Clear cancellation reason
-        setCancellationReason('');
       } else {
-        setErrorMessage(response.message || 'Failed to cancel booking');
+        // Cancel via booking API (from search)
+        const cancellationRequest = {
+          confirmationNumber: booking.confirmationNumber,
+          guestEmail: booking.guestEmail,
+          cancellationReason: cancellationReason
+        };
+        
+        const apiResponse = await bookingApiService.cancelBooking(
+          cancellationRequest.confirmationNumber,
+          cancellationRequest.guestEmail,
+          cancellationRequest.cancellationReason
+        );
+        
+        if (apiResponse.success) {
+          setSuccessMessage(apiResponse.message || 'Booking cancelled successfully');
+          setCancelDialogOpen(false);
+          
+          // Update booking state to reflect cancellation
+          setBooking({
+            ...booking,
+            status: 'Cancelled'
+          });
+          
+          // Clear cancellation reason
+          setCancellationReason('');
+          return;
+        } else {
+          setErrorMessage(apiResponse.message || 'Failed to cancel booking');
+          return;
+        }
+      }
+      
+      // Handle token-based cancellation response
+      if (response && !response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Failed to cancel booking');
+      }
+
+      if (response) {
+        // Get the updated booking data from the response
+        const updatedBooking = await response.json();
+        
+        setCancelDialogOpen(false);
+        setSuccessMessage('Booking cancelled successfully');
+        
+        // Update the local booking state with the cancelled booking data
+        setBooking(updatedBooking);
       }
     } catch (error) {
       setErrorMessage('Failed to cancel booking. Please try again.');

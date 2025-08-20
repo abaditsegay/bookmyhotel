@@ -4,10 +4,14 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,6 +26,7 @@ import com.bookmyhotel.dto.BookingResponse;
 import com.bookmyhotel.entity.Reservation;
 import com.bookmyhotel.entity.ReservationStatus;
 import com.bookmyhotel.entity.Room;
+import com.bookmyhotel.entity.RoomType;
 import com.bookmyhotel.entity.User;
 import com.bookmyhotel.entity.UserRole;
 import com.bookmyhotel.exception.BookingException;
@@ -41,6 +46,8 @@ import com.stripe.param.PaymentIntentCreateParams;
 @Transactional
 public class BookingService {
     
+    private static final Logger logger = LoggerFactory.getLogger(BookingService.class);
+    
     @Autowired
     private ReservationRepository reservationRepository;
     
@@ -49,6 +56,13 @@ public class BookingService {
     
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private BookingNotificationService notificationService;
+    
+    // TODO: Temporarily commented out for compilation - will reintegrate after Phase 3.3
+    // @Autowired
+    // private BookingHistoryService historyService;
     
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -134,6 +148,35 @@ public class BookingService {
             reservation.setConfirmationNumber(confirmationNumber);
             reservation = reservationRepository.save(reservation);
             
+            // Record booking creation in history
+            // TODO: Complete history integration after Phase 3.3
+            /*
+            try {
+                // Create a simple booking creation record
+                Map<String, Object> creationData = new HashMap<>();
+                creationData.put("totalAmount", reservation.getTotalAmount());
+                creationData.put("roomType", reservation.getRoom().getRoomType().toString());
+                creationData.put("checkInDate", reservation.getCheckInDate());
+                creationData.put("checkOutDate", reservation.getCheckOutDate());
+                
+                historyService.recordBookingAction(reservation, BookingActionType.CREATED, 
+                    reservation.getGuest().getEmail(), 
+                    "New booking created for " + reservation.getRoom().getRoomNumber() + 
+                    " from " + reservation.getCheckInDate() + " to " + reservation.getCheckOutDate(),
+                    reservation.getTotalAmount(), null, creationData);
+                
+                // Record payment processing if payment was made
+                if (reservation.getPaymentIntentId() != null) {
+                    historyService.recordPayment(reservation, 
+                        reservation.getGuest().getEmail(),
+                        reservation.getTotalAmount(), 
+                        "Initial payment for booking");
+                }
+            } catch (Exception e) {
+                logger.warn("Failed to record booking creation in history: {}", e.getMessage());
+            }
+            */
+            
             // Convert to response DTO first (before email)
             BookingResponse bookingResponse = convertToBookingResponse(reservation);
             
@@ -189,6 +232,22 @@ public class BookingService {
         reservation.setCancelledAt(LocalDateTime.now());
         reservation.setCancellationReason("Cancelled by guest");
         reservation = reservationRepository.save(reservation);
+        
+        // Record booking cancellation in history
+        // TODO: Complete history integration after Phase 3.3
+        /*
+        try {
+            BigDecimal refundAmount = calculateCancellationRefund(reservation);
+            historyService.recordCancellation(
+                reservation,
+                reservation.getGuest().getEmail(),
+                "Booking cancelled by guest via admin interface",
+                refundAmount
+            );
+        } catch (Exception e) {
+            logger.warn("Failed to record booking cancellation in history: {}", e.getMessage());
+        }
+        */
         
         // Process refund if needed
         if (reservation.getPaymentIntentId() != null) {
@@ -466,6 +525,10 @@ public class BookingService {
             Reservation reservation = reservationRepository.findByConfirmationNumberPublic(request.getConfirmationNumber())
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
             
+            // Capture original data for history tracking
+            // TODO: Store original data for audit tracking when history is re-enabled
+            // Map<String, Object> originalData = convertReservationToMap(reservation);
+            
             // Check if booking can be modified (not checked in, not cancelled)
             if (reservation.getStatus() == ReservationStatus.CHECKED_IN || 
                 reservation.getStatus() == ReservationStatus.CHECKED_OUT ||
@@ -547,8 +610,56 @@ public class BookingService {
                 reservation.setRoom(newRoom);
                 reservation.setTotalAmount(newRoomTotal);
             }
-            
-            // Update guest information if provided
+            // Handle room changes by type name
+            else if (request.getNewRoomType() != null && !request.getNewRoomType().trim().isEmpty()) {
+                
+                // Convert string to RoomType enum
+                RoomType requestedRoomType;
+                try {
+                    requestedRoomType = RoomType.valueOf(request.getNewRoomType().trim().toUpperCase());
+                } catch (IllegalArgumentException e) {
+                    return new BookingModificationResponse(false, "Invalid room type: " + request.getNewRoomType());
+                }
+                
+                // Check if it's actually a different room type
+                if (!requestedRoomType.equals(reservation.getRoom().getRoomType())) {
+                    
+                    // Find an available room of the requested type in the same hotel
+                    List<Room> availableRooms = roomRepository.findByHotelIdAndRoomType(
+                        reservation.getRoom().getHotel().getId(), 
+                        request.getNewRoomType().trim().toUpperCase()
+                    );
+                    
+                    Room newRoom = null;
+                    for (Room room : availableRooms) {
+                        if (isRoomAvailableForModification(room.getId(), 
+                            reservation.getCheckInDate(), reservation.getCheckOutDate(), reservation.getId())) {
+                            newRoom = room;
+                            break;
+                        }
+                    }
+                    
+                    if (newRoom == null) {
+                        return new BookingModificationResponse(false, "No available rooms of type '" + request.getNewRoomType() + "' for your dates");
+                    }
+                    
+                    // Calculate price difference for room upgrade/downgrade
+                    long nights = ChronoUnit.DAYS.between(reservation.getCheckInDate(), reservation.getCheckOutDate());
+                    BigDecimal oldRoomTotal = reservation.getRoom().getPricePerNight().multiply(BigDecimal.valueOf(nights));
+                    BigDecimal newRoomTotal = newRoom.getPricePerNight().multiply(BigDecimal.valueOf(nights));
+                    BigDecimal roomPriceDifference = newRoomTotal.subtract(oldRoomTotal);
+                    
+                    if (roomPriceDifference.compareTo(BigDecimal.ZERO) > 0) {
+                        additionalCharges = additionalCharges.add(roomPriceDifference);
+                    } else if (roomPriceDifference.compareTo(BigDecimal.ZERO) < 0) {
+                        refundAmount = refundAmount.add(roomPriceDifference.abs());
+                    }
+                    
+                    // Update room and total amount
+                    reservation.setRoom(newRoom);
+                    reservation.setTotalAmount(newRoomTotal);
+                }
+            }            // Update guest information if provided
             if (request.getGuestName() != null && !request.getGuestName().trim().isEmpty()) {
                 User guest = reservation.getGuest();
                 String[] nameParts = request.getGuestName().trim().split(" ", 2);
@@ -581,6 +692,38 @@ public class BookingService {
             response.setUpdatedBooking(convertToBookingResponse(reservation));
             response.setAdditionalCharges(additionalCharges);
             response.setRefundAmount(refundAmount);
+            
+            // Send email notification
+            try {
+                notificationService.sendModificationConfirmationEmail(
+                    convertToBookingResponse(reservation), additionalCharges, refundAmount);
+            } catch (Exception e) {
+                logger.warn("Failed to send modification confirmation email: {}", e.getMessage());
+            }
+            
+            // Record booking modification in history
+            // TODO: Complete history integration after Phase 3.3
+            /*
+            /*
+            try {
+                Map<String, Object> changes = new HashMap<>();
+                // Compare original and new data
+                // String summary = getModificationSummary(originalData, reservation);
+                changes.put("summary", "Booking modified");
+                changes.put("additionalCharges", additionalCharges);
+                changes.put("refundAmount", refundAmount);
+                
+                historyService.recordModification(
+                    reservation,
+                    reservation.getGuest().getEmail(),
+                    "Booking modified: " + summary,
+                    additionalCharges.subtract(refundAmount), // net financial impact
+                    changes
+                );
+            } catch (Exception e) {
+                logger.warn("Failed to record booking modification in history: {}", e.getMessage());
+            }
+            */
             
             // Handle payment processing if there are additional charges
             if (additionalCharges.compareTo(BigDecimal.ZERO) > 0) {
@@ -644,6 +787,31 @@ public class BookingService {
             BookingModificationResponse response = new BookingModificationResponse(true, "Booking successfully cancelled");
             response.setUpdatedBooking(convertToBookingResponse(reservation));
             response.setRefundAmount(refundAmount);
+            
+            // Send email notification
+            try {
+                notificationService.sendCancellationConfirmationEmail(
+                    convertToBookingResponse(reservation), refundAmount);
+            } catch (Exception e) {
+                logger.warn("Failed to send cancellation confirmation email: {}", e.getMessage());
+            }
+            
+            // Record booking cancellation in history
+            // TODO: Complete history integration after Phase 3.3
+            /*
+            try {
+                String cancellationReason = request.getCancellationReason() != null && !request.getCancellationReason().trim().isEmpty() 
+                    ? request.getCancellationReason().trim() : "No reason provided";
+                historyService.recordCancellation(
+                    reservation,
+                    reservation.getGuest().getEmail(),
+                    "Booking cancelled by guest. Reason: " + cancellationReason,
+                    refundAmount
+                );
+            } catch (Exception e) {
+                logger.warn("Failed to record booking cancellation in history: {}", e.getMessage());
+            }
+            */
             
             if (refundAmount.compareTo(BigDecimal.ZERO) > 0) {
                 response.setMessage("Booking cancelled. Refund of $" + refundAmount + " will be processed within 3-5 business days.");
@@ -794,5 +962,61 @@ public class BookingService {
     public byte[] generateBookingConfirmationPdf(Long reservationId) {
         BookingResponse booking = getBooking(reservationId);
         return pdfService.generateBookingConfirmationPdf(booking);
+    }
+    
+    /**
+     * Create a summary of booking modifications for history tracking
+     */
+    private String getModificationSummary(Map<String, Object> originalData, Reservation updatedReservation) {
+        StringBuilder summary = new StringBuilder();
+        
+        // Check date changes
+        LocalDate originalCheckIn = (LocalDate) originalData.get("checkInDate");
+        LocalDate originalCheckOut = (LocalDate) originalData.get("checkOutDate");
+        
+        if (!originalCheckIn.equals(updatedReservation.getCheckInDate())) {
+            summary.append("Check-in changed from ").append(originalCheckIn)
+                   .append(" to ").append(updatedReservation.getCheckInDate()).append("; ");
+        }
+        
+        if (!originalCheckOut.equals(updatedReservation.getCheckOutDate())) {
+            summary.append("Check-out changed from ").append(originalCheckOut)
+                   .append(" to ").append(updatedReservation.getCheckOutDate()).append("; ");
+        }
+        
+        // Check guest count changes
+        // Note: Guest count is not stored in Reservation entity currently
+        // This would need to be added to the entity if guest count tracking is needed
+        
+        // Check special requests changes
+        String originalRequests = (String) originalData.get("specialRequests");
+        String newRequests = updatedReservation.getSpecialRequests();
+        if ((originalRequests == null && newRequests != null) ||
+            (originalRequests != null && !originalRequests.equals(newRequests))) {
+            summary.append("Special requests updated; ");
+        }
+        
+        return summary.length() > 0 ? summary.toString() : "Minor booking details updated";
+    }
+    
+    /**
+     * Convert reservation entity to map for history tracking
+     */
+    private Map<String, Object> convertReservationToMap(Reservation reservation) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("id", reservation.getId());
+        map.put("checkInDate", reservation.getCheckInDate());
+        map.put("checkOutDate", reservation.getCheckOutDate());
+        // Note: guestCount field doesn't exist in Reservation entity
+        map.put("specialRequests", reservation.getSpecialRequests());
+        map.put("totalAmount", reservation.getTotalAmount());
+        map.put("status", reservation.getStatus().toString());
+        map.put("roomId", reservation.getRoom().getId());
+        map.put("roomNumber", reservation.getRoom().getRoomNumber());
+        map.put("roomType", reservation.getRoom().getRoomType().toString());
+        map.put("guestId", reservation.getGuest().getId());
+        map.put("guestEmail", reservation.getGuest().getEmail());
+        map.put("updatedAt", reservation.getUpdatedAt());
+        return map;
     }
 }

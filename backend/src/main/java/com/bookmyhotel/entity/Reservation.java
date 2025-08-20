@@ -84,6 +84,9 @@ public class Reservation extends TenantEntity {
     @Column(name = "cancelled_at")
     private LocalDateTime cancelledAt;
     
+    @Column(name = "promotional_code", length = 50)
+    private String promotionalCode;
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id", nullable = false)
     private Room room;
@@ -228,5 +231,13 @@ public class Reservation extends TenantEntity {
     
     public void setCancelledAt(LocalDateTime cancelledAt) {
         this.cancelledAt = cancelledAt;
+    }
+    
+    public String getPromotionalCode() {
+        return promotionalCode;
+    }
+    
+    public void setPromotionalCode(String promotionalCode) {
+        this.promotionalCode = promotionalCode;
     }
 }

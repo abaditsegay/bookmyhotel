@@ -1,14 +1,9 @@
 package com.bookmyhotel.service;
 
-import com.bookmyhotel.dto.admin.CreateTenantRequest;
-import com.bookmyhotel.dto.admin.TenantDTO;
-import com.bookmyhotel.dto.admin.UpdateTenantRequest;
-import com.bookmyhotel.entity.Hotel;
-import com.bookmyhotel.entity.Tenant;
-import com.bookmyhotel.entity.User;
-import com.bookmyhotel.repository.HotelRepository;
-import com.bookmyhotel.repository.TenantRepository;
-import com.bookmyhotel.repository.UserRepository;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,9 +11,13 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import com.bookmyhotel.dto.admin.CreateTenantRequest;
+import com.bookmyhotel.dto.admin.TenantDTO;
+import com.bookmyhotel.dto.admin.UpdateTenantRequest;
+import com.bookmyhotel.entity.Tenant;
+import com.bookmyhotel.repository.HotelRepository;
+import com.bookmyhotel.repository.TenantRepository;
+import com.bookmyhotel.repository.UserRepository;
 
 /**
  * Service for tenant management operations
@@ -66,7 +65,7 @@ public class TenantManagementService {
      */
     @Transactional(readOnly = true)
     public TenantDTO getTenantById(String tenantId) {
-        Tenant tenant = tenantRepository.findByTenantId(tenantId)
+        Tenant tenant = tenantRepository.findById(tenantId)
                 .orElseThrow(() -> new RuntimeException("Tenant not found with ID: " + tenantId));
         return convertToDTO(tenant);
     }
@@ -101,7 +100,7 @@ public class TenantManagementService {
      * Update tenant
      */
     public TenantDTO updateTenant(String tenantId, UpdateTenantRequest request) {
-        Tenant tenant = tenantRepository.findByTenantId(tenantId)
+        Tenant tenant = tenantRepository.findById(tenantId)
                 .orElseThrow(() -> new RuntimeException("Tenant not found with ID: " + tenantId));
 
         // Update fields if provided
@@ -140,7 +139,7 @@ public class TenantManagementService {
      * Toggle tenant status
      */
     public TenantDTO toggleTenantStatus(String tenantId) {
-        Tenant tenant = tenantRepository.findByTenantId(tenantId)
+        Tenant tenant = tenantRepository.findById(tenantId)
                 .orElseThrow(() -> new RuntimeException("Tenant not found with ID: " + tenantId));
 
         tenant.setIsActive(!tenant.getIsActive());
@@ -152,7 +151,7 @@ public class TenantManagementService {
      * Delete tenant
      */
     public void deleteTenant(String tenantId) {
-        Tenant tenant = tenantRepository.findByTenantId(tenantId)
+        Tenant tenant = tenantRepository.findById(tenantId)
                 .orElseThrow(() -> new RuntimeException("Tenant not found with ID: " + tenantId));
 
         // Check if tenant has associated users or hotels
@@ -200,7 +199,7 @@ public class TenantManagementService {
     private TenantDTO convertToDTO(Tenant tenant) {
         TenantDTO dto = new TenantDTO(
             tenant.getId(),
-            tenant.getTenantId(),
+            tenant.getId(),  // Both id and tenantId are the same now
             tenant.getName(),
             tenant.getSubdomain(),
             tenant.getDescription(),
@@ -210,8 +209,8 @@ public class TenantManagementService {
         );
 
         // Add statistics
-        dto.setTotalUsers(userRepository.countByTenantId(tenant.getTenantId()));
-        dto.setTotalHotels(hotelRepository.countByTenantId(tenant.getTenantId()));
+        dto.setTotalUsers(userRepository.countByTenantId(tenant.getId()));
+        dto.setTotalHotels(hotelRepository.countByTenantId(tenant.getId()));
 
         return dto;
     }

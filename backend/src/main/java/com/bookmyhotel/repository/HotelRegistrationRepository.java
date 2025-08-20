@@ -40,6 +40,11 @@ public interface HotelRegistrationRepository extends JpaRepository<HotelRegistra
     Optional<HotelRegistration> findByContactEmail(String contactEmail);
     
     /**
+     * Find registrations by contact email ordered by submission date (for status checking)
+     */
+    List<HotelRegistration> findByContactEmailOrderBySubmittedAtDesc(String contactEmail);
+    
+    /**
      * Find registrations by city
      */
     List<HotelRegistration> findByCityIgnoreCaseOrderBySubmittedAtDesc(String city);

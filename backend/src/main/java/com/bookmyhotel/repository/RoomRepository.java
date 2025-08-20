@@ -2,6 +2,7 @@ package com.bookmyhotel.repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Repository;
 import com.bookmyhotel.entity.Hotel;
 import com.bookmyhotel.entity.Room;
 import com.bookmyhotel.entity.RoomStatus;
+import com.bookmyhotel.entity.RoomType;
 
 /**
  * Room repository
@@ -48,6 +50,11 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
      * Find rooms by hotel and room type
      */
     List<Room> findByHotelIdAndRoomType(Long hotelId, String roomType);
+    
+    /**
+     * Find first room by hotel and room type (for pricing lookup)
+     */
+    Optional<Room> findFirstByHotelIdAndRoomType(Long hotelId, RoomType roomType);
     
     /**
      * Find available rooms by hotel

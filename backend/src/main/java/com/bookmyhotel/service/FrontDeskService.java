@@ -45,6 +45,10 @@ public class FrontDeskService {
     @Autowired
     private BookingService bookingService;
     
+    // TODO: Temporarily commented out for compilation - will reintegrate after Phase 3.3
+    // @Autowired
+    // private BookingHistoryService historyService;
+    
     /**
      * Get all bookings with pagination and search
      */
@@ -235,6 +239,23 @@ public class FrontDeskService {
         
         reservation = reservationRepository.save(reservation);
         
+        // Record check-in in history
+        // TODO: Complete history integration after Phase 3.3
+        /*
+        try {
+            historyService.recordBookingAction(
+                reservation,
+                BookingActionType.CHECKED_IN,
+                "Front Desk Staff", // TODO: Get actual staff member name
+                "Guest checked in to room " + room.getRoomNumber(),
+                null, null, null
+            );
+        } catch (Exception e) {
+            // Log but don't fail the check-in process
+            System.err.println("Failed to record check-in in history: " + e.getMessage());
+        }
+        */
+        
         return convertToBookingResponse(reservation);
     }
     
@@ -260,6 +281,23 @@ public class FrontDeskService {
         roomRepository.save(room);
         
         reservation = reservationRepository.save(reservation);
+        
+        // Record check-out in history
+        // TODO: Complete history integration after Phase 3.3
+        /*
+        try {
+            historyService.recordBookingAction(
+                reservation,
+                BookingActionType.CHECKED_OUT,
+                "Front Desk Staff", // TODO: Get actual staff member name
+                "Guest checked out from room " + room.getRoomNumber(),
+                null, null, null
+            );
+        } catch (Exception e) {
+            // Log but don't fail the check-out process
+            System.err.println("Failed to record check-out in history: " + e.getMessage());
+        }
+        */
         
         return convertToBookingResponse(reservation);
     }
@@ -290,6 +328,23 @@ public class FrontDeskService {
         roomRepository.save(room);
         
         reservation = reservationRepository.save(reservation);
+        
+        // Record no-show in history
+        // TODO: Complete history integration after Phase 3.3
+        /*
+        try {
+            historyService.recordBookingAction(
+                reservation,
+                BookingActionType.NO_SHOW,
+                "Front Desk Staff", // TODO: Get actual staff member name
+                "Guest marked as no-show for room " + room.getRoomNumber(),
+                null, null, null
+            );
+        } catch (Exception e) {
+            // Log but don't fail the no-show process
+            System.err.println("Failed to record no-show in history: " + e.getMessage());
+        }
+        */
         
         return convertToBookingResponse(reservation);
     }

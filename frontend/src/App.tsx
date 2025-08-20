@@ -19,6 +19,9 @@ import BookingSearchPage from './pages/BookingSearchPage';
 import LoginPage from './pages/LoginPage';
 import GuestAuthPage from './pages/GuestAuthPage';
 import ProfilePage from './pages/ProfilePage';
+import PublicHotelRegistration from './pages/PublicHotelRegistration';
+import PublicAdminHotelRegistration from './pages/PublicAdminHotelRegistration';
+import HotelRegistrationStatus from './pages/HotelRegistrationStatus';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import HotelRegistrationAdmin from './pages/admin/HotelRegistrationAdmin';
 import HotelRegistrationForm from './pages/admin/HotelRegistrationForm';
@@ -154,6 +157,22 @@ const HomePage: React.FC = () => {
           >
             Search Hotels
           </Button>
+          <Button
+            variant="outlined"
+            color="inherit"
+            size="large"
+            onClick={() => navigate('/register-hotel-admin')}
+            sx={{ 
+              px: 4, 
+              py: 1.5, 
+              fontSize: '1.1rem', 
+              borderRadius: 3,
+              borderColor: 'rgba(255, 255, 255, 0.5)',
+              '&:hover': { borderColor: 'white', backgroundColor: 'rgba(255, 255, 255, 0.1)' }
+            }}
+          >
+            Register Your Hotel
+          </Button>
         </Box>
       </Box>
 
@@ -275,6 +294,9 @@ function App() {
         } />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/guest-auth" element={<GuestAuthPage />} />
+        <Route path="/register-hotel" element={<PublicHotelRegistration />} />
+        <Route path="/register-hotel-admin" element={<PublicAdminHotelRegistration />} />
+        <Route path="/registration-status" element={<HotelRegistrationStatus />} />
         <Route path="/register" element={
           <PlaceholderPage 
             title="Register" 

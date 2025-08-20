@@ -105,6 +105,17 @@ public class HotelRegistrationService {
     }
     
     /**
+     * Get registrations by email address
+     */
+    @Transactional(readOnly = true)
+    public List<HotelRegistrationResponse> getRegistrationByEmail(String email) {
+        var registrations = registrationRepository.findByContactEmailOrderBySubmittedAtDesc(email);
+        return registrations.stream()
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
+    }
+    
+    /**
      * Approve hotel registration
      */
     public HotelRegistrationResponse approveRegistration(Long registrationId, ApproveRegistrationRequest request, Long reviewerId) {

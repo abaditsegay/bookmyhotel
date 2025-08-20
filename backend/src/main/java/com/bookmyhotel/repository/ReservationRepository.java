@@ -166,4 +166,15 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
      */
     @Query("SELECT r FROM Reservation r WHERE r.room.hotel.tenantId = :tenantId ORDER BY r.checkInDate DESC")
     Page<Reservation> findByTenantId(@Param("tenantId") String tenantId, Pageable pageable);
+    
+    /**
+     * Count active reservations in a date range for occupancy calculation
+     */
+    @Query("SELECT COUNT(r) FROM Reservation r " +
+           "WHERE r.room.hotel.id = :hotelId " +
+           "AND r.status NOT IN ('CANCELLED', 'NO_SHOW') " +
+           "AND NOT (r.checkOutDate <= :startDate OR r.checkInDate >= :endDate)")
+    long countActiveReservationsInDateRange(@Param("hotelId") Long hotelId,
+                                           @Param("startDate") LocalDate startDate,
+                                           @Param("endDate") LocalDate endDate);
 }

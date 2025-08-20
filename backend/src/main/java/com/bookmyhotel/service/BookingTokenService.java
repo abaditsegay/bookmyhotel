@@ -91,6 +91,6 @@ public class BookingTokenService {
      */
     public String generateManagementUrl(Long reservationId, String guestEmail, String baseUrl) {
         String token = generateBookingManagementToken(reservationId, guestEmail);
-        return baseUrl + "/booking-management?token=" + token;
+        return baseUrl + "/guest-booking-management?token=" + token;
     }
 }

@@ -27,6 +27,8 @@ import {
   Logout as LogoutIcon,
   Login as LoginIcon,
   Business as BusinessIcon,
+  AppRegistration as RegisterIcon,
+  TrackChanges as StatusIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -89,12 +91,22 @@ const Navbar: React.FC = () => {
   const getNavigationItems = () => {
     const baseItems: { label: string; path?: string; icon: React.ReactNode; action?: () => void }[] = [];
 
-    // Add "Find My Booking" for non-authenticated users
+    // Add navigation items for non-authenticated users
     if (!user) {
       baseItems.push({ 
         label: 'Find My Booking', 
         path: '/find-booking', 
         icon: <BusinessIcon /> 
+      });
+      baseItems.push({ 
+        label: 'Register Hotel', 
+        path: '/register-hotel-admin', 
+        icon: <RegisterIcon /> 
+      });
+      baseItems.push({ 
+        label: 'Registration Status', 
+        path: '/registration-status', 
+        icon: <StatusIcon /> 
       });
     }
 

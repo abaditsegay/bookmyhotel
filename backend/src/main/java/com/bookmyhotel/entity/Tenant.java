@@ -1,34 +1,37 @@
 package com.bookmyhotel.entity;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import java.time.LocalDateTime;
+
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.time.LocalDateTime;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 /**
  * Tenant entity for managing tenant information
  */
 @Entity
 @Table(name = "tenants", indexes = {
-        @Index(name = "idx_tenant_id", columnList = "tenant_id", unique = true),
         @Index(name = "idx_tenant_name", columnList = "name"),
-        @Index(name = "idx_tenant_status", columnList = "is_active")
+        @Index(name = "idx_tenant_status", columnList = "is_active"),
+        @Index(name = "idx_tenant_subdomain", columnList = "subdomain")
 })
 @EntityListeners(AuditingEntityListener.class)
 public class Tenant {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     @NotBlank(message = "Tenant ID is required")
     @Size(max = 50, message = "Tenant ID must not exceed 50 characters")
-    @Column(name = "tenant_id", nullable = false, unique = true, length = 50)
-    private String tenantId;
+    @Column(name = "id", nullable = false, length = 50)
+    private String id;  // This will store the UUID
 
     @NotBlank(message = "Tenant name is required")
     @Size(max = 100, message = "Tenant name must not exceed 100 characters")
@@ -57,32 +60,24 @@ public class Tenant {
     public Tenant() {
     }
 
-    public Tenant(String tenantId, String name) {
-        this.tenantId = tenantId;
+    public Tenant(String id, String name) {
+        this.id = id;
         this.name = name;
     }
 
-    public Tenant(String tenantId, String name, String description) {
-        this.tenantId = tenantId;
+    public Tenant(String id, String name, String description) {
+        this.id = id;
         this.name = name;
         this.description = description;
     }
 
     // Getters and Setters
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
-    }
-
-    public String getTenantId() {
-        return tenantId;
-    }
-
-    public void setTenantId(String tenantId) {
-        this.tenantId = tenantId;
     }
 
     public String getName() {
@@ -131,5 +126,14 @@ public class Tenant {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    // Convenience method to get tenant ID (for backward compatibility if needed)
+    public String getTenantId() {
+        return this.id;
+    }
+
+    public void setTenantId(String tenantId) {
+        this.id = tenantId;
     }
 }
