@@ -128,10 +128,22 @@ const LoginPage: React.FC = () => {
               <Button
                 variant="outlined"
                 size="small"
-                onClick={() => fillSampleUser('admin@grandplaza.com', 'password')}
+                onClick={() => fillSampleUser('admin@system.com', 'password')}
                 sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
               >
                 <Typography variant="body2" fontWeight="bold">System Admin</Typography>
+                <Typography variant="caption" color="textSecondary">
+                  admin@system.com / password
+                </Typography>
+              </Button>
+              
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => fillSampleUser('admin@grandplaza.com', 'password')}
+                sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
+              >
+                <Typography variant="body2" fontWeight="bold">Grand Plaza Hotel Admin</Typography>
                 <Typography variant="caption" color="textSecondary">
                   admin@grandplaza.com / password
                 </Typography>
@@ -143,7 +155,7 @@ const LoginPage: React.FC = () => {
                 onClick={() => fillSampleUser('hoteladmin@bookmyhotel.com', 'password')}
                 sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
               >
-                <Typography variant="body2" fontWeight="bold">Hotel Admin</Typography>
+                <Typography variant="body2" fontWeight="bold">BookMyHotel Admin</Typography>
                 <Typography variant="caption" color="textSecondary">
                   hoteladmin@bookmyhotel.com / password
                 </Typography>

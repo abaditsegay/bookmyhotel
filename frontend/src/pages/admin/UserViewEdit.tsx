@@ -153,7 +153,7 @@ const UserViewEdit: React.FC = () => {
     if (returnTab) {
       navigate(`/admin/dashboard?tab=${returnTab}`);
     } else {
-      navigate('/admin/dashboard');
+      navigate('/system-dashboard');
     }
   };
 

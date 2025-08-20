@@ -303,10 +303,7 @@ function App() {
         } />
         <Route path="/system/hotels" element={
           <ProtectedRoute requiredRole="ADMIN">
-            <PlaceholderPage 
-              title="System Hotel Management" 
-              message="Global hotel management interface coming soon!" 
-            />
+            <HotelManagementAdmin />
           </ProtectedRoute>
         } />
         <Route path="/system/tenants" element={
@@ -316,10 +313,7 @@ function App() {
         } />
         <Route path="/system/users" element={
           <ProtectedRoute requiredRole="ADMIN">
-            <PlaceholderPage 
-              title="System User Management" 
-              message="Global user management interface coming soon!" 
-            />
+            <UserManagementAdmin />
           </ProtectedRoute>
         } />
         <Route path="/system/analytics" element={

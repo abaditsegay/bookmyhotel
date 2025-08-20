@@ -1,18 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Container,
   Typography,
   Box,
-  Card,
-  CardContent,
-  Grid,
-  TextField,
   Button,
-  InputAdornment,
-  Avatar,
-  IconButton,
-  Tooltip,
   Paper,
+  TextField,
+  Grid,
   Table,
   TableBody,
   TableCell,
@@ -20,45 +15,61 @@ import {
   TableHead,
   TableRow,
   TablePagination,
+  Chip,
   Dialog,
   DialogTitle,
   DialogContent,
+  DialogContentText,
   DialogActions,
-  Divider,
-  LinearProgress,
-  Snackbar,
   Alert,
-  Chip,
+  CircularProgress,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  IconButton
 } from '@mui/material';
-import {
-  Search as SearchIcon,
-  Hotel as HotelIcon,
-  LocationOn as LocationIcon,
-  Visibility as VisibilityIcon,
-  Refresh as RefreshIcon,
-  FilterList as FilterListIcon,
-  ToggleOn as ToggleOnIcon,
-  ToggleOff as ToggleOffIcon,
-} from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { ArrowBack as ArrowBackIcon, Visibility as ViewIcon, Edit as EditIcon, ToggleOn as ToggleOnIcon, ToggleOff as ToggleOffIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
-import { adminApiService, HotelDTO, PagedResponse } from '../../services/adminApi';
+import { adminApiService, HotelDTO, UpdateHotelRequest } from '../../services/adminApi';
+import HotelEditDialog from '../../components/hotel/HotelEditDialog';
+
+interface Hotel extends HotelDTO {}
 
 const HotelManagementAdmin: React.FC = () => {
   const navigate = useNavigate();
   const { token } = useAuth();
-  const [hotels, setHotels] = useState<HotelDTO[]>([]);
+
+  // State management
+  const [hotels, setHotels] = useState<Hotel[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedHotel, setSelectedHotel] = useState<HotelDTO | null>(null);
-  const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10); // Changed back to 10 for testing
-  const [totalHotels, setTotalHotels] = useState(0);
   const [success, setSuccess] = useState<string | null>(null);
 
-  console.log('Component render - State:', { page, rowsPerPage, totalHotels });
+  // Search and filter state
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+
+  // Pagination state
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+
+  // Dialog state
+  const [selectedHotel, setSelectedHotel] = useState<Hotel | null>(null);
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+  // Debounced search
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   // Set token in API service when component mounts
   useEffect(() => {
@@ -67,398 +78,490 @@ const HotelManagementAdmin: React.FC = () => {
     }
   }, [token]);
 
-  const loadHotelsData = async () => {
-    if (!token) {
-      setError('Authentication required');
-      return;
+  // Load hotels data
+  const loadHotels = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await adminApiService.getHotels(0, 1000); // Get all hotels for now
+      setHotels(response.content || []);
+    } catch (err) {
+      console.error('Error loading hotels:', err);
+      setError('Failed to load hotels. Please try again.');
+    } finally {
+      setLoading(false);
     }
+  }, []);
 
-    setLoading(true);
-    setError(null);
+  useEffect(() => {
+    loadHotels();
+  }, [loadHotels]);
+
+  // Filter hotels based on search term and status
+  const filteredHotels = useMemo(() => {
+    return hotels.filter(hotel => {
+      const matchesSearch = hotel.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+                           hotel.city.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+                           (hotel.email && hotel.email.toLowerCase().includes(debouncedSearchTerm.toLowerCase()));
+      
+      const matchesStatus = statusFilter === 'all' || 
+                           (statusFilter === 'active' && hotel.isActive) ||
+                           (statusFilter === 'inactive' && !hotel.isActive);
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [hotels, debouncedSearchTerm, statusFilter]);
+
+  // Pagination handlers
+  const handleChangePage = (event: unknown, newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  // View hotel details
+  const handleViewHotel = (hotel: Hotel) => {
+    setSelectedHotel(hotel);
+    setViewDialogOpen(true);
+  };
+
+  const handleCloseViewDialog = () => {
+    setViewDialogOpen(false);
+    setSelectedHotel(null);
+  };
+
+  // Edit hotel
+  const handleEditHotel = (hotel: Hotel) => {
+    setSelectedHotel(hotel);
+    setEditDialogOpen(true);
+  };
+
+  const handleUpdateHotel = async (hotelData: Partial<Hotel>) => {
+    if (!selectedHotel || !token) return;
 
     try {
-      let result: PagedResponse<HotelDTO>;
-      
-      console.log('Making API call with:', { searchTerm: searchTerm.trim(), page, rowsPerPage });
-      
-      if (searchTerm.trim()) {
-        result = await adminApiService.searchHotels(searchTerm, page, rowsPerPage);
-      } else {
-        result = await adminApiService.getHotels(page, rowsPerPage);
-      }
+      const updateRequest: UpdateHotelRequest = {
+        name: hotelData.name || selectedHotel.name,
+        description: hotelData.description || selectedHotel.description || '',
+        address: hotelData.address || selectedHotel.address || '',
+        city: hotelData.city || selectedHotel.city || '',
+        country: hotelData.country || selectedHotel.country || '',
+        phone: hotelData.phone || selectedHotel.phone || '',
+        email: hotelData.email || selectedHotel.email || '',
+        tenantId: selectedHotel.tenantId || null
+      };
 
-      console.log('API Response:', result);
-      console.log('API Response structure:');
-      console.log('- content:', result.content?.length);
-      console.log('- totalElements:', result.totalElements);
-      console.log('- totalPages:', result.totalPages);
-      console.log('- number (current page):', result.number);
-      console.log('- size:', result.size);
-      console.log('- first:', result.first);
-      console.log('- last:', result.last);
-      
-      setHotels(result.content || []);
-      
-      // Handle Spring Boot Page structure
-      const totalCount = result.totalElements || 0;
-      console.log('Setting total hotels count:', totalCount);
-      console.log('Current page state:', page);
-      console.log('Current rowsPerPage state:', rowsPerPage);
-      setTotalHotels(totalCount);
-    } catch (error) {
-      console.error('Error loading hotels:', error);
-      setError('Failed to load hotels. Please try again.');
-      setHotels([]);
-      setTotalHotels(0);
+      await adminApiService.updateHotel(selectedHotel.id, updateRequest);
+      setEditDialogOpen(false);
+      setSelectedHotel(null);
+      loadHotels(); // Refresh the list
+      setSuccess('Hotel updated successfully');
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err) {
+      console.error('Error updating hotel:', err);
+      setError('Failed to update hotel. Please try again.');
+    }
+  };
+
+  // Toggle hotel status
+  const handleToggleHotelStatus = async (hotel: Hotel) => {
+    if (!token) return;
+    
+    try {
+      setLoading(true);
+      await adminApiService.toggleHotelStatus(hotel.id);
+      loadHotels(); // Refresh the list
+      setError(null);
+      setSuccess(`Hotel ${hotel.isActive ? 'deactivated' : 'activated'} successfully`);
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err) {
+      console.error('Error toggling hotel status:', err);
+      setError('Failed to update hotel status. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    if (token) {
-      loadHotelsData();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token, page, rowsPerPage, searchTerm]);
-
-  const loadHotels = async () => {
-    await loadHotelsData();
-  };
-
-  const handleViewDetails = (hotel: HotelDTO) => {
+  // Delete hotel functions
+  const openDeleteDialog = (hotel: Hotel) => {
     setSelectedHotel(hotel);
-    setDetailsDialogOpen(true);
+    setDeleteDialogOpen(true);
   };
 
-  const handleToggleHotelStatus = async (hotelId: number) => {
+  const handleDeleteHotel = async () => {
+    if (!selectedHotel || !token) return;
+
     try {
-      await adminApiService.toggleHotelStatus(hotelId);
-      setSuccess('Hotel status updated successfully');
-      await loadHotelsData(); // Refresh the list
-    } catch (error) {
-      console.error('Error toggling hotel status:', error);
-      setError('Failed to update hotel status');
+      setLoading(true);
+      await adminApiService.deleteHotel(selectedHotel.id);
+      setDeleteDialogOpen(false);
+      setSelectedHotel(null);
+      loadHotels(); // Refresh the list
+      setError(null);
+      setSuccess('Hotel deleted successfully');
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err) {
+      console.error('Error deleting hotel:', err);
+      setError('Failed to delete hotel. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
-
-  const HotelDetailsDialog = () => (
-    <Dialog
-      open={detailsDialogOpen}
-      onClose={() => setDetailsDialogOpen(false)}
-      maxWidth="md"
-      fullWidth
-    >
-      <DialogTitle>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <HotelIcon />
-          Hotel Details - {selectedHotel?.name}
-        </Box>
-      </DialogTitle>
-      <DialogContent>
-        {selectedHotel && (
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
-              <Typography variant="h6" gutterBottom>Basic Information</Typography>
-              <Box sx={{ mb: 2 }}>
-                <Typography variant="body2" color="text.secondary">Name</Typography>
-                <Typography variant="body1">{selectedHotel.name}</Typography>
-              </Box>
-              <Box sx={{ mb: 2 }}>
-                <Typography variant="body2" color="text.secondary">Description</Typography>
-                <Typography variant="body1">{selectedHotel.description || 'No description available'}</Typography>
-              </Box>
-              <Box sx={{ mb: 2 }}>
-                <Typography variant="body2" color="text.secondary">Address</Typography>
-                <Typography variant="body1">
-                  {selectedHotel.address}, {selectedHotel.city}, {selectedHotel.country}
-                </Typography>
-              </Box>
-              <Box sx={{ mb: 2 }}>
-                <Typography variant="body2" color="text.secondary">Contact</Typography>
-                <Typography variant="body1">📞 {selectedHotel.phone || 'Not provided'}</Typography>
-                <Typography variant="body1">✉️ {selectedHotel.email || 'Not provided'}</Typography>
-              </Box>
-            </Grid>
-            
-            <Grid item xs={12} md={6}>
-              <Typography variant="h6" gutterBottom>Operational Details</Typography>
-              <Box sx={{ mb: 2 }}>
-                <Typography variant="body2" color="text.secondary">Rooms</Typography>
-                <Typography variant="body1">
-                  {selectedHotel.availableRooms || 0}/{selectedHotel.totalRooms || 0} available
-                </Typography>
-              </Box>
-              <Box sx={{ mb: 2 }}>
-                <Typography variant="body2" color="text.secondary">Tenant ID</Typography>
-                <Typography variant="body1">{selectedHotel.tenantId || 'Not assigned'}</Typography>
-              </Box>
-            </Grid>
-            
-            <Grid item xs={12}>
-              <Divider sx={{ my: 2 }} />
-              <Grid container spacing={2}>
-                <Grid item xs={6}>
-                  <Typography variant="body2" color="text.secondary">Created</Typography>
-                  <Typography variant="body1">{selectedHotel.createdAt || 'Unknown'}</Typography>
-                </Grid>
-                <Grid item xs={6}>
-                  <Typography variant="body2" color="text.secondary">Last Updated</Typography>
-                  <Typography variant="body1">{selectedHotel.updatedAt || 'Unknown'}</Typography>
-                </Grid>
-              </Grid>
-            </Grid>
-          </Grid>
-        )}
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={() => setDetailsDialogOpen(false)}>Close</Button>
-      </DialogActions>
-    </Dialog>
-  );
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
-      {/* Header */}
-      <Box sx={{ mb: 4 }}>
-        <Button
-          variant="outlined"
-          onClick={() => navigate('/admin')}
-          sx={{ mb: 2 }}
-        >
-          ← Back to Admin Dashboard
-        </Button>
-      </Box>
+    <Container maxWidth="xl">
+      <Box sx={{ py: 4 }}>
+        {/* Header */}
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+          <IconButton 
+            onClick={() => navigate('/system-dashboard')}
+            sx={{ mr: 2 }}
+          >
+            <ArrowBackIcon />
+          </IconButton>
+          <Typography variant="h4" component="h1" sx={{ flexGrow: 1 }}>
+            Hotel Management
+          </Typography>
+        </Box>
 
-      {/* Error Alert */}
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {error}
-        </Alert>
-      )}
+        {/* Error and Success Messages */}
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+            {error}
+          </Alert>
+        )}
 
-      {/* Statistics Cards */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white' }}>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>Total Hotels</Typography>
-              <Typography variant="h4">{totalHotels}</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)', color: 'white' }}>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>Listed Hotels</Typography>
-              <Typography variant="h4">{hotels.length}</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', color: 'white' }}>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>Total Rooms</Typography>
-              <Typography variant="h4">
-                {hotels.reduce((sum, hotel) => sum + (hotel.totalRooms || 0), 0)}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', color: 'white' }}>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>Available Rooms</Typography>
-              <Typography variant="h4">
-                {hotels.reduce((sum, hotel) => sum + (hotel.availableRooms || 0), 0)}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+        {success && (
+          <Alert severity="success" sx={{ mb: 2 }} onClose={() => setSuccess(null)}>
+            {success}
+          </Alert>
+        )}
 
-      {/* Search and Filters */}
-      <Card sx={{ mb: 3 }}>
-        <CardContent>
-          <Grid container spacing={2} alignItems="center">
+        {/* Search and Filters */}
+        <Paper sx={{ p: 2, mb: 2 }}>
+          <Grid container spacing={2}>
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
-                placeholder="Search hotels by name, city, or email..."
+                label="Search hotels..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon />
-                    </InputAdornment>
-                  ),
-                }}
+                placeholder="Search by name, city, or email"
               />
             </Grid>
-            <Grid item xs={12} md={6}>
-              <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
-                <Button
-                  variant="outlined"
-                  startIcon={<FilterListIcon />}
-                  onClick={() => {/* Add filter functionality */}}
+            <Grid item xs={12} md={3}>
+              <FormControl fullWidth>
+                <InputLabel>Status</InputLabel>
+                <Select
+                  value={statusFilter}
+                  label="Status"
+                  onChange={(e) => setStatusFilter(e.target.value)}
                 >
-                  Filters
-                </Button>
-                <Button
-                  variant="outlined"
-                  startIcon={<RefreshIcon />}
-                  onClick={loadHotels}
-                >
-                  Refresh
-                </Button>
-              </Box>
+                  <MenuItem value="all">All Hotels</MenuItem>
+                  <MenuItem value="active">Active Only</MenuItem>
+                  <MenuItem value="inactive">Inactive Only</MenuItem>
+                </Select>
+              </FormControl>
             </Grid>
           </Grid>
-        </CardContent>
-      </Card>
+        </Paper>
 
-      {/* Hotels Table */}
-      <Card>
-        <CardContent sx={{ p: 0 }}>
-          {loading && <LinearProgress />}
-          
-          <TableContainer component={Paper} elevation={0}>
-            <Table>
-              <TableHead>
+        {/* Hotels Table */}
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Hotel Name</TableCell>
+                <TableCell>Location</TableCell>
+                <TableCell>Contact</TableCell>
+                <TableCell>Rooms</TableCell>
+                <TableCell>Rating</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {loading ? (
                 <TableRow>
-                  <TableCell>Hotel</TableCell>
-                  <TableCell>Location</TableCell>
-                  <TableCell>Contact</TableCell>
-                  <TableCell>Rooms</TableCell>
-                  <TableCell>Actions</TableCell>
+                  <TableCell colSpan={7} align="center">
+                    <CircularProgress />
+                  </TableCell>
                 </TableRow>
-              </TableHead>
-              <TableBody>
-                {hotels.map((hotel) => (
-                  <TableRow key={hotel.id} hover>
-                    <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Avatar sx={{ bgcolor: 'primary.main' }}>
-                          <HotelIcon />
-                        </Avatar>
-                        <Box>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Typography variant="subtitle2" fontWeight="bold">
-                              {hotel.name}
-                            </Typography>
-                            <Chip
-                              size="small"
-                              label={hotel.isActive ? "Active" : "Inactive"}
-                              color={hotel.isActive ? "success" : "error"}
-                              variant="outlined"
-                            />
-                          </Box>
-                          <Typography variant="body2" color="text.secondary">
-                            {hotel.tenantId || 'No tenant ID'}
-                          </Typography>
-                        </Box>
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <LocationIcon fontSize="small" color="action" />
+              ) : filteredHotels.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} align="center">
+                    <Typography variant="body2" color="text.secondary">
+                      No hotels found
+                    </Typography>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredHotels
+                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  .map((hotel) => (
+                    <TableRow key={hotel.id}>
+                      <TableCell>
+                        <Typography variant="subtitle2">{hotel.name}</Typography>
+                      </TableCell>
+                      <TableCell>
                         <Typography variant="body2">
-                          {hotel.city}, {hotel.country}
+                          {hotel.city}
                         </Typography>
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2">{hotel.phone || 'Not provided'}</Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {hotel.email || 'Not provided'}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2">
-                        {hotel.availableRooms || 0}/{hotel.totalRooms || 0}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        available
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Box sx={{ display: 'flex', gap: 0.5 }}>
-                        <Tooltip title="View Details">
+                        <Typography variant="caption" color="text.secondary">
+                          {hotel.country}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2">{hotel.email}</Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {hotel.phone}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2">
+                          {hotel.availableRooms || 0} / {hotel.totalRooms || 0}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2">
+                          Not available
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={hotel.isActive ? 'Active' : 'Inactive'}
+                          color={hotel.isActive ? 'success' : 'error'}
+                          size="small"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', gap: 1 }}>
                           <IconButton
                             size="small"
-                            onClick={() => handleViewDetails(hotel)}
+                            onClick={() => handleViewHotel(hotel)}
+                            title="View Details"
                           >
-                            <VisibilityIcon />
+                            <ViewIcon />
                           </IconButton>
-                        </Tooltip>
-                        <Tooltip title={hotel.isActive ? "Deactivate Hotel" : "Activate Hotel"}>
                           <IconButton
                             size="small"
+                            onClick={() => handleToggleHotelStatus(hotel)}
+                            title={hotel.isActive ? "Deactivate" : "Activate"}
                             color={hotel.isActive ? "success" : "error"}
-                            onClick={() => handleToggleHotelStatus(hotel.id)}
                           >
                             {hotel.isActive ? <ToggleOnIcon /> : <ToggleOffIcon />}
                           </IconButton>
-                        </Tooltip>
-                      </Box>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-
-          {/* Debug information */}
-          <Box sx={{ p: 2, bgcolor: 'grey.100', fontSize: '12px' }}>
-            <Typography variant="caption">
-              Debug: page={page}, rowsPerPage={rowsPerPage}, totalHotels={totalHotels}, 
-              hotels.length={hotels.length}, totalPages={Math.ceil(totalHotels / rowsPerPage)}
-            </Typography>
-          </Box>
-
+                          <IconButton
+                            size="small"
+                            onClick={() => openDeleteDialog(hotel)}
+                            title="Delete Hotel"
+                            color="error"
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  ))
+              )}
+            </TableBody>
+          </Table>
           <TablePagination
             component="div"
-            count={totalHotels || 0}
+            count={filteredHotels.length}
             page={page}
-            onPageChange={(event, newPage) => {
-              console.log('=== PAGINATION DEBUG ===');
-              console.log('Current page:', page);
-              console.log('New page:', newPage);
-              console.log('Total hotels:', totalHotels);
-              console.log('Rows per page:', rowsPerPage);
-              console.log('Total pages calculated:', Math.ceil(totalHotels / rowsPerPage));
-              console.log('Is next button disabled?', page >= Math.ceil(totalHotels / rowsPerPage) - 1);
-              console.log('Is prev button disabled?', page <= 0);
-              console.log('========================');
-              setPage(newPage);
-            }}
+            onPageChange={handleChangePage}
             rowsPerPage={rowsPerPage}
-            onRowsPerPageChange={(event) => {
-              const newRowsPerPage = parseInt(event.target.value, 10);
-              console.log('Rows per page change:', newRowsPerPage);
-              setRowsPerPage(newRowsPerPage);
-              setPage(0); // Reset to first page when changing page size
-            }}
-            rowsPerPageOptions={[5, 10, 25, 50]}
-            showFirstButton
-            showLastButton
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            rowsPerPageOptions={[5, 10, 25]}
           />
-        </CardContent>
-      </Card>
+        </TableContainer>
 
-      <HotelDetailsDialog />
+        {/* View Hotel Dialog */}
+        <Dialog open={viewDialogOpen} onClose={handleCloseViewDialog} maxWidth="md" fullWidth>
+          <DialogTitle>Hotel Details</DialogTitle>
+          <DialogContent>
+            {selectedHotel && (
+              <Grid container spacing={2} sx={{ mt: 1 }}>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="Hotel Name"
+                    fullWidth
+                    value={selectedHotel.name || ''}
+                    disabled
+                    variant="filled"
+                  />
+                </Grid>
+                
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="Email"
+                    type="email"
+                    fullWidth
+                    value={selectedHotel.email || ''}
+                    disabled
+                    variant="filled"
+                  />
+                </Grid>
+                
+                <Grid item xs={12}>
+                  <TextField
+                    label="Description"
+                    multiline
+                    rows={3}
+                    fullWidth
+                    value={selectedHotel.description || ''}
+                    disabled
+                    variant="filled"
+                  />
+                </Grid>
+                
+                <Grid item xs={12}>
+                  <TextField
+                    label="Address"
+                    fullWidth
+                    value={selectedHotel.address || ''}
+                    disabled
+                    variant="filled"
+                  />
+                </Grid>
+                
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="City"
+                    fullWidth
+                    value={selectedHotel.city || ''}
+                    disabled
+                    variant="filled"
+                  />
+                </Grid>
+                
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="Country"
+                    fullWidth
+                    value={selectedHotel.country || ''}
+                    disabled
+                    variant="filled"
+                  />
+                </Grid>
+                
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="Phone"
+                    fullWidth
+                    value={selectedHotel.phone || ''}
+                    disabled
+                    variant="filled"
+                  />
+                </Grid>
 
-      {/* Success Snackbar */}
-      <Snackbar
-        open={Boolean(success)}
-        autoHideDuration={6000}
-        onClose={() => setSuccess(null)}
-      >
-        <Alert severity="success" onClose={() => setSuccess(null)}>
-          {success}
-        </Alert>
-      </Snackbar>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="Status"
+                    fullWidth
+                    value={selectedHotel.isActive ? 'Active' : 'Inactive'}
+                    disabled
+                    variant="filled"
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="Total Rooms"
+                    fullWidth
+                    value={selectedHotel.totalRooms?.toString() || '0'}
+                    disabled
+                    variant="filled"
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="Available Rooms"
+                    fullWidth
+                    value={selectedHotel.availableRooms?.toString() || '0'}
+                    disabled
+                    variant="filled"
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="Created At"
+                    fullWidth
+                    value={selectedHotel.createdAt ? new Date(selectedHotel.createdAt).toLocaleString() : ''}
+                    disabled
+                    variant="filled"
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="Last Updated"
+                    fullWidth
+                    value={selectedHotel.updatedAt ? new Date(selectedHotel.updatedAt).toLocaleString() : ''}
+                    disabled
+                    variant="filled"
+                  />
+                </Grid>
+              </Grid>
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseViewDialog}>Close</Button>
+            <Button 
+              variant="contained" 
+              startIcon={<EditIcon />}
+              onClick={() => {
+                if (selectedHotel) {
+                  handleEditHotel(selectedHotel);
+                  setViewDialogOpen(false);
+                }
+              }}
+            >
+              Edit
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Hotel Edit Dialog */}
+        <HotelEditDialog
+          open={editDialogOpen}
+          onClose={() => setEditDialogOpen(false)}
+          onSave={handleUpdateHotel}
+          hotel={selectedHotel}
+          loading={loading}
+        />
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog
+          open={deleteDialogOpen}
+          onClose={() => setDeleteDialogOpen(false)}
+        >
+          <DialogTitle>Confirm Delete</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Are you sure you want to delete the hotel "{selectedHotel?.name}"? This action cannot be undone.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setDeleteDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleDeleteHotel}
+              color="error"
+              variant="contained"
+            >
+              Delete
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </Box>
     </Container>
   );
 };
