@@ -106,4 +106,23 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
      * Count rooms by status
      */
     long countByStatus(RoomStatus status);
+    
+    /**
+     * Find available rooms of specific type excluding a reservation
+     */
+    @Query("SELECT r FROM Room r " +
+           "WHERE r.roomType = :roomType " +
+           "AND r.isAvailable = true " +
+           "AND r.id NOT IN (" +
+           "  SELECT res.room.id FROM Reservation res " +
+           "  WHERE res.id != :excludeReservationId " +
+           "  AND res.status NOT IN ('CANCELLED', 'NO_SHOW') " +
+           "  AND NOT (res.checkOutDate <= :checkInDate OR res.checkInDate >= :checkOutDate)" +
+           ")")
+    List<Room> findAvailableRoomsOfType(
+        @Param("roomType") String roomType,
+        @Param("checkInDate") LocalDate checkInDate,
+        @Param("checkOutDate") LocalDate checkOutDate,
+        @Param("excludeReservationId") Long excludeReservationId
+    );
 }

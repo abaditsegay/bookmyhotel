@@ -29,6 +29,7 @@ import {
   Hotel as HotelIcon,
   Person as PersonIcon
 } from '@mui/icons-material';
+import { bookingApiService } from '../services/bookingApi';
 import { useAuthenticatedApi } from '../hooks/useAuthenticatedApi';
 
 interface BookingData {
@@ -67,11 +68,19 @@ const GuestBookingManagementPage: React.FC = () => {
   const [modificationData, setModificationData] = useState({
     newCheckInDate: booking?.checkInDate || '',
     newCheckOutDate: booking?.checkOutDate || '',
-    newSpecialRequests: '',
-    guestName: booking?.guestName || '',
-    guestPhone: '',
-    reason: ''
+    newRoomType: booking?.roomType || '',
+    modificationReason: ''
   });
+  
+  // Cost preview state
+  const [costPreview, setCostPreview] = useState<{
+    originalCost: number;
+    newCost: number;
+    additionalCost: number;
+    modificationFee: number;
+  } | null>(null);
+  
+  const [previewLoading, setPreviewLoading] = useState(false);
   
   // Cancellation form state
   const [cancellationReason, setCancellationReason] = useState('');
@@ -146,34 +155,31 @@ const GuestBookingManagementPage: React.FC = () => {
         guestEmail: booking.guestEmail,
         newCheckInDate: modificationData.newCheckInDate !== booking.checkInDate ? modificationData.newCheckInDate : undefined,
         newCheckOutDate: modificationData.newCheckOutDate !== booking.checkOutDate ? modificationData.newCheckOutDate : undefined,
-        newSpecialRequests: modificationData.newSpecialRequests || undefined,
-        guestName: modificationData.guestName !== booking.guestName ? modificationData.guestName : undefined,
-        guestPhone: modificationData.guestPhone || undefined,
-        reason: modificationData.reason
+        newRoomType: modificationData.newRoomType !== booking.roomType ? modificationData.newRoomType : undefined,
+        modificationReason: modificationData.modificationReason
       };
       
-      const response = await hotelApiService.modifyBooking(modificationRequest);
+      const response = await bookingApiService.modifyBooking(modificationRequest);
       
       if (response.success) {
-        setSuccessMessage(response.message);
+        setSuccessMessage(response.message || 'Booking modified successfully');
         setModifyDialogOpen(false);
         
         // Update booking state with the modified booking data
-        if (response.updatedBooking) {
+        if (response.data?.updatedBooking) {
           setBooking({
             ...booking,
-            checkInDate: response.updatedBooking.checkInDate,
-            checkOutDate: response.updatedBooking.checkOutDate,
-            totalAmount: response.updatedBooking.totalAmount,
-            guestName: response.updatedBooking.guestName,
-            // Update other fields as needed
+            checkInDate: response.data.updatedBooking.checkInDate,
+            checkOutDate: response.data.updatedBooking.checkOutDate,
+            roomType: response.data.updatedBooking.roomType,
+            totalAmount: response.data.updatedBooking.totalAmount
           });
         }
       } else {
-        setErrorMessage(response.message);
+        setErrorMessage(response.message || 'Failed to modify booking');
       }
     } catch (error) {
-      setErrorMessage('Failed to modify booking. Please try again.');
+      setErrorMessage('An error occurred while modifying the booking');
     } finally {
       setLoading(false);
     }
@@ -187,13 +193,17 @@ const GuestBookingManagementPage: React.FC = () => {
       const cancellationRequest = {
         confirmationNumber: booking.confirmationNumber,
         guestEmail: booking.guestEmail,
-        cancellationReason: cancellationReason
+        cancellationReason: ''
       };
       
-      const response = await hotelApiService.cancelBookingGuest(cancellationRequest);
+      const response = await bookingApiService.cancelBooking(
+        cancellationRequest.confirmationNumber,
+        cancellationRequest.guestEmail,
+        cancellationRequest.cancellationReason
+      );
       
       if (response.success) {
-        setSuccessMessage(response.message);
+        setSuccessMessage(response.message || 'Booking cancelled successfully');
         setCancelDialogOpen(false);
         
         // Update booking state to reflect cancellation
@@ -205,7 +215,7 @@ const GuestBookingManagementPage: React.FC = () => {
         // Clear cancellation reason
         setCancellationReason('');
       } else {
-        setErrorMessage(response.message);
+        setErrorMessage(response.message || 'Failed to cancel booking');
       }
     } catch (error) {
       setErrorMessage('Failed to cancel booking. Please try again.');
@@ -398,38 +408,29 @@ const GuestBookingManagementPage: React.FC = () => {
                 inputProps={{ min: modificationData.newCheckInDate }}
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                label="Guest Name"
-                fullWidth
-                value={modificationData.guestName}
-                onChange={(e) => setModificationData({ ...modificationData, guestName: e.target.value })}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                label="Phone Number"
-                fullWidth
-                value={modificationData.guestPhone}
-                onChange={(e) => setModificationData({ ...modificationData, guestPhone: e.target.value })}
-              />
-            </Grid>
             <Grid item xs={12}>
               <TextField
-                label="Special Requests"
+                label="Room Type"
                 fullWidth
-                multiline
-                rows={3}
-                value={modificationData.newSpecialRequests}
-                onChange={(e) => setModificationData({ ...modificationData, newSpecialRequests: e.target.value })}
-              />
+                select
+                value={modificationData.newRoomType}
+                onChange={(e) => setModificationData({ ...modificationData, newRoomType: e.target.value })}
+                SelectProps={{
+                  native: true,
+                }}
+              >
+                <option value="Standard">Standard</option>
+                <option value="Deluxe">Deluxe</option>
+                <option value="Suite">Suite</option>
+                <option value="Family">Family</option>
+              </TextField>
             </Grid>
             <Grid item xs={12}>
               <TextField
                 label="Reason for Modification"
                 fullWidth
-                value={modificationData.reason}
-                onChange={(e) => setModificationData({ ...modificationData, reason: e.target.value })}
+                value={modificationData.modificationReason}
+                onChange={(e) => setModificationData({ ...modificationData, modificationReason: e.target.value })}
                 helperText="Optional: Help us understand why you're making changes"
               />
             </Grid>

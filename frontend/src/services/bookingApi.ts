@@ -92,4 +92,114 @@ export const bookingApiService = {
       };
     }
   },
+
+  /**
+   * Cancel a booking
+   */
+  cancelBooking: async (confirmationNumber: string, guestEmail: string, cancellationReason?: string): Promise<{ success: boolean; data?: any; message?: string }> => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/bookings/cancel`,
+        {
+          method: 'POST',
+          headers: getHeaders(),
+          body: JSON.stringify({
+            confirmationNumber: confirmationNumber.trim(),
+            guestEmail: guestEmail.trim(),
+            cancellationReason: cancellationReason?.trim() || ''
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return { success: false, message: errorData.message || 'Failed to cancel booking' };
+      }
+
+      const data = await response.json();
+      return { success: true, data, message: data.message };
+    } catch (error) {
+      console.error('Booking cancellation error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to cancel booking' 
+      };
+    }
+  },
+
+  /**
+   * Modify a booking
+   */
+  modifyBooking: async (modificationRequest: {
+    confirmationNumber: string;
+    guestEmail: string;
+    newCheckInDate?: string;
+    newCheckOutDate?: string;
+    newRoomType?: string;
+    modificationReason?: string;
+  }): Promise<{ success: boolean; data?: any; message?: string }> => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/bookings/modify`,
+        {
+          method: 'POST',
+          headers: getHeaders(),
+          body: JSON.stringify({
+            confirmationNumber: modificationRequest.confirmationNumber.trim(),
+            guestEmail: modificationRequest.guestEmail.trim(),
+            newCheckInDate: modificationRequest.newCheckInDate,
+            newCheckOutDate: modificationRequest.newCheckOutDate,
+            newRoomType: modificationRequest.newRoomType?.trim(),
+            modificationReason: modificationRequest.modificationReason?.trim() || ''
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return { success: false, message: errorData.message || 'Failed to modify booking' };
+      }
+
+      const data = await response.json();
+      return { success: true, data, message: data.message };
+    } catch (error) {
+      console.error('Booking modification error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to modify booking' 
+      };
+    }
+  },
+
+  /**
+   * Get available modification options for a booking
+   */
+  getModificationOptions: async (confirmationNumber: string, guestEmail: string): Promise<{ success: boolean; data?: any; message?: string }> => {
+    try {
+      // This would typically be a separate endpoint, but for now we'll use the booking search
+      const searchResult = await bookingApiService.searchByConfirmationNumber(confirmationNumber);
+      
+      if (!searchResult.success || !searchResult.data) {
+        return { success: false, message: 'Booking not found' };
+      }
+
+      // Mock modification options - in a real app, this would come from the backend
+      const options = {
+        canModifyDates: searchResult.data.status === 'CONFIRMED',
+        canModifyRoomType: searchResult.data.status === 'CONFIRMED',
+        canCancel: ['CONFIRMED', 'PENDING'].includes(searchResult.data.status),
+        modificationDeadline: new Date(searchResult.data.checkInDate),
+        availableRoomTypes: ['Standard', 'Deluxe', 'Suite', 'Family'], // Would come from backend
+        modificationFee: 25.00
+      };
+
+      return { success: true, data: options };
+    } catch (error) {
+      console.error('Get modification options error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to get modification options' 
+      };
+    }
+  },
 };

@@ -658,6 +658,98 @@ public class BookingService {
         }
     }
     
+
+    
+    /**
+     * Validate booking modification request
+     */
+    private BookingModificationResponse validateModificationRequest(BookingModificationRequest request, Reservation reservation) {
+        // Check if booking can be modified
+        if (reservation.getStatus() == ReservationStatus.CHECKED_IN || 
+            reservation.getStatus() == ReservationStatus.CHECKED_OUT ||
+            reservation.getStatus() == ReservationStatus.CANCELLED) {
+            return new BookingModificationResponse(false, "This booking cannot be modified in its current status");
+        }
+        
+        // Check modification time limits (cannot modify within 24 hours of check-in)
+        LocalDate now = LocalDate.now();
+        LocalDate checkInDate = reservation.getCheckInDate();
+        if (request.getNewCheckInDate() != null) {
+            checkInDate = request.getNewCheckInDate();
+        }
+        
+        long hoursUntilCheckIn = ChronoUnit.HOURS.between(LocalDateTime.now(), checkInDate.atStartOfDay());
+        if (hoursUntilCheckIn < 24) {
+            return new BookingModificationResponse(false, "Cannot modify booking within 24 hours of check-in");
+        }
+        
+        // Validate date ranges
+        if (request.getNewCheckInDate() != null && request.getNewCheckOutDate() != null) {
+            if (!request.getNewCheckInDate().isBefore(request.getNewCheckOutDate())) {
+                return new BookingModificationResponse(false, "Check-out date must be after check-in date");
+            }
+        }
+        
+        // Check room availability for new dates/room type
+        LocalDate newCheckIn = request.getNewCheckInDate() != null ? request.getNewCheckInDate() : reservation.getCheckInDate();
+        LocalDate newCheckOut = request.getNewCheckOutDate() != null ? request.getNewCheckOutDate() : reservation.getCheckOutDate();
+        
+        if (request.getNewRoomId() != null) {
+            // Check if the new room is available for the dates
+            if (!isRoomAvailableForModification(request.getNewRoomId(), newCheckIn, newCheckOut, reservation.getId())) {
+                return new BookingModificationResponse(false, "Requested room is not available for the new dates");
+            }
+        } else {
+            // Check if current room is available for new dates
+            if (!isRoomAvailableForModification(reservation.getRoom().getId(), newCheckIn, newCheckOut, reservation.getId())) {
+                return new BookingModificationResponse(false, "Current room is not available for the new dates");
+            }
+        }
+        
+        return new BookingModificationResponse(true, "Validation passed");
+    }
+    
+    /**
+     * Calculate modification costs
+     */
+    private BigDecimal calculateModificationCosts(BookingModificationRequest request, Reservation reservation) {
+        BigDecimal currentTotal = reservation.getTotalAmount();
+        BigDecimal newTotal = currentTotal;
+        
+        // Calculate new total based on changes
+        LocalDate newCheckIn = request.getNewCheckInDate() != null ? request.getNewCheckInDate() : reservation.getCheckInDate();
+        LocalDate newCheckOut = request.getNewCheckOutDate() != null ? request.getNewCheckOutDate() : reservation.getCheckOutDate();
+        
+        // Calculate base cost difference
+        long originalNights = ChronoUnit.DAYS.between(reservation.getCheckInDate(), reservation.getCheckOutDate());
+        long newNights = ChronoUnit.DAYS.between(newCheckIn, newCheckOut);
+        
+        Room targetRoom = reservation.getRoom();
+        if (request.getNewRoomId() != null) {
+            targetRoom = roomRepository.findById(request.getNewRoomId()).orElse(reservation.getRoom());
+        }
+        
+        if (targetRoom != null) {
+            BigDecimal originalCost = reservation.getRoom().getPricePerNight().multiply(BigDecimal.valueOf(originalNights));
+            BigDecimal newCost = targetRoom.getPricePerNight().multiply(BigDecimal.valueOf(newNights));
+            newTotal = newCost;
+        }
+        
+        // Add modification fee (flat $25 fee for any modification)
+        BigDecimal modificationFee = BigDecimal.valueOf(25.00);
+        newTotal = newTotal.add(modificationFee);
+        
+        return newTotal.subtract(currentTotal);
+    }
+    
+    /**
+     * Find available room of specific type
+     */
+    private Room findAvailableRoomOfType(String roomType, LocalDate checkIn, LocalDate checkOut, Long excludeReservationId) {
+        List<Room> availableRooms = roomRepository.findAvailableRoomsOfType(roomType, checkIn, checkOut, excludeReservationId);
+        return availableRooms.isEmpty() ? null : availableRooms.get(0);
+    }
+    
     /**
      * Check if room is available for modification (excluding current reservation)
      */
