@@ -35,6 +35,8 @@ import {
   FilterList as FilterListIcon,
   LockReset as LockResetIcon,
   ArrowBack as ArrowBackIcon,
+  ToggleOn as ToggleOnIcon,
+  ToggleOff as ToggleOffIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -395,8 +397,6 @@ const UserManagementAdmin: React.FC = () => {
                       label={user.isActive ? 'Active' : 'Inactive'}
                       color={getStatusColor(user.isActive) as any}
                       size="small"
-                      onClick={() => handleToggleUserStatus(user.id)}
-                      clickable
                     />
                   </TableCell>
                   <TableCell>
@@ -413,6 +413,15 @@ const UserManagementAdmin: React.FC = () => {
                           onClick={() => openDetailsDialog(user)}
                         >
                           <VisibilityIcon />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title={user.isActive ? 'Deactivate User' : 'Activate User'}>
+                        <IconButton
+                          size="small"
+                          onClick={() => handleToggleUserStatus(user.id)}
+                          color={user.isActive ? 'success' : 'error'}
+                        >
+                          {user.isActive ? <ToggleOnIcon /> : <ToggleOffIcon />}
                         </IconButton>
                       </Tooltip>
                       <Tooltip title="Reset Password">

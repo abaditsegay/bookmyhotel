@@ -42,7 +42,7 @@ const GuestAuthPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const { login } = useAuth();
+  const { login, error: authError, clearError } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 

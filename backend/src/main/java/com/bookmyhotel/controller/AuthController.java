@@ -55,6 +55,11 @@ public class AuthController {
             LoginResponse response = authService.login(loginRequest);
             return ResponseEntity.ok(response);
         } catch (BadCredentialsException e) {
+            // Check if it's an account deactivation error
+            if (e.getMessage().contains("Account is deactivated")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("This account is not active");
+            }
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("Invalid email or password");
         } catch (Exception e) {

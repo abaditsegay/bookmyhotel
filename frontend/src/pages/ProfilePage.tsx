@@ -25,7 +25,7 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 
 const ProfilePage: React.FC = () => {
-  const { user, updateProfile } = useAuth();
+  const { user, updateProfile, changePassword } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
@@ -117,23 +117,39 @@ const ProfilePage: React.FC = () => {
       };
 
       // Update profile using the context function
-      const success = await updateProfile(profileUpdates);
+      const profileSuccess = await updateProfile(profileUpdates);
       
-      if (success) {
-        setSuccessMessage('Profile updated successfully!');
-        setIsEditing(false);
-        setErrorMessage('');
-        
-        // Clear password fields
-        setFormData(prev => ({
-          ...prev,
-          currentPassword: '',
-          newPassword: '',
-          confirmPassword: '',
-        }));
-      } else {
+      if (!profileSuccess) {
         setErrorMessage('Failed to update profile. Please try again.');
+        return;
       }
+
+      // Handle password change if requested
+      if (formData.newPassword) {
+        const passwordSuccess = await changePassword(formData.currentPassword, formData.newPassword);
+        
+        if (!passwordSuccess) {
+          setErrorMessage('Profile updated, but failed to change password. Please try again.');
+          return;
+        }
+      }
+
+      // Success
+      setSuccessMessage(
+        formData.newPassword 
+          ? 'Profile and password updated successfully!' 
+          : 'Profile updated successfully!'
+      );
+      setIsEditing(false);
+      setErrorMessage('');
+      
+      // Clear password fields
+      setFormData(prev => ({
+        ...prev,
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+      }));
 
     } catch (error) {
       setErrorMessage('Failed to update profile. Please try again.');

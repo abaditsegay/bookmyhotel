@@ -6,9 +6,9 @@ import { useNavigate, useLocation } from 'react-router-dom';
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [localError, setLocalError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, error: authError, clearError } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -18,7 +18,7 @@ const LoginPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    clearError(); // Clear previous auth errors
     setLoading(true);
 
     try {
@@ -31,11 +31,10 @@ const LoginPage: React.FC = () => {
           // Navigate to home page, which will redirect based on user role
           navigate('/');
         }
-      } else {
-        setError('Invalid email or password');
       }
+      // Note: If login fails, the error will be set in authError by AuthContext
     } catch (err) {
-      setError('Login failed. Please try again.');
+      console.error('Login error:', err);
     } finally {
       setLoading(false);
     }
@@ -44,8 +43,11 @@ const LoginPage: React.FC = () => {
   const fillSampleUser = (sampleEmail: string, samplePassword: string) => {
     setEmail(sampleEmail);
     setPassword(samplePassword);
-    setError('');
+    clearError(); // Clear any existing errors
   };
+
+  // Get the error to display (prefer auth context error)
+  const displayError = authError;
 
   return (
     <Container maxWidth="sm">
@@ -76,9 +78,9 @@ const LoginPage: React.FC = () => {
               Sign In{bookingData ? ' to Book' : ''}
             </Typography>
 
-            {error && (
+            {displayError && (
               <Alert severity="error" sx={{ mb: 2 }}>
-                {error}
+                {displayError}
               </Alert>
             )}
 

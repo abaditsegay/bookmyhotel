@@ -1,4 +1,5 @@
 import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
+import { updateUserProfile, changeUserPassword } from '../services/userApi';
 
 interface User {
   id: string;
@@ -23,11 +24,14 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   token: string | null;
+  error: string | null;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   updateProfile: (updates: Partial<User>) => Promise<boolean>;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<boolean>;
   isAuthenticated: boolean;
   onTokenChange?: (token: string) => void;
+  clearError: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -40,7 +44,10 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenChange }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
+
+  const clearError = () => setError(null);
 
   // Load authentication state from localStorage on startup
   useEffect(() => {
@@ -65,6 +72,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
 
   const login = async (email: string, password: string): Promise<boolean> => {
     setLoading(true);
+    setError(null);
     try {
       console.log('Attempting login with:', email, password);
       
@@ -82,6 +90,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
       if (!response.ok) {
         const errorText = await response.text();
         console.error('Login failed:', errorText);
+        setError(errorText);
         return false;
       }
 
@@ -139,24 +148,62 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
   };
 
   const updateProfile = async (updates: Partial<User>): Promise<boolean> => {
+    if (!user || !token) {
+      setError('User not authenticated');
+      return false;
+    }
+
     try {
       setLoading(true);
+      setError(null);
       
-      // In a real application, this would make an API call to update the user profile
-      console.log('Updating profile with:', updates);
+      // Call the API to update profile
+      const result = await updateUserProfile(user.id, updates, token);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Update the user state with the new information
-      if (user) {
+      if (result.success) {
+        // Update the user state with the new information
         const updatedUser = { ...user, ...updates };
         setUser(updatedUser);
+        
+        // Update localStorage
+        localStorage.setItem('auth_user', JSON.stringify(updatedUser));
+        
+        return true;
+      } else {
+        setError(result.message || 'Failed to update profile');
+        return false;
       }
-      
-      return true;
     } catch (error) {
       console.error('Profile update failed:', error);
+      setError('Failed to update profile. Please try again.');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const changePassword = async (currentPassword: string, newPassword: string): Promise<boolean> => {
+    if (!user || !token) {
+      setError('User not authenticated');
+      return false;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Call the API to change password
+      const result = await changeUserPassword(user.id, { currentPassword, newPassword }, token);
+      
+      if (result.success) {
+        return true;
+      } else {
+        setError(result.message || 'Failed to change password');
+        return false;
+      }
+    } catch (error) {
+      console.error('Password change failed:', error);
+      setError('Failed to change password. Please try again.');
       return false;
     } finally {
       setLoading(false);
@@ -167,11 +214,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
     user,
     loading,
     token,
+    error,
     login,
     logout,
     updateProfile,
+    changePassword,
     isAuthenticated: !!user,
     onTokenChange,
+    clearError,
   };
 
   return (
