@@ -85,10 +85,12 @@ public class BookingController {
         
         BookingResponse response;
         if (confirmationNumber != null && !confirmationNumber.trim().isEmpty()) {
-            response = bookingService.findByConfirmationNumber(confirmationNumber.trim());
+            // Use public search to find bookings across all tenants
+            response = bookingService.findByConfirmationNumberPublic(confirmationNumber.trim());
         } else if (email != null && lastName != null && 
                    !email.trim().isEmpty() && !lastName.trim().isEmpty()) {
-            response = bookingService.findByEmailAndLastName(email.trim(), lastName.trim());
+            // Use public search for email/lastName to find bookings across all tenants
+            response = bookingService.findByEmailAndLastNamePublic(email.trim(), lastName.trim());
         } else {
             return ResponseEntity.badRequest().build();
         }

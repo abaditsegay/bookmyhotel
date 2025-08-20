@@ -278,7 +278,7 @@ public class BookingService {
         reservation.setTotalAmount(totalAmount);
         reservation.setSpecialRequests(request.getSpecialRequests());
         reservation.setStatus(ReservationStatus.PENDING);
-        reservation.setTenantId(guest.getTenantId()); // Set tenant_id from the guest user
+        reservation.setTenantId(room.getHotel().getTenantId()); // Set tenant_id from the hotel (not guest) so hotel admins can see the booking
         reservation.setPaymentMethod(request.getPaymentMethodId()); // Store the payment method
         
         // Set guest name from the booking request for this specific reservation
@@ -373,13 +373,46 @@ public class BookingService {
     }
     
     /**
-     * Find booking by confirmation number
+     * Find booking by confirmation number (tenant-specific)
      */
     public BookingResponse findByConfirmationNumber(String confirmationNumber) {
         Reservation reservation = reservationRepository.findByConfirmationNumber(confirmationNumber)
             .orElseThrow(() -> new ResourceNotFoundException("Booking not found with confirmation number: " + confirmationNumber));
         
         return convertToBookingResponse(reservation);
+    }
+    
+    /**
+     * Find booking by confirmation number across all tenants (for public booking search)
+     */
+    public BookingResponse findByConfirmationNumberPublic(String confirmationNumber) {
+        Reservation reservation = reservationRepository.findByConfirmationNumberPublic(confirmationNumber)
+            .orElseThrow(() -> new ResourceNotFoundException("Booking not found with confirmation number: " + confirmationNumber));
+        
+        return convertToBookingResponse(reservation);
+    }
+    
+    /**
+     * Find booking by email and last name (public search across all tenants)
+     */
+    public BookingResponse findByEmailAndLastNamePublic(String email, String lastName) {
+        // Find user by email using public search
+        User user = userRepository.findByEmailPublic(email)
+            .orElseThrow(() -> new ResourceNotFoundException("No booking found for the provided email and last name"));
+        
+        // Find the most recent reservation for this user with matching last name using public search
+        List<Reservation> userReservations = reservationRepository.findByGuestPublic(user.getId());
+        
+        Reservation matchingReservation = userReservations.stream()
+            .filter(reservation -> {
+                String reservationLastName = user.getLastName();
+                return reservationLastName != null && reservationLastName.equalsIgnoreCase(lastName);
+            })
+            .sorted((r1, r2) -> r2.getCreatedAt().compareTo(r1.getCreatedAt())) // Sort by creation date descending
+            .findFirst()
+            .orElseThrow(() -> new ResourceNotFoundException("No booking found for the provided email and last name"));
+            
+        return convertToBookingResponse(matchingReservation);
     }
     
     /**

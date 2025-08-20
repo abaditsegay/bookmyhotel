@@ -108,7 +108,19 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     Optional<Reservation> findByConfirmationNumber(String confirmationNumber);
     
     /**
-     * Find reservations by user ordered by creation date
+     * Find reservation by confirmation number (public search across all tenants)
+     */
+    @Query(value = "SELECT * FROM reservations WHERE confirmation_number = ?1", nativeQuery = true)
+    Optional<Reservation> findByConfirmationNumberPublic(String confirmationNumber);
+    
+    /**
+     * Find reservations by guest user ID (public search across all tenants)
+     */
+    @Query(value = "SELECT * FROM reservations WHERE guest_id = ?1 ORDER BY created_at DESC", nativeQuery = true)
+    List<Reservation> findByGuestPublic(Long guestId);
+    
+    /**
+     * Find reservations by guest and order by creation date descending
      */
     List<Reservation> findByGuestOrderByCreatedAtDesc(User guest);
     

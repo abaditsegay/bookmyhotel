@@ -26,6 +26,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
     
     /**
+     * Find user by email (public search across all tenants)
+     */
+    @Query(value = "SELECT * FROM users WHERE email = ?1", nativeQuery = true)
+    Optional<User> findByEmailPublic(String email);
+    
+    /**
      * Check if user exists by email
      */
     boolean existsByEmail(String email);

@@ -66,6 +66,7 @@ const BookingConfirmationPage: React.FC = () => {
   
   // Get booking data from location state if available (from successful booking)
   const locationBooking = location.state?.booking;
+  const fromSearch = location.state?.fromSearch; // Flag indicating this came from search
 
   const fetchBookingData = useCallback(async () => {
     if (!reservationId) return;
@@ -85,18 +86,18 @@ const BookingConfirmationPage: React.FC = () => {
 
   useEffect(() => {
     if (locationBooking) {
-      // Use booking data from successful booking flow
+      // Use booking data from successful booking flow or search
       setBooking(locationBooking);
       setEmailAddress(locationBooking.guestEmail);
       setLoading(false);
-    } else if (reservationId) {
-      // Fetch booking data using reservation ID
+    } else if (reservationId && !fromSearch) {
+      // Only fetch booking data if not from search (to avoid auth issues for guests)
       fetchBookingData();
     } else {
       setError('No booking information available');
       setLoading(false);
     }
-  }, [reservationId, locationBooking, fetchBookingData]);
+  }, [reservationId, locationBooking, fromSearch, fetchBookingData]);
 
   const calculateNights = (checkIn: string, checkOut: string) => {
     const checkInDate = new Date(checkIn);
@@ -223,11 +224,6 @@ const BookingConfirmationPage: React.FC = () => {
           Your reservation has been successfully created
         </Typography>
         <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap' }}>
-          <Chip
-            label={`Reservation ID: ${booking.reservationId}`}
-            variant="filled"
-            sx={{ bgcolor: 'success.dark', color: 'white', fontWeight: 'bold', fontSize: '1rem' }}
-          />
           <Chip
             label={`Confirmation: ${booking.confirmationNumber}`}
             variant="filled"
@@ -417,7 +413,7 @@ const BookingConfirmationPage: React.FC = () => {
           • Please bring a valid ID for check-in<br/>
           • Check-in time: 3:00 PM | Check-out time: 11:00 AM<br/>
           • For any changes or cancellations, please contact the hotel directly<br/>
-          • Keep your reservation ID and confirmation number for reference
+          • Keep your confirmation number for reference
         </Typography>
       </Alert>
 
