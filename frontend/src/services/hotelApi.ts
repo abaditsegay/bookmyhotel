@@ -62,6 +62,26 @@ class HotelApiService {
     });
   }
 
+  // Public hotel search (without tenant context for anonymous users)
+  async searchHotelsPublic(searchRequest: HotelSearchRequest): Promise<HotelSearchResult[]> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    // Deliberately NOT adding Authorization or X-Tenant-ID headers for public search
+    const response = await fetch(`${API_BASE_URL}/hotels/search`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(searchRequest),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Public Hotel Search Error: ${response.status} ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+
   async getHotelDetails(
     hotelId: number, 
     checkInDate?: string, 

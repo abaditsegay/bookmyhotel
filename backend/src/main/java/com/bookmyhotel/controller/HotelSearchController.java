@@ -20,7 +20,7 @@ import com.bookmyhotel.service.HotelSearchService;
 import jakarta.validation.Valid;
 
 /**
- * Hotel search controller
+ * Hotel search controller - Public endpoints for hotel discovery
  */
 @RestController
 @RequestMapping("/api/hotels")
@@ -31,7 +31,8 @@ public class HotelSearchController {
     private HotelSearchService hotelSearchService;
     
     /**
-     * Search hotels based on criteria
+     * Search hotels based on criteria - PUBLIC ENDPOINT
+     * Shows hotels from ALL tenants for anonymous users
      */
     @PostMapping("/search")
     public ResponseEntity<List<HotelSearchResult>> searchHotels(
@@ -42,7 +43,7 @@ public class HotelSearchController {
     }
     
     /**
-     * Get hotel details by ID
+     * Get hotel details by ID - PUBLIC ENDPOINT
      */
     @GetMapping("/{hotelId}")
     public ResponseEntity<HotelSearchResult> getHotelDetails(
@@ -78,7 +79,7 @@ public class HotelSearchController {
     }
     
     /**
-     * Get available rooms for a hotel
+     * Get available rooms for a hotel - PUBLIC ENDPOINT
      */
     @GetMapping("/{hotelId}/rooms")
     public ResponseEntity<List<HotelSearchResult.AvailableRoomDto>> getAvailableRooms(

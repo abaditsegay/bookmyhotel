@@ -68,6 +68,16 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     );
     
     /**
+     * Check if room is currently booked (has active reservations)
+     */
+    @Query("SELECT COUNT(res) > 0 FROM Reservation res " +
+           "WHERE res.room.id = :roomId " +
+           "AND res.status NOT IN ('CANCELLED', 'NO_SHOW') " +
+           "AND res.checkInDate <= CURRENT_DATE " +
+           "AND res.checkOutDate > CURRENT_DATE")
+    boolean isRoomCurrentlyBooked(@Param("roomId") Long roomId);
+    
+    /**
      * Find rooms by hotel
      */
     List<Room> findByHotel(Hotel hotel);

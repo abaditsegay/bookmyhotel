@@ -89,6 +89,15 @@ const Navbar: React.FC = () => {
   const getNavigationItems = () => {
     const baseItems: { label: string; path?: string; icon: React.ReactNode; action?: () => void }[] = [];
 
+    // Add "Find My Booking" for non-authenticated users
+    if (!user) {
+      baseItems.push({ 
+        label: 'Find My Booking', 
+        path: '/find-booking', 
+        icon: <BusinessIcon /> 
+      });
+    }
+
     if (user) {
       // For admin, show minimal navigation without dashboard
       if (user.role === 'ADMIN') {
@@ -105,7 +114,7 @@ const Navbar: React.FC = () => {
         return [...baseItems, { label: 'Front Desk', path: '/frontdesk', icon: <DashboardIcon /> }];
       }
 
-            // For guests and customers, show dashboard and bookings
+      // For guests and customers, show dashboard and bookings
       if (user.role === 'GUEST') {
         const guestItems = [
           { label: 'Dashboard', path: '/dashboard', icon: <DashboardIcon /> },

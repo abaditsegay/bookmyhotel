@@ -13,6 +13,7 @@ import {
   Bed as BedIcon,
 } from '@mui/icons-material';
 import { AvailableRoom } from '../../types/hotel';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface RoomCardProps {
   room: AvailableRoom;
@@ -47,6 +48,7 @@ const getRoomAmenities = (roomType: string): string[] => {
 
 const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
   const amenities = getRoomAmenities(room.roomType);
+  const { isAuthenticated } = useAuth();
 
   return (
     <Card 
@@ -144,33 +146,54 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
 
         {/* Book Buttons */}
         <Box sx={{ mt: 'auto' }}>
-          <Button
-            fullWidth
-            variant="contained"
-            color="primary"
-            onClick={() => onBookRoom(hotelId, room.id)}
-            sx={{ 
-              borderRadius: 2,
-              textTransform: 'none',
-              fontWeight: 'bold',
-              mb: 1,
-            }}
-          >
-            Sign in to Book
-          </Button>
-          <Button
-            fullWidth
-            variant="outlined"
-            color="primary"
-            onClick={() => onBookRoom(hotelId, room.id, true)} // true indicates guest booking
-            sx={{ 
-              borderRadius: 2,
-              textTransform: 'none',
-              fontWeight: 'bold',
-            }}
-          >
-            Book as Guest
-          </Button>
+          {isAuthenticated ? (
+            // For authenticated users - show primary book button
+            <Button
+              fullWidth
+              variant="contained"
+              color="primary"
+              onClick={() => onBookRoom(hotelId, room.id)}
+              sx={{ 
+                borderRadius: 2,
+                textTransform: 'none',
+                fontWeight: 'bold',
+                mb: 1,
+              }}
+            >
+              Book Now
+            </Button>
+          ) : (
+            // For non-authenticated users - show both options
+            <>
+              <Button
+                fullWidth
+                variant="contained"
+                color="primary"
+                onClick={() => onBookRoom(hotelId, room.id)}
+                sx={{ 
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  fontWeight: 'bold',
+                  mb: 1,
+                }}
+              >
+                Sign in to Book
+              </Button>
+              <Button
+                fullWidth
+                variant="outlined"
+                color="primary"
+                onClick={() => onBookRoom(hotelId, room.id, true)} // true indicates guest booking
+                sx={{ 
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  fontWeight: 'bold',
+                }}
+              >
+                Book as Guest
+              </Button>
+            </>
+          )}
         </Box>
       </CardContent>
     </Card>

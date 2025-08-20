@@ -19,6 +19,7 @@ import {
   FormControlLabel,
   Radio,
   InputAdornment,
+  Chip,
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -78,15 +79,19 @@ const BookingPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Redirect if no booking data or not authenticated (unless booking as guest)
+  // Redirect if no booking data
   useEffect(() => {
     if (!bookingData?.room) {
       navigate('/search-results');
       return;
     }
     
-    // Only redirect to auth if not authenticated AND not booking as guest
-    if (!isAuthenticated && !bookingData.asGuest) {
+    // Check if this is a guest booking (either explicitly marked or user not authenticated)
+    const isGuestBooking = bookingData.asGuest || !isAuthenticated;
+    
+    // Only redirect to auth if user is authenticated but no booking data marked as guest
+    // This allows for true guest checkout without forcing authentication
+    if (!isAuthenticated && !bookingData.asGuest && !isGuestBooking) {
       navigate('/guest-auth', {
         state: {
           from: '/booking',
@@ -96,10 +101,14 @@ const BookingPage: React.FC = () => {
     }
   }, [bookingData, isAuthenticated, navigate]);
 
-  // Allow access if authenticated OR booking as guest
-  if (!bookingData?.room || (!isAuthenticated && !bookingData.asGuest)) {
+  // Allow access if authenticated OR booking as guest OR has booking data
+  // This ensures guest users can complete booking without authentication
+  if (!bookingData?.room) {
     return null; // Will redirect
   }
+
+  // Determine if this is a guest booking flow
+  const isGuestBookingFlow = bookingData.asGuest || !isAuthenticated;
 
   const { room, hotelName } = bookingData;
 
@@ -123,8 +132,8 @@ const BookingPage: React.FC = () => {
       return;
     }
 
-    // Validate guest information for non-authenticated users
-    if (!isAuthenticated) {
+    // Validate guest information for guest booking flow
+    if (isGuestBookingFlow) {
       if (!guestName.trim() || !guestEmail.trim()) {
         setError('Please provide guest name and email');
         return;
@@ -184,10 +193,10 @@ const BookingPage: React.FC = () => {
         specialRequests: specialRequests.trim() || undefined,
         paymentMethodId: paymentMethod === 'credit_card' ? 'card_payment' : 
                         paymentMethod === 'pay_at_frontdesk' ? 'pay_at_frontdesk' : undefined,
-        // Include guest information for non-authenticated users
-        guestName: !isAuthenticated ? guestName.trim() : undefined,
-        guestEmail: !isAuthenticated ? guestEmail.trim() : undefined,
-        guestPhone: !isAuthenticated ? (guestPhone.trim() || undefined) : undefined,
+        // Include guest information for guest booking flow
+        guestName: isGuestBookingFlow ? guestName.trim() : undefined,
+        guestEmail: isGuestBookingFlow ? guestEmail.trim() : undefined,
+        guestPhone: isGuestBookingFlow ? (guestPhone.trim() || undefined) : undefined,
       };      const result = await hotelApiService.createBooking(bookingRequest);
       
       // Navigate to confirmation page with booking details
@@ -256,10 +265,23 @@ const BookingPage: React.FC = () => {
           {/* Page Title */}
           <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
             Book Your Stay
+            {isGuestBookingFlow && (
+              <Chip 
+                label="Guest Booking" 
+                color="info" 
+                size="small" 
+                sx={{ ml: 2, fontWeight: 'bold' }}
+              />
+            )}
           </Typography>
           {hotelName && (
             <Typography variant="h6" color="text.secondary" gutterBottom>
               {hotelName}
+            </Typography>
+          )}
+          {isGuestBookingFlow && (
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              ✨ You're booking as a guest - no account required!
             </Typography>
           )}
         </Box>
@@ -365,8 +387,8 @@ const BookingPage: React.FC = () => {
                 </Typography>
               </Grid>
 
-              {isAuthenticated ? (
-                // Display authenticated user information
+              {isAuthenticated && !isGuestBookingFlow ? (
+                // Display authenticated user information (only if not doing guest booking)
                 <Grid item xs={12}>
                   <Card variant="outlined" sx={{ p: 2, backgroundColor: '#f5f5f5' }}>
                     <Typography variant="body1" gutterBottom>
@@ -383,7 +405,7 @@ const BookingPage: React.FC = () => {
                   </Card>
                 </Grid>
               ) : (
-                // Guest input fields for non-authenticated users
+                // Guest input fields for guest booking flow or non-authenticated users
                 <>
                   <Grid item xs={12} sm={6}>
                     <TextField

@@ -18,6 +18,7 @@ import {
   Sort as SortIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import HotelDetailsCard from '../components/hotel/HotelDetailsCard';
 import { 
   HotelSearchRequest, 
@@ -27,6 +28,7 @@ import {
 const SearchResultsPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { isAuthenticated } = useAuth();
   
   // State from search parameters
   const [searchRequest, setSearchRequest] = useState<HotelSearchRequest | null>(null);
@@ -62,34 +64,33 @@ const SearchResultsPage: React.FC = () => {
   }, [location, navigate]);
 
   const handleBookRoom = async (hotelId: number, roomId: number, asGuest: boolean = false) => {
-    // Find the selected room and hotel
-    const hotel = hotels.find(h => h.id === hotelId);
-    const room = hotel?.availableRooms.find(r => r.id === roomId);
+    // Get room details for booking
+    const hotel = hotels.find((h: HotelSearchResult) => h.id === hotelId);
+    if (!hotel) return;
     
-    if (!room || !hotel) {
-      setError('Selected room not found');
-      return;
-    }
+    const room = hotel.availableRooms.find((r: any) => r.id === roomId);
+    if (!room) return;
 
-    const bookingData = {
-      room,
-      hotelName: hotel.name,
-      hotelId: hotel.id,
-      searchRequest,
-      asGuest // Add flag to indicate guest booking
-    };
-
-    if (asGuest) {
-      // Navigate directly to booking page for guest booking
+    if (asGuest || !isAuthenticated) {
+      // For guest bookings or non-authenticated users, navigate directly to booking page
       navigate('/booking', {
-        state: bookingData
+        state: {
+          room,
+          hotelName: hotel.name,
+          hotelId: hotelId,
+          searchRequest: searchRequest,
+          asGuest: true // Always set as guest for non-authenticated bookings
+        }
       });
     } else {
-      // Navigate to login page first for authenticated booking
-      navigate('/login', {
-        state: { 
-          redirectTo: '/booking',
-          bookingData: bookingData
+      // For authenticated users who want to book with their account
+      navigate('/booking', {
+        state: {
+          room,
+          hotelName: hotel.name,
+          hotelId: hotelId,
+          searchRequest: searchRequest,
+          asGuest: false // Authenticated user booking
         }
       });
     }

@@ -583,7 +583,12 @@ public class HotelAdminService {
         dto.setPricePerNight(room.getPricePerNight());
         dto.setCapacity(room.getCapacity());
         dto.setDescription(room.getDescription());
-        dto.setIsAvailable(room.getIsAvailable());
+        
+        // Check if room is currently booked
+        boolean isCurrentlyBooked = roomRepository.isRoomCurrentlyBooked(room.getId());
+        // Room is available if it's marked as available AND not currently booked
+        dto.setIsAvailable(room.getIsAvailable() && !isCurrentlyBooked);
+        
         dto.setCreatedAt(room.getCreatedAt());
         dto.setUpdatedAt(room.getUpdatedAt());
         

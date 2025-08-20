@@ -14,6 +14,7 @@ import HotelSearchPage from './pages/HotelSearchPage';
 import SearchResultsPage from './pages/SearchResultsPage';
 import BookingPage from './pages/BookingPage';
 import BookingConfirmationPage from './pages/BookingConfirmationPage';
+import FindBookingPage from './pages/FindBookingPage';
 import BookingSearchPage from './pages/BookingSearchPage';
 import LoginPage from './pages/LoginPage';
 import GuestAuthPage from './pages/GuestAuthPage';
@@ -259,6 +260,7 @@ function App() {
         } />
         <Route path="/hotels/search" element={<HotelSearchPage />} />
         <Route path="/search-results" element={<SearchResultsPage />} />
+        <Route path="/find-booking" element={<FindBookingPage />} />
         <Route path="/booking" element={<BookingPage />} />
         <Route path="/booking-confirmation/:reservationId" element={<BookingConfirmationPage />} />
         <Route path="/booking-management" element={<BookingManagementPage />} />

@@ -22,6 +22,14 @@ public class TenantFilterInterceptor implements HandlerInterceptor {
     
     @Override
     public boolean preHandle(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull Object handler) {
+        String requestPath = request.getRequestURI();
+        
+        // Skip tenant filtering for public hotel search endpoints
+        if (requestPath.startsWith("/api/hotels/")) {
+            // Don't enable tenant filter for public hotel endpoints
+            return true;
+        }
+        
         // Enable tenant filter for this request
         tenantFilter.enableFilter();
         return true;
