@@ -593,9 +593,9 @@ public class HotelAdminService {
             .count();
         stats.put("availableRooms", availableRooms);
         
-        // Occupied rooms: status is OCCUPIED (guests are currently in the room)
+        // Occupied rooms: not available for booking (includes occupied, out of order, maintenance, etc.)
         long occupiedRooms = rooms.stream()
-            .filter(r -> r.getStatus() == RoomStatus.OCCUPIED)
+            .filter(r -> r.getStatus() != RoomStatus.AVAILABLE)
             .count();
         stats.put("occupiedRooms", occupiedRooms);
         
