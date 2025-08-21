@@ -593,11 +593,11 @@ public class HotelAdminService {
             .count();
         stats.put("availableRooms", availableRooms);
         
-        // Occupied rooms: not available for booking (includes occupied, out of order, maintenance, etc.)
-        long occupiedRooms = rooms.stream()
-            .filter(r -> r.getStatus() != RoomStatus.AVAILABLE)
+        // Booked rooms: rooms that are currently occupied (have active bookings)
+        long bookedRooms = rooms.stream()
+            .filter(r -> r.getStatus() == RoomStatus.OCCUPIED)
             .count();
-        stats.put("occupiedRooms", occupiedRooms);
+        stats.put("bookedRooms", bookedRooms);
         
         // Staff statistics - include all staff roles (excluding guests and customers)
         List<User> staff = userRepository.findByHotelAndRolesContaining(hotel, 

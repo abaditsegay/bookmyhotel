@@ -361,14 +361,14 @@ const HotelAdminDashboard: React.FC = () => {
     name: hotel.name || user?.hotelName || 'Loading...',
     totalRooms: hotel.totalRooms || 0,
     availableRooms: hotel.availableRooms || 0,
-    occupiedRooms: Math.max(0, (hotel.totalRooms || 0) - (hotel.availableRooms || 0)),
+    bookedRooms: hotel.bookedRooms || 0,
     totalStaff: hotel.totalStaff || 0,
     activeStaff: hotel.totalStaff || 0, // Using same value as totalStaff for now
   } : {
     name: user?.hotelName || (hotelLoading ? 'Loading hotel...' : 'Hotel information not available'),
     totalRooms: 0,
     availableRooms: 0,
-    occupiedRooms: 0,
+    bookedRooms: 0,
     totalStaff: 0,
     activeStaff: 0,
   };
@@ -385,8 +385,8 @@ const HotelAdminDashboard: React.FC = () => {
       color: 'success',
     },
     {
-      title: 'Occupied Rooms',
-      value: hotelData.occupiedRooms,
+      title: 'Booked Rooms',
+      value: hotelData.bookedRooms,
       color: 'warning',
     },
     {

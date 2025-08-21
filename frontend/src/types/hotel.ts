@@ -115,6 +115,7 @@ export interface Hotel {
   roomCount?: number;
   totalRooms?: number;
   availableRooms?: number;
+  bookedRooms?: number;
   totalStaff?: number;
   createdAt?: string;
   updatedAt?: string;
