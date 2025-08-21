@@ -359,18 +359,18 @@ const HotelAdminDashboard: React.FC = () => {
   // Mock data for demonstration - will be replaced with real data from hotel state
   const hotelData = hotel ? {
     name: hotel.name || user?.hotelName || 'Loading...',
-    totalRooms: hotel.totalRooms || 120,
-    availableRooms: hotel.availableRooms || 89,
-    occupiedRooms: (hotel.totalRooms || 120) - (hotel.availableRooms || 89),
-    totalStaff: hotel.totalStaff || 25,
-    activeStaff: 23, // This would need to come from staff API
+    totalRooms: hotel.totalRooms || 0,
+    availableRooms: hotel.availableRooms || 0,
+    occupiedRooms: Math.max(0, (hotel.totalRooms || 0) - (hotel.availableRooms || 0)),
+    totalStaff: hotel.totalStaff || 0,
+    activeStaff: hotel.totalStaff || 0, // Using same value as totalStaff for now
   } : {
     name: user?.hotelName || (hotelLoading ? 'Loading hotel...' : 'Hotel information not available'),
-    totalRooms: 120,
-    availableRooms: 89,
-    occupiedRooms: 31,
-    totalStaff: 25,
-    activeStaff: 23,
+    totalRooms: 0,
+    availableRooms: 0,
+    occupiedRooms: 0,
+    totalStaff: 0,
+    activeStaff: 0,
   };
 
   const stats = [
