@@ -34,9 +34,10 @@ import {
   Edit as EditIcon
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
-import { hotelAdminApi } from '../../services/hotelAdminApi';
 
-// Hotel admin specific room response interface (matching FrontDesk)
+// Front desk specific API service
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+
 interface RoomResponse {
   id: number;
   roomNumber: string;
@@ -53,7 +54,155 @@ interface RoomResponse {
   currentGuest?: string;
 }
 
-interface RoomManagementTableProps {
+interface RoomPage {
+  content: RoomResponse[];
+  page: {
+    totalElements: number;
+    totalPages: number;
+    number: number;
+    size: number;
+  };
+}
+
+const getAuthHeaders = (token: string) => ({
+  'Content-Type': 'application/json',
+  'Authorization': `Bearer ${token}`,
+});
+
+const frontDeskRoomApi = {
+  getAllRooms: async (
+    token: string,
+    page: number = 0,
+    size: number = 10,
+    search?: string,
+    roomType?: string,
+    status?: string
+  ): Promise<{ success: boolean; data?: RoomPage; message?: string }> => {
+    try {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        size: size.toString(),
+      });
+      
+      if (search && search.trim()) {
+        params.append('search', search.trim());
+      }
+      
+      if (roomType && roomType.trim()) {
+        params.append('roomType', roomType.trim());
+      }
+      
+      if (status && status.trim() && status !== 'ALL') {
+        params.append('status', status);
+      }
+
+      const response = await fetch(`${API_BASE_URL}/api/front-desk/rooms?${params.toString()}`, {
+        method: 'GET',
+        headers: getAuthHeaders(token),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to fetch rooms');
+      }
+
+      const backendData = await response.json();
+      
+      // Transform backend response to match expected structure
+      const transformedData: RoomPage = {
+        content: backendData.content || [],
+        page: {
+          totalElements: backendData.page?.totalElements || backendData.totalElements || 0,
+          totalPages: backendData.page?.totalPages || backendData.totalPages || 0,
+          size: backendData.page?.size || backendData.size || size,
+          number: backendData.page?.number || backendData.number || page,
+        },
+      };
+      
+      return { success: true, data: transformedData };
+    } catch (error) {
+      console.error('Rooms fetch error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to fetch rooms' 
+      };
+    }
+  },
+
+  updateRoomStatus: async (
+    token: string,
+    roomId: number,
+    status: string,
+    notes?: string
+  ): Promise<{ success: boolean; data?: RoomResponse; message?: string }> => {
+    try {
+      const params = new URLSearchParams({ status });
+      if (notes) {
+        params.append('notes', notes);
+      }
+
+      const response = await fetch(
+        `${API_BASE_URL}/api/front-desk/rooms/${roomId}/status?${params.toString()}`,
+        {
+          method: 'PUT',
+          headers: getAuthHeaders(token),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update room status');
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      console.error('Room status update error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to update room status' 
+      };
+    }
+  },
+
+  toggleRoomAvailability: async (
+    token: string,
+    roomId: number,
+    available: boolean,
+    reason?: string
+  ): Promise<{ success: boolean; data?: RoomResponse; message?: string }> => {
+    try {
+      const params = new URLSearchParams({ available: available.toString() });
+      if (reason) {
+        params.append('reason', reason);
+      }
+
+      const response = await fetch(
+        `${API_BASE_URL}/api/front-desk/rooms/${roomId}/availability?${params.toString()}`,
+        {
+          method: 'PUT',
+          headers: getAuthHeaders(token),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update room availability');
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      console.error('Room availability update error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to update room availability' 
+      };
+    }
+  },
+};
+
+interface FrontDeskRoomManagementProps {
   onRoomUpdate?: (room: RoomResponse) => void;
 }
 
@@ -66,7 +215,7 @@ const ROOM_STATUS_OPTIONS = [
   { value: 'DIRTY', label: 'Dirty', color: 'default' as const }
 ];
 
-const RoomManagementTable: React.FC<RoomManagementTableProps> = ({ onRoomUpdate }) => {
+const FrontDeskRoomManagement: React.FC<FrontDeskRoomManagementProps> = ({ onRoomUpdate }) => {
   const { token } = useAuth();
   const [rooms, setRooms] = useState<RoomResponse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -93,12 +242,11 @@ const RoomManagementTable: React.FC<RoomManagementTableProps> = ({ onRoomUpdate 
     setError(null);
     
     try {
-      const result = await hotelAdminApi.getHotelRooms(
+      const result = await frontDeskRoomApi.getAllRooms(
         token,
         page,
         rowsPerPage,
         searchQuery,
-        undefined, // room number
         undefined, // room type
         statusFilter === 'ALL' ? undefined : statusFilter
       );
@@ -158,7 +306,7 @@ const RoomManagementTable: React.FC<RoomManagementTableProps> = ({ onRoomUpdate 
     setStatusUpdating(true);
     
     try {
-      const result = await hotelAdminApi.updateRoomStatus(
+      const result = await frontDeskRoomApi.updateRoomStatus(
         token,
         selectedRoom.id,
         newStatus
@@ -191,7 +339,7 @@ const RoomManagementTable: React.FC<RoomManagementTableProps> = ({ onRoomUpdate 
     setAvailabilityUpdating(prev => ({ ...prev, [room.id]: true }));
     
     try {
-      const result = await hotelAdminApi.toggleRoomAvailability(
+      const result = await frontDeskRoomApi.toggleRoomAvailability(
         token,
         room.id,
         !room.isAvailable
@@ -405,4 +553,4 @@ const RoomManagementTable: React.FC<RoomManagementTableProps> = ({ onRoomUpdate 
   );
 };
 
-export default RoomManagementTable;
+export default FrontDeskRoomManagement;

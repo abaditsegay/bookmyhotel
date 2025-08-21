@@ -537,6 +537,43 @@ export const hotelAdminApi = {
     }
   },
 
+  // Update room status
+  updateRoomStatus: async (
+    token: string,
+    roomId: number,
+    status: string,
+    notes?: string
+  ): Promise<{ success: boolean; data?: RoomResponse; message?: string }> => {
+    try {
+      const params = new URLSearchParams({ status });
+      if (notes) {
+        params.append('notes', notes);
+      }
+
+      const response = await fetch(
+        `${API_BASE_URL}/api/hotel-admin/rooms/${roomId}/status?${params.toString()}`,
+        {
+          method: 'PUT',
+          headers: getAuthHeaders(token),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update room status');
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      console.error('Room status update error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to update room status' 
+      };
+    }
+  },
+
   // ===========================
   // STAFF MANAGEMENT METHODS
   // ===========================

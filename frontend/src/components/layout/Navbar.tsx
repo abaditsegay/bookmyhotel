@@ -7,7 +7,6 @@ import {
   IconButton,
   Menu,
   MenuItem,
-  Avatar,
   Box,
   Drawer,
   List,
@@ -25,7 +24,6 @@ import {
   Person as PersonIcon,
   Dashboard as DashboardIcon,
   Logout as LogoutIcon,
-  Login as LoginIcon,
   Business as BusinessIcon,
   AppRegistration as RegisterIcon,
 } from '@mui/icons-material';
@@ -79,6 +77,36 @@ const Navbar: React.FC = () => {
     setMobileDrawerOpen(!mobileDrawerOpen);
   };
 
+  // Helper function to get user role display name
+  const getRoleDisplayName = (role: string) => {
+    const roleMap: { [key: string]: string } = {
+      'ADMIN': 'System Administrator',
+      'HOTEL_ADMIN': 'Hotel Administrator',
+      'FRONTDESK': 'Front Desk Staff',
+      'GUEST': 'Guest',
+      'HOTEL_MANAGER': 'Hotel Manager',
+      'HOUSEKEEPING': 'Housekeeping Staff',
+      'MAINTENANCE': 'Maintenance Staff',
+      'CUSTOMER': 'Customer'
+    };
+    return roleMap[role] || role;
+  };
+
+  // Helper function to get role color
+  const getRoleColor = (role: string) => {
+    const colorMap: { [key: string]: 'primary' | 'secondary' | 'success' | 'warning' | 'info' | 'error' } = {
+      'ADMIN': 'error',
+      'HOTEL_ADMIN': 'primary',
+      'FRONTDESK': 'info',
+      'GUEST': 'success',
+      'HOTEL_MANAGER': 'secondary',
+      'HOUSEKEEPING': 'warning',
+      'MAINTENANCE': 'warning',
+      'CUSTOMER': 'success'
+    };
+    return colorMap[role] || 'primary';
+  };
+
   // Helper function to determine if hotel name should be shown
   const shouldShowHotelName = () => {
     // Hide hotel name for system admin and guest users
@@ -90,24 +118,12 @@ const Navbar: React.FC = () => {
   const getNavigationItems = () => {
     const baseItems: { label: string; path?: string; icon: React.ReactNode; action?: () => void }[] = [];
 
-    // Add navigation items for non-authenticated users
-    if (!user) {
-      baseItems.push({ 
-        label: 'Find My Booking', 
-        path: '/find-booking', 
-        icon: <BusinessIcon /> 
-      });
-      baseItems.push({ 
-        label: 'Register Hotel', 
-        path: '/register-hotel-admin', 
-        icon: <RegisterIcon /> 
-      });
-    }
+    // Base items are now empty for non-authenticated users since we're moving them to the right side
 
     if (user) {
-      // For admin, show minimal navigation without dashboard
+      // For admin, show minimal navigation without dashboard or profile
       if (user.role === 'ADMIN') {
-        return [...baseItems, { label: 'Profile', path: '/profile', icon: <PersonIcon /> }];
+        return [...baseItems];
       }
 
       // For hotel admin, show hotel admin dashboard
@@ -120,18 +136,17 @@ const Navbar: React.FC = () => {
         return [...baseItems, { label: 'Front Desk', path: '/frontdesk', icon: <DashboardIcon /> }];
       }
 
-      // For guests and customers, show dashboard and bookings
+      // For guests and customers, show dashboard and bookings (without profile)
       if (user.role === 'GUEST') {
         const guestItems = [
           { label: 'Dashboard', path: '/dashboard', icon: <DashboardIcon /> },
           { label: 'My Bookings', path: '/bookings', icon: <BusinessIcon /> },
-          { label: 'Profile', path: '/profile', icon: <PersonIcon /> },
         ];
         return [...baseItems, ...guestItems];
       }
 
-      // For other roles (like HOUSEKEEPING, HOTEL_MANAGER), only show profile
-      return [...baseItems, { label: 'Profile', path: '/profile', icon: <PersonIcon /> }];
+      // For other roles (like HOUSEKEEPING, HOTEL_MANAGER), show only base items
+      return [...baseItems];
     }
 
     return baseItems;
@@ -190,6 +205,15 @@ const Navbar: React.FC = () => {
             label={tenant.name}
             size="small"
             color="secondary"
+            sx={{ mt: 1, mr: 1 }}
+          />
+        )}
+        {user && (
+          <Chip
+            label={getRoleDisplayName(user.role)}
+            color={getRoleColor(user.role)}
+            size="small"
+            variant="outlined"
             sx={{ mt: 1 }}
           />
         )}
@@ -222,6 +246,24 @@ const Navbar: React.FC = () => {
             />
           </ListItem>
         ))}
+        
+        {/* Additional items for non-authenticated users */}
+        {!user && (
+          <>
+            <ListItem onClick={() => handleNavigation('/find-booking')} sx={{ cursor: 'pointer' }}>
+              <ListItemIcon>
+                <BusinessIcon />
+              </ListItemIcon>
+              <ListItemText primary="Find My Booking" />
+            </ListItem>
+            <ListItem onClick={() => handleNavigation('/register-hotel-admin')} sx={{ cursor: 'pointer' }}>
+              <ListItemIcon>
+                <RegisterIcon />
+              </ListItemIcon>
+              <ListItemText primary="Register Hotel" />
+            </ListItem>
+          </>
+        )}
       </List>
       {user && (
         <>
@@ -351,40 +393,65 @@ const Navbar: React.FC = () => {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {user ? (
               <>
-                {/* User Avatar & Menu */}
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Typography variant="body2" sx={{ color: 'white', fontWeight: 500 }}>
-                    {user.firstName || user.email?.split('@')[0] || 'User'}
-                  </Typography>
-                  <IconButton onClick={handleMenuOpen} sx={{ p: 0.5 }}>
-                    <Avatar 
-                      sx={{ 
-                        width: 36, 
-                        height: 36,
-                        backgroundColor: theme.palette.secondary.main,
-                        fontSize: '0.9rem',
-                        fontWeight: 'bold',
-                      }}
-                    >
-                      {user.firstName?.[0] || user.email?.[0] || 'U'}
-                    </Avatar>
-                  </IconButton>
-                </Box>
+                {/* User Role Display */}
+                <Chip
+                  label={getRoleDisplayName(user.role)}
+                  color={getRoleColor(user.role)}
+                  size="small"
+                  variant="outlined"
+                  sx={{ 
+                    color: 'white', 
+                    borderColor: 'rgba(255, 255, 255, 0.5)',
+                    fontSize: '0.75rem',
+                    fontWeight: 500,
+                    display: { xs: 'none', sm: 'flex' }, // Hide on mobile to save space
+                  }}
+                />
+                
+                {/* User Icon & Menu */}
+                <IconButton onClick={handleMenuOpen} sx={{ p: 0.5, color: 'white' }}>
+                  <PersonIcon sx={{ fontSize: 28 }} />
+                </IconButton>
                 <UserMenu />
               </>
             ) : (
               /* Guest Actions */
-              <Button
-                color="inherit"
-                onClick={() => handleNavigation('/login')}
-                startIcon={<LoginIcon />}
-                sx={{
-                  borderRadius: 2,
-                  '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
-                }}
-              >
-                {!isMobile && 'Login'}
-              </Button>
+              <>
+                {!isMobile && (
+                  <>
+                    <Button
+                      color="inherit"
+                      onClick={() => handleNavigation('/find-booking')}
+                      sx={{
+                        borderRadius: 2,
+                        '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
+                      }}
+                    >
+                      Find My Booking
+                    </Button>
+                    <Button
+                      color="inherit"
+                      onClick={() => handleNavigation('/register-hotel-admin')}
+                      sx={{
+                        borderRadius: 2,
+                        '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
+                      }}
+                    >
+                      Register Hotel
+                    </Button>
+                  </>
+                )}
+                <Button
+                  color="inherit"
+                  onClick={() => handleNavigation('/login')}
+                  sx={{
+                    borderRadius: 2,
+                    '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
+                  }}
+                >
+                  Login
+                </Button>
+              </>
             )}
           </Box>
         </Toolbar>

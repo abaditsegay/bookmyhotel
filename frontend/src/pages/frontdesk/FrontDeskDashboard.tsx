@@ -22,7 +22,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { frontDeskApiService, FrontDeskStats } from '../../services/frontDeskApi';
 import BookingManagementTable from '../../components/booking/BookingManagementTable';
 import WalkInBookingModal from '../../components/booking/WalkInBookingModal';
-import RoomManagementTable from '../../components/hotel/RoomManagementTable';
+import FrontDeskRoomManagement from '../../components/frontdesk/FrontDeskRoomManagement';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -288,15 +288,29 @@ const FrontDeskDashboard: React.FC = () => {
         />
       </TabPanel>
 
-      {/* Housekeeping Tab */}
+      {/* Room Management Tab */}
       <TabPanel value={activeTab} index={2}>
-        <RoomManagementTable
+        <FrontDeskRoomManagement
           onRoomUpdate={(room) => {
             console.log('Room updated:', room);
             // Refresh stats when room is updated
             loadStats();
           }}
         />
+      </TabPanel>
+
+      {/* Housekeeping Tab */}
+      <TabPanel value={activeTab} index={3}>
+        <Box sx={{ p: 3, textAlign: 'center' }}>
+          <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>
+            Housekeeping Module
+          </Typography>
+          <Typography color="text.secondary">
+            Housekeeping features will be available in future releases.
+            <br />
+            Currently, room status changes can be managed through the Room Management tab.
+          </Typography>
+        </Box>
       </TabPanel>
 
       {/* Walk-in Booking Modal */}

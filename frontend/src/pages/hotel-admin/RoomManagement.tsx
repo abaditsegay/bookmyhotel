@@ -31,6 +31,7 @@ import {
   CardContent,
   Switch,
   Tooltip,
+  FormControlLabel,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -38,6 +39,7 @@ import {
   Add as AddIcon,
   Visibility as ViewIcon,
   Refresh as RefreshIcon,
+  Edit as EditIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { hotelAdminApi, RoomResponse, RoomCreateRequest, RoomUpdateRequest } from '../../services/hotelAdminApi';
@@ -74,7 +76,13 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<RoomResponse | null>(null);
+
+  // Status update states
+  const [newStatus, setNewStatus] = useState('');
+  const [statusUpdating, setStatusUpdating] = useState(false);
+  const [availabilityUpdating, setAvailabilityUpdating] = useState<Record<number, boolean>>({});
 
   // Form states
   const [roomForm, setRoomForm] = useState<RoomCreateRequest>({
@@ -94,7 +102,16 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
   });
 
   const roomTypes = ['STANDARD', 'DELUXE', 'SUITE', 'EXECUTIVE', 'PRESIDENTIAL'];
-  const roomStatuses = ['AVAILABLE', 'OCCUPIED', 'MAINTENANCE', 'OUT_OF_ORDER'];
+
+  // Room status options with colors (matching front desk)
+  const ROOM_STATUS_OPTIONS = [
+    { value: 'AVAILABLE', label: 'Available', color: 'success' as const },
+    { value: 'OCCUPIED', label: 'Occupied', color: 'info' as const },
+    { value: 'OUT_OF_ORDER', label: 'Out of Order', color: 'error' as const },
+    { value: 'MAINTENANCE', label: 'Maintenance', color: 'warning' as const },
+    { value: 'CLEANING', label: 'Cleaning', color: 'secondary' as const },
+    { value: 'DIRTY', label: 'Dirty', color: 'default' as const }
+  ];
 
   const loadRooms = useCallback(async () => {
     if (!token) return;
@@ -172,7 +189,105 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
     }
   };
 
-    const handleCreateRoom = async () => {
+  // Get status configuration with colors
+  const getStatusConfig = (status: string) => {
+    return ROOM_STATUS_OPTIONS.find(option => option.value === status) || 
+           { value: status, label: status, color: 'default' as const };
+  };
+
+  // Handle status update dialog
+  const handleStatusUpdate = (room: RoomResponse) => {
+    setSelectedRoom(room);
+    setNewStatus(room.status);
+    setStatusDialogOpen(true);
+  };
+
+  const handleStatusDialogClose = () => {
+    setStatusDialogOpen(false);
+    setSelectedRoom(null);
+    setNewStatus('');
+  };
+
+  const handleStatusConfirm = async () => {
+    if (!selectedRoom || !token) return;
+    
+    setStatusUpdating(true);
+    
+    try {
+      const response = await hotelAdminApi.updateRoomStatus(token, selectedRoom.id, newStatus);
+      if (response.success && response.data) {
+        // Update the room in the list
+        setRooms(prevRooms => 
+          prevRooms.map(room => 
+            room.id === selectedRoom.id ? response.data! : room
+          )
+        );
+        
+        handleStatusDialogClose();
+        setError(null);
+      } else {
+        setError(response.message || 'Failed to update room status');
+      }
+    } catch (err) {
+      console.error('Error updating room status:', err);
+      setError('Failed to update room status. Please try again.');
+    } finally {
+      setStatusUpdating(false);
+    }
+  };
+
+  // Handle availability toggle like front desk
+  const handleAvailabilityToggle = async (room: RoomResponse) => {
+    if (!token) return;
+    
+    setAvailabilityUpdating(prev => ({ ...prev, [room.id]: true }));
+    
+    try {
+      const response = await hotelAdminApi.toggleRoomAvailability(token, room.id, !room.isAvailable);
+      if (response.success && response.data) {
+        // Update the room in the list
+        setRooms(prevRooms => 
+          prevRooms.map(r => 
+            r.id === room.id ? response.data! : r
+          )
+        );
+        
+        setError(null);
+      } else {
+        setError(response.message || 'Failed to update room availability');
+      }
+    } catch (err) {
+      console.error('Error toggling room availability:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update room availability';
+      setError(errorMessage);
+    } finally {
+      setAvailabilityUpdating(prev => ({ ...prev, [room.id]: false }));
+    }
+  };
+
+  const handleDeleteRoom = async () => {
+    if (!selectedRoom || !token) return;
+    
+    try {
+      setLoading(true);
+      const response = await hotelAdminApi.deleteRoom(token, selectedRoom.id);
+      if (response.success) {
+        setDeleteDialogOpen(false);
+        setSelectedRoom(null);
+        await loadRooms();
+        setError(null);
+      } else {
+        setError(response.message || 'Failed to delete room. Room may have active bookings.');
+      }
+    } catch (err) {
+      console.error('Error deleting room:', err);
+      setError('Failed to delete room. Room may have active bookings.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreateRoom = async () => {
     if (!token) return;
     
     try {
@@ -222,61 +337,6 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
     }
   };
 
-  const handleDeleteRoom = async () => {
-    if (!selectedRoom || !token) return;
-    
-    try {
-      setLoading(true);
-      const response = await hotelAdminApi.deleteRoom(token, selectedRoom.id);
-      if (response.success) {
-        setDeleteDialogOpen(false);
-        setSelectedRoom(null);
-        await loadRooms();
-        setError(null);
-      } else {
-        setError(response.message || 'Failed to delete room. Room may have active bookings.');
-      }
-    } catch (err) {
-      console.error('Error deleting room:', err);
-      setError('Failed to delete room. Room may have active bookings.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleToggleAvailability = async (roomId: number, currentAvailability: boolean) => {
-    if (!token) return;
-    
-    try {
-      setLoading(true);
-      const response = await hotelAdminApi.toggleRoomAvailability(token, roomId, !currentAvailability);
-      if (response.success) {
-        await loadRooms();
-        setError(null);
-      } else {
-        setError(response.message || 'Failed to update room availability');
-      }
-    } catch (err) {
-      console.error('Error toggling room availability:', err);
-      // Show the specific error message from the backend
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update room availability';
-      setError(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const canToggleAvailability = (room: RoomResponse): { canToggle: boolean; reason: string } => {
-    // Cannot make available if room is in maintenance or out of order
-    if (!room.isAvailable && (room.status === 'OUT_OF_ORDER' || room.status === 'MAINTENANCE')) {
-      return {
-        canToggle: false,
-        reason: `Cannot make available while room is ${room.status.toLowerCase().replace('_', ' ')}`
-      };
-    }
-    return { canToggle: true, reason: '' };
-  };
-
   const getStatusColor = (isAvailable: boolean) => {
     return isAvailable ? 'success' : 'error';
   };
@@ -323,145 +383,150 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
           </Alert>
         )}
 
-        {/* Search and Filters */}
-        <Paper sx={{ p: 2, mb: 2 }}>
-          <Grid container spacing={2} alignItems="center">
-            <Grid item xs={12} md={4}>
-              <TextField
-                fullWidth
-                label="Search rooms..."
-                value={searchTerm}
-                onChange={handleSearchChange}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} md={2}>
-              <TextField
-                fullWidth
-                label="Room Number"
-                value={filters.roomNumber}
-                onChange={(e) => handleFilterChange('roomNumber', e.target.value)}
-              />
-            </Grid>
-            <Grid item xs={12} md={2}>
-              <FormControl fullWidth>
-                <InputLabel>Room Type</InputLabel>
-                <Select
-                  value={filters.roomType}
-                  label="Room Type"
-                  onChange={(e) => handleFilterChange('roomType', e.target.value)}
-                >
-                  <MenuItem value="">All Types</MenuItem>
-                  {roomTypes.map(type => (
-                    <MenuItem key={type} value={type}>{type}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} md={2}>
-              <FormControl fullWidth>
-                <InputLabel>Status</InputLabel>
-                <Select
-                  value={filters.status}
-                  label="Status"
-                  onChange={(e) => handleFilterChange('status', e.target.value)}
-                >
-                  <MenuItem value="">All Statuses</MenuItem>
-                  {roomStatuses.map(status => (
-                    <MenuItem key={status} value={status}>{status}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} md={2}>
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                <Button
-                  variant="outlined"
-                  onClick={resetFilters}
-                  size="small"
-                >
-                  Clear
-                </Button>
-                <IconButton
-                  onClick={loadRooms}
-                  disabled={loading}
-                >
-                  <RefreshIcon />
-                </IconButton>
-              </Box>
-            </Grid>
-          </Grid>
-        </Paper>
+        {/* Search and Filters - Front Desk Style */}
+        <Box sx={{ mb: 3, display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
+          <TextField
+            label="Search rooms"
+            value={searchTerm}
+            onChange={handleSearchChange}
+            size="small"
+            sx={{ minWidth: 200 }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              ),
+            }}
+          />
+          
+          <FormControl size="small" sx={{ minWidth: 150 }}>
+            <InputLabel>Status Filter</InputLabel>
+            <Select
+              value={filters.status}
+              label="Status Filter"
+              onChange={(e) => handleFilterChange('status', e.target.value)}
+            >
+              <MenuItem value="">All Statuses</MenuItem>
+              {ROOM_STATUS_OPTIONS.map((status) => (
+                <MenuItem key={status.value} value={status.value}>
+                  {status.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          
+          <FormControl size="small" sx={{ minWidth: 150 }}>
+            <InputLabel>Room Type</InputLabel>
+            <Select
+              value={filters.roomType}
+              label="Room Type"
+              onChange={(e) => handleFilterChange('roomType', e.target.value)}
+            >
+              <MenuItem value="">All Types</MenuItem>
+              {roomTypes.map(type => (
+                <MenuItem key={type} value={type}>{type}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
-        {/* Rooms Table */}
-        <Paper>
-          <TableContainer>
-            <Table>
-              <TableHead>
+          <Button
+            variant="outlined"
+            onClick={resetFilters}
+            size="small"
+          >
+            Clear
+          </Button>
+          
+          <Tooltip title="Refresh">
+            <IconButton
+              onClick={loadRooms}
+              disabled={loading}
+            >
+              <RefreshIcon />
+            </IconButton>
+          </Tooltip>
+        </Box>
+
+        {/* Rooms Table - Front Desk Style */}
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Room Number</TableCell>
+                <TableCell>Type</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell>Current Guest</TableCell>
+                <TableCell>Capacity</TableCell>
+                <TableCell>Price/Night</TableCell>
+                <TableCell>Available</TableCell>
+                <TableCell align="center">Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {loading ? (
                 <TableRow>
-                  <TableCell>Room Number</TableCell>
-                  <TableCell>Type</TableCell>
-                  <TableCell>Price/Night</TableCell>
-                  <TableCell>Capacity</TableCell>
-                  <TableCell>Availability</TableCell>
-                  <TableCell align="center">Actions</TableCell>
+                  <TableCell colSpan={8} align="center">
+                    <CircularProgress />
+                  </TableCell>
                 </TableRow>
-              </TableHead>
-              <TableBody>
-                {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={6} align="center">
-                      <CircularProgress />
-                    </TableCell>
-                  </TableRow>
-                ) : rooms.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} align="center">
-                      <Typography variant="body2" color="text.secondary">
-                        No rooms found matching your criteria
-                      </Typography>
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  rooms.map((room) => (
+              ) : rooms.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={8} align="center">
+                    <Typography variant="body2" color="text.secondary">
+                      No rooms found matching your criteria
+                    </Typography>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                rooms.map((room) => {
+                  const statusConfig = getStatusConfig(room.status);
+                  return (
                     <TableRow key={room.id} hover>
                       <TableCell>
-                        <Typography variant="body2" fontWeight="medium">
+                        <Typography variant="subtitle2" fontWeight="bold">
                           {room.roomNumber}
                         </Typography>
                       </TableCell>
                       <TableCell>{room.roomType}</TableCell>
-                      <TableCell>${room.pricePerNight}</TableCell>
-                      <TableCell>{room.capacity}</TableCell>
                       <TableCell>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                          <Tooltip 
-                            title={!canToggleAvailability(room).canToggle ? canToggleAvailability(room).reason : (room.isAvailable ? 'Click to make unavailable' : 'Click to make available')}
-                            placement="top"
-                          >
-                            <span>
-                              <Switch
-                                checked={room.isAvailable}
-                                onChange={() => handleToggleAvailability(room.id, room.isAvailable)}
-                                disabled={loading || !canToggleAvailability(room).canToggle}
-                                size="small"
-                                color={room.isAvailable ? 'success' : 'error'}
-                              />
-                            </span>
-                          </Tooltip>
-                          <Typography variant="caption" color={room.isAvailable ? 'success.main' : 'error.main'}>
-                            {room.isAvailable ? 'Available' : 'Unavailable'}
-                          </Typography>
-                        </Box>
+                        <Chip 
+                          label={statusConfig.label}
+                          color={statusConfig.color}
+                          size="small"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        {/* For now, show placeholder until currentGuest field is added to backend */}
+                        <Typography variant="body2" color="text.secondary">
+                          No guest
+                        </Typography>
+                      </TableCell>
+                      <TableCell>{room.capacity} guests</TableCell>
+                      <TableCell>${room.pricePerNight}</TableCell>
+                      <TableCell>
+                        <FormControlLabel
+                          control={
+                            <Switch
+                              checked={room.isAvailable}
+                              onChange={() => handleAvailabilityToggle(room)}
+                              disabled={availabilityUpdating[room.id]}
+                              size="small"
+                            />
+                          }
+                          label={room.isAvailable ? 'Available' : 'Unavailable'}
+                        />
                       </TableCell>
                       <TableCell align="center">
                         <Box sx={{ display: 'flex', gap: 0.5 }}>
+                          <Tooltip title="Update Status">
+                            <IconButton
+                              size="small"
+                              onClick={() => handleStatusUpdate(room)}
+                            >
+                              <EditIcon />
+                            </IconButton>
+                          </Tooltip>
                           <IconButton
                             size="small"
                             onClick={() => handleViewRoom(room.id)}
@@ -483,21 +548,60 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
                         </Box>
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-          <TablePagination
-            rowsPerPageOptions={[5, 10, 25]}
-            component="div"
-            count={totalElements || 0}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onPageChange={handlePageChange}
-            onRowsPerPageChange={handleRowsPerPageChange}
-          />
-        </Paper>
+                  );
+                })
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
+        <TablePagination
+          rowsPerPageOptions={[5, 10, 25]}
+          component="div"
+          count={totalElements || 0}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handlePageChange}
+          onRowsPerPageChange={handleRowsPerPageChange}
+        />
+
+        {/* Status Update Dialog - Front Desk Style */}
+        <Dialog open={statusDialogOpen} onClose={handleStatusDialogClose}>
+          <DialogTitle>Update Room Status</DialogTitle>
+          <DialogContent>
+            {selectedRoom && (
+              <Box sx={{ pt: 1 }}>
+                <Typography variant="body2" sx={{ mb: 2 }}>
+                  Room: {selectedRoom.roomNumber} ({selectedRoom.roomType})
+                </Typography>
+                <FormControl fullWidth>
+                  <InputLabel>Status</InputLabel>
+                  <Select
+                    value={newStatus}
+                    label="Status"
+                    onChange={(e) => setNewStatus(e.target.value)}
+                  >
+                    {ROOM_STATUS_OPTIONS.map((status) => (
+                      <MenuItem key={status.value} value={status.value}>
+                        {status.label}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Box>
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleStatusDialogClose}>Cancel</Button>
+            <Button
+              onClick={handleStatusConfirm}
+              variant="contained"
+              disabled={statusUpdating || !newStatus}
+            >
+              {statusUpdating ? <CircularProgress size={20} /> : 'Update'}
+            </Button>
+          </DialogActions>
+        </Dialog>
 
         {/* View Room Dialog */}
         <Dialog

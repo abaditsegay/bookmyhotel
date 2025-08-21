@@ -8,8 +8,8 @@ import {
   IconButton,
   Menu,
   MenuItem,
-  Avatar,
-  Chip
+  Chip,
+  Divider
 } from '@mui/material';
 import {
   AccountCircle,
@@ -77,14 +77,15 @@ export const SystemWideNavbar: React.FC = () => {
         {/* System-wide user indicator */}
         <Box sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
           <Chip 
-            label={isSystemAdmin ? "System Admin" : "Global Guest"}
-            color={isSystemAdmin ? "secondary" : "default"}
-            variant="outlined"
+            label={isSystemAdmin ? "System Administrator" : "Guest"}
+            color={isSystemAdmin ? "error" : "success"}
             size="small"
+            variant="outlined"
             sx={{ 
               color: 'white', 
-              borderColor: 'white',
-              bgcolor: isSystemAdmin ? 'rgba(255,255,255,0.1)' : 'transparent'
+              borderColor: 'rgba(255, 255, 255, 0.5)',
+              fontSize: '0.75rem',
+              fontWeight: 500,
             }}
           />
         </Box>
@@ -139,9 +140,7 @@ export const SystemWideNavbar: React.FC = () => {
             onClick={handleMenu}
             color="inherit"
           >
-            <Avatar sx={{ width: 32, height: 32, bgcolor: 'secondary.main' }}>
-              {user.firstName ? user.firstName[0].toUpperCase() : <AccountCircle />}
-            </Avatar>
+            <AccountCircle sx={{ fontSize: 32 }} />
           </IconButton>
           <Menu
             id="menu-appbar"
@@ -168,6 +167,7 @@ export const SystemWideNavbar: React.FC = () => {
                 System Settings
               </MenuItem>
             )}
+            <Divider />
             <MenuItem onClick={handleLogout}>
               <Logout sx={{ mr: 1 }} />
               Logout

@@ -21,7 +21,6 @@ import {
   People,
   TrendingUp,
   Settings,
-  AdminPanelSettings,
   Business
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
@@ -110,23 +109,6 @@ export const SystemDashboardPage: React.FC = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      {/* Header */}
-      <Box sx={{ mb: 4 }}>        
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <AdminPanelSettings sx={{ mr: 2, fontSize: 32, color: 'primary.main' }} />
-            <Typography variant="h6" color="text.primary" sx={{ fontWeight: 'bold' }}>
-              Welcome {user.firstName || user.email}
-            </Typography>
-          </Box>
-          <Box sx={{ textAlign: 'right' }}>
-            <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold' }}>
-              {isSystemAdmin ? 'System Administrator' : 'Global Guest'}
-            </Typography>
-          </Box>
-        </Box>
-      </Box>
-
       {/* Quick Actions Grid */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         {quickActions.map((action, index) => (
