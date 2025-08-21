@@ -2,7 +2,10 @@ package com.bookmyhotel.service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -517,5 +520,135 @@ public class FrontDeskService {
     private BookingResponse convertToBookingResponse(Reservation reservation) {
         // Delegate to BookingService for consistent conversion
         return bookingService.convertToBookingResponse(reservation);
+    }
+
+    /**
+     * Get rooms for front desk operations with filtering and pagination
+     */
+    public Page<Map<String, Object>> getRooms(Pageable pageable, String search, String roomType, String status) {
+        String tenantId = TenantContext.getTenantId();
+        if (tenantId == null || tenantId.trim().isEmpty()) {
+            throw new IllegalStateException("Tenant context is not set");
+        }
+        
+        // Get the hotel for this tenant
+        List<Hotel> hotels = hotelRepository.findByTenantId(tenantId);
+        if (hotels.isEmpty()) {
+            throw new ResourceNotFoundException("No hotel found for tenant: " + tenantId);
+        }
+        
+        Hotel hotel = hotels.get(0);
+        
+        // Build the query with filters
+        List<Room> allRooms = roomRepository.findByHotelId(hotel.getId());
+        
+        // Apply filters
+        List<Room> filteredRooms = allRooms.stream()
+            .filter(room -> {
+                boolean matches = true;
+                
+                // Search filter (room number)
+                if (search != null && !search.trim().isEmpty()) {
+                    matches = matches && room.getRoomNumber().toLowerCase().contains(search.toLowerCase());
+                }
+                
+                // Room type filter
+                if (roomType != null && !roomType.trim().isEmpty()) {
+                    matches = matches && room.getRoomType().toString().equals(roomType);
+                }
+                
+                // Status filter
+                if (status != null && !status.trim().isEmpty()) {
+                    matches = matches && room.getStatus().toString().equals(status);
+                }
+                
+                return matches;
+            })
+            .toList();
+        
+        // Convert to Map for JSON response
+        List<Map<String, Object>> roomMaps = filteredRooms.stream()
+            .map(this::convertRoomToMap)
+            .toList();
+        
+        // Apply pagination manually
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), roomMaps.size());
+        List<Map<String, Object>> pageContent = roomMaps.subList(start, end);
+        
+        return new PageImpl<>(pageContent, pageable, roomMaps.size());
+    }
+    
+    /**
+     * Update room status for housekeeping operations
+     */
+    public Map<String, Object> updateRoomStatus(Long roomId, String status, String notes) {
+        Room room = roomRepository.findById(roomId)
+            .orElseThrow(() -> new ResourceNotFoundException("Room not found with id: " + roomId));
+        
+        // Validate status
+        try {
+            RoomStatus roomStatus = RoomStatus.valueOf(status);
+            room.setStatus(roomStatus);
+            
+            // Update availability based on status
+            room.setIsAvailable(roomStatus == RoomStatus.AVAILABLE);
+            
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid room status: " + status);
+        }
+        
+        room.setUpdatedAt(LocalDateTime.now());
+        Room savedRoom = roomRepository.save(room);
+        
+        return convertRoomToMap(savedRoom);
+    }
+    
+    /**
+     * Get room by ID
+     */
+    public Map<String, Object> getRoomById(Long roomId) {
+        Room room = roomRepository.findById(roomId)
+            .orElseThrow(() -> new ResourceNotFoundException("Room not found with id: " + roomId));
+        
+        return convertRoomToMap(room);
+    }
+    
+    /**
+     * Convert Room entity to Map for JSON response
+     */
+    private Map<String, Object> convertRoomToMap(Room room) {
+        Map<String, Object> roomMap = new HashMap<>();
+        roomMap.put("id", room.getId());
+        roomMap.put("roomNumber", room.getRoomNumber());
+        roomMap.put("roomType", room.getRoomType().toString());
+        roomMap.put("status", room.getStatus().toString());
+        roomMap.put("capacity", room.getCapacity());
+        roomMap.put("pricePerNight", room.getPricePerNight());
+        roomMap.put("description", room.getDescription());
+        
+        // Get current guest if occupied
+        String currentGuest = null;
+        if (room.getStatus() == RoomStatus.OCCUPIED) {
+            // Find current reservation for this room
+            LocalDate today = LocalDate.now();
+            
+            // Use existing method to find overlapping reservations
+            List<Reservation> currentReservations = reservationRepository.findOverlappingReservations(
+                room.getId(), today, today.plusDays(1));
+            
+            // Filter for checked-in reservations
+            Optional<Reservation> checkedInReservation = currentReservations.stream()
+                .filter(r -> r.getStatus() == ReservationStatus.CHECKED_IN)
+                .findFirst();
+            
+            if (checkedInReservation.isPresent()) {
+                Reservation reservation = checkedInReservation.get();
+                currentGuest = reservation.getGuest().getFirstName() + " " + reservation.getGuest().getLastName();
+            }
+        }
+        
+        roomMap.put("currentGuest", currentGuest);
+        return roomMap;
     }
 }

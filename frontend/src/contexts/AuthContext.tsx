@@ -25,6 +25,7 @@ interface AuthContextType {
   loading: boolean;
   token: string | null;
   error: string | null;
+  isInitializing: boolean; // Add to interface
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   updateProfile: (updates: Partial<User>) => Promise<boolean>;
@@ -46,6 +47,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [isInitializing, setIsInitializing] = useState(true); // Add initialization state
 
   const clearError = () => setError(null);
 
@@ -68,6 +70,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
         localStorage.removeItem('auth_user');
       }
     }
+    
+    // Set initialization complete after checking localStorage
+    setIsInitializing(false);
   }, [onTokenChange]);
 
   const login = async (email: string, password: string): Promise<boolean> => {
@@ -215,6 +220,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
     loading,
     token,
     error,
+    isInitializing,
     login,
     logout,
     updateProfile,

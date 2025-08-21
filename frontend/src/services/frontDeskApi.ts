@@ -32,6 +32,33 @@ export interface FrontDeskStats {
   roomsUnderMaintenance: number;
 }
 
+export interface FrontDeskRoom {
+  id: number;
+  roomNumber: string;
+  roomType: string;
+  status: 'AVAILABLE' | 'OCCUPIED' | 'MAINTENANCE' | 'OUT_OF_ORDER';
+  currentGuest?: string;
+  capacity: number;
+  pricePerNight: number;
+  description?: string;
+  lastCleaned?: string;
+  notes?: string;
+}
+
+export interface RoomPage {
+  content: FrontDeskRoom[];
+  page: {
+    size: number;
+    number: number;
+    totalElements: number;
+    totalPages: number;
+  };
+  first: boolean;
+  last: boolean;
+  numberOfElements: number;
+  empty: boolean;
+}
+
 export interface BookingPage {
   content: FrontDeskBooking[];
   page: {
@@ -444,6 +471,134 @@ export const frontDeskApiService = {
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to fetch front desk statistics' 
+      };
+    }
+  },
+
+  /**
+   * Get all rooms with pagination and filters for front desk
+   */
+  getRooms: async (
+    token: string,
+    page: number = 0,
+    size: number = 10,
+    search?: string,
+    roomType?: string,
+    status?: string,
+    tenantId: string | null = 'default'
+  ): Promise<{ success: boolean; data?: RoomPage; message?: string }> => {
+    try {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        size: size.toString(),
+      });
+      
+      if (search && search.trim()) {
+        params.append('search', search.trim());
+      }
+      if (roomType) {
+        params.append('roomType', roomType);
+      }
+      if (status) {
+        params.append('status', status);
+      }
+
+      const response = await fetch(`${API_BASE_URL}/front-desk/rooms?${params.toString()}`, {
+        method: 'GET',
+        headers: getAuthHeaders(token, tenantId),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to fetch rooms');
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      console.error('Rooms fetch error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to fetch rooms' 
+      };
+    }
+  },
+
+  /**
+   * Update room status (for housekeeping operations)
+   */
+  updateRoomStatus: async (
+    token: string,
+    roomId: number,
+    status: string,
+    notes?: string,
+    tenantId: string | null = 'default'
+  ): Promise<{ success: boolean; data?: FrontDeskRoom; message?: string }> => {
+    try {
+      const params = new URLSearchParams({
+        status: status
+      });
+      
+      if (notes) {
+        params.append('notes', notes);
+      }
+
+      const response = await fetch(`${API_BASE_URL}/front-desk/rooms/${roomId}/status?${params.toString()}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(token, tenantId),
+      });
+
+      if (!response.ok) {
+        let errorMessage = 'Failed to update room status';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch (parseError) {
+          // If response isn't JSON, it might be HTML error page
+          const errorText = await response.text();
+          console.error('Non-JSON error response:', errorText);
+          errorMessage = `Server error (${response.status}): ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      console.error('Room status update error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to update room status' 
+      };
+    }
+  },
+
+  /**
+   * Get room details by ID
+   */
+  getRoomById: async (
+    token: string,
+    roomId: number,
+    tenantId: string | null = 'default'
+  ): Promise<{ success: boolean; data?: FrontDeskRoom; message?: string }> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/front-desk/rooms/${roomId}`, {
+        method: 'GET',
+        headers: getAuthHeaders(token, tenantId),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to fetch room details');
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      console.error('Room details fetch error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to fetch room details' 
       };
     }
   },

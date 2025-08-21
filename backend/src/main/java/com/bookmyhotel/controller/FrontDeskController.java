@@ -194,6 +194,47 @@ public class FrontDeskController {
     }
     
     /**
+     * Get rooms for front desk operations
+     */
+    @GetMapping("/rooms")
+    @PreAuthorize("hasRole('FRONT_DESK') or hasRole('HOTEL_ADMIN')")
+    public ResponseEntity<Page<Map<String, Object>>> getRooms(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String roomType,
+            @RequestParam(required = false) String status) {
+        
+        Pageable pageable = PageRequest.of(page, size, Sort.by("roomNumber").ascending());
+        Page<Map<String, Object>> rooms = frontDeskService.getRooms(pageable, search, roomType, status);
+        return ResponseEntity.ok(rooms);
+    }
+    
+    /**
+     * Update room status for housekeeping operations
+     */
+    @PutMapping("/rooms/{roomId}/status")
+    @PreAuthorize("hasRole('FRONT_DESK') or hasRole('HOTEL_ADMIN')")
+    public ResponseEntity<Map<String, Object>> updateRoomStatus(
+            @PathVariable Long roomId,
+            @RequestParam String status,
+            @RequestParam(required = false) String notes) {
+        
+        Map<String, Object> updatedRoom = frontDeskService.updateRoomStatus(roomId, status, notes);
+        return ResponseEntity.ok(updatedRoom);
+    }
+    
+    /**
+     * Get room details by ID
+     */
+    @GetMapping("/rooms/{roomId}")
+    @PreAuthorize("hasRole('FRONT_DESK') or hasRole('HOTEL_ADMIN')")
+    public ResponseEntity<Map<String, Object>> getRoomById(@PathVariable Long roomId) {
+        Map<String, Object> room = frontDeskService.getRoomById(roomId);
+        return ResponseEntity.ok(room);
+    }
+    
+    /**
      * Inner class for front desk statistics
      */
     public static class FrontDeskStats {

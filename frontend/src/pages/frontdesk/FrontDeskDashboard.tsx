@@ -9,16 +9,20 @@ import {
   Tabs,
   Tab,
   Paper,
-  Button
+  Button,
+  Snackbar,
+  Alert
 } from '@mui/material';
 import {
   Refresh as RefreshIcon,
-  PersonAdd as AddGuestIcon
+  PersonAdd as AddGuestIcon,
+  Hotel as RoomIcon
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { frontDeskApiService, FrontDeskStats } from '../../services/frontDeskApi';
 import BookingManagementTable from '../../components/booking/BookingManagementTable';
 import WalkInBookingModal from '../../components/booking/WalkInBookingModal';
+import FrontDeskRoomManagement from '../../components/room/FrontDeskRoomManagement';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -47,9 +51,16 @@ const FrontDeskDashboard: React.FC = () => {
   
   // Get initial tab from URL parameter, default to 0
   const initialTab = parseInt(searchParams.get('tab') || '0', 10);
-  const [activeTab, setActiveTab] = useState(Math.max(0, Math.min(initialTab, 1))); // Ensure tab is 0 or 1
+  const [activeTab, setActiveTab] = useState(Math.max(0, Math.min(initialTab, 3))); // Ensure tab is 0-3
   const [stats, setStats] = useState<FrontDeskStats | null>(null);
   const [walkInModalOpen, setWalkInModalOpen] = useState(false);
+  
+  // Snackbar state for success notifications
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success' as 'success' | 'error'
+  });
 
   // Debug modal state changes
   useEffect(() => {
@@ -85,15 +96,26 @@ const FrontDeskDashboard: React.FC = () => {
     loadStats();
   };
 
-  const handleWalkInSuccess = (bookingData: any) => {
+  const handleWalkInSuccess = async (bookingData: any) => {
     console.log('Walk-in booking created successfully:', bookingData);
     // Close modal first
     setWalkInModalOpen(false);
+    
+    // Show success message
+    setSnackbar({
+      open: true,
+      message: `Walk-in booking created successfully! Confirmation: ${bookingData.confirmationNumber}`,
+      severity: 'success'
+    });
+    
     // Refresh stats and possibly switch to booking management tab
     loadStats();
     // Optionally switch to booking management tab to see the new booking
     setActiveTab(1);
     setSearchParams({ tab: '1' });
+    
+    // Add a small delay to ensure the booking appears in the list
+    // The tab switch and currentTab dependency should trigger a refresh
   };
 
   const todayStats = stats || {
@@ -192,6 +214,7 @@ const FrontDeskDashboard: React.FC = () => {
         <Tabs value={activeTab} onChange={handleTabChange} aria-label="front desk tabs">
           <Tab label="Quick Actions" />
           <Tab label="Booking Management" />
+          <Tab label="Room Management" />
           <Tab label="Housekeeping" />
         </Tabs>
       </Paper>
@@ -210,6 +233,17 @@ const FrontDeskDashboard: React.FC = () => {
               onClick={handleRefresh}
             >
               Refresh
+            </Button>
+            <Button 
+              variant="outlined" 
+              startIcon={<RoomIcon />}
+              sx={{ mr: 2 }}
+              onClick={() => {
+                setActiveTab(2);
+                setSearchParams({ tab: '2' });
+              }}
+            >
+              Manage Rooms
             </Button>
             <Button 
               variant="contained" 
@@ -254,8 +288,13 @@ const FrontDeskDashboard: React.FC = () => {
         />
       </TabPanel>
 
-      {/* Housekeeping Tab */}
+      {/* Room Management Tab */}
       <TabPanel value={activeTab} index={2}>
+        <FrontDeskRoomManagement currentTab={activeTab} />
+      </TabPanel>
+
+      {/* Housekeeping Tab */}
+      <TabPanel value={activeTab} index={3}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
             Housekeeping Management
@@ -289,6 +328,22 @@ const FrontDeskDashboard: React.FC = () => {
         }}
         onSuccess={handleWalkInSuccess}
       />
+
+      {/* Success/Error Snackbar */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

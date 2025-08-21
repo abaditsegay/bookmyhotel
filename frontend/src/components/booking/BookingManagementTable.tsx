@@ -199,7 +199,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
 
     console.log('BookingManagementTable: useEffect triggered - loading bookings');
     loadData();
-  }, [page, size, token, mode, searchTerm, tenant]);
+  }, [page, size, token, mode, searchTerm, tenant, currentTab]);
 
   // Handle search with debounce - only reset page when search changes
   useEffect(() => {
