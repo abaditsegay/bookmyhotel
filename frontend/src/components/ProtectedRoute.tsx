@@ -1,5 +1,6 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
+import { Box, CircularProgress, Typography } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext';
 
 interface ProtectedRouteProps {
@@ -8,7 +9,28 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole }) => {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, isInitializing } = useAuth();
+
+  // Show loading state while checking authentication from localStorage
+  if (isInitializing) {
+    return (
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          flexDirection: 'column',
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          height: '100vh',
+          gap: 2 
+        }}
+      >
+        <CircularProgress />
+        <Typography variant="body2" color="text.secondary">
+          Loading...
+        </Typography>
+      </Box>
+    );
+  }
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;

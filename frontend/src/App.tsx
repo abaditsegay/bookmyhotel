@@ -44,7 +44,25 @@ import { SystemDashboardPage } from './pages/SystemDashboardPage';
 
 // Home Page Router Component - redirects based on user role
 const HomePageRouter: React.FC = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isInitializing } = useAuth();
+  
+  // Show loading state while authentication is being initialized
+  if (isInitializing) {
+    return (
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          flexDirection: 'column',
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          height: '50vh',
+          gap: 2 
+        }}
+      >
+        <Typography variant="h6">Loading...</Typography>
+      </Box>
+    );
+  }
   
   // If user is authenticated, check their roles
   if (isAuthenticated && user?.roles) {
