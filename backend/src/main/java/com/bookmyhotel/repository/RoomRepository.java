@@ -38,7 +38,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
         @Param("checkInDate") LocalDate checkInDate,
         @Param("checkOutDate") LocalDate checkOutDate,
         @Param("guests") Integer guests,
-        @Param("roomType") String roomType
+        @Param("roomType") com.bookmyhotel.entity.RoomType roomType
     );
     
     /**
@@ -49,7 +49,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     /**
      * Find rooms by hotel and room type
      */
-    List<Room> findByHotelIdAndRoomType(Long hotelId, String roomType);
+    List<Room> findByHotelIdAndRoomType(Long hotelId, com.bookmyhotel.entity.RoomType roomType);
     
     /**
      * Find first room by hotel and room type (for pricing lookup)
@@ -131,5 +131,89 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
         @Param("checkInDate") LocalDate checkInDate,
         @Param("checkOutDate") LocalDate checkOutDate,
         @Param("excludeReservationId") Long excludeReservationId
+    );
+    
+    /**
+     * Count available rooms by type for a hotel within date range
+     */
+    @Query("SELECT COUNT(r) FROM Room r " +
+           "WHERE r.hotel.id = :hotelId " +
+           "AND r.roomType = :roomType " +
+           "AND r.isAvailable = true " +
+           "AND r.capacity >= :guests " +
+           "AND r.id NOT IN (" +
+           "  SELECT res.room.id FROM Reservation res " +
+           "  WHERE res.status NOT IN ('CANCELLED', 'NO_SHOW') " +
+           "  AND NOT (res.checkOutDate <= :checkInDate OR res.checkInDate >= :checkOutDate)" +
+           ")")
+    long countAvailableRoomsByType(
+        @Param("hotelId") Long hotelId,
+        @Param("roomType") RoomType roomType,
+        @Param("checkInDate") LocalDate checkInDate,
+        @Param("checkOutDate") LocalDate checkOutDate,
+        @Param("guests") Integer guests
+    );
+    
+    /**
+     * Count total rooms by type for a hotel
+     */
+    @Query("SELECT COUNT(r) FROM Room r " +
+           "WHERE r.hotel.id = :hotelId " +
+           "AND r.roomType = :roomType " +
+           "AND r.isAvailable = true")
+    long countTotalRoomsByType(
+        @Param("hotelId") Long hotelId,
+        @Param("roomType") RoomType roomType
+    );
+    
+    /**
+     * Get distinct room types for a hotel
+     */
+    @Query("SELECT DISTINCT r.roomType FROM Room r " +
+           "WHERE r.hotel.id = :hotelId " +
+           "AND r.isAvailable = true")
+    List<RoomType> findDistinctRoomTypesByHotel(@Param("hotelId") Long hotelId);
+    
+    /**
+     * Find first available room of specific type for assignment
+     */
+    @Query("SELECT r FROM Room r " +
+           "WHERE r.hotel.id = :hotelId " +
+           "AND r.roomType = :roomType " +
+           "AND r.isAvailable = true " +
+           "AND r.status = 'AVAILABLE' " +
+           "AND r.id NOT IN (" +
+           "  SELECT res.room.id FROM Reservation res " +
+           "  WHERE res.status NOT IN ('CANCELLED', 'NO_SHOW') " +
+           "  AND NOT (res.checkOutDate <= :checkInDate OR res.checkInDate >= :checkOutDate)" +
+           ") " +
+           "ORDER BY r.roomNumber")
+    Optional<Room> findFirstAvailableRoomOfType(
+        @Param("hotelId") Long hotelId,
+        @Param("roomType") RoomType roomType,
+        @Param("checkInDate") LocalDate checkInDate,
+        @Param("checkOutDate") LocalDate checkOutDate
+    );
+
+    /**
+     * Find first available room of specific type for cross-tenant bookings (bypasses tenant filter)
+     */
+    @Query(value = "SELECT * FROM rooms r " +
+           "WHERE r.hotel_id = :hotelId " +
+           "AND r.room_type = :roomType " +
+           "AND r.is_available = true " +
+           "AND r.status = 'AVAILABLE' " +
+           "AND r.id NOT IN (" +
+           "  SELECT res.room_id FROM reservations res " +
+           "  WHERE res.status NOT IN ('CANCELLED', 'NO_SHOW') " +
+           "  AND NOT (res.check_out_date <= :checkInDate OR res.check_in_date >= :checkOutDate)" +
+           ") " +
+           "ORDER BY r.room_number " +
+           "LIMIT 1", nativeQuery = true)
+    Optional<Room> findFirstAvailableRoomOfTypePublic(
+        @Param("hotelId") Long hotelId,
+        @Param("roomType") String roomType,
+        @Param("checkInDate") LocalDate checkInDate,
+        @Param("checkOutDate") LocalDate checkOutDate
     );
 }

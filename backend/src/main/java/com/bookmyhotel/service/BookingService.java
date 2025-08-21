@@ -21,12 +21,14 @@ import com.bookmyhotel.dto.BookingModificationRequest;
 import com.bookmyhotel.dto.BookingModificationResponse;
 import com.bookmyhotel.dto.BookingRequest;
 import com.bookmyhotel.dto.BookingResponse;
+import com.bookmyhotel.dto.RoomTypeBookingRequest;
 import com.bookmyhotel.entity.GuestInfo;
+import com.bookmyhotel.entity.Hotel;
 import com.bookmyhotel.entity.Reservation;
 import com.bookmyhotel.entity.ReservationStatus;
 import com.bookmyhotel.entity.Room;
-import com.bookmyhotel.entity.RoomType;
 import com.bookmyhotel.entity.User;
+import com.bookmyhotel.entity.RoomType;
 import com.bookmyhotel.exception.BookingException;
 import com.bookmyhotel.exception.ResourceNotFoundException;
 import com.bookmyhotel.repository.ReservationRepository;
@@ -204,6 +206,217 @@ public class BookingService {
     }
     
     /**
+     * Create a new booking by room type using BookingRequest (new approach)
+     */
+    public BookingResponse createBookingByRoomType(BookingRequest request, String userEmail) {
+        System.err.println("🎯🎯🎯 BOOKING SERVICE: createBookingByRoomType called with userEmail: " + userEmail + 
+                          ", hotelId: " + request.getHotelId() + ", roomType: " + request.getRoomType() + " 🎯🎯🎯");
+        try {
+            // Validate booking request for room type booking
+            validateBookingRequestForRoomType(request, userEmail == null);
+            
+            // Find an available room of the requested type using public method (bypasses tenant filter)
+            System.err.println("🔍 About to call findFirstAvailableRoomOfTypePublic with hotelId: " + 
+                              request.getHotelId() + ", roomType: " + request.getRoomType());
+            Room room = roomRepository.findFirstAvailableRoomOfTypePublic(
+                request.getHotelId(),
+                request.getRoomType(), // Use string directly for native query
+                request.getCheckInDate(),
+                request.getCheckOutDate()
+            ).orElseThrow(() -> new BookingException("No available rooms of type " + 
+                        request.getRoomType() + " for the selected dates"));
+            System.err.println("✅ Found room: " + room.getId() + " - " + room.getRoomNumber());
+            
+            // Get the hotel to determine the correct tenant context
+            Hotel hotel = room.getHotel();
+            String hotelTenantId = hotel.getTenantId();
+            
+            // Set the tenant context to the hotel's tenant for the rest of the booking process
+            com.bookmyhotel.tenant.TenantContext.setTenantId(hotelTenantId);
+            System.err.println("🏢 Set tenant context to hotel's tenant: " + hotelTenantId);
+            
+            // Get or create user (authenticated or guest)
+            User user = null;
+            if (userEmail != null) {
+                // Authenticated user - get existing user
+                user = userRepository.findByEmail(userEmail)
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userEmail));
+            }
+            // For anonymous guests, we no longer create User records
+
+            // Calculate total amount
+            BigDecimal totalAmount = calculateTotalAmount(room, request);
+
+            // Create reservation with guest information
+            Reservation reservation = createReservation(request, room, user, totalAmount);
+            
+            // Process payment if payment method provided
+            if (request.getPaymentMethodId() != null) {
+                if ("pay_at_frontdesk".equals(request.getPaymentMethodId())) {
+                    // For pay at front desk, mark reservation as confirmed with payment pending
+                    reservation.setStatus(ReservationStatus.CONFIRMED);
+                    // No payment intent ID set, so payment status will be "PENDING"
+                } else {
+                    // Handle other payment methods (e.g., credit card via Stripe)
+                    try {
+                        String paymentIntentId = processPayment(totalAmount, request.getPaymentMethodId());
+                        reservation.setPaymentIntentId(paymentIntentId);
+                        reservation.setStatus(ReservationStatus.CONFIRMED);
+                    } catch (StripeException e) {
+                        // Even if payment fails, confirm the booking but mark payment as failed
+                        reservation.setStatus(ReservationStatus.CONFIRMED);
+                        logger.warn("Payment processing failed for reservation, but booking confirmed: {}", e.getMessage());
+                        // Payment status will be determined by the absence of payment intent ID
+                    }
+                }
+            } else {
+                // No payment method provided - still confirm the booking
+                reservation.setStatus(ReservationStatus.CONFIRMED);
+            }
+            
+            // Generate a temporary confirmation number before first save
+            // We'll update it with the actual ID-based number after save
+            String tempConfirmationNumber = "TEMP" + String.format("%08d", (int)(System.currentTimeMillis() % 100000000));
+            reservation.setConfirmationNumber(tempConfirmationNumber);
+            
+            // Save reservation
+            reservation = reservationRepository.save(reservation);
+            
+            // Generate and set final confirmation number using the actual ID
+            String confirmationNumber = generateConfirmationNumber(reservation.getId());
+            reservation.setConfirmationNumber(confirmationNumber);
+            reservation = reservationRepository.save(reservation);
+            
+            // Convert to response DTO first (before email)
+            BookingResponse bookingResponse = convertToBookingResponse(reservation);
+            
+            // Generate management URL for anonymous guests
+            if (userEmail == null) {
+                String managementUrl = bookingTokenService.generateManagementUrl(
+                    reservation.getId(), 
+                    reservation.getGuestInfo().getEmail(), 
+                    frontendUrl
+                );
+                bookingResponse.setManagementUrl(managementUrl);
+            }
+            
+            // Send booking confirmation email automatically (separate transaction)
+            try {
+                String emailAddress = user != null ? user.getEmail() : reservation.getGuestInfo().getEmail();
+                emailService.sendBookingConfirmationEmail(bookingResponse, emailAddress, true);
+            } catch (Exception e) {
+                // Log email sending failure but don't fail the booking
+                System.err.println("Failed to send booking confirmation email: " + e.getMessage());
+                e.printStackTrace();
+            }
+            
+            return bookingResponse;
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+    
+    /**
+     * Create a new booking using room type (new approach)
+     */
+    public BookingResponse createRoomTypeBooking(RoomTypeBookingRequest request, String userEmail) {
+        System.err.println("🎯🎯🎯 BOOKING SERVICE: createRoomTypeBooking called with userEmail: " + userEmail + 
+                          ", hotelId: " + request.getHotelId() + ", roomType: " + request.getRoomType() + " 🎯🎯🎯");
+        try {
+            // Validate booking request
+            validateRoomTypeBookingRequest(request, userEmail == null);
+            
+            // Find an available room of the requested type
+            Room room = roomRepository.findFirstAvailableRoomOfType(
+                request.getHotelId(),
+                request.getRoomType(),
+                request.getCheckInDate(),
+                request.getCheckOutDate()
+            ).orElseThrow(() -> new BookingException("No available rooms of type " + 
+                        request.getRoomType() + " for the selected dates"));
+            
+            // Get or create user (authenticated or guest)
+            User user = null;
+            if (userEmail != null) {
+                // Authenticated user - get existing user
+                user = userRepository.findByEmail(userEmail)
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userEmail));
+            }
+            // For anonymous guests, we no longer create User records
+
+            // Calculate total amount
+            BigDecimal totalAmount = calculateTotalAmountForRoomType(room, request);
+
+            // Create reservation with guest information
+            Reservation reservation = createReservationFromRoomType(request, room, user, totalAmount);
+            
+            // Process payment if payment method provided
+            if (request.getPaymentMethodId() != null) {
+                if ("pay_at_frontdesk".equals(request.getPaymentMethodId())) {
+                    // For pay at front desk, mark reservation as confirmed with payment pending
+                    reservation.setStatus(ReservationStatus.CONFIRMED);
+                    // No payment intent ID set, so payment status will be "PENDING"
+                } else {
+                    // Handle other payment methods (e.g., credit card via Stripe)
+                    try {
+                        String paymentIntentId = processPayment(totalAmount, request.getPaymentMethodId());
+                        reservation.setPaymentIntentId(paymentIntentId);
+                        reservation.setStatus(ReservationStatus.CONFIRMED);
+                    } catch (StripeException e) {
+                        // Even if payment fails, confirm the booking but mark payment as failed
+                        reservation.setStatus(ReservationStatus.CONFIRMED);
+                        logger.warn("Payment processing failed for reservation, but booking confirmed: {}", e.getMessage());
+                        // Payment status will be determined by the absence of payment intent ID
+                    }
+                }
+            } else {
+                // No payment method provided - still confirm the booking
+                reservation.setStatus(ReservationStatus.CONFIRMED);
+            }
+            
+            // Generate a temporary confirmation number before first save
+            // We'll update it with the actual ID-based number after save
+            String tempConfirmationNumber = "TEMP" + String.format("%08d", (int)(System.currentTimeMillis() % 100000000));
+            reservation.setConfirmationNumber(tempConfirmationNumber);
+            
+            // Save reservation
+            reservation = reservationRepository.save(reservation);
+            
+            // Generate and set final confirmation number using the actual ID
+            String confirmationNumber = generateConfirmationNumber(reservation.getId());
+            reservation.setConfirmationNumber(confirmationNumber);
+            reservation = reservationRepository.save(reservation);
+            
+            // Convert to response DTO first (before email)
+            BookingResponse bookingResponse = convertToBookingResponse(reservation);
+            
+            // Generate management URL for anonymous guests
+            if (userEmail == null) {
+                String managementUrl = bookingTokenService.generateManagementUrl(
+                    reservation.getId(), 
+                    reservation.getGuestInfo().getEmail(), 
+                    frontendUrl
+                );
+                bookingResponse.setManagementUrl(managementUrl);
+            }
+            
+            // Send booking confirmation email automatically (separate transaction)
+            try {
+                String emailAddress = user != null ? user.getEmail() : reservation.getGuestInfo().getEmail();
+                emailService.sendBookingConfirmationEmail(bookingResponse, emailAddress, true);
+            } catch (Exception e) {
+                // Log email sending failure but don't fail the booking
+                System.err.println("Failed to send booking confirmation email: " + e.getMessage());
+                e.printStackTrace();
+            }
+            
+            return bookingResponse;
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+    
+    /**
      * Get booking details
      */
     @Transactional(readOnly = true)
@@ -294,6 +507,42 @@ public class BookingService {
     }
     
     /**
+     * Validate booking request for room type booking
+     */
+    private void validateBookingRequestForRoomType(BookingRequest request, boolean isAnonymousBooking) {
+        if (request.getCheckInDate().isAfter(request.getCheckOutDate())) {
+            throw new BookingException("Check-in date must be before check-out date");
+        }
+        
+        if (request.getCheckInDate().isBefore(LocalDateTime.now().toLocalDate())) {
+            throw new BookingException("Check-in date cannot be in the past");
+        }
+        
+        if (request.getGuests() == null || request.getGuests() <= 0) {
+            throw new BookingException("Number of guests must be greater than 0");
+        }
+        
+        // For room type booking, hotelId and roomType are required
+        if (request.getHotelId() == null) {
+            throw new BookingException("Hotel ID is required for room type booking");
+        }
+        
+        if (request.getRoomType() == null || request.getRoomType().trim().isEmpty()) {
+            throw new BookingException("Room type is required for room type booking");
+        }
+        
+        // For anonymous bookings, guest information is required
+        if (isAnonymousBooking) {
+            if (request.getGuestName() == null || request.getGuestName().trim().isEmpty()) {
+                throw new BookingException("Guest name is required for anonymous bookings");
+            }
+            if (request.getGuestEmail() == null || request.getGuestEmail().trim().isEmpty()) {
+                throw new BookingException("Guest email is required for anonymous bookings");
+            }
+        }
+    }
+    
+    /**
      * Calculate total amount for the booking
      */
     private BigDecimal calculateTotalAmount(Room room, BookingRequest request) {
@@ -302,9 +551,73 @@ public class BookingService {
     }
     
     /**
+     * Validate room type booking request
+     */
+    private void validateRoomTypeBookingRequest(RoomTypeBookingRequest request, boolean isAnonymousBooking) {
+        if (request.getCheckInDate().isAfter(request.getCheckOutDate())) {
+            throw new BookingException("Check-in date must be before check-out date");
+        }
+        
+        if (request.getCheckInDate().isBefore(LocalDateTime.now().toLocalDate())) {
+            throw new BookingException("Check-in date cannot be in the past");
+        }
+        
+        if (request.getGuests() == null || request.getGuests() <= 0) {
+            throw new BookingException("Number of guests must be greater than 0");
+        }
+        
+        // For anonymous bookings, guest information is required
+        if (isAnonymousBooking) {
+            if (request.getGuestName() == null || request.getGuestName().trim().isEmpty()) {
+                throw new BookingException("Guest name is required for anonymous bookings");
+            }
+            if (request.getGuestEmail() == null || request.getGuestEmail().trim().isEmpty()) {
+                throw new BookingException("Guest email is required for anonymous bookings");
+            }
+        }
+    }
+    
+    /**
+     * Calculate total amount for room type booking
+     */
+    private BigDecimal calculateTotalAmountForRoomType(Room room, RoomTypeBookingRequest request) {
+        long numberOfNights = ChronoUnit.DAYS.between(request.getCheckInDate(), request.getCheckOutDate());
+        return room.getPricePerNight().multiply(BigDecimal.valueOf(numberOfNights));
+    }
+    
+    /**
      * Create reservation entity
      */
     private Reservation createReservation(BookingRequest request, Room room, User user, BigDecimal totalAmount) {
+        Reservation reservation = new Reservation();
+        reservation.setRoom(room);
+        
+        // Set user only for authenticated users (will be null for anonymous guests)
+        reservation.setGuest(user);
+        
+        // Always set guest information (for both registered and anonymous guests)
+        GuestInfo guestInfo = new GuestInfo(
+            request.getGuestName(),
+            request.getGuestEmail(), 
+            request.getGuestPhone()
+        );
+        reservation.setGuestInfo(guestInfo);
+        
+        reservation.setCheckInDate(request.getCheckInDate());
+        reservation.setCheckOutDate(request.getCheckOutDate());
+        reservation.setTotalAmount(totalAmount);
+        reservation.setSpecialRequests(request.getSpecialRequests());
+        reservation.setStatus(ReservationStatus.CONFIRMED); // Immediate confirmation
+        reservation.setTenantId(room.getHotel().getTenantId()); // Set tenant_id from the hotel so hotel admins can see the booking
+        reservation.setPaymentMethod(request.getPaymentMethodId()); // Store the payment method
+        
+        return reservation;
+    }
+    
+    /**
+     * Create reservation entity from room type booking
+     */
+    private Reservation createReservationFromRoomType(RoomTypeBookingRequest request, Room room, User user, BigDecimal totalAmount) {
         Reservation reservation = new Reservation();
         reservation.setRoom(room);
         
@@ -588,7 +901,7 @@ public class BookingService {
                     // Find an available room of the requested type in the same hotel
                     List<Room> availableRooms = roomRepository.findByHotelIdAndRoomType(
                         reservation.getRoom().getHotel().getId(), 
-                        request.getNewRoomType().trim().toUpperCase()
+                        requestedRoomType
                     );
                     
                     Room newRoom = null;

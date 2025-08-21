@@ -21,13 +21,20 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.bookmyhotel.dto.BookingResponse;
+import com.bookmyhotel.dto.BookingModificationRequest;
+import com.bookmyhotel.dto.BookingModificationResponse;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 import com.bookmyhotel.dto.HotelDTO;
 import com.bookmyhotel.dto.RoomDTO;
 import com.bookmyhotel.dto.UserDTO;
+import com.bookmyhotel.entity.GuestInfo;
 import com.bookmyhotel.entity.Hotel;
 import com.bookmyhotel.entity.Reservation;
 import com.bookmyhotel.entity.ReservationStatus;
 import com.bookmyhotel.entity.Room;
+import com.bookmyhotel.entity.RoomStatus;
 import com.bookmyhotel.entity.RoomType;
 import com.bookmyhotel.entity.User;
 import com.bookmyhotel.entity.UserRole;
@@ -46,6 +53,9 @@ public class HotelAdminService {
     @Autowired
     private UserRepository userRepository;
 
+    @PersistenceContext
+    private EntityManager entityManager;
+
     @Autowired
     private HotelRepository hotelRepository;
 
@@ -54,6 +64,9 @@ public class HotelAdminService {
 
     @Autowired
     private ReservationRepository reservationRepository;
+
+    @Autowired
+    private BookingService bookingService;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -315,8 +328,8 @@ public class HotelAdminService {
         
         Pageable pageable = PageRequest.of(page, size);
         
-        // Get all rooms for this hotel
-        List<Room> allRooms = roomRepository.findByHotel(hotel);
+        // Get all rooms for this hotel using hotel ID instead of hotel entity
+        List<Room> allRooms = roomRepository.findByHotelId(hotel.getId());
         
         // Apply filters
         List<Room> filteredRooms = allRooms.stream()
@@ -475,6 +488,28 @@ public class HotelAdminService {
             throw new RuntimeException("Room does not belong to your hotel");
         }
         
+        // Business rule: Cannot make a room available if it's in certain statuses
+        if (available && (room.getStatus() == RoomStatus.OUT_OF_ORDER || 
+                         room.getStatus() == RoomStatus.MAINTENANCE)) {
+            throw new RuntimeException("Cannot make room available while it's " + 
+                                     room.getStatus().toString().toLowerCase().replace("_", " "));
+        }
+        
+        // Business rule: Cannot make a room unavailable if it has active bookings
+        if (!available) {
+            LocalDate today = LocalDate.now();
+            boolean hasActiveBookings = room.getReservations().stream()
+                .anyMatch(reservation -> 
+                    (reservation.getStatus() == ReservationStatus.CONFIRMED || 
+                     reservation.getStatus() == ReservationStatus.CHECKED_IN) &&
+                    !reservation.getCheckInDate().isAfter(today) &&
+                    !reservation.getCheckOutDate().isBefore(today));
+            
+            if (hasActiveBookings) {
+                throw new RuntimeException("Cannot make room unavailable - it has active bookings");
+            }
+        }
+        
         room.setIsAvailable(available);
         room.setUpdatedAt(LocalDateTime.now());
         
@@ -496,7 +531,7 @@ public class HotelAdminService {
         Map<String, Object> stats = new HashMap<>();
         
         // Room statistics
-        List<Room> rooms = roomRepository.findByHotel(hotel);
+        List<Room> rooms = roomRepository.findByHotelId(hotel.getId());
         stats.put("totalRooms", rooms.size());
         stats.put("availableRooms", rooms.stream().mapToInt(r -> r.getIsAvailable() ? 1 : 0).sum());
         stats.put("occupiedRooms", rooms.stream().mapToInt(r -> r.getIsAvailable() ? 0 : 1).sum());
@@ -529,7 +564,7 @@ public class HotelAdminService {
 
     // Helper methods
     private User getUserByEmail(String email) {
-        return userRepository.findByEmail(email)
+        return userRepository.findByEmailWithHotel(email)
             .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
@@ -588,6 +623,7 @@ public class HotelAdminService {
         boolean isCurrentlyBooked = roomRepository.isRoomCurrentlyBooked(room.getId());
         // Room is available if it's marked as available AND not currently booked
         dto.setIsAvailable(room.getIsAvailable() && !isCurrentlyBooked);
+        dto.setStatus(room.getStatus());
         
         dto.setCreatedAt(room.getCreatedAt());
         dto.setUpdatedAt(room.getUpdatedAt());
@@ -621,13 +657,31 @@ public class HotelAdminService {
         if (search != null && !search.trim().isEmpty()) {
             String searchLower = search.toLowerCase();
             filteredReservations = allReservations.stream()
-                .filter(reservation -> 
-                    reservation.getGuest().getFirstName().toLowerCase().contains(searchLower) ||
-                    reservation.getGuest().getLastName().toLowerCase().contains(searchLower) ||
-                    reservation.getGuest().getEmail().toLowerCase().contains(searchLower) ||
-                    reservation.getRoom().getRoomNumber().toLowerCase().contains(searchLower) ||
-                    reservation.getStatus().name().toLowerCase().contains(searchLower)
-                )
+                .filter(reservation -> {
+                    // Handle both registered users and guest bookings
+                    String firstName = "", lastName = "", email = "";
+                    
+                    if (reservation.getGuest() != null) {
+                        // Registered user booking
+                        firstName = reservation.getGuest().getFirstName();
+                        lastName = reservation.getGuest().getLastName();
+                        email = reservation.getGuest().getEmail();
+                    } else if (reservation.getGuestInfo() != null) {
+                        // Guest booking - use the combined name
+                        String fullName = reservation.getGuestInfo().getName() != null ? 
+                                        reservation.getGuestInfo().getName() : "";
+                        firstName = fullName; // Use full name for first name field
+                        lastName = ""; // Leave last name empty since we have a combined name
+                        email = reservation.getGuestInfo().getEmail() != null ? 
+                               reservation.getGuestInfo().getEmail() : "";
+                    }
+                    
+                    return firstName.toLowerCase().contains(searchLower) ||
+                           lastName.toLowerCase().contains(searchLower) ||
+                           email.toLowerCase().contains(searchLower) ||
+                           reservation.getRoom().getRoomNumber().toLowerCase().contains(searchLower) ||
+                           reservation.getStatus().name().toLowerCase().contains(searchLower);
+                })
                 .collect(Collectors.toList());
         }
 
@@ -728,14 +782,84 @@ public class HotelAdminService {
     /**
      * Update booking status
      */
+    @Transactional
     public BookingResponse updateBookingStatus(Long reservationId, ReservationStatus newStatus) {
+        System.out.println("DEBUG: Updating booking status - reservationId: " + reservationId + ", newStatus: " + newStatus);
+        
         Reservation reservation = reservationRepository.findById(reservationId)
-            .orElseThrow(() -> new RuntimeException("Reservation not found with id: " + reservationId));
+            .orElseThrow(() -> new RuntimeException("Reservation not found"));
+        
+        System.out.println("DEBUG: Found reservation: " + reservation.getId() + ", current status: " + reservation.getStatus());
+        System.out.println("DEBUG: Tenant ID: " + reservation.getTenantId());
         
         reservation.setStatus(newStatus);
+        System.out.println("DEBUG: Set new status: " + newStatus);
+        
+        // Fix guestInfo validation issue for guest users
+        System.out.println("DEBUG: Guest object: " + reservation.getGuest());
+        System.out.println("DEBUG: GuestInfo object: " + reservation.getGuestInfo());
+        
+        if (reservation.getGuestInfo() != null) {
+            GuestInfo guestInfo = reservation.getGuestInfo();
+            System.out.println("DEBUG: Current guestInfo name: " + guestInfo.getName());
+            
+            if (guestInfo.getName() == null || guestInfo.getName().trim().isEmpty()) {
+                // Use guest_id from reservation to fetch guest information
+                if (reservation.getGuest() != null) {
+                    System.out.println("DEBUG: Fetching guest user with ID: " + reservation.getGuest().getId());
+                    User guest = fetchGuestUserById(reservation.getGuest().getId());
+                    if (guest != null) {
+                        guestInfo.setName(guest.getFirstName() + " " + guest.getLastName());
+                        System.out.println("DEBUG: Fixed guestInfo name: " + guestInfo.getName());
+                    } else {
+                        System.out.println("DEBUG: Failed to fetch guest user");
+                    }
+                } else {
+                    System.out.println("DEBUG: reservation.getGuest() is null, cannot fetch guest info");
+                }
+            } else {
+                System.out.println("DEBUG: guestInfo name already exists: " + guestInfo.getName());
+            }
+        } else {
+            System.out.println("DEBUG: reservation.getGuestInfo() is null");
+        }
+        
+        System.out.println("DEBUG: About to save reservation...");
         reservation = reservationRepository.save(reservation);
+        System.out.println("DEBUG: Reservation saved successfully");
         
         return convertToBookingResponse(reservation);
+    }
+
+    /**
+     * Modify booking (admin version)
+     */
+    @Transactional
+    public BookingModificationResponse modifyBooking(Long reservationId, BookingModificationRequest request, Long hotelId) {
+        try {
+            // Find the reservation
+            Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new RuntimeException("Booking not found with id: " + reservationId));
+            
+            // Verify the reservation belongs to the specified hotel
+            if (!reservation.getRoom().getHotel().getId().equals(hotelId)) {
+                return new BookingModificationResponse(false, "Booking does not belong to your hotel");
+            }
+            
+            // Set the confirmation number and guest email from the existing reservation
+            request.setConfirmationNumber(reservation.getConfirmationNumber());
+            if (reservation.getGuest() != null) {
+                request.setGuestEmail(reservation.getGuest().getEmail());
+            } else if (reservation.getGuestInfo() != null) {
+                request.setGuestEmail(reservation.getGuestInfo().getEmail());
+            }
+            
+            // Use the existing booking service modification logic
+            return bookingService.modifyBooking(request);
+            
+        } catch (Exception e) {
+            return new BookingModificationResponse(false, "Failed to modify booking: " + e.getMessage());
+        }
     }
 
     /**
@@ -762,6 +886,37 @@ public class HotelAdminService {
     /**
      * Convert Reservation to BookingResponse DTO
      */
+    /**
+     * Fetch guest user without tenant filtering (guests have tenant_id = NULL)
+     */
+    private User fetchGuestUserById(Long guestId) {
+        if (guestId == null) {
+            return null;
+        }
+        
+        try {
+            // Use native query to bypass tenant filtering for guest users
+            Query query = entityManager.createNativeQuery(
+                "SELECT id, email, first_name, last_name, phone, tenant_id FROM users WHERE id = ? AND tenant_id IS NULL"
+            );
+            query.setParameter(1, guestId);
+            Object[] result = (Object[]) query.getSingleResult();
+            
+            // Manually create User object to avoid validation issues
+            User guestUser = new User();
+            guestUser.setId(((Number) result[0]).longValue());
+            guestUser.setEmail((String) result[1]);
+            guestUser.setFirstName((String) result[2]);
+            guestUser.setLastName((String) result[3]);
+            guestUser.setPhone((String) result[4]);
+            
+            return guestUser;
+        } catch (Exception e) {
+            System.out.println("DEBUG: Failed to fetch guest user with ID " + guestId + ": " + e.getMessage());
+            return null;
+        }
+    }
+
     private BookingResponse convertToBookingResponse(Reservation reservation) {
         BookingResponse response = new BookingResponse();
         response.setReservationId(reservation.getId());
@@ -781,10 +936,28 @@ public class HotelAdminService {
         response.setHotelName(room.getHotel().getName());
         response.setHotelAddress(room.getHotel().getAddress());
         
-        // Guest details
-        User guest = reservation.getGuest();
-        response.setGuestName(guest.getFirstName() + " " + guest.getLastName());
-        response.setGuestEmail(guest.getEmail());
+        // Guest details - handle both registered users and guest bookings
+        if (reservation.getGuest() != null) {
+            // Registered user booking - fetch guest safely without tenant filtering
+            User guest = fetchGuestUserById(reservation.getGuest().getId());
+            if (guest != null) {
+                response.setGuestName(guest.getFirstName() + " " + guest.getLastName());
+                response.setGuestEmail(guest.getEmail());
+            } else {
+                response.setGuestName("Guest User");
+                response.setGuestEmail("N/A");
+            }
+        } else if (reservation.getGuestInfo() != null) {
+            // Guest booking (anonymous)
+            response.setGuestName(reservation.getGuestInfo().getName() != null ? 
+                                reservation.getGuestInfo().getName() : "Unknown Guest");
+            response.setGuestEmail(reservation.getGuestInfo().getEmail() != null ? 
+                                 reservation.getGuestInfo().getEmail() : "N/A");
+        } else {
+            // Fallback for incomplete data
+            response.setGuestName("Unknown Guest");
+            response.setGuestEmail("N/A");
+        }
         
         // Payment status
         if (reservation.getPaymentIntentId() != null) {

@@ -49,7 +49,7 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
         @Param("checkInDate") LocalDate checkInDate,
         @Param("checkOutDate") LocalDate checkOutDate,
         @Param("guests") Integer guests,
-        @Param("roomType") String roomType,
+        @Param("roomType") com.bookmyhotel.entity.RoomType roomType,
         @Param("minPrice") Double minPrice,
         @Param("maxPrice") Double maxPrice
     );

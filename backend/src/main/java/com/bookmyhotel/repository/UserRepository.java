@@ -26,6 +26,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
     
     /**
+     * Find user by email with hotel eagerly loaded
+     */
+    @Query("SELECT u FROM User u LEFT JOIN FETCH u.hotel WHERE u.email = :email")
+    Optional<User> findByEmailWithHotel(@Param("email") String email);
+    
+    /**
      * Find user by email (public search across all tenants)
      */
     @Query(value = "SELECT * FROM users WHERE email = ?1", nativeQuery = true)

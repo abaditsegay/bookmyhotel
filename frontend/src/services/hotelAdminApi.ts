@@ -48,6 +48,7 @@ export interface RoomResponse {
   capacity: number;
   description?: string;
   isAvailable: boolean;
+  status: string;
   hotelId: number;
   hotelName: string;
   createdAt: string;
@@ -226,6 +227,49 @@ export const hotelAdminApi = {
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to update booking status' 
+      };
+    }
+  },
+
+  // Modify booking details (admin version)
+  modifyBooking: async (
+    token: string,
+    reservationId: number,
+    modificationRequest: {
+      confirmationNumber: string;
+      guestEmail: string;
+      newCheckInDate?: string;
+      newCheckOutDate?: string;
+      newRoomId?: number;
+      newRoomType?: string;
+      guestName?: string;
+      guestPhone?: string;
+      newSpecialRequests?: string;
+      reason?: string;
+    }
+  ): Promise<{ success: boolean; data?: any; message?: string }> => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/hotel-admin/bookings/${reservationId}`,
+        {
+          method: 'PUT',
+          headers: getAuthHeaders(token),
+          body: JSON.stringify(modificationRequest),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to modify booking');
+      }
+
+      const data = await response.json();
+      return { success: true, data, message: data.message };
+    } catch (error) {
+      console.error('Booking modification error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to modify booking' 
       };
     }
   },

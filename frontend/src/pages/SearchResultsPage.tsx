@@ -71,15 +71,29 @@ const SearchResultsPage: React.FC = () => {
     const room = hotel.availableRooms.find((r: any) => r.id === roomId);
     if (!room) return;
 
-    if (asGuest || !isAuthenticated) {
-      // For guest bookings or non-authenticated users, navigate directly to booking page
+    if (asGuest) {
+      // For explicit guest bookings, navigate directly to booking page
       navigate('/booking', {
         state: {
           room,
           hotelName: hotel.name,
           hotelId: hotelId,
           searchRequest: searchRequest,
-          asGuest: true // Always set as guest for non-authenticated bookings
+          asGuest: true
+        }
+      });
+    } else if (!isAuthenticated) {
+      // For "Sign in to Book" when user is not authenticated, redirect to login page
+      navigate('/login', {
+        state: {
+          redirectTo: '/booking',
+          bookingData: {
+            room,
+            hotelName: hotel.name,
+            hotelId: hotelId,
+            searchRequest: searchRequest,
+            asGuest: false
+          }
         }
       });
     } else {
@@ -87,6 +101,53 @@ const SearchResultsPage: React.FC = () => {
       navigate('/booking', {
         state: {
           room,
+          hotelName: hotel.name,
+          hotelId: hotelId,
+          searchRequest: searchRequest,
+          asGuest: false // Authenticated user booking
+        }
+      });
+    }
+  };
+
+  const handleBookRoomType = async (hotelId: number, roomType: string, asGuest: boolean = false) => {
+    // Get hotel details for booking
+    const hotel = hotels.find((h: HotelSearchResult) => h.id === hotelId);
+    if (!hotel) return;
+    
+    const roomTypeInfo = hotel.roomTypeAvailability?.find((rt: any) => rt.roomType === roomType);
+    if (!roomTypeInfo) return;
+
+    if (asGuest) {
+      // For explicit guest bookings, navigate directly to booking page
+      navigate('/booking', {
+        state: {
+          roomType: roomTypeInfo,
+          hotelName: hotel.name,
+          hotelId: hotelId,
+          searchRequest: searchRequest,
+          asGuest: true
+        }
+      });
+    } else if (!isAuthenticated) {
+      // For "Sign in to Book" when user is not authenticated, redirect to login page
+      navigate('/login', {
+        state: {
+          redirectTo: '/booking',
+          bookingData: {
+            roomType: roomTypeInfo,
+            hotelName: hotel.name,
+            hotelId: hotelId,
+            searchRequest: searchRequest,
+            asGuest: false
+          }
+        }
+      });
+    } else {
+      // For authenticated users who want to book with their account
+      navigate('/booking', {
+        state: {
+          roomType: roomTypeInfo,
           hotelName: hotel.name,
           hotelId: hotelId,
           searchRequest: searchRequest,
@@ -209,6 +270,7 @@ const SearchResultsPage: React.FC = () => {
               key={hotel.id}
               hotel={hotel}
               onBookRoom={handleBookRoom}
+              onBookRoomType={handleBookRoomType}
               defaultExpanded={index === 0} // Expand first hotel by default
             />
           ))}

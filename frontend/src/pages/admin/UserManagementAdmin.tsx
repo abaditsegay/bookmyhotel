@@ -44,7 +44,9 @@ import {
   adminApiService, 
   UserManagementResponse, 
   CreateUserRequest, 
-  UpdateUserRequest 
+  UpdateUserRequest,
+  TenantDTO,
+  HotelDTO
 } from '../../services/adminApi';
 
 interface UserFilters {
@@ -98,6 +100,12 @@ const UserManagementAdmin: React.FC = () => {
 
   const [newPassword, setNewPassword] = useState('');
 
+  // Tenant and Hotel state for user creation
+  const [tenants, setTenants] = useState<TenantDTO[]>([]);
+  const [hotels, setHotels] = useState<HotelDTO[]>([]);
+  const [loadingTenants, setLoadingTenants] = useState(false);
+  const [loadingHotels, setLoadingHotels] = useState(false);
+
   const roleOptions = ['ADMIN', 'HOTEL_MANAGER', 'HOTEL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'CUSTOMER', 'GUEST'];
   const statusOptions = ['ALL', 'ACTIVE', 'INACTIVE'];
 
@@ -142,6 +150,48 @@ const UserManagementAdmin: React.FC = () => {
     loadUsers();
   }, [loadUsers]);
 
+  // Load tenants when component mounts
+  const loadTenants = useCallback(async () => {
+    if (!token) return;
+    
+    try {
+      setLoadingTenants(true);
+      const response = await adminApiService.getActiveTenants();
+      setTenants(response || []);
+    } catch (err) {
+      console.error('Error loading tenants:', err);
+      setError('Failed to load tenants');
+    } finally {
+      setLoadingTenants(false);
+    }
+  }, [token]);
+
+  const loadHotels = useCallback(async (tenantId: string) => {
+    if (!token || !tenantId) return;
+    
+    try {
+      setLoadingHotels(true);
+      const response = await adminApiService.getHotelsByTenant(tenantId);
+      setHotels(response || []);
+    } catch (err) {
+      console.error('Error loading hotels:', err);
+      setError('Failed to load hotels');
+    } finally {
+      setLoadingHotels(false);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    loadTenants();
+  }, [loadTenants]);
+
+  // Load hotels when tenant is selected
+  useEffect(() => {
+    if (userForm.tenantId) {
+      loadHotels(userForm.tenantId);
+    }
+  }, [userForm.tenantId, loadHotels]);
+
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
   };
@@ -172,6 +222,7 @@ const UserManagementAdmin: React.FC = () => {
         password: '',
         roles: [],
       });
+      setHotels([]); // Clear hotels when form is reset
       loadUsers();
     } catch (err) {
       console.error('Error creating user:', err);
@@ -488,6 +539,7 @@ const UserManagementAdmin: React.FC = () => {
         onClose={() => {
           setCreateDialogOpen(false);
           setCreateError(null);
+          setHotels([]); // Clear hotels when dialog is closed
         }} 
         maxWidth="md" 
         fullWidth
@@ -547,7 +599,15 @@ const UserManagementAdmin: React.FC = () => {
                 <InputLabel>Role</InputLabel>
                 <Select
                   value={userForm.roles.length > 0 ? userForm.roles[0] : ''}
-                  onChange={(e) => setUserForm({ ...userForm, roles: [e.target.value] })}
+                  onChange={(e) => {
+                    const selectedRole = e.target.value;
+                    setUserForm({ 
+                      ...userForm, 
+                      roles: [selectedRole],
+                      // Clear hotel selection if role changes from HOTEL_ADMIN
+                      hotelId: selectedRole === 'HOTEL_ADMIN' ? userForm.hotelId : undefined
+                    });
+                  }}
                   label="Role"
                 >
                   {roleOptions.map((role) => (
@@ -558,6 +618,55 @@ const UserManagementAdmin: React.FC = () => {
                 </Select>
               </FormControl>
             </Grid>
+            
+            {/* Tenant Selection - Show for HOTEL_ADMIN */}
+            {userForm.roles.includes('HOTEL_ADMIN') && (
+              <Grid item xs={12} md={6}>
+                <FormControl fullWidth required>
+                  <InputLabel>Tenant</InputLabel>
+                  <Select
+                    value={userForm.tenantId || ''}
+                    onChange={(e) => {
+                      const selectedTenantId = e.target.value;
+                      setUserForm({ 
+                        ...userForm, 
+                        tenantId: selectedTenantId,
+                        hotelId: undefined // Clear hotel selection when tenant changes
+                      });
+                    }}
+                    label="Tenant"
+                    disabled={loadingTenants}
+                  >
+                    {tenants.map((tenant) => (
+                      <MenuItem key={tenant.tenantId} value={tenant.tenantId}>
+                        {tenant.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+            )}
+
+            {/* Hotel Selection - Show for HOTEL_ADMIN when tenant is selected */}
+            {userForm.roles.includes('HOTEL_ADMIN') && userForm.tenantId && (
+              <Grid item xs={12} md={6}>
+                <FormControl fullWidth required>
+                  <InputLabel>Hotel</InputLabel>
+                  <Select
+                    value={userForm.hotelId || ''}
+                    onChange={(e) => setUserForm({ ...userForm, hotelId: e.target.value as number })}
+                    label="Hotel"
+                    disabled={loadingHotels}
+                  >
+                    {hotels.map((hotel) => (
+                      <MenuItem key={hotel.id} value={hotel.id}>
+                        {hotel.name} - {hotel.city}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+            )}
           </Grid>
         </DialogContent>
         {createError && (
@@ -571,6 +680,7 @@ const UserManagementAdmin: React.FC = () => {
           <Button onClick={() => {
             setCreateDialogOpen(false);
             setCreateError(null);
+            setHotels([]); // Clear hotels when dialog is closed
           }}>Cancel</Button>
           <Button onClick={handleCreateUser} variant="contained">
             Create User

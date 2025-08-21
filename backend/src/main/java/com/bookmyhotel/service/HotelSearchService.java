@@ -10,8 +10,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.bookmyhotel.dto.HotelSearchRequest;
 import com.bookmyhotel.dto.HotelSearchResult;
+import com.bookmyhotel.dto.RoomTypeAvailabilityDto;
 import com.bookmyhotel.entity.Hotel;
 import com.bookmyhotel.entity.Room;
+import com.bookmyhotel.entity.RoomType;
 import com.bookmyhotel.repository.HotelRepository;
 import com.bookmyhotel.repository.RoomRepository;
 
@@ -32,13 +34,24 @@ public class HotelSearchService {
      * Search hotels based on criteria
      */
     public List<HotelSearchResult> searchHotels(HotelSearchRequest request) {
+        // Convert roomType string to enum if provided
+        RoomType roomTypeEnum = null;
+        if (request.getRoomType() != null && !request.getRoomType().trim().isEmpty()) {
+            try {
+                roomTypeEnum = RoomType.valueOf(request.getRoomType().toUpperCase());
+            } catch (IllegalArgumentException e) {
+                // Invalid room type provided, ignore filter
+                roomTypeEnum = null;
+            }
+        }
+        
         // Find hotels with available rooms
         List<Hotel> hotels = hotelRepository.findAvailableHotels(
             request.getLocation(),
             request.getCheckInDate(),
             request.getCheckOutDate(),
             request.getGuests(),
-            request.getRoomType(),
+            roomTypeEnum,
             request.getMinPrice(),
             request.getMaxPrice()
         );
@@ -65,18 +78,97 @@ public class HotelSearchService {
     public List<HotelSearchResult.AvailableRoomDto> getAvailableRooms(
             Long hotelId, HotelSearchRequest request) {
         
+        // Convert roomType string to enum if provided
+        RoomType roomTypeEnum = null;
+        if (request.getRoomType() != null && !request.getRoomType().trim().isEmpty()) {
+            try {
+                roomTypeEnum = RoomType.valueOf(request.getRoomType().toUpperCase());
+            } catch (IllegalArgumentException e) {
+                // Invalid room type provided, ignore filter
+                roomTypeEnum = null;
+            }
+        }
+        
         List<Room> availableRooms = roomRepository.findAvailableRooms(
             hotelId,
             request.getCheckInDate(),
             request.getCheckOutDate(),
             request.getGuests(),
-            request.getRoomType()
+            roomTypeEnum
         );
         
         return availableRooms.stream()
             .filter(room -> isRoomInPriceRange(room, request))
             .map(this::convertToAvailableRoomDto)
             .collect(Collectors.toList());
+    }
+    
+    /**
+     * Get room type availability for a hotel (new approach)
+     */
+    public List<RoomTypeAvailabilityDto> getRoomTypeAvailability(
+            Long hotelId, HotelSearchRequest request) {
+        
+        // Get distinct room types for the hotel
+        List<RoomType> roomTypes = roomRepository.findDistinctRoomTypesByHotel(hotelId);
+        
+        return roomTypes.stream()
+            .map(roomType -> createRoomTypeAvailability(hotelId, roomType, request))
+            .filter(availability -> availability.getTotalCount() > 0)
+            .filter(availability -> isRoomTypeInPriceRange(availability, request))
+            .collect(Collectors.toList());
+    }
+    
+    /**
+     * Create room type availability DTO
+     */
+    private RoomTypeAvailabilityDto createRoomTypeAvailability(
+            Long hotelId, RoomType roomType, HotelSearchRequest request) {
+        
+        long availableCount = roomRepository.countAvailableRoomsByType(
+            hotelId,
+            roomType,
+            request.getCheckInDate(),
+            request.getCheckOutDate(),
+            request.getGuests()
+        );
+        
+        long totalCount = roomRepository.countTotalRoomsByType(hotelId, roomType);
+        
+        // Get a sample room for pricing and details
+        Room sampleRoom = roomRepository.findAvailableRooms(
+            hotelId,
+            request.getCheckInDate(),
+            request.getCheckOutDate(),
+            request.getGuests(),
+            roomType
+        ).stream()
+            .filter(room -> room.getRoomType() == roomType)
+            .findFirst()
+            .orElse(null);
+        
+        if (sampleRoom == null) {
+            // Get any room of this type for pricing info
+            sampleRoom = roomRepository.findByHotelIdAndRoomType(hotelId, roomType)
+                .stream()
+                .findFirst()
+                .orElse(null);
+        }
+        
+        RoomTypeAvailabilityDto dto = new RoomTypeAvailabilityDto(
+            roomType,
+            (int) availableCount,
+            (int) totalCount,
+            sampleRoom != null ? sampleRoom.getPricePerNight() : BigDecimal.ZERO,
+            sampleRoom != null ? sampleRoom.getCapacity() : 1
+        );
+        
+        // Set description separately
+        if (sampleRoom != null) {
+            dto.setDescription(sampleRoom.getDescription());
+        }
+        
+        return dto;
     }
     
     /**
@@ -93,19 +185,19 @@ public class HotelSearchService {
         result.setPhone(hotel.getPhone());
         result.setEmail(hotel.getEmail());
         
-        // Get available rooms for this hotel
-        List<HotelSearchResult.AvailableRoomDto> availableRooms = getAvailableRooms(hotel.getId(), request);
-        result.setAvailableRooms(availableRooms);
+        // Get room type availability instead of individual rooms
+        List<RoomTypeAvailabilityDto> roomTypeAvailability = getRoomTypeAvailability(hotel.getId(), request);
+        result.setRoomTypeAvailability(roomTypeAvailability);
         
-        // Calculate price range
-        if (!availableRooms.isEmpty()) {
-            BigDecimal minPrice = availableRooms.stream()
-                .map(HotelSearchResult.AvailableRoomDto::getPricePerNight)
+        // Calculate price range from room types
+        if (!roomTypeAvailability.isEmpty()) {
+            BigDecimal minPrice = roomTypeAvailability.stream()
+                .map(RoomTypeAvailabilityDto::getPricePerNight)
                 .min(BigDecimal::compareTo)
                 .orElse(BigDecimal.ZERO);
                 
-            BigDecimal maxPrice = availableRooms.stream()
-                .map(HotelSearchResult.AvailableRoomDto::getPricePerNight)
+            BigDecimal maxPrice = roomTypeAvailability.stream()
+                .map(RoomTypeAvailabilityDto::getPricePerNight)
                 .max(BigDecimal::compareTo)
                 .orElse(BigDecimal.ZERO);
                 
@@ -135,6 +227,23 @@ public class HotelSearchService {
      */
     private boolean isRoomInPriceRange(Room room, HotelSearchRequest request) {
         BigDecimal price = room.getPricePerNight();
+        
+        if (request.getMinPrice() != null && price.compareTo(BigDecimal.valueOf(request.getMinPrice())) < 0) {
+            return false;
+        }
+        
+        if (request.getMaxPrice() != null && price.compareTo(BigDecimal.valueOf(request.getMaxPrice())) > 0) {
+            return false;
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Check if room type is within price range
+     */
+    private boolean isRoomTypeInPriceRange(RoomTypeAvailabilityDto availability, HotelSearchRequest request) {
+        BigDecimal price = availability.getPricePerNight();
         
         if (request.getMinPrice() != null && price.compareTo(BigDecimal.valueOf(request.getMinPrice())) < 0) {
             return false;

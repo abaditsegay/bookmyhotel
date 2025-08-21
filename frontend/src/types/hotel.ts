@@ -20,6 +20,16 @@ export interface AvailableRoom {
   description?: string;
 }
 
+export interface RoomTypeAvailability {
+  roomType: string;
+  availableCount: number;
+  totalCount: number;
+  pricePerNight: number;
+  capacity: number;
+  description?: string;
+  displayMessage: string;
+}
+
 export interface HotelSearchResult {
   id: number;
   name: string;
@@ -29,13 +39,20 @@ export interface HotelSearchResult {
   country: string;
   phone?: string;
   email?: string;
-  availableRooms: AvailableRoom[];
+  availableRooms: AvailableRoom[]; // Keep for backward compatibility
+  roomTypeAvailability?: RoomTypeAvailability[]; // New room type approach
   minPrice: number;
   maxPrice: number;
 }
 
 export interface BookingRequest {
-  roomId: number;
+  // For individual room booking (traditional approach)
+  roomId?: number;
+  
+  // For room type booking (new approach)
+  hotelId?: number;
+  roomType?: string;
+  
   checkInDate: string;
   checkOutDate: string;
   guests: number;

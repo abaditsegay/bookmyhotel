@@ -16,7 +16,8 @@ public class HotelSearchResult {
     private String country;
     private String phone;
     private String email;
-    private List<AvailableRoomDto> availableRooms;
+    private List<AvailableRoomDto> availableRooms; // Keep for backward compatibility
+    private List<RoomTypeAvailabilityDto> roomTypeAvailability; // New room type approach
     private BigDecimal minPrice;
     private BigDecimal maxPrice;
     
@@ -102,6 +103,14 @@ public class HotelSearchResult {
     
     public void setAvailableRooms(List<AvailableRoomDto> availableRooms) {
         this.availableRooms = availableRooms;
+    }
+    
+    public List<RoomTypeAvailabilityDto> getRoomTypeAvailability() {
+        return roomTypeAvailability;
+    }
+    
+    public void setRoomTypeAvailability(List<RoomTypeAvailabilityDto> roomTypeAvailability) {
+        this.roomTypeAvailability = roomTypeAvailability;
     }
     
     public BigDecimal getMinPrice() {

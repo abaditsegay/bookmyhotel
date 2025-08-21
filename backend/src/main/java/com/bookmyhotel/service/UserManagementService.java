@@ -14,8 +14,10 @@ import org.springframework.transaction.annotation.Transactional;
 import com.bookmyhotel.dto.admin.CreateUserRequest;
 import com.bookmyhotel.dto.admin.UpdateUserRequest;
 import com.bookmyhotel.dto.admin.UserManagementResponse;
+import com.bookmyhotel.entity.Hotel;
 import com.bookmyhotel.entity.User;
 import com.bookmyhotel.entity.UserRole;
+import com.bookmyhotel.repository.HotelRepository;
 import com.bookmyhotel.repository.UserRepository;
 
 /**
@@ -27,6 +29,9 @@ public class UserManagementService {
     
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private HotelRepository hotelRepository;
     
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -84,6 +89,22 @@ public class UserManagementService {
             throw new RuntimeException("Email already exists: " + request.getEmail());
         }
         
+        // If creating a HOTEL_ADMIN, validate hotel assignment
+        if (request.getRoles().contains(UserRole.HOTEL_ADMIN)) {
+            if (request.getHotelId() == null) {
+                throw new RuntimeException("Hotel assignment is required for HOTEL_ADMIN users");
+            }
+            
+            // Verify the hotel exists
+            Hotel hotel = hotelRepository.findById(request.getHotelId())
+                    .orElseThrow(() -> new RuntimeException("Hotel not found with id: " + request.getHotelId()));
+            
+            // If tenantId is not provided, use the hotel's tenant
+            if (request.getTenantId() == null || request.getTenantId().trim().isEmpty()) {
+                request.setTenantId(hotel.getTenantId());
+            }
+        }
+        
         User user = new User();
         user.setEmail(request.getEmail());
         user.setFirstName(request.getFirstName());
@@ -93,6 +114,12 @@ public class UserManagementService {
         user.setRoles(request.getRoles());
         user.setTenantId(request.getTenantId());
         user.setIsActive(true); // New users are active by default
+        
+        // Set hotel for HOTEL_ADMIN users
+        if (request.getRoles().contains(UserRole.HOTEL_ADMIN) && request.getHotelId() != null) {
+            Hotel hotel = hotelRepository.findById(request.getHotelId()).orElse(null);
+            user.setHotel(hotel);
+        }
         
         user = userRepository.save(user);
         

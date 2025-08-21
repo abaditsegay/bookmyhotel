@@ -7,6 +7,18 @@ const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [showSignUp, setShowSignUp] = useState(false);
+  
+  // Registration form state
+  const [registerEmail, setRegisterEmail] = useState('');
+  const [registerPassword, setRegisterPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [phone, setPhone] = useState('');
+  
   const { login, error: authError, clearError } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -39,14 +51,99 @@ const LoginPage: React.FC = () => {
     }
   };
 
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    clearError();
+
+    // Validation
+    if (registerPassword !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    if (registerPassword.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(registerEmail)) {
+      setError('Please provide a valid email address');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await fetch('http://localhost:8080/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: registerEmail,
+          password: registerPassword,
+          firstName,
+          lastName,
+          phone: phone || undefined,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Registration failed');
+      }
+
+      const registrationData = await response.json();
+      
+      // Store authentication data (same format as login)
+      const user = {
+        id: registrationData.id.toString(),
+        email: registrationData.email,
+        firstName: registrationData.firstName || '',
+        lastName: registrationData.lastName || '',
+        phone: '',
+        role: Array.isArray(registrationData.roles) ? registrationData.roles[0] : registrationData.roles,
+        roles: Array.isArray(registrationData.roles) ? registrationData.roles : [registrationData.roles],
+        hotelId: undefined,
+        hotelName: undefined,
+        createdAt: new Date().toISOString(),
+        lastLogin: new Date().toISOString(),
+        isActive: true,
+      };
+
+      // Store in localStorage (mimicking the login process)
+      localStorage.setItem('auth_token', registrationData.token);
+      localStorage.setItem('auth_user', JSON.stringify(user));
+
+      setSuccess('Registration successful! Redirecting...');
+
+      // Small delay to show success message
+      setTimeout(() => {
+        if (redirectTo && bookingData) {
+          navigate(redirectTo, { state: bookingData });
+        } else {
+          navigate('/');
+        }
+      }, 1500);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Registration failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const fillSampleUser = (sampleEmail: string, samplePassword: string) => {
     setEmail(sampleEmail);
     setPassword(samplePassword);
     clearError(); // Clear any existing errors
+    setError(''); // Clear local errors
+    setSuccess(''); // Clear success messages
   };
 
-  // Get the error to display (prefer auth context error)
-  const displayError = authError;
+  // Get the error to display (prefer auth context error, then local error)
+  const displayError = authError || error;
 
   return (
     <Container maxWidth="sm">
@@ -74,7 +171,7 @@ const LoginPage: React.FC = () => {
             )}
 
             <Typography variant="h5" component="h2" gutterBottom align="center">
-              Sign In{bookingData ? ' to Book' : ''}
+              {!showSignUp ? 'Sign In' : 'Create Account'}{bookingData ? ' to Book' : ''}
             </Typography>
 
             {displayError && (
@@ -83,113 +180,218 @@ const LoginPage: React.FC = () => {
               </Alert>
             )}
 
-            <Box component="form" onSubmit={handleSubmit}>
-              <TextField
-                fullWidth
-                label="Email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                margin="normal"
-                required
-                autoComplete="email"
-                autoFocus
-              />
-              <TextField
-                fullWidth
-                label="Password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                margin="normal"
-                required
-                autoComplete="current-password"
-              />
-              <Button
-                type="submit"
-                fullWidth
-                variant="contained"
-                sx={{ mt: 3, mb: 2 }}
-                disabled={loading}
-              >
-                {loading ? 'Signing In...' : 'Sign In'}
-              </Button>
-            </Box>
+            {success && (
+              <Alert severity="success" sx={{ mb: 2 }}>
+                {success}
+              </Alert>
+            )}
 
-            {/* Test Users Section */}
-            <Divider sx={{ my: 3 }}>
-              <Chip label="Test Users - Click to Login" size="small" color="primary" />
-            </Divider>
-            
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <Typography variant="body2" color="textSecondary" align="center" sx={{ mb: 1 }}>
-                ✅ All test users are working! Click any button to auto-fill and test login:
-              </Typography>
-              
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={() => fillSampleUser('admin@bookmyhotel.com', 'admin123')}
-                sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
-              >
-                <Typography variant="body2" fontWeight="bold">🔧 System Administrator</Typography>
-                <Typography variant="caption" color="textSecondary">
-                  admin@bookmyhotel.com / admin123 (✅ Working - Platform Admin)
-                </Typography>
-              </Button>
-              
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={() => fillSampleUser('hotel.admin@grandplaza.com', 'admin123')}
-                sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
-              >
-                <Typography variant="body2" fontWeight="bold">🏨 Hotel Administrator</Typography>
-                <Typography variant="caption" color="textSecondary">
-                  hotel.admin@grandplaza.com / admin123 (✅ Working - John Manager)
-                </Typography>
-              </Button>
-              
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={() => fillSampleUser('frontdesk@grandplaza.com', 'frontdesk123')}
-                sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
-              >
-                <Typography variant="body2" fontWeight="bold">🎯 Front Desk Staff</Typography>
-                <Typography variant="caption" color="textSecondary">
-                  frontdesk@grandplaza.com / frontdesk123 (✅ Working - Jane Desk)
-                </Typography>
-              </Button>
-
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={() => fillSampleUser('customer@example.com', 'customer123')}
-                sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
-              >
-                <Typography variant="body2" fontWeight="bold">👤 Regular Customer</Typography>
-                <Typography variant="caption" color="textSecondary">
-                  customer@example.com / customer123 (✅ Working - John Customer)
-                </Typography>
-              </Button>
-
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={() => fillSampleUser('guest@example.com', 'guest123')}
-                sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
-              >
-                <Typography variant="body2" fontWeight="bold">👋 Guest User</Typography>
-                <Typography variant="caption" color="textSecondary">
-                  guest@example.com / guest123 (✅ Working - Test Guest)
-                </Typography>
-              </Button>
-            </Box>
+            {!showSignUp ? (
+              // Sign In Form
+              <Box component="form" onSubmit={handleSubmit}>
+                <TextField
+                  fullWidth
+                  label="Email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  margin="normal"
+                  required
+                  autoComplete="email"
+                  autoFocus
+                />
+                <TextField
+                  fullWidth
+                  label="Password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  margin="normal"
+                  required
+                  autoComplete="current-password"
+                />
+                <Button
+                  type="submit"
+                  fullWidth
+                  variant="contained"
+                  sx={{ mt: 3, mb: 2 }}
+                  disabled={loading}
+                >
+                  {loading ? 'Signing In...' : 'Sign In'}
+                </Button>
+              </Box>
+            ) : (
+              // Sign Up Form
+              <Box component="form" onSubmit={handleRegister}>
+                <TextField
+                  fullWidth
+                  label="First Name"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  margin="normal"
+                  required
+                />
+                <TextField
+                  fullWidth
+                  label="Last Name"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  margin="normal"
+                  required
+                />
+                <TextField
+                  fullWidth
+                  label="Email"
+                  type="email"
+                  value={registerEmail}
+                  onChange={(e) => setRegisterEmail(e.target.value)}
+                  margin="normal"
+                  required
+                  autoComplete="email"
+                />
+                <TextField
+                  fullWidth
+                  label="Phone (optional)"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  margin="normal"
+                />
+                <TextField
+                  fullWidth
+                  label="Password"
+                  type="password"
+                  value={registerPassword}
+                  onChange={(e) => setRegisterPassword(e.target.value)}
+                  margin="normal"
+                  required
+                  autoComplete="new-password"
+                />
+                <TextField
+                  fullWidth
+                  label="Confirm Password"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  margin="normal"
+                  required
+                  autoComplete="new-password"
+                />
+                <Button
+                  type="submit"
+                  fullWidth
+                  variant="contained"
+                  sx={{ mt: 3, mb: 2 }}
+                  disabled={loading}
+                >
+                  {loading ? 'Creating Account...' : 'Create Account'}
+                </Button>
+              </Box>
+            )}
 
             <Typography variant="body2" color="textSecondary" align="center" sx={{ mt: 2 }}>
-              ✅ Fixed! All test users now have correct passwords. Click to auto-fill, then "Sign In"
+              {!showSignUp ? (
+                <>
+                  Don't have an account?{' '}
+                  <Button 
+                    variant="text" 
+                    onClick={() => setShowSignUp(true)}
+                    sx={{ textTransform: 'none', p: 0, minWidth: 'auto' }}
+                  >
+                    Sign up here
+                  </Button>
+                </>
+              ) : (
+                <>
+                  Already have an account?{' '}
+                  <Button 
+                    variant="text" 
+                    onClick={() => setShowSignUp(false)}
+                    sx={{ textTransform: 'none', p: 0, minWidth: 'auto' }}
+                  >
+                    Sign in here
+                  </Button>
+                </>
+              )}
             </Typography>
+
+            {/* Test Users Section - Only show on Sign In */}
+            {!showSignUp && (
+              <>
+                <Divider sx={{ my: 3 }}>
+                  <Chip label="Test Users - Click to Login" size="small" color="primary" />
+                </Divider>
+                
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Typography variant="body2" color="textSecondary" align="center" sx={{ mb: 1 }}>
+                    ✅ All test users are working! Click any button to auto-fill and test login:
+                  </Typography>
+                  
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => fillSampleUser('admin@bookmyhotel.com', 'admin123')}
+                    sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
+                  >
+                    <Typography variant="body2" fontWeight="bold">🔧 System Administrator</Typography>
+                    <Typography variant="caption" color="textSecondary">
+                      admin@bookmyhotel.com / admin123 (✅ Working - Platform Admin)
+                    </Typography>
+                  </Button>
+                  
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => fillSampleUser('hotel.admin@grandplaza.com', 'admin123')}
+                    sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
+                  >
+                    <Typography variant="body2" fontWeight="bold">🏨 Hotel Administrator</Typography>
+                    <Typography variant="caption" color="textSecondary">
+                      hotel.admin@grandplaza.com / admin123 (✅ Working - John Manager)
+                    </Typography>
+                  </Button>
+                  
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => fillSampleUser('frontdesk@grandplaza.com', 'frontdesk123')}
+                    sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
+                  >
+                    <Typography variant="body2" fontWeight="bold">🎯 Front Desk Staff</Typography>
+                    <Typography variant="caption" color="textSecondary">
+                      frontdesk@grandplaza.com / frontdesk123 (✅ Working - Jane Desk)
+                    </Typography>
+                  </Button>
+
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => fillSampleUser('customer@example.com', 'customer123')}
+                    sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
+                  >
+                    <Typography variant="body2" fontWeight="bold">👤 Regular Customer</Typography>
+                    <Typography variant="caption" color="textSecondary">
+                      customer@example.com / customer123 (✅ Working - John Customer)
+                    </Typography>
+                  </Button>
+
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => fillSampleUser('guest@example.com', 'guest123')}
+                    sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
+                  >
+                    <Typography variant="body2" fontWeight="bold">👋 Guest User</Typography>
+                    <Typography variant="caption" color="textSecondary">
+                      guest@example.com / guest123 (✅ Working - Test Guest)
+                    </Typography>
+                  </Button>
+                </Box>
+
+                <Typography variant="body2" color="textSecondary" align="center" sx={{ mt: 2 }}>
+                  ✅ Fixed! All test users now have correct passwords. Click to auto-fill, then "Sign In"
+                </Typography>
+              </>
+            )}
           </CardContent>
         </Card>
       </Box>

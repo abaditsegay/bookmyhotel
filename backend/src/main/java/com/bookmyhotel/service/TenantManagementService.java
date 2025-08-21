@@ -79,16 +79,18 @@ public class TenantManagementService {
             throw new RuntimeException("Tenant with name '" + request.getName() + "' already exists");
         }
         
-        // Check if subdomain already exists (if provided)
+        // Clean and validate subdomain (if provided)
+        String cleanSubdomain = null;
         if (request.getSubdomain() != null && !request.getSubdomain().trim().isEmpty()) {
-            if (tenantRepository.findBySubdomain(request.getSubdomain()).isPresent()) {
-                throw new RuntimeException("Tenant with subdomain '" + request.getSubdomain() + "' already exists");
+            cleanSubdomain = request.getSubdomain().trim();
+            if (tenantRepository.findBySubdomain(cleanSubdomain).isPresent()) {
+                throw new RuntimeException("Tenant with subdomain '" + cleanSubdomain + "' already exists");
             }
         }
 
         String tenantId = UUID.randomUUID().toString();
         Tenant tenant = new Tenant(tenantId, request.getName());
-        tenant.setSubdomain(request.getSubdomain());
+        tenant.setSubdomain(cleanSubdomain);
         tenant.setDescription(request.getDescription());
         tenant.setIsActive(true);
 
@@ -114,13 +116,16 @@ public class TenantManagementService {
         }
 
         if (request.getSubdomain() != null) {
-            // Check if new subdomain conflicts with existing tenant
-            if (!request.getSubdomain().equals(tenant.getSubdomain()) && 
-                !request.getSubdomain().trim().isEmpty() &&
-                tenantRepository.findBySubdomain(request.getSubdomain()).isPresent()) {
-                throw new RuntimeException("Tenant with subdomain '" + request.getSubdomain() + "' already exists");
+            // Clean subdomain - convert empty strings to null
+            String cleanSubdomain = request.getSubdomain().trim().isEmpty() ? null : request.getSubdomain().trim();
+            
+            // Check if new subdomain conflicts with existing tenant (only if not null/empty)
+            if (cleanSubdomain != null && 
+                !cleanSubdomain.equals(tenant.getSubdomain()) && 
+                tenantRepository.findBySubdomain(cleanSubdomain).isPresent()) {
+                throw new RuntimeException("Tenant with subdomain '" + cleanSubdomain + "' already exists");
             }
-            tenant.setSubdomain(request.getSubdomain());
+            tenant.setSubdomain(cleanSubdomain);
         }
 
         if (request.getDescription() != null) {

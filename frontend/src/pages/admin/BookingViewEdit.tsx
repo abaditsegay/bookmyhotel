@@ -18,16 +18,25 @@ import {
   Alert,
   Snackbar,
   CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemButton,
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
   Edit as EditIcon,
   Save as SaveIcon,
   Cancel as CancelIcon,
+  Room as RoomIcon,
 } from '@mui/icons-material';
 import { useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { hotelAdminApi } from '../../services/hotelAdminApi';
+import { hotelAdminApi, RoomResponse } from '../../services/hotelAdminApi';
 
 // Map BookingResponse from API to display format
 interface BookingData {
@@ -62,6 +71,13 @@ const BookingViewEdit: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  // Room selection state
+  const [availableRooms, setAvailableRooms] = useState<RoomResponse[]>([]);
+  const [roomDialogOpen, setRoomDialogOpen] = useState(false);
+  const [loadingRooms, setLoadingRooms] = useState(false);
+  const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
+  const [priceCalculating, setPriceCalculating] = useState(false);
 
   useEffect(() => {
     const loadBooking = async () => {
@@ -136,57 +152,214 @@ const BookingViewEdit: React.FC = () => {
   };
 
   const handleSave = async () => {
-    if (!editedBooking || !token) return;
+    if (!editedBooking || !booking || !token) return;
 
     try {
-      // Update booking status via API if status changed
-      if (booking && editedBooking.status !== booking.status) {
-        const result = await hotelAdminApi.updateBookingStatus(
+      setPriceCalculating(true);
+      
+      // Check if any modifiable fields have changed
+      const hasChanges = 
+        editedBooking.checkInDate !== booking.checkInDate ||
+        editedBooking.checkOutDate !== booking.checkOutDate ||
+        editedBooking.guestName !== booking.guestName ||
+        editedBooking.status !== booking.status ||
+        selectedRoomId !== null; // Room change
+
+      if (hasChanges) {
+        // Prepare modification request
+        const modificationRequest: any = {
+          // Required fields
+          confirmationNumber: booking.confirmationNumber,
+          guestEmail: booking.guestEmail
+        };
+        
+        if (editedBooking.checkInDate !== booking.checkInDate) {
+          modificationRequest.newCheckInDate = editedBooking.checkInDate;
+        }
+        
+        if (editedBooking.checkOutDate !== booking.checkOutDate) {
+          modificationRequest.newCheckOutDate = editedBooking.checkOutDate;
+        }
+        
+        if (editedBooking.guestName !== booking.guestName) {
+          modificationRequest.guestName = editedBooking.guestName;
+        }
+        
+        if (selectedRoomId !== null) {
+          modificationRequest.newRoomId = selectedRoomId;
+        }
+        
+        modificationRequest.reason = 'Admin modification';
+
+        // Call the comprehensive booking modification API
+        const result = await hotelAdminApi.modifyBooking(
+          token,
+          editedBooking.reservationId,
+          modificationRequest
+        );
+        
+        if (result.success && result.data?.updatedBooking) {
+          // Update local state with API response
+          const apiBooking = result.data.updatedBooking;
+          const updatedBooking: BookingData = {
+            reservationId: apiBooking.reservationId,
+            confirmationNumber: apiBooking.confirmationNumber,
+            guestName: apiBooking.guestName,
+            guestEmail: apiBooking.guestEmail,
+            hotelName: apiBooking.hotelName,
+            hotelAddress: apiBooking.hotelAddress,
+            roomNumber: apiBooking.roomNumber,
+            roomType: apiBooking.roomType,
+            checkInDate: apiBooking.checkInDate,
+            checkOutDate: apiBooking.checkOutDate,
+            totalAmount: apiBooking.totalAmount,
+            pricePerNight: apiBooking.pricePerNight,
+            status: apiBooking.status,
+            createdAt: apiBooking.createdAt,
+            paymentStatus: apiBooking.paymentStatus,
+            paymentIntentId: apiBooking.paymentIntentId
+          };
+          
+          setBooking(updatedBooking);
+          setEditedBooking({ ...updatedBooking });
+          setSelectedRoomId(null);
+          
+          let message = 'Booking updated successfully';
+          if (result.data.additionalCharges && result.data.additionalCharges > 0) {
+            message += ` (Additional charges: $${result.data.additionalCharges})`;
+          } else if (result.data.refundAmount && result.data.refundAmount > 0) {
+            message += ` (Refund amount: $${result.data.refundAmount})`;
+          }
+          setSuccess(message);
+        } else {
+          throw new Error(result.message || 'Failed to modify booking');
+        }
+      } 
+      
+      // Handle status-only changes
+      if (editedBooking.status !== booking.status && !hasChanges) {
+        const statusResult = await hotelAdminApi.updateBookingStatus(
           token, 
           editedBooking.reservationId, 
           editedBooking.status
         );
         
-        if (result.success && result.data) {
-          // Update local state with API response
+        if (statusResult.success && statusResult.data) {
           const updatedBooking: BookingData = {
-            reservationId: result.data.reservationId,
-            confirmationNumber: result.data.confirmationNumber,
-            guestName: result.data.guestName,
-            guestEmail: result.data.guestEmail,
-            hotelName: result.data.hotelName,
-            hotelAddress: result.data.hotelAddress,
-            roomNumber: result.data.roomNumber,
-            roomType: result.data.roomType,
-            checkInDate: result.data.checkInDate,
-            checkOutDate: result.data.checkOutDate,
-            totalAmount: result.data.totalAmount,
-            pricePerNight: result.data.pricePerNight,
-            status: result.data.status,
-            createdAt: result.data.createdAt,
-            paymentStatus: result.data.paymentStatus,
-            paymentIntentId: result.data.paymentIntentId
+            reservationId: statusResult.data.reservationId,
+            confirmationNumber: statusResult.data.confirmationNumber,
+            guestName: statusResult.data.guestName,
+            guestEmail: statusResult.data.guestEmail,
+            hotelName: statusResult.data.hotelName,
+            hotelAddress: statusResult.data.hotelAddress,
+            roomNumber: statusResult.data.roomNumber,
+            roomType: statusResult.data.roomType,
+            checkInDate: statusResult.data.checkInDate,
+            checkOutDate: statusResult.data.checkOutDate,
+            totalAmount: statusResult.data.totalAmount,
+            pricePerNight: statusResult.data.pricePerNight,
+            status: statusResult.data.status,
+            createdAt: statusResult.data.createdAt,
+            paymentStatus: statusResult.data.paymentStatus,
+            paymentIntentId: statusResult.data.paymentIntentId
           };
           
           setBooking(updatedBooking);
           setEditedBooking({ ...updatedBooking });
+          setSuccess('Booking status updated successfully');
         }
       }
       
       setIsEditing(false);
-      setSuccess('Booking updated successfully');
     } catch (err) {
-      setError('Failed to update booking');
+      setError(err instanceof Error ? err.message : 'Failed to update booking');
       console.error('Error updating booking:', err);
+    } finally {
+      setPriceCalculating(false);
     }
+  };
+
+  // Load available rooms for room selection
+  const loadAvailableRooms = async (roomType?: string) => {
+    if (!token || !editedBooking) return;
+
+    try {
+      setLoadingRooms(true);
+      const result = await hotelAdminApi.getHotelRooms(
+        token,
+        0, // page
+        100, // size - get more rooms for selection
+        '', // search
+        '', // room number
+        roomType || editedBooking.roomType, // filter by current or selected room type
+        'AVAILABLE' // only available rooms
+      );
+      
+      if (result.success && result.data) {
+        setAvailableRooms(result.data.content);
+      } else {
+        setError('Failed to load available rooms');
+      }
+    } catch (err) {
+      setError('Failed to load available rooms');
+      console.error('Error loading rooms:', err);
+    } finally {
+      setLoadingRooms(false);
+    }
+  };
+
+  // Handle room selection
+  const handleRoomSelect = (room: RoomResponse) => {
+    if (!editedBooking) return;
+    
+    setSelectedRoomId(room.id);
+    
+    // Calculate new total amount based on new price per night
+    const checkIn = new Date(editedBooking.checkInDate);
+    const checkOut = new Date(editedBooking.checkOutDate);
+    const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
+    const newTotalAmount = room.pricePerNight * nights;
+    
+    setEditedBooking({
+      ...editedBooking,
+      roomNumber: room.roomNumber,
+      roomType: room.roomType,
+      pricePerNight: room.pricePerNight,
+      totalAmount: newTotalAmount
+    });
+    setRoomDialogOpen(false);
+  };
+
+  // Open room selection dialog
+  const handleSelectRoom = () => {
+    loadAvailableRooms();
+    setRoomDialogOpen(true);
   };
 
   const handleFieldChange = (field: keyof BookingData, value: any) => {
     if (editedBooking) {
-      setEditedBooking({
+      const updatedBooking = {
         ...editedBooking,
         [field]: value
-      });
+      };
+      
+      // Recalculate total amount when dates change
+      if (field === 'checkInDate' || field === 'checkOutDate') {
+        const checkInDate = field === 'checkInDate' ? value : updatedBooking.checkInDate;
+        const checkOutDate = field === 'checkOutDate' ? value : updatedBooking.checkOutDate;
+        
+        if (checkInDate && checkOutDate) {
+          const checkIn = new Date(checkInDate);
+          const checkOut = new Date(checkOutDate);
+          
+          if (checkOut > checkIn) {
+            const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
+            updatedBooking.totalAmount = updatedBooking.pricePerNight * nights;
+          }
+        }
+      }
+      
+      setEditedBooking(updatedBooking);
     }
   };
 
@@ -458,13 +631,34 @@ const BookingViewEdit: React.FC = () => {
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      label="Room Number"
-                      value={currentBooking?.roomNumber || ''}
-                      disabled
-                      variant="filled"
-                    />
+                    {isEditing ? (
+                      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                        <TextField
+                          fullWidth
+                          label="Room Number"
+                          value={currentBooking?.roomNumber || ''}
+                          disabled
+                          variant="filled"
+                        />
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          startIcon={<RoomIcon />}
+                          onClick={handleSelectRoom}
+                          sx={{ minWidth: 'auto', whiteSpace: 'nowrap' }}
+                        >
+                          Select Room
+                        </Button>
+                      </Box>
+                    ) : (
+                      <TextField
+                        fullWidth
+                        label="Room Number"
+                        value={currentBooking?.roomNumber || ''}
+                        disabled
+                        variant="filled"
+                      />
+                    )}
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     <TextField
@@ -475,6 +669,14 @@ const BookingViewEdit: React.FC = () => {
                       variant="filled"
                     />
                   </Grid>
+                  {isEditing && selectedRoomId && (
+                    <Grid item xs={12}>
+                      <Alert severity="info">
+                        Room selection will be applied when you save the booking. 
+                        {priceCalculating && ' Calculating price changes...'}
+                      </Alert>
+                    </Grid>
+                  )}
                 </Grid>
               </CardContent>
             </Card>
@@ -570,6 +772,60 @@ const BookingViewEdit: React.FC = () => {
             </Card>
           </Grid>
         </Grid>
+
+        {/* Room Selection Dialog */}
+        <Dialog
+          open={roomDialogOpen}
+          onClose={() => setRoomDialogOpen(false)}
+          maxWidth="md"
+          fullWidth
+        >
+          <DialogTitle>
+            Select Room
+            {loadingRooms && (
+              <CircularProgress size={20} sx={{ ml: 2 }} />
+            )}
+          </DialogTitle>
+          <DialogContent>
+            {availableRooms.length > 0 ? (
+              <List>
+                {availableRooms.map((room) => (
+                  <ListItem key={room.id} disablePadding>
+                    <ListItemButton onClick={() => handleRoomSelect(room)}>
+                      <ListItemText
+                        primary={`Room ${room.roomNumber} - ${room.roomType}`}
+                        secondary={
+                          <Box>
+                            <Typography component="span" variant="body2" color="text.primary">
+                              ${room.pricePerNight}/night
+                            </Typography>
+                            {room.description && (
+                              <Typography component="span" variant="body2" sx={{ ml: 1 }}>
+                                • {room.description}
+                              </Typography>
+                            )}
+                            <Typography component="span" variant="body2" sx={{ ml: 1 }}>
+                              • Capacity: {room.capacity} guests
+                            </Typography>
+                          </Box>
+                        }
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                ))}
+              </List>
+            ) : (
+              <Alert severity="info">
+                {loadingRooms ? 'Loading available rooms...' : 'No available rooms found for the selected dates and room type.'}
+              </Alert>
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setRoomDialogOpen(false)}>
+              Cancel
+            </Button>
+          </DialogActions>
+        </Dialog>
 
         {/* Success/Error Messages */}
         <Snackbar

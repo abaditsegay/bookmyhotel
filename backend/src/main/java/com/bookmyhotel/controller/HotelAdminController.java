@@ -17,7 +17,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
 import com.bookmyhotel.dto.BookingResponse;
+import com.bookmyhotel.dto.BookingModificationRequest;
+import com.bookmyhotel.dto.BookingModificationResponse;
 import com.bookmyhotel.dto.HotelDTO;
 import com.bookmyhotel.dto.RoomDTO;
 import com.bookmyhotel.dto.UserDTO;
@@ -206,13 +209,45 @@ public class HotelAdminController {
     @PutMapping("/bookings/{reservationId}/status")
     public ResponseEntity<BookingResponse> updateBookingStatus(
             @PathVariable Long reservationId,
-            @RequestParam ReservationStatus status,
+            @RequestParam String status,
             Authentication auth) {
         
         // Verify the reservation belongs to the hotel admin's hotel
         HotelDTO hotel = hotelAdminService.getMyHotel(auth.getName());
-        BookingResponse updated = hotelAdminService.updateBookingStatus(reservationId, status);
+        
+        // Convert string to enum (case-insensitive, handle spaces)
+        ReservationStatus reservationStatus;
+        try {
+            // Replace spaces with underscores and convert to uppercase
+            String normalizedStatus = status.replace(" ", "_").toUpperCase();
+            reservationStatus = ReservationStatus.valueOf(normalizedStatus);
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid status value: " + status);
+        }
+        
+        BookingResponse updated = hotelAdminService.updateBookingStatus(reservationId, reservationStatus);
         return ResponseEntity.ok(updated);
+    }
+
+    /**
+     * Modify booking details (admin version)
+     */
+    @PutMapping("/bookings/{reservationId}")
+    public ResponseEntity<BookingModificationResponse> modifyBooking(
+            @PathVariable Long reservationId,
+            @Valid @RequestBody BookingModificationRequest request,
+            Authentication auth) {
+        
+        // Verify the reservation belongs to the hotel admin's hotel
+        HotelDTO hotel = hotelAdminService.getMyHotel(auth.getName());
+        
+        BookingModificationResponse response = hotelAdminService.modifyBooking(reservationId, request, hotel.getId());
+        
+        if (response.isSuccess()) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.badRequest().body(response);
+        }
     }
 
     /**

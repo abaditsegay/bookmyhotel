@@ -30,6 +30,7 @@ import {
   Card,
   CardContent,
   Switch,
+  Tooltip,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -257,10 +258,23 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
       }
     } catch (err) {
       console.error('Error toggling room availability:', err);
-      setError('Failed to update room availability.');
+      // Show the specific error message from the backend
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update room availability';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
+  };
+
+  const canToggleAvailability = (room: RoomResponse): { canToggle: boolean; reason: string } => {
+    // Cannot make available if room is in maintenance or out of order
+    if (!room.isAvailable && (room.status === 'OUT_OF_ORDER' || room.status === 'MAINTENANCE')) {
+      return {
+        canToggle: false,
+        reason: `Cannot make available while room is ${room.status.toLowerCase().replace('_', ' ')}`
+      };
+    }
+    return { canToggle: true, reason: '' };
   };
 
   const getStatusColor = (isAvailable: boolean) => {
@@ -395,21 +409,20 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
                   <TableCell>Type</TableCell>
                   <TableCell>Price/Night</TableCell>
                   <TableCell>Capacity</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell>Available</TableCell>
+                  <TableCell>Availability</TableCell>
                   <TableCell align="center">Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={7} align="center">
+                    <TableCell colSpan={6} align="center">
                       <CircularProgress />
                     </TableCell>
                   </TableRow>
                 ) : rooms.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} align="center">
+                    <TableCell colSpan={6} align="center">
                       <Typography variant="body2" color="text.secondary">
                         No rooms found matching your criteria
                       </Typography>
@@ -427,19 +440,25 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
                       <TableCell>${room.pricePerNight}</TableCell>
                       <TableCell>{room.capacity}</TableCell>
                       <TableCell>
-                        <Chip
-                          label={room.isAvailable ? 'Available' : 'Unavailable'}
-                          color={getStatusColor(room.isAvailable) as any}
-                          size="small"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Switch
-                          checked={room.isAvailable}
-                          onChange={() => handleToggleAvailability(room.id, room.isAvailable)}
-                          disabled={loading}
-                          size="small"
-                        />
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <Tooltip 
+                            title={!canToggleAvailability(room).canToggle ? canToggleAvailability(room).reason : (room.isAvailable ? 'Click to make unavailable' : 'Click to make available')}
+                            placement="top"
+                          >
+                            <span>
+                              <Switch
+                                checked={room.isAvailable}
+                                onChange={() => handleToggleAvailability(room.id, room.isAvailable)}
+                                disabled={loading || !canToggleAvailability(room).canToggle}
+                                size="small"
+                                color={room.isAvailable ? 'success' : 'error'}
+                              />
+                            </span>
+                          </Tooltip>
+                          <Typography variant="caption" color={room.isAvailable ? 'success.main' : 'error.main'}>
+                            {room.isAvailable ? 'Available' : 'Unavailable'}
+                          </Typography>
+                        </Box>
                       </TableCell>
                       <TableCell align="center">
                         <Box sx={{ display: 'flex', gap: 0.5 }}>

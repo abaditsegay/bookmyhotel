@@ -38,7 +38,8 @@ import { useAuthenticatedApi } from '../hooks/useAuthenticatedApi';
 import { AvailableRoom, HotelSearchRequest } from '../types/hotel';
 
 interface BookingPageState {
-  room: AvailableRoom;
+  room?: AvailableRoom;
+  roomType?: any; // For room type bookings
   hotelName: string;
   hotelId: number;
   searchRequest?: HotelSearchRequest;
@@ -81,17 +82,13 @@ const BookingPage: React.FC = () => {
 
   // Redirect if no booking data
   useEffect(() => {
-    if (!bookingData?.room) {
+    if (!bookingData?.room && !bookingData?.roomType) {
       navigate('/search-results');
       return;
     }
     
-    // Check if this is a guest booking (either explicitly marked or user not authenticated)
-    const isGuestBooking = bookingData.asGuest || !isAuthenticated;
-    
-    // Only redirect to auth if user is authenticated but no booking data marked as guest
-    // This allows for true guest checkout without forcing authentication
-    if (!isAuthenticated && !bookingData.asGuest && !isGuestBooking) {
+    // Only redirect to auth if user is not authenticated AND this is not marked as guest booking
+    if (!isAuthenticated && !bookingData.asGuest) {
       navigate('/guest-auth', {
         state: {
           from: '/booking',
@@ -103,19 +100,22 @@ const BookingPage: React.FC = () => {
 
   // Allow access if authenticated OR booking as guest OR has booking data
   // This ensures guest users can complete booking without authentication
-  if (!bookingData?.room) {
+  if (!bookingData?.room && !bookingData?.roomType) {
     return null; // Will redirect
   }
 
   // Determine if this is a guest booking flow
   const isGuestBookingFlow = bookingData.asGuest || !isAuthenticated;
 
-  const { room, hotelName } = bookingData;
+  const { room, roomType, hotelName } = bookingData;
+
+  // Use room data from either room or roomType
+  const roomData = room || roomType;
 
   const calculateTotalAmount = () => {
-    if (!checkInDate || !checkOutDate) return 0;
+    if (!checkInDate || !checkOutDate || !roomData) return 0;
     const nights = checkOutDate.diff(checkInDate, 'day');
-    return room.pricePerNight * nights;
+    return roomData.pricePerNight * nights;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -186,7 +186,9 @@ const BookingPage: React.FC = () => {
 
     try {
       const bookingRequest = {
-        roomId: room.id,
+        hotelId: bookingData.hotelId,
+        roomId: roomData.id || undefined, // For individual room bookings
+        roomType: roomData.roomType || roomType?.roomType, // For room type bookings
         checkInDate: checkInDate.format('YYYY-MM-DD'),
         checkOutDate: checkOutDate.format('YYYY-MM-DD'),
         guests: guests,
@@ -197,7 +199,12 @@ const BookingPage: React.FC = () => {
         guestName: isGuestBookingFlow ? guestName.trim() : undefined,
         guestEmail: isGuestBookingFlow ? guestEmail.trim() : undefined,
         guestPhone: isGuestBookingFlow ? (guestPhone.trim() || undefined) : undefined,
-      };      const result = await hotelApiService.createBooking(bookingRequest);
+      };
+
+      // Remove undefined roomId for room type bookings to avoid sending null to backend
+      if (!bookingRequest.roomId) {
+        delete (bookingRequest as any).roomId;
+      }      const result = await hotelApiService.createBooking(bookingRequest);
       
       // Navigate to confirmation page with booking details
       navigate(`/booking-confirmation/${result.reservationId}`, { 
@@ -301,18 +308,18 @@ const BookingPage: React.FC = () => {
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
               <Typography variant="body2">
-                <strong>Room:</strong> {room.roomNumber}
+                <strong>Room:</strong> {roomData.roomNumber || 'Room Type Booking'}
               </Typography>
               <Typography variant="body2">
-                <strong>Type:</strong> {room.roomType}
+                <strong>Type:</strong> {roomData.roomType}
               </Typography>
               <Typography variant="body2">
-                <strong>Capacity:</strong> Up to {room.capacity} guests
+                <strong>Capacity:</strong> Up to {roomData.capacity} guests
               </Typography>
             </Grid>
             <Grid item xs={12} sm={6}>
               <Typography variant="body2">
-                <strong>Price per night:</strong> ${room.pricePerNight}
+                <strong>Price per night:</strong> ${roomData.pricePerNight}
               </Typography>
               {nights > 0 && (
                 <>
@@ -326,9 +333,9 @@ const BookingPage: React.FC = () => {
               )}
             </Grid>
           </Grid>
-          {room.description && (
+          {roomData.description && (
             <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-              {room.description}
+              {roomData.description}
             </Typography>
           )}
         </Paper>
@@ -374,7 +381,7 @@ const BookingPage: React.FC = () => {
                   type="number"
                   value={guests}
                   onChange={(e) => setGuests(Math.max(1, parseInt(e.target.value) || 1))}
-                  inputProps={{ min: 1, max: room.capacity }}
+                  inputProps={{ min: 1, max: roomData.capacity }}
                   fullWidth
                   required
                 />

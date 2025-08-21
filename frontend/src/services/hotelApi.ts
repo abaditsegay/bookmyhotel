@@ -120,7 +120,37 @@ class HotelApiService {
 
   // Booking methods
   async createBooking(bookingRequest: BookingRequest): Promise<BookingResponse> {
-    return this.fetchApi<BookingResponse>('/bookings', {
+    // Use different endpoints based on booking type
+    const endpoint = bookingRequest.roomId ? '/bookings' : '/bookings/room-type';
+    
+    // For room-type bookings (public booking flow), don't send tenant header
+    // Let the backend determine the tenant from the hotel being booked
+    if (!bookingRequest.roomId) {
+      // Make request without tenant header for cross-tenant booking
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+
+      // Add Authorization header if token is available
+      if (this.token) {
+        headers['Authorization'] = `Bearer ${this.token}`;
+      }
+
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(bookingRequest),
+      });
+
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.status} ${response.statusText}`);
+      }
+
+      return response.json();
+    }
+    
+    // For specific room bookings, use the normal fetchApi with tenant context
+    return this.fetchApi<BookingResponse>(endpoint, {
       method: 'POST',
       body: JSON.stringify(bookingRequest),
     });

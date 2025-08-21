@@ -239,6 +239,10 @@ class AdminApiService {
     return this.fetchApi<TenantDTO[]>('/admin/tenants/active');
   }
 
+  async getHotelsByTenant(tenantId: string): Promise<HotelDTO[]> {
+    return this.fetchApi<HotelDTO[]>(`/admin/hotels/tenant/${tenantId}/options`);
+  }
+
   // Hotel Registration Management Methods
   async getHotelRegistrations(page: number = 0, size: number = 10): Promise<PagedResponse<HotelRegistrationResponse>> {
     return this.fetchApi<PagedResponse<HotelRegistrationResponse>>(`/admin/hotel-registrations?page=${page}&size=${size}`);
@@ -324,6 +328,7 @@ export interface CreateUserRequest {
   password: string;
   roles: string[];
   tenantId?: string;
+  hotelId?: number;
 }
 
 export interface UserStatistics {
@@ -408,7 +413,7 @@ export interface TenantDTO {
   id: number;
   tenantId: string;
   name: string;
-  subdomain: string;
+  subdomain?: string;
   description?: string;
   isActive: boolean;
   createdAt: string;
@@ -419,13 +424,13 @@ export interface TenantDTO {
 
 export interface CreateTenantRequest {
   name: string;
-  subdomain: string;
+  subdomain?: string;
   description?: string;
 }
 
 export interface UpdateTenantRequest {
   name: string;
-  subdomain: string;
+  subdomain?: string;
   description?: string;
 }
 

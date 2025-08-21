@@ -21,10 +21,12 @@ import {
 } from '@mui/icons-material';
 import { HotelSearchResult } from '../../types/hotel';
 import RoomCard from './RoomCard';
+import RoomTypeCard from './RoomTypeCard';
 
 interface HotelDetailsCardProps {
   hotel: HotelSearchResult;
-  onBookRoom: (hotelId: number, roomId: number, asGuest?: boolean) => void;
+  onBookRoom?: (hotelId: number, roomId: number, asGuest?: boolean) => void;
+  onBookRoomType?: (hotelId: number, roomType: string, asGuest?: boolean) => void;
   defaultExpanded?: boolean;
 }
 
@@ -45,10 +47,20 @@ const getHotelImage = (hotelName: string, city: string): string => {
 const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({ 
   hotel, 
   onBookRoom, 
+  onBookRoomType,
   defaultExpanded = false 
 }) => {
   const [expanded, setExpanded] = React.useState(defaultExpanded);
-  const hasAvailableRooms = hotel.availableRooms && hotel.availableRooms.length > 0;
+  
+  // Determine if we should use room types or individual rooms
+  const useRoomTypes = hotel.roomTypeAvailability && hotel.roomTypeAvailability.length > 0;
+  const hasAvailableRooms = useRoomTypes ? 
+    hotel.roomTypeAvailability?.some(rt => rt.availableCount > 0) || false : 
+    hotel.availableRooms && hotel.availableRooms.length > 0;
+  
+  const totalAvailableCount = useRoomTypes ? 
+    hotel.roomTypeAvailability?.reduce((sum, rt) => sum + rt.availableCount, 0) || 0 :
+    hotel.availableRooms?.length || 0;
 
   // Mock rating (in a real app, this would come from the backend)
   const hotelRating = 4.2 + (hotel.id % 10) / 10; // Generates ratings between 4.2-5.1
@@ -96,7 +108,10 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
                   </Typography>
                 </Box>
                 <Chip 
-                  label={`${hotel.availableRooms.length} rooms available`} 
+                  label={useRoomTypes ? 
+                    `${totalAvailableCount} rooms available` : 
+                    `${hotel.availableRooms?.length || 0} rooms available`
+                  } 
                   color="success" 
                   variant="outlined"
                   size="small"
@@ -157,7 +172,10 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
         {/* Rooms Section Header */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
           <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-            Available Rooms ({hotel.availableRooms.length})
+            {useRoomTypes ? 
+              `Available Room Types (${hotel.roomTypeAvailability?.length || 0})` :
+              `Available Rooms (${hotel.availableRooms?.length || 0})`
+            }
           </Typography>
           <Button
             onClick={() => setExpanded(!expanded)}
@@ -173,24 +191,42 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
         {hasAvailableRooms && !expanded && (
           <Box sx={{ mb: 2 }}>
             <Grid container spacing={2}>
-              {hotel.availableRooms.slice(0, 2).map((room) => (
-                <Grid item xs={12} sm={6} key={room.id}>
-                  <RoomCard
-                    room={room}
-                    hotelId={hotel.id}
-                    onBookRoom={onBookRoom}
-                  />
-                </Grid>
-              ))}
+              {useRoomTypes ? (
+                // Display room types
+                hotel.roomTypeAvailability?.slice(0, 2).map((roomType) => (
+                  <Grid item xs={12} sm={6} key={roomType.roomType}>
+                    <RoomTypeCard
+                      roomType={roomType}
+                      hotelId={hotel.id}
+                      onBookRoomType={onBookRoomType || (() => {})}
+                    />
+                  </Grid>
+                ))
+              ) : (
+                // Display individual rooms (backward compatibility)
+                hotel.availableRooms?.slice(0, 2).map((room) => (
+                  <Grid item xs={12} sm={6} key={room.id}>
+                    <RoomCard
+                      room={room}
+                      hotelId={hotel.id}
+                      onBookRoom={onBookRoom || (() => {})}
+                    />
+                  </Grid>
+                ))
+              )}
             </Grid>
-            {hotel.availableRooms.length > 2 && (
+            {((useRoomTypes && hotel.roomTypeAvailability && hotel.roomTypeAvailability.length > 2) ||
+              (!useRoomTypes && hotel.availableRooms && hotel.availableRooms.length > 2)) && (
               <Box sx={{ textAlign: 'center', mt: 2 }}>
                 <Button
                   variant="text"
                   onClick={() => setExpanded(true)}
                   color="primary"
                 >
-                  View {hotel.availableRooms.length - 2} more rooms
+                  View {useRoomTypes ? 
+                    (hotel.roomTypeAvailability!.length - 2) : 
+                    (hotel.availableRooms!.length - 2)
+                  } more {useRoomTypes ? 'room types' : 'rooms'}
                 </Button>
               </Box>
             )}
@@ -201,15 +237,29 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
         <Collapse in={expanded} timeout="auto" unmountOnExit>
           <Box sx={{ mt: 2 }}>
             <Grid container spacing={2}>
-              {hotel.availableRooms.map((room) => (
-                <Grid item xs={12} sm={6} md={4} key={room.id}>
-                  <RoomCard
-                    room={room}
-                    hotelId={hotel.id}
-                    onBookRoom={onBookRoom}
-                  />
-                </Grid>
-              ))}
+              {useRoomTypes ? (
+                // Display room types
+                hotel.roomTypeAvailability?.map((roomType) => (
+                  <Grid item xs={12} sm={6} md={4} key={roomType.roomType}>
+                    <RoomTypeCard
+                      roomType={roomType}
+                      hotelId={hotel.id}
+                      onBookRoomType={onBookRoomType || (() => {})}
+                    />
+                  </Grid>
+                ))
+              ) : (
+                // Display individual rooms (backward compatibility)
+                hotel.availableRooms?.map((room) => (
+                  <Grid item xs={12} sm={6} md={4} key={room.id}>
+                    <RoomCard
+                      room={room}
+                      hotelId={hotel.id}
+                      onBookRoom={onBookRoom || (() => {})}
+                    />
+                  </Grid>
+                ))
+              )}
             </Grid>
           </Box>
         </Collapse>

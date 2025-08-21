@@ -100,6 +100,7 @@ public class User extends BaseEntity implements UserDetails {
     // Lifecycle methods for tenant management
     @PrePersist
     public void prePersist() {
+        super.prePersist(); // Call BaseEntity's prePersist first
         System.err.println("🚨🚨🚨 USER PRE_PERSIST: STARTING prePersist() method 🚨🚨🚨");
         System.err.println("🚨🚨🚨 USER PRE_PERSIST: User email = " + this.email + " 🚨🚨🚨");
         System.err.println("🚨🚨🚨 USER PRE_PERSIST: User roles = " + this.roles + " 🚨🚨🚨");
@@ -107,8 +108,19 @@ public class User extends BaseEntity implements UserDetails {
         System.err.println("🚨🚨🚨 USER PRE_PERSIST: TenantContext.getTenantId() = " + TenantContext.getTenantId() + " 🚨🚨🚨");
         
         if (isTenantBoundUser()) {
-            System.err.println("🚨🚨🚨 USER PRE_PERSIST: User is TENANT BOUND, setting tenant ID 🚨🚨🚨");
-            this.tenantId = TenantContext.getTenantId();
+            // Only set tenant ID from context if not explicitly set
+            // This prevents overriding explicitly assigned tenant IDs during user creation
+            if (this.tenantId == null || this.tenantId.trim().isEmpty()) {
+                String contextTenantId = TenantContext.getTenantId();
+                if (contextTenantId != null && !contextTenantId.trim().isEmpty()) {
+                    System.err.println("🚨🚨🚨 USER PRE_PERSIST: User is TENANT BOUND, setting tenant ID from context 🚨🚨🚨");
+                    this.tenantId = contextTenantId;
+                } else {
+                    System.err.println("🚨🚨🚨 USER PRE_PERSIST: User is TENANT BOUND but no context tenant available 🚨🚨🚨");
+                }
+            } else {
+                System.err.println("🚨🚨🚨 USER PRE_PERSIST: User is TENANT BOUND but tenant_id already explicitly set, preserving it 🚨🚨🚨");
+            }
         } else {
             System.err.println("🚨🚨🚨 USER PRE_PERSIST: User is NOT tenant bound (guest/admin), keeping tenant_id as null 🚨🚨🚨");
             // Explicitly set to null for guest users

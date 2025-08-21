@@ -58,6 +58,24 @@ public class BookingController {
     }
     
     /**
+     * Create a new booking by room type (no specific room assignment)
+     */
+    @PostMapping("/room-type")
+    public ResponseEntity<BookingResponse> createBookingByRoomType(
+            @Valid @RequestBody BookingRequest request, 
+            Authentication auth) {
+        System.err.println("🎯🎯🎯 BOOKING CONTROLLER: createBookingByRoomType method called");
+        System.err.println("🎯🎯🎯 BOOKING CONTROLLER: request = " + request);
+        System.err.println("🎯🎯🎯 BOOKING CONTROLLER: auth = " + auth);
+        
+        String userEmail = (auth != null) ? auth.getName() : null;
+        System.err.println("🎯🎯🎯 BOOKING CONTROLLER: userEmail = " + userEmail);
+        
+        BookingResponse response = bookingService.createBookingByRoomType(request, userEmail);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+    
+    /**
      * Get booking details
      */
     @GetMapping("/{reservationId}")

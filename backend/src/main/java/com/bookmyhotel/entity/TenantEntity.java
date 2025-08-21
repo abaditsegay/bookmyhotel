@@ -25,8 +25,13 @@ public abstract class TenantEntity extends BaseEntity {
     @PrePersist
     public void prePersist() {
         super.prePersist(); // Call BaseEntity's prePersist
-        if (this.tenantId == null) {
-            this.tenantId = TenantContext.getTenantId();
+        // Only set tenant ID from context if not explicitly set
+        // This prevents overriding explicitly assigned tenant IDs during user creation
+        if (this.tenantId == null || this.tenantId.trim().isEmpty()) {
+            String contextTenantId = TenantContext.getTenantId();
+            if (contextTenantId != null && !contextTenantId.trim().isEmpty()) {
+                this.tenantId = contextTenantId;
+            }
         }
     }
     

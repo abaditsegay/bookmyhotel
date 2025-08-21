@@ -169,8 +169,8 @@ const TenantManagementAdmin: React.FC = () => {
   const handleCreateTenant = async () => {
     if (!token) return;
     
-    if (!tenantForm.name || !tenantForm.subdomain) {
-      setError('Please fill in all required fields.');
+    if (!tenantForm.name) {
+      setError('Please enter a tenant name.');
       return;
     }
     
@@ -187,7 +187,7 @@ const TenantManagementAdmin: React.FC = () => {
       setError(null);
     } catch (err) {
       console.error('Error creating tenant:', err);
-      setError('Failed to create tenant. Please check the subdomain is unique.');
+      setError('Failed to create tenant. Please check if the name and subdomain are unique.');
     } finally {
       setLoading(false);
     }
@@ -496,11 +496,10 @@ const TenantManagementAdmin: React.FC = () => {
               <Grid item xs={12}>
                 <TextField
                   fullWidth
-                  label="Subdomain"
+                  label="Subdomain (Optional)"
                   value={tenantForm.subdomain || ''}
                   onChange={(e) => setTenantForm({ ...tenantForm, subdomain: e.target.value })}
-                  helperText="This will be used as part of the tenant's URL"
-                  required
+                  helperText="Optional: This will be used as part of the tenant's URL if provided"
                 />
               </Grid>
               <Grid item xs={12}>
@@ -520,7 +519,7 @@ const TenantManagementAdmin: React.FC = () => {
             <Button 
               onClick={handleCreateTenant}
               variant="contained"
-              disabled={loading || !tenantForm.name || !tenantForm.subdomain}
+              disabled={loading || !tenantForm.name}
             >
               Create Tenant
             </Button>
@@ -549,10 +548,10 @@ const TenantManagementAdmin: React.FC = () => {
               <Grid item xs={12}>
                 <TextField
                   fullWidth
-                  label="Subdomain"
+                  label="Subdomain (Optional)"
                   value={editForm.subdomain || ''}
                   onChange={(e) => setEditForm({ ...editForm, subdomain: e.target.value })}
-                  required
+                  helperText="Optional: This will be used as part of the tenant's URL if provided"
                 />
               </Grid>
               <Grid item xs={12}>
@@ -572,7 +571,7 @@ const TenantManagementAdmin: React.FC = () => {
             <Button 
               onClick={handleEditTenant}
               variant="contained"
-              disabled={loading || !editForm.name || !editForm.subdomain}
+              disabled={loading || !editForm.name}
             >
               Update Tenant
             </Button>

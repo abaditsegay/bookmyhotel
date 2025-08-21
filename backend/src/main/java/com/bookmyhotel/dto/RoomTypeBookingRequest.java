@@ -2,20 +2,21 @@ package com.bookmyhotel.dto;
 
 import java.time.LocalDate;
 
+import com.bookmyhotel.entity.RoomType;
+
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 /**
- * Booking request DTO
+ * Room type booking request DTO - for booking room types instead of specific rooms
  */
-public class BookingRequest {
+public class RoomTypeBookingRequest {
     
-    // For individual room booking (traditional approach)
-    private Long roomId;
-    
-    // For room type booking (new approach)
+    @NotNull(message = "Hotel ID is required")
     private Long hotelId;
-    private String roomType;
+    
+    @NotNull(message = "Room type is required")
+    private RoomType roomType;
     
     @NotNull(message = "Check-in date is required")
     private LocalDate checkInDate;
@@ -39,17 +40,10 @@ public class BookingRequest {
     private String guestPhone;
     
     // Constructors
-    public BookingRequest() {}
+    public RoomTypeBookingRequest() {}
     
-    public BookingRequest(Long roomId, LocalDate checkInDate, LocalDate checkOutDate, Integer guests) {
-        this.roomId = roomId;
-        this.checkInDate = checkInDate;
-        this.checkOutDate = checkOutDate;
-        this.guests = guests;
-    }
-    
-    // Constructor for room type booking
-    public BookingRequest(Long hotelId, String roomType, LocalDate checkInDate, LocalDate checkOutDate, Integer guests) {
+    public RoomTypeBookingRequest(Long hotelId, RoomType roomType, LocalDate checkInDate, 
+                                LocalDate checkOutDate, Integer guests) {
         this.hotelId = hotelId;
         this.roomType = roomType;
         this.checkInDate = checkInDate;
@@ -58,14 +52,6 @@ public class BookingRequest {
     }
     
     // Getters and Setters
-    public Long getRoomId() {
-        return roomId;
-    }
-    
-    public void setRoomId(Long roomId) {
-        this.roomId = roomId;
-    }
-    
     public Long getHotelId() {
         return hotelId;
     }
@@ -74,11 +60,11 @@ public class BookingRequest {
         this.hotelId = hotelId;
     }
     
-    public String getRoomType() {
+    public RoomType getRoomType() {
         return roomType;
     }
     
-    public void setRoomType(String roomType) {
+    public void setRoomType(RoomType roomType) {
         this.roomType = roomType;
     }
     

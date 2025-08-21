@@ -40,6 +40,9 @@ public class CreateUserRequest {
     @Size(max = 50, message = "Tenant ID must not exceed 50 characters")
     private String tenantId;
     
+    // Hotel ID for HOTEL_ADMIN users
+    private Long hotelId;
+    
     // Constructors
     public CreateUserRequest() {}
     
@@ -98,5 +101,13 @@ public class CreateUserRequest {
     
     public void setTenantId(String tenantId) {
         this.tenantId = tenantId;
+    }
+    
+    public Long getHotelId() {
+        return hotelId;
+    }
+    
+    public void setHotelId(Long hotelId) {
+        this.hotelId = hotelId;
     }
 }

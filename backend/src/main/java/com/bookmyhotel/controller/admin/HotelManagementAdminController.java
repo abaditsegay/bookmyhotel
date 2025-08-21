@@ -189,4 +189,13 @@ public class HotelManagementAdminController {
         HotelManagementService.HotelStatistics stats = hotelManagementService.getHotelStatistics();
         return ResponseEntity.ok(stats);
     }
+    
+    /**
+     * Get hotels by tenant for user assignment dropdown
+     */
+    @GetMapping("/tenant/{tenantId}/options")
+    public ResponseEntity<List<HotelDTO>> getHotelOptionsForTenant(@PathVariable String tenantId) {
+        List<HotelDTO> hotels = hotelManagementService.getHotelsByTenantForDropdown(tenantId);
+        return ResponseEntity.ok(hotels);
+    }
 }

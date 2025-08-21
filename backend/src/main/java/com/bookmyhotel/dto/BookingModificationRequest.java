@@ -2,7 +2,6 @@ package com.bookmyhotel.dto;
 
 import java.time.LocalDate;
 
-import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
 
 /**
@@ -19,7 +18,7 @@ public class BookingModificationRequest {
     // Optional fields for modification
     private LocalDate newCheckInDate;
     
-    @Future(message = "Check-out date must be in the future")
+    // Remove @Future constraint for admin modifications
     private LocalDate newCheckOutDate;
     
     private Long newRoomId; // For room type changes

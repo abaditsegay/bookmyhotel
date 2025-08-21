@@ -221,6 +221,24 @@ public class HotelManagementService {
     }
     
     /**
+     * Get hotels by tenant for dropdown selection
+     */
+    public List<HotelDTO> getHotelsByTenantForDropdown(String tenantId) {
+        List<Hotel> hotels = hotelRepository.findByTenantIdAndIsActiveTrue(tenantId);
+        return hotels.stream()
+                .map(hotel -> {
+                    HotelDTO dto = new HotelDTO();
+                    dto.setId(hotel.getId());
+                    dto.setName(hotel.getName());
+                    dto.setCity(hotel.getCity());
+                    dto.setTenantId(hotel.getTenantId());
+                    dto.setIsActive(hotel.getIsActive());
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+    
+    /**
      * Convert Hotel entity to DTO
      */
     private HotelDTO convertToDTO(Hotel hotel) {
