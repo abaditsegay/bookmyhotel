@@ -599,9 +599,10 @@ public class HotelAdminService {
             .count();
         stats.put("occupiedRooms", occupiedRooms);
         
-        // Staff statistics
+        // Staff statistics - include all staff roles (excluding guests and customers)
         List<User> staff = userRepository.findByHotelAndRolesContaining(hotel, 
-            Arrays.asList(UserRole.FRONTDESK, UserRole.HOUSEKEEPING, UserRole.HOTEL_ADMIN));
+            Arrays.asList(UserRole.FRONTDESK, UserRole.HOUSEKEEPING, UserRole.HOTEL_ADMIN, 
+                         UserRole.HOTEL_MANAGER, UserRole.ADMIN));
         stats.put("totalStaff", staff.size());
         stats.put("activeStaff", staff.stream().mapToInt(s -> s.getIsActive() ? 1 : 0).sum());
         
