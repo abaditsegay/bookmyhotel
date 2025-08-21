@@ -586,8 +586,18 @@ public class HotelAdminService {
         // Room statistics
         List<Room> rooms = roomRepository.findByHotelId(hotel.getId());
         stats.put("totalRooms", rooms.size());
-        stats.put("availableRooms", rooms.stream().mapToInt(r -> r.getIsAvailable() ? 1 : 0).sum());
-        stats.put("occupiedRooms", rooms.stream().mapToInt(r -> r.getIsAvailable() ? 0 : 1).sum());
+        
+        // Available rooms: status is AVAILABLE and room is available for booking
+        long availableRooms = rooms.stream()
+            .filter(r -> r.getStatus() == RoomStatus.AVAILABLE && r.getIsAvailable())
+            .count();
+        stats.put("availableRooms", availableRooms);
+        
+        // Occupied rooms: status is OCCUPIED (guests are currently in the room)
+        long occupiedRooms = rooms.stream()
+            .filter(r -> r.getStatus() == RoomStatus.OCCUPIED)
+            .count();
+        stats.put("occupiedRooms", occupiedRooms);
         
         // Staff statistics
         List<User> staff = userRepository.findByHotelAndRolesContaining(hotel, 
