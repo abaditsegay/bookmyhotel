@@ -9,15 +9,9 @@ import {
   Tabs,
   Tab,
   Paper,
-  Button,
   Snackbar,
   Alert
 } from '@mui/material';
-import {
-  Refresh as RefreshIcon,
-  PersonAdd as AddGuestIcon,
-  Hotel as RoomIcon
-} from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { frontDeskApiService, FrontDeskStats } from '../../services/frontDeskApi';
 import BookingManagementTable from '../../components/booking/BookingManagementTable';
@@ -108,11 +102,11 @@ const FrontDeskDashboard: React.FC = () => {
       severity: 'success'
     });
     
-    // Refresh stats and possibly switch to booking management tab
+    // Refresh stats and switch to booking management tab
     loadStats();
-    // Optionally switch to booking management tab to see the new booking
-    setActiveTab(1);
-    setSearchParams({ tab: '1' });
+    // Switch to booking management tab to see the new booking (now index 0)
+    setActiveTab(0);
+    setSearchParams({ tab: '0' });
     
     // Add a small delay to ensure the booking appears in the list
     // The tab switch and currentTab dependency should trigger a refresh
@@ -212,64 +206,14 @@ const FrontDeskDashboard: React.FC = () => {
       {/* Tabs */}
       <Paper sx={{ mb: 3 }}>
         <Tabs value={activeTab} onChange={handleTabChange} aria-label="front desk tabs">
-          <Tab label="Quick Actions" />
           <Tab label="Booking Management" />
           <Tab label="Room Management" />
           <Tab label="Housekeeping" />
         </Tabs>
       </Paper>
 
-      {/* Quick Actions Tab */}
-      <TabPanel value={activeTab} index={0}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-          <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-            Today's Quick Actions
-          </Typography>
-          <Box>
-            <Button 
-              variant="outlined" 
-              startIcon={<RefreshIcon />} 
-              sx={{ mr: 2 }}
-              onClick={handleRefresh}
-            >
-              Refresh
-            </Button>
-            <Button 
-              variant="outlined" 
-              startIcon={<RoomIcon />}
-              sx={{ mr: 2 }}
-              onClick={() => {
-                setActiveTab(2);
-                setSearchParams({ tab: '2' });
-              }}
-            >
-              Manage Rooms
-            </Button>
-            <Button 
-              variant="contained" 
-              startIcon={<AddGuestIcon />}
-              onClick={() => {
-                console.log('Walk-in booking button clicked!'); // Debug log
-                setWalkInModalOpen(true);
-              }}
-            >
-              Walk-in Guest
-            </Button>
-          </Box>
-        </Box>
-        
-        <Card>
-          <CardContent>
-            <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
-              Quick actions for today's arrivals and departures will be displayed here.
-              Use the "Booking Management" tab for comprehensive booking operations.
-            </Typography>
-          </CardContent>
-        </Card>
-      </TabPanel>
-
       {/* Comprehensive Booking Management Tab */}
-      <TabPanel value={activeTab} index={1}>
+      <TabPanel value={activeTab} index={0}>
         <BookingManagementTable
           mode="front-desk"
           title="Booking Management"
@@ -289,7 +233,7 @@ const FrontDeskDashboard: React.FC = () => {
       </TabPanel>
 
       {/* Room Management Tab */}
-      <TabPanel value={activeTab} index={2}>
+      <TabPanel value={activeTab} index={1}>
         <FrontDeskRoomManagement
           onRoomUpdate={(room) => {
             console.log('Room updated:', room);
@@ -300,7 +244,7 @@ const FrontDeskDashboard: React.FC = () => {
       </TabPanel>
 
       {/* Housekeeping Tab */}
-      <TabPanel value={activeTab} index={3}>
+      <TabPanel value={activeTab} index={2}>
         <Box sx={{ p: 3, textAlign: 'center' }}>
           <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>
             Housekeeping Module
