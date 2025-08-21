@@ -7,7 +7,7 @@ import {
   Speed as SpeedIcon,
   CloudQueue as CloudIcon 
 } from '@mui/icons-material';
-import { Layout } from './components/layout';
+import EnhancedLayout from './components/layout/EnhancedLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import { useAuth } from './contexts/AuthContext';
 import HotelSearchPage from './pages/HotelSearchPage';
@@ -266,8 +266,10 @@ const PlaceholderPage: React.FC<{ title: string; message: string }> = ({ title, 
 );
 
 function App() {
+  const { isAuthenticated } = useAuth();
+  
   return (
-    <Layout>
+    <EnhancedLayout hideSidebar={!isAuthenticated}>
       <Routes>
         <Route path="/" element={<HomePageRouter />} />
         <Route path="/home" element={<HomePage />} />
@@ -494,7 +496,7 @@ function App() {
           </ProtectedRoute>
         } />
       </Routes>
-    </Layout>
+    </EnhancedLayout>
   );
 }
 

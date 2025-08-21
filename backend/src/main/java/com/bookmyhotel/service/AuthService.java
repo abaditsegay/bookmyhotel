@@ -32,6 +32,9 @@ public class AuthService {
     @Autowired
     private JwtUtil jwtUtil;
     
+    @Autowired
+    private EmailService emailService;
+    
     /**
      * Register a new guest user (system-wide)
      */
@@ -54,6 +57,19 @@ public class AuthService {
         
         // Save the user
         user = userRepository.save(user);
+        
+        // Send welcome email to the new user
+        try {
+            emailService.sendUserWelcomeEmail(
+                user.getEmail(),
+                user.getFirstName(),
+                user.getLastName()
+            );
+        } catch (Exception e) {
+            // Log the error but don't fail registration
+            // Email is nice-to-have, registration success is critical
+            System.err.println("Failed to send welcome email to " + user.getEmail() + ": " + e.getMessage());
+        }
         
         // Generate token for immediate login
         String token = jwtUtil.generateToken(user);

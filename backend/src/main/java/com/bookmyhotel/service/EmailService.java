@@ -1,6 +1,10 @@
 package com.bookmyhotel.service;
 
-import com.bookmyhotel.dto.BookingResponse;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,10 +14,7 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
-import java.util.Map;
+import com.bookmyhotel.dto.BookingResponse;
 
 /**
  * Email service using OAuth2 Microsoft Graph API
@@ -141,6 +142,42 @@ public class EmailService {
         } catch (Exception e) {
             logger.error("Failed to send hotel admin welcome email via Microsoft Graph", e);
             throw new RuntimeException("Failed to send hotel admin welcome email", e);
+        }
+    }
+
+    /**
+     * Send welcome email to new user after registration
+     */
+    public void sendUserWelcomeEmail(String email, String firstName, String lastName) {
+        // Check if Microsoft Graph is configured
+        if (!microsoftGraphEmailService.isConfigured()) {
+            logger.warn("Microsoft Graph OAuth2 is not configured. Cannot send welcome email to: {}", email);
+            throw new IllegalStateException("Email service is not configured. Microsoft Graph OAuth2 credentials are required.");
+        }
+        
+        try {
+            logger.info("Sending welcome email to new user: {} via Microsoft Graph OAuth2", email);
+            
+            Map<String, Object> templateData = new HashMap<>();
+            templateData.put("firstName", firstName);
+            templateData.put("lastName", lastName);
+            templateData.put("email", email);
+            templateData.put("appName", appName);
+            templateData.put("appUrl", appUrl);
+            templateData.put("registrationDate", java.time.LocalDate.now());
+            
+            String htmlContent = templateEngine.process("user-welcome", createContext(templateData));
+            String subject = String.format("Welcome to %s - Your Account is Ready!", appName);
+            
+            microsoftGraphEmailService.sendEmail(email, subject, htmlContent);
+            
+            logger.info("Successfully sent welcome email to: {}", email);
+            
+        } catch (Exception e) {
+            logger.error("Failed to send user welcome email via Microsoft Graph to: {}", email, e);
+            // Don't throw exception to prevent registration failure due to email issues
+            // Registration should succeed even if email fails
+            logger.warn("User registration will continue despite email failure");
         }
     }
 

@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTenant } from '../contexts/TenantContext';
 import { hotelApiService } from '../services/hotelApi';
 import { adminApiService } from '../services/adminApi';
+import { todoApiService } from '../services/todoApi';
 
 /**
  * Hook to automatically set the authentication token in API services
@@ -16,6 +17,13 @@ export const useAuthenticatedApi = () => {
     // Update the token in the API services whenever it changes
     hotelApiService.setToken(token);
     adminApiService.setToken(token);
+    todoApiService.setToken(token);
+    
+    // Update tenant ID for services that support it
+    if (tenantId) {
+      hotelApiService.setTenantId(tenantId);
+      todoApiService.setTenantId(tenantId);
+    }
     
     if (!token || !user) {
       // Anonymous user
@@ -37,6 +45,7 @@ export const useAuthenticatedApi = () => {
   return { 
     hotelApiService, 
     adminApiService,
+    todoApiService,
     isSystemWideUser: user?.isSystemWide || false,
     tenantId
   };
