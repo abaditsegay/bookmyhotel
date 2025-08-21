@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.bookmyhotel.controller.FrontDeskController.FrontDeskStats;
 import com.bookmyhotel.dto.BookingResponse;
 import com.bookmyhotel.dto.HotelDTO;
+import com.bookmyhotel.dto.RoomResponse;
 import com.bookmyhotel.entity.Hotel;
 import com.bookmyhotel.entity.Reservation;
 import com.bookmyhotel.entity.ReservationStatus;
@@ -481,6 +482,118 @@ public class FrontDeskService {
         Hotel hotel = hotels.get(0); // Get the first hotel for this tenant
         return convertToHotelDTO(hotel);
     }
+
+    /**
+     * Get all rooms with pagination and filtering
+     */
+    @Transactional(readOnly = true)
+    public Page<RoomResponse> getAllRooms(Pageable pageable, String search, String roomType, String status) {
+        String tenantId = TenantContext.getTenantId();
+        if (tenantId == null || tenantId.trim().isEmpty()) {
+            throw new IllegalStateException("Tenant context is not set");
+        }
+        
+        // Get the hotel for this tenant first
+        List<Hotel> hotels = hotelRepository.findByTenantId(tenantId);
+        if (hotels.isEmpty()) {
+            throw new ResourceNotFoundException("No hotel found for tenant: " + tenantId);
+        }
+        
+        Hotel hotel = hotels.get(0);
+        
+        // Get all rooms for the hotel and apply filtering
+        List<Room> allRooms = roomRepository.findByHotelIdOrderByRoomNumber(hotel.getId());
+        
+        // Apply search and filters
+        List<Room> filteredRooms = allRooms.stream()
+            .filter(room -> search == null || search.trim().isEmpty() || 
+                    room.getRoomNumber().toLowerCase().contains(search.toLowerCase()) ||
+                    room.getDescription() != null && room.getDescription().toLowerCase().contains(search.toLowerCase()))
+            .filter(room -> roomType == null || roomType.trim().isEmpty() || 
+                    room.getRoomType().toString().equalsIgnoreCase(roomType))
+            .filter(room -> status == null || status.trim().isEmpty() || 
+                    room.getStatus().toString().equalsIgnoreCase(status))
+            .toList();
+        
+        // Apply manual pagination
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), filteredRooms.size());
+        List<Room> pagedRooms = start < filteredRooms.size() ? 
+            filteredRooms.subList(start, end) : List.of();
+        
+        List<RoomResponse> roomResponses = pagedRooms.stream()
+            .map(this::convertToRoomResponse)
+            .toList();
+        
+        return new PageImpl<>(roomResponses, pageable, filteredRooms.size());
+    }
+
+    /**
+     * Update room status
+     */
+    public RoomResponse updateRoomStatus(Long roomId, String status, String notes) {
+        Room room = roomRepository.findById(roomId)
+            .orElseThrow(() -> new ResourceNotFoundException("Room not found with id: " + roomId));
+        
+        try {
+            RoomStatus newStatus = RoomStatus.valueOf(status.toUpperCase());
+            room.setStatus(newStatus);
+            
+            // Add any logic for handling specific status changes
+            if (newStatus == RoomStatus.AVAILABLE) {
+                // Room is now available for booking
+                room.setIsAvailable(true);
+            } else if (newStatus == RoomStatus.OUT_OF_ORDER) {
+                // Room is not available for booking
+                room.setIsAvailable(false);
+            }
+            
+            room = roomRepository.save(room);
+            
+            return convertToRoomResponse(room);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid room status: " + status);
+        }
+    }
+
+    /**
+     * Toggle room availability
+     */
+    public RoomResponse toggleRoomAvailability(Long roomId, boolean available, String reason) {
+        Room room = roomRepository.findById(roomId)
+            .orElseThrow(() -> new ResourceNotFoundException("Room not found with id: " + roomId));
+        
+        room.setIsAvailable(available);
+        
+        // If making unavailable, set appropriate status
+        if (!available) {
+            if (room.getStatus() == RoomStatus.AVAILABLE) {
+                room.setStatus(RoomStatus.OUT_OF_ORDER);
+            }
+        } else {
+            // If making available, ensure status allows booking
+            if (room.getStatus() == RoomStatus.OUT_OF_ORDER) {
+                room.setStatus(RoomStatus.AVAILABLE);
+            }
+        }
+        
+        room = roomRepository.save(room);
+        
+        return convertToRoomResponse(room);
+    }
+
+    /**
+     * Toggle room availability (overloaded method for actual toggling)
+     */
+    public RoomResponse toggleRoomAvailability(Long roomId) {
+        Room room = roomRepository.findById(roomId)
+            .orElseThrow(() -> new ResourceNotFoundException("Room not found with id: " + roomId));
+        
+        // Toggle the availability
+        boolean newAvailability = !room.getIsAvailable();
+        
+        return toggleRoomAvailability(roomId, newAvailability, null);
+    }
     
     /**
      * Convert Hotel entity to HotelDTO
@@ -517,5 +630,39 @@ public class FrontDeskService {
     private BookingResponse convertToBookingResponse(Reservation reservation) {
         // Delegate to BookingService for consistent conversion
         return bookingService.convertToBookingResponse(reservation);
+    }
+
+    /**
+     * Convert room to room response
+     */
+    private RoomResponse convertToRoomResponse(Room room) {
+        RoomResponse response = new RoomResponse();
+        response.setId(room.getId());
+        response.setRoomNumber(room.getRoomNumber());
+        response.setRoomType(room.getRoomType());
+        response.setStatus(room.getStatus());
+        response.setPricePerNight(room.getPricePerNight());
+        response.setCapacity(room.getCapacity());
+        response.setDescription(room.getDescription());
+        response.setIsAvailable(room.getIsAvailable());
+        
+        // Set hotel name
+        if (room.getHotel() != null) {
+            response.setHotelName(room.getHotel().getName());
+        }
+        
+        // Check if room has current guest (checked-in reservation)
+        if (room.getReservations() != null) {
+            room.getReservations().stream()
+                .filter(reservation -> reservation.getStatus() == ReservationStatus.CHECKED_IN)
+                .findFirst()
+                .ifPresent(reservation -> {
+                    String guestName = reservation.getGuest().getFirstName() + " " + 
+                                     reservation.getGuest().getLastName();
+                    response.setCurrentGuest(guestName);
+                });
+        }
+        
+        return response;
     }
 }

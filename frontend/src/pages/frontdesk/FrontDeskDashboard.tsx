@@ -19,6 +19,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { frontDeskApiService, FrontDeskStats } from '../../services/frontDeskApi';
 import BookingManagementTable from '../../components/booking/BookingManagementTable';
 import WalkInBookingModal from '../../components/booking/WalkInBookingModal';
+import RoomManagementTable from '../../components/hotel/RoomManagementTable';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -47,7 +48,7 @@ const FrontDeskDashboard: React.FC = () => {
   
   // Get initial tab from URL parameter, default to 0
   const initialTab = parseInt(searchParams.get('tab') || '0', 10);
-  const [activeTab, setActiveTab] = useState(Math.max(0, Math.min(initialTab, 1))); // Ensure tab is 0 or 1
+  const [activeTab, setActiveTab] = useState(Math.max(0, Math.min(initialTab, 2))); // Ensure tab is 0, 1, or 2
   const [stats, setStats] = useState<FrontDeskStats | null>(null);
   const [walkInModalOpen, setWalkInModalOpen] = useState(false);
 
@@ -256,27 +257,13 @@ const FrontDeskDashboard: React.FC = () => {
 
       {/* Housekeeping Tab */}
       <TabPanel value={activeTab} index={2}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-          <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-            Housekeeping Management
-          </Typography>
-          <Button 
-            variant="outlined" 
-            startIcon={<RefreshIcon />}
-            onClick={handleRefresh}
-          >
-            Refresh
-          </Button>
-        </Box>
-        
-        <Card>
-          <CardContent>
-            <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
-              Housekeeping management functionality will be implemented here.
-              This includes room status tracking, cleaning assignments, and maintenance requests.
-            </Typography>
-          </CardContent>
-        </Card>
+        <RoomManagementTable
+          onRoomUpdate={(room) => {
+            console.log('Room updated:', room);
+            // Refresh stats when room is updated
+            loadStats();
+          }}
+        />
       </TabPanel>
 
       {/* Walk-in Booking Modal */}

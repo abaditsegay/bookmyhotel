@@ -2,7 +2,6 @@ package com.bookmyhotel.controller;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -15,14 +14,15 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bookmyhotel.dto.BookingResponse;
 import com.bookmyhotel.dto.HotelDTO;
+import com.bookmyhotel.dto.RoomResponse;
 import com.bookmyhotel.entity.ReservationStatus;
 import com.bookmyhotel.service.FrontDeskService;
 
@@ -191,6 +191,59 @@ public class FrontDeskController {
     public ResponseEntity<HotelDTO> getHotelInfo() {
         HotelDTO hotel = frontDeskService.getHotelInfo();
         return ResponseEntity.ok(hotel);
+    }
+
+    /**
+     * Get all rooms with pagination and filtering
+     */
+    @GetMapping("/rooms")
+    @PreAuthorize("hasRole('FRONT_DESK') or hasRole('HOTEL_ADMIN')")
+    public ResponseEntity<Page<RoomResponse>> getAllRooms(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String roomType,
+            @RequestParam(required = false) String status) {
+        
+        Pageable pageable = PageRequest.of(page, size, Sort.by("roomNumber"));
+        Page<RoomResponse> rooms = frontDeskService.getAllRooms(pageable, search, roomType, status);
+        return ResponseEntity.ok(rooms);
+    }
+
+    /**
+     * Update room status
+     */
+    @PutMapping("/rooms/{roomId}/status")
+    @PreAuthorize("hasRole('FRONT_DESK') or hasRole('HOTEL_ADMIN')")
+    public ResponseEntity<RoomResponse> updateRoomStatus(
+            @PathVariable Long roomId,
+            @RequestParam String status,
+            @RequestParam(required = false) String notes) {
+        RoomResponse response = frontDeskService.updateRoomStatus(roomId, status, notes);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Toggle room availability
+     */
+    @PutMapping("/rooms/{roomId}/availability")
+    @PreAuthorize("hasRole('FRONT_DESK') or hasRole('HOTEL_ADMIN')")
+    public ResponseEntity<RoomResponse> toggleRoomAvailability(
+            @PathVariable Long roomId,
+            @RequestParam boolean available,
+            @RequestParam(required = false) String reason) {
+        RoomResponse response = frontDeskService.toggleRoomAvailability(roomId, available, reason);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Toggle room availability (simple toggle without parameters)
+     */
+    @PostMapping("/rooms/{roomId}/toggle-availability")
+    @PreAuthorize("hasRole('FRONT_DESK') or hasRole('HOTEL_ADMIN')")
+    public ResponseEntity<RoomResponse> toggleRoomAvailability(@PathVariable Long roomId) {
+        RoomResponse response = frontDeskService.toggleRoomAvailability(roomId);
+        return ResponseEntity.ok(response);
     }
     
     /**
