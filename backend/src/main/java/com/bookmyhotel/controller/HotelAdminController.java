@@ -17,10 +17,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import jakarta.validation.Valid;
-import com.bookmyhotel.dto.BookingResponse;
 import com.bookmyhotel.dto.BookingModificationRequest;
 import com.bookmyhotel.dto.BookingModificationResponse;
+import com.bookmyhotel.dto.BookingResponse;
 import com.bookmyhotel.dto.HotelDTO;
 import com.bookmyhotel.dto.RoomDTO;
 import com.bookmyhotel.dto.UserDTO;
@@ -150,6 +149,16 @@ public class HotelAdminController {
             @RequestParam Boolean available,
             Authentication auth) {
         RoomDTO updated = hotelAdminService.toggleRoomAvailability(roomId, available, auth.getName());
+        return ResponseEntity.ok(updated);
+    }
+
+    @PutMapping("/rooms/{roomId}/status")
+    public ResponseEntity<RoomDTO> updateRoomStatus(
+            @PathVariable Long roomId,
+            @RequestParam String status,
+            @RequestParam(required = false) String notes,
+            Authentication auth) {
+        RoomDTO updated = hotelAdminService.updateRoomStatus(roomId, status, notes, auth.getName());
         return ResponseEntity.ok(updated);
     }
 

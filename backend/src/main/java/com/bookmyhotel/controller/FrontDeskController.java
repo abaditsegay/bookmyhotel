@@ -2,6 +2,7 @@ package com.bookmyhotel.controller;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bookmyhotel.dto.BookingResponse;
+import com.bookmyhotel.dto.FrontDeskStats;
 import com.bookmyhotel.dto.HotelDTO;
 import com.bookmyhotel.dto.RoomResponse;
 import com.bookmyhotel.entity.ReservationStatus;
@@ -235,100 +237,14 @@ public class FrontDeskController {
         RoomResponse response = frontDeskService.toggleRoomAvailability(roomId, available, reason);
         return ResponseEntity.ok(response);
     }
-
-    /**
-     * Toggle room availability (simple toggle without parameters)
-     */
-    @PostMapping("/rooms/{roomId}/toggle-availability")
-    @PreAuthorize("hasRole('FRONT_DESK') or hasRole('HOTEL_ADMIN')")
-    public ResponseEntity<RoomResponse> toggleRoomAvailability(@PathVariable Long roomId) {
-        RoomResponse response = frontDeskService.toggleRoomAvailability(roomId);
-        return ResponseEntity.ok(response);
-    }
-    
-    /**
-     * Get rooms for front desk operations
-     */
-    @GetMapping("/rooms")
-    @PreAuthorize("hasRole('FRONT_DESK') or hasRole('HOTEL_ADMIN')")
-    public ResponseEntity<Page<Map<String, Object>>> getRooms(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String search,
-            @RequestParam(required = false) String roomType,
-            @RequestParam(required = false) String status) {
-        
-        Pageable pageable = PageRequest.of(page, size, Sort.by("roomNumber").ascending());
-        Page<Map<String, Object>> rooms = frontDeskService.getRooms(pageable, search, roomType, status);
-        return ResponseEntity.ok(rooms);
-    }
-    
-    /**
-     * Update room status for housekeeping operations
-     */
-    @PutMapping("/rooms/{roomId}/status")
-    @PreAuthorize("hasRole('FRONT_DESK') or hasRole('HOTEL_ADMIN')")
-    public ResponseEntity<Map<String, Object>> updateRoomStatus(
-            @PathVariable Long roomId,
-            @RequestParam String status,
-            @RequestParam(required = false) String notes) {
-        
-        Map<String, Object> updatedRoom = frontDeskService.updateRoomStatus(roomId, status, notes);
-        return ResponseEntity.ok(updatedRoom);
-    }
     
     /**
      * Get room details by ID
      */
     @GetMapping("/rooms/{roomId}")
     @PreAuthorize("hasRole('FRONT_DESK') or hasRole('HOTEL_ADMIN')")
-    public ResponseEntity<Map<String, Object>> getRoomById(@PathVariable Long roomId) {
-        Map<String, Object> room = frontDeskService.getRoomById(roomId);
+    public ResponseEntity<RoomResponse> getRoomById(@PathVariable Long roomId) {
+        RoomResponse room = frontDeskService.getRoomById(roomId);
         return ResponseEntity.ok(room);
-    }
-    
-    /**
-     * Inner class for front desk statistics
-     */
-    public static class FrontDeskStats {
-        private long todaysArrivals;
-        private long todaysDepartures;
-        private long currentOccupancy;
-        private long availableRooms;
-        private long roomsOutOfOrder;
-        private long roomsUnderMaintenance;
-        
-        // Constructors
-        public FrontDeskStats() {}
-        
-        public FrontDeskStats(long todaysArrivals, long todaysDepartures, 
-                             long currentOccupancy, long availableRooms,
-                             long roomsOutOfOrder, long roomsUnderMaintenance) {
-            this.todaysArrivals = todaysArrivals;
-            this.todaysDepartures = todaysDepartures;
-            this.currentOccupancy = currentOccupancy;
-            this.availableRooms = availableRooms;
-            this.roomsOutOfOrder = roomsOutOfOrder;
-            this.roomsUnderMaintenance = roomsUnderMaintenance;
-        }
-        
-        // Getters and Setters
-        public long getTodaysArrivals() { return todaysArrivals; }
-        public void setTodaysArrivals(long todaysArrivals) { this.todaysArrivals = todaysArrivals; }
-        
-        public long getTodaysDepartures() { return todaysDepartures; }
-        public void setTodaysDepartures(long todaysDepartures) { this.todaysDepartures = todaysDepartures; }
-        
-        public long getCurrentOccupancy() { return currentOccupancy; }
-        public void setCurrentOccupancy(long currentOccupancy) { this.currentOccupancy = currentOccupancy; }
-        
-        public long getAvailableRooms() { return availableRooms; }
-        public void setAvailableRooms(long availableRooms) { this.availableRooms = availableRooms; }
-        
-        public long getRoomsOutOfOrder() { return roomsOutOfOrder; }
-        public void setRoomsOutOfOrder(long roomsOutOfOrder) { this.roomsOutOfOrder = roomsOutOfOrder; }
-        
-        public long getRoomsUnderMaintenance() { return roomsUnderMaintenance; }
-        public void setRoomsUnderMaintenance(long roomsUnderMaintenance) { this.roomsUnderMaintenance = roomsUnderMaintenance; }
     }
 }

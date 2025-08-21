@@ -14,8 +14,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.bookmyhotel.controller.FrontDeskController.FrontDeskStats;
 import com.bookmyhotel.dto.BookingResponse;
+import com.bookmyhotel.dto.FrontDeskStats;
 import com.bookmyhotel.dto.HotelDTO;
 import com.bookmyhotel.dto.RoomResponse;
 import com.bookmyhotel.entity.Hotel;
@@ -539,17 +539,29 @@ public class FrontDeskService {
             .orElseThrow(() -> new ResourceNotFoundException("Room not found with id: " + roomId));
         
         try {
-            RoomStatus newStatus = RoomStatus.valueOf(status.toUpperCase());
-            room.setStatus(newStatus);
+            // Convert status string to RoomStatus enum (consistent with Hotel Admin)
+            String normalizedStatus = status.replace(" ", "_").toUpperCase();
+            RoomStatus newStatus = RoomStatus.valueOf(normalizedStatus);
             
-            // Add any logic for handling specific status changes
-            if (newStatus == RoomStatus.AVAILABLE) {
-                // Room is now available for booking
-                room.setIsAvailable(true);
-            } else if (newStatus == RoomStatus.OUT_OF_ORDER) {
-                // Room is not available for booking
-                room.setIsAvailable(false);
+            // Business rule: Cannot change status if room has active bookings and new status would conflict
+            LocalDate today = LocalDate.now();
+            boolean hasActiveBookings = room.getReservations().stream()
+                .anyMatch(reservation -> 
+                    (reservation.getStatus() == ReservationStatus.CONFIRMED || 
+                     reservation.getStatus() == ReservationStatus.CHECKED_IN) &&
+                    !reservation.getCheckInDate().isAfter(today) &&
+                    !reservation.getCheckOutDate().isBefore(today));
+            
+            if (hasActiveBookings && (newStatus == RoomStatus.OUT_OF_ORDER || 
+                                     newStatus == RoomStatus.MAINTENANCE)) {
+                throw new RuntimeException("Cannot set room to " + status + " - it has active bookings");
             }
+            
+            room.setStatus(newStatus);
+            room.setUpdatedAt(LocalDateTime.now());
+            
+            // Note: Availability is controlled independently through toggleRoomAvailability
+            // This allows hotel staff to control booking availability separately from room status
             
             room = roomRepository.save(room);
             
@@ -566,19 +578,26 @@ public class FrontDeskService {
         Room room = roomRepository.findById(roomId)
             .orElseThrow(() -> new ResourceNotFoundException("Room not found with id: " + roomId));
         
-        room.setIsAvailable(available);
-        
-        // If making unavailable, set appropriate status
+        // Business rule: Cannot make room unavailable if it has active bookings
         if (!available) {
-            if (room.getStatus() == RoomStatus.AVAILABLE) {
-                room.setStatus(RoomStatus.OUT_OF_ORDER);
-            }
-        } else {
-            // If making available, ensure status allows booking
-            if (room.getStatus() == RoomStatus.OUT_OF_ORDER) {
-                room.setStatus(RoomStatus.AVAILABLE);
+            LocalDate today = LocalDate.now();
+            boolean hasActiveBookings = room.getReservations().stream()
+                .anyMatch(reservation -> 
+                    (reservation.getStatus() == ReservationStatus.CONFIRMED || 
+                     reservation.getStatus() == ReservationStatus.CHECKED_IN) &&
+                    !reservation.getCheckInDate().isAfter(today) &&
+                    !reservation.getCheckOutDate().isBefore(today));
+            
+            if (hasActiveBookings) {
+                throw new RuntimeException("Cannot make room unavailable - it has active bookings");
             }
         }
+        
+        room.setIsAvailable(available);
+        room.setUpdatedAt(LocalDateTime.now());
+        
+        // Note: Status and availability are controlled independently
+        // This allows hotel staff to control booking availability without changing room status
         
         room = roomRepository.save(room);
         
@@ -596,6 +615,16 @@ public class FrontDeskService {
         boolean newAvailability = !room.getIsAvailable();
         
         return toggleRoomAvailability(roomId, newAvailability, null);
+    }
+
+    /**
+     * Get room details by ID
+     */
+    public RoomResponse getRoomById(Long roomId) {
+        Room room = roomRepository.findById(roomId)
+            .orElseThrow(() -> new ResourceNotFoundException("Room not found with id: " + roomId));
+        
+        return convertToRoomResponse(room);
     }
     
     /**
@@ -636,17 +665,30 @@ public class FrontDeskService {
     }
 
     /**
-     * Convert room to room response
+     * Convert room to room response with consistent business logic
      */
     private RoomResponse convertToRoomResponse(Room room) {
         RoomResponse response = new RoomResponse();
         response.setId(room.getId());
         response.setRoomNumber(room.getRoomNumber());
         response.setRoomType(room.getRoomType());
-        response.setStatus(room.getStatus());
         response.setPricePerNight(room.getPricePerNight());
         response.setCapacity(room.getCapacity());
         response.setDescription(room.getDescription());
+        
+        // Check if room is currently booked
+        boolean isCurrentlyBooked = roomRepository.isRoomCurrentlyBooked(room.getId());
+        
+        // Update room status to OCCUPIED if currently booked and status is AVAILABLE
+        // This ensures consistent status display across Hotel Admin and Front Desk
+        if (isCurrentlyBooked && room.getStatus() == RoomStatus.AVAILABLE) {
+            response.setStatus(RoomStatus.OCCUPIED);
+        } else {
+            response.setStatus(room.getStatus());
+        }
+        
+        // Availability toggle shows the admin's manual setting (independent of booking status)
+        // This allows hotel admin to control booking availability separately from operational status
         response.setIsAvailable(room.getIsAvailable());
         
         // Set hotel name

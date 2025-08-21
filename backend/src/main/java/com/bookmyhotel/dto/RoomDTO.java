@@ -40,6 +40,7 @@ public class RoomDTO {
     
     private Long hotelId;
     private String hotelName;
+    private String currentGuest; // Current guest name if room is occupied
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     
@@ -134,6 +135,14 @@ public class RoomDTO {
     
     public void setHotelName(String hotelName) {
         this.hotelName = hotelName;
+    }
+    
+    public String getCurrentGuest() {
+        return currentGuest;
+    }
+    
+    public void setCurrentGuest(String currentGuest) {
+        this.currentGuest = currentGuest;
     }
     
     public LocalDateTime getCreatedAt() {

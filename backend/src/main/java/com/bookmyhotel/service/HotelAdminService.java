@@ -20,12 +20,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.bookmyhotel.dto.BookingResponse;
 import com.bookmyhotel.dto.BookingModificationRequest;
 import com.bookmyhotel.dto.BookingModificationResponse;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.Query;
+import com.bookmyhotel.dto.BookingResponse;
 import com.bookmyhotel.dto.HotelDTO;
 import com.bookmyhotel.dto.RoomDTO;
 import com.bookmyhotel.dto.UserDTO;
@@ -42,6 +39,10 @@ import com.bookmyhotel.repository.HotelRepository;
 import com.bookmyhotel.repository.ReservationRepository;
 import com.bookmyhotel.repository.RoomRepository;
 import com.bookmyhotel.repository.UserRepository;
+
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 
 /**
  * Service for hotel admin operations
@@ -518,6 +519,58 @@ public class HotelAdminService {
     }
 
     /**
+     * Update room status
+     */
+    public RoomDTO updateRoomStatus(Long roomId, String status, String notes, String adminEmail) {
+        User admin = getUserByEmail(adminEmail);
+        Hotel hotel = admin.getHotel();
+        
+        Room room = roomRepository.findById(roomId)
+            .orElseThrow(() -> new RuntimeException("Room not found"));
+        
+        // Verify the room belongs to the same hotel
+        if (!room.getHotel().getId().equals(hotel.getId())) {
+            throw new RuntimeException("Room does not belong to your hotel");
+        }
+        
+        // Convert status string to RoomStatus enum
+        RoomStatus roomStatus;
+        try {
+            String normalizedStatus = status.replace(" ", "_").toUpperCase();
+            roomStatus = RoomStatus.valueOf(normalizedStatus);
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid status value: " + status);
+        }
+        
+        // Business rule: Cannot change status if room has active bookings and new status would conflict
+        LocalDate today = LocalDate.now();
+        boolean hasActiveBookings = room.getReservations().stream()
+            .anyMatch(reservation -> 
+                (reservation.getStatus() == ReservationStatus.CONFIRMED || 
+                 reservation.getStatus() == ReservationStatus.CHECKED_IN) &&
+                !reservation.getCheckInDate().isAfter(today) &&
+                !reservation.getCheckOutDate().isBefore(today));
+        
+        if (hasActiveBookings && (roomStatus == RoomStatus.OUT_OF_ORDER || 
+                                 roomStatus == RoomStatus.MAINTENANCE)) {
+            throw new RuntimeException("Cannot set room to " + status + " - it has active bookings");
+        }
+        
+        room.setStatus(roomStatus);
+        room.setUpdatedAt(LocalDateTime.now());
+        
+        // Auto-adjust availability based on status
+        if (roomStatus == RoomStatus.OUT_OF_ORDER || roomStatus == RoomStatus.MAINTENANCE) {
+            room.setIsAvailable(false);
+        } else if (roomStatus == RoomStatus.AVAILABLE) {
+            room.setIsAvailable(true);
+        }
+        
+        Room saved = roomRepository.save(room);
+        return convertToRoomDTO(saved);
+    }
+
+    /**
      * Get hotel statistics
      */
     public Map<String, Object> getHotelStatistics(String adminEmail) {
@@ -621,9 +674,17 @@ public class HotelAdminService {
         
         // Check if room is currently booked
         boolean isCurrentlyBooked = roomRepository.isRoomCurrentlyBooked(room.getId());
-        // Room is available if it's marked as available AND not currently booked
-        dto.setIsAvailable(room.getIsAvailable() && !isCurrentlyBooked);
-        dto.setStatus(room.getStatus());
+        
+        // Update room status to OCCUPIED if currently booked and status is AVAILABLE
+        if (isCurrentlyBooked && room.getStatus() == RoomStatus.AVAILABLE) {
+            dto.setStatus(RoomStatus.OCCUPIED);
+        } else {
+            dto.setStatus(room.getStatus());
+        }
+        
+        // Availability toggle shows the admin's manual setting (independent of booking status)
+        // This allows hotel admin to control booking availability separately from operational status
+        dto.setIsAvailable(room.getIsAvailable());
         
         dto.setCreatedAt(room.getCreatedAt());
         dto.setUpdatedAt(room.getUpdatedAt());
@@ -631,6 +692,18 @@ public class HotelAdminService {
         if (room.getHotel() != null) {
             dto.setHotelId(room.getHotel().getId());
             dto.setHotelName(room.getHotel().getName());
+        }
+        
+        // Check if room has current guest (checked-in reservation) - same as Front Desk
+        if (room.getReservations() != null) {
+            room.getReservations().stream()
+                .filter(reservation -> reservation.getStatus() == ReservationStatus.CHECKED_IN)
+                .findFirst()
+                .ifPresent(reservation -> {
+                    String guestName = reservation.getGuest().getFirstName() + " " + 
+                                     reservation.getGuest().getLastName();
+                    dto.setCurrentGuest(guestName);
+                });
         }
         
         return dto;
