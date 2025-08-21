@@ -646,11 +646,19 @@ public class HotelAdminService {
         dto.setCreatedAt(hotel.getCreatedAt());
         dto.setUpdatedAt(hotel.getUpdatedAt());
         
-        // Calculate statistics
+        // Calculate room statistics
         if (hotel.getRooms() != null) {
             dto.setTotalRooms(hotel.getRooms().size());
             dto.setAvailableRooms((int) hotel.getRooms().stream().mapToInt(r -> r.getIsAvailable() ? 1 : 0).sum());
+            dto.setBookedRooms((int) hotel.getRooms().stream().filter(r -> r.getStatus() == RoomStatus.OCCUPIED).count());
         }
+        
+        // Calculate staff statistics
+        List<User> staff = userRepository.findByHotelAndRolesContaining(hotel, 
+            Arrays.asList(UserRole.FRONTDESK, UserRole.HOUSEKEEPING, UserRole.HOTEL_ADMIN, 
+                         UserRole.HOTEL_MANAGER, UserRole.ADMIN));
+        dto.setTotalStaff(staff.size());
+        dto.setActiveStaff((int) staff.stream().mapToInt(s -> s.getIsActive() ? 1 : 0).sum());
         
         return dto;
     }

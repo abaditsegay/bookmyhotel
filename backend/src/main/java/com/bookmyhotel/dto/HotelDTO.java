@@ -42,7 +42,9 @@ public class HotelDTO {
     private Integer roomCount;
     private Integer totalRooms;
     private Integer availableRooms;
+    private Integer bookedRooms;
     private Integer totalStaff;
+    private Integer activeStaff;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     
@@ -141,12 +143,28 @@ public class HotelDTO {
         this.availableRooms = availableRooms;
     }
     
+    public Integer getBookedRooms() {
+        return bookedRooms;
+    }
+    
+    public void setBookedRooms(Integer bookedRooms) {
+        this.bookedRooms = bookedRooms;
+    }
+    
     public Integer getTotalStaff() {
         return totalStaff;
     }
     
     public void setTotalStaff(Integer totalStaff) {
         this.totalStaff = totalStaff;
+    }
+    
+    public Integer getActiveStaff() {
+        return activeStaff;
+    }
+    
+    public void setActiveStaff(Integer activeStaff) {
+        this.activeStaff = activeStaff;
     }
     
     public LocalDateTime getCreatedAt() {
