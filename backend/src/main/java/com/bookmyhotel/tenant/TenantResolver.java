@@ -27,9 +27,7 @@ public class TenantResolver {
     public String resolveTenant(HttpServletRequest request) {
         // First check if tenant is already set from JWT authentication
         String existingTenantId = TenantContext.getTenantId();
-        System.out.println("DEBUG: TenantResolver - Existing tenant ID from context: " + existingTenantId);
         if (existingTenantId != null && !existingTenantId.trim().isEmpty()) {
-            System.out.println("DEBUG: TenantResolver - Using existing tenant ID: " + existingTenantId);
             return existingTenantId;
         }
 

@@ -876,49 +876,27 @@ public class HotelAdminService {
      */
     @Transactional
     public BookingResponse updateBookingStatus(Long reservationId, ReservationStatus newStatus) {
-        System.out.println("DEBUG: Updating booking status - reservationId: " + reservationId + ", newStatus: " + newStatus);
-        
         Reservation reservation = reservationRepository.findById(reservationId)
             .orElseThrow(() -> new RuntimeException("Reservation not found"));
         
-        System.out.println("DEBUG: Found reservation: " + reservation.getId() + ", current status: " + reservation.getStatus());
-        System.out.println("DEBUG: Tenant ID: " + reservation.getTenantId());
-        
         reservation.setStatus(newStatus);
-        System.out.println("DEBUG: Set new status: " + newStatus);
         
         // Fix guestInfo validation issue for guest users
-        System.out.println("DEBUG: Guest object: " + reservation.getGuest());
-        System.out.println("DEBUG: GuestInfo object: " + reservation.getGuestInfo());
-        
         if (reservation.getGuestInfo() != null) {
             GuestInfo guestInfo = reservation.getGuestInfo();
-            System.out.println("DEBUG: Current guestInfo name: " + guestInfo.getName());
             
             if (guestInfo.getName() == null || guestInfo.getName().trim().isEmpty()) {
                 // Use guest_id from reservation to fetch guest information
                 if (reservation.getGuest() != null) {
-                    System.out.println("DEBUG: Fetching guest user with ID: " + reservation.getGuest().getId());
                     User guest = fetchGuestUserById(reservation.getGuest().getId());
                     if (guest != null) {
                         guestInfo.setName(guest.getFirstName() + " " + guest.getLastName());
-                        System.out.println("DEBUG: Fixed guestInfo name: " + guestInfo.getName());
-                    } else {
-                        System.out.println("DEBUG: Failed to fetch guest user");
                     }
-                } else {
-                    System.out.println("DEBUG: reservation.getGuest() is null, cannot fetch guest info");
                 }
-            } else {
-                System.out.println("DEBUG: guestInfo name already exists: " + guestInfo.getName());
             }
-        } else {
-            System.out.println("DEBUG: reservation.getGuestInfo() is null");
         }
         
-        System.out.println("DEBUG: About to save reservation...");
         reservation = reservationRepository.save(reservation);
-        System.out.println("DEBUG: Reservation saved successfully");
         
         return convertToBookingResponse(reservation);
     }
@@ -1004,7 +982,7 @@ public class HotelAdminService {
             
             return guestUser;
         } catch (Exception e) {
-            System.out.println("DEBUG: Failed to fetch guest user with ID " + guestId + ": " + e.getMessage());
+            // Silently handle guest fetch errors
             return null;
         }
     }

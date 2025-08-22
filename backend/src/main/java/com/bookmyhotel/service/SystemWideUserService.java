@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.bookmyhotel.dto.admin.UserManagementResponse;
 import com.bookmyhotel.entity.User;
 import com.bookmyhotel.entity.UserRole;
 import com.bookmyhotel.repository.UserRepository;
@@ -54,6 +55,31 @@ public class SystemWideUserService {
      */
     public Page<User> getAllSystemWideUsers(Pageable pageable) {
         return userRepository.findByTenantIdIsNull(pageable);
+    }
+    
+    /**
+     * Get all users in the system (both system-wide and tenant users)
+     */
+    public Page<UserManagementResponse> getAllUsers(Pageable pageable) {
+        Page<User> users = userRepository.findAll(pageable);
+        return users.map(this::convertToUserManagementResponse);
+    }
+    
+    /**
+     * Convert User entity to UserManagementResponse DTO
+     */
+    private UserManagementResponse convertToUserManagementResponse(User user) {
+        UserManagementResponse response = new UserManagementResponse();
+        response.setId(user.getId());
+        response.setEmail(user.getEmail());
+        response.setFirstName(user.getFirstName());
+        response.setLastName(user.getLastName());
+        response.setIsActive(user.getIsActive());
+        response.setTenantId(user.getTenantId());
+        response.setRoles(user.getRoles());
+        response.setCreatedAt(user.getCreatedAt());
+        response.setUpdatedAt(user.getUpdatedAt());
+        return response;
     }
     
     /**

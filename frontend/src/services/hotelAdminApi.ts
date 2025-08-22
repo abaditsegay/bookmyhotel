@@ -40,6 +40,16 @@ export interface BookingStats {
   upcomingCheckOuts: number;
 }
 
+export interface HotelStatistics {
+  totalRooms: number;
+  availableRooms: number;
+  bookedRooms: number;
+  totalStaff: number;
+  activeStaff: number;
+  staffByRole: { [key: string]: number };
+  roomsByType: { [key: string]: number };
+}
+
 export interface RoomResponse {
   id: number;
   roomNumber: string;
@@ -196,6 +206,30 @@ export const hotelAdminApi = {
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to fetch booking statistics' 
+      };
+    }
+  },
+
+  // Get hotel statistics
+  getHotelStatistics: async (token: string): Promise<{ success: boolean; data?: HotelStatistics; message?: string }> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/hotel-admin/statistics`, {
+        method: 'GET',
+        headers: getAuthHeaders(token),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to fetch hotel statistics');
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      console.error('Hotel stats fetch error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to fetch hotel statistics' 
       };
     }
   },

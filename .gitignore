@@ -109,6 +109,9 @@ jspm_packages/
 # Azure and OAuth credentials
 *oauth2-credentials*
 *azure-credentials*
+oauth2-credentials.env
+setup-oauth2.sh
+start-backend-with-oauth2.sh
 *.pem
 *.p12
 *.pfx

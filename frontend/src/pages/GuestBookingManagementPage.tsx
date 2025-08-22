@@ -16,6 +16,7 @@ import {
   DialogContent,
   DialogActions,
   TextField,
+  MenuItem,
   Accordion,
   AccordionSummary,
   AccordionDetails,
@@ -65,11 +66,12 @@ const GuestBookingManagementPage: React.FC = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   
-  // Modification form state
+    // Modification form state
   const [modificationData, setModificationData] = useState({
     newCheckInDate: booking?.checkInDate || '',
     newCheckOutDate: booking?.checkOutDate || '',
     newRoomType: booking?.roomType || '',
+    newGuestEmail: booking?.guestEmail || '',
     modificationReason: ''
   });
   
@@ -114,6 +116,19 @@ const GuestBookingManagementPage: React.FC = () => {
       setLoading(false);
     }
   }, [token, initialBooking, fetchBookingFromToken]);
+
+  // Update modification form when booking data changes
+  useEffect(() => {
+    if (booking) {
+      setModificationData({
+        newCheckInDate: booking.checkInDate || '',
+        newCheckOutDate: booking.checkOutDate || '',
+        newRoomType: booking.roomType || '',
+        newGuestEmail: booking.guestEmail || '',
+        modificationReason: ''
+      });
+    }
+  }, [booking]);
 
   if (loading) {
     return (
@@ -193,7 +208,8 @@ const GuestBookingManagementPage: React.FC = () => {
       
       const modificationRequest = {
         confirmationNumber: booking.confirmationNumber,
-        guestEmail: booking.guestEmail,
+        guestEmail: booking.guestEmail, // Always send original email for authentication
+        newGuestEmail: modificationData.newGuestEmail !== booking.guestEmail ? modificationData.newGuestEmail : undefined,
         newCheckInDate: modificationData.newCheckInDate !== booking.checkInDate ? modificationData.newCheckInDate : undefined,
         newCheckOutDate: modificationData.newCheckOutDate !== booking.checkOutDate ? modificationData.newCheckOutDate : undefined,
         newRoomType: modificationData.newRoomType !== booking.roomType ? modificationData.newRoomType : undefined,
@@ -230,6 +246,7 @@ const GuestBookingManagementPage: React.FC = () => {
               checkInDate: response.updatedBooking.checkInDate,
               checkOutDate: response.updatedBooking.checkOutDate,
               roomType: response.updatedBooking.roomType,
+              guestEmail: response.updatedBooking.guestEmail,
               totalAmount: response.updatedBooking.totalAmount
             });
           }
@@ -495,6 +512,17 @@ const GuestBookingManagementPage: React.FC = () => {
         <DialogTitle>Modify Your Booking</DialogTitle>
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 1 }}>
+            <Grid item xs={12}>
+              <TextField
+                label="Email Address"
+                type="email"
+                fullWidth
+                value={modificationData.newGuestEmail}
+                onChange={(e) => setModificationData({ ...modificationData, newGuestEmail: e.target.value })}
+                helperText="Update your email address if needed for confirmations"
+                required
+              />
+            </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
                 label="Check-in Date"
@@ -524,14 +552,13 @@ const GuestBookingManagementPage: React.FC = () => {
                 select
                 value={modificationData.newRoomType}
                 onChange={(e) => setModificationData({ ...modificationData, newRoomType: e.target.value })}
-                SelectProps={{
-                  native: true,
-                }}
               >
-                <option value="Standard">Standard</option>
-                <option value="Deluxe">Deluxe</option>
-                <option value="Suite">Suite</option>
-                <option value="Family">Family</option>
+                <MenuItem value="">Select Room Type</MenuItem>
+                <MenuItem value="SINGLE">Single</MenuItem>
+                <MenuItem value="DOUBLE">Double</MenuItem>
+                <MenuItem value="DELUXE">Deluxe</MenuItem>
+                <MenuItem value="SUITE">Suite</MenuItem>
+                <MenuItem value="PRESIDENTIAL">Presidential</MenuItem>
               </TextField>
             </Grid>
             <Grid item xs={12}>

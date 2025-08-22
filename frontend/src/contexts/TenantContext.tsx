@@ -28,7 +28,7 @@ export const TenantProvider: React.FC<TenantProviderProps> = ({ children }) => {
   
   // Mock available tenants - in real app, this would come from an API
   const availableTenants: Tenant[] = useMemo(() => [
-    { id: '07fac8ae-7c91-11f0-8a72-6abc1ea96c43', name: 'Grand Plaza Hotel', subdomain: 'grandplaza' },
+    { id: 'd7b7e673-6788-45b2-8dad-4d48944a144e', name: 'Grand Plaza Hotel', subdomain: 'grandplaza' },
     { id: 'f60a5bc4-7c91-11f0-8a72-6abc1ea96c43', name: 'Downtown Business Hotel', subdomain: 'downtown' },
     { id: 'f60a5c04-7c91-11f0-8a72-6abc1ea96c43', name: 'Seaside Resort', subdomain: 'seaside' },
     { id: 'a1b2c3d4-5e6f-7g8h-9i0j-k1l2m3n4o5p6', name: 'Luxury Hotel Group', subdomain: 'luxury' },

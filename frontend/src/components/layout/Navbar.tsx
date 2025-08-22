@@ -20,9 +20,7 @@ import {
 } from '@mui/material';
 import {
   Menu as MenuIcon,
-  Hotel as HotelIcon,
   Person as PersonIcon,
-  Dashboard as DashboardIcon,
   Logout as LogoutIcon,
   Business as BusinessIcon,
   AppRegistration as RegisterIcon,
@@ -126,9 +124,9 @@ const Navbar: React.FC = () => {
         return [...baseItems];
       }
 
-      // For hotel admin, show hotel admin dashboard
+      // For hotel admin, show only base items (no dashboard link)
       if (user.role === 'HOTEL_ADMIN') {
-        return [...baseItems, { label: 'Dashboard', path: '/hotel-admin', icon: <DashboardIcon /> }];
+        return [...baseItems];
       }
 
       // For front desk staff, show only base items (no dashboard link)
@@ -136,10 +134,9 @@ const Navbar: React.FC = () => {
         return [...baseItems];
       }
 
-      // For customers and guests, show dashboard and bookings (without profile)
+      // For customers and guests, show bookings (without dashboard or profile)
       if (user.role === 'CUSTOMER') {
         const customerItems = [
-          { label: 'Dashboard', path: '/dashboard', icon: <DashboardIcon /> },
           { label: 'My Bookings', path: '/bookings', icon: <BusinessIcon /> },
         ];
         return [...baseItems, ...customerItems];
@@ -304,10 +301,6 @@ const Navbar: React.FC = () => {
       </MenuItem>
       {user?.role === 'CUSTOMER' && (
         <>
-          <MenuItem onClick={() => handleNavigation('/dashboard')}>
-            <DashboardIcon sx={{ mr: 1 }} />
-            Dashboard
-          </MenuItem>
           <MenuItem onClick={() => handleNavigation('/bookings')}>
             <BusinessIcon sx={{ mr: 1 }} />
             My Bookings
@@ -334,7 +327,7 @@ const Navbar: React.FC = () => {
       >
         <Toolbar sx={{ justifyContent: 'space-between' }}>
           {/* Left Section: Logo + Mobile Menu */}
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
             {isMobile && (
               <IconButton
                 edge="start"
@@ -357,7 +350,6 @@ const Navbar: React.FC = () => {
               }}
               onClick={() => handleNavigation('/')}
             >
-              <HotelIcon sx={{ mr: 1, fontSize: 28 }} />
               <Typography 
                 variant="h6" 
                 component="div" 
@@ -369,28 +361,45 @@ const Navbar: React.FC = () => {
                 BookMyHotel
               </Typography>
             </Box>
-
-            {/* Tenant Badge */}
-            {tenant && !isMobile && shouldShowHotelName() && (
-              <Chip
-                label={tenant.name}
-                size="small"
-                variant="outlined"
-                sx={{ 
-                  ml: 2, 
-                  color: 'white', 
-                  borderColor: 'rgba(255, 255, 255, 0.5)',
-                  fontSize: '0.75rem',
-                }}
-              />
-            )}
           </Box>
 
-          {/* Center Section: Desktop Navigation */}
-          <DesktopNavigation />
+          {/* Center Section: Hotel Name for Hotel Admin and Front Desk */}
+          {tenant && shouldShowHotelName() && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', flex: 1 }}>
+              <Typography 
+                variant="h4" 
+                component="div" 
+                sx={{ 
+                  fontWeight: 'bold',
+                  color: '#FFD700', // Bright gold color
+                  textAlign: 'center',
+                  fontSize: { xs: '1.5rem', sm: '2rem', md: '2.25rem' },
+                  textOverflow: 'ellipsis',
+                  overflow: 'hidden',
+                  whiteSpace: 'nowrap',
+                  maxWidth: { xs: '200px', sm: '300px', md: '400px' },
+                  textShadow: '2px 2px 4px rgba(0,0,0,0.7)' // Stronger shadow for better contrast
+                }}
+              >
+                {tenant.name}
+              </Typography>
+            </Box>
+          )}
+
+          {/* For users who shouldn't see hotel name, show navigation in center */}
+          {(!tenant || !shouldShowHotelName()) && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', flex: 1 }}>
+              <DesktopNavigation />
+            </Box>
+          )}
 
           {/* Right Section: User Actions */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1, justifyContent: 'flex-end' }}>
+            {/* Show navigation on right for users with hotel name displayed */}
+            {tenant && shouldShowHotelName() && !isMobile && (
+              <DesktopNavigation />
+            )}
+            
             {user ? (
               <>
                 {/* User Role Display */}
@@ -399,6 +408,7 @@ const Navbar: React.FC = () => {
                   color={getRoleColor(user.role)}
                   size="small"
                   variant="outlined"
+                  data-testid="user-role"
                   sx={{ 
                     color: 'white', 
                     borderColor: 'rgba(255, 255, 255, 0.5)',

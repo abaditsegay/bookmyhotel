@@ -27,8 +27,8 @@ import com.bookmyhotel.entity.Hotel;
 import com.bookmyhotel.entity.Reservation;
 import com.bookmyhotel.entity.ReservationStatus;
 import com.bookmyhotel.entity.Room;
-import com.bookmyhotel.entity.User;
 import com.bookmyhotel.entity.RoomType;
+import com.bookmyhotel.entity.User;
 import com.bookmyhotel.exception.BookingException;
 import com.bookmyhotel.exception.ResourceNotFoundException;
 import com.bookmyhotel.repository.ReservationRepository;
@@ -83,7 +83,6 @@ public class BookingService {
      * Create a new booking
      */
     public BookingResponse createBooking(BookingRequest request, String userEmail) {
-        System.err.println("🎯🎯🎯 BOOKING SERVICE: createBooking called with userEmail: " + userEmail + " 🎯🎯🎯");
         try {
             // Validate booking request
             validateBookingRequest(request, userEmail == null);
@@ -209,15 +208,11 @@ public class BookingService {
      * Create a new booking by room type using BookingRequest (new approach)
      */
     public BookingResponse createBookingByRoomType(BookingRequest request, String userEmail) {
-        System.err.println("🎯🎯🎯 BOOKING SERVICE: createBookingByRoomType called with userEmail: " + userEmail + 
-                          ", hotelId: " + request.getHotelId() + ", roomType: " + request.getRoomType() + " 🎯🎯🎯");
         try {
             // Validate booking request for room type booking
             validateBookingRequestForRoomType(request, userEmail == null);
             
             // Find an available room of the requested type using public method (bypasses tenant filter)
-            System.err.println("🔍 About to call findFirstAvailableRoomOfTypePublic with hotelId: " + 
-                              request.getHotelId() + ", roomType: " + request.getRoomType());
             Room room = roomRepository.findFirstAvailableRoomOfTypePublic(
                 request.getHotelId(),
                 request.getRoomType(), // Use string directly for native query
@@ -225,7 +220,6 @@ public class BookingService {
                 request.getCheckOutDate()
             ).orElseThrow(() -> new BookingException("No available rooms of type " + 
                         request.getRoomType() + " for the selected dates"));
-            System.err.println("✅ Found room: " + room.getId() + " - " + room.getRoomNumber());
             
             // Get the hotel to determine the correct tenant context
             Hotel hotel = room.getHotel();
@@ -233,7 +227,6 @@ public class BookingService {
             
             // Set the tenant context to the hotel's tenant for the rest of the booking process
             com.bookmyhotel.tenant.TenantContext.setTenantId(hotelTenantId);
-            System.err.println("🏢 Set tenant context to hotel's tenant: " + hotelTenantId);
             
             // Get or create user (authenticated or guest)
             User user = null;
@@ -320,8 +313,6 @@ public class BookingService {
      * Create a new booking using room type (new approach)
      */
     public BookingResponse createRoomTypeBooking(RoomTypeBookingRequest request, String userEmail) {
-        System.err.println("🎯🎯🎯 BOOKING SERVICE: createRoomTypeBooking called with userEmail: " + userEmail + 
-                          ", hotelId: " + request.getHotelId() + ", roomType: " + request.getRoomType() + " 🎯🎯🎯");
         try {
             // Validate booking request
             validateRoomTypeBookingRequest(request, userEmail == null);
@@ -690,6 +681,9 @@ public class BookingService {
         response.setGuestName(reservation.getGuestInfo().getName());
         response.setGuestEmail(reservation.getGuestInfo().getEmail());
         
+        // Special requests
+        response.setSpecialRequests(reservation.getSpecialRequests());
+        
         // Payment status - now using the stored payment method for better accuracy
         if (reservation.getPaymentIntentId() != null) {
             response.setPaymentStatus("PAID");
@@ -898,27 +892,24 @@ public class BookingService {
                 // Check if it's actually a different room type
                 if (!requestedRoomType.equals(reservation.getRoom().getRoomType())) {
                     
-                    // Find an available room of the requested type in the same hotel
-                    List<Room> availableRooms = roomRepository.findByHotelIdAndRoomType(
-                        reservation.getRoom().getHotel().getId(), 
-                        requestedRoomType
-                    );
+                    // Use the effective dates (new dates if they were modified, otherwise current dates)
+                    LocalDate effectiveCheckIn = reservation.getCheckInDate();
+                    LocalDate effectiveCheckOut = reservation.getCheckOutDate();
                     
-                    Room newRoom = null;
-                    for (Room room : availableRooms) {
-                        if (isRoomAvailableForModification(room.getId(), 
-                            reservation.getCheckInDate(), reservation.getCheckOutDate(), reservation.getId())) {
-                            newRoom = room;
-                            break;
-                        }
-                    }
+                    // Find an available room of the requested type directly using the availability query
+                    Room newRoom = findAvailableRoomOfType(
+                        requestedRoomType.name(), 
+                        effectiveCheckIn, 
+                        effectiveCheckOut, 
+                        reservation.getId()
+                    );
                     
                     if (newRoom == null) {
                         return new BookingModificationResponse(false, "No available rooms of type '" + request.getNewRoomType() + "' for your dates");
                     }
                     
-                    // Calculate price difference for room upgrade/downgrade
-                    long nights = ChronoUnit.DAYS.between(reservation.getCheckInDate(), reservation.getCheckOutDate());
+                    // Calculate price difference for room upgrade/downgrade using effective dates
+                    long nights = ChronoUnit.DAYS.between(effectiveCheckIn, effectiveCheckOut);
                     BigDecimal oldRoomTotal = reservation.getRoom().getPricePerNight().multiply(BigDecimal.valueOf(nights));
                     BigDecimal newRoomTotal = newRoom.getPricePerNight().multiply(BigDecimal.valueOf(nights));
                     BigDecimal roomPriceDifference = newRoomTotal.subtract(oldRoomTotal);
@@ -952,6 +943,18 @@ public class BookingService {
                     currentGuestInfo.getName(),
                     currentGuestInfo.getEmail(),
                     request.getGuestPhone().trim()
+                );
+                reservation.setGuestInfo(updatedGuestInfo);
+            }
+            
+            // Handle email changes
+            if (request.getNewGuestEmail() != null && !request.getNewGuestEmail().trim().isEmpty()) {
+                // Update guest info in reservation
+                GuestInfo currentGuestInfo = reservation.getGuestInfo();
+                GuestInfo updatedGuestInfo = new GuestInfo(
+                    currentGuestInfo.getName(),
+                    request.getNewGuestEmail().trim(),
+                    currentGuestInfo.getPhone()
                 );
                 reservation.setGuestInfo(updatedGuestInfo);
             }
@@ -1194,7 +1197,20 @@ public class BookingService {
      * Find available room of specific type
      */
     private Room findAvailableRoomOfType(String roomType, LocalDate checkIn, LocalDate checkOut, Long excludeReservationId) {
-        List<Room> availableRooms = roomRepository.findAvailableRoomsOfType(roomType, checkIn, checkOut, excludeReservationId);
+        // Get the reservation to know which hotel we're looking in
+        Reservation reservation = reservationRepository.findById(excludeReservationId)
+            .orElseThrow(() -> new RuntimeException("Reservation not found"));
+        
+        // Use the proper hotel-filtered availability query
+        RoomType roomTypeEnum = RoomType.valueOf(roomType);
+        List<Room> availableRooms = roomRepository.findAvailableRooms(
+            reservation.getRoom().getHotel().getId(),
+            checkIn,
+            checkOut,
+            1, // minimum capacity
+            roomTypeEnum
+        );
+        
         return availableRooms.isEmpty() ? null : availableRooms.get(0);
     }
     

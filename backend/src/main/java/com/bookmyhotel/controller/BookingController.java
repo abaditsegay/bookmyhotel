@@ -46,12 +46,7 @@ public class BookingController {
      */
     @PostMapping
     public ResponseEntity<BookingResponse> createBooking(@Valid @RequestBody BookingRequest request, Authentication auth) {
-        System.err.println("🎯🎯🎯 BOOKING CONTROLLER: createBooking method called");
-        System.err.println("🎯🎯🎯 BOOKING CONTROLLER: request = " + request);
-        System.err.println("🎯🎯🎯 BOOKING CONTROLLER: auth = " + auth);
-        
         String userEmail = (auth != null) ? auth.getName() : null;
-        System.err.println("🎯🎯🎯 BOOKING CONTROLLER: userEmail = " + userEmail);
         
         BookingResponse response = bookingService.createBooking(request, userEmail);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -64,12 +59,7 @@ public class BookingController {
     public ResponseEntity<BookingResponse> createBookingByRoomType(
             @Valid @RequestBody BookingRequest request, 
             Authentication auth) {
-        System.err.println("🎯🎯🎯 BOOKING CONTROLLER: createBookingByRoomType method called");
-        System.err.println("🎯🎯🎯 BOOKING CONTROLLER: request = " + request);
-        System.err.println("🎯🎯🎯 BOOKING CONTROLLER: auth = " + auth);
-        
         String userEmail = (auth != null) ? auth.getName() : null;
-        System.err.println("🎯🎯🎯 BOOKING CONTROLLER: userEmail = " + userEmail);
         
         BookingResponse response = bookingService.createBookingByRoomType(request, userEmail);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);

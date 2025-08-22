@@ -65,11 +65,6 @@ public class PdfService {
                 .setBold());
 
             // Confirmation details
-            document.add(new Paragraph("Reservation ID: " + booking.getReservationId())
-                .setTextAlignment(TextAlignment.CENTER)
-                .setFontSize(14)
-                .setBold());
-            
             document.add(new Paragraph("Confirmation Number: " + booking.getConfirmationNumber())
                 .setTextAlignment(TextAlignment.CENTER)
                 .setFontSize(14)

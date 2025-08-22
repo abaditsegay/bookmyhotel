@@ -14,8 +14,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.bookmyhotel.dto.BookingModificationRequest;
 import com.bookmyhotel.dto.BookingModificationResponse;
 import com.bookmyhotel.dto.BookingResponse;
+import com.bookmyhotel.repository.ReservationRepository;
 import com.bookmyhotel.service.BookingService;
 import com.bookmyhotel.service.BookingTokenService;
+import com.bookmyhotel.tenant.TenantContext;
 
 /**
  * Controller for handling booking management via tokens
@@ -31,6 +33,9 @@ public class BookingManagementController {
     
     @Autowired
     private BookingService bookingService;
+    
+    @Autowired
+    private ReservationRepository reservationRepository;
 
     /**
      * Get booking details using a booking token
@@ -90,9 +95,25 @@ public class BookingManagementController {
             }
 
             // Get current booking to extract confirmation number and verify guest email
+            // This call uses public search (no tenant context needed)
             BookingResponse currentBooking = bookingService.getBooking(reservationId);
             if (!guestEmail.equals(currentBooking.getGuestEmail())) {
                 return ResponseEntity.badRequest().body("Token does not match booking guest");
+            }
+
+            // Get the reservation entity to access tenant information
+            // Use public search to get the reservation without tenant context
+            String confirmationNumber = currentBooking.getConfirmationNumber();
+            var reservation = reservationRepository.findByConfirmationNumberPublic(confirmationNumber);
+            if (reservation.isEmpty()) {
+                return ResponseEntity.badRequest().body("Reservation not found");
+            }
+
+            // Set tenant context based on the reservation's tenant ID
+            // This is crucial for the room availability queries to work correctly
+            String tenantId = reservation.get().getTenantId();
+            if (tenantId != null) {
+                TenantContext.setTenantId(tenantId);
             }
 
             // Set the confirmation number and guest email from the token/booking data
@@ -110,6 +131,9 @@ public class BookingManagementController {
             
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error updating booking: " + e.getMessage());
+        } finally {
+            // Clear tenant context to avoid leaking to other requests
+            TenantContext.clear();
         }
     }
 
@@ -140,12 +164,28 @@ public class BookingManagementController {
                 return ResponseEntity.badRequest().body("Token does not match booking guest");
             }
 
+            // Get the reservation entity to access tenant information
+            String confirmationNumber = currentBooking.getConfirmationNumber();
+            var reservation = reservationRepository.findByConfirmationNumberPublic(confirmationNumber);
+            if (reservation.isEmpty()) {
+                return ResponseEntity.badRequest().body("Reservation not found");
+            }
+
+            // Set tenant context based on the reservation's tenant ID
+            String tenantId = reservation.get().getTenantId();
+            if (tenantId != null) {
+                TenantContext.setTenantId(tenantId);
+            }
+
             // Cancel the booking and get updated booking data
             BookingResponse cancelledBooking = bookingService.cancelBooking(reservationId);
             return ResponseEntity.ok(cancelledBooking);
             
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error cancelling booking: " + e.getMessage());
+        } finally {
+            // Clear tenant context to avoid leaking to other requests
+            TenantContext.clear();
         }
     }
 

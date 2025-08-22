@@ -31,6 +31,9 @@ public class BookingModificationRequest {
     
     private String guestPhone;
     
+    // New email address for the guest (if they want to change it)
+    private String newGuestEmail;
+    
     // Modification reason
     private String reason;
     
@@ -113,6 +116,14 @@ public class BookingModificationRequest {
     
     public void setGuestPhone(String guestPhone) {
         this.guestPhone = guestPhone;
+    }
+    
+    public String getNewGuestEmail() {
+        return newGuestEmail;
+    }
+    
+    public void setNewGuestEmail(String newGuestEmail) {
+        this.newGuestEmail = newGuestEmail;
     }
     
     public String getReason() {

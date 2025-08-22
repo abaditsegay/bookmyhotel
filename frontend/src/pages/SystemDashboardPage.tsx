@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Container,
   Typography,
@@ -13,7 +13,8 @@ import {
   ListItem,
   ListItemText,
   ListItemIcon,
-  Divider
+  Divider,
+  CircularProgress
 } from '@mui/material';
 import {
   Dashboard,
@@ -21,7 +22,8 @@ import {
   People,
   TrendingUp,
   Settings,
-  Business
+  Business,
+  Refresh
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -33,6 +35,79 @@ import { useNavigate } from 'react-router-dom';
 export const SystemDashboardPage: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  // State for dashboard statistics
+  const [stats, setStats] = useState({
+    totalHotels: 0,
+    totalUsers: 0,
+    totalTenants: 0,
+    totalBookings: 0,
+    revenue: '$0',
+    loading: true
+  });
+
+  // Fetch dashboard statistics
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        // Fetch hotels count
+        const hotelsResponse = await fetch('http://localhost:8080/api/system/hotels', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          }
+        });
+        
+        // Fetch users count  
+        const usersResponse = await fetch('http://localhost:8080/api/system/users', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          }
+        });
+
+        // Fetch tenants count
+        const tenantsResponse = await fetch('http://localhost:8080/api/system/tenants', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          }
+        });
+
+        let hotelsCount = 0;
+        let usersCount = 0;
+        let tenantsCount = 0;
+
+        if (hotelsResponse.ok) {
+          const hotelsData = await hotelsResponse.json();
+          hotelsCount = Array.isArray(hotelsData) ? hotelsData.length : (hotelsData.totalElements || hotelsData.content?.length || 0);
+        }
+
+        if (usersResponse.ok) {
+          const usersData = await usersResponse.json();
+          usersCount = Array.isArray(usersData) ? usersData.length : (usersData.totalElements || usersData.content?.length || 0);
+        }
+
+        if (tenantsResponse.ok) {
+          const tenantsData = await tenantsResponse.json();
+          tenantsCount = Array.isArray(tenantsData) ? tenantsData.length : (tenantsData.totalElements || tenantsData.content?.length || 0);
+        }
+
+        setStats({
+          totalHotels: hotelsCount,
+          totalUsers: usersCount,
+          totalTenants: tenantsCount,
+          totalBookings: 0, // This would need a separate endpoint
+          revenue: '$0', // This would need a separate endpoint
+          loading: false
+        });
+      } catch (error) {
+        console.error('Failed to fetch dashboard statistics:', error);
+        setStats(prev => ({ ...prev, loading: false }));
+      }
+    };
+
+    if (user && !user.tenantId) {
+      fetchStats();
+    }
+  }, [user]);
 
   if (!user || user.tenantId) {
     // Redirect non-system users
@@ -50,6 +125,9 @@ export const SystemDashboardPage: React.FC = () => {
       icon: <Business />,
       action: () => navigate('/system/tenants'),
       color: 'info' as const,
+      buttonText: 'View Tenants',
+      stat: stats.totalTenants,
+      statLabel: 'Active Tenants'
     },
     {
       title: 'Manage Hotels',
@@ -57,6 +135,9 @@ export const SystemDashboardPage: React.FC = () => {
       icon: <Hotel />,
       action: () => navigate('/system/hotels'),
       color: 'primary' as const,
+      buttonText: 'View Hotels',
+      stat: stats.totalHotels,
+      statLabel: 'Total Hotels'
     },
     {
       title: 'Manage Users',
@@ -64,20 +145,19 @@ export const SystemDashboardPage: React.FC = () => {
       icon: <People />,
       action: () => navigate('/system/users'),
       color: 'secondary' as const,
+      buttonText: 'View Users',
+      stat: stats.totalUsers,
+      statLabel: 'Total Users'
     },
-    // {
-    //   title: 'System Analytics',
-    //   description: 'View platform-wide statistics and insights',
-    //   icon: <Analytics />,
-    //   action: () => navigate('/system/analytics'),
-    //   color: 'success' as const,
-    // },
     {
       title: 'System Settings',
       description: 'Configure global system settings',
       icon: <Settings />,
       action: () => navigate('/system/settings'),
       color: 'warning' as const,
+      buttonText: 'Open Settings',
+      stat: null,
+      statLabel: null
     },
   ];
 
@@ -88,6 +168,9 @@ export const SystemDashboardPage: React.FC = () => {
       icon: <Hotel />,
       action: () => navigate('/search'),
       color: 'primary' as const,
+      buttonText: 'Start Search',
+      stat: null,
+      statLabel: null
     },
     {
       title: 'My Bookings',
@@ -95,6 +178,9 @@ export const SystemDashboardPage: React.FC = () => {
       icon: <Dashboard />,
       action: () => navigate('/my-bookings'),
       color: 'secondary' as const,
+      buttonText: 'View Bookings',
+      stat: null,
+      statLabel: null
     },
     {
       title: 'Profile Settings',
@@ -102,15 +188,51 @@ export const SystemDashboardPage: React.FC = () => {
       icon: <Settings />,
       action: () => navigate('/profile'),
       color: 'info' as const,
+      buttonText: 'Edit Profile',
+      stat: null,
+      statLabel: null
     },
   ];
 
   const quickActions = isSystemAdmin ? adminQuickActions : guestQuickActions;
 
+  // If statistics are still loading, show loading indicator
+  if (stats.loading) {
+    return (
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        <Box 
+          display="flex" 
+          justifyContent="center" 
+          alignItems="center" 
+          minHeight="400px"
+          flexDirection="column"
+          gap={2}
+        >
+          <CircularProgress size={60} />
+          <Typography variant="h6" color="text.secondary">
+            Loading dashboard statistics...
+          </Typography>
+        </Box>
+      </Container>
+    );
+  }
+
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: 4 }} data-testid="system-dashboard">
+      {/* Header */}
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mb: 3 }}>
+        <Button
+          variant="outlined"
+          startIcon={<Refresh />}
+          onClick={() => window.location.reload()}
+          data-testid="refresh-dashboard"
+        >
+          Refresh
+        </Button>
+      </Box>
+      
       {/* Quick Actions Grid */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
+      <Grid container spacing={3} sx={{ mb: 4 }} data-testid="stats-cards">
         {quickActions.map((action, index) => (
           <Grid item xs={12} sm={6} md={3} key={index}>
             <Card 
@@ -124,6 +246,7 @@ export const SystemDashboardPage: React.FC = () => {
                 }
               }}
               onClick={action.action}
+              data-testid={`stats-card-${action.title.toLowerCase().replace(/\s+/g, '-')}`}
             >
               <CardContent sx={{ textAlign: 'center', pb: 2 }}>
                 <Box 
@@ -141,12 +264,23 @@ export const SystemDashboardPage: React.FC = () => {
                 >
                   {React.cloneElement(action.icon, { sx: { fontSize: 32 } })}
                 </Box>
-                <Typography variant="h6" gutterBottom fontWeight="bold">
+                <Typography variant="h6" gutterBottom fontWeight="bold" data-testid={`stat-title-${action.title.toLowerCase().replace(/\s+/g, '-')}`}>
                   {action.title}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   {action.description}
                 </Typography>
+                {/* Display real statistics */}
+                {action.stat !== null && action.stat !== undefined && (
+                  <Box sx={{ mt: 2, textAlign: 'center' }}>
+                    <Typography variant="h3" color={action.color} fontWeight="bold" data-testid={action.title === 'Manage Hotels' ? 'total-hotels' : action.title === 'Manage Users' ? 'total-users' : 'active-bookings'}>
+                      {stats.loading ? '...' : action.stat}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {action.statLabel}
+                    </Typography>
+                  </Box>
+                )}
               </CardContent>
               <CardActions sx={{ justifyContent: 'center', pt: 0 }}>
                 <Button 
@@ -156,8 +290,10 @@ export const SystemDashboardPage: React.FC = () => {
                     e.stopPropagation();
                     action.action();
                   }}
+                  data-testid={`nav-${action.title.toLowerCase().replace(/\s+/g, '-')}`}
+                  disabled={stats.loading}
                 >
-                  Access
+                  {action.buttonText}
                 </Button>
               </CardActions>
             </Card>
@@ -225,7 +361,7 @@ export const SystemDashboardPage: React.FC = () => {
               <Dashboard sx={{ mr: 1 }} />
               Recent Activity
             </Typography>
-            <List dense>
+            <List dense data-testid="recent-activities">
               <ListItem>
                 <ListItemText 
                   primary={isSystemAdmin ? "System Administration Login" : "Account Login"}

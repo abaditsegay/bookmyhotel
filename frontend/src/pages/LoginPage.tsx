@@ -188,7 +188,7 @@ const LoginPage: React.FC = () => {
 
             {!showSignUp ? (
               // Sign In Form
-              <Box component="form" onSubmit={handleSubmit}>
+              <Box component="form" onSubmit={handleSubmit} data-testid="login-form">
                 <TextField
                   fullWidth
                   label="Email"
@@ -199,6 +199,7 @@ const LoginPage: React.FC = () => {
                   required
                   autoComplete="email"
                   autoFocus
+                  inputProps={{ 'data-testid': 'email-input' }}
                 />
                 <TextField
                   fullWidth
@@ -209,6 +210,7 @@ const LoginPage: React.FC = () => {
                   margin="normal"
                   required
                   autoComplete="current-password"
+                  inputProps={{ 'data-testid': 'password-input' }}
                 />
                 <Button
                   type="submit"
@@ -216,6 +218,7 @@ const LoginPage: React.FC = () => {
                   variant="contained"
                   sx={{ mt: 3, mb: 2 }}
                   disabled={loading}
+                  data-testid="login-button"
                 >
                   {loading ? 'Signing In...' : 'Sign In'}
                 </Button>

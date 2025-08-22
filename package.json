@@ -1,0 +1,15 @@
+{
+  "name": "bookmyhotel",
+  "version": "1.0.0",
+  "description": "A production-ready, multi-tenant hotel booking application built with Spring Boot (Java 21), React (TypeScript), and MySQL 8. This application implements enterprise-grade features including RBAC, multi-tenancy, payment processing, and comprehensive observability.",
+  "main": "test-pagination.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.55.0"
+  }
+}

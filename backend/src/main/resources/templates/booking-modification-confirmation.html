@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Booking Confirmation</title>
+    <title>Booking Modification Confirmation</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -26,25 +26,45 @@
             text-align: center;
             margin-bottom: 30px;
             padding-bottom: 20px;
-            border-bottom: 2px solid #4CAF50;
+            border-bottom: 2px solid #2196F3;
         }
         
         .header h1 {
-            color: #4CAF50;
+            color: #2196F3;
             margin: 0 0 10px 0;
             font-size: 24px;
         }
         
+        .modification-alert {
+            background-color: #e3f2fd;
+            border: 1px solid #2196F3;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            border-left: 4px solid #2196F3;
+        }
+        
+        .modification-alert h3 {
+            color: #1976d2;
+            margin: 0 0 10px 0;
+            font-size: 18px;
+        }
+        
+        .modification-alert p {
+            margin: 0;
+            color: #1565c0;
+        }
+        
         .confirmation-number {
-            background: #f0f8f0;
+            background: #f0f8ff;
             padding: 15px;
             text-align: center;
             margin: 20px 0;
-            border: 1px solid #4CAF50;
+            border: 1px solid #2196F3;
         }
         
         .confirmation-number strong {
-            color: #2e7d32;
+            color: #1976d2;
             font-size: 18px;
         }
         
@@ -70,37 +90,62 @@
         }
         
         .section-title {
-            background-color: #e8f5e8;
+            background-color: #e3f2fd;
             font-weight: bold;
-            color: #2e7d32;
+            color: #1976d2;
             text-align: center;
         }
         
-        .total-row {
-            background-color: #fff3e0;
+        .financial-section {
+            margin: 20px 0;
+        }
+        
+        .additional-charges {
+            background-color: #fff3cd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .refund-info {
+            background-color: #d4edda;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #28a745;
+        }
+        
+        .financial-header {
+            color: #495057;
+            font-weight: bold;
+            margin: 0 0 10px 0;
+        }
+        
+        .amount {
+            font-size: 18px;
             font-weight: bold;
         }
         
-        .status-confirmed {
-            color: #4CAF50;
-            font-weight: bold;
+        .charge-amount {
+            color: #e67e22;
         }
         
-        .status-pending {
-            color: #ff9800;
-            font-weight: bold;
+        .refund-amount {
+            color: #27ae60;
         }
         
         .important-box {
             background: #fff3cd;
-            border: 1px solid #ffeaa7;
             padding: 15px;
             margin: 20px 0;
+            border: 1px solid #ffc107;
+            border-radius: 5px;
         }
         
         .important-box h4 {
-            margin: 0 0 10px 0;
             color: #856404;
+            margin: 0 0 10px 0;
         }
         
         .important-box ul {
@@ -115,34 +160,61 @@
         
         .button {
             display: inline-block;
-            padding: 12px 25px;
-            margin: 5px;
+            padding: 12px 30px;
+            background-color: #2196F3;
             color: white;
-            background-color: #4CAF50;
             text-decoration: none;
-            border: none;
-            cursor: pointer;
+            border-radius: 5px;
+            margin: 0 10px;
+            font-weight: bold;
+        }
+        
+        .button:hover {
+            background-color: #1976d2;
         }
         
         .button-secondary {
             background-color: #6c757d;
         }
         
+        .button-secondary:hover {
+            background-color: #545b62;
+        }
+        
         .footer {
             text-align: center;
+            color: #666;
+            font-size: 14px;
             margin-top: 30px;
             padding-top: 20px;
             border-top: 1px solid #ddd;
-            font-size: 14px;
-            color: #666;
+        }
+        
+        .footer p {
+            margin: 5px 0;
+        }
+        
+        .status-confirmed {
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .status-pending {
+            color: #ffc107;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>✓ Booking Confirmed</h1>
-            <p>Your reservation has been successfully processed</p>
+            <h1>🔄 Booking Modification Confirmed</h1>
+            <p>Your reservation has been successfully updated</p>
+        </div>
+
+        <div class="modification-alert">
+            <h3>✅ Your Booking Has Been Modified</h3>
+            <p>The details below reflect your updated reservation. Please review the changes and keep this confirmation for your records.</p>
         </div>
 
         <div class="confirmation-number">
@@ -151,7 +223,7 @@
 
         <table>
             <tr>
-                <th colspan="2" class="section-title">Guest Information</th>
+                <th colspan="2" class="section-title">Updated Guest Information</th>
             </tr>
             <tr>
                 <td>Name</td>
@@ -165,7 +237,7 @@
 
         <table>
             <tr>
-                <th colspan="2" class="section-title">Hotel & Room Details</th>
+                <th colspan="2" class="section-title">Updated Hotel & Room Details</th>
             </tr>
             <tr>
                 <td>Hotel</td>
@@ -179,11 +251,15 @@
                 <td>Room Type</td>
                 <td th:text="${booking.roomType}"></td>
             </tr>
+            <tr>
+                <td>Room Number</td>
+                <td th:text="${booking.roomNumber}"></td>
+            </tr>
         </table>
 
         <table>
             <tr>
-                <th colspan="2" class="section-title">Stay Details</th>
+                <th colspan="2" class="section-title">Updated Stay Details</th>
             </tr>
             <tr>
                 <td>Check-in Date</td>
@@ -198,10 +274,6 @@
                 <td th:text="${nights}"></td>
             </tr>
             <tr>
-                <td>Rate per Night</td>
-                <td th:text="'$' + ${booking.pricePerNight}"></td>
-            </tr>
-            <tr class="total-row">
                 <td>Total Amount</td>
                 <td th:text="'$' + ${booking.totalAmount}"></td>
             </tr>
@@ -209,10 +281,10 @@
 
         <table>
             <tr>
-                <th colspan="2" class="section-title">Status</th>
+                <th colspan="2" class="section-title">Booking Status</th>
             </tr>
             <tr>
-                <td>Booking Status</td>
+                <td>Reservation Status</td>
                 <td class="status-confirmed" th:text="${booking.status}"></td>
             </tr>
             <tr>
@@ -221,23 +293,52 @@
             </tr>
         </table>
 
+        <!-- Financial Impact Section -->
+        <div class="financial-section" th:if="${additionalCharges != null and additionalCharges > 0}">
+            <div class="additional-charges">
+                <h4 class="financial-header">💳 Additional Payment Required</h4>
+                <p class="amount charge-amount">Amount: $<span th:text="${additionalCharges}"></span></p>
+                <p>This amount will be charged to your original payment method within 24 hours.</p>
+            </div>
+        </div>
+
+        <div class="financial-section" th:if="${refundAmount != null and refundAmount > 0}">
+            <div class="refund-info">
+                <h4 class="financial-header">💰 Refund Processing</h4>
+                <p class="amount refund-amount">Amount: $<span th:text="${refundAmount}"></span></p>
+                <p>The refund will be processed to your original payment method within 3-5 business days.</p>
+            </div>
+        </div>
+
+        <!-- Special Requests -->
+        <table th:if="${booking.specialRequests != null and not #strings.isEmpty(booking.specialRequests)}">
+            <tr>
+                <th colspan="2" class="section-title">Special Requests</th>
+            </tr>
+            <tr>
+                <td colspan="2" th:text="${booking.specialRequests}"></td>
+            </tr>
+        </table>
+
         <div class="important-box">
             <h4>Important Information</h4>
             <ul>
                 <li>Please bring a valid government-issued photo ID</li>
                 <li>Check-in: 3:00 PM | Check-out: 11:00 AM</li>
-                <li>Contact hotel directly for changes or cancellations</li>
+                <li>Present this confirmation at the front desk</li>
+                <li>Contact hotel directly for any additional changes</li>
                 <li>Keep this confirmation for your records</li>
             </ul>
         </div>
 
         <div class="buttons">
-            <a th:href="${bookingUrl}" class="button">View Booking</a>
+            <a th:href="${bookingUrl}" class="button">View Updated Booking</a>
             <a href="#" class="button button-secondary">Contact Hotel</a>
         </div>
 
         <div class="footer">
             <p><strong>Thank you for choosing <span th:text="${appName}"></span>!</strong></p>
+            <p>Your booking modification has been processed successfully.</p>
             <p>This is an automated email. Please do not reply.</p>
         </div>
     </div>

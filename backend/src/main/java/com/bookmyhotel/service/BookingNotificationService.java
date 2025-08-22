@@ -2,11 +2,18 @@ package com.bookmyhotel.service;
 
 import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 
 import com.bookmyhotel.dto.BookingResponse;
 
@@ -21,6 +28,19 @@ public class BookingNotificationService {
     @Autowired
     private MicrosoftGraphEmailService emailService;
     
+    @Autowired
+    @Qualifier("emailTemplateEngine")
+    private TemplateEngine templateEngine;
+    
+    @Autowired
+    private BookingTokenService bookingTokenService;
+    
+    @Value("${app.name:BookMyHotel}")
+    private String appName;
+    
+    @Value("${app.url:http://localhost:3000}")
+    private String appUrl;
+    
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("MMMM dd, yyyy");
     
     /**
@@ -28,10 +48,21 @@ public class BookingNotificationService {
      */
     public void sendModificationConfirmationEmail(BookingResponse booking, BigDecimal additionalCharges, BigDecimal refundAmount) {
         try {
-            String subject = "Booking Modification Confirmed - " + booking.getConfirmationNumber();
-            String body = buildModificationEmailBody(booking, additionalCharges, refundAmount);
+            // Check if email service is configured
+            if (!emailService.isConfigured()) {
+                logger.warn("Microsoft Graph OAuth2 is not configured. Cannot send modification confirmation email to: {}", booking.getGuestEmail());
+                return;
+            }
             
-            emailService.sendEmail(booking.getGuestEmail(), subject, body);
+            String subject = "Booking Modification Confirmed - " + booking.getConfirmationNumber();
+            
+            // Prepare template data
+            Map<String, Object> templateData = prepareModificationEmailData(booking, additionalCharges, refundAmount);
+            
+            // Generate email content using the template
+            String htmlContent = templateEngine.process("booking-modification-confirmation", createContext(templateData));
+            
+            emailService.sendEmail(booking.getGuestEmail(), subject, htmlContent);
             logger.info("Modification confirmation email sent to: {}", booking.getGuestEmail());
             
         } catch (Exception e) {
@@ -44,6 +75,12 @@ public class BookingNotificationService {
      */
     public void sendCancellationConfirmationEmail(BookingResponse booking, BigDecimal refundAmount) {
         try {
+            // Check if email service is configured
+            if (!emailService.isConfigured()) {
+                logger.warn("Microsoft Graph OAuth2 is not configured. Cannot send cancellation confirmation email to: {}", booking.getGuestEmail());
+                return;
+            }
+            
             String subject = "Booking Cancellation Confirmed - " + booking.getConfirmationNumber();
             String body = buildCancellationEmailBody(booking, refundAmount);
             
@@ -60,6 +97,12 @@ public class BookingNotificationService {
      */
     public void sendPaymentReceiptEmail(BookingResponse booking, BigDecimal amount, String paymentMethod) {
         try {
+            // Check if email service is configured
+            if (!emailService.isConfigured()) {
+                logger.warn("Microsoft Graph OAuth2 is not configured. Cannot send payment receipt email to: {}", booking.getGuestEmail());
+                return;
+            }
+            
             String subject = "Payment Receipt - " + booking.getConfirmationNumber();
             String body = buildPaymentReceiptEmailBody(booking, amount, paymentMethod);
             
@@ -76,6 +119,12 @@ public class BookingNotificationService {
      */
     public void sendRefundConfirmationEmail(BookingResponse booking, BigDecimal refundAmount, String refundMethod) {
         try {
+            // Check if email service is configured
+            if (!emailService.isConfigured()) {
+                logger.warn("Microsoft Graph OAuth2 is not configured. Cannot send refund confirmation email to: {}", booking.getGuestEmail());
+                return;
+            }
+            
             String subject = "Refund Processed - " + booking.getConfirmationNumber();
             String body = buildRefundEmailBody(booking, refundAmount, refundMethod);
             
@@ -88,64 +137,43 @@ public class BookingNotificationService {
     }
     
     /**
-     * Build modification confirmation email body
+     * Prepare modification email template data
      */
-    private String buildModificationEmailBody(BookingResponse booking, BigDecimal additionalCharges, BigDecimal refundAmount) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("<!DOCTYPE html>");
-        sb.append("<html><head><meta charset='UTF-8'></head><body>");
-        sb.append("<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>");
+    private Map<String, Object> prepareModificationEmailData(BookingResponse booking, BigDecimal additionalCharges, BigDecimal refundAmount) {
+        Map<String, Object> templateData = new HashMap<>();
+        templateData.put("booking", booking);
+        templateData.put("additionalCharges", additionalCharges);
+        templateData.put("refundAmount", refundAmount);
+        templateData.put("appName", appName);
+        templateData.put("appUrl", appUrl);
         
-        // Header
-        sb.append("<div style='background-color: #2196F3; color: white; padding: 20px; text-align: center;'>");
-        sb.append("<h1>Booking Modification Confirmed</h1>");
-        sb.append("</div>");
+        // Generate authenticated booking URL for guest access
+        String bookingUrl = bookingTokenService.generateManagementUrl(
+            booking.getReservationId(), 
+            booking.getGuestEmail(), 
+            appUrl
+        );
+        templateData.put("bookingUrl", bookingUrl);
         
-        // Content
-        sb.append("<div style='padding: 20px;'>");
-        sb.append("<p>Dear ").append(booking.getGuestName()).append(",</p>");
-        sb.append("<p>Your booking modification has been successfully processed.</p>");
+        // Format dates
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy");
+        templateData.put("checkInFormatted", booking.getCheckInDate().format(formatter));
+        templateData.put("checkOutFormatted", booking.getCheckOutDate().format(formatter));
         
-        // Booking Details
-        sb.append("<div style='background-color: #f5f5f5; padding: 15px; margin: 20px 0; border-radius: 5px;'>");
-        sb.append("<h3>Updated Booking Details</h3>");
-        sb.append("<p><strong>Confirmation Number:</strong> ").append(booking.getConfirmationNumber()).append("</p>");
-        sb.append("<p><strong>Hotel:</strong> ").append(booking.getHotelName()).append("</p>");
-        sb.append("<p><strong>Check-in Date:</strong> ").append(booking.getCheckInDate().format(DATE_FORMATTER)).append("</p>");
-        sb.append("<p><strong>Check-out Date:</strong> ").append(booking.getCheckOutDate().format(DATE_FORMATTER)).append("</p>");
-        sb.append("<p><strong>Room:</strong> ").append(booking.getRoomNumber()).append(" (").append(booking.getRoomType()).append(")</p>");
-        sb.append("<p><strong>Total Amount:</strong> $").append(booking.getTotalAmount()).append("</p>");
-        sb.append("</div>");
+        // Calculate stay duration
+        long nights = ChronoUnit.DAYS.between(booking.getCheckInDate(), booking.getCheckOutDate());
+        templateData.put("nights", nights);
         
-        // Financial Impact
-        if (additionalCharges != null && additionalCharges.compareTo(BigDecimal.ZERO) > 0) {
-            sb.append("<div style='background-color: #fff3cd; padding: 15px; margin: 20px 0; border-radius: 5px; border-left: 4px solid #ffc107;'>");
-            sb.append("<h4>Additional Payment Required</h4>");
-            sb.append("<p>Amount: $").append(additionalCharges).append("</p>");
-            sb.append("<p>This amount will be charged to your original payment method.</p>");
-            sb.append("</div>");
-        }
-        
-        if (refundAmount != null && refundAmount.compareTo(BigDecimal.ZERO) > 0) {
-            sb.append("<div style='background-color: #d4edda; padding: 15px; margin: 20px 0; border-radius: 5px; border-left: 4px solid #28a745;'>");
-            sb.append("<h4>Refund Processing</h4>");
-            sb.append("<p>Amount: $").append(refundAmount).append("</p>");
-            sb.append("<p>The refund will be processed to your original payment method within 3-5 business days.</p>");
-            sb.append("</div>");
-        }
-        
-        // Footer
-        sb.append("<p>If you have any questions, please contact our customer service.</p>");
-        sb.append("<p>Thank you for choosing BookMyHotel!</p>");
-        sb.append("</div>");
-        
-        sb.append("<div style='background-color: #f8f9fa; padding: 15px; text-align: center; font-size: 12px; color: #6c757d;'>");
-        sb.append("<p>This is an automated message. Please do not reply to this email.</p>");
-        sb.append("</div>");
-        
-        sb.append("</div></body></html>");
-        
-        return sb.toString();
+        return templateData;
+    }
+    
+    /**
+     * Create Thymeleaf context
+     */
+    private Context createContext(Map<String, Object> templateData) {
+        Context context = new Context();
+        context.setVariables(templateData);
+        return context;
     }
     
     /**
