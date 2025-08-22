@@ -24,7 +24,7 @@ import { useTenant } from '../../contexts/TenantContext';
 import { useNavigate } from 'react-router-dom';
 
 /**
- * Navigation bar for system-wide users (GUEST and ADMIN roles)
+ * Navigation bar for system-wide users (CUSTOMER and ADMIN roles)
  * Shows global navigation without tenant-specific context
  */
 export const SystemWideNavbar: React.FC = () => {
@@ -63,7 +63,7 @@ export const SystemWideNavbar: React.FC = () => {
   }
 
   const isSystemAdmin = user.roles.includes('ADMIN');
-  const isSystemGuest = user.roles.includes('GUEST');
+  const isSystemCustomer = user.roles.includes('CUSTOMER');
 
   return (
     <AppBar position="static" sx={{ bgcolor: 'primary.main' }}>
@@ -118,7 +118,7 @@ export const SystemWideNavbar: React.FC = () => {
         )}
 
         {/* Search hotels button for guests */}
-        {isSystemGuest && (
+        {isSystemCustomer && (
           <Box sx={{ display: 'flex', gap: 1, mr: 2 }}>
             <Button 
               color="inherit" 

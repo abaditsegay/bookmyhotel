@@ -63,7 +63,7 @@ class SystemWideUserServiceTest {
         systemGuest.setFirstName("System");
         systemGuest.setLastName("Guest");
         Set<UserRole> guestRoles = new HashSet<>();
-        guestRoles.add(UserRole.GUEST);
+        guestRoles.add(UserRole.CUSTOMER);
         systemGuest.setRoles(guestRoles);
         systemGuest.setTenantId(null);
         systemGuest.setPassword("hashedPassword");
@@ -75,7 +75,7 @@ class SystemWideUserServiceTest {
         tenantUser.setFirstName("Hotel");
         tenantUser.setLastName("User");
         Set<UserRole> tenantGuestRoles = new HashSet<>();
-        tenantGuestRoles.add(UserRole.GUEST);
+        tenantGuestRoles.add(UserRole.CUSTOMER);
         tenantUser.setRoles(tenantGuestRoles);
         tenantUser.setTenantId("hotel-tenant-1");
         tenantUser.setPassword("hashedPassword");
@@ -147,7 +147,7 @@ class SystemWideUserServiceTest {
     void testGetAllGuestUsers() {
         // Arrange
         List<User> guestUsers = Arrays.asList(systemGuest);
-        when(userRepository.findSystemWideUsersByRole(UserRole.GUEST)).thenReturn(guestUsers);
+        when(userRepository.findSystemWideUsersByRole(UserRole.CUSTOMER)).thenReturn(guestUsers);
 
         // Act
         List<User> result = systemWideUserService.getAllGuestUsers();
@@ -155,10 +155,10 @@ class SystemWideUserServiceTest {
         // Assert
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertTrue(result.get(0).getRoles().contains(UserRole.GUEST));
+        assertTrue(result.get(0).getRoles().contains(UserRole.CUSTOMER));
         assertNull(result.get(0).getTenantId());
         
-        verify(userRepository).findSystemWideUsersByRole(UserRole.GUEST);
+        verify(userRepository).findSystemWideUsersByRole(UserRole.CUSTOMER);
     }
 
     @Test
@@ -247,7 +247,7 @@ class SystemWideUserServiceTest {
         User guestToPromote = new User();
         guestToPromote.setId(2L);
         Set<UserRole> guestRoles = new HashSet<>();
-        guestRoles.add(UserRole.GUEST);
+        guestRoles.add(UserRole.CUSTOMER);
         guestToPromote.setRoles(guestRoles);
         guestToPromote.setTenantId(null);
         
@@ -317,7 +317,7 @@ class SystemWideUserServiceTest {
         User demotedUser = new User();
         demotedUser.setId(1L);
         Set<UserRole> guestRoles = new HashSet<>();
-        guestRoles.add(UserRole.GUEST);
+        guestRoles.add(UserRole.CUSTOMER);
         demotedUser.setRoles(guestRoles);
         demotedUser.setTenantId("hotel-tenant-1");
         
@@ -329,12 +329,12 @@ class SystemWideUserServiceTest {
 
         // Assert
         assertNotNull(result);
-        assertTrue(result.getRoles().contains(UserRole.GUEST));
+        assertTrue(result.getRoles().contains(UserRole.CUSTOMER));
         assertEquals("hotel-tenant-1", result.getTenantId());
         
         verify(userRepository).findById(1L);
         verify(userRepository).save(argThat(user -> 
-            user.getRoles().contains(UserRole.GUEST) && 
+            user.getRoles().contains(UserRole.CUSTOMER) && 
             "hotel-tenant-1".equals(user.getTenantId())
         ));
     }

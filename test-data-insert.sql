@@ -8,8 +8,8 @@ INSERT INTO users (tenant_id, first_name, last_name, email, password, phone, hot
 -- Get the user ID for the guest user
 SET @guest_user_id = LAST_INSERT_ID();
 
--- Add guest role for the test user
-INSERT INTO user_roles (user_id, role) VALUES (@guest_user_id, 'GUEST');
+-- Add customer role for the test user
+INSERT INTO user_roles (user_id, role) VALUES (@guest_user_id, 'CUSTOMER');
 
 -- Add some rooms to existing hotels for testing
 INSERT INTO rooms (hotel_id, tenant_id, room_number, room_type, capacity, price_per_night, description, status, is_available, created_at, updated_at) VALUES

@@ -83,11 +83,11 @@ const Navbar: React.FC = () => {
       'ADMIN': 'System Administrator',
       'HOTEL_ADMIN': 'Hotel Administrator',
       'FRONTDESK': 'Front Desk Staff',
-      'GUEST': 'Guest',
+      'CUSTOMER': 'Customer', // Registered users with accounts
       'HOTEL_MANAGER': 'Hotel Manager',
       'HOUSEKEEPING': 'Housekeeping Staff',
       'MAINTENANCE': 'Maintenance Staff',
-      'CUSTOMER': 'Customer'
+      'GUEST': 'Guest' // Anonymous users (rarely seen in UI)
     };
     return roleMap[role] || role;
   };
@@ -98,20 +98,20 @@ const Navbar: React.FC = () => {
       'ADMIN': 'error',
       'HOTEL_ADMIN': 'primary',
       'FRONTDESK': 'info',
-      'GUEST': 'success',
+      'CUSTOMER': 'success', // Registered customers
       'HOTEL_MANAGER': 'secondary',
       'HOUSEKEEPING': 'warning',
       'MAINTENANCE': 'warning',
-      'CUSTOMER': 'success'
+      'GUEST': 'secondary' // Anonymous guests
     };
     return colorMap[role] || 'primary';
   };
 
   // Helper function to determine if hotel name should be shown
   const shouldShowHotelName = () => {
-    // Hide hotel name for system admin and guest users
+    // Hide hotel name for system admin and customer users
     if (!user) return true; // Show for anonymous users
-    return user.role !== 'ADMIN' && user.role !== 'GUEST';
+    return user.role !== 'ADMIN' && user.role !== 'CUSTOMER';
   };
 
   // Navigation items based on user role
@@ -136,13 +136,13 @@ const Navbar: React.FC = () => {
         return [...baseItems];
       }
 
-      // For guests and customers, show dashboard and bookings (without profile)
-      if (user.role === 'GUEST') {
-        const guestItems = [
+      // For customers and guests, show dashboard and bookings (without profile)
+      if (user.role === 'CUSTOMER') {
+        const customerItems = [
           { label: 'Dashboard', path: '/dashboard', icon: <DashboardIcon /> },
           { label: 'My Bookings', path: '/bookings', icon: <BusinessIcon /> },
         ];
-        return [...baseItems, ...guestItems];
+        return [...baseItems, ...customerItems];
       }
 
       // For other roles (like HOUSEKEEPING, HOTEL_MANAGER), show only base items
@@ -302,7 +302,7 @@ const Navbar: React.FC = () => {
         <PersonIcon sx={{ mr: 1 }} />
         Profile
       </MenuItem>
-      {user?.role === 'GUEST' && (
+      {user?.role === 'CUSTOMER' && (
         <>
           <MenuItem onClick={() => handleNavigation('/dashboard')}>
             <DashboardIcon sx={{ mr: 1 }} />

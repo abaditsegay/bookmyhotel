@@ -67,7 +67,7 @@ public class SystemWideUserService {
      * Get all GUEST users (system-wide)
      */
     public List<User> getAllGuestUsers() {
-        return userRepository.findSystemWideUsersByRole(UserRole.GUEST);
+        return userRepository.findSystemWideUsersByRole(UserRole.CUSTOMER);
     }
     
     /**
@@ -133,7 +133,7 @@ public class SystemWideUserService {
             throw new IllegalArgumentException("User is not a system admin");
         }
         
-        user.setRoles(Set.of(UserRole.GUEST));
+        user.setRoles(Set.of(UserRole.CUSTOMER));
         // If tenantId is provided, bind to tenant; otherwise keep as system-wide GUEST
         if (tenantId != null && !tenantId.trim().isEmpty()) {
             user.setTenantId(tenantId);

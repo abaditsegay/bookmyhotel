@@ -599,7 +599,7 @@ public class HotelAdminService {
             .count();
         stats.put("bookedRooms", bookedRooms);
         
-        // Staff statistics - include all staff roles (excluding guests and customers)
+        // Staff statistics - include all staff roles (excluding customers and guests)
         List<User> staff = userRepository.findByHotelAndRolesContaining(hotel, 
             Arrays.asList(UserRole.FRONTDESK, UserRole.HOUSEKEEPING, UserRole.HOTEL_ADMIN, 
                          UserRole.HOTEL_MANAGER, UserRole.ADMIN));
@@ -1040,7 +1040,7 @@ public class HotelAdminService {
                 response.setGuestEmail("N/A");
             }
         } else if (reservation.getGuestInfo() != null) {
-            // Guest booking (anonymous)
+            // Anonymous guest booking (no User record)
             response.setGuestName(reservation.getGuestInfo().getName() != null ? 
                                 reservation.getGuestInfo().getName() : "Unknown Guest");
             response.setGuestEmail(reservation.getGuestInfo().getEmail() != null ? 

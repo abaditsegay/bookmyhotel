@@ -70,7 +70,7 @@ ADMIN (5) - Platform administrators
 ├─ HOTEL_MANAGER (3) - Hotel managers
 ├─ FRONTDESK (2) - Front desk staff
 ├─ HOUSEKEEPING (2) - Housekeeping staff
-└─ GUEST (1) - Hotel guests
+└─ CUSTOMER (1) - Registered customers with accounts
 ```
 
 ### Access Matrix

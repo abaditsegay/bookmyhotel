@@ -123,7 +123,7 @@ public class SystemUserControllerUnitTest {
         // Arrange
         List<User> mockUsers = Arrays.asList(
                 createMockUser(1L, "admin@test.com", "Admin", "User", Set.of(UserRole.ADMIN)),
-                createMockUser(2L, "guest@test.com", "Guest", "User", Set.of(UserRole.GUEST))
+                createMockUser(2L, "customer@test.com", "Customer", "User", Set.of(UserRole.CUSTOMER))
         );
         Page<User> mockPage = new PageImpl<>(mockUsers, PageRequest.of(0, 20), 2);
         when(systemWideUserService.getAllSystemWideUsers(any(Pageable.class))).thenReturn(mockPage);
@@ -164,7 +164,7 @@ public class SystemUserControllerUnitTest {
     void testGetAllGuestUsers() throws Exception {
         // Arrange
         List<User> mockGuests = Arrays.asList(
-                createMockUser(2L, "guest1@test.com", "Guest", "One", Set.of(UserRole.GUEST))
+                createMockUser(2L, "customer1@test.com", "Customer", "One", Set.of(UserRole.CUSTOMER))
         );
         when(systemWideUserService.getAllGuestUsers()).thenReturn(mockGuests);
 
@@ -197,7 +197,7 @@ public class SystemUserControllerUnitTest {
     @Test
     void testDemoteFromSystemAdmin() throws Exception {
         // Arrange
-        User demotedUser = createMockUser(1L, "admin@test.com", "Test", "Admin", Set.of(UserRole.GUEST));
+        User demotedUser = createMockUser(1L, "admin@test.com", "Test", "Admin", Set.of(UserRole.CUSTOMER));
         when(systemWideUserService.demoteFromSystemAdmin(eq(1L), anyString())).thenReturn(demotedUser);
 
         // Act & Assert

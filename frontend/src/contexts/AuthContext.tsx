@@ -7,7 +7,7 @@ interface User {
   firstName?: string;
   lastName?: string;
   phone?: string;
-  role: 'ADMIN' | 'HOTEL_ADMIN' | 'HOTEL_MANAGER' | 'FRONTDESK' | 'HOUSEKEEPING' | 'GUEST';
+  role: 'ADMIN' | 'HOTEL_ADMIN' | 'HOTEL_MANAGER' | 'FRONTDESK' | 'HOUSEKEEPING' | 'CUSTOMER' | 'GUEST';
   roles: string[]; // Support multiple roles
   tenantId?: string | null; // null for system-wide users
   hotelId?: string;

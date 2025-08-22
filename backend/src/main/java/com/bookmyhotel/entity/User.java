@@ -33,7 +33,9 @@ import jakarta.validation.constraints.Size;
 /**
  * User entity for authentication and authorization
  * Supports both tenant-bound users (HOTEL_ADMIN, FRONTDESK, etc.) 
- * and system-wide users (GUEST, ADMIN)
+ * and system-wide users (CUSTOMER, ADMIN)
+ * CUSTOMER: Registered users with accounts
+ * GUEST: Anonymous users (don't have User records)
  */
 @Entity
 @Table(name = "users",
@@ -143,7 +145,7 @@ public class User extends BaseEntity implements UserDetails {
     public boolean isTenantBoundUser() {
         // Check if user has system-wide roles (GUEST or ADMIN)
         if (roles != null) {
-            return !roles.contains(UserRole.GUEST) && !roles.contains(UserRole.ADMIN);
+            return !roles.contains(UserRole.CUSTOMER) && !roles.contains(UserRole.ADMIN);
         }
         return false; // If no roles, not tenant-bound
     }

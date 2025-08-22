@@ -36,7 +36,7 @@ public class AuthService {
     private EmailService emailService;
     
     /**
-     * Register a new guest user (system-wide)
+     * Register a new customer user (system-wide registered users)
      */
     public LoginResponse register(RegisterRequest registerRequest) {
         // Check if user already exists
@@ -44,7 +44,7 @@ public class AuthService {
             throw new ResourceAlreadyExistsException("User with email " + registerRequest.getEmail() + " already exists");
         }
         
-        // Create new user with GUEST role (system-wide)
+        // Create new user with CUSTOMER role (system-wide registered users)
         User user = new User();
         user.setEmail(registerRequest.getEmail());
         user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
@@ -52,8 +52,8 @@ public class AuthService {
         user.setLastName(registerRequest.getLastName());
         user.setPhone(registerRequest.getPhone());
         user.setIsActive(true);
-        user.setRoles(Set.of(UserRole.GUEST));
-        // Do NOT set tenant_id - GUEST users are system-wide (tenant_id = null)
+        user.setRoles(Set.of(UserRole.CUSTOMER));
+        // Do NOT set tenant_id - CUSTOMER users are system-wide (tenant_id = null)
         
         // Save the user
         user = userRepository.save(user);
