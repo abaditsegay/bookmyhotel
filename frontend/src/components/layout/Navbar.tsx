@@ -131,9 +131,9 @@ const Navbar: React.FC = () => {
         return [...baseItems, { label: 'Dashboard', path: '/hotel-admin', icon: <DashboardIcon /> }];
       }
 
-      // For front desk staff, show front desk dashboard
+      // For front desk staff, show only base items (no dashboard link)
       if (user.role === 'FRONTDESK') {
-        return [...baseItems, { label: 'Front Desk', path: '/frontdesk', icon: <DashboardIcon /> }];
+        return [...baseItems];
       }
 
       // For guests and customers, show dashboard and bookings (without profile)
