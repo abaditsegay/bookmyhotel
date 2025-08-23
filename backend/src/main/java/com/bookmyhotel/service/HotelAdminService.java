@@ -72,6 +72,9 @@ public class HotelAdminService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private RoomTypePricingService roomTypePricingService;
+
     /**
      * Get the hotel for the logged-in hotel admin
      */
@@ -398,7 +401,14 @@ public class HotelAdminService {
         Room newRoom = new Room();
         newRoom.setRoomNumber(roomDTO.getRoomNumber());
         newRoom.setRoomType(roomDTO.getRoomType());
-        newRoom.setPricePerNight(roomDTO.getPricePerNight());
+        
+        // Use room type pricing if price not specified or use room type default
+        BigDecimal pricePerNight = roomDTO.getPricePerNight();
+        if (pricePerNight == null || pricePerNight.compareTo(BigDecimal.ZERO) <= 0) {
+            pricePerNight = roomTypePricingService.getBasePriceForRoomType(hotel.getId(), roomDTO.getRoomType());
+        }
+        newRoom.setPricePerNight(pricePerNight);
+        
         newRoom.setCapacity(roomDTO.getCapacity());
         newRoom.setDescription(roomDTO.getDescription());
         newRoom.setIsAvailable(true);
@@ -587,17 +597,29 @@ public class HotelAdminService {
         List<Room> rooms = roomRepository.findByHotelId(hotel.getId());
         stats.put("totalRooms", rooms.size());
         
-        // Available rooms: status is AVAILABLE and room is available for booking
+        // Get all reservations for the hotel to calculate proper statistics
+        List<Reservation> allReservations = reservationRepository.findByHotelId(hotel.getId());
+        LocalDate today = LocalDate.now();
+        
+        // Booked rooms: rooms with active reservations (confirmed, checked-in, or future bookings)
+        Set<Long> bookedRoomIds = allReservations.stream()
+            .filter(r -> r.getStatus() == ReservationStatus.CONFIRMED || 
+                        r.getStatus() == ReservationStatus.CHECKED_IN ||
+                        (r.getStatus() == ReservationStatus.PENDING && r.getCheckInDate().isAfter(today)))
+            .filter(r -> !r.getCheckOutDate().isBefore(today)) // Not already checked out
+            .map(r -> r.getRoom().getId())
+            .collect(Collectors.toSet());
+        
+        long bookedRooms = bookedRoomIds.size();
+        stats.put("bookedRooms", bookedRooms);
+        
+        // Available rooms: total rooms minus booked rooms, and must be available for booking
         long availableRooms = rooms.stream()
-            .filter(r -> r.getStatus() == RoomStatus.AVAILABLE && r.getIsAvailable())
+            .filter(r -> r.getIsAvailable() && 
+                        r.getStatus() == RoomStatus.AVAILABLE && 
+                        !bookedRoomIds.contains(r.getId()))
             .count();
         stats.put("availableRooms", availableRooms);
-        
-        // Booked rooms: rooms that are currently occupied (have active bookings)
-        long bookedRooms = rooms.stream()
-            .filter(r -> r.getStatus() == RoomStatus.OCCUPIED)
-            .count();
-        stats.put("bookedRooms", bookedRooms);
         
         // Staff statistics - include all staff roles (excluding customers and guests)
         List<User> staff = userRepository.findByHotelAndRolesContaining(hotel, 

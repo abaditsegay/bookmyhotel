@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Card,
@@ -8,7 +8,9 @@ import {
   Button,
   Chip,
   Stack,
-  Divider
+  Divider,
+  Skeleton,
+  Alert
 } from '@mui/material';
 import {
   LocalOffer as OfferIcon,
@@ -16,6 +18,7 @@ import {
   LocationOn as LocationIcon,
   AccessTime as TimeIcon
 } from '@mui/icons-material';
+import adApiService, { AdResponse } from '../services/adApi';
 
 interface Advertisement {
   id: string;
@@ -37,87 +40,168 @@ interface AdvertisementBannerProps {
   maxAds?: number;
 }
 
+// Fallback advertisement data with professional hotel images
+const fallbackAdvertisements: Advertisement[] = [
+  {
+    id: '1',
+    title: 'Luxury Spa Resort - Weekend Getaway',
+    description: 'Experience ultimate relaxation with our premium spa packages and oceanview suites.',
+    imageUrl: 'https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=300&h=200&fit=crop&crop=center',
+    price: '$299',
+    originalPrice: '$399',
+    discount: '25% OFF',
+    location: 'Malibu, CA',
+    rating: 4.8,
+    validUntil: '2025-09-15',
+    ctaText: 'Book Now',
+    ctaUrl: '#',
+    isSponsored: true
+  },
+  {
+    id: '2',
+    title: 'Business Hotel Downtown',
+    description: 'Perfect for business travelers with modern amenities and conference facilities.',
+    imageUrl: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=300&h=200&fit=crop&crop=center',
+    price: '$189',
+    originalPrice: '$249',
+    discount: '24% OFF',
+    location: 'San Francisco, CA',
+    rating: 4.6,
+    validUntil: '2025-08-30',
+    ctaText: 'View Deals',
+    ctaUrl: '#',
+    isSponsored: true
+  },
+  {
+    id: '3',
+    title: 'Mountain Resort & Adventure',
+    description: 'Outdoor activities, hiking trails, and cozy mountain lodge atmosphere.',
+    imageUrl: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=300&h=200&fit=crop&crop=center',
+    price: '$149',
+    originalPrice: '$199',
+    discount: '25% OFF',
+    location: 'Aspen, CO',
+    rating: 4.7,
+    validUntil: '2025-09-30',
+    ctaText: 'Explore',
+    ctaUrl: '#',
+    isSponsored: false
+  },
+  {
+    id: '4',
+    title: 'Boutique City Hotel',
+    description: 'Unique design, local cuisine, and personalized service in the heart of the city.',
+    imageUrl: 'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=300&h=200&fit=crop&crop=center',
+    price: '$219',
+    originalPrice: '$279',
+    discount: '22% OFF',
+    location: 'New York, NY',
+    rating: 4.9,
+    validUntil: '2025-08-25',
+    ctaText: 'Book Now',
+    ctaUrl: '#',
+    isSponsored: true
+  },
+  {
+    id: '5',
+    title: 'Beach Resort Paradise',
+    description: 'Tropical paradise with pristine beaches, water sports, and sunset dinners.',
+    imageUrl: 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=300&h=200&fit=crop&crop=center',
+    price: '$349',
+    originalPrice: '$449',
+    discount: '22% OFF',
+    location: 'Miami, FL',
+    rating: 4.8,
+    validUntil: '2025-09-10',
+    ctaText: 'Book Now',
+    ctaUrl: '#',
+    isSponsored: true
+  }
+];
+
 const AdvertisementBanner: React.FC<AdvertisementBannerProps> = ({
   maxAds = 4
 }) => {
-  // Sample advertisement data
-  const advertisements: Advertisement[] = [
-    {
-      id: '1',
-      title: 'Luxury Spa Resort - Weekend Getaway',
-      description: 'Experience ultimate relaxation with our premium spa packages and oceanview suites.',
-      imageUrl: 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=300&h=200&fit=crop',
-      price: '$299',
-      originalPrice: '$399',
-      discount: '25% OFF',
-      location: 'Malibu, CA',
-      rating: 4.8,
-      validUntil: '2025-09-15',
+  const [ads, setAds] = useState<Advertisement[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Convert API response to Advertisement format
+  const convertAdResponseToAdvertisement = (adResponse: AdResponse): Advertisement => {
+    const discount = adResponse.discountPercentage > 0 
+      ? `${Math.round(adResponse.discountPercentage)}% OFF` 
+      : undefined;
+    
+    return {
+      id: adResponse.id.toString(),
+      title: adResponse.title,
+      description: adResponse.description || `Special offers at ${adResponse.hotelName}`,
+      imageUrl: adResponse.imageUrl || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=300&h=200&fit=crop',
+      price: `$${adResponse.discountedPrice}`,
+      originalPrice: adResponse.originalPrice !== adResponse.discountedPrice ? `$${adResponse.originalPrice}` : undefined,
+      discount,
+      location: adResponse.hotelLocation,
+      rating: undefined, // Rating could be added to Ad entity in future
+      validUntil: adResponse.validUntil,
       ctaText: 'Book Now',
-      ctaUrl: '#',
+      ctaUrl: `/search-results?hotelId=${adResponse.hotelId}`,
       isSponsored: true
-    },
-    {
-      id: '2',
-      title: 'Business Hotel Downtown',
-      description: 'Perfect for business travelers with modern amenities and conference facilities.',
-      imageUrl: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=300&h=200&fit=crop',
-      price: '$189',
-      originalPrice: '$249',
-      discount: '24% OFF',
-      location: 'San Francisco, CA',
-      rating: 4.6,
-      validUntil: '2025-08-30',
-      ctaText: 'View Deals',
-      ctaUrl: '#',
-      isSponsored: true
-    },
-    {
-      id: '3',
-      title: 'Mountain Resort & Adventure',
-      description: 'Outdoor activities, hiking trails, and cozy mountain lodge atmosphere.',
-      imageUrl: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=300&h=200&fit=crop',
-      price: '$149',
-      originalPrice: '$199',
-      discount: '25% OFF',
-      location: 'Aspen, CO',
-      rating: 4.7,
-      validUntil: '2025-09-30',
-      ctaText: 'Explore',
-      ctaUrl: '#',
-      isSponsored: false
-    },
-    {
-      id: '4',
-      title: 'Boutique City Hotel',
-      description: 'Unique design, local cuisine, and personalized service in the heart of the city.',
-      imageUrl: 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=300&h=200&fit=crop',
-      price: '$219',
-      originalPrice: '$279',
-      discount: '22% OFF',
-      location: 'New York, NY',
-      rating: 4.9,
-      validUntil: '2025-08-25',
-      ctaText: 'Book Now',
-      ctaUrl: '#',
-      isSponsored: true
-    },
-    {
-      id: '5',
-      title: 'Beach Resort Paradise',
-      description: 'Tropical paradise with pristine beaches, water sports, and sunset dinners.',
-      imageUrl: 'https://images.unsplash.com/photo-1540541338287-41700207dee6?w=300&h=200&fit=crop',
-      price: '$349',
-      originalPrice: '$449',
-      discount: '22% OFF',
-      location: 'Miami, FL',
-      rating: 4.8,
-      validUntil: '2025-09-10',
-      ctaText: 'Book Now',
-      ctaUrl: '#',
-      isSponsored: true
+    };
+  };
+
+  // Fetch ads from API
+  const fetchAds = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const apiAds = await adApiService.getRandomActiveAds(maxAds);
+      
+      if (apiAds && apiAds.length > 0) {
+        const convertedAds = apiAds.map(convertAdResponseToAdvertisement);
+        setAds(convertedAds);
+      } else {
+        // Use fallback ads if no API ads available
+        setAds(fallbackAdvertisements.slice(0, maxAds));
+      }
+    } catch (err) {
+      console.warn('Failed to fetch ads from API, using fallback:', err);
+      setError('Using sample ads');
+      setAds(fallbackAdvertisements.slice(0, maxAds));
+    } finally {
+      setLoading(false);
     }
-  ];
+  }, [maxAds]);
+
+  // Track ad click
+  const handleAdClick = async (ad: Advertisement) => {
+    try {
+      // Only track clicks for ads from the API (numeric IDs)
+      const adId = parseInt(ad.id);
+      if (!isNaN(adId)) {
+        await adApiService.trackAdClick(adId);
+      }
+    } catch (err) {
+      console.warn('Failed to track ad click:', err);
+    }
+    // Navigate to the URL regardless of tracking success
+    if (ad.ctaUrl !== '#') {
+      window.location.href = ad.ctaUrl;
+    }
+  };
+
+  // Load ads on component mount
+  useEffect(() => {
+    fetchAds();
+  }, [fetchAds]);
+
+  // Set up 1-minute rotation
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchAds();
+    }, 60000); // 60 seconds = 1 minute
+
+    return () => clearInterval(interval);
+  }, [fetchAds]);
 
   const formatValidUntil = (dateString: string) => {
     const date = new Date(dateString);
@@ -128,7 +212,39 @@ const AdvertisementBanner: React.FC<AdvertisementBannerProps> = ({
     });
   };
 
-  const displayedAds = advertisements.slice(0, maxAds);
+  // Show loading skeletons
+  if (loading && ads.length === 0) {
+    return (
+      <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <OfferIcon color="primary" />
+          <Typography variant="h6" sx={{ fontWeight: 'bold', flex: 1 }}>
+            Special Offers
+          </Typography>
+          <Chip 
+            label="Loading" 
+            size="small" 
+            color="primary" 
+            variant="outlined"
+          />
+        </Box>
+        <Stack spacing={2}>
+          {Array.from({ length: maxAds }).map((_, index) => (
+            <Card key={index}>
+              <Skeleton variant="rectangular" height={120} />
+              <CardContent>
+                <Skeleton variant="text" width="80%" />
+                <Skeleton variant="text" width="60%" />
+                <Skeleton variant="text" width="40%" />
+              </CardContent>
+            </Card>
+          ))}
+        </Stack>
+      </Box>
+    );
+  }
+
+  const displayedAds = ads.slice(0, maxAds);
 
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -139,9 +255,9 @@ const AdvertisementBanner: React.FC<AdvertisementBannerProps> = ({
           Special Offers
         </Typography>
         <Chip 
-          label="Sponsored" 
+          label={error ? "Sample Ads" : "Sponsored"} 
           size="small" 
-          color="primary" 
+          color={error ? "warning" : "primary"} 
           variant="outlined"
         />
       </Box>
@@ -282,7 +398,7 @@ const AdvertisementBanner: React.FC<AdvertisementBannerProps> = ({
                   color="primary"
                   fullWidth
                   size="small"
-                  href={ad.ctaUrl}
+                  onClick={() => handleAdClick(ad)}
                   sx={{
                     textTransform: 'none',
                     fontWeight: 'bold',
@@ -301,6 +417,11 @@ const AdvertisementBanner: React.FC<AdvertisementBannerProps> = ({
 
       {/* Footer */}
       <Box sx={{ mt: 2, textAlign: 'center' }}>
+        {error ? (
+          <Alert severity="info" sx={{ mb: 1 }}>
+            Showing sample ads. Live ads from registered hotels will be available soon.
+          </Alert>
+        ) : null}
         <Typography variant="caption" color="text.secondary">
           Sponsored content • Advertise with us
         </Typography>

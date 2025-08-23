@@ -1,6 +1,7 @@
 package com.bookmyhotel.service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -14,6 +15,7 @@ import com.bookmyhotel.dto.RoomTypeAvailabilityDto;
 import com.bookmyhotel.entity.Hotel;
 import com.bookmyhotel.entity.Room;
 import com.bookmyhotel.entity.RoomType;
+import com.bookmyhotel.entity.RoomTypePricing;
 import com.bookmyhotel.repository.HotelRepository;
 import com.bookmyhotel.repository.RoomRepository;
 
@@ -29,6 +31,9 @@ public class HotelSearchService {
     
     @Autowired
     private RoomRepository roomRepository;
+    
+    @Autowired
+    private RoomTypePricingService roomTypePricingService;
     
     /**
      * Search hotels based on criteria
@@ -98,8 +103,8 @@ public class HotelSearchService {
         );
         
         return availableRooms.stream()
-            .filter(room -> isRoomInPriceRange(room, request))
-            .map(this::convertToAvailableRoomDto)
+            .filter(room -> isRoomInPriceRange(room, request, request.getCheckInDate(), request.getCheckOutDate()))
+            .map(room -> convertToAvailableRoomDto(room, request.getCheckInDate(), request.getCheckOutDate()))
             .collect(Collectors.toList());
     }
     
@@ -155,11 +160,14 @@ public class HotelSearchService {
                 .orElse(null);
         }
         
+        // Calculate dynamic pricing using RoomTypePricing configurations
+        BigDecimal dynamicPrice = calculateDynamicPricing(hotelId, roomType, request.getCheckInDate(), sampleRoom);
+        
         RoomTypeAvailabilityDto dto = new RoomTypeAvailabilityDto(
             roomType,
             (int) availableCount,
             (int) totalCount,
-            sampleRoom != null ? sampleRoom.getPricePerNight() : BigDecimal.ZERO,
+            dynamicPrice,
             sampleRoom != null ? sampleRoom.getCapacity() : 1
         );
         
@@ -209,24 +217,28 @@ public class HotelSearchService {
     }
     
     /**
-     * Convert Room entity to AvailableRoomDto
+     * Convert Room entity to AvailableRoomDto with dynamic pricing
      */
-    private HotelSearchResult.AvailableRoomDto convertToAvailableRoomDto(Room room) {
+    private HotelSearchResult.AvailableRoomDto convertToAvailableRoomDto(Room room, LocalDate checkInDate, LocalDate checkOutDate) {
         HotelSearchResult.AvailableRoomDto dto = new HotelSearchResult.AvailableRoomDto();
         dto.setId(room.getId());
         dto.setRoomNumber(room.getRoomNumber());
         dto.setRoomType(room.getRoomType().name());
-        dto.setPricePerNight(room.getPricePerNight());
+        
+        // Calculate dynamic pricing using RoomTypePricing configurations
+        BigDecimal dynamicPrice = calculateDynamicPricing(room.getHotel().getId(), room.getRoomType(), checkInDate, room);
+        dto.setPricePerNight(dynamicPrice);
+        
         dto.setCapacity(room.getCapacity());
         dto.setDescription(room.getDescription());
         return dto;
     }
     
     /**
-     * Check if room is within price range
+     * Check if room is within price range using dynamic pricing
      */
-    private boolean isRoomInPriceRange(Room room, HotelSearchRequest request) {
-        BigDecimal price = room.getPricePerNight();
+    private boolean isRoomInPriceRange(Room room, HotelSearchRequest request, LocalDate checkIn, LocalDate checkOut) {
+        BigDecimal price = calculateDynamicPricing(room.getHotel().getId(), room.getRoomType(), checkIn, room);
         
         if (request.getMinPrice() != null && price.compareTo(BigDecimal.valueOf(request.getMinPrice())) < 0) {
             return false;
@@ -254,5 +266,23 @@ public class HotelSearchService {
         }
         
         return true;
+    }
+    
+    /**
+     * Calculate dynamic pricing using RoomTypePricing configurations
+     */
+    private BigDecimal calculateDynamicPricing(Long hotelId, RoomType roomType, LocalDate checkInDate, Room fallbackRoom) {
+        try {
+            // Try to get the configured pricing for this room type
+            RoomTypePricing pricingConfig = roomTypePricingService.getRoomTypePricing(hotelId, roomType);
+            if (pricingConfig != null) {
+                return pricingConfig.getBasePricePerNight();
+            }
+        } catch (Exception e) {
+            // If no pricing configuration found, fall back to room's static price
+        }
+        
+        // Fallback to the room's static price if no dynamic pricing is configured
+        return fallbackRoom != null ? fallbackRoom.getPricePerNight() : BigDecimal.valueOf(100);
     }
 }

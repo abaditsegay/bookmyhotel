@@ -32,6 +32,8 @@ import {
   Switch,
   Tooltip,
   FormControlLabel,
+  Tabs,
+  Tab,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -44,6 +46,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { hotelAdminApi, RoomResponse, RoomCreateRequest, RoomUpdateRequest } from '../../services/hotelAdminApi';
 import { useAuth } from '../../contexts/AuthContext';
+import RoomTypePricing from '../../components/RoomTypePricing';
 
 interface RoomFilters {
   roomNumber: string;
@@ -65,6 +68,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalElements, setTotalElements] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
+  const [tabValue, setTabValue] = useState(0);
   const [filters, setFilters] = useState<RoomFilters>({
     roomNumber: '',
     roomType: '',
@@ -368,13 +372,15 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
           <Typography variant="h4" component="h1">
             Room Management
           </Typography>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => setCreateDialogOpen(true)}
-          >
-            Add New Room
-          </Button>
+          {tabValue === 0 && (
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => setCreateDialogOpen(true)}
+            >
+              Add New Room
+            </Button>
+          )}
         </Box>
 
         {error && (
@@ -382,6 +388,18 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
             {error}
           </Alert>
         )}
+
+        {/* Tabs */}
+        <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
+          <Tabs value={tabValue} onChange={(e, newValue) => setTabValue(newValue)}>
+            <Tab label="Rooms" />
+            <Tab label="Room Type Pricing" />
+          </Tabs>
+        </Box>
+
+        {/* Tab Panel 0 - Rooms */}
+        {tabValue === 0 && (
+          <Box>
 
         {/* Search and Filters - Front Desk Style */}
         <Box sx={{ mb: 3, display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -564,6 +582,15 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
           onPageChange={handlePageChange}
           onRowsPerPageChange={handleRowsPerPageChange}
         />
+          </Box>
+        )}
+
+        {/* Tab Panel 1 - Room Type Pricing */}
+        {tabValue === 1 && (
+          <Box>
+            <RoomTypePricing onPricingUpdate={loadRooms} />
+          </Box>
+        )}
 
         {/* Status Update Dialog - Front Desk Style */}
         <Dialog open={statusDialogOpen} onClose={handleStatusDialogClose}>

@@ -23,14 +23,14 @@ interface RoomTypeCardProps {
   onBookRoomType: (hotelId: number, roomType: string, asGuest?: boolean) => void;
 }
 
-// Mock room images based on room type
+// Professional room images based on room type
 const getRoomImage = (roomType: string): string => {
   const images = {
-    SINGLE: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop&crop=center',
-    DOUBLE: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=250&fit=crop&crop=center',
-    SUITE: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=250&fit=crop&crop=center',
-    DELUXE: 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=400&h=250&fit=crop&crop=center',
-    PRESIDENTIAL: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=250&fit=crop&crop=center',
+    SINGLE: 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=400&h=250&fit=crop&crop=center', // Modern single bedroom with workspace
+    DOUBLE: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop&crop=center', // Modern hotel room with two beds and desk area
+    SUITE: 'https://images.unsplash.com/photo-1582719508461-905c673771fd?w=400&h=250&fit=crop&crop=center', // Luxury suite with living area
+    DELUXE: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop&crop=center', // Deluxe room with premium finishes
+    PRESIDENTIAL: 'https://images.unsplash.com/photo-1591088398332-8a7791972843?w=400&h=250&fit=crop&crop=center', // Presidential suite with panoramic views
   };
   return images[roomType as keyof typeof images] || images.DOUBLE;
 };

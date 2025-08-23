@@ -28,7 +28,6 @@ import {
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { useTenant } from '../../contexts/TenantContext';
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
@@ -37,7 +36,6 @@ const Navbar: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
   const { user, logout } = useAuth();
-  const { tenant } = useTenant();
   
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
@@ -200,9 +198,9 @@ const Navbar: React.FC = () => {
         <Typography variant="h6" sx={{ color: theme.palette.primary.main, fontWeight: 'bold' }}>
           🏨 BookMyHotel
         </Typography>
-        {tenant && shouldShowHotelName() && (
+        {user && user.hotelName && shouldShowHotelName() && (
           <Chip
-            label={tenant.name}
+            label={user.hotelName}
             size="small"
             color="secondary"
             sx={{ mt: 1, mr: 1 }}
@@ -371,7 +369,7 @@ const Navbar: React.FC = () => {
           </Box>
 
           {/* Center Section: Hotel Name for Hotel Admin and Front Desk */}
-          {tenant && shouldShowHotelName() && (
+          {user && user.hotelName && shouldShowHotelName() && (
             <Box sx={{ display: 'flex', justifyContent: 'center', flex: 1 }}>
               <Typography 
                 variant="h4" 
@@ -380,21 +378,22 @@ const Navbar: React.FC = () => {
                   fontWeight: 'bold',
                   color: '#FFD700', // Bright gold color
                   textAlign: 'center',
-                  fontSize: { xs: '1.5rem', sm: '2rem', md: '2.25rem' },
-                  textOverflow: 'ellipsis',
-                  overflow: 'hidden',
-                  whiteSpace: 'nowrap',
-                  maxWidth: { xs: '200px', sm: '300px', md: '400px' },
-                  textShadow: '2px 2px 4px rgba(0,0,0,0.7)' // Stronger shadow for better contrast
+                  fontSize: { xs: '1.2rem', sm: '1.8rem', md: '2rem' },
+                  textShadow: '2px 2px 4px rgba(0,0,0,0.7)', // Stronger shadow for better contrast
+                  // Allow text to wrap and display fully
+                  whiteSpace: 'normal',
+                  wordBreak: 'break-word',
+                  maxWidth: { xs: '280px', sm: '400px', md: '600px' },
+                  lineHeight: 1.2,
                 }}
               >
-                {tenant.name}
+                {user.hotelName}
               </Typography>
             </Box>
           )}
 
           {/* For users who shouldn't see hotel name, show navigation in center */}
-          {(!tenant || !shouldShowHotelName()) && (
+          {(!user || !user.hotelName || !shouldShowHotelName()) && (
             <Box sx={{ display: 'flex', justifyContent: 'center', flex: 1 }}>
               <DesktopNavigation />
             </Box>
@@ -403,7 +402,7 @@ const Navbar: React.FC = () => {
           {/* Right Section: User Actions */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1, justifyContent: 'flex-end' }}>
             {/* Show navigation on right for users with hotel name displayed */}
-            {tenant && shouldShowHotelName() && !isMobile && (
+            {user && user.hotelName && shouldShowHotelName() && !isMobile && (
               <DesktopNavigation />
             )}
             

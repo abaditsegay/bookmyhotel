@@ -285,9 +285,10 @@ const HotelAdminDashboard: React.FC = () => {
 
   // Load initial data on component mount
   React.useEffect(() => {
-    // Load bookings data on component mount for demo purposes
+    // Load essential data including statistics for dashboard cards
     loadBookings();
     loadBookingStats();
+    loadReportsData(); // Load hotel statistics for dashboard cards
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -451,21 +452,21 @@ const HotelAdminDashboard: React.FC = () => {
     }
   }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Mock data for demonstration - will be replaced with real data from hotel state
+  // Use statistics data from API instead of basic hotel data
   const hotelData = hotel ? {
     name: hotel.name || user?.hotelName || 'Loading...',
-    totalRooms: hotel.totalRooms || 0,
-    availableRooms: hotel.availableRooms || 0,
-    bookedRooms: hotel.bookedRooms || 0,
-    totalStaff: hotel.totalStaff || 0,
-    activeStaff: hotel.totalStaff || 0, // Using same value as totalStaff for now
+    totalRooms: reportsData.hotelStats?.totalRooms || hotel.totalRooms || 0,
+    availableRooms: reportsData.hotelStats?.availableRooms || hotel.availableRooms || 0,
+    bookedRooms: reportsData.hotelStats?.bookedRooms || hotel.bookedRooms || 0,
+    totalStaff: reportsData.hotelStats?.totalStaff || hotel.totalStaff || 0,
+    activeStaff: reportsData.hotelStats?.activeStaff || hotel.totalStaff || 0,
   } : {
     name: user?.hotelName || (hotelLoading ? 'Loading hotel...' : 'Hotel information not available'),
-    totalRooms: 0,
-    availableRooms: 0,
-    bookedRooms: 0,
-    totalStaff: 0,
-    activeStaff: 0,
+    totalRooms: reportsData.hotelStats?.totalRooms || 0,
+    availableRooms: reportsData.hotelStats?.availableRooms || 0,
+    bookedRooms: reportsData.hotelStats?.bookedRooms || 0,
+    totalStaff: reportsData.hotelStats?.totalStaff || 0,
+    activeStaff: reportsData.hotelStats?.activeStaff || 0,
   };
 
   const stats = [

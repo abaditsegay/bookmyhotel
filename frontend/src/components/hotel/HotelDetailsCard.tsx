@@ -30,16 +30,19 @@ interface HotelDetailsCardProps {
   defaultExpanded?: boolean;
 }
 
-// Mock hotel images based on hotel name/location
+// Professional hotel images based on hotel name/location
 const getHotelImage = (hotelName: string, city: string): string => {
   const cityImages = {
-    'New York': 'https://images.unsplash.com/photo-1496417263034-38ec4f0b665a?w=800&h=400&fit=crop&crop=center',
-    'Miami': 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=400&fit=crop&crop=center',
-    'Los Angeles': 'https://images.unsplash.com/photo-1515542622106-78bda8ba0e5b?w=800&h=400&fit=crop&crop=center',
-    'San Francisco': 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800&h=400&fit=crop&crop=center',
-    'Chicago': 'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=800&h=400&fit=crop&crop=center',
-    'Philadelphia': 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=800&h=400&fit=crop&crop=center',
-    'Seattle': 'https://images.unsplash.com/photo-1541697549-39ecbf2e7067?w=800&h=400&fit=crop&crop=center',
+    'New York': 'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=800&h=400&fit=crop&crop=center', // Luxury NYC hotel exterior
+    'Miami': 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800&h=400&fit=crop&crop=center', // Modern Miami beachfront hotel
+    'Los Angeles': 'https://images.unsplash.com/photo-1455587734955-081b22074882?w=800&h=400&fit=crop&crop=center', // Elegant LA hotel facade
+    'San Francisco': 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800&h=400&fit=crop&crop=center', // Victorian SF hotel
+    'Chicago': 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&h=400&fit=crop&crop=center', // Modern Chicago hotel
+    'Philadelphia': 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&h=400&fit=crop&crop=center', // Historic Philadelphia hotel
+    'Seattle': 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=800&h=400&fit=crop&crop=center', // Seattle waterfront hotel
+    'San Diego': 'https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=800&h=400&fit=crop&crop=center', // San Diego resort hotel
+    'Las Vegas': 'https://images.unsplash.com/photo-1540541338287-41700207dee6?w=800&h=400&fit=crop&crop=center', // Vegas luxury hotel
+    'Boston': 'https://images.unsplash.com/photo-1445019980597-93fa8acb246c?w=800&h=400&fit=crop&crop=center', // Historic Boston hotel
   };
   return cityImages[city as keyof typeof cityImages] || cityImages['New York'];
 };

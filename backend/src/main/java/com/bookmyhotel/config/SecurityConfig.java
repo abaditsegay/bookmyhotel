@@ -44,6 +44,8 @@ public class SecurityConfig {
                 // Public endpoints - no authentication required
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/hotels/**").permitAll()
+                .requestMatchers("/api/ads/random").permitAll() // Allow public access to random ads
+                .requestMatchers("/api/ads/*/click").permitAll() // Allow public access to click tracking
                 .requestMatchers("/api/public/hotel-registration/**").permitAll() // Allow public hotel registration
                 .requestMatchers("/api/bookings/webhook/**").permitAll()
                 .requestMatchers("/api/bookings/*/pdf").permitAll() // Allow PDF downloads for guests

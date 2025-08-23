@@ -39,7 +39,7 @@ export const CustomerDashboard: React.FC = () => {
     {
       id: 1,
       name: 'New York City',
-      image: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=400&h=300&fit=crop',
+      image: 'https://images.unsplash.com/photo-1541336032412-2048a678540d?w=400&h=300&fit=crop&crop=center',
       description: 'The city that never sleeps',
       hotels: '1,200+ hotels',
       rating: 4.5,
@@ -48,7 +48,7 @@ export const CustomerDashboard: React.FC = () => {
     {
       id: 2,
       name: 'Paris, France',
-      image: 'https://images.unsplash.com/photo-1502602898536-47ad22581b52?w=400&h=300&fit=crop',
+      image: 'https://images.unsplash.com/photo-1502602898536-47ad22581b52?w=400&h=300&fit=crop&crop=center',
       description: 'City of lights and romance',
       hotels: '800+ hotels',
       rating: 4.7,
@@ -57,7 +57,7 @@ export const CustomerDashboard: React.FC = () => {
     {
       id: 3,
       name: 'Tokyo, Japan',
-      image: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=400&h=300&fit=crop',
+      image: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=400&h=300&fit=crop&crop=center',
       description: 'Modern culture meets tradition',
       hotels: '600+ hotels',
       rating: 4.6,
@@ -66,7 +66,7 @@ export const CustomerDashboard: React.FC = () => {
     {
       id: 4,
       name: 'London, England',
-      image: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=400&h=300&fit=crop',
+      image: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=400&h=300&fit=crop&crop=center',
       description: 'Rich history and royal heritage',
       hotels: '900+ hotels',
       rating: 4.4,

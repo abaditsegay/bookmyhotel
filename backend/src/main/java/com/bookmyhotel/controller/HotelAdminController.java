@@ -1,5 +1,6 @@
 package com.bookmyhotel.controller;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,9 +23,12 @@ import com.bookmyhotel.dto.BookingModificationResponse;
 import com.bookmyhotel.dto.BookingResponse;
 import com.bookmyhotel.dto.HotelDTO;
 import com.bookmyhotel.dto.RoomDTO;
+import com.bookmyhotel.dto.RoomTypePricingDTO;
 import com.bookmyhotel.dto.UserDTO;
 import com.bookmyhotel.entity.ReservationStatus;
+import com.bookmyhotel.entity.RoomType;
 import com.bookmyhotel.service.HotelAdminService;
+import com.bookmyhotel.service.RoomTypePricingService;
 
 import jakarta.validation.Valid;
 
@@ -38,6 +42,9 @@ public class HotelAdminController {
 
     @Autowired
     private HotelAdminService hotelAdminService;
+
+    @Autowired
+    private RoomTypePricingService roomTypePricingService;
 
     // Hotel Management
     @GetMapping("/hotel")
@@ -271,5 +278,69 @@ public class HotelAdminController {
         HotelDTO hotel = hotelAdminService.getMyHotel(auth.getName());
         hotelAdminService.deleteBooking(reservationId, hotel.getId());
         return ResponseEntity.noContent().build();
+    }
+
+    // Room Type Pricing Management
+    
+    /**
+     * Get all room type pricing for the hotel
+     */
+    @GetMapping("/room-type-pricing")
+    public ResponseEntity<List<RoomTypePricingDTO>> getRoomTypePricing(Authentication auth) {
+        List<RoomTypePricingDTO> pricing = roomTypePricingService.getRoomTypePricing(auth.getName());
+        return ResponseEntity.ok(pricing);
+    }
+
+    /**
+     * Create or update room type pricing
+     */
+    @PostMapping("/room-type-pricing")
+    public ResponseEntity<RoomTypePricingDTO> saveRoomTypePricing(
+            @Valid @RequestBody RoomTypePricingDTO pricingDTO, 
+            Authentication auth) {
+        RoomTypePricingDTO saved = roomTypePricingService.saveRoomTypePricing(pricingDTO, auth.getName());
+        return ResponseEntity.ok(saved);
+    }
+
+    /**
+     * Update room type pricing
+     */
+    @PutMapping("/room-type-pricing/{id}")
+    public ResponseEntity<RoomTypePricingDTO> updateRoomTypePricing(
+            @PathVariable Long id,
+            @Valid @RequestBody RoomTypePricingDTO pricingDTO, 
+            Authentication auth) {
+        pricingDTO.setId(id);
+        RoomTypePricingDTO updated = roomTypePricingService.saveRoomTypePricing(pricingDTO, auth.getName());
+        return ResponseEntity.ok(updated);
+    }
+
+    /**
+     * Delete room type pricing
+     */
+    @DeleteMapping("/room-type-pricing/{id}")
+    public ResponseEntity<Void> deleteRoomTypePricing(@PathVariable Long id, Authentication auth) {
+        roomTypePricingService.deleteRoomTypePricing(id, auth.getName());
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Get room type pricing by room type
+     */
+    @GetMapping("/room-type-pricing/{roomType}")
+    public ResponseEntity<RoomTypePricingDTO> getRoomTypePricing(
+            @PathVariable RoomType roomType, 
+            Authentication auth) {
+        RoomTypePricingDTO pricing = roomTypePricingService.getRoomTypePricing(auth.getName(), roomType);
+        return ResponseEntity.ok(pricing);
+    }
+
+    /**
+     * Initialize default pricing for all room types
+     */
+    @PostMapping("/room-type-pricing/initialize-defaults")
+    public ResponseEntity<Void> initializeDefaultPricing(Authentication auth) {
+        roomTypePricingService.initializeDefaultPricing(auth.getName());
+        return ResponseEntity.ok().build();
     }
 }
