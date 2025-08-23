@@ -13,6 +13,7 @@ interface TenantContextType {
   setTenantId: (tenantId: string | null) => void;
   availableTenants: Tenant[];
   updateTenantFromToken: (token: string) => void;
+  clearTenant: () => void; // Add method to clear tenant context
   isSystemWideContext: boolean; // True when no tenant is set (system-wide user)
 }
 
@@ -57,6 +58,11 @@ export const TenantProvider: React.FC<TenantProviderProps> = ({ children }) => {
     }
   }, [setTenantId]);
 
+  const clearTenant = useCallback(() => {
+    console.log('Clearing tenant context on logout');
+    setTenantId(null);
+  }, [setTenantId]);
+
   // Initialize tenant on mount
   useEffect(() => {
     // Check if there's a saved token in localStorage and extract tenant from it
@@ -74,6 +80,7 @@ export const TenantProvider: React.FC<TenantProviderProps> = ({ children }) => {
     setTenantId,
     availableTenants,
     updateTenantFromToken,
+    clearTenant,
     isSystemWideContext: tenantId === null,
   };
 

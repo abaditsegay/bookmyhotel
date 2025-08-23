@@ -20,7 +20,9 @@ import com.bookmyhotel.service.HotelSearchService;
 import jakarta.validation.Valid;
 
 /**
- * Hotel search controller - Public endpoints for hotel discovery
+ * Hotel search controller - Public endpoints for hotel discovery and booking
+ * Provides public access to hotel search, details, and room availability
+ * Used by anonymous guests and the booking system
  */
 @RestController
 @RequestMapping("/api/hotels")

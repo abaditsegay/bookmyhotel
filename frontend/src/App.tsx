@@ -36,11 +36,15 @@ import RoomManagement from './pages/hotel-admin/RoomManagement';
 import RoomViewEdit from './pages/hotel-admin/RoomViewEdit';
 import StaffManagement from './pages/hotel-admin/StaffManagement';
 import StaffDetails from './pages/hotel-admin/StaffDetails';
+import StaffScheduleManagement from './components/StaffScheduleManagement';
+import StaffScheduleDashboard from './components/StaffScheduleDashboard';
 import FrontDeskDashboard from './pages/frontdesk/FrontDeskDashboard';
 import FrontDeskBookingDetails from './pages/frontdesk/FrontDeskBookingDetails';
 import BookingManagementPage from './pages/BookingManagementPage';
 import GuestBookingManagementPage from './pages/GuestBookingManagementPage';
 import { SystemDashboardPage } from './pages/SystemDashboardPage';
+import { CustomerDashboard } from './pages/CustomerDashboard';
+import MyBookings from './components/MyBookings';
 
 // Home Page Router Component - redirects based on user role
 const HomePageRouter: React.FC = () => {
@@ -71,13 +75,18 @@ const HomePageRouter: React.FC = () => {
       if (user.roles.includes('ADMIN')) {
         return <Navigate to="/system-dashboard" replace />;
       }
+      if (user.roles.includes('CUSTOMER')) {
+        // CUSTOMER: Registered users with accounts - send to customer dashboard
+        return <CustomerDashboard />;
+      }
       if (user.roles.includes('GUEST')) {
-        return <Navigate to="/system-dashboard" replace />;
+        // GUEST: Anonymous users without accounts - send to hotel search page
+        return <HotelSearchPage />;
       }
     }
     
     // For tenant-bound users
-    // Priority order: ADMIN (system admin) > HOTEL_ADMIN > FRONTDESK
+    // Priority order: ADMIN (system admin) > HOTEL_ADMIN > FRONTDESK > HOUSEKEEPING
     if (user.roles.includes('ADMIN') && !user.isSystemWide) {
       return <Navigate to="/admin/dashboard" replace />;
     }
@@ -88,6 +97,10 @@ const HomePageRouter: React.FC = () => {
     
     if (user.roles.includes('FRONTDESK')) {
       return <Navigate to="/frontdesk/dashboard" replace />;
+    }
+    
+    if (user.roles.includes('HOUSEKEEPING')) {
+      return <Navigate to="/housekeeping/schedules" replace />;
     }
     
     // Legacy role handling for backward compatibility
@@ -101,6 +114,20 @@ const HomePageRouter: React.FC = () => {
     
     if (user.role === 'FRONTDESK') {
       return <Navigate to="/frontdesk/dashboard" replace />;
+    }
+    
+    if (user.role === 'HOUSEKEEPING') {
+      return <Navigate to="/housekeeping/schedules" replace />;
+    }
+    
+    if (user.role === 'CUSTOMER' && user.isSystemWide) {
+      // CUSTOMER: Registered users with accounts - send to customer dashboard
+      return <CustomerDashboard />;
+    }
+    
+    if (user.role === 'GUEST' && user.isSystemWide) {
+      // GUEST: Anonymous users without accounts - send to hotel search page
+      return <HotelSearchPage />;
     }
   }
   
@@ -378,10 +405,7 @@ function App() {
         } />
         <Route path="/my-bookings" element={
           <ProtectedRoute>
-            <PlaceholderPage 
-              title="My Bookings" 
-              message="Your booking history across all hotels coming soon!" 
-            />
+            <MyBookings />
           </ProtectedRoute>
         } />
         
@@ -481,6 +505,16 @@ function App() {
             <StaffDetails />
           </ProtectedRoute>
         } />
+        <Route path="/hotel-admin/schedules" element={
+          <ProtectedRoute requiredRole="HOTEL_ADMIN">
+            <StaffScheduleManagement />
+          </ProtectedRoute>
+        } />
+        <Route path="/hotel-admin/schedule-dashboard" element={
+          <ProtectedRoute requiredRole="HOTEL_ADMIN">
+            <StaffScheduleDashboard />
+          </ProtectedRoute>
+        } />
         <Route path="/hotel-admin/rooms" element={
           <ProtectedRoute requiredRole="HOTEL_ADMIN">
             <RoomManagement />
@@ -511,6 +545,23 @@ function App() {
         <Route path="/frontdesk/bookings/:id/edit" element={
           <ProtectedRoute requiredRole="FRONTDESK">
             <FrontDeskBookingDetails />
+          </ProtectedRoute>
+        } />
+        <Route path="/frontdesk/schedules" element={
+          <ProtectedRoute requiredRole="FRONTDESK">
+            <StaffScheduleDashboard />
+          </ProtectedRoute>
+        } />
+        
+        {/* Housekeeping Routes */}
+        <Route path="/housekeeping" element={
+          <ProtectedRoute requiredRole="HOUSEKEEPING">
+            <Navigate to="/housekeeping/schedules" replace />
+          </ProtectedRoute>
+        } />
+        <Route path="/housekeeping/schedules" element={
+          <ProtectedRoute requiredRole="HOUSEKEEPING">
+            <StaffScheduleDashboard />
           </ProtectedRoute>
         } />
       </Routes>

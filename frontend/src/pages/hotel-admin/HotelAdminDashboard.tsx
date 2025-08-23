@@ -44,6 +44,7 @@ import { hotelAdminApi, BookingResponse, BookingStats, HotelStatistics } from '.
 import { Hotel } from '../../types/hotel';
 import RoomManagement from './RoomManagement';
 import StaffManagement from './StaffManagement';
+import StaffScheduleManagement from '../../components/StaffScheduleManagement';
 import HotelEditDialog from '../../components/hotel/HotelEditDialog';
 
 interface TabPanelProps {
@@ -81,7 +82,7 @@ const HotelAdminDashboard: React.FC = () => {
   const getInitialTab = () => {
     const tabParam = searchParams.get('tab');
     const tab = tabParam ? parseInt(tabParam, 10) : 0;
-    return isNaN(tab) || tab < 0 || tab > 4 ? 0 : tab;
+    return isNaN(tab) || tab < 0 || tab > 5 ? 0 : tab;
   };
   
   const [activeTab, setActiveTab] = useState(getInitialTab);
@@ -518,6 +519,7 @@ const HotelAdminDashboard: React.FC = () => {
             <Tab label="Staff" />
             <Tab label="Rooms" />
             <Tab label="Bookings" />
+            <Tab label="Staff Schedules" />
             <Tab label="Reports" />
           </Tabs>
         </Box>
@@ -773,6 +775,10 @@ const HotelAdminDashboard: React.FC = () => {
         </TabPanel>
 
         <TabPanel value={activeTab} index={4}>
+          <StaffScheduleManagement />
+        </TabPanel>
+
+        <TabPanel value={activeTab} index={5}>
           {/* Reports Tab */}
           <Box>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
@@ -1090,6 +1096,13 @@ const HotelAdminDashboard: React.FC = () => {
                             onClick={() => setActiveTab(1)}
                           >
                             Manage Staff
+                          </Button>
+                          <Button 
+                            variant="outlined" 
+                            size="small"
+                            onClick={() => setActiveTab(4)}
+                          >
+                            Staff Schedules
                           </Button>
                         </Box>
                       </CardContent>

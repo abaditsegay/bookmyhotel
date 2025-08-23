@@ -28,10 +28,13 @@ const queryClient = new QueryClient({
 
 // Component to connect Auth and Tenant contexts
 const AppWithProviders: React.FC = () => {
-  const { updateTenantFromToken } = useTenant();
+  const { updateTenantFromToken, clearTenant } = useTenant();
 
   return (
-    <AuthProvider onTokenChange={updateTenantFromToken}>
+    <AuthProvider 
+      onTokenChange={updateTenantFromToken}
+      onLogout={clearTenant}
+    >
       <App />
     </AuthProvider>
   );

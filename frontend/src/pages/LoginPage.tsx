@@ -332,12 +332,12 @@ const LoginPage: React.FC = () => {
                   <Button
                     variant="outlined"
                     size="small"
-                    onClick={() => fillSampleUser('admin@bookmyhotel.com', 'admin123')}
+                    onClick={() => fillSampleUser('admin@bookmyhotel.com', 'password')}
                     sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
                   >
                     <Typography variant="body2" fontWeight="bold">🔧 System Administrator</Typography>
                     <Typography variant="caption" color="textSecondary">
-                      admin@bookmyhotel.com / admin123 (✅ Working - Platform Admin)
+                      admin@bookmyhotel.com / password (✅ Working - Platform Admin)
                     </Typography>
                   </Button>
                   

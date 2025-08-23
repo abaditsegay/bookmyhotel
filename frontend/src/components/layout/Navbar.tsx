@@ -24,6 +24,7 @@ import {
   Logout as LogoutIcon,
   Business as BusinessIcon,
   AppRegistration as RegisterIcon,
+  Search as SearchIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -137,7 +138,9 @@ const Navbar: React.FC = () => {
       // For customers and guests, show bookings (without dashboard or profile)
       if (user.role === 'CUSTOMER') {
         const customerItems = [
-          { label: 'My Bookings', path: '/bookings', icon: <BusinessIcon /> },
+          { label: 'Hotel Search', path: '/hotels/search', icon: <SearchIcon /> },
+          { label: 'My Bookings', path: '/my-bookings', icon: <BusinessIcon /> },
+          { label: 'Profile', path: '/profile', icon: <PersonIcon /> },
         ];
         return [...baseItems, ...customerItems];
       }
@@ -301,7 +304,11 @@ const Navbar: React.FC = () => {
       </MenuItem>
       {user?.role === 'CUSTOMER' && (
         <>
-          <MenuItem onClick={() => handleNavigation('/bookings')}>
+          <MenuItem onClick={() => handleNavigation('/hotels/search')}>
+            <SearchIcon sx={{ mr: 1 }} />
+            Hotel Search
+          </MenuItem>
+          <MenuItem onClick={() => handleNavigation('/my-bookings')}>
             <BusinessIcon sx={{ mr: 1 }} />
             My Bookings
           </MenuItem>

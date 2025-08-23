@@ -29,7 +29,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 /**
- * Dashboard page for system-wide users (ADMIN and GUEST roles)
+ * Dashboard page for system-wide users (ADMIN and CUSTOMER roles)
  * Shows different content based on user role
  */
 export const SystemDashboardPage: React.FC = () => {
@@ -116,7 +116,7 @@ export const SystemDashboardPage: React.FC = () => {
   }
 
   const isSystemAdmin = user.roles.includes('ADMIN');
-  const isSystemGuest = user.roles.includes('GUEST');
+  const isSystemCustomer = user.roles.includes('CUSTOMER');
 
   const adminQuickActions = [
     {
@@ -161,7 +161,7 @@ export const SystemDashboardPage: React.FC = () => {
     },
   ];
 
-  const guestQuickActions = [
+  const customerQuickActions = [
     {
       title: 'Search Hotels',
       description: 'Find and book hotels across all locations',
@@ -194,7 +194,7 @@ export const SystemDashboardPage: React.FC = () => {
     },
   ];
 
-  const quickActions = isSystemAdmin ? adminQuickActions : guestQuickActions;
+  const quickActions = isSystemAdmin ? adminQuickActions : customerQuickActions;
 
   // If statistics are still loading, show loading indicator
   if (stats.loading) {
@@ -393,7 +393,7 @@ export const SystemDashboardPage: React.FC = () => {
                   </ListItem>
                 </>
               )}
-              {isSystemGuest && (
+              {isSystemCustomer && (
                 <>
                   <ListItem>
                     <ListItemText 

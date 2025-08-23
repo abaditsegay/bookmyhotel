@@ -8,30 +8,25 @@ import { SYSTEM_ADMIN } from '../fixtures/testData';
 
 const authFile = 'e2e-tests/auth/system-admin.json';
 
-setup('authenticate system admin', async ({ page }) => {
-  console.log('🔐 Setting up System Admin authentication...');
-  
+setup('authenticate as system admin', async ({ page }) => {
   // Navigate to login page
   await page.goto('/login');
+
+  // Fill in login form with system admin credentials
+  await page.fill('input[data-testid="email-input"]', SYSTEM_ADMIN.email);
+  await page.fill('input[data-testid="password-input"]', SYSTEM_ADMIN.password);
   
-  // Wait for login form to be visible
-  await expect(page.locator('[data-testid="login-form"]')).toBeVisible({ timeout: 10000 });
-  
-  // Fill login credentials
-  await page.fill('[data-testid="email-input"]', SYSTEM_ADMIN.email);
-  await page.fill('[data-testid="password-input"]', SYSTEM_ADMIN.password);
-  
-  // Submit login form
+  // Submit the form
   await page.click('[data-testid="login-button"]');
   
-  // Wait for successful login - should redirect to system dashboard (for system-wide admin)
-  await expect(page).toHaveURL(/\/system-dashboard/, { timeout: 15000 });
+  // Wait for successful login and redirect to system dashboard
+  await page.waitForURL('/system-dashboard');
   
-  // Verify we're logged in as system admin
-  await expect(page.locator('[data-testid="user-role"]')).toContainText('System Administrator');
+  // Verify we're logged in by checking for system admin elements
+  await expect(page.locator('[data-testid="system-dashboard"]')).toBeVisible();
   
-  // Save authentication state
-  await page.context().storageState({ path: authFile });
+  // Save the authentication state
+  await page.context().storageState({ path: 'e2e-tests/auth/.auth/system-admin.json' });
   
-  console.log('✅ System Admin authentication completed successfully');
+  console.log('✅ System admin authentication setup completed');
 });

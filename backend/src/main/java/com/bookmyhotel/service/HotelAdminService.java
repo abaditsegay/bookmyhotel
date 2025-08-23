@@ -691,8 +691,8 @@ public class HotelAdminService {
         dto.setCapacity(room.getCapacity());
         dto.setDescription(room.getDescription());
         
-        // Check if room is currently booked
-        boolean isCurrentlyBooked = roomRepository.isRoomCurrentlyBooked(room.getId());
+        // Check if room is currently booked (use room's tenant ID)
+        boolean isCurrentlyBooked = roomRepository.isRoomCurrentlyBooked(room.getId(), room.getTenantId());
         
         // Update room status to OCCUPIED if currently booked and status is AVAILABLE
         if (isCurrentlyBooked && room.getStatus() == RoomStatus.AVAILABLE) {

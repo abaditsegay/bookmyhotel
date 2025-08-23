@@ -202,4 +202,51 @@ public class BookingController {
             return ResponseEntity.badRequest().body(response);
         }
     }
+    
+    /**
+     * Modify an existing booking (for authenticated customers)
+     */
+    @PutMapping("/{reservationId}/modify")
+    public ResponseEntity<BookingModificationResponse> modifyCustomerBooking(
+            @PathVariable Long reservationId, 
+            @Valid @RequestBody BookingModificationRequest request,
+            Authentication auth) {
+        
+        if (auth == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        
+        String userEmail = auth.getName();
+        BookingModificationResponse response = bookingService.modifyCustomerBooking(reservationId, request, userEmail);
+        
+        if (response.isSuccess()) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+    
+    /**
+     * Cancel a booking (for authenticated customers)
+     */
+    @PutMapping("/{reservationId}/cancel")
+    public ResponseEntity<BookingModificationResponse> cancelCustomerBooking(
+            @PathVariable Long reservationId,
+            @RequestBody(required = false) Map<String, String> requestBody,
+            Authentication auth) {
+        
+        if (auth == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        
+        String userEmail = auth.getName();
+        String cancellationReason = requestBody != null ? requestBody.get("cancellationReason") : null;
+        BookingModificationResponse response = bookingService.cancelCustomerBooking(reservationId, cancellationReason, userEmail);
+        
+        if (response.isSuccess()) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
 }

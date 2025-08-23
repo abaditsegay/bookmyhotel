@@ -80,14 +80,15 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     );
     
     /**
-     * Check if room is currently booked (has active reservations)
+     * Check if room is currently booked (has active reservations) - tenant aware
      */
     @Query("SELECT COUNT(res) > 0 FROM Reservation res " +
            "WHERE res.room.id = :roomId " +
+           "AND res.tenantId = :tenantId " +
            "AND res.status NOT IN ('CANCELLED', 'NO_SHOW') " +
            "AND res.checkInDate <= CURRENT_DATE " +
            "AND res.checkOutDate > CURRENT_DATE")
-    boolean isRoomCurrentlyBooked(@Param("roomId") Long roomId);
+    boolean isRoomCurrentlyBooked(@Param("roomId") Long roomId, @Param("tenantId") String tenantId);
     
     /**
      * Find rooms by hotel
@@ -118,6 +119,16 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
      * Count rooms by status
      */
     long countByStatus(RoomStatus status);
+    
+    /**
+     * Count rooms by status and tenant ID
+     */
+    long countByStatusAndTenantId(RoomStatus status, String tenantId);
+    
+    /**
+     * Count total rooms by tenant ID
+     */
+    long countByTenantId(String tenantId);
     
     /**
      * Find available rooms of specific type excluding a reservation

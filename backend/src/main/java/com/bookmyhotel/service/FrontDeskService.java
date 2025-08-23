@@ -447,10 +447,10 @@ public class FrontDeskService {
         long todaysDepartures = reservationRepository.findUpcomingCheckOutsByTenantId(today, tenantId).size();
         long currentOccupancy = reservationRepository.findByStatusAndTenantId(ReservationStatus.CHECKED_IN, tenantId).size();
         
-        long totalRooms = roomRepository.count();
-        long availableRooms = roomRepository.countByStatus(RoomStatus.AVAILABLE);
-        long roomsOutOfOrder = roomRepository.countByStatus(RoomStatus.OUT_OF_ORDER);
-        long roomsUnderMaintenance = roomRepository.countByStatus(RoomStatus.MAINTENANCE);
+        long totalRooms = roomRepository.countByTenantId(tenantId);
+        long availableRooms = roomRepository.countByStatusAndTenantId(RoomStatus.AVAILABLE, tenantId);
+        long roomsOutOfOrder = roomRepository.countByStatusAndTenantId(RoomStatus.OUT_OF_ORDER, tenantId);
+        long roomsUnderMaintenance = roomRepository.countByStatusAndTenantId(RoomStatus.MAINTENANCE, tenantId);
         
         return new FrontDeskStats(
             todaysArrivals,
@@ -501,11 +501,16 @@ public class FrontDeskService {
         
         Hotel hotel = hotels.get(0);
         
-        // Get all rooms for the hotel and apply filtering
+        // Get all rooms for the hotel
         List<Room> allRooms = roomRepository.findByHotelIdOrderByRoomNumber(hotel.getId());
         
-        // Apply search and filters
-        List<Room> filteredRooms = allRooms.stream()
+        // Convert to responses first (this computes the actual status including OCCUPIED)
+        List<RoomResponse> allRoomResponses = allRooms.stream()
+            .map(this::convertToRoomResponse)
+            .toList();
+        
+        // Apply search and filters on the computed responses
+        List<RoomResponse> filteredRooms = allRoomResponses.stream()
             .filter(room -> search == null || search.trim().isEmpty() || 
                     room.getRoomNumber().toLowerCase().contains(search.toLowerCase()) ||
                     room.getDescription() != null && room.getDescription().toLowerCase().contains(search.toLowerCase()))
@@ -518,14 +523,10 @@ public class FrontDeskService {
         // Apply manual pagination
         int start = (int) pageable.getOffset();
         int end = Math.min((start + pageable.getPageSize()), filteredRooms.size());
-        List<Room> pagedRooms = start < filteredRooms.size() ? 
+        List<RoomResponse> pagedRooms = start < filteredRooms.size() ? 
             filteredRooms.subList(start, end) : List.of();
         
-        List<RoomResponse> roomResponses = pagedRooms.stream()
-            .map(this::convertToRoomResponse)
-            .toList();
-        
-        return new PageImpl<>(roomResponses, pageable, filteredRooms.size());
+        return new PageImpl<>(pagedRooms, pageable, filteredRooms.size());
     }
 
     /**
@@ -665,6 +666,8 @@ public class FrontDeskService {
      * Convert room to room response with consistent business logic
      */
     private RoomResponse convertToRoomResponse(Room room) {
+        String tenantId = TenantContext.getTenantId();
+        
         RoomResponse response = new RoomResponse();
         response.setId(room.getId());
         response.setRoomNumber(room.getRoomNumber());
@@ -673,8 +676,8 @@ public class FrontDeskService {
         response.setCapacity(room.getCapacity());
         response.setDescription(room.getDescription());
         
-        // Check if room is currently booked
-        boolean isCurrentlyBooked = roomRepository.isRoomCurrentlyBooked(room.getId());
+        // Check if room is currently booked (tenant-aware)
+        boolean isCurrentlyBooked = roomRepository.isRoomCurrentlyBooked(room.getId(), tenantId);
         
         // Update room status to OCCUPIED if currently booked and status is AVAILABLE
         // This ensures consistent status display across Hotel Admin and Front Desk

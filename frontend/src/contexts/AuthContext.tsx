@@ -40,9 +40,10 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 interface AuthProviderProps {
   children: ReactNode;
   onTokenChange?: (token: string) => void;
+  onLogout?: () => void;
 }
 
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenChange }) => {
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenChange, onLogout }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -148,6 +149,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
     // Clear localStorage
     localStorage.removeItem('auth_token');
     localStorage.removeItem('auth_user');
+    
+    // Clear tenant context
+    onLogout?.();
     
     console.log('User logged out');
   };

@@ -63,7 +63,7 @@ export default defineConfig({
       testMatch: /.*\.cleanup\.ts/,
     },
     
-    // System Admin tests on Chromium
+    // System Admin tests
     {
       name: 'system-admin-chromium',
       use: { 
@@ -73,8 +73,6 @@ export default defineConfig({
       dependencies: ['setup'],
       testMatch: /.*system-admin\.spec\.ts/,
     },
-    
-    // System Admin tests on Firefox
     {
       name: 'system-admin-firefox',
       use: { 
@@ -84,8 +82,6 @@ export default defineConfig({
       dependencies: ['setup'],
       testMatch: /.*system-admin\.spec\.ts/,
     },
-    
-    // System Admin tests on WebKit (Safari)
     {
       name: 'system-admin-webkit',
       use: { 
@@ -96,15 +92,139 @@ export default defineConfig({
       testMatch: /.*system-admin\.spec\.ts/,
     },
     
-    // Mobile testing (optional)
+    // Hotel Admin tests
     {
-      name: 'system-admin-mobile',
+      name: 'hotel-admin-chromium',
+      use: { 
+        ...devices['Desktop Chrome'],
+        storageState: 'e2e-tests/auth/hotel-admin.json'
+      },
+      dependencies: ['setup'],
+      testMatch: /.*hotel-admin\.spec\.ts/,
+    },
+    {
+      name: 'hotel-admin-firefox',
+      use: { 
+        ...devices['Desktop Firefox'],
+        storageState: 'e2e-tests/auth/hotel-admin.json'
+      },
+      dependencies: ['setup'],
+      testMatch: /.*hotel-admin\.spec\.ts/,
+    },
+    {
+      name: 'hotel-admin-webkit',
+      use: { 
+        ...devices['Desktop Safari'],
+        storageState: 'e2e-tests/auth/hotel-admin.json'
+      },
+      dependencies: ['setup'],
+      testMatch: /.*hotel-admin\.spec\.ts/,
+    },
+    
+    // Front Desk tests
+    {
+      name: 'frontdesk-chromium',
+      use: { 
+        ...devices['Desktop Chrome'],
+        storageState: 'e2e-tests/auth/frontdesk.json'
+      },
+      dependencies: ['setup'],
+      testMatch: /.*frontdesk\.spec\.ts/,
+    },
+    {
+      name: 'frontdesk-firefox',
+      use: { 
+        ...devices['Desktop Firefox'],
+        storageState: 'e2e-tests/auth/frontdesk.json'
+      },
+      dependencies: ['setup'],
+      testMatch: /.*frontdesk\.spec\.ts/,
+    },
+    {
+      name: 'frontdesk-webkit',
+      use: { 
+        ...devices['Desktop Safari'],
+        storageState: 'e2e-tests/auth/frontdesk.json'
+      },
+      dependencies: ['setup'],
+      testMatch: /.*frontdesk\.spec\.ts/,
+    },
+    
+    // Customer tests
+    {
+      name: 'customer-chromium',
+      use: { 
+        ...devices['Desktop Chrome'],
+        storageState: 'e2e-tests/auth/customer.json'
+      },
+      dependencies: ['setup'],
+      testMatch: /.*customer\.spec\.ts/,
+    },
+    {
+      name: 'customer-firefox',
+      use: { 
+        ...devices['Desktop Firefox'],
+        storageState: 'e2e-tests/auth/customer.json'
+      },
+      dependencies: ['setup'],
+      testMatch: /.*customer\.spec\.ts/,
+    },
+    {
+      name: 'customer-webkit',
+      use: { 
+        ...devices['Desktop Safari'],
+        storageState: 'e2e-tests/auth/customer.json'
+      },
+      dependencies: ['setup'],
+      testMatch: /.*customer\.spec\.ts/,
+    },
+    
+    // Public/Guest tests (no authentication)
+    {
+      name: 'public-chromium',
+      use: devices['Desktop Chrome'],
+      dependencies: ['setup'],
+      testMatch: /.*public\.spec\.ts/,
+    },
+    {
+      name: 'public-firefox',
+      use: devices['Desktop Firefox'],
+      dependencies: ['setup'],
+      testMatch: /.*public\.spec\.ts/,
+    },
+    {
+      name: 'public-webkit',
+      use: devices['Desktop Safari'],
+      dependencies: ['setup'],
+      testMatch: /.*public\.spec\.ts/,
+    },
+    
+    // Cross-role integration tests
+    {
+      name: 'integration-chromium',
+      use: devices['Desktop Chrome'],
+      dependencies: ['setup'],
+      testMatch: /.*integration\.spec\.ts/,
+    },
+    
+    // Mobile testing
+    {
+      name: 'mobile-system-admin',
       use: { 
         ...devices['iPhone 13'],
         storageState: 'e2e-tests/auth/system-admin.json'
       },
       dependencies: ['setup'],
-      testMatch: /.*system-admin\.spec\.ts/,
+      testMatch: /.*mobile\.spec\.ts/,
+    },
+    {
+      name: 'mobile-customer',
+      use: { 
+        ...devices['iPhone 13'],
+        storageState: 'e2e-tests/auth/customer.json'
+      },
+      dependencies: ['setup'],
+      testMatch: /.*mobile\.spec\.ts/,
     },
   ],
   

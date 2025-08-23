@@ -109,4 +109,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
      */
     long countByTenantId(String tenantId);
     
+    /**
+     * Find staff members by hotel ID (users with staff roles)
+     */
+    @Query("SELECT u FROM User u WHERE u.hotel.id = :hotelId AND EXISTS (SELECT 1 FROM u.roles r WHERE r IN :staffRoles)")
+    List<User> findStaffByHotelId(@Param("hotelId") Long hotelId, @Param("staffRoles") List<UserRole> staffRoles);
+    
 }

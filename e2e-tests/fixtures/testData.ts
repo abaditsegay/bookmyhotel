@@ -46,7 +46,7 @@ export interface TestHotelRegistration {
  */
 export const SYSTEM_ADMIN: TestUser = {
   email: 'admin@bookmyhotel.com',
-  password: 'admin123',
+  password: 'password',
   firstName: 'System',
   lastName: 'Administrator',
   role: 'ADMIN'
@@ -137,41 +137,59 @@ export const EXISTING_TEST_HOTELS: TestHotel[] = [
  * Test Users for various scenarios
  */
 export const TEST_USERS: TestUser[] = [
+  // System Admin
+  {
+    email: 'admin@bookmyhotel.com',
+    password: 'password',
+    firstName: 'Samuel',
+    lastName: 'Weldegebriel',
+    role: 'ADMIN'
+  },
+  
   // Hotel Admins
   {
-    email: 'admin@luxurychain.com',
-    password: 'luxury123',
-    firstName: 'Alice',
-    lastName: 'Luxury',
+    email: 'hotel.admin@grandplaza.com',
+    password: 'admin123',
+    firstName: 'John',
+    lastName: 'Manager',
     role: 'HOTEL_ADMIN',
-    tenantId: 'luxury-chain'
+    tenantId: 'd7b7e673-6788-45b2-8dad-4d48944a144e'
   },
   {
-    email: 'admin@budgetinn.com',
-    password: 'budget123',
-    firstName: 'Bob',
-    lastName: 'Budget',
+    email: 'admin@budget-stays.com',
+    password: 'secret',
+    firstName: 'Lisa',
+    lastName: 'Davis',
     role: 'HOTEL_ADMIN',
-    tenantId: 'budget-inn'
+    tenantId: 'budget-stays'
   },
   
   // Front Desk Staff
   {
-    email: 'frontdesk@luxurychain.com',
+    email: 'frontdesk@grandplaza.com',
     password: 'frontdesk123',
-    firstName: 'Carol',
-    lastName: 'Frontdesk',
+    firstName: 'Jane',
+    lastName: 'Desk',
     role: 'FRONTDESK',
-    tenantId: 'luxury-chain'
+    tenantId: 'd7b7e673-6788-45b2-8dad-4d48944a144e'
   },
   
   // System-wide Customer
   {
-    email: 'customer@test.com',
+    email: 'customer@example.com',
     password: 'customer123',
-    firstName: 'David',
+    firstName: 'John',
     lastName: 'Customer',
     role: 'CUSTOMER'
+  },
+  
+  // Guest User
+  {
+    email: 'guest@example.com',
+    password: 'guest123',
+    firstName: 'Test',
+    lastName: 'Guest',
+    role: 'GUEST'
   }
 ];
 
