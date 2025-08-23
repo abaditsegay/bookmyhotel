@@ -1,12 +1,17 @@
 package com.bookmyhotel.service;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,8 +22,11 @@ import com.bookmyhotel.dto.admin.RejectRegistrationRequest;
 import com.bookmyhotel.entity.Hotel;
 import com.bookmyhotel.entity.HotelRegistration;
 import com.bookmyhotel.entity.RegistrationStatus;
+import com.bookmyhotel.entity.User;
+import com.bookmyhotel.entity.UserRole;
 import com.bookmyhotel.repository.HotelRegistrationRepository;
 import com.bookmyhotel.repository.HotelRepository;
+import com.bookmyhotel.repository.UserRepository;
 import com.bookmyhotel.tenant.TenantContext;
 
 /**
@@ -28,11 +36,24 @@ import com.bookmyhotel.tenant.TenantContext;
 @Transactional
 public class HotelRegistrationService {
     
+    private static final Logger logger = LoggerFactory.getLogger(HotelRegistrationService.class);
+    private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+    private static final int PASSWORD_LENGTH = 12;
+    
     @Autowired
     private HotelRegistrationRepository registrationRepository;
     
     @Autowired
     private HotelRepository hotelRepository;
+    
+    @Autowired
+    private UserRepository userRepository;
+    
+    @Autowired
+    private EmailService emailService;
+    
+    @Autowired
+    private PasswordEncoder passwordEncoder;
     
     /**
      * Submit a new hotel registration
@@ -130,6 +151,10 @@ public class HotelRegistrationService {
         // Create the hotel
         Hotel hotel = createHotelFromRegistration(registration, request.getTenantId());
         
+        // Generate temporary password and create hotel admin user
+        String temporaryPassword = generateTemporaryPassword();
+        User hotelAdmin = createHotelAdminUser(registration, request.getTenantId(), temporaryPassword, hotel);
+        
         // Update registration status
         registration.setStatus(RegistrationStatus.APPROVED);
         registration.setReviewedAt(LocalDateTime.now());
@@ -139,6 +164,15 @@ public class HotelRegistrationService {
         registration.setTenantId(request.getTenantId());
         
         registration = registrationRepository.save(registration);
+        
+        // Send approval email with credentials
+        try {
+            sendHotelApprovalEmail(registration, hotel, hotelAdmin, temporaryPassword);
+            logger.info("Hotel approval email sent successfully to: {}", registration.getContactEmail());
+        } catch (Exception e) {
+            logger.error("Failed to send hotel approval email to: {}", registration.getContactEmail(), e);
+            // Don't fail the approval process if email fails
+        }
         
         return convertToResponse(registration);
     }
@@ -217,6 +251,92 @@ public class HotelRegistrationService {
             return hotelRepository.save(hotel);
         } finally {
             TenantContext.clear();
+        }
+    }
+    
+    /**
+     * Generate a secure temporary password for hotel admin
+     */
+    private String generateTemporaryPassword() {
+        SecureRandom random = new SecureRandom();
+        StringBuilder password = new StringBuilder(PASSWORD_LENGTH);
+        
+        for (int i = 0; i < PASSWORD_LENGTH; i++) {
+            password.append(CHARACTERS.charAt(random.nextInt(CHARACTERS.length())));
+        }
+        
+        return password.toString();
+    }
+    
+    /**
+     * Create hotel admin user account
+     */
+    private User createHotelAdminUser(HotelRegistration registration, String tenantId, String temporaryPassword, Hotel hotel) {
+        // Set tenant context for user creation
+        TenantContext.setTenantId(tenantId);
+        
+        try {
+            // Check if user already exists
+            if (userRepository.findByEmail(registration.getContactEmail()).isPresent()) {
+                throw new RuntimeException("User with email " + registration.getContactEmail() + " already exists");
+            }
+            
+            User hotelAdmin = new User();
+            hotelAdmin.setEmail(registration.getContactEmail());
+            hotelAdmin.setFirstName(extractFirstName(registration.getContactPerson()));
+            hotelAdmin.setLastName(extractLastName(registration.getContactPerson()));
+            hotelAdmin.setPassword(passwordEncoder.encode(temporaryPassword));
+            hotelAdmin.setRoles(Set.of(UserRole.HOTEL_ADMIN));
+            hotelAdmin.setIsActive(true);
+            hotelAdmin.setHotel(hotel); // Associate user with the hotel
+            
+            return userRepository.save(hotelAdmin);
+        } finally {
+            TenantContext.clear();
+        }
+    }
+    
+    /**
+     * Extract first name from full name
+     */
+    private String extractFirstName(String fullName) {
+        if (fullName == null || fullName.trim().isEmpty()) {
+            return "Hotel";
+        }
+        String[] parts = fullName.trim().split("\\s+");
+        return parts[0];
+    }
+    
+    /**
+     * Extract last name from full name
+     */
+    private String extractLastName(String fullName) {
+        if (fullName == null || fullName.trim().isEmpty()) {
+            return "Admin";
+        }
+        String[] parts = fullName.trim().split("\\s+");
+        if (parts.length > 1) {
+            return String.join(" ", java.util.Arrays.copyOfRange(parts, 1, parts.length));
+        }
+        return "Admin";
+    }
+    
+    /**
+     * Send hotel approval email with login credentials
+     */
+    private void sendHotelApprovalEmail(HotelRegistration registration, Hotel hotel, User hotelAdmin, String temporaryPassword) {
+        try {
+            emailService.sendHotelRegistrationApprovalEmail(
+                registration.getContactEmail(),
+                hotelAdmin.getFirstName(),
+                registration.getHotelName(),
+                temporaryPassword
+            );
+        } catch (IllegalStateException e) {
+            logger.warn("Email service not configured - hotel approval email not sent: {}", e.getMessage());
+        } catch (Exception e) {
+            logger.error("Failed to send hotel approval email", e);
+            throw new RuntimeException("Failed to send hotel approval email", e);
         }
     }
     

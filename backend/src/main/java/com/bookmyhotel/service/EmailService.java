@@ -146,6 +146,43 @@ public class EmailService {
     }
 
     /**
+     * Send hotel registration approval email with login credentials
+     */
+    public void sendHotelRegistrationApprovalEmail(String email, String firstName, String hotelName, String tempPassword) {
+        // Check if Microsoft Graph is configured
+        if (!microsoftGraphEmailService.isConfigured()) {
+            logger.warn("Microsoft Graph OAuth2 is not configured. Cannot send hotel approval email to: {}", email);
+            throw new IllegalStateException("Email service is not configured. Microsoft Graph OAuth2 credentials are required.");
+        }
+        
+        try {
+            logger.info("Sending hotel registration approval email to: {} via Microsoft Graph OAuth2", email);
+            
+            Map<String, Object> templateData = new HashMap<>();
+            templateData.put("firstName", firstName);
+            templateData.put("hotelName", hotelName);
+            templateData.put("tempPassword", tempPassword);
+            templateData.put("email", email);
+            templateData.put("appName", appName);
+            templateData.put("appUrl", appUrl);
+            templateData.put("loginUrl", appUrl + "/login");
+            templateData.put("dashboardUrl", appUrl + "/hotel-admin/dashboard");
+            templateData.put("approvalDate", java.time.LocalDate.now());
+            
+            String htmlContent = templateEngine.process("hotel-registration-approval", createContext(templateData));
+            String subject = String.format("🎉 Hotel Registration Approved - Welcome to %s!", appName);
+            
+            microsoftGraphEmailService.sendEmail(email, subject, htmlContent);
+            
+            logger.info("Successfully sent hotel registration approval email to: {}", email);
+            
+        } catch (Exception e) {
+            logger.error("Failed to send hotel registration approval email via Microsoft Graph", e);
+            throw new RuntimeException("Failed to send hotel registration approval email", e);
+        }
+    }
+
+    /**
      * Send welcome email to new user after registration
      */
     public void sendUserWelcomeEmail(String email, String firstName, String lastName) {

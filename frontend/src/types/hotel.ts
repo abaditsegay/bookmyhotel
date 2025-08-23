@@ -62,7 +62,7 @@ export interface BookingRequest {
   guestPhone?: string;
   
   // Payment information (optional for backward compatibility)
-  paymentMethod?: 'credit_card' | 'mobile_money';
+  paymentMethod?: 'credit_card' | 'mobile_money' | 'mbirr' | 'telebirr';
   
   // Credit card fields
   creditCardNumber?: string;

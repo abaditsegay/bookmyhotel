@@ -85,7 +85,7 @@ public class User extends BaseEntity implements UserDetails {
     @Column(name = "role")
     private Set<UserRole> roles;
     
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "hotel_id")
     private Hotel hotel;
     

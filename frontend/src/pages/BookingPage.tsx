@@ -69,13 +69,18 @@ const BookingPage: React.FC = () => {
   const [specialRequests, setSpecialRequests] = useState('');
   
   // Payment state
-  const [paymentMethod, setPaymentMethod] = useState<'credit_card' | 'mobile_money' | 'pay_at_frontdesk'>('credit_card');
+  const [paymentMethod, setPaymentMethod] = useState<'credit_card' | 'mobile_money' | 'pay_at_frontdesk' | 'mbirr' | 'telebirr'>('credit_card');
   const [creditCardNumber, setCreditCardNumber] = useState('');
   const [expiryDate, setExpiryDate] = useState('');
   const [cvv, setCvv] = useState('');
   const [cardholderName, setCardholderName] = useState('');
   const [mobileNumber, setMobileNumber] = useState('');
   const [transferReceiptNumber, setTransferReceiptNumber] = useState('');
+  
+  // Ethiopian payment state
+  const [ethiopianPhoneNumber, setEthiopianPhoneNumber] = useState('');
+  const [showEthiopianPayment, setShowEthiopianPayment] = useState(false);
+  const [ethiopianPaymentResponse, setEthiopianPaymentResponse] = useState<any>(null);
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -182,6 +187,19 @@ const BookingPage: React.FC = () => {
       }
     }
 
+    if (paymentMethod === 'mbirr' || paymentMethod === 'telebirr') {
+      if (!ethiopianPhoneNumber) {
+        setError('Please provide your Ethiopian mobile number');
+        return;
+      }
+      // Ethiopian phone number validation (09xxxxxxxx)
+      const cleanPhone = ethiopianPhoneNumber.replace(/\s/g, '');
+      if (!/^09\d{8}$/.test(cleanPhone)) {
+        setError('Please enter a valid Ethiopian phone number (09xxxxxxxx)');
+        return;
+      }
+    }
+
     setLoading(true);
 
     try {
@@ -194,11 +212,17 @@ const BookingPage: React.FC = () => {
         guests: guests,
         specialRequests: specialRequests.trim() || undefined,
         paymentMethodId: paymentMethod === 'credit_card' ? 'card_payment' : 
-                        paymentMethod === 'pay_at_frontdesk' ? 'pay_at_frontdesk' : undefined,
+                        paymentMethod === 'pay_at_frontdesk' ? 'pay_at_frontdesk' :
+                        paymentMethod === 'mbirr' ? 'mbirr' :
+                        paymentMethod === 'telebirr' ? 'telebirr' : undefined,
         // Include guest information for guest booking flow
         guestName: isGuestBookingFlow ? guestName.trim() : undefined,
         guestEmail: isGuestBookingFlow ? guestEmail.trim() : undefined,
         guestPhone: isGuestBookingFlow ? (guestPhone.trim() || undefined) : undefined,
+        // Include Ethiopian phone number for Ethiopian payment methods
+        mobileNumber: (paymentMethod === 'mbirr' || paymentMethod === 'telebirr') ? 
+                     ethiopianPhoneNumber.replace(/\s/g, '') : 
+                     (paymentMethod === 'mobile_money' ? mobileNumber : undefined),
       };
 
       // Remove undefined roomId for room type bookings to avoid sending null to backend
@@ -478,7 +502,7 @@ const BookingPage: React.FC = () => {
                   <RadioGroup
                     row
                     value={paymentMethod}
-                    onChange={(e) => setPaymentMethod(e.target.value as 'credit_card' | 'mobile_money' | 'pay_at_frontdesk')}
+                    onChange={(e) => setPaymentMethod(e.target.value as 'credit_card' | 'mobile_money' | 'pay_at_frontdesk' | 'mbirr' | 'telebirr')}
                     sx={{ mt: 1 }}
                   >
                     <FormControlLabel
@@ -508,6 +532,26 @@ const BookingPage: React.FC = () => {
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
                           <HotelIcon sx={{ mr: 1 }} />
                           Pay at Front Desk
+                        </Box>
+                      }
+                    />
+                    <FormControlLabel
+                      value="mbirr"
+                      control={<Radio />}
+                      label={
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <PhoneIcon sx={{ mr: 1, color: '#FF6B35' }} />
+                          🇪🇹 M-birr
+                        </Box>
+                      }
+                    />
+                    <FormControlLabel
+                      value="telebirr"
+                      control={<Radio />}
+                      label={
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <PhoneIcon sx={{ mr: 1, color: '#00A651' }} />
+                          🇪🇹 Telebirr
                         </Box>
                       }
                     />
@@ -675,6 +719,156 @@ const BookingPage: React.FC = () => {
                           <li>Total amount due: <strong>${totalAmount}</strong></li>
                         </Typography>
                       </Box>
+                    </Paper>
+                  </Grid>
+                </>
+              )}
+
+              {/* Ethiopian Mobile Payment (M-birr) */}
+              {paymentMethod === 'mbirr' && (
+                <>
+                  <Grid item xs={12}>
+                    <Paper sx={{ p: 2, bgcolor: '#FFF5F0', border: '2px solid #FF6B35' }}>
+                      <Typography variant="subtitle2" gutterBottom sx={{ display: 'flex', alignItems: 'center', fontWeight: 'bold', color: '#FF6B35' }}>
+                        <PhoneIcon sx={{ mr: 1 }} />
+                        🇪🇹 M-birr Mobile Payment
+                      </Typography>
+                      <Alert severity="info" sx={{ mb: 2 }}>
+                        Pay securely using your M-birr mobile wallet. You'll receive SMS instructions to complete the payment.
+                      </Alert>
+                      <Grid container spacing={2}>
+                        <Grid item xs={12} sm={6}>
+                          <TextField
+                            label="Ethiopian Mobile Number"
+                            value={ethiopianPhoneNumber}
+                            onChange={(e) => {
+                              const value = e.target.value.replace(/\D/g, '');
+                              if (value.length <= 10) {
+                                if (value.length >= 2) {
+                                  setEthiopianPhoneNumber(`09${value.substring(2, 3)} ${value.substring(3, 5)} ${value.substring(5, 7)} ${value.substring(7, 9)}`);
+                                } else if (value.length >= 1) {
+                                  setEthiopianPhoneNumber(`09${value.substring(1)}`);
+                                } else {
+                                  setEthiopianPhoneNumber('09');
+                                }
+                              }
+                            }}
+                            fullWidth
+                            required
+                            placeholder="09 12 34 56 78"
+                            helperText="Enter your Ethiopian mobile number"
+                            InputProps={{
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <PhoneIcon sx={{ color: '#FF6B35' }} />
+                                </InputAdornment>
+                              ),
+                            }}
+                          />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <Box sx={{ p: 2, bgcolor: '#FF6B35', color: 'white', borderRadius: 1 }}>
+                            <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>
+                              M-birr Information
+                            </Typography>
+                            <Typography variant="caption" display="block">
+                              • USSD Code: *847#
+                            </Typography>
+                            <Typography variant="caption" display="block">
+                              • Limits: 10 - 100,000 ETB
+                            </Typography>
+                            <Typography variant="caption" display="block">
+                              • Amount: ${totalAmount} USD
+                            </Typography>
+                          </Box>
+                        </Grid>
+                        <Grid item xs={12}>
+                          <Alert severity="warning">
+                            <Typography variant="body2">
+                              <strong>Payment Instructions:</strong><br />
+                              1. You'll receive an SMS with payment instructions<br />
+                              2. Open your M-birr app or dial *847#<br />
+                              3. Follow the prompts to complete payment<br />
+                              4. Your booking will be confirmed automatically
+                            </Typography>
+                          </Alert>
+                        </Grid>
+                      </Grid>
+                    </Paper>
+                  </Grid>
+                </>
+              )}
+
+              {/* Ethiopian Mobile Payment (Telebirr) */}
+              {paymentMethod === 'telebirr' && (
+                <>
+                  <Grid item xs={12}>
+                    <Paper sx={{ p: 2, bgcolor: '#F0FFF4', border: '2px solid #00A651' }}>
+                      <Typography variant="subtitle2" gutterBottom sx={{ display: 'flex', alignItems: 'center', fontWeight: 'bold', color: '#00A651' }}>
+                        <PhoneIcon sx={{ mr: 1 }} />
+                        🇪🇹 Telebirr Mobile Payment
+                      </Typography>
+                      <Alert severity="info" sx={{ mb: 2 }}>
+                        Pay securely using your Telebirr mobile wallet. You'll receive SMS instructions to complete the payment.
+                      </Alert>
+                      <Grid container spacing={2}>
+                        <Grid item xs={12} sm={6}>
+                          <TextField
+                            label="Ethiopian Mobile Number"
+                            value={ethiopianPhoneNumber}
+                            onChange={(e) => {
+                              const value = e.target.value.replace(/\D/g, '');
+                              if (value.length <= 10) {
+                                if (value.length >= 2) {
+                                  setEthiopianPhoneNumber(`09${value.substring(2, 3)} ${value.substring(3, 5)} ${value.substring(5, 7)} ${value.substring(7, 9)}`);
+                                } else if (value.length >= 1) {
+                                  setEthiopianPhoneNumber(`09${value.substring(1)}`);
+                                } else {
+                                  setEthiopianPhoneNumber('09');
+                                }
+                              }
+                            }}
+                            fullWidth
+                            required
+                            placeholder="09 12 34 56 78"
+                            helperText="Enter your Ethiopian mobile number"
+                            InputProps={{
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <PhoneIcon sx={{ color: '#00A651' }} />
+                                </InputAdornment>
+                              ),
+                            }}
+                          />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <Box sx={{ p: 2, bgcolor: '#00A651', color: 'white', borderRadius: 1 }}>
+                            <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>
+                              Telebirr Information
+                            </Typography>
+                            <Typography variant="caption" display="block">
+                              • USSD Code: *127#
+                            </Typography>
+                            <Typography variant="caption" display="block">
+                              • Limits: 5 - 50,000 ETB
+                            </Typography>
+                            <Typography variant="caption" display="block">
+                              • Amount: ${totalAmount} USD
+                            </Typography>
+                          </Box>
+                        </Grid>
+                        <Grid item xs={12}>
+                          <Alert severity="warning">
+                            <Typography variant="body2">
+                              <strong>Payment Instructions:</strong><br />
+                              1. You'll receive an SMS with payment instructions<br />
+                              2. Open your Telebirr app or dial *127#<br />
+                              3. Follow the prompts to complete payment<br />
+                              4. Your booking will be confirmed automatically
+                            </Typography>
+                          </Alert>
+                        </Grid>
+                      </Grid>
                     </Paper>
                   </Grid>
                 </>

@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Registration Approved</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.5;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border: 1px solid #ddd;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #4CAF50;
+        }
+        
+        .header h1 {
+            color: #4CAF50;
+            margin: 0 0 10px 0;
+            font-size: 24px;
+        }
+        
+        .approval-alert {
+            background-color: #e8f5e8;
+            border: 1px solid #4CAF50;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .approval-alert h3 {
+            color: #2e7d32;
+            margin: 0 0 10px 0;
+            font-size: 18px;
+        }
+        
+        .approval-alert p {
+            margin: 0;
+            color: #388e3c;
+        }
+        
+        .welcome-message {
+            background: #f0f8f0;
+            padding: 15px;
+            text-align: center;
+            margin: 20px 0;
+            border: 1px solid #4CAF50;
+            border-radius: 5px;
+        }
+        
+        .welcome-message strong {
+            color: #2e7d32;
+            font-size: 18px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        th {
+            background-color: #f5f5f5;
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            vertical-align: top;
+        }
+        
+        .section-title {
+            background-color: #e8f5e8;
+            font-weight: bold;
+            color: #2e7d32;
+            text-align: center;
+        }
+        
+        .credentials-section {
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .credentials-section h4 {
+            color: #856404;
+            margin: 0 0 15px 0;
+            font-size: 16px;
+        }
+        
+        .credential-item {
+            margin: 10px 0;
+            padding: 8px 12px;
+            background-color: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 3px;
+        }
+        
+        .credential-label {
+            font-weight: bold;
+            color: #495057;
+            display: inline-block;
+            width: 80px;
+        }
+        
+        .credential-value {
+            color: #007bff;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        
+        .password-notice {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .important-box {
+            background: #e3f2fd;
+            border: 1px solid #2196F3;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            border-left: 4px solid #2196F3;
+        }
+        
+        .important-box h4 {
+            color: #1976d2;
+            margin: 0 0 15px 0;
+        }
+        
+        .important-box ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .important-box li {
+            margin: 8px 0;
+        }
+        
+        .buttons {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .button {
+            display: inline-block;
+            padding: 15px 30px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 0 10px;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .button:hover {
+            background-color: #45a049;
+        }
+        
+        .button-secondary {
+            background-color: #2196F3;
+        }
+        
+        .button-secondary:hover {
+            background-color: #1976d2;
+        }
+        
+        .footer {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+        }
+        
+        .footer p {
+            margin: 5px 0;
+        }
+        
+        .next-steps {
+            background-color: #fff8e1;
+            border: 1px solid #ffb74d;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            border-left: 4px solid #ff9800;
+        }
+        
+        .next-steps h4 {
+            color: #e65100;
+            margin: 0 0 15px 0;
+        }
+        
+        .next-steps ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .next-steps li {
+            margin: 8px 0;
+            color: #bf360c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎉 Registration Approved!</h1>
+            <p>Your hotel has been successfully approved and is now live on our platform</p>
+        </div>
+
+        <div class="approval-alert">
+            <h3>✅ Congratulations!</h3>
+            <p>Your hotel registration has been reviewed and approved. Welcome to the <span th:text="${appName}"></span> family!</p>
+        </div>
+
+        <div class="welcome-message">
+            <strong>Welcome <span th:text="${firstName}"></span>! Your <span th:text="${hotelName}"></span> is now ready to accept bookings.</strong>
+        </div>
+
+        <table>
+            <tr>
+                <th colspan="2" class="section-title">Hotel Information</th>
+            </tr>
+            <tr>
+                <td>Hotel Name</td>
+                <td th:text="${hotelName}"></td>
+            </tr>
+            <tr>
+                <td>Contact Person</td>
+                <td th:text="${firstName}"></td>
+            </tr>
+            <tr>
+                <td>Email Address</td>
+                <td th:text="${email}"></td>
+            </tr>
+            <tr>
+                <td>Approval Date</td>
+                <td th:text="${#temporals.format(approvalDate, 'MMMM dd, yyyy')}"></td>
+            </tr>
+        </table>
+
+        <div class="credentials-section">
+            <h4>🔐 Your Login Credentials</h4>
+            <p style="margin-bottom: 15px;">Use these credentials to access your hotel management dashboard:</p>
+            
+            <div class="credential-item">
+                <span class="credential-label">Username:</span>
+                <span class="credential-value" th:text="${email}"></span>
+            </div>
+            
+            <div class="credential-item">
+                <span class="credential-label">Password:</span>
+                <span class="credential-value" th:text="${tempPassword}"></span>
+            </div>
+            
+            <div class="password-notice">
+                <strong>⚠️ Important:</strong> Please change this temporary password immediately after your first login for security purposes.
+            </div>
+        </div>
+
+        <div class="next-steps">
+            <h4>📋 Next Steps</h4>
+            <ol>
+                <li>Click the "Login to Dashboard" button below</li>
+                <li>Use your email and temporary password to log in</li>
+                <li>Change your password in Account Settings</li>
+                <li>Complete your hotel profile and add room information</li>
+                <li>Upload high-quality photos of your property</li>
+                <li>Set up your booking policies and rates</li>
+                <li>Start receiving bookings!</li>
+            </ol>
+        </div>
+
+        <div class="important-box">
+            <h4>🛡️ Account Security</h4>
+            <ul>
+                <li>Change your temporary password within 24 hours</li>
+                <li>Use a strong password with letters, numbers, and symbols</li>
+                <li>Never share your login credentials with unauthorized users</li>
+                <li>Log out from shared or public computers</li>
+                <li>Contact support if you notice any suspicious activity</li>
+            </ul>
+        </div>
+
+        <div class="important-box">
+            <h4>🏨 Platform Features</h4>
+            <ul>
+                <li>Real-time booking management and notifications</li>
+                <li>Comprehensive guest and reservation tracking</li>
+                <li>Revenue and analytics dashboard</li>
+                <li>Direct communication with guests</li>
+                <li>Flexible pricing and availability management</li>
+                <li>24/7 customer support for you and your guests</li>
+            </ul>
+        </div>
+
+        <div class="buttons">
+            <a th:href="${loginUrl}" class="button">Login to Dashboard</a>
+            <a th:href="${dashboardUrl}" class="button button-secondary">View Features</a>
+        </div>
+
+        <div class="footer">
+            <p><strong>Welcome to <span th:text="${appName}"></span>!</strong></p>
+            <p>We're excited to have <span th:text="${hotelName}"></span> as part of our platform.</p>
+            <p>If you need assistance, our support team is here to help.</p>
+            <p>This is an automated email. Please do not reply.</p>
+        </div>
+    </div>
+</body>
+</html>

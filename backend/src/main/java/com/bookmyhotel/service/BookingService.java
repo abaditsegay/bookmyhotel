@@ -34,6 +34,10 @@ import com.bookmyhotel.exception.ResourceNotFoundException;
 import com.bookmyhotel.repository.ReservationRepository;
 import com.bookmyhotel.repository.RoomRepository;
 import com.bookmyhotel.repository.UserRepository;
+import com.bookmyhotel.service.payment.EthiopianMobilePaymentService;
+import com.bookmyhotel.dto.payment.PaymentInitiationResponse;
+import com.bookmyhotel.dto.payment.PaymentInitiationRequest;
+import com.bookmyhotel.exception.PaymentException;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
 import com.stripe.model.PaymentIntent;
@@ -72,6 +76,9 @@ public class BookingService {
     
     @Autowired
     private BookingTokenService bookingTokenService;
+    
+    @Autowired
+    private EthiopianMobilePaymentService ethiopianPaymentService;
     
     @Value("${stripe.api.key:}")
     private String stripeApiKey;
@@ -249,6 +256,19 @@ public class BookingService {
                     // For pay at front desk, mark reservation as confirmed with payment pending
                     reservation.setStatus(ReservationStatus.CONFIRMED);
                     // No payment intent ID set, so payment status will be "PENDING"
+                } else if ("mbirr".equals(request.getPaymentMethodId()) || "telebirr".equals(request.getPaymentMethodId())) {
+                    // Handle Ethiopian mobile payments
+                    try {
+                        String paymentIntentId = processEthiopianPayment(totalAmount, request.getPaymentMethodId(), 
+                                                                       request.getGuestPhone(), reservation);
+                        reservation.setPaymentIntentId(paymentIntentId);
+                        reservation.setStatus(ReservationStatus.CONFIRMED);
+                    } catch (Exception e) {
+                        // If Ethiopian payment initiation fails, still confirm booking but mark payment as failed
+                        reservation.setStatus(ReservationStatus.CONFIRMED);
+                        logger.warn("Ethiopian payment processing failed for reservation, but booking confirmed: {}", e.getMessage());
+                        // Payment status will be determined by the absence of payment intent ID
+                    }
                 } else {
                     // Handle other payment methods (e.g., credit card via Stripe)
                     try {
@@ -1601,5 +1621,43 @@ public class BookingService {
         map.put("guestEmail", reservation.getGuest().getEmail());
         map.put("updatedAt", reservation.getUpdatedAt());
         return map;
+    }
+    
+    /**
+     * Process Ethiopian mobile payment (M-birr or Telebirr)
+     */
+    private String processEthiopianPayment(BigDecimal amount, String paymentMethod, String phoneNumber, Reservation reservation) {
+        try {
+            String bookingReference = "BK" + System.currentTimeMillis();
+            
+            PaymentInitiationRequest paymentRequest = PaymentInitiationRequest.builder()
+                .amount(amount)
+                .phoneNumber(phoneNumber)
+                .bookingReference(bookingReference)
+                .customerName(reservation.getGuestInfo().getName())
+                .customerEmail(reservation.getGuestInfo().getEmail())
+                .build();
+            
+            if ("mbirr".equals(paymentMethod)) {
+                var response = ethiopianPaymentService.initiateMbirrPayment(paymentRequest);
+                if (response.isSuccess()) {
+                    return response.getTransactionId();
+                } else {
+                    throw new BookingException("M-birr payment initiation failed: " + response.getErrorMessage());
+                }
+            } else if ("telebirr".equals(paymentMethod)) {
+                var response = ethiopianPaymentService.initiateTelebirrPayment(paymentRequest);
+                if (response.isSuccess()) {
+                    return response.getTransactionId();
+                } else {
+                    throw new BookingException("Telebirr payment initiation failed: " + response.getErrorMessage());
+                }
+            } else {
+                throw new BookingException("Unsupported Ethiopian payment method: " + paymentMethod);
+            }
+        } catch (Exception e) {
+            logger.error("Failed to process Ethiopian payment for method {}: {}", paymentMethod, e.getMessage());
+            throw new BookingException("Ethiopian payment processing failed: " + e.getMessage());
+        }
     }
 }

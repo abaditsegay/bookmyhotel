@@ -457,12 +457,14 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
           </Button>
           
           <Tooltip title="Refresh">
-            <IconButton
-              onClick={loadRooms}
-              disabled={loading}
-            >
-              <RefreshIcon />
-            </IconButton>
+            <span>
+              <IconButton
+                onClick={loadRooms}
+                disabled={loading}
+              >
+                <RefreshIcon />
+              </IconButton>
+            </span>
           </Tooltip>
         </Box>
 
