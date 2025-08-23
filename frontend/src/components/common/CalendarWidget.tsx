@@ -28,6 +28,13 @@ const CalendarWidget: React.FC = () => {
   const { user } = useAuth();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
+
+  // Check if user has access to Calendar functionality
+  // CUSTOMER and GUEST roles should not have access to calendar
+  const hasAccess = user?.roles && 
+    !user.roles.includes('CUSTOMER') && 
+    !user.roles.includes('GUEST');
 
   // Calendar navigation
   const navigateMonth = (direction: 'prev' | 'next') => {
@@ -41,13 +48,15 @@ const CalendarWidget: React.FC = () => {
       return newDate;
     });
   };
-  const [events, setEvents] = useState<CalendarEvent[]>([]);
 
   // Mock events based on user role - in real app, fetch from API
   useEffect(() => {
+    if (!hasAccess) return;
+    
     const mockEvents: CalendarEvent[] = [];
     const today = new Date();
     
+    // Only show calendar events for staff roles, not for CUSTOMER or GUEST roles
     if (user?.roles?.includes('HOTEL_ADMIN')) {
       mockEvents.push(
         {
@@ -96,27 +105,16 @@ const CalendarWidget: React.FC = () => {
           description: 'Process departures'
         }
       );
-    } else if (user?.roles?.includes('GUEST')) {
-      mockEvents.push(
-        {
-          id: '7',
-          title: 'Hotel Reservation',
-          date: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 5),
-          type: 'booking',
-          description: 'Grand Hotel - 3 nights'
-        },
-        {
-          id: '8',
-          title: 'Flight Departure',
-          date: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 4),
-          type: 'reminder',
-          description: 'Pack bags, check-in online'
-        }
-      );
     }
+    // Removed GUEST and CUSTOMER calendar events - they should not have access to calendar
     
     setEvents(mockEvents);
-  }, [user]);
+  }, [user, hasAccess]);
+
+  // If user doesn't have access, don't render the widget
+  if (!hasAccess) {
+    return null;
+  }
 
   const getEventTypeColor = (type: CalendarEvent['type']) => {
     switch (type) {

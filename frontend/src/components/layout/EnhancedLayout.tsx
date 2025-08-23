@@ -45,8 +45,9 @@ const EnhancedLayout: React.FC<EnhancedLayoutProps> = ({
   // Sidebar state for mobile/tablet
   const [sidebarOpen, setSidebarOpen] = useState(false);
   
-  // Show sidebar only for authenticated users and when not hidden
-  const showSidebar = isAuthenticated && !hideSidebar;
+  // Show sidebar only for authenticated users, when not hidden, and not for CUSTOMER/GUEST roles
+  const showSidebar = isAuthenticated && !hideSidebar && user?.roles && 
+    !user.roles.includes('CUSTOMER') && !user.roles.includes('GUEST');
   
   // Determine which navbar to render
   const renderNavbar = () => {

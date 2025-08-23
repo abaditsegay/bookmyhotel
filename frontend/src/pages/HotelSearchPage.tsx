@@ -8,11 +8,15 @@ import {
   Paper,
   Button,
   Divider,
+  Grid,
+  Card,
+  CardContent,
 } from '@mui/material';
 import {
   Search as SearchIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import AdvertisementBanner from '../components/AdvertisementBanner';
 import HotelSearchForm from '../components/hotel/HotelSearchForm';
 import { hotelApiService } from '../services/hotelApi';
 import { 
@@ -52,62 +56,84 @@ const HotelSearchPage: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Typography variant="h3" component="h1" gutterBottom align="center">
-        Find Your Perfect Hotel
-      </Typography>
+    <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Grid container spacing={3}>
+        {/* Main Content Area */}
+        <Grid item xs={12} md={8}>
+          <Typography variant="h3" component="h1" gutterBottom align="center">
+            Find Your Perfect Hotel
+          </Typography>
 
-      <Box sx={{ mb: 4 }}>
-        <HotelSearchForm onSearch={handleSearch} loading={loading} />
-      </Box>
+          <Box sx={{ mb: 4 }}>
+            <HotelSearchForm onSearch={handleSearch} loading={loading} />
+          </Box>
 
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {error}
-        </Alert>
-      )}
+          {error && (
+            <Alert severity="error" sx={{ mb: 3 }}>
+              {error}
+            </Alert>
+          )}
 
-      {loading && (
-        <Box display="flex" justifyContent="center" sx={{ my: 4 }}>
-          <CircularProgress size={60} />
-        </Box>
-      )}
+          {loading && (
+            <Box display="flex" justifyContent="center" sx={{ my: 4 }}>
+              <CircularProgress size={60} />
+            </Box>
+          )}
 
-      {/* Find My Booking Section */}
-      <Divider sx={{ my: 4 }} />
-      
-      <Paper 
-        elevation={1} 
-        sx={{ 
-          p: 3, 
-          textAlign: 'center',
-          backgroundColor: '#f8f9fa',
-          border: '1px solid #e9ecef'
-        }}
-      >
-        <Typography variant="h5" component="h2" gutterBottom sx={{ fontWeight: 'bold' }}>
-          Already Have a Booking?
-        </Typography>
-        <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-          Manage your existing reservation or view booking details
-        </Typography>
-        <Button
-          variant="outlined"
-          size="large"
-          startIcon={<SearchIcon />}
-          onClick={() => navigate('/find-booking')}
-          sx={{ 
-            borderRadius: 2,
-            textTransform: 'none',
-            fontWeight: 'bold',
-            px: 4,
-            py: 1.5
-          }}
-        >
-          Find My Booking
-        </Button>
-      </Paper>
+          {/* Find My Booking Section */}
+          <Divider sx={{ my: 4 }} />
+          
+          <Paper 
+            elevation={1} 
+            sx={{ 
+              p: 3, 
+              textAlign: 'center',
+              backgroundColor: '#f8f9fa',
+              border: '1px solid #e9ecef'
+            }}
+          >
+            <Typography variant="h5" component="h2" gutterBottom sx={{ fontWeight: 'bold' }}>
+              Already Have a Booking?
+            </Typography>
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+              Manage your existing reservation or view booking details
+            </Typography>
+            <Button
+              variant="outlined"
+              size="large"
+              startIcon={<SearchIcon />}
+              onClick={() => navigate('/find-booking')}
+              sx={{ 
+                borderRadius: 2,
+                textTransform: 'none',
+                fontWeight: 'bold',
+                px: 4,
+                py: 1.5
+              }}
+            >
+              Find My Booking
+            </Button>
+          </Paper>
+        </Grid>
 
+        {/* Advertisement Sidebar */}
+        <Grid item xs={12} md={4}>
+          <Box sx={{ position: 'sticky', top: 24 }}>
+            <Card 
+              sx={{ 
+                height: '85vh',
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden'
+              }}
+            >
+              <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: 2 }}>
+                <AdvertisementBanner maxAds={5} />
+              </CardContent>
+            </Card>
+          </Box>
+        </Grid>
+      </Grid>
     </Container>
   );
 };

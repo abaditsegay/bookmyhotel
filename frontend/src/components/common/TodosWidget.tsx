@@ -41,8 +41,16 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
   const [newTodoTitle, setNewTodoTitle] = useState('');
   const [priority, setPriority] = useState<'HIGH' | 'MEDIUM' | 'LOW'>('MEDIUM');
 
+  // Check if user has access to TODO functionality
+  // CUSTOMER and GUEST roles should not have access to TODOs
+  const hasAccess = user?.roles && 
+    !user.roles.includes('CUSTOMER') && 
+    !user.roles.includes('GUEST');
+
   // Load todos when component mounts
   const loadTodos = useCallback(async () => {
+    if (!hasAccess) return;
+    
     try {
       setLoading(true);
       setError(null);
@@ -54,13 +62,18 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [todoApi]);
+  }, [todoApi, hasAccess]);
 
   useEffect(() => {
-    if (user) {
+    if (user && hasAccess) {
       loadTodos();
     }
-  }, [user, loadTodos]);
+  }, [user, loadTodos, hasAccess]);
+
+  // If user doesn't have access, don't render the widget
+  if (!hasAccess) {
+    return null;
+  }
 
   const handleAddTodo = async () => {
     if (!newTodoTitle.trim()) return;
