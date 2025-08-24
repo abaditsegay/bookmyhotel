@@ -3,11 +3,14 @@ package com.bookmyhotel.service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +28,7 @@ import com.bookmyhotel.exception.ResourceNotFoundException;
 import com.bookmyhotel.repository.HotelRepository;
 import com.bookmyhotel.repository.ReservationRepository;
 import com.bookmyhotel.repository.RoomRepository;
+import com.bookmyhotel.repository.UserRepository;
 import com.bookmyhotel.tenant.TenantContext;
 
 /**
@@ -44,6 +48,9 @@ public class FrontDeskService {
     private HotelRepository hotelRepository;
     
     @Autowired
+    private UserRepository userRepository;
+    
+    @Autowired
     private BookingService bookingService;
     
     // TODO: Temporarily commented out for compilation - will reintegrate after Phase 3.3
@@ -55,24 +62,59 @@ public class FrontDeskService {
      */
     @Transactional(readOnly = true)
     public Page<BookingResponse> getAllBookings(Pageable pageable, String search) {
-        String tenantId = TenantContext.getTenantId();
-        if (tenantId == null || tenantId.trim().isEmpty()) {
-            throw new IllegalStateException("Tenant context is not set");
+        // Get the current user's hotel to ensure proper data isolation
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new IllegalStateException("User not authenticated");
         }
         
-        // For now, get all reservations and do basic filtering
-        // In the future, we can add more sophisticated search with tenant-aware queries
-        List<Reservation> allReservations = reservationRepository.findAll();
+        String userEmail = authentication.getName();
+        User currentUser = userRepository.findByEmailWithHotel(userEmail)
+            .orElseThrow(() -> new IllegalStateException("User not found: " + userEmail));
         
-        // Filter by tenant and search term
-        List<Reservation> filteredReservations = allReservations.stream()
-            .filter(reservation -> tenantId.equals(reservation.getTenantId()))
-            .filter(reservation -> search == null || search.trim().isEmpty() || 
-                    reservation.getGuest().getFirstName().toLowerCase().contains(search.toLowerCase()) ||
-                    reservation.getGuest().getLastName().toLowerCase().contains(search.toLowerCase()) ||
-                    reservation.getRoom().getRoomNumber().toLowerCase().contains(search.toLowerCase()) ||
-                    reservation.getConfirmationNumber().toLowerCase().contains(search.toLowerCase()))
-            .toList();
+        Hotel userHotel = currentUser.getHotel();
+        if (userHotel == null) {
+            throw new IllegalStateException("User is not associated with any hotel");
+        }
+        
+        // Get reservations for the user's specific hotel only
+        List<Reservation> allReservations = reservationRepository.findByHotelId(userHotel.getId());
+        
+        // Apply search filter if provided
+        List<Reservation> filteredReservations = allReservations;
+        if (search != null && !search.trim().isEmpty()) {
+            String searchLower = search.toLowerCase();
+            filteredReservations = allReservations.stream()
+                .filter(reservation -> {
+                    // Handle both registered users and guest bookings
+                    String firstName = "", lastName = "", email = "";
+                    
+                    if (reservation.getGuest() != null) {
+                        // Registered user booking
+                        firstName = reservation.getGuest().getFirstName();
+                        lastName = reservation.getGuest().getLastName();
+                        email = reservation.getGuest().getEmail();
+                    } else if (reservation.getGuestInfo() != null) {
+                        // Guest booking - use the combined name
+                        String fullName = reservation.getGuestInfo().getName() != null ? 
+                                        reservation.getGuestInfo().getName() : "";
+                        firstName = fullName; // Use full name for first name field
+                        lastName = ""; // Leave last name empty since we have a combined name
+                        email = reservation.getGuestInfo().getEmail() != null ? 
+                               reservation.getGuestInfo().getEmail() : "";
+                    }
+                    
+                    return firstName.toLowerCase().contains(searchLower) ||
+                           lastName.toLowerCase().contains(searchLower) ||
+                           email.toLowerCase().contains(searchLower) ||
+                           reservation.getRoom().getRoomNumber().toLowerCase().contains(searchLower) ||
+                           reservation.getConfirmationNumber().toLowerCase().contains(searchLower);
+                })
+                .collect(Collectors.toList());
+        }
+        
+        // Sort by check-in date descending
+        filteredReservations.sort((r1, r2) -> r2.getCheckInDate().compareTo(r1.getCheckInDate()));
         
         // Apply manual pagination
         int start = (int) pageable.getOffset();
@@ -389,15 +431,38 @@ public class FrontDeskService {
                                                String confirmationNumber, LocalDate checkInDate,
                                                ReservationStatus status) {
         
-        // For now, implement basic search - this can be enhanced with custom queries
-        List<Reservation> allReservations = reservationRepository.findAll();
+        // Get the current user's hotel to ensure proper data isolation
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new IllegalStateException("User not authenticated");
+        }
+        
+        String userEmail = authentication.getName();
+        User currentUser = userRepository.findByEmailWithHotel(userEmail)
+            .orElseThrow(() -> new IllegalStateException("User not found: " + userEmail));
+        
+        Hotel userHotel = currentUser.getHotel();
+        if (userHotel == null) {
+            throw new IllegalStateException("User is not associated with any hotel");
+        }
+        
+        // Get reservations for the user's specific hotel only
+        List<Reservation> allReservations = reservationRepository.findByHotelId(userHotel.getId());
         
         return allReservations.stream()
             .filter(reservation -> {
                 if (guestName != null && !guestName.trim().isEmpty()) {
-                    User guest = reservation.getGuest();
-                    String fullName = (guest.getFirstName() + " " + guest.getLastName()).toLowerCase();
-                    return fullName.contains(guestName.toLowerCase().trim());
+                    if (reservation.getGuest() != null) {
+                        // Registered user booking
+                        String fullName = (reservation.getGuest().getFirstName() + " " + reservation.getGuest().getLastName()).toLowerCase();
+                        return fullName.contains(guestName.toLowerCase().trim());
+                    } else if (reservation.getGuestInfo() != null) {
+                        // Guest booking
+                        String guestInfoName = reservation.getGuestInfo().getName() != null ? 
+                                             reservation.getGuestInfo().getName().toLowerCase() : "";
+                        return guestInfoName.contains(guestName.toLowerCase().trim());
+                    }
+                    return false;
                 }
                 return true;
             })
@@ -436,21 +501,45 @@ public class FrontDeskService {
      */
     @Transactional(readOnly = true)
     public FrontDeskStats getFrontDeskStats() {
-        String tenantId = TenantContext.getTenantId();
-        if (tenantId == null || tenantId.trim().isEmpty()) {
-            throw new IllegalStateException("Tenant context is not set");
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication.getName() == null) {
+            throw new IllegalStateException("User authentication is not available");
+        }
+        
+        User user = userRepository.findByEmail(authentication.getName())
+            .orElseThrow(() -> new ResourceNotFoundException("User not found: " + authentication.getName()));
+        
+        Hotel hotel = user.getHotel();
+        if (hotel == null) {
+            throw new ResourceNotFoundException("User is not associated with any hotel");
         }
         
         LocalDate today = LocalDate.now();
+        String tenantId = TenantContext.getTenantId();
         
-        long todaysArrivals = reservationRepository.findUpcomingCheckInsByTenantId(today, tenantId).size();
-        long todaysDepartures = reservationRepository.findUpcomingCheckOutsByTenantId(today, tenantId).size();
-        long currentOccupancy = reservationRepository.findByStatusAndTenantId(ReservationStatus.CHECKED_IN, tenantId).size();
+        // Get bookings for this specific hotel by joining with rooms
+        // Using existing repository methods with custom queries for hotel-specific data
+        long todaysArrivals = reservationRepository.findByHotelId(hotel.getId()).stream()
+            .filter(r -> r.getCheckInDate().equals(today) && r.getStatus() == ReservationStatus.CONFIRMED)
+            .count();
+        long todaysDepartures = reservationRepository.findByHotelId(hotel.getId()).stream()
+            .filter(r -> r.getCheckOutDate().equals(today) && r.getStatus() == ReservationStatus.CHECKED_IN)
+            .count();
+        long currentOccupancy = reservationRepository.findByHotelId(hotel.getId()).stream()
+            .filter(r -> r.getStatus() == ReservationStatus.CHECKED_IN)
+            .count();
         
-        long totalRooms = roomRepository.countByTenantId(tenantId);
-        long availableRooms = roomRepository.countByStatusAndTenantId(RoomStatus.AVAILABLE, tenantId);
-        long roomsOutOfOrder = roomRepository.countByStatusAndTenantId(RoomStatus.OUT_OF_ORDER, tenantId);
-        long roomsUnderMaintenance = roomRepository.countByStatusAndTenantId(RoomStatus.MAINTENANCE, tenantId);
+        // Get room counts for this specific hotel
+        long totalRooms = roomRepository.countByHotelId(hotel.getId());
+        long availableRooms = roomRepository.findByHotelId(hotel.getId()).stream()
+            .filter(room -> room.getStatus() == RoomStatus.AVAILABLE)
+            .count();
+        long roomsOutOfOrder = roomRepository.findByHotelId(hotel.getId()).stream()
+            .filter(room -> room.getStatus() == RoomStatus.OUT_OF_ORDER)
+            .count();
+        long roomsUnderMaintenance = roomRepository.findByHotelId(hotel.getId()).stream()
+            .filter(room -> room.getStatus() == RoomStatus.MAINTENANCE)
+            .count();
         
         return new FrontDeskStats(
             todaysArrivals,
@@ -463,24 +552,34 @@ public class FrontDeskService {
     }
 
     /**
-     * Get hotel information for the current tenant
+     * Get hotel information for the current user
      */
     @Transactional(readOnly = true)
     public HotelDTO getHotelInfo() {
-        String tenantId = TenantContext.getTenantId();
-        if (tenantId == null || tenantId.trim().isEmpty()) {
-            throw new IllegalStateException("Tenant context is not set");
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || authentication.getName() == null) {
+                throw new IllegalStateException("User authentication is not available");
+            }
+            
+            User user = userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + authentication.getName()));
+            
+            // Get hotel ID from user and fetch hotel directly from repository 
+            // This avoids tenant filter issues with lazy loading
+            if (user.getHotel() == null) {
+                throw new ResourceNotFoundException("User is not associated with any hotel");
+            }
+            
+            Long hotelId = user.getHotel().getId();
+            Hotel userHotel = hotelRepository.findById(hotelId)
+                .orElseThrow(() -> new ResourceNotFoundException("Hotel not found with id: " + hotelId));
+            
+            return convertToHotelDTO(userHotel);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error getting hotel info: " + e.getMessage(), e);
         }
-        
-        // For now, get the first hotel for the tenant
-        // In a multi-hotel system, this would need to be more specific
-        List<Hotel> hotels = hotelRepository.findByTenantId(tenantId);
-        if (hotels.isEmpty()) {
-            throw new ResourceNotFoundException("No hotel found for tenant: " + tenantId);
-        }
-        
-        Hotel hotel = hotels.get(0); // Get the first hotel for this tenant
-        return convertToHotelDTO(hotel);
     }
 
     /**
@@ -488,18 +587,18 @@ public class FrontDeskService {
      */
     @Transactional(readOnly = true)
     public Page<RoomResponse> getAllRooms(Pageable pageable, String search, String roomType, String status) {
-        String tenantId = TenantContext.getTenantId();
-        if (tenantId == null || tenantId.trim().isEmpty()) {
-            throw new IllegalStateException("Tenant context is not set");
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication.getName() == null) {
+            throw new IllegalStateException("User authentication is not available");
         }
         
-        // Get the hotel for this tenant first
-        List<Hotel> hotels = hotelRepository.findByTenantId(tenantId);
-        if (hotels.isEmpty()) {
-            throw new ResourceNotFoundException("No hotel found for tenant: " + tenantId);
-        }
+        User user = userRepository.findByEmail(authentication.getName())
+            .orElseThrow(() -> new ResourceNotFoundException("User not found: " + authentication.getName()));
         
-        Hotel hotel = hotels.get(0);
+        Hotel hotel = user.getHotel();
+        if (hotel == null) {
+            throw new ResourceNotFoundException("User is not associated with any hotel");
+        }
         
         // Get all rooms for the hotel
         List<Room> allRooms = roomRepository.findByHotelIdOrderByRoomNumber(hotel.getId());
