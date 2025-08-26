@@ -351,6 +351,118 @@ const LoginPage: React.FC = () => {
             </CardContent>
           </Card>
 
+          {/* Ethiopian Heritage Hotels Section */}
+          <Card sx={{ flex: 1, maxWidth: 400, maxHeight: '90vh', overflow: 'auto' }}>
+            <CardContent sx={{ p: 3 }}>
+              <Typography variant="h5" component="h2" gutterBottom align="center" color="primary">
+                🇪🇹 Ethiopian Heritage Hotels
+              </Typography>
+              <Typography variant="body2" color="textSecondary" align="center" sx={{ mb: 3 }}>
+                Authentic Ethiopian hospitality - New!
+              </Typography>
+
+              <Alert severity="success" sx={{ mb: 2 }}>
+                <Typography variant="body2">
+                  🆕 <strong>NEW:</strong> Ethiopian hotels with 68+ staff members! International-ready with English interface ✅
+                </Typography>
+              </Alert>
+
+              <Divider sx={{ my: 2 }}>
+                <Chip label="Ethiopian Hotel Credentials" size="small" />
+              </Divider>
+
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  onClick={() => fillSampleUser('admin@ethiopian-heritage.et', 'password123')}
+                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
+                >
+                  <Typography variant="body2" fontWeight="bold">🔧 System Administrator</Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    admin@ethiopian-heritage.et
+                  </Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    Password: password123
+                  </Typography>
+                  <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
+                    ✅ Abebe Tesfaye - System Admin
+                  </Typography>
+                </Button>
+                
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  onClick={() => fillSampleUser('hotel.admin@sheraton-addis.et', 'password123')}
+                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
+                >
+                  <Typography variant="body2" fontWeight="bold">🏨 Sheraton Addis Ababa</Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    hotel.admin@sheraton-addis.et
+                  </Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    Password: password123
+                  </Typography>
+                  <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
+                    ✅ Hawaryat Bekele - Hotel Admin
+                  </Typography>
+                </Button>
+
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  onClick={() => fillSampleUser('hotel.admin@lalibela-lodge.et', 'password123')}
+                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
+                >
+                  <Typography variant="body2" fontWeight="bold">🏛️ Lalibela Cultural Lodge</Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    hotel.admin@lalibela-lodge.et
+                  </Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    Password: password123
+                  </Typography>
+                  <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
+                    ✅ Zera Yacob - Hotel Admin
+                  </Typography>
+                </Button>
+
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  onClick={() => fillSampleUser('frontdesk@sheraton-addis.et', 'password123')}
+                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
+                >
+                  <Typography variant="body2" fontWeight="bold">🎯 Sheraton Front Desk</Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    frontdesk@sheraton-addis.et
+                  </Typography>
+                </Button>
+
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  onClick={() => fillSampleUser('frontdesk@lalibela-lodge.et', 'password123')}
+                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
+                >
+                  <Typography variant="body2" fontWeight="bold">🎯 Lalibela Front Desk</Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    frontdesk@lalibela-lodge.et
+                  </Typography>
+                </Button>
+              </Box>
+
+              <Box sx={{ mt: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
+                <Typography variant="caption" color="textSecondary">
+                  <strong>Ethiopian Hotels Info:</strong><br/>
+                  📍 Addis Ababa & Lalibela, Ethiopia<br/>
+                  👥 68 total staff members<br/>
+                  🏨 2 hotels with 19 premium rooms<br/>
+                  ✨ Authentic Ethiopian culture & hospitality
+                </Typography>
+              </Box>
+            </CardContent>
+          </Card>
+
           {/* Grand Plaza Hotel Credentials */}
           <Card sx={{ flex: 1, maxWidth: 400, maxHeight: '90vh', overflow: 'auto' }}>
             <CardContent sx={{ p: 3 }}>
