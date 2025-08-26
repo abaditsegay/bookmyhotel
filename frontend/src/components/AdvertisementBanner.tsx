@@ -14,9 +14,7 @@ import {
 } from '@mui/material';
 import {
   LocalOffer as OfferIcon,
-  Star as StarIcon,
-  LocationOn as LocationIcon,
-  AccessTime as TimeIcon
+  LocationOn as LocationIcon
 } from '@mui/icons-material';
 import { hotelApiService } from '../services/hotelApi';
 import { HotelSearchResult } from '../types/hotel';
@@ -114,91 +112,6 @@ export default function AdvertisementBanner({ maxAds = 5 }: AdvertisementBannerP
     return () => clearInterval(interval);
   }, [fetchHotels]);
 
-const AdvertisementBanner: React.FC<AdvertisementBannerProps> = ({
-  maxAds = 4
-}) => {
-  const [ads, setAds] = useState<Advertisement[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const { user } = useAuth();
-
-  // Convert API response to Advertisement format
-  const convertAdResponseToAdvertisement = (adResponse: AdResponse): Advertisement => {
-    const discount = adResponse.discountPercentage > 0 
-      ? `${Math.round(adResponse.discountPercentage)}% OFF` 
-      : undefined;
-    
-    return {
-      id: adResponse.id.toString(),
-      title: adResponse.title,
-      description: adResponse.description || `Special offers at ${adResponse.hotelName}`,
-      imageUrl: adResponse.imageUrl || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=300&h=200&fit=crop',
-      price: `$${adResponse.discountedPrice}`,
-      originalPrice: adResponse.originalPrice !== adResponse.discountedPrice ? `$${adResponse.originalPrice}` : undefined,
-      discount,
-      location: adResponse.hotelLocation,
-      rating: undefined, // Rating could be added to Ad entity in future
-      validUntil: adResponse.validUntil,
-      ctaText: 'Book Now',
-      ctaUrl: `/search-results?hotelId=${adResponse.hotelId}`,
-      isSponsored: true
-    };
-  };
-
-  // Fetch ads from API
-  const fetchAds = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const apiAds = await adApiService.getRandomActiveAds(maxAds);
-      
-      if (apiAds && apiAds.length > 0) {
-        const convertedAds = apiAds.map(convertAdResponseToAdvertisement);
-        setAds(convertedAds);
-      } else {
-        // Use fallback ads if no API ads available
-        setAds(fallbackAdvertisements.slice(0, maxAds));
-      }
-    } catch (err) {
-      console.warn('Failed to fetch ads from API, using fallback:', err);
-      setError('Using sample ads');
-      setAds(fallbackAdvertisements.slice(0, maxAds));
-    } finally {
-      setLoading(false);
-    }
-  }, [maxAds]);
-
-  // Track ad click
-  const handleAdClick = async (ad: Advertisement) => {
-    try {
-      // Only track clicks for ads from the API (numeric IDs)
-      const adId = parseInt(ad.id);
-      if (!isNaN(adId)) {
-        await adApiService.trackAdClick(adId);
-      }
-    } catch (err) {
-      console.warn('Failed to track ad click:', err);
-    }
-    // Navigate to the URL regardless of tracking success
-    if (ad.ctaUrl !== '#') {
-      window.location.href = ad.ctaUrl;
-    }
-  };
-
-  // Load ads on component mount
-  useEffect(() => {
-    fetchAds();
-  }, [fetchAds]);
-
-  // Set up 1-minute rotation
-  useEffect(() => {
-    const interval = setInterval(() => {
-      fetchAds();
-    }, 60000); // 60 seconds = 1 minute
-
-    return () => clearInterval(interval);
-  }, [fetchAds]);
-
   // Hide advertisement banner for operations users
   const isOperationsUser = user?.role === 'OPERATIONS_SUPERVISOR' || 
                            user?.role === 'HOUSEKEEPING' || 
@@ -208,23 +121,14 @@ const AdvertisementBanner: React.FC<AdvertisementBannerProps> = ({
     return null; // Don't render anything for operations users
   }
 
-  const formatValidUntil = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric', 
-      year: 'numeric' 
-    });
-  };
-
   // Show loading skeletons
-  if (loading && ads.length === 0) {
+  if (loading && hotels.length === 0) {
     return (
       <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
         <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
           <OfferIcon color="primary" />
           <Typography variant="h6" sx={{ fontWeight: 'bold', flex: 1 }}>
-            Special Offers
+            Featured Hotels
           </Typography>
           <Chip 
             label="Loading" 
@@ -249,7 +153,7 @@ const AdvertisementBanner: React.FC<AdvertisementBannerProps> = ({
     );
   }
 
-  const displayedAds = ads.slice(0, maxAds);
+  const displayedHotels = hotels.slice(0, maxAds);
 
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -257,65 +161,52 @@ const AdvertisementBanner: React.FC<AdvertisementBannerProps> = ({
       <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
         <OfferIcon color="primary" />
         <Typography variant="h6" sx={{ fontWeight: 'bold', flex: 1 }}>
-          Special Offers
+          Featured Hotels
         </Typography>
         <Chip 
-          label={error ? "Sample Ads" : "Sponsored"} 
+          label={error ? "Sample Hotels" : "Live Data"} 
           size="small" 
           color={error ? "warning" : "primary"} 
           variant="outlined"
         />
       </Box>
 
-      {/* Advertisement Cards */}
+      {/* Hotel Cards */}
       <Box sx={{ flex: 1, overflow: 'auto' }}>
         <Stack spacing={2}>
-          {displayedAds.map((ad, index) => (
+          {displayedHotels.map((hotel, index) => (
             <Card 
-              key={ad.id}
+              key={hotel.id}
               sx={{ 
                 transition: 'transform 0.2s, box-shadow 0.2s',
+                cursor: 'pointer',
                 '&:hover': {
                   transform: 'translateY(-2px)',
                   boxShadow: 3,
                 }
               }}
+              onClick={() => handleHotelClick(hotel)}
             >
               <Box sx={{ position: 'relative' }}>
                 <CardMedia
                   component="img"
                   height="120"
-                  image={ad.imageUrl}
-                  alt={ad.title}
+                  image="https://images.unsplash.com/photo-1566073771259-6a8506099945?w=300&h=200&fit=crop"
+                  alt={hotel.name}
                   sx={{ objectFit: 'cover' }}
                 />
-                {ad.discount && (
-                  <Chip
-                    label={ad.discount}
-                    color="error"
-                    size="small"
-                    sx={{
-                      position: 'absolute',
-                      top: 8,
-                      right: 8,
-                      fontWeight: 'bold'
-                    }}
-                  />
-                )}
-                {ad.isSponsored && (
-                  <Chip
-                    label="Sponsored"
-                    size="small"
-                    sx={{
-                      position: 'absolute',
-                      top: 8,
-                      left: 8,
-                      backgroundColor: 'rgba(0,0,0,0.7)',
-                      color: 'white',
-                      fontSize: '0.7rem'
-                    }}
-                  />
-                )}
+                <Chip
+                  label="Featured"
+                  size="small"
+                  sx={{
+                    position: 'absolute',
+                    top: 8,
+                    left: 8,
+                    backgroundColor: 'rgba(0,0,0,0.7)',
+                    color: 'white',
+                    fontSize: '0.7rem'
+                  }}
+                />
               </Box>
               
               <CardContent sx={{ p: 2 }}>
@@ -328,7 +219,7 @@ const AdvertisementBanner: React.FC<AdvertisementBannerProps> = ({
                     lineHeight: 1.2
                   }}
                 >
-                  {ad.title}
+                  {hotel.name}
                 </Typography>
                 
                 <Typography 
@@ -343,43 +234,25 @@ const AdvertisementBanner: React.FC<AdvertisementBannerProps> = ({
                     lineHeight: 1.3
                   }}
                 >
-                  {ad.description}
+                  {hotel.description}
                 </Typography>
 
-                {/* Location and Rating */}
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                  {ad.location && (
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <LocationIcon sx={{ fontSize: 14, color: 'text.secondary' }} />
-                      <Typography variant="caption" color="text.secondary">
-                        {ad.location}
-                      </Typography>
-                    </Box>
-                  )}
-                  {ad.rating && (
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, ml: 'auto' }}>
-                      <StarIcon sx={{ fontSize: 14, color: '#ffc107' }} />
-                      <Typography variant="caption" color="text.secondary">
-                        {ad.rating}
-                      </Typography>
-                    </Box>
-                  )}
+                {/* Location */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
+                  <LocationIcon sx={{ fontSize: 14, color: 'text.secondary' }} />
+                  <Typography variant="caption" color="text.secondary">
+                    {hotel.city}, {hotel.country}
+                  </Typography>
                 </Box>
 
                 {/* Price Section */}
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                   <Typography variant="h6" color="primary" sx={{ fontWeight: 'bold' }}>
-                    {ad.price}
+                    ${hotel.minPrice}
                   </Typography>
-                  {ad.originalPrice && (
-                    <Typography 
-                      variant="body2" 
-                      sx={{ 
-                        textDecoration: 'line-through',
-                        color: 'text.secondary'
-                      }}
-                    >
-                      {ad.originalPrice}
+                  {hotel.maxPrice > hotel.minPrice && (
+                    <Typography variant="body2" color="text.secondary">
+                      - ${hotel.maxPrice}
                     </Typography>
                   )}
                   <Typography variant="caption" color="success.main" sx={{ fontWeight: 'bold' }}>
@@ -387,34 +260,23 @@ const AdvertisementBanner: React.FC<AdvertisementBannerProps> = ({
                   </Typography>
                 </Box>
 
-                {/* Valid Until */}
-                {ad.validUntil && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 2 }}>
-                    <TimeIcon sx={{ fontSize: 14, color: 'warning.main' }} />
-                    <Typography variant="caption" color="warning.main">
-                      Valid until {formatValidUntil(ad.validUntil)}
-                    </Typography>
-                  </Box>
-                )}
-
                 {/* CTA Button */}
                 <Button
                   variant="contained"
                   color="primary"
                   fullWidth
                   size="small"
-                  onClick={() => handleAdClick(ad)}
                   sx={{
                     textTransform: 'none',
                     fontWeight: 'bold',
                     borderRadius: 2
                   }}
                 >
-                  {ad.ctaText}
+                  View Details
                 </Button>
               </CardContent>
               
-              {index < displayedAds.length - 1 && <Divider />}
+              {index < displayedHotels.length - 1 && <Divider />}
             </Card>
           ))}
         </Stack>
@@ -424,15 +286,13 @@ const AdvertisementBanner: React.FC<AdvertisementBannerProps> = ({
       <Box sx={{ mt: 2, textAlign: 'center' }}>
         {error ? (
           <Alert severity="info" sx={{ mb: 1 }}>
-            Showing sample ads. Live ads from registered hotels will be available soon.
+            Showing sample hotels. Live hotel data will be available once connected to the API.
           </Alert>
         ) : null}
         <Typography variant="caption" color="text.secondary">
-          Sponsored content • Advertise with us
+          Updates every 2 minutes • {new Date().toLocaleTimeString()}
         </Typography>
       </Box>
     </Box>
   );
-};
-
-export default AdvertisementBanner;
+}
