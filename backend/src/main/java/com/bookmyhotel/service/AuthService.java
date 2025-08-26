@@ -99,7 +99,7 @@ public class AuthService {
         User user = userOpt.get();
         
         if (!user.getIsActive()) {
-            throw new BadCredentialsException("Account is deactivated");
+            throw new BadCredentialsException("Account is disabled");
         }
         
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {

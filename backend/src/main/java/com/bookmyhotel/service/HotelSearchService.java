@@ -119,7 +119,7 @@ public class HotelSearchService {
         
         return roomTypes.stream()
             .map(roomType -> createRoomTypeAvailability(hotelId, roomType, request))
-            .filter(availability -> availability.getTotalCount() > 0)
+            .filter(availability -> availability.getAvailableCount() != null && availability.getAvailableCount() > 0)
             .filter(availability -> isRoomTypeInPriceRange(availability, request))
             .collect(Collectors.toList());
     }

@@ -361,6 +361,12 @@ const LoginPage: React.FC = () => {
                 Luxury Hotel Chain - New York
               </Typography>
 
+              <Alert severity="success" sx={{ mb: 2 }}>
+                <Typography variant="body2">
+                  🔧 <strong>UPDATED:</strong> All hotel staff credentials now use standardized password "password" for easy testing! All accounts verified ✅
+                </Typography>
+              </Alert>
+
               <Divider sx={{ my: 2 }}>
                 <Chip label="Staff Login Credentials" size="small" />
               </Divider>
@@ -369,7 +375,7 @@ const LoginPage: React.FC = () => {
                 <Button
                   variant="outlined"
                   fullWidth
-                  onClick={() => fillSampleUser('hotel.admin@grandplaza.com', 'admin123')}
+                  onClick={() => fillSampleUser('hotel.admin@grandplaza.com', 'password')}
                   sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
                 >
                   <Typography variant="body2" fontWeight="bold">🏨 Hotel Administrator</Typography>
@@ -377,17 +383,17 @@ const LoginPage: React.FC = () => {
                     hotel.admin@grandplaza.com
                   </Typography>
                   <Typography variant="caption" color="textSecondary">
-                    Password: admin123
+                    Password: password
                   </Typography>
                   <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
-                    ✅ John Manager - Working
+                    ✅ John Manager - Working Perfectly
                   </Typography>
                 </Button>
                 
                 <Button
                   variant="outlined"
                   fullWidth
-                  onClick={() => fillSampleUser('frontdesk@grandplaza.com', 'frontdesk123')}
+                  onClick={() => fillSampleUser('frontdesk@grandplaza.com', 'password')}
                   sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
                 >
                   <Typography variant="body2" fontWeight="bold">🎯 Front Desk Staff</Typography>
@@ -395,35 +401,17 @@ const LoginPage: React.FC = () => {
                     frontdesk@grandplaza.com
                   </Typography>
                   <Typography variant="caption" color="textSecondary">
-                    Password: frontdesk123
+                    Password: password
                   </Typography>
                   <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
-                    ✅ Jane Desk - Working
+                    ✅ Jane Desk - Working Perfectly
                   </Typography>
                 </Button>
 
                 <Button
                   variant="outlined"
                   fullWidth
-                  onClick={() => fillSampleUser('operations@grandplaza.com', 'operations123')}
-                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
-                >
-                  <Typography variant="body2" fontWeight="bold">🔧 Operations Supervisor</Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    operations@grandplaza.com
-                  </Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    Password: operations123
-                  </Typography>
-                  <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
-                    ✅ Michael Johnson - Working
-                  </Typography>
-                </Button>
-
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  onClick={() => fillSampleUser('housekeeping@grandplaza.com', 'housekeeping123')}
+                  onClick={() => fillSampleUser('housekeeping@grandplaza.com', 'password')}
                   sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
                 >
                   <Typography variant="body2" fontWeight="bold">🧹 Housekeeping Staff</Typography>
@@ -431,17 +419,17 @@ const LoginPage: React.FC = () => {
                     housekeeping@grandplaza.com
                   </Typography>
                   <Typography variant="caption" color="textSecondary">
-                    Password: housekeeping123
+                    Password: password
                   </Typography>
                   <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
-                    ✅ Maria Lopez - Working
+                    ✅ Anna Miller - Working Perfectly
                   </Typography>
                 </Button>
 
                 <Button
                   variant="outlined"
                   fullWidth
-                  onClick={() => fillSampleUser('maintenance@grandplaza.com', 'maintenance123')}
+                  onClick={() => fillSampleUser('maintenance@grandplaza.com', 'password')}
                   sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
                 >
                   <Typography variant="body2" fontWeight="bold">🔨 Maintenance Staff</Typography>
@@ -449,10 +437,10 @@ const LoginPage: React.FC = () => {
                     maintenance@grandplaza.com
                   </Typography>
                   <Typography variant="caption" color="textSecondary">
-                    Password: maintenance123
+                    Password: password
                   </Typography>
                   <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
-                    ✅ Robert Wilson - Working
+                    ✅ Carlos Rodriguez - Working Perfectly
                   </Typography>
                 </Button>
               </Box>
@@ -468,118 +456,113 @@ const LoginPage: React.FC = () => {
             </CardContent>
           </Card>
 
-          {/* Maritime Grand Hotel Credentials */}
+          {/* Multi-Hotel Credentials Section */}
           <Card sx={{ flex: 1, maxWidth: 400, maxHeight: '90vh', overflow: 'auto' }}>
             <CardContent sx={{ p: 3 }}>
               <Typography variant="h5" component="h2" gutterBottom align="center" color="primary">
-                🌊 The Maritime Grand Hotel
+                � More Hotels - All Use "password"
               </Typography>
               <Typography variant="body2" color="textSecondary" align="center" sx={{ mb: 3 }}>
-                Sam's Hotels - San Diego Oceanfront
+                All 13 hotels standardized with "password"
               </Typography>
 
               <Divider sx={{ my: 2 }}>
-                <Chip label="Staff Login Credentials" size="small" />
+                <Chip label="Quick Test Credentials" size="small" />
               </Divider>
 
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <Button
                   variant="outlined"
                   fullWidth
-                  onClick={() => fillSampleUser('admin@maritimegrand.com', 'admin123')}
-                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
+                  onClick={() => fillSampleUser('hoteladmin@grandtesthotel.com', 'password')}
+                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
                 >
-                  <Typography variant="body2" fontWeight="bold">🏨 Hotel Administrator</Typography>
+                  <Typography variant="body2" fontWeight="bold">🏨 Grand Test Hotel</Typography>
                   <Typography variant="caption" color="textSecondary">
-                    admin@maritimegrand.com
-                  </Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    Password: admin123
-                  </Typography>
-                  <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
-                    ✅ Sarah Martinez - Working
+                    hoteladmin@grandtesthotel.com
                   </Typography>
                 </Button>
                 
                 <Button
                   variant="outlined"
                   fullWidth
-                  onClick={() => fillSampleUser('frontdesk@maritimegrand.com', 'frontdesk123')}
-                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
+                  onClick={() => fillSampleUser('hoteladmin@sunshineresort.com', 'password')}
+                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
                 >
-                  <Typography variant="body2" fontWeight="bold">🎯 Front Desk Staff</Typography>
+                  <Typography variant="body2" fontWeight="bold">🌞 Sunshine Family Resort</Typography>
                   <Typography variant="caption" color="textSecondary">
-                    frontdesk@maritimegrand.com
-                  </Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    Password: frontdesk123
-                  </Typography>
-                  <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
-                    ✅ Emma Rodriguez - Working
+                    hoteladmin@sunshineresort.com
                   </Typography>
                 </Button>
 
                 <Button
                   variant="outlined"
                   fullWidth
-                  onClick={() => fillSampleUser('operations@maritimegrand.com', 'operations123')}
-                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
+                  onClick={() => fillSampleUser('hoteladmin@grandluxuryresort.com', 'password')}
+                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
                 >
-                  <Typography variant="body2" fontWeight="bold">🔧 Operations Supervisor</Typography>
+                  <Typography variant="body2" fontWeight="bold">✨ Grand Luxury Resort & Spa</Typography>
                   <Typography variant="caption" color="textSecondary">
-                    operations@maritimegrand.com
-                  </Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    Password: operations123
-                  </Typography>
-                  <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
-                    ✅ David Thompson - Working
+                    hoteladmin@grandluxuryresort.com
                   </Typography>
                 </Button>
 
                 <Button
                   variant="outlined"
                   fullWidth
-                  onClick={() => fillSampleUser('housekeeping@maritimegrand.com', 'housekeeping123')}
-                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
+                  onClick={() => fillSampleUser('hoteladmin@metrobusinesshotel.com', 'password')}
+                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
                 >
-                  <Typography variant="body2" fontWeight="bold">🧹 Housekeeping Staff</Typography>
+                  <Typography variant="body2" fontWeight="bold">🏢 Metropolitan Business Hotel</Typography>
                   <Typography variant="caption" color="textSecondary">
-                    housekeeping@maritimegrand.com
-                  </Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    Password: housekeeping123
-                  </Typography>
-                  <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
-                    ✅ Lisa Chen - Working
+                    hoteladmin@metrobusinesshotel.com
                   </Typography>
                 </Button>
 
                 <Button
                   variant="outlined"
                   fullWidth
-                  onClick={() => fillSampleUser('maintenance@maritimegrand.com', 'maintenance123')}
-                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
+                  onClick={() => fillSampleUser('admin@maritimegrand.com', 'password')}
+                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
                 >
-                  <Typography variant="body2" fontWeight="bold">🔨 Maintenance Staff</Typography>
+                  <Typography variant="body2" fontWeight="bold">🌊 The Maritime Grand Hotel</Typography>
                   <Typography variant="caption" color="textSecondary">
-                    maintenance@maritimegrand.com
+                    admin@maritimegrand.com
                   </Typography>
+                </Button>
+
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  onClick={() => fillSampleUser('admin@urbanbusinesshub.com', 'password')}
+                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
+                >
+                  <Typography variant="body2" fontWeight="bold">🏙️ Urban Business Hub</Typography>
                   <Typography variant="caption" color="textSecondary">
-                    Password: maintenance123
+                    admin@urbanbusinesshub.com
                   </Typography>
-                  <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
-                    ✅ Carlos Rivera - Working
+                </Button>
+
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  onClick={() => fillSampleUser('hoteladmin@globalhotel.co.uk', 'password')}
+                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
+                >
+                  <Typography variant="body2" fontWeight="bold">🌍 Global International Hotel</Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    hoteladmin@globalhotel.co.uk
                   </Typography>
                 </Button>
               </Box>
 
               <Box sx={{ mt: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
                 <Typography variant="caption" color="textSecondary">
-                  <strong>Hotel Info:</strong><br/>
-                  📍 1500 Ocean Boulevard, San Diego<br/>
-                  📞 +1-619-555-0200<br/>
-                  🌊 Luxury oceanfront resort & spa
+                  <strong>All Hotels Info:</strong><br/>
+                  � Password: "password" for ALL users<br/>
+                  👥 Each hotel has: hoteladmin, frontdesk, housekeeping, maintenance<br/>
+                  🏨 13 hotels total with comprehensive room data<br/>
+                  📋 See STANDARDIZED_LOGIN_CREDENTIALS.md for complete list
                 </Typography>
               </Box>
             </CardContent>
@@ -603,7 +586,7 @@ const LoginPage: React.FC = () => {
             <Box sx={{ display: 'flex', gap: 3, justifyContent: 'center', flexWrap: 'wrap' }}>
               <Button
                 variant="outlined"
-                onClick={() => fillSampleUser('customer@example.com', 'customer123')}
+                onClick={() => fillSampleUser('customer@example.com', 'password')}
                 sx={{ 
                   textTransform: 'none', 
                   display: 'flex', 
@@ -617,7 +600,7 @@ const LoginPage: React.FC = () => {
                   customer@example.com
                 </Typography>
                 <Typography variant="caption" color="textSecondary">
-                  Password: customer123
+                  Password: password
                 </Typography>
                 <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
                   ✅ John Customer - Working

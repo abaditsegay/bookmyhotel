@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -323,12 +324,16 @@ public class HotelAdminService {
      * Get hotel rooms with filtering
      */
     public Page<RoomDTO> getHotelRooms(String adminEmail, int page, int size, String search, String roomType, Boolean available) {
+        System.err.println("🔍 HotelAdminService.getHotelRooms called with adminEmail: " + adminEmail);
         User admin = getUserByEmail(adminEmail);
+        System.err.println("🔍 Retrieved admin user: " + admin.getId() + ", email: " + admin.getEmail());
         Hotel hotel = admin.getHotel();
         
         if (hotel == null) {
             throw new RuntimeException("Hotel admin is not associated with any hotel");
         }
+        
+        System.err.println("🔍 Admin associated with hotel: " + hotel.getId() + ", name: " + hotel.getName());
         
         Pageable pageable = PageRequest.of(page, size);
         
@@ -650,8 +655,18 @@ public class HotelAdminService {
 
     // Helper methods
     private User getUserByEmail(String email) {
-        return userRepository.findByEmailWithHotel(email)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+        System.err.println("🔍 HotelAdminService.getUserByEmail called with email: " + email);
+        Optional<User> userOpt = userRepository.findByEmailWithHotel(email);
+        System.err.println("🔍 userRepository.findByEmailWithHotel returned: " + userOpt.isPresent());
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            System.err.println("🔍 Found user with ID: " + user.getId() + ", email: " + user.getEmail());
+            System.err.println("🔍 User hotel: " + (user.getHotel() != null ? user.getHotel().getId() : "null"));
+            return user;
+        } else {
+            System.err.println("🔍 User not found, throwing exception");
+            throw new RuntimeException("User not found");
+        }
     }
 
     private HotelDTO convertToHotelDTO(Hotel hotel) {
@@ -741,8 +756,17 @@ public class HotelAdminService {
                 .filter(reservation -> reservation.getStatus() == ReservationStatus.CHECKED_IN)
                 .findFirst()
                 .ifPresent(reservation -> {
-                    String guestName = reservation.getGuest().getFirstName() + " " + 
-                                     reservation.getGuest().getLastName();
+                    String guestName = "Unknown Guest";
+                    
+                    if (reservation.getGuest() != null) {
+                        // Registered user booking
+                        guestName = reservation.getGuest().getFirstName() + " " + 
+                                   reservation.getGuest().getLastName();
+                    } else if (reservation.getGuestInfo() != null && reservation.getGuestInfo().getName() != null && !reservation.getGuestInfo().getName().trim().isEmpty()) {
+                        // Anonymous guest booking - use guestInfo embedded object
+                        guestName = reservation.getGuestInfo().getName();
+                    }
+                    
                     dto.setCurrentGuest(guestName);
                 });
         }
@@ -780,14 +804,11 @@ public class HotelAdminService {
                         firstName = reservation.getGuest().getFirstName();
                         lastName = reservation.getGuest().getLastName();
                         email = reservation.getGuest().getEmail();
-                    } else if (reservation.getGuestInfo() != null) {
-                        // Guest booking - use the combined name
-                        String fullName = reservation.getGuestInfo().getName() != null ? 
-                                        reservation.getGuestInfo().getName() : "";
-                        firstName = fullName; // Use full name for first name field
-                        lastName = ""; // Leave last name empty since we have a combined name
-                        email = reservation.getGuestInfo().getEmail() != null ? 
-                               reservation.getGuestInfo().getEmail() : "";
+                    } else {
+                        // Anonymous guest booking - use guestInfo embedded object
+                        firstName = reservation.getGuestInfo() != null && reservation.getGuestInfo().getName() != null ? reservation.getGuestInfo().getName() : "";
+                        lastName = ""; // No separate last name for guest bookings
+                        email = reservation.getGuestInfo() != null && reservation.getGuestInfo().getEmail() != null ? reservation.getGuestInfo().getEmail() : "";
                     }
                     
                     return firstName.toLowerCase().contains(searchLower) ||

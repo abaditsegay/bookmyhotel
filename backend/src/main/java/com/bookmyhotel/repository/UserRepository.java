@@ -38,6 +38,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmailPublic(String email);
     
     /**
+     * Find user by email with hotel loaded (public search across all tenants)
+     */
+    @Query(value = "SELECT u.*, h.* FROM users u LEFT JOIN hotels h ON u.hotel_id = h.id WHERE u.email = ?1", nativeQuery = true)
+    Optional<User> findByEmailWithHotelPublic(String email);
+    
+    /**
      * Check if user exists by email
      */
     boolean existsByEmail(String email);

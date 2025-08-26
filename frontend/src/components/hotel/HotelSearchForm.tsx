@@ -26,8 +26,8 @@ interface HotelSearchFormProps {
 
 const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = false }) => {
   const [location, setLocation] = useState('');
-  const [checkInDate, setCheckInDate] = useState<Dayjs | null>(dayjs().add(1, 'day'));
-  const [checkOutDate, setCheckOutDate] = useState<Dayjs | null>(dayjs().add(2, 'day'));
+  const [checkInDate, setCheckInDate] = useState<Dayjs | null>(dayjs().add(7, 'day'));
+  const [checkOutDate, setCheckOutDate] = useState<Dayjs | null>(dayjs().add(9, 'day'));
   const [guests, setGuests] = useState(2);
 
   const handleSubmit = (e: React.FormEvent) => {

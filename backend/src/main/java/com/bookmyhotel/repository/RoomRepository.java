@@ -26,6 +26,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     @Query("SELECT r FROM Room r " +
            "WHERE r.hotel.id = :hotelId " +
            "AND r.isAvailable = true " +
+           "AND r.status = 'AVAILABLE' " +
            "AND r.capacity >= :guests " +
            "AND (:roomType IS NULL OR r.roomType = :roomType) " +
            "AND r.id NOT IN (" +
@@ -156,6 +157,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
            "WHERE r.hotel.id = :hotelId " +
            "AND r.roomType = :roomType " +
            "AND r.isAvailable = true " +
+           "AND r.status = 'AVAILABLE' " +
            "AND r.capacity >= :guests " +
            "AND r.id NOT IN (" +
            "  SELECT res.room.id FROM Reservation res " +
@@ -187,7 +189,8 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
      */
     @Query("SELECT DISTINCT r.roomType FROM Room r " +
            "WHERE r.hotel.id = :hotelId " +
-           "AND r.isAvailable = true")
+           "AND r.isAvailable = true " +
+           "AND r.status = 'AVAILABLE'")
     List<RoomType> findDistinctRoomTypesByHotel(@Param("hotelId") Long hotelId);
     
     /**

@@ -162,7 +162,14 @@ class HotelApiService {
       });
 
       if (!response.ok) {
-        throw new Error(`API Error: ${response.status} ${response.statusText}`);
+        // Try to get the actual error message from the response
+        try {
+          const errorData = await response.json();
+          throw new Error(errorData.error || errorData.message || `API Error: ${response.status} ${response.statusText}`);
+        } catch (jsonError) {
+          // If we can't parse the JSON, fall back to the status text
+          throw new Error(`API Error: ${response.status} ${response.statusText}`);
+        }
       }
 
       return response.json();
