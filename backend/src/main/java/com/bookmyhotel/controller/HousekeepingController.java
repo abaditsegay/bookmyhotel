@@ -5,6 +5,7 @@ import com.bookmyhotel.entity.HousekeepingTaskStatus;
 import com.bookmyhotel.entity.HousekeepingStaff;
 import com.bookmyhotel.entity.HousekeepingTaskType;
 import com.bookmyhotel.entity.TaskPriority;
+import com.bookmyhotel.enums.WorkShift;
 import com.bookmyhotel.service.HousekeepingService;
 import com.bookmyhotel.tenant.TenantContext;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -127,7 +128,7 @@ public class HousekeepingController {
         String tenantId = TenantContext.getTenantId();
         HousekeepingStaff staff = housekeepingService.createStaff(
             tenantId,
-            request.getUserId(),
+            request.getEmail(),
             request.getHotelId(),
             request.getShiftType(),
             request.getEmployeeId()
@@ -218,18 +219,18 @@ public class HousekeepingController {
     }
 
     public static class HousekeepingStaffRequest {
-        private Long userId;
+        private String email;
         private Long hotelId;
-        private HousekeepingStaff.ShiftType shiftType;
+        private com.bookmyhotel.enums.WorkShift shiftType;
         private String employeeId;
 
         // Getters and setters
-        public Long getUserId() { return userId; }
-        public void setUserId(Long userId) { this.userId = userId; }
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
         public Long getHotelId() { return hotelId; }
         public void setHotelId(Long hotelId) { this.hotelId = hotelId; }
-        public HousekeepingStaff.ShiftType getShiftType() { return shiftType; }
-        public void setShiftType(HousekeepingStaff.ShiftType shiftType) { this.shiftType = shiftType; }
+        public com.bookmyhotel.enums.WorkShift getShiftType() { return shiftType; }
+        public void setShiftType(com.bookmyhotel.enums.WorkShift shiftType) { this.shiftType = shiftType; }
         public String getEmployeeId() { return employeeId; }
         public void setEmployeeId(String employeeId) { this.employeeId = employeeId; }
     }

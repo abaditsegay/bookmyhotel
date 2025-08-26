@@ -4,12 +4,12 @@ package com.bookmyhotel.enums;
  * Enum representing different status values for staff
  */
 public enum StaffStatus {
-    ACTIVE("Active", "Staff member is currently working"),
-    INACTIVE("Inactive", "Staff member is not currently working"),
+    AVAILABLE("Available", "Staff member is available for tasks"),
+    WORKING("Working", "Staff member is currently working on a task"),
     ON_BREAK("On Break", "Staff member is on break"),
+    OFF_DUTY("Off Duty", "Staff member is off duty"),
     SICK_LEAVE("Sick Leave", "Staff member is on sick leave"),
-    VACATION("Vacation", "Staff member is on vacation"),
-    TERMINATED("Terminated", "Staff member's employment has ended");
+    VACATION("Vacation", "Staff member is on vacation");
     
     private final String displayName;
     private final String description;

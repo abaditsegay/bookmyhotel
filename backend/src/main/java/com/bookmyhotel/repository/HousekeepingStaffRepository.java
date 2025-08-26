@@ -1,7 +1,7 @@
 package com.bookmyhotel.repository;
 
 import com.bookmyhotel.entity.HousekeepingStaff;
-import com.bookmyhotel.entity.ShiftType;
+import com.bookmyhotel.enums.WorkShift;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,61 +17,38 @@ import java.util.Optional;
 public interface HousekeepingStaffRepository extends JpaRepository<HousekeepingStaff, Long> {
     
     // Basic queries
-    List<HousekeepingStaff> findByTenantIdOrderByCreatedAtDesc(String tenantId);
-    Page<HousekeepingStaff> findByTenantIdOrderByCreatedAtDesc(String tenantId, Pageable pageable);
-    List<HousekeepingStaff> findByTenantIdAndHotel_IdOrderByCreatedAtDesc(String tenantId, Long hotelId);
-    Page<HousekeepingStaff> findByTenantIdAndHotel_IdOrderByCreatedAtDesc(String tenantId, Long hotelId, Pageable pageable);
+    List<HousekeepingStaff> findByTenantIdOrderByIdDesc(String tenantId);
+    Page<HousekeepingStaff> findByTenantIdOrderByIdDesc(String tenantId, Pageable pageable);
     
-    // Find by user
-    Optional<HousekeepingStaff> findByTenantIdAndUserId(String tenantId, Long userId);
-    Optional<HousekeepingStaff> findByTenantIdAndUserIdAndHotel_Id(String tenantId, Long userId, Long hotelId);
-    Optional<HousekeepingStaff> findByUserId(Long userId);
+    // Find by email (new primary method)
+    Optional<HousekeepingStaff> findByTenantIdAndEmail(String tenantId, String email);
+    Optional<HousekeepingStaff> findByEmail(String email);
     
     // Find by availability
     List<HousekeepingStaff> findByTenantIdAndIsActiveTrue(String tenantId);
-    List<HousekeepingStaff> findByTenantIdAndHotel_IdAndIsActiveTrue(String tenantId, Long hotelId);
     Page<HousekeepingStaff> findByTenantIdAndIsActive(String tenantId, Boolean isActive, Pageable pageable);
     List<HousekeepingStaff> findByTenantIdAndIsActive(String tenantId, Boolean isActive);
     
     // Find by shift
-    List<HousekeepingStaff> findByTenantIdAndShiftType(String tenantId, ShiftType shiftType);
-    List<HousekeepingStaff> findByTenantIdAndHotel_IdAndShiftType(String tenantId, Long hotelId, ShiftType shiftType);
-    
-    // Performance queries
-    // TODO: Fix entity field mapping for averageRating
-    // @Query("SELECT hs FROM HousekeepingStaff hs WHERE hs.tenantId = :tenantId AND hs.averageRating >= :minRating ORDER BY hs.averageRating DESC")
-    // List<HousekeepingStaff> findTopPerformers(@Param("tenantId") String tenantId, @Param("minRating") Double minRating);
-    
-    // @Query("SELECT hs FROM HousekeepingStaff hs WHERE hs.tenantId = :tenantId AND hs.hotel.id = :hotelId AND hs.averageRating >= :minRating ORDER BY hs.averageRating DESC")
-    // List<HousekeepingStaff> findTopPerformersByHotel(@Param("tenantId") String tenantId, @Param("hotelId") Long hotelId, @Param("minRating") Double minRating);
-    
-    // Workload queries
-    // TODO: Fix entity field mapping for currentWorkload
-    // @Query("SELECT hs FROM HousekeepingStaff hs WHERE hs.tenantId = :tenantId AND hs.currentWorkload < :maxWorkload AND hs.isActive = true ORDER BY hs.currentWorkload ASC")
-    // List<HousekeepingStaff> findAvailableStaff(@Param("tenantId") String tenantId, @Param("maxWorkload") Integer maxWorkload);
-    
-    // @Query("SELECT hs FROM HousekeepingStaff hs WHERE hs.tenantId = :tenantId AND hs.hotel.id = :hotelId AND hs.currentWorkload < :maxWorkload AND hs.isActive = true ORDER BY hs.currentWorkload ASC")
-    // List<HousekeepingStaff> findAvailableStaffByHotel(@Param("tenantId") String tenantId, @Param("hotelId") Long hotelId, @Param("maxWorkload") Integer maxWorkload);
+    List<HousekeepingStaff> findByTenantIdAndShift(String tenantId, WorkShift shift);
     
     // Statistics queries
     @Query("SELECT COUNT(hs) FROM HousekeepingStaff hs WHERE hs.tenantId = :tenantId AND hs.isActive = true")
     Long countActiveStaff(@Param("tenantId") String tenantId);
     
-    @Query("SELECT COUNT(hs) FROM HousekeepingStaff hs WHERE hs.tenantId = :tenantId AND hs.hotel.id = :hotelId AND hs.isActive = true")
-    Long countActiveStaffByHotel(@Param("tenantId") String tenantId, @Param("hotelId") Long hotelId);
-    
     // Available staff based on current workload
-    @Query("SELECT hs FROM HousekeepingStaff hs WHERE hs.tenantId = :tenantId AND hs.isActive = true AND hs.currentWorkload <= :maxWorkload ORDER BY hs.currentWorkload ASC")
-    List<HousekeepingStaff> findAvailableStaff(@Param("tenantId") String tenantId, @Param("maxWorkload") Integer maxWorkload);
+    @Query("SELECT hs FROM HousekeepingStaff hs WHERE hs.tenantId = :tenantId AND hs.isActive = true ORDER BY hs.id ASC")
+    List<HousekeepingStaff> findAvailableStaff(@Param("tenantId") String tenantId);
     
-    // Top performers based on rating
-    @Query("SELECT hs FROM HousekeepingStaff hs WHERE hs.tenantId = :tenantId AND hs.averageRating >= :minRating AND hs.isActive = true ORDER BY hs.averageRating DESC")
+    // Staff by work shift
+    @Query("SELECT hs FROM HousekeepingStaff hs WHERE hs.tenantId = :tenantId AND hs.shift = :shift AND hs.isActive = true ORDER BY hs.id ASC")
+    List<HousekeepingStaff> findActiveStaffByShift(@Param("tenantId") String tenantId, @Param("shift") WorkShift shift);
+
+    // Performance-based queries (simplified)
+    @Query("SELECT hs FROM HousekeepingStaff hs WHERE hs.tenantId = :tenantId AND hs.performanceRating >= :minRating AND hs.isActive = true ORDER BY hs.performanceRating DESC")
     List<HousekeepingStaff> findTopPerformers(@Param("tenantId") String tenantId, @Param("minRating") Double minRating);
-    
+
     // Average staff rating
-    @Query("SELECT AVG(hs.averageRating) FROM HousekeepingStaff hs WHERE hs.tenantId = :tenantId AND hs.isActive = true")
+    @Query("SELECT AVG(hs.performanceRating) FROM HousekeepingStaff hs WHERE hs.tenantId = :tenantId AND hs.isActive = true")
     Double getAverageStaffRating(@Param("tenantId") String tenantId);
-    
-    @Query("SELECT AVG(hs.averageRating) FROM HousekeepingStaff hs WHERE hs.tenantId = :tenantId AND hs.hotel.id = :hotelId AND hs.isActive = true")
-    Double getAverageStaffRatingByHotel(@Param("tenantId") String tenantId, @Param("hotelId") Long hotelId);
 }

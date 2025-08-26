@@ -16,6 +16,8 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * Hotel entity
  */
@@ -64,6 +66,7 @@ public class Hotel extends TenantEntity {
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
     
+    @JsonIgnore
     @OneToMany(mappedBy = "hotel", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Room> rooms = new ArrayList<>();
     

@@ -51,15 +51,11 @@ public class MaintenanceRequest {
     private Room room;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "hotel_id", nullable = false)
-    private Hotel hotel;
-    
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "requested_by")
+    @JoinColumn(name = "reported_by_user_id")
     private User requestedBy;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "assigned_to")
+    @JoinColumn(name = "assigned_staff_id")
     private HousekeepingStaff assignedTo;
     
     @Column(name = "estimated_cost")
@@ -74,8 +70,11 @@ public class MaintenanceRequest {
     @Column(name = "actual_duration_hours")
     private Integer actualDurationHours;
     
-    @Column(name = "scheduled_date")
+    @Column(name = "due_date")
     private LocalDateTime scheduledDate;
+    
+    @Column(name = "assigned_at")
+    private LocalDateTime assignedAt;
     
     @Column(name = "started_at")
     private LocalDateTime startedAt;
@@ -88,9 +87,6 @@ public class MaintenanceRequest {
     
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
-    
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
     
     // Enum for maintenance status
     public enum MaintenanceStatus {
@@ -116,13 +112,12 @@ public class MaintenanceRequest {
     public MaintenanceRequest() {}
     
     public MaintenanceRequest(String title, String description, MaintenanceCategory category, 
-                            MaintenancePriority priority, Hotel hotel, User requestedBy, String tenantId) {
+                            MaintenancePriority priority, User requestedBy, String tenantId) {
         this.title = title;
         this.description = description;
         this.category = category;
         this.priority = priority;
         this.status = MaintenanceStatus.PENDING;
-        this.hotel = hotel;
         this.requestedBy = requestedBy;
         this.tenantId = tenantId;
         this.createdAt = LocalDateTime.now();
@@ -183,14 +178,6 @@ public class MaintenanceRequest {
     
     public void setRoom(Room room) {
         this.room = room;
-    }
-    
-    public Hotel getHotel() {
-        return hotel;
-    }
-    
-    public void setHotel(Hotel hotel) {
-        this.hotel = hotel;
     }
     
     public User getRequestedBy() {
@@ -263,6 +250,14 @@ public class MaintenanceRequest {
         this.scheduledDate = scheduledDate;
     }
     
+    public LocalDateTime getAssignedAt() {
+        return assignedAt;
+    }
+    
+    public void setAssignedAt(LocalDateTime assignedAt) {
+        this.assignedAt = assignedAt;
+    }
+    
     public LocalDateTime getStartedAt() {
         return startedAt;
     }
@@ -295,14 +290,6 @@ public class MaintenanceRequest {
         this.createdAt = createdAt;
     }
     
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-    
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-    
     // Business methods
     public boolean canBeAssigned() {
         return status == MaintenanceStatus.PENDING;
@@ -322,7 +309,7 @@ public class MaintenanceRequest {
         }
         this.assignedTo = staff;
         this.status = MaintenanceStatus.ASSIGNED;
-        this.updatedAt = LocalDateTime.now();
+        this.assignedAt = LocalDateTime.now();
     }
     
     public void start() {
@@ -331,7 +318,6 @@ public class MaintenanceRequest {
         }
         this.status = MaintenanceStatus.IN_PROGRESS;
         this.startedAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
     }
     
     public void complete(Double actualCost, Integer actualDurationHours) {
@@ -342,7 +328,6 @@ public class MaintenanceRequest {
         this.completedAt = LocalDateTime.now();
         this.actualCost = actualCost;
         this.actualDurationHours = actualDurationHours;
-        this.updatedAt = LocalDateTime.now();
     }
     
     public boolean isOverdue() {

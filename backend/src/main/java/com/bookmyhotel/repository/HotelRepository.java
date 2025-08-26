@@ -125,4 +125,10 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
      * Count hotels by tenant ID
      */
     long countByTenantId(String tenantId);
+    
+    /**
+     * Find random active hotels for advertisement display
+     */
+    @Query(value = "SELECT * FROM hotels WHERE is_active = true ORDER BY RAND() LIMIT 5", nativeQuery = true)
+    List<Hotel> findRandomActiveHotels();
 }

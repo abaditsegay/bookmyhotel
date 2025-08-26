@@ -23,6 +23,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * Room entity
  */
@@ -73,6 +75,7 @@ public class Room extends TenantEntity {
     @JoinColumn(name = "hotel_id", nullable = false)
     private Hotel hotel;
     
+    @JsonIgnore
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Reservation> reservations = new ArrayList<>();
     

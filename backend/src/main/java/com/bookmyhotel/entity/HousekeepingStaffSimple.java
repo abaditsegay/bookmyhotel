@@ -6,11 +6,11 @@ import com.bookmyhotel.enums.StaffStatus;
 import com.bookmyhotel.enums.WorkShift;
 
 /**
- * Housekeeping staff entity that matches the current database schema
+ * Simplified Housekeeping staff entity that matches the current database schema
  */
 @Entity
 @Table(name = "housekeeping_staff")
-public class HousekeepingStaff {
+public class HousekeepingStaffSimple {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -71,7 +71,7 @@ public class HousekeepingStaff {
     private String tenantId;
 
     // Default constructor
-    public HousekeepingStaff() {
+    public HousekeepingStaffSimple() {
         this.isActive = true;
         this.tasksCompletedToday = 0;
         this.currentWorkload = 0;

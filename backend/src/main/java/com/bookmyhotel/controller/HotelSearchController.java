@@ -117,4 +117,13 @@ public class HotelSearchController {
         List<HotelSearchResult.AvailableRoomDto> rooms = hotelSearchService.getAvailableRooms(hotelId, request);
         return ResponseEntity.ok(rooms);
     }
+    
+    /**
+     * Get random hotels for advertisement display - PUBLIC ENDPOINT
+     */
+    @GetMapping("/random")
+    public ResponseEntity<List<HotelSearchResult>> getRandomHotels() {
+        List<HotelSearchResult> randomHotels = hotelSearchService.getRandomHotels();
+        return ResponseEntity.ok(randomHotels);
+    }
 }

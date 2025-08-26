@@ -20,7 +20,7 @@ public interface MaintenanceRequestRepository extends JpaRepository<MaintenanceR
     List<MaintenanceRequest> findByAssignedToIdAndTenantId(Long staffId, String tenantId);
     
     // Staff-specific queries for the StaffController
-    Page<MaintenanceRequest> findByAssignedToUserId(Long userId, Pageable pageable);
-    long countByAssignedToUserId(Long userId);
-    long countByAssignedToUserIdAndStatus(Long userId, String status);
+    Page<MaintenanceRequest> findByAssignedToId(Long staffId, Pageable pageable);
+    long countByAssignedToId(Long staffId);
+    long countByAssignedToIdAndStatus(Long staffId, MaintenanceRequest.MaintenanceStatus status);
 }

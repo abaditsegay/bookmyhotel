@@ -101,6 +101,25 @@ class HotelApiService {
     return this.fetchApi<HotelSearchResult>(`/hotels/${hotelId}${query}`);
   }
 
+  // Public random hotels for advertisement display
+  async getRandomHotels(): Promise<HotelSearchResult[]> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    // Public endpoint - no auth required
+    const response = await fetch(`${API_BASE_URL}/hotels/random`, {
+      method: 'GET',
+      headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Random Hotels Error: ${response.status} ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+
   async getAvailableRooms(
     hotelId: number,
     checkInDate?: string,

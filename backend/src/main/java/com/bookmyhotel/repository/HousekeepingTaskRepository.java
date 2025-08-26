@@ -35,13 +35,15 @@ public interface HousekeepingTaskRepository extends JpaRepository<HousekeepingTa
     // Staff assignment queries
     List<HousekeepingTask> findByTenantIdAndAssignedStaff(String tenantId, HousekeepingStaff staff);
     List<HousekeepingTask> findByTenantIdAndAssignedStaffAndStatus(String tenantId, HousekeepingStaff staff, HousekeepingTaskStatus status);
+    Page<HousekeepingTask> findByTenantIdAndAssignedStaff(String tenantId, HousekeepingStaff staff, Pageable pageable);
     Page<HousekeepingTask> findByTenantIdAndAssignedStaffId(String tenantId, Long staffId, Pageable pageable);
     List<HousekeepingTask> findByAssignedStaffIdAndTenantIdAndCreatedAtBetween(Long staffId, String tenantId, LocalDateTime start, LocalDateTime end);
+    List<HousekeepingTask> findByTenantIdAndAssignedStaffAndCreatedAtBetween(String tenantId, HousekeepingStaff staff, LocalDateTime start, LocalDateTime end);
     
     // Staff-specific queries (for staff view)
     Page<HousekeepingTask> findByAssignedStaffId(Long staffId, Pageable pageable);
     long countByAssignedStaffId(Long staffId);
-    long countByAssignedStaffIdAndStatus(Long staffId, String status);
+    long countByAssignedStaffIdAndStatus(Long staffId, HousekeepingTaskStatus status);
     
     // Room-based queries
     List<HousekeepingTask> findByTenantIdAndRoom(String tenantId, Room room);

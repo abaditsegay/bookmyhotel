@@ -285,4 +285,19 @@ public class HotelSearchService {
         // Fallback to the room's static price if no dynamic pricing is configured
         return fallbackRoom != null ? fallbackRoom.getPricePerNight() : BigDecimal.valueOf(100);
     }
+    
+    /**
+     * Get random hotels for advertisement display
+     */
+    public List<HotelSearchResult> getRandomHotels() {
+        List<Hotel> randomHotels = hotelRepository.findRandomActiveHotels();
+        
+        // Create a simple request for basic hotel info
+        HotelSearchRequest request = new HotelSearchRequest();
+        request.setGuests(2); // Default guest count for display
+        
+        return randomHotels.stream()
+            .map(hotel -> convertToSearchResult(hotel, request))
+            .collect(Collectors.toList());
+    }
 }

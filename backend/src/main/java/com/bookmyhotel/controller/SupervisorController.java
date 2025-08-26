@@ -2,7 +2,7 @@ package com.bookmyhotel.controller;
 
 import com.bookmyhotel.entity.*;
 import com.bookmyhotel.enums.*;
-import com.bookmyhotel.service.HousekeepingServiceSimple;
+import com.bookmyhotel.service.HousekeepingService;
 import com.bookmyhotel.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -29,7 +29,7 @@ import java.util.ArrayList;
 public class SupervisorController {
     
     @Autowired
-    private HousekeepingServiceSimple housekeepingService;
+    private HousekeepingService housekeepingService;
     
     @Autowired
     private UserRepository userRepository;
@@ -840,7 +840,7 @@ public class SupervisorController {
             }
             
             // Use the simplified service that supports both housekeeping_staff and users table assignments
-            HousekeepingTask assignedTask = housekeepingService.assignTask(taskId, staffId, tenantId);
+            HousekeepingTask assignedTask = housekeepingService.assignTask(tenantId, taskId, staffId);
             
             // Convert to simplified format to avoid circular references
             Map<String, Object> taskMap = new HashMap<>();

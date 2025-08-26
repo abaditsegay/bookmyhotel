@@ -18,107 +18,101 @@ import {
   LocationOn as LocationIcon,
   AccessTime as TimeIcon
 } from '@mui/icons-material';
-import adApiService, { AdResponse } from '../services/adApi';
+import { hotelApiService } from '../services/hotelApi';
+import { HotelSearchResult } from '../types/hotel';
 import { useAuth } from '../contexts/AuthContext';
-
-interface Advertisement {
-  id: string;
-  title: string;
-  description: string;
-  imageUrl: string;
-  price?: string;
-  originalPrice?: string;
-  discount?: string;
-  location?: string;
-  rating?: number;
-  validUntil?: string;
-  ctaText: string;
-  ctaUrl: string;
-  isSponsored?: boolean;
-}
 
 interface AdvertisementBannerProps {
   maxAds?: number;
 }
 
-// Fallback advertisement data with professional hotel images
-const fallbackAdvertisements: Advertisement[] = [
+// Fallback hotel data
+const fallbackHotels: HotelSearchResult[] = [
   {
-    id: '1',
-    title: 'Luxury Spa Resort - Weekend Getaway',
+    id: 1,
+    name: 'Luxury Spa Resort',
     description: 'Experience ultimate relaxation with our premium spa packages and oceanview suites.',
-    imageUrl: 'https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=300&h=200&fit=crop&crop=center',
-    price: '$299',
-    originalPrice: '$399',
-    discount: '25% OFF',
-    location: 'Malibu, CA',
-    rating: 4.8,
-    validUntil: '2025-09-15',
-    ctaText: 'Book Now',
-    ctaUrl: '#',
-    isSponsored: true
+    address: '123 Ocean Drive',
+    city: 'Malibu',
+    country: 'USA',
+    minPrice: 299,
+    maxPrice: 399,
+    availableRooms: [],
+    roomTypeAvailability: []
   },
   {
-    id: '2',
-    title: 'Business Hotel Downtown',
-    description: 'Perfect for business travelers with modern amenities and conference facilities.',
-    imageUrl: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=300&h=200&fit=crop&crop=center',
-    price: '$189',
-    originalPrice: '$249',
-    discount: '24% OFF',
-    location: 'San Francisco, CA',
-    rating: 4.6,
-    validUntil: '2025-08-30',
-    ctaText: 'View Deals',
-    ctaUrl: '#',
-    isSponsored: true
+    id: 2,
+    name: 'Business Hotel Downtown',
+    description: 'Modern amenities perfect for business travelers in the heart of the city.',
+    address: '456 Business Blvd',
+    city: 'New York',
+    country: 'USA',
+    minPrice: 199,
+    maxPrice: 299,
+    availableRooms: [],
+    roomTypeAvailability: []
   },
   {
-    id: '3',
-    title: 'Mountain Resort & Adventure',
-    description: 'Outdoor activities, hiking trails, and cozy mountain lodge atmosphere.',
-    imageUrl: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=300&h=200&fit=crop&crop=center',
-    price: '$149',
-    originalPrice: '$199',
-    discount: '25% OFF',
-    location: 'Aspen, CO',
-    rating: 4.7,
-    validUntil: '2025-09-30',
-    ctaText: 'Explore',
-    ctaUrl: '#',
-    isSponsored: false
-  },
-  {
-    id: '4',
-    title: 'Boutique City Hotel',
-    description: 'Unique design, local cuisine, and personalized service in the heart of the city.',
-    imageUrl: 'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=300&h=200&fit=crop&crop=center',
-    price: '$219',
-    originalPrice: '$279',
-    discount: '22% OFF',
-    location: 'New York, NY',
-    rating: 4.9,
-    validUntil: '2025-08-25',
-    ctaText: 'Book Now',
-    ctaUrl: '#',
-    isSponsored: true
-  },
-  {
-    id: '5',
-    title: 'Beach Resort Paradise',
-    description: 'Tropical paradise with pristine beaches, water sports, and sunset dinners.',
-    imageUrl: 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=300&h=200&fit=crop&crop=center',
-    price: '$349',
-    originalPrice: '$449',
-    discount: '22% OFF',
-    location: 'Miami, FL',
-    rating: 4.8,
-    validUntil: '2025-09-10',
-    ctaText: 'Book Now',
-    ctaUrl: '#',
-    isSponsored: true
+    id: 3,
+    name: 'Mountain View Lodge',
+    description: 'Escape to nature with breathtaking mountain views and outdoor activities.',
+    address: '789 Mountain Trail',
+    city: 'Aspen',
+    country: 'USA',
+    minPrice: 259,
+    maxPrice: 359,
+    availableRooms: [],
+    roomTypeAvailability: []
   }
 ];
+
+export default function AdvertisementBanner({ maxAds = 5 }: AdvertisementBannerProps) {
+  const { user } = useAuth();
+  const [hotels, setHotels] = useState<HotelSearchResult[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch random hotels from API
+  const fetchHotels = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const randomHotels = await hotelApiService.getRandomHotels();
+      
+      if (randomHotels && randomHotels.length > 0) {
+        setHotels(randomHotels.slice(0, maxAds));
+      } else {
+        // Use fallback hotels if no API hotels available
+        setHotels(fallbackHotels.slice(0, maxAds));
+      }
+    } catch (err) {
+      console.warn('Failed to fetch random hotels from API, using fallback:', err);
+      setError('Using sample hotels');
+      setHotels(fallbackHotels.slice(0, maxAds));
+    } finally {
+      setLoading(false);
+    }
+  }, [maxAds]);
+
+  // Handle hotel click
+  const handleHotelClick = (hotel: HotelSearchResult) => {
+    // Navigate to hotel details (you can customize this URL)
+    window.location.href = `/hotels/${hotel.id}`;
+  };
+
+  // Load hotels on component mount
+  useEffect(() => {
+    fetchHotels();
+  }, [fetchHotels]);
+
+  // Set up 2-minute rotation
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchHotels();
+    }, 120000); // 120 seconds = 2 minutes
+
+    return () => clearInterval(interval);
+  }, [fetchHotels]);
 
 const AdvertisementBanner: React.FC<AdvertisementBannerProps> = ({
   maxAds = 4

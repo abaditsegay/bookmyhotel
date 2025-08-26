@@ -1,6 +1,7 @@
 package com.bookmyhotel.service;
 
 import com.bookmyhotel.entity.*;
+import com.bookmyhotel.enums.WorkShift;
 import com.bookmyhotel.repository.HousekeepingStaffRepository;
 import com.bookmyhotel.repository.HousekeepingTaskRepository;
 import com.bookmyhotel.repository.RoomRepository;
@@ -300,29 +301,28 @@ public class HousekeepingService {
     // ===== STAFF MANAGEMENT METHODS =====
 
     /**
+     * Find staff member by email
+     */
+    public Optional<HousekeepingStaff> findStaffByEmail(String email) {
+        return housekeepingStaffRepository.findByEmail(email);
+    }
+
+    /**
      * Create a new housekeeping staff member
      */
-    public HousekeepingStaff createStaff(String tenantId, Long userId, Long hotelId, HousekeepingStaff.ShiftType shiftType, String employeeId) {
-        User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
-
-        // Check if staff already exists for this user
-        Optional<HousekeepingStaff> existingStaff = housekeepingStaffRepository.findByTenantIdAndUserId(tenantId, userId);
+    public HousekeepingStaff createStaff(String tenantId, String email, Long hotelId, WorkShift shiftType, String employeeId) {
+        // Check if staff already exists for this email
+        Optional<HousekeepingStaff> existingStaff = housekeepingStaffRepository.findByTenantIdAndEmail(tenantId, email);
         if (existingStaff.isPresent()) {
-            throw new RuntimeException("Housekeeping staff already exists for this user");
+            throw new RuntimeException("Housekeeping staff already exists for this email");
         }
 
         HousekeepingStaff staff = new HousekeepingStaff();
         staff.setTenantId(tenantId);
-        staff.setUser(user);
-        // Note: Hotel field requires Hotel entity, not just ID - leaving null for now
-        staff.setShiftType(shiftType);
+        staff.setEmail(email);
+        staff.setShift(shiftType);
         staff.setEmployeeId(employeeId != null ? employeeId : "EMP" + System.currentTimeMillis());
         staff.setIsActive(true);
-        staff.setMaxConcurrentTasks(3);
-        staff.setPerformanceRating(3.0);
-        staff.setTotalTasksCompleted(0);
-        staff.setCreatedAt(LocalDateTime.now());
 
         return housekeepingStaffRepository.save(staff);
     }
@@ -331,21 +331,23 @@ public class HousekeepingService {
      * Get all staff members for a tenant
      */
     public List<HousekeepingStaff> getAllStaff(String tenantId) {
-        return housekeepingStaffRepository.findByTenantIdOrderByCreatedAtDesc(tenantId);
+        return housekeepingStaffRepository.findByTenantIdOrderByIdDesc(tenantId);
     }
 
     /**
      * Get staff members with pagination
      */
     public Page<HousekeepingStaff> getAllStaff(String tenantId, Pageable pageable) {
-        return housekeepingStaffRepository.findByTenantIdOrderByCreatedAtDesc(tenantId, pageable);
+        return housekeepingStaffRepository.findByTenantIdOrderByIdDesc(tenantId, pageable);
     }
 
     /**
-     * Get staff members by hotel
+     * Get staff members by hotel (note: staff are not hotel-specific in current schema)
      */
     public List<HousekeepingStaff> getStaffByHotel(String tenantId, Long hotelId) {
-        return housekeepingStaffRepository.findByTenantIdAndHotel_IdOrderByCreatedAtDesc(tenantId, hotelId);
+        // Since staff are not associated with specific hotels in the current schema,
+        // return all active staff for the tenant
+        return housekeepingStaffRepository.findByTenantIdAndIsActiveTrue(tenantId);
     }
 
     /**
@@ -356,20 +358,20 @@ public class HousekeepingService {
     }
 
     /**
-     * Get available staff members (with low workload)
+     * Get available staff members
      */
     public List<HousekeepingStaff> getAvailableStaff(String tenantId, Integer maxWorkload) {
-        return housekeepingStaffRepository.findAvailableStaff(tenantId, maxWorkload);
+        // Simplified - just get active staff (maxWorkload not used in simplified repository)
+        return housekeepingStaffRepository.findAvailableStaff(tenantId);
     }
 
     /**
      * Get staff members by shift type
      */
-    public List<HousekeepingStaff> getStaffByShift(String tenantId, HousekeepingStaff.ShiftType shiftType) {
-        // Note: The repository method expects ShiftType, but entity uses HousekeepingStaff.ShiftType
-        // We need to convert or create a compatible method
+    public List<HousekeepingStaff> getStaffByShift(String tenantId, WorkShift shiftType) {
+        // Note: The repository method expects WorkShift, entity uses WorkShift
         return housekeepingStaffRepository.findByTenantIdAndIsActiveTrue(tenantId).stream()
-            .filter(staff -> staff.getShiftType() == shiftType)
+            .filter(staff -> staff.getShift() == shiftType)
             .toList();
     }
 
@@ -385,8 +387,8 @@ public class HousekeepingService {
         }
 
         // Update allowed fields
-        if (updatedStaff.getShiftType() != null) {
-            existingStaff.setShiftType(updatedStaff.getShiftType());
+        if (updatedStaff.getShift() != null) {
+            existingStaff.setShift(updatedStaff.getShift());
         }
         if (updatedStaff.getHourlyRate() != null) {
             existingStaff.setHourlyRate(updatedStaff.getHourlyRate());
@@ -394,9 +396,7 @@ public class HousekeepingService {
         if (updatedStaff.getIsActive() != null) {
             existingStaff.setIsActive(updatedStaff.getIsActive());
         }
-        if (updatedStaff.getHotel() != null) {
-            existingStaff.setHotel(updatedStaff.getHotel());
-        }
+        // Note: Hotel field doesn't exist in simplified entity
 
         return housekeepingStaffRepository.save(existingStaff);
     }
@@ -472,5 +472,76 @@ public class HousekeepingService {
      */
     public Double getAverageStaffRating(String tenantId) {
         return housekeepingStaffRepository.getAverageStaffRating(tenantId);
+    }
+
+    // ===== MISSING METHODS FOR SUPERVISOR CONTROLLER =====
+
+    /**
+     * Get all active staff with pagination
+     */
+    public Page<HousekeepingStaff> getAllActiveStaff(String tenantId, Pageable pageable) {
+        return housekeepingStaffRepository.findByTenantIdAndIsActive(tenantId, true, pageable);
+    }
+
+    /**
+     * Create task without room
+     */
+    public HousekeepingTask createTaskWithoutRoom(String tenantId, HousekeepingTaskType taskType, 
+                                                 TaskPriority priority, String description, String specialInstructions) {
+        HousekeepingTask task = new HousekeepingTask();
+        task.setTenantId(tenantId);
+        // No room assigned
+        task.setTaskType(taskType);
+        task.setStatus(HousekeepingTaskStatus.PENDING);
+        task.setPriority(priority);
+        task.setDescription(description);
+        task.setSpecialInstructions(specialInstructions);
+        task.setCreatedAt(LocalDateTime.now());
+
+        return housekeepingTaskRepository.save(task);
+    }
+
+    /**
+     * Get tasks for specific staff member with pagination
+     */
+    public Page<HousekeepingTask> getTasksForStaff(String tenantId, Long staffId, Pageable pageable) {
+        HousekeepingStaff staff = housekeepingStaffRepository.findById(staffId)
+            .orElseThrow(() -> new RuntimeException("Staff member not found"));
+        return housekeepingTaskRepository.findByTenantIdAndAssignedStaff(tenantId, staff, pageable);
+    }
+
+    /**
+     * Get today's tasks for specific staff member
+     */
+    public List<HousekeepingTask> getTodaysTasksForStaff(Long staffId, String tenantId) {
+        HousekeepingStaff staff = housekeepingStaffRepository.findById(staffId)
+            .orElseThrow(() -> new RuntimeException("Staff member not found"));
+        
+        LocalDateTime startOfDay = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0);
+        LocalDateTime endOfDay = LocalDateTime.now().withHour(23).withMinute(59).withSecond(59);
+        
+        return housekeepingTaskRepository.findByTenantIdAndAssignedStaffAndCreatedAtBetween(
+            tenantId, staff, startOfDay, endOfDay);
+    }
+
+    /**
+     * Assign task automatically to available staff
+     */
+    public HousekeepingTask assignTaskAutomatically(Long taskId, String tenantId) {
+        HousekeepingTask task = housekeepingTaskRepository.findById(taskId)
+            .orElseThrow(() -> new RuntimeException("Task not found"));
+
+        // Find available staff (simplistic algorithm)
+        List<HousekeepingStaff> availableStaff = housekeepingStaffRepository.findAvailableStaff(tenantId);
+        
+        if (!availableStaff.isEmpty()) {
+            HousekeepingStaff assignedStaff = availableStaff.get(0); // Take first available
+            task.setAssignedStaff(assignedStaff);
+            task.setStatus(HousekeepingTaskStatus.IN_PROGRESS);
+            task.setStartedAt(LocalDateTime.now());
+            return housekeepingTaskRepository.save(task);
+        } else {
+            throw new RuntimeException("No available staff found for automatic assignment");
+        }
     }
 }
