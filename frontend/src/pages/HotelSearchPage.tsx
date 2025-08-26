@@ -15,7 +15,6 @@ import {
   Search as SearchIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import HotelAdvertisementBanner from '../components/HotelAdvertisementBanner';
 import VerticalHotelAdvertisementBanner from '../components/VerticalHotelAdvertisementBanner';
 import HotelSearchForm from '../components/hotel/HotelSearchForm';
 import { hotelApiService } from '../services/hotelApi';
@@ -141,13 +140,6 @@ const HotelSearchPage: React.FC = () => {
           </Grid>
         )}
       </Grid>
-
-      {/* Bottom Advertisement Banner - Hidden for operations users */}
-      {!isOperationsUser && (
-        <Card sx={{ mt: 0, border: '1px solid #e0e0e0', borderRadius: 1 }}>
-          <HotelAdvertisementBanner maxHotels={6} />
-        </Card>
-      )}
     </Container>
   );
 };
