@@ -37,116 +37,10 @@ import FrontDeskBookingDetails from './pages/frontdesk/FrontDeskBookingDetails';
 import BookingManagementPage from './pages/BookingManagementPage';
 import GuestBookingManagementPage from './pages/GuestBookingManagementPage';
 import { SystemDashboardPage } from './pages/SystemDashboardPage';
-import { CustomerDashboard } from './pages/CustomerDashboard';
 import MyBookings from './components/MyBookings';
 import OperationsPage from './pages/operations/OperationsPage';
 import StaffDashboardPage from './pages/StaffDashboardPage';
 import HomePage from './pages/HomePage';
-
-// Home Page Router Component - redirects based on user role
-const HomePageRouter: React.FC = () => {
-  const { user, isAuthenticated, isInitializing } = useAuth();
-  
-  // Show loading state while authentication is being initialized
-  if (isInitializing) {
-    return (
-      <Box 
-        sx={{ 
-          display: 'flex', 
-          flexDirection: 'column',
-          justifyContent: 'center', 
-          alignItems: 'center', 
-          height: '50vh',
-          gap: 2 
-        }}
-      >
-        <Typography variant="h6">Loading...</Typography>
-      </Box>
-    );
-  }
-  
-  // If user is authenticated, check their roles
-  if (isAuthenticated && user?.roles) {
-    // Check if user is system-wide (no tenant binding)
-    if (user.isSystemWide) {
-      if (user.roles.includes('ADMIN')) {
-        return <Navigate to="/system-dashboard" replace />;
-      }
-      if (user.roles.includes('CUSTOMER')) {
-        // CUSTOMER: Registered users with accounts - send to customer dashboard
-        return <CustomerDashboard />;
-      }
-      if (user.roles.includes('GUEST')) {
-        // GUEST: Anonymous users without accounts - send to hotel search page
-        return <HotelSearchPage />;
-      }
-    }
-    
-    // For tenant-bound users
-    // Priority order: ADMIN (system admin) > HOTEL_ADMIN > FRONTDESK > HOUSEKEEPING
-    if (user.roles.includes('ADMIN') && !user.isSystemWide) {
-      return <Navigate to="/admin/dashboard" replace />;
-    }
-    
-    if (user.roles.includes('HOTEL_ADMIN')) {
-      return <Navigate to="/hotel-admin/dashboard" replace />;
-    }
-    
-    if (user.roles.includes('FRONTDESK')) {
-      return <Navigate to="/frontdesk/dashboard" replace />;
-    }
-    
-    if (user.roles.includes('OPERATIONS_SUPERVISOR')) {
-      return <Navigate to="/operations/dashboard" replace />;
-    }
-    
-    if (user.roles.includes('HOUSEKEEPING')) {
-      return <Navigate to="/staff/dashboard" replace />;
-    }
-    
-    if (user.roles.includes('MAINTENANCE')) {
-      return <Navigate to="/staff/dashboard" replace />;
-    }
-    
-    // Legacy role handling for backward compatibility
-    if (user.role === 'ADMIN' && !user.isSystemWide) {
-      return <Navigate to="/admin/dashboard" replace />;
-    }
-    
-    if (user.role === 'HOTEL_ADMIN') {
-      return <Navigate to="/hotel-admin/dashboard" replace />;
-    }
-    
-    if (user.role === 'FRONTDESK') {
-      return <Navigate to="/frontdesk/dashboard" replace />;
-    }
-    
-    if (user.role === 'OPERATIONS_SUPERVISOR') {
-      return <Navigate to="/operations/dashboard" replace />;
-    }
-    
-    if (user.role === 'HOUSEKEEPING') {
-      return <Navigate to="/staff/dashboard" replace />;
-    }
-    
-    if (user.role === 'MAINTENANCE') {
-      return <Navigate to="/staff/dashboard" replace />;
-    }
-    
-    if (user.role === 'CUSTOMER' && user.isSystemWide) {
-      // CUSTOMER: Registered users with accounts - send to customer dashboard
-      return <CustomerDashboard />;
-    }
-    
-    if (user.role === 'GUEST' && user.isSystemWide) {
-      // GUEST: Anonymous users without accounts - send to hotel search page
-      return <HotelSearchPage />;
-    }
-  }
-  
-  // For all other users (including unauthenticated), show the new homepage
-  return <HomePage />;
-};
 
 // Placeholder Components for Routes
 const PlaceholderPage: React.FC<{ title: string; message: string }> = ({ title, message }) => (
@@ -164,7 +58,7 @@ function App() {
   return (
     <EnhancedLayout hideSidebar={!isAuthenticated}>
       <Routes>
-        <Route path="/" element={<HomePageRouter />} />
+        <Route path="/" element={<Navigate to="/hotels/search" replace />} />
         <Route path="/home" element={<HomePage />} />
         <Route path="/hotels" element={
           <PlaceholderPage 
