@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Container,
   Typography,
@@ -19,6 +19,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { hotelApiService } from '../services/hotelApi';
 import HotelDetailsCard from '../components/hotel/HotelDetailsCard';
 import { 
   HotelSearchRequest, 
@@ -39,6 +40,25 @@ const SearchResultsPage: React.FC = () => {
   // Success/error feedback
   const [successMessage, setSuccessMessage] = useState('');
 
+  // Function to perform a new search when we have searchRequest but no hotels
+  const performSearch = useCallback(async (searchReq: HotelSearchRequest) => {
+    try {
+      setLoading(true);
+      setError('');
+      console.log('🔍 Re-performing hotel search:', searchReq);
+      const results = await hotelApiService.searchHotelsPublic(searchReq);
+      console.log('✅ Hotel search results:', results);
+      setHotels(results);
+    } catch (err) {
+      console.error('❌ Hotel search failed:', err);
+      setError(err instanceof Error ? err.message : 'An error occurred while searching for hotels');
+      // If search fails, redirect back to search page
+      navigate('/hotels/search');
+    } finally {
+      setLoading(false);
+    }
+  }, [navigate]);
+
   // Extract search parameters from location state or URL
   useEffect(() => {
     const state = location.state as { 
@@ -47,21 +67,25 @@ const SearchResultsPage: React.FC = () => {
       successMessage?: string;
     };
     
-    if (state?.searchRequest && state?.hotels) {
+    if (state?.searchRequest && state?.hotels && state.hotels.length > 0) {
       // If we have data passed from the search page
       setSearchRequest(state.searchRequest);
       setHotels(state.hotels);
       setLoading(false);
+    } else if (state?.searchRequest) {
+      // If we have searchRequest but no hotels, perform a new search
+      setSearchRequest(state.searchRequest);
+      performSearch(state.searchRequest);
     } else {
       // If no data, redirect back to search
-      navigate('/');
+      navigate('/hotels/search');
     }
 
     // Handle success message from booking
     if (state?.successMessage) {
       setSuccessMessage(state.successMessage);
     }
-  }, [location, navigate]);
+  }, [location, navigate, performSearch]);
 
   const handleBookRoom = async (hotelId: number, roomId: number, asGuest: boolean = false) => {
     // Get room details for booking

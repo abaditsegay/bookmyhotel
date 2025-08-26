@@ -244,11 +244,19 @@ const BookingPage: React.FC = () => {
   };
 
   const handleBackToResults = () => {
-    navigate('/search-results', { 
-      state: { 
-        searchRequest: bookingData.searchRequest 
-      } 
-    });
+    // Try to go back to search results with the data we have
+    if (bookingData?.searchRequest) {
+      navigate('/search-results', { 
+        state: { 
+          searchRequest: bookingData.searchRequest,
+          // If we don't have hotels data, SearchResultsPage will perform a new search
+          hotels: [] // This will trigger a search in SearchResultsPage
+        } 
+      });
+    } else {
+      // Fallback to search page if we don't have search request data
+      navigate('/hotels/search');
+    }
   };
 
   const totalAmount = calculateTotalAmount();
