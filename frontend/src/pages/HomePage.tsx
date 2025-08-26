@@ -328,7 +328,7 @@ const HomePage: React.FC = () => {
             </CardContent>
           </Card>
           
-          {/* Sidebar Advertisement */}
+          {/* Advertisement */}
           <Card sx={{ mb: 3, border: '1px solid #e0e0e0' }}>
             <VerticalHotelAdvertisementBanner maxHotels={3} />
           </Card>
@@ -338,7 +338,7 @@ const HomePage: React.FC = () => {
         <Box
           sx={{
             display: 'grid',
-            gridTemplateColumns: '1fr 300px', // Main content + Right sidebar
+            gridTemplateColumns: '1fr 1fr', // 50-50 split: Main content + Advertisement
             gridTemplateRows: '1fr', // Main area only
             gridTemplateAreas: `
               "main sidebar"
@@ -363,7 +363,7 @@ const HomePage: React.FC = () => {
             </Card>
           </Box>
 
-          {/* Sidebar Advertisement */}
+          {/* Advertisement Sidebar - 50% */}
           <Box sx={{ gridArea: 'sidebar' }}>
             <Card 
               sx={{ 

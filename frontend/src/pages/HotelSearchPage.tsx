@@ -62,13 +62,14 @@ const HotelSearchPage: React.FC = () => {
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
-      <Grid container spacing={3}>
-        {/* Main Content Area */}
-        <Grid item xs={12} md={isOperationsUser ? 12 : 8}>
-          <Typography variant="h3" component="h1" gutterBottom align="center">
-            Find Your Perfect Hotel
-          </Typography>
+      {/* Title spanning across both search form and ad pane */}
+      <Typography variant="h3" component="h1" gutterBottom align="center" sx={{ mb: 4 }}>
+        Find Your Perfect Hotel
+      </Typography>
 
+      <Grid container spacing={3}>
+        {/* Main Content Area - 50% */}
+        <Grid item xs={12} md={isOperationsUser ? 12 : 6}>
           <Box sx={{ mb: 4 }}>
             <HotelSearchForm onSearch={handleSearch} loading={loading} />
           </Box>
@@ -121,9 +122,9 @@ const HotelSearchPage: React.FC = () => {
           </Paper>
         </Grid>
 
-        {/* Advertisement Sidebar - Hidden for operations users */}
+        {/* Advertisement Sidebar - 50% */}
         {!isOperationsUser && (
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} md={6}>
             <Box sx={{ position: 'sticky', top: 24 }}>
               <Card 
                 sx={{ 
@@ -134,7 +135,7 @@ const HotelSearchPage: React.FC = () => {
                   border: '1px solid #e0e0e0'
                 }}
               >
-                <VerticalHotelAdvertisementBanner maxHotels={4} />
+                <VerticalHotelAdvertisementBanner maxHotels={5} />
               </Card>
             </Box>
           </Grid>

@@ -7,7 +7,6 @@ import {
   Typography,
   Button,
   Chip,
-  Stack,
   Skeleton,
   Alert
 } from '@mui/material';
@@ -16,6 +15,7 @@ import {
   LocationOn as LocationIcon,
   AccessTime as TimeIcon
 } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import { hotelApiService } from '../services/hotelApi';
 import { HotelSearchResult } from '../types/hotel';
 import { useAuth } from '../contexts/AuthContext';
@@ -66,6 +66,7 @@ const fallbackHotels: HotelSearchResult[] = [
 
 export default function VerticalHotelAdvertisementBanner({ maxHotels = 3 }: VerticalHotelAdvertisementBannerProps) {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [hotels, setHotels] = useState<HotelSearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -94,8 +95,23 @@ export default function VerticalHotelAdvertisementBanner({ maxHotels = 3 }: Vert
 
   // Handle hotel click
   const handleHotelClick = (hotel: HotelSearchResult) => {
-    // Navigate to hotel details
-    window.location.href = `/hotels/${hotel.id}`;
+    // Create a basic search request for the selected hotel's location
+    const searchRequest = {
+      destination: hotel.city,
+      checkInDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0], // Tomorrow
+      checkOutDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // Day after tomorrow
+      guests: 1,
+      rooms: 1
+    };
+
+    // Navigate to search results page with the selected hotel
+    navigate('/search-results', {
+      state: {
+        searchRequest,
+        hotels: [hotel], // Pass the selected hotel as the search result
+        selectedFromAd: true // Flag to indicate this came from advertisement
+      }
+    });
   };
 
   // Load hotels on component mount
@@ -123,13 +139,26 @@ export default function VerticalHotelAdvertisementBanner({ maxHotels = 3 }: Vert
 
   if (loading && hotels.length === 0) {
     return (
-      <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ 
+        width: '100%', // Use full width of the container
+        height: '100%', 
+        display: 'flex', 
+        flexDirection: 'column' 
+      }}>
         <Typography variant="h6" sx={{ mb: 1.5, px: 2, pt: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
           <OfferIcon color="primary" />
           Special Deals
         </Typography>
-        <Stack spacing={1} sx={{ px: 2, pb: 2 }}>
-          {[...Array(3)].map((_, index) => (
+        <Box 
+          sx={{ 
+            px: 2, 
+            pb: 2,
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr', // Two column layout for loading
+            gap: 1
+          }}
+        >
+          {[...Array(4)].map((_, index) => (
             <Card key={index} sx={{ width: '100%' }}>
               <Skeleton variant="rectangular" width="100%" height={80} />
               <CardContent sx={{ p: 1 }}>
@@ -138,7 +167,7 @@ export default function VerticalHotelAdvertisementBanner({ maxHotels = 3 }: Vert
               </CardContent>
             </Card>
           ))}
-        </Stack>
+        </Box>
       </Box>
     );
   }
@@ -148,7 +177,12 @@ export default function VerticalHotelAdvertisementBanner({ maxHotels = 3 }: Vert
   }
 
   return (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ 
+      width: '100%', // Use full width of the container (which will be 50% of main container)
+      height: '100%', 
+      display: 'flex', 
+      flexDirection: 'column' 
+    }}>
       <Typography variant="h6" sx={{ mb: 1.5, px: 2, pt: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
         <OfferIcon color="primary" />
         Special Deals
@@ -159,13 +193,15 @@ export default function VerticalHotelAdvertisementBanner({ maxHotels = 3 }: Vert
         )}
       </Typography>
       
-      <Stack 
-        spacing={1} 
+      <Box 
         sx={{ 
           flex: 1,
           px: 2,
           pb: 2,
           overflowY: 'auto',
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr', // Two column layout
+          gap: 1,
           '&::-webkit-scrollbar': {
             width: 4,
           },
@@ -188,6 +224,7 @@ export default function VerticalHotelAdvertisementBanner({ maxHotels = 3 }: Vert
             sx={{ 
               cursor: 'pointer',
               transition: 'all 0.3s ease',
+              height: 'fit-content', // Allow cards to size naturally
               '&:hover': {
                 transform: 'translateY(-2px)',
                 boxShadow: '0 4px 15px rgba(0,0,0,0.15)',
@@ -269,7 +306,7 @@ export default function VerticalHotelAdvertisementBanner({ maxHotels = 3 }: Vert
             </CardContent>
           </Card>
         ))}
-      </Stack>
+      </Box>
       
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', px: 2, pb: 1 }}>
         <TimeIcon fontSize="small" color="action" sx={{ mr: 0.5 }} />
