@@ -326,12 +326,12 @@ const LoginPage: React.FC = () => {
             {!showSignUp && (
               <>
                 <Divider sx={{ my: 3 }}>
-                  <Chip label="Quick Login - System Users" size="small" color="primary" />
+                  <Chip label="Quick Login - System Administrators" size="small" color="primary" />
                 </Divider>
                 
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                   <Typography variant="body2" color="textSecondary" align="center" sx={{ mb: 1 }}>
-                    ✅ System users - Click to auto-fill and test:
+                    ✅ System administrators - Click to auto-fill and test:
                   </Typography>
                   
                   <Button
@@ -340,9 +340,27 @@ const LoginPage: React.FC = () => {
                     onClick={() => fillSampleUser('admin@bookmyhotel.com', 'password')}
                     sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
                   >
-                    <Typography variant="body2" fontWeight="bold">🔧 System Administrator</Typography>
+                    <Typography variant="body2" fontWeight="bold">🔧 System Administrator 1</Typography>
                     <Typography variant="caption" color="textSecondary">
                       admin@bookmyhotel.com / password
+                    </Typography>
+                    <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
+                      ✅ Primary System Admin
+                    </Typography>
+                  </Button>
+                  
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => fillSampleUser('admin2@bookmyhotel.com', 'password123')}
+                    sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
+                  >
+                    <Typography variant="body2" fontWeight="bold">🔧 System Administrator 2</Typography>
+                    <Typography variant="caption" color="textSecondary">
+                      admin2@bookmyhotel.com / password123
+                    </Typography>
+                    <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
+                      ✅ Secondary System Admin
                     </Typography>
                   </Button>
                 </Box>
@@ -372,24 +390,6 @@ const LoginPage: React.FC = () => {
               </Divider>
 
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  onClick={() => fillSampleUser('admin@ethiopian-heritage.et', 'password123')}
-                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
-                >
-                  <Typography variant="body2" fontWeight="bold">🔧 System Administrator</Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    admin@ethiopian-heritage.et
-                  </Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    Password: password123
-                  </Typography>
-                  <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
-                    ✅ Abebe Tesfaye - System Admin
-                  </Typography>
-                </Button>
-                
                 <Button
                   variant="outlined"
                   fullWidth

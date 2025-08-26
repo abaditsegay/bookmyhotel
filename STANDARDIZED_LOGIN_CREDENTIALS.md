@@ -3,6 +3,18 @@
 ## Overview
 All hotel staff accounts have been standardized with the password **"password"** for testing purposes.
 
+## 🔒 System Admin Credentials
+
+### **Cross-Tenant System Administrators**
+| Email | Password | Role | Access Level |
+|-------|----------|------|--------------|
+| `admin@bookmyhotel.com` | `password` | ADMIN | **ALL tenants, hotels, users** |
+| `admin2@bookmyhotel.com` | `password123` | ADMIN | **ALL tenants, hotels, users** |
+
+**Note:** System admins have `tenant_id = NULL` and can access ALL data across ALL tenants.
+
+---
+
 ## Hotel Login Credentials
 
 ### Hotel ID 1: Grand Plaza Hotel
