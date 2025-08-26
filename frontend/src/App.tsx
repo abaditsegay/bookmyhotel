@@ -45,6 +45,8 @@ import GuestBookingManagementPage from './pages/GuestBookingManagementPage';
 import { SystemDashboardPage } from './pages/SystemDashboardPage';
 import { CustomerDashboard } from './pages/CustomerDashboard';
 import MyBookings from './components/MyBookings';
+import OperationsPage from './pages/operations/OperationsPage';
+import StaffDashboardPage from './pages/StaffDashboardPage';
 
 // Home Page Router Component - redirects based on user role
 const HomePageRouter: React.FC = () => {
@@ -99,8 +101,16 @@ const HomePageRouter: React.FC = () => {
       return <Navigate to="/frontdesk/dashboard" replace />;
     }
     
+    if (user.roles.includes('OPERATIONS_SUPERVISOR')) {
+      return <Navigate to="/operations/dashboard" replace />;
+    }
+    
     if (user.roles.includes('HOUSEKEEPING')) {
-      return <Navigate to="/housekeeping/schedules" replace />;
+      return <Navigate to="/staff/dashboard" replace />;
+    }
+    
+    if (user.roles.includes('MAINTENANCE')) {
+      return <Navigate to="/staff/dashboard" replace />;
     }
     
     // Legacy role handling for backward compatibility
@@ -116,8 +126,16 @@ const HomePageRouter: React.FC = () => {
       return <Navigate to="/frontdesk/dashboard" replace />;
     }
     
+    if (user.role === 'OPERATIONS_SUPERVISOR') {
+      return <Navigate to="/operations/dashboard" replace />;
+    }
+    
     if (user.role === 'HOUSEKEEPING') {
-      return <Navigate to="/housekeeping/schedules" replace />;
+      return <Navigate to="/staff/dashboard" replace />;
+    }
+    
+    if (user.role === 'MAINTENANCE') {
+      return <Navigate to="/staff/dashboard" replace />;
     }
     
     if (user.role === 'CUSTOMER' && user.isSystemWide) {
@@ -556,6 +574,30 @@ function App() {
         <Route path="/frontdesk/schedules" element={
           <ProtectedRoute requiredRole="FRONTDESK">
             <StaffScheduleDashboard />
+          </ProtectedRoute>
+        } />
+        
+        {/* Staff Routes */}
+        <Route path="/staff" element={
+          <ProtectedRoute requiredRoles={['HOUSEKEEPING', 'MAINTENANCE']}>
+            <Navigate to="/staff/dashboard" replace />
+          </ProtectedRoute>
+        } />
+        <Route path="/staff/dashboard" element={
+          <ProtectedRoute requiredRoles={['HOUSEKEEPING', 'MAINTENANCE']}>
+            <StaffDashboardPage />
+          </ProtectedRoute>
+        } />
+        
+        {/* Operations Routes */}
+        <Route path="/operations" element={
+          <ProtectedRoute requiredRoles={['OPERATIONS_SUPERVISOR', 'MAINTENANCE']}>
+            <Navigate to="/operations/dashboard" replace />
+          </ProtectedRoute>
+        } />
+        <Route path="/operations/dashboard" element={
+          <ProtectedRoute requiredRoles={['OPERATIONS_SUPERVISOR', 'MAINTENANCE']}>
+            <OperationsPage />
           </ProtectedRoute>
         } />
         

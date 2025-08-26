@@ -19,15 +19,21 @@ import { useNavigate } from 'react-router-dom';
 import AdvertisementBanner from '../components/AdvertisementBanner';
 import HotelSearchForm from '../components/hotel/HotelSearchForm';
 import { hotelApiService } from '../services/hotelApi';
+import { useAuth } from '../contexts/AuthContext';
 import { 
   HotelSearchRequest,
-  HotelSearchResult,
 } from '../types/hotel';
 
 const HotelSearchPage: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const { user } = useAuth();
+
+  // Check if user is operations staff who shouldn't see ads
+  const isOperationsUser = user?.role === 'OPERATIONS_SUPERVISOR' || 
+                           user?.role === 'HOUSEKEEPING' || 
+                           user?.role === 'MAINTENANCE';
 
   const handleSearch = async (searchRequest: HotelSearchRequest) => {
     setLoading(true);
@@ -59,7 +65,7 @@ const HotelSearchPage: React.FC = () => {
     <Container maxWidth="xl" sx={{ py: 4 }}>
       <Grid container spacing={3}>
         {/* Main Content Area */}
-        <Grid item xs={12} md={8}>
+        <Grid item xs={12} md={isOperationsUser ? 12 : 8}>
           <Typography variant="h3" component="h1" gutterBottom align="center">
             Find Your Perfect Hotel
           </Typography>
@@ -116,23 +122,25 @@ const HotelSearchPage: React.FC = () => {
           </Paper>
         </Grid>
 
-        {/* Advertisement Sidebar */}
-        <Grid item xs={12} md={4}>
-          <Box sx={{ position: 'sticky', top: 24 }}>
-            <Card 
-              sx={{ 
-                height: '85vh',
-                display: 'flex',
-                flexDirection: 'column',
-                overflow: 'hidden'
-              }}
-            >
-              <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: 2 }}>
-                <AdvertisementBanner maxAds={5} />
-              </CardContent>
-            </Card>
-          </Box>
-        </Grid>
+        {/* Advertisement Sidebar - Hidden for operations users */}
+        {!isOperationsUser && (
+          <Grid item xs={12} md={4}>
+            <Box sx={{ position: 'sticky', top: 24 }}>
+              <Card 
+                sx={{ 
+                  height: '85vh',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  overflow: 'hidden'
+                }}
+              >
+                <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: 2 }}>
+                  <AdvertisementBanner maxAds={5} />
+                </CardContent>
+              </Card>
+            </Box>
+          </Grid>
+        )}
       </Grid>
     </Container>
   );

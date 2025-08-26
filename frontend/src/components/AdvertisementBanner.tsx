@@ -19,6 +19,7 @@ import {
   AccessTime as TimeIcon
 } from '@mui/icons-material';
 import adApiService, { AdResponse } from '../services/adApi';
+import { useAuth } from '../contexts/AuthContext';
 
 interface Advertisement {
   id: string;
@@ -125,6 +126,7 @@ const AdvertisementBanner: React.FC<AdvertisementBannerProps> = ({
   const [ads, setAds] = useState<Advertisement[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
 
   // Convert API response to Advertisement format
   const convertAdResponseToAdvertisement = (adResponse: AdResponse): Advertisement => {
@@ -202,6 +204,15 @@ const AdvertisementBanner: React.FC<AdvertisementBannerProps> = ({
 
     return () => clearInterval(interval);
   }, [fetchAds]);
+
+  // Hide advertisement banner for operations users
+  const isOperationsUser = user?.role === 'OPERATIONS_SUPERVISOR' || 
+                           user?.role === 'HOUSEKEEPING' || 
+                           user?.role === 'MAINTENANCE';
+
+  if (isOperationsUser) {
+    return null; // Don't render anything for operations users
+  }
 
   const formatValidUntil = (dateString: string) => {
     const date = new Date(dateString);

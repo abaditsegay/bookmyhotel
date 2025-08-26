@@ -10,7 +10,9 @@ public enum UserRole {
     GUEST,       // Anonymous users without accounts (was CUSTOMER)
     FRONTDESK,
     HOUSEKEEPING,
+    MAINTENANCE,
     HOTEL_ADMIN,
     HOTEL_MANAGER,
+    OPERATIONS_SUPERVISOR,
     ADMIN
 }

@@ -401,6 +401,60 @@ const LoginPage: React.FC = () => {
                     ✅ Jane Desk - Working
                   </Typography>
                 </Button>
+
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  onClick={() => fillSampleUser('operations@grandplaza.com', 'operations123')}
+                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
+                >
+                  <Typography variant="body2" fontWeight="bold">🔧 Operations Supervisor</Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    operations@grandplaza.com
+                  </Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    Password: operations123
+                  </Typography>
+                  <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
+                    ✅ Michael Johnson - Working
+                  </Typography>
+                </Button>
+
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  onClick={() => fillSampleUser('housekeeping@grandplaza.com', 'housekeeping123')}
+                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
+                >
+                  <Typography variant="body2" fontWeight="bold">🧹 Housekeeping Staff</Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    housekeeping@grandplaza.com
+                  </Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    Password: housekeeping123
+                  </Typography>
+                  <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
+                    ✅ Maria Lopez - Working
+                  </Typography>
+                </Button>
+
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  onClick={() => fillSampleUser('maintenance@grandplaza.com', 'maintenance123')}
+                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
+                >
+                  <Typography variant="body2" fontWeight="bold">🔨 Maintenance Staff</Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    maintenance@grandplaza.com
+                  </Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    Password: maintenance123
+                  </Typography>
+                  <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
+                    ✅ Robert Wilson - Working
+                  </Typography>
+                </Button>
               </Box>
 
               <Box sx={{ mt: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
@@ -462,6 +516,60 @@ const LoginPage: React.FC = () => {
                   </Typography>
                   <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
                     ✅ Emma Rodriguez - Working
+                  </Typography>
+                </Button>
+
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  onClick={() => fillSampleUser('operations@maritimegrand.com', 'operations123')}
+                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
+                >
+                  <Typography variant="body2" fontWeight="bold">🔧 Operations Supervisor</Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    operations@maritimegrand.com
+                  </Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    Password: operations123
+                  </Typography>
+                  <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
+                    ✅ David Thompson - Working
+                  </Typography>
+                </Button>
+
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  onClick={() => fillSampleUser('housekeeping@maritimegrand.com', 'housekeeping123')}
+                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
+                >
+                  <Typography variant="body2" fontWeight="bold">🧹 Housekeeping Staff</Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    housekeeping@maritimegrand.com
+                  </Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    Password: housekeeping123
+                  </Typography>
+                  <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
+                    ✅ Lisa Chen - Working
+                  </Typography>
+                </Button>
+
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  onClick={() => fillSampleUser('maintenance@maritimegrand.com', 'maintenance123')}
+                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
+                >
+                  <Typography variant="body2" fontWeight="bold">🔨 Maintenance Staff</Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    maintenance@maritimegrand.com
+                  </Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    Password: maintenance123
+                  </Typography>
+                  <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
+                    ✅ Carlos Rivera - Working
                   </Typography>
                 </Button>
               </Box>

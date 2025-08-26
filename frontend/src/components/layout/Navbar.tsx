@@ -83,6 +83,7 @@ const Navbar: React.FC = () => {
       'CUSTOMER': 'Customer', // Registered users with accounts
       'HOTEL_MANAGER': 'Hotel Manager',
       'HOUSEKEEPING': 'Housekeeping Staff',
+      'OPERATIONS_SUPERVISOR': 'Operations Supervisor',
       'MAINTENANCE': 'Maintenance Staff',
       'GUEST': 'Guest' // Anonymous users (rarely seen in UI)
     };
@@ -98,6 +99,7 @@ const Navbar: React.FC = () => {
       'CUSTOMER': 'success', // Registered customers
       'HOTEL_MANAGER': 'secondary',
       'HOUSEKEEPING': 'warning',
+      'OPERATIONS_SUPERVISOR': 'primary',
       'MAINTENANCE': 'warning',
       'GUEST': 'secondary' // Anonymous guests
     };
@@ -131,6 +133,14 @@ const Navbar: React.FC = () => {
       // For front desk staff, show only base items (no dashboard link)
       if (user.role === 'FRONTDESK') {
         return [...baseItems];
+      }
+
+      // For operations supervisor and maintenance, show operations dashboard
+      if (user.role === 'OPERATIONS_SUPERVISOR' || user.role === 'MAINTENANCE') {
+        const operationsItems = [
+          { label: 'Operations Dashboard', path: '/operations/dashboard', icon: <BusinessIcon /> },
+        ];
+        return [...baseItems, ...operationsItems];
       }
 
       // For customers and guests, show bookings (without dashboard or profile)

@@ -1,0 +1,268 @@
+package com.bookmyhotel.service;
+
+import com.bookmyhotel.entity.*;
+import com.bookmyhotel.repository.MaintenanceTaskRepository;
+import com.bookmyhotel.repository.UserRepository;
+import com.bookmyhotel.exception.ResourceNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+/**
+ * Service for managing maintenance tasks
+ */
+@Service
+@Transactional
+public class MaintenanceService {
+    
+    @Autowired
+    private MaintenanceTaskRepository maintenanceTaskRepository;
+    
+    @Autowired
+    private UserRepository userRepository;
+    
+    // Create new maintenance task
+    public MaintenanceTask createTask(MaintenanceTask task) {
+        task.setStatus(TaskStatus.PENDING);
+        task.setCreatedAt(LocalDateTime.now());
+        task.setUpdatedAt(LocalDateTime.now());
+        return maintenanceTaskRepository.save(task);
+    }
+    
+    // Get task by ID
+    public MaintenanceTask getTaskById(String tenantId, Long taskId) {
+        return maintenanceTaskRepository.findById(taskId)
+            .filter(task -> task.getTenantId().equals(tenantId))
+            .orElseThrow(() -> new ResourceNotFoundException("Maintenance task not found with ID: " + taskId));
+    }
+    
+    // Get all tasks for tenant
+    public List<MaintenanceTask> getAllTasks(String tenantId) {
+        return maintenanceTaskRepository.findByTenantIdOrderByCreatedAtDesc(tenantId);
+    }
+    
+    // Get tasks by hotel
+    public List<MaintenanceTask> getTasksByHotel(String tenantId, Long hotelId) {
+        return maintenanceTaskRepository.findByTenantIdAndHotelIdOrderByCreatedAtDesc(tenantId, hotelId);
+    }
+    
+    // Get tasks by status
+    public List<MaintenanceTask> getTasksByStatus(String tenantId, TaskStatus status) {
+        return maintenanceTaskRepository.findByTenantIdAndStatusOrderByCreatedAtDesc(tenantId, status);
+    }
+    
+    // Get emergency tasks
+    public List<MaintenanceTask> getEmergencyTasks(String tenantId) {
+        return maintenanceTaskRepository.findEmergencyTasks(tenantId);
+    }
+    
+    // Get tasks assigned to a staff member
+    public List<MaintenanceTask> getTasksByAssignedStaff(String tenantId, Long staffId) {
+        User staff = userRepository.findById(staffId)
+            .orElseThrow(() -> new ResourceNotFoundException("Staff member not found with ID: " + staffId));
+        return maintenanceTaskRepository.findByTenantIdAndAssignedToOrderByScheduledStartTimeAsc(tenantId, staff);
+    }
+    
+    // Get tasks by assigned staff and status
+    public List<MaintenanceTask> getTasksByAssignedStaffAndStatus(String tenantId, Long staffId, TaskStatus status) {
+        User staff = userRepository.findById(staffId)
+            .orElseThrow(() -> new ResourceNotFoundException("Staff member not found with ID: " + staffId));
+        return maintenanceTaskRepository.findByTenantIdAndAssignedToAndStatusOrderByScheduledStartTimeAsc(
+            tenantId, staff, status);
+    }
+    
+    // Assign task to staff member
+    public MaintenanceTask assignTask(String tenantId, Long taskId, Long staffId) {
+        MaintenanceTask task = getTaskById(tenantId, taskId);
+        User staff = userRepository.findById(staffId)
+            .orElseThrow(() -> new ResourceNotFoundException("Staff member not found with ID: " + staffId));
+        
+        // Verify staff has maintenance role
+        if (!staff.getRoles().contains(UserRole.MAINTENANCE) && !staff.getRoles().contains(UserRole.HOTEL_ADMIN)) {
+            throw new IllegalArgumentException("Only maintenance staff or hotel admins can be assigned maintenance tasks");
+        }
+        
+        task.setAssignedTo(staff);
+        task.setStatus(TaskStatus.ASSIGNED);
+        task.setUpdatedAt(LocalDateTime.now());
+        
+        return maintenanceTaskRepository.save(task);
+    }
+    
+    // Start task
+    public MaintenanceTask startTask(String tenantId, Long taskId, Long staffId) {
+        MaintenanceTask task = getTaskById(tenantId, taskId);
+        
+        // Verify the staff member is assigned to this task
+        if (task.getAssignedTo() == null || !task.getAssignedTo().getId().equals(staffId)) {
+            throw new IllegalArgumentException("Task is not assigned to this staff member");
+        }
+        
+        if (task.getStatus() != TaskStatus.ASSIGNED) {
+            throw new IllegalStateException("Task must be in ASSIGNED status to start");
+        }
+        
+        task.setStatus(TaskStatus.IN_PROGRESS);
+        task.setActualStartTime(LocalDateTime.now());
+        task.setUpdatedAt(LocalDateTime.now());
+        
+        return maintenanceTaskRepository.save(task);
+    }
+    
+    // Complete task
+    public MaintenanceTask completeTask(String tenantId, Long taskId, Long staffId, 
+                                       String workPerformed, String partsUsed, Double actualCost) {
+        MaintenanceTask task = getTaskById(tenantId, taskId);
+        
+        // Verify the staff member is assigned to this task
+        if (task.getAssignedTo() == null || !task.getAssignedTo().getId().equals(staffId)) {
+            throw new IllegalArgumentException("Task is not assigned to this staff member");
+        }
+        
+        if (task.getStatus() != TaskStatus.IN_PROGRESS) {
+            throw new IllegalStateException("Task must be in IN_PROGRESS status to complete");
+        }
+        
+        LocalDateTime endTime = LocalDateTime.now();
+        task.setStatus(TaskStatus.COMPLETED);
+        task.setActualEndTime(endTime);
+        task.setWorkPerformed(workPerformed);
+        task.setPartsUsed(partsUsed);
+        task.setActualCost(actualCost);
+        task.setUpdatedAt(endTime);
+        
+        // Calculate actual duration if start time is available
+        if (task.getActualStartTime() != null) {
+            long durationMinutes = java.time.Duration.between(task.getActualStartTime(), endTime).toMinutes();
+            task.setActualDurationMinutes((int) durationMinutes);
+        }
+        
+        return maintenanceTaskRepository.save(task);
+    }
+    
+    // Verify task completion (by supervisor)
+    public MaintenanceTask verifyTask(String tenantId, Long taskId, Long supervisorId, 
+                                     String verificationNotes, boolean approved, 
+                                     boolean followUpRequired, LocalDateTime followUpDate, String followUpNotes) {
+        MaintenanceTask task = getTaskById(tenantId, taskId);
+        User supervisor = userRepository.findById(supervisorId)
+            .orElseThrow(() -> new ResourceNotFoundException("Supervisor not found with ID: " + supervisorId));
+        
+        if (task.getStatus() != TaskStatus.COMPLETED) {
+            throw new IllegalStateException("Task must be completed before verification");
+        }
+        
+        task.setStatus(approved ? TaskStatus.VERIFIED : TaskStatus.ASSIGNED); // Reassign if not approved
+        task.setVerifiedBy(supervisor);
+        task.setVerificationTime(LocalDateTime.now());
+        task.setVerificationNotes(verificationNotes);
+        task.setFollowUpRequired(followUpRequired);
+        task.setFollowUpDate(followUpDate);
+        task.setFollowUpNotes(followUpNotes);
+        task.setUpdatedAt(LocalDateTime.now());
+        
+        return maintenanceTaskRepository.save(task);
+    }
+    
+    // Update task
+    public MaintenanceTask updateTask(String tenantId, Long taskId, MaintenanceTask updatedTask) {
+        MaintenanceTask existingTask = getTaskById(tenantId, taskId);
+        
+        // Update allowed fields
+        existingTask.setTitle(updatedTask.getTitle());
+        existingTask.setDescription(updatedTask.getDescription());
+        existingTask.setPriority(updatedTask.getPriority());
+        existingTask.setLocation(updatedTask.getLocation());
+        existingTask.setEquipmentType(updatedTask.getEquipmentType());
+        existingTask.setEstimatedDurationMinutes(updatedTask.getEstimatedDurationMinutes());
+        existingTask.setEstimatedCost(updatedTask.getEstimatedCost());
+        existingTask.setScheduledStartTime(updatedTask.getScheduledStartTime());
+        existingTask.setPartsRequired(updatedTask.getPartsRequired());
+        existingTask.setToolsRequired(updatedTask.getToolsRequired());
+        existingTask.setSafetyRequirements(updatedTask.getSafetyRequirements());
+        existingTask.setUpdatedAt(LocalDateTime.now());
+        
+        return maintenanceTaskRepository.save(existingTask);
+    }
+    
+    // Delete task
+    public void deleteTask(String tenantId, Long taskId) {
+        MaintenanceTask task = getTaskById(tenantId, taskId);
+        maintenanceTaskRepository.delete(task);
+    }
+    
+    // Get overdue tasks
+    public List<MaintenanceTask> getOverdueTasks(String tenantId) {
+        return maintenanceTaskRepository.findOverdueTasks(tenantId, LocalDateTime.now());
+    }
+    
+    // Get tasks requiring follow-up
+    public List<MaintenanceTask> getTasksRequiringFollowUp(String tenantId) {
+        return maintenanceTaskRepository.findTasksRequiringFollowUp(tenantId, LocalDateTime.now());
+    }
+    
+    // Get tasks scheduled for today
+    public List<MaintenanceTask> getTodaysTasks(String tenantId) {
+        return maintenanceTaskRepository.findTasksScheduledForDate(tenantId, LocalDateTime.now());
+    }
+    
+    // Get maintenance costs for date range
+    public Double getMaintenanceCosts(String tenantId, LocalDateTime startDate, LocalDateTime endDate) {
+        return maintenanceTaskRepository.calculateMaintenanceCostsByDateRange(tenantId, startDate, endDate);
+    }
+    
+    // Get task statistics
+    public TaskStatistics getTaskStatistics(String tenantId) {
+        Long pending = maintenanceTaskRepository.countByTenantIdAndStatus(tenantId, TaskStatus.PENDING);
+        Long assigned = maintenanceTaskRepository.countByTenantIdAndStatus(tenantId, TaskStatus.ASSIGNED);
+        Long inProgress = maintenanceTaskRepository.countByTenantIdAndStatus(tenantId, TaskStatus.IN_PROGRESS);
+        Long completed = maintenanceTaskRepository.countByTenantIdAndStatus(tenantId, TaskStatus.COMPLETED);
+        Long verified = maintenanceTaskRepository.countByTenantIdAndStatus(tenantId, TaskStatus.VERIFIED);
+        Long emergency = maintenanceTaskRepository.countEmergencyTasks(tenantId);
+        
+        return new TaskStatistics(pending, assigned, inProgress, completed, verified, emergency);
+    }
+    
+    // Get paginated tasks
+    public Page<MaintenanceTask> getTasksPaginated(String tenantId, Pageable pageable) {
+        return maintenanceTaskRepository.findByTenantIdOrderByCreatedAtDesc(tenantId, pageable);
+    }
+    
+    // Get paginated tasks by hotel
+    public Page<MaintenanceTask> getTasksByHotelPaginated(String tenantId, Long hotelId, Pageable pageable) {
+        return maintenanceTaskRepository.findByTenantIdAndHotelIdOrderByCreatedAtDesc(tenantId, hotelId, pageable);
+    }
+    
+    // Inner class for task statistics
+    public static class TaskStatistics {
+        private final Long pending;
+        private final Long assigned;
+        private final Long inProgress;
+        private final Long completed;
+        private final Long verified;
+        private final Long emergency;
+        
+        public TaskStatistics(Long pending, Long assigned, Long inProgress, Long completed, Long verified, Long emergency) {
+            this.pending = pending;
+            this.assigned = assigned;
+            this.inProgress = inProgress;
+            this.completed = completed;
+            this.verified = verified;
+            this.emergency = emergency;
+        }
+        
+        // Getters
+        public Long getPending() { return pending; }
+        public Long getAssigned() { return assigned; }
+        public Long getInProgress() { return inProgress; }
+        public Long getCompleted() { return completed; }
+        public Long getVerified() { return verified; }
+        public Long getEmergency() { return emergency; }
+        public Long getTotal() { return pending + assigned + inProgress + completed + verified; }
+    }
+}
