@@ -76,7 +76,7 @@ public class Room extends TenantEntity {
     private Hotel hotel;
     
     @JsonIgnore
-    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "assignedRoom", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Reservation> reservations = new ArrayList<>();
     
     // Constructors

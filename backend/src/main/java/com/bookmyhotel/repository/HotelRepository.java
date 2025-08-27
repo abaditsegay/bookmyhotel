@@ -40,8 +40,9 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
            "AND (:minPrice IS NULL OR r.pricePerNight >= :minPrice) " +
            "AND (:maxPrice IS NULL OR r.pricePerNight <= :maxPrice) " +
            "AND r.id NOT IN (" +
-           "  SELECT res.room.id FROM Reservation res " +
-           "  WHERE res.status NOT IN ('CANCELLED', 'NO_SHOW') " +
+           "  SELECT res.assignedRoom.id FROM Reservation res " +
+           "  WHERE res.assignedRoom IS NOT NULL " +
+           "  AND res.status NOT IN ('CANCELLED', 'NO_SHOW') " +
            "  AND NOT (res.checkOutDate <= :checkInDate OR res.checkInDate >= :checkOutDate)" +
            ")")
     List<Hotel> findAvailableHotels(

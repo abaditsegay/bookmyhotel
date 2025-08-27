@@ -25,6 +25,7 @@ import {
   Business as BusinessIcon,
   AppRegistration as RegisterIcon,
   Search as SearchIcon,
+  Store as StoreIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -125,23 +126,35 @@ const Navbar: React.FC = () => {
         return [...baseItems];
       }
 
-      // For hotel admin, show only base items (no dashboard link)
+      // For hotel admin, show shop navigation
       if (user.role === 'HOTEL_ADMIN') {
-        return [...baseItems];
-      }
-
-      // For front desk staff, show only base items (no dashboard link)
-      if (user.role === 'FRONTDESK') {
-        return [...baseItems];
-      }
-
-      // For operations supervisor and maintenance, show operations dashboard
-      if (user.role === 'OPERATIONS_SUPERVISOR' || user.role === 'MAINTENANCE') {
-        const operationsItems = [
-          { label: 'Operations Dashboard', path: '/operations/dashboard', icon: <BusinessIcon /> },
+        const hotelAdminItems = [
+          { label: 'Hotel Shop', path: '/shop', icon: <StoreIcon /> },
         ];
-        return [...baseItems, ...operationsItems];
+        return [...baseItems, ...hotelAdminItems];
       }
+
+      // For front desk staff, show shop navigation
+      if (user.role === 'FRONTDESK') {
+        const frontdeskItems = [
+          { label: 'Hotel Shop', path: '/shop', icon: <StoreIcon /> },
+        ];
+        return [...baseItems, ...frontdeskItems];
+      }
+
+      // For operations supervisor, don't show operations dashboard link since it's their landing page
+      if (user.role === 'OPERATIONS_SUPERVISOR') {
+        // Operations supervisors land directly on their dashboard, no additional nav needed
+        return [...baseItems];
+      }
+
+      // For maintenance staff, show operations dashboard
+//      if (user.role === 'MAINTENANCE') {
+//        const maintenanceItems = [
+//          { label: 'Operations Dashboard', path: '/operations/dashboard', icon: <BusinessIcon /> },
+//        ];
+//       return [...baseItems, ...maintenanceItems];
+//      }
 
       // For customers and guests, show bookings (without dashboard or profile)
       if (user.role === 'CUSTOMER') {
@@ -179,9 +192,15 @@ const Navbar: React.FC = () => {
           sx={{
             mx: 0.5,
             borderRadius: 2,
-            backgroundColor: item.path && isActivePath(item.path) ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
+            backgroundColor: item.label === 'Hotel Shop' 
+              ? 'red' 
+              : item.path && isActivePath(item.path) 
+                ? 'rgba(255, 255, 255, 0.1)' 
+                : 'transparent',
             '&:hover': {
-              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              backgroundColor: item.label === 'Hotel Shop' 
+                ? '#cc0000' 
+                : 'rgba(255, 255, 255, 0.1)',
             },
           }}
         >
@@ -234,9 +253,15 @@ const Navbar: React.FC = () => {
             onClick={() => handleItemClick(item)}
             sx={{
               cursor: 'pointer',
-              backgroundColor: item.path && isActivePath(item.path) ? theme.palette.action.selected : 'transparent',
+              backgroundColor: item.label === 'Hotel Shop' 
+                ? 'red' 
+                : item.path && isActivePath(item.path) 
+                  ? theme.palette.action.selected 
+                  : 'transparent',
               '&:hover': {
-                backgroundColor: theme.palette.action.hover,
+                backgroundColor: item.label === 'Hotel Shop' 
+                  ? '#cc0000' 
+                  : theme.palette.action.hover,
               },
             }}
           >

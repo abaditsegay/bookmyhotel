@@ -158,8 +158,8 @@ const LoginPage: React.FC = () => {
           gap: 3,
         }}
       >
-        {/* Three Column Layout for Hotel Staff */}
-        <Box sx={{ display: 'flex', gap: 3, width: '100%', maxWidth: 1400 }}>
+        {/* Four Column Layout for Hotel Staff */}
+        <Box sx={{ display: 'flex', gap: 3, width: '100%', maxWidth: 1800 }}>
           {/* Main Login Form */}
           <Card sx={{ flex: 1, maxWidth: 450, maxHeight: '90vh', overflow: 'auto' }}>
             <CardContent sx={{ p: 4 }}>
@@ -568,6 +568,124 @@ const LoginPage: React.FC = () => {
             </CardContent>
           </Card>
 
+          {/* Operations Supervisor Section */}
+          <Card sx={{ flex: 1, maxWidth: 400, maxHeight: '90vh', overflow: 'auto' }}>
+            <CardContent sx={{ p: 3 }}>
+              <Typography variant="h5" component="h2" gutterBottom align="center" color="primary">
+                🔧 Operations Supervisors
+              </Typography>
+              <Typography variant="body2" color="textSecondary" align="center" sx={{ mb: 3 }}>
+                Staff Schedule Management & Operations
+              </Typography>
+
+              <Alert severity="success" sx={{ mb: 2 }}>
+                <Typography variant="body2">
+                  ✅ <strong>NEW:</strong> Operations Supervisors can now access staff schedule management! All accounts updated with proper permissions ✅
+                </Typography>
+              </Alert>
+
+              <Divider sx={{ my: 2 }}>
+                <Chip label="Operations Supervisor Credentials" size="small" />
+              </Divider>
+
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  onClick={() => fillSampleUser('operations@grandplaza.com', 'password')}
+                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
+                >
+                  <Typography variant="body2" fontWeight="bold">🏨 Grand Plaza Operations</Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    operations@grandplaza.com
+                  </Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    Password: password
+                  </Typography>
+                  <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
+                    ✅ David Operations - Staff Schedule Access
+                  </Typography>
+                </Button>
+
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  onClick={() => fillSampleUser('operations@sheraton-addis.et', 'password123')}
+                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
+                >
+                  <Typography variant="body2" fontWeight="bold">🇪🇹 Sheraton Addis Operations</Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    operations@sheraton-addis.et
+                  </Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    Password: password123
+                  </Typography>
+                  <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
+                    ✅ Tamrat Alemu - Ethiopian Heritage
+                  </Typography>
+                </Button>
+
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  onClick={() => fillSampleUser('operations@lalibela-lodge.et', 'password123')}
+                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
+                >
+                  <Typography variant="body2" fontWeight="bold">🏛️ Lalibela Lodge Operations</Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    operations@lalibela-lodge.et
+                  </Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    Password: password123
+                  </Typography>
+                  <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
+                    ✅ Mihret Kedada - Cultural Heritage
+                  </Typography>
+                </Button>
+
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  onClick={() => fillSampleUser('operations@maritimegrand.com', 'password')}
+                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
+                >
+                  <Typography variant="body2" fontWeight="bold">🌊 Maritime Grand Operations</Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    operations@maritimegrand.com
+                  </Typography>
+                  <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
+                    ✅ Rachel Operations
+                  </Typography>
+                </Button>
+
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  onClick={() => fillSampleUser('operations@urbanbusinesshub.com', 'password')}
+                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
+                >
+                  <Typography variant="body2" fontWeight="bold">🏙️ Urban Business Operations</Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    operations@urbanbusinesshub.com
+                  </Typography>
+                  <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
+                    ✅ Marcus Operations
+                  </Typography>
+                </Button>
+              </Box>
+
+              <Box sx={{ mt: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
+                <Typography variant="caption" color="textSecondary">
+                  <strong>Operations Features:</strong><br/>
+                  👥 Staff schedule management<br/>
+                  📋 Operational oversight<br/>
+                  🔧 System coordination<br/>
+                  ✅ All permissions verified & working
+                </Typography>
+              </Box>
+            </CardContent>
+          </Card>
+
           {/* Multi-Hotel Credentials Section */}
           <Card sx={{ flex: 1, maxWidth: 400, maxHeight: '90vh', overflow: 'auto' }}>
             <CardContent sx={{ p: 3 }}>
@@ -681,8 +799,8 @@ const LoginPage: React.FC = () => {
           </Card>
         </Box>
 
-        {/* Customer Credentials Row - Spans across all three columns */}
-        <Card sx={{ width: '100%', maxWidth: 1400 }}>
+        {/* Customer Credentials Row - Spans across all four columns */}
+        <Card sx={{ width: '100%', maxWidth: 1800 }}>
           <CardContent sx={{ p: 3 }}>
             <Typography variant="h6" component="h3" gutterBottom align="center" color="primary">
               👤 Customer Portal Access

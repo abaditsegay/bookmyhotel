@@ -12,7 +12,9 @@
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                   <div class="room-details">
+                    <div class="room-type" th:text="${booking.roomType}"></div>
+                </div>     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             line-height: 1.6;
             background-color: #fafafa;
             color: #333;
@@ -352,7 +354,6 @@
                 <div class="hotel-address" th:text="${booking.hotelAddress}"></div>
                 <div class="room-info">
                     <div class="room-type" th:text="${booking.roomType}"></div>
-                    <div class="room-number">Room <span th:text="${booking.roomNumber}"></span></div>
                 </div>
             </div>
 

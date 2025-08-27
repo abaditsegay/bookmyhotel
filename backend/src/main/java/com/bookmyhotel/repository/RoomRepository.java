@@ -1,5 +1,6 @@
 package com.bookmyhotel.repository;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -30,8 +31,9 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
            "AND r.capacity >= :guests " +
            "AND (:roomType IS NULL OR r.roomType = :roomType) " +
            "AND r.id NOT IN (" +
-           "  SELECT res.room.id FROM Reservation res " +
-           "  WHERE res.status NOT IN ('CANCELLED', 'NO_SHOW') " +
+           "  SELECT res.assignedRoom.id FROM Reservation res " +
+           "  WHERE res.assignedRoom IS NOT NULL " +
+           "  AND res.status NOT IN ('CANCELLED', 'NO_SHOW') " +
            "  AND NOT (res.checkOutDate <= :checkInDate OR res.checkInDate >= :checkOutDate)" +
            ")")
     List<Room> findAvailableRooms(
@@ -71,7 +73,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
      * Check if room is available for given dates
      */
     @Query("SELECT COUNT(res) = 0 FROM Reservation res " +
-           "WHERE res.room.id = :roomId " +
+           "WHERE res.assignedRoom.id = :roomId " +
            "AND res.status NOT IN ('CANCELLED', 'NO_SHOW') " +
            "AND NOT (res.checkOutDate <= :checkInDate OR res.checkInDate >= :checkOutDate)")
     boolean isRoomAvailable(
@@ -84,7 +86,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
      * Check if room is currently booked (has active reservations) - tenant aware
      */
     @Query("SELECT COUNT(res) > 0 FROM Reservation res " +
-           "WHERE res.room.id = :roomId " +
+           "WHERE res.assignedRoom.id = :roomId " +
            "AND res.tenantId = :tenantId " +
            "AND res.status NOT IN ('CANCELLED', 'NO_SHOW') " +
            "AND res.checkInDate <= CURRENT_DATE " +
@@ -138,8 +140,9 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
            "WHERE r.roomType = :roomType " +
            "AND r.isAvailable = true " +
            "AND r.id NOT IN (" +
-           "  SELECT res.room.id FROM Reservation res " +
-           "  WHERE res.id != :excludeReservationId " +
+           "  SELECT res.assignedRoom.id FROM Reservation res " +
+           "  WHERE res.assignedRoom IS NOT NULL " +
+           "  AND res.id != :excludeReservationId " +
            "  AND res.status NOT IN ('CANCELLED', 'NO_SHOW') " +
            "  AND NOT (res.checkOutDate <= :checkInDate OR res.checkInDate >= :checkOutDate)" +
            ")")
@@ -160,8 +163,9 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
            "AND r.status = 'AVAILABLE' " +
            "AND r.capacity >= :guests " +
            "AND r.id NOT IN (" +
-           "  SELECT res.room.id FROM Reservation res " +
-           "  WHERE res.status NOT IN ('CANCELLED', 'NO_SHOW') " +
+           "  SELECT res.assignedRoom.id FROM Reservation res " +
+           "  WHERE res.assignedRoom IS NOT NULL " +
+           "  AND res.status NOT IN ('CANCELLED', 'NO_SHOW') " +
            "  AND NOT (res.checkOutDate <= :checkInDate OR res.checkInDate >= :checkOutDate)" +
            ")")
     long countAvailableRoomsByType(
@@ -202,8 +206,9 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
            "AND r.isAvailable = true " +
            "AND r.status = 'AVAILABLE' " +
            "AND r.id NOT IN (" +
-           "  SELECT res.room.id FROM Reservation res " +
-           "  WHERE res.status NOT IN ('CANCELLED', 'NO_SHOW') " +
+           "  SELECT res.assignedRoom.id FROM Reservation res " +
+           "  WHERE res.assignedRoom IS NOT NULL " +
+           "  AND res.status NOT IN ('CANCELLED', 'NO_SHOW') " +
            "  AND NOT (res.checkOutDate <= :checkInDate OR res.checkInDate >= :checkOutDate)" +
            ") " +
            "ORDER BY r.roomNumber")
@@ -223,8 +228,9 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
            "AND r.is_available = true " +
            "AND r.status = 'AVAILABLE' " +
            "AND r.id NOT IN (" +
-           "  SELECT res.room_id FROM reservations res " +
-           "  WHERE res.status NOT IN ('CANCELLED', 'NO_SHOW') " +
+           "  SELECT res.assigned_room_id FROM reservations res " +
+           "  WHERE res.assigned_room_id IS NOT NULL " +
+           "  AND res.status NOT IN ('CANCELLED', 'NO_SHOW') " +
            "  AND NOT (res.check_out_date <= :checkInDate OR res.check_in_date >= :checkOutDate)" +
            ") " +
            "ORDER BY r.room_number " +
@@ -235,4 +241,45 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
         @Param("checkInDate") LocalDate checkInDate,
         @Param("checkOutDate") LocalDate checkOutDate
     );
+    
+    /**
+     * Check if there are available rooms of a specific type for given dates (room type booking)
+     */
+    @Query("SELECT COUNT(r) > 0 FROM Room r " +
+           "WHERE r.hotel.id = :hotelId " +
+           "AND r.roomType = :roomType " +
+           "AND r.isAvailable = true " +
+           "AND r.status = 'AVAILABLE' " +
+           "AND r.id NOT IN (" +
+           "  SELECT res.assignedRoom.id FROM Reservation res " +
+           "  WHERE res.assignedRoom.id IS NOT NULL " +
+           "  AND res.status NOT IN ('CANCELLED', 'NO_SHOW') " +
+           "  AND NOT (res.checkOutDate <= :checkInDate OR res.checkInDate >= :checkOutDate)" +
+           ")")
+    boolean hasAvailableRoomsOfType(
+        @Param("hotelId") Long hotelId,
+        @Param("roomType") String roomType,
+        @Param("checkInDate") LocalDate checkInDate,
+        @Param("checkOutDate") LocalDate checkOutDate
+    );
+    
+    /**
+     * Get price for a specific room type in a hotel
+     */
+    @Query("SELECT r.pricePerNight FROM Room r " +
+           "WHERE r.hotel.id = :hotelId " +
+           "AND r.roomType = :roomType " +
+           "AND r.isAvailable = true " +
+           "ORDER BY r.id " +
+           "LIMIT 1")
+    Optional<BigDecimal> getPriceForRoomType(
+        @Param("hotelId") Long hotelId,
+        @Param("roomType") String roomType
+    );
+    
+    /**
+     * Find hotel by ID (bypasses tenant filter for cross-tenant booking)
+     */
+    @Query("SELECT h FROM Hotel h WHERE h.id = :hotelId")
+    Optional<Hotel> findHotelById(@Param("hotelId") Long hotelId);
 }

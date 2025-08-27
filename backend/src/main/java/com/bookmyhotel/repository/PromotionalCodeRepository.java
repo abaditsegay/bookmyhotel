@@ -68,7 +68,8 @@ public interface PromotionalCodeRepository extends JpaRepository<PromotionalCode
      * Check if customer is first time customer (has no previous bookings)
      */
     @Query("SELECT COUNT(r) FROM Reservation r WHERE r.guest.email = :customerEmail " +
-           "AND r.room.hotel.id = :hotelId")
+           "AND ((r.assignedRoom IS NOT NULL AND r.assignedRoom.hotel.id = :hotelId) OR " +
+           "(r.assignedRoom IS NULL AND r.hotel.id = :hotelId))")
     Integer countPreviousBookingsByCustomer(@Param("customerEmail") String customerEmail, 
                                            @Param("hotelId") Long hotelId);
     

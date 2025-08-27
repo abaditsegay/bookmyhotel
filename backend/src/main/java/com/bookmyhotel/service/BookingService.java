@@ -7,6 +7,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -87,128 +88,11 @@ public class BookingService {
     private String frontendUrl;
     
     /**
-     * Create a new booking
+     * Create a new booking (Room Type Only - No Backward Compatibility)
      */
     public BookingResponse createBooking(BookingRequest request, String userEmail) {
-        try {
-            // Validate booking request
-            validateBookingRequest(request, userEmail == null);
-            
-            // Get room details
-            Room room = roomRepository.findById(request.getRoomId())
-                .orElseThrow(() -> new ResourceNotFoundException("Room not found with id: " + request.getRoomId()));
-            
-            // Check room availability
-            if (!roomRepository.isRoomAvailable(request.getRoomId(), request.getCheckInDate(), request.getCheckOutDate())) {
-                throw new BookingException("Room is not available for the selected dates");
-            }
-            
-            // Get or create user (authenticated or guest)
-            User user = null;
-            if (userEmail != null) {
-                // Authenticated user - get existing user
-                user = userRepository.findByEmail(userEmail)
-                    .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userEmail));
-            }
-            // For anonymous guests, we no longer create User records
-
-            // Calculate total amount
-            BigDecimal totalAmount = calculateTotalAmount(room, request);
-
-            // Create reservation with guest information
-            Reservation reservation = createReservation(request, room, user, totalAmount);            // Process payment if payment method provided
-            if (request.getPaymentMethodId() != null) {
-                if ("pay_at_frontdesk".equals(request.getPaymentMethodId())) {
-                    // For pay at front desk, mark reservation as confirmed with payment pending
-                    reservation.setStatus(ReservationStatus.CONFIRMED);
-                    // No payment intent ID set, so payment status will be "PENDING"
-                } else {
-                    // Handle other payment methods (e.g., credit card via Stripe)
-                    try {
-                        String paymentIntentId = processPayment(totalAmount, request.getPaymentMethodId());
-                        reservation.setPaymentIntentId(paymentIntentId);
-                        reservation.setStatus(ReservationStatus.CONFIRMED);
-                    } catch (StripeException e) {
-                        // Even if payment fails, confirm the booking but mark payment as failed
-                        reservation.setStatus(ReservationStatus.CONFIRMED);
-                        logger.warn("Payment processing failed for reservation, but booking confirmed: {}", e.getMessage());
-                        // Payment status will be determined by the absence of payment intent ID
-                    }
-                }
-            } else {
-                // No payment method provided - still confirm the booking
-                reservation.setStatus(ReservationStatus.CONFIRMED);
-            }
-            
-            // Generate a temporary confirmation number before first save
-            // We'll update it with the actual ID-based number after save
-            String tempConfirmationNumber = "TEMP" + String.format("%08d", (int)(System.currentTimeMillis() % 100000000));
-            reservation.setConfirmationNumber(tempConfirmationNumber);
-            
-            // Save reservation
-            reservation = reservationRepository.save(reservation);
-            
-            // Generate and set final confirmation number using the actual ID
-            String confirmationNumber = generateConfirmationNumber(reservation.getId());
-            reservation.setConfirmationNumber(confirmationNumber);
-            reservation = reservationRepository.save(reservation);
-            
-            // Record booking creation in history
-            // TODO: Complete history integration after Phase 3.3
-            /*
-            try {
-                // Create a simple booking creation record
-                Map<String, Object> creationData = new HashMap<>();
-                creationData.put("totalAmount", reservation.getTotalAmount());
-                creationData.put("roomType", reservation.getRoom().getRoomType().toString());
-                creationData.put("checkInDate", reservation.getCheckInDate());
-                creationData.put("checkOutDate", reservation.getCheckOutDate());
-                
-                historyService.recordBookingAction(reservation, BookingActionType.CREATED, 
-                    reservation.getGuest().getEmail(), 
-                    "New booking created for " + reservation.getRoom().getRoomNumber() + 
-                    " from " + reservation.getCheckInDate() + " to " + reservation.getCheckOutDate(),
-                    reservation.getTotalAmount(), null, creationData);
-                
-                // Record payment processing if payment was made
-                if (reservation.getPaymentIntentId() != null) {
-                    historyService.recordPayment(reservation, 
-                        reservation.getGuest().getEmail(),
-                        reservation.getTotalAmount(), 
-                        "Initial payment for booking");
-                }
-            } catch (Exception e) {
-                logger.warn("Failed to record booking creation in history: {}", e.getMessage());
-            }
-            */
-            
-            // Convert to response DTO first (before email)
-            BookingResponse bookingResponse = convertToBookingResponse(reservation);
-            
-            // Generate management URL for anonymous guests
-            if (userEmail == null) {
-                String managementUrl = bookingTokenService.generateManagementUrl(
-                    reservation.getId(), 
-                    reservation.getGuestInfo().getEmail(), 
-                    frontendUrl
-                );
-                bookingResponse.setManagementUrl(managementUrl);
-            }
-            
-            // Send booking confirmation email automatically (separate transaction)
-            try {
-                String emailAddress = user != null ? user.getEmail() : reservation.getGuestInfo().getEmail();
-                emailService.sendBookingConfirmationEmail(bookingResponse, emailAddress, true);
-            } catch (Exception e) {
-                // Log email sending failure but don't fail the booking
-                System.err.println("Failed to send booking confirmation email: " + e.getMessage());
-                e.printStackTrace();
-            }
-            
-            return bookingResponse;
-        } catch (Exception e) {
-            throw e;
-        }
+        // Route all bookings to room type method - no backward compatibility
+        return createBookingByRoomType(request, userEmail);
     }
     
     /**
@@ -603,6 +487,11 @@ public class BookingService {
         Reservation reservation = new Reservation();
         reservation.setRoom(room);
         
+        // Set required fields for validation
+        reservation.setHotel(room.getHotel());
+        reservation.setRoomType(room.getRoomType());
+        reservation.setPricePerNight(room.getPricePerNight());
+        
         // Set user only for authenticated users (will be null for anonymous guests)
         reservation.setGuest(user);
         
@@ -631,6 +520,7 @@ public class BookingService {
         reservation.setCheckOutDate(request.getCheckOutDate());
         reservation.setTotalAmount(totalAmount);
         reservation.setSpecialRequests(request.getSpecialRequests());
+        reservation.setNumberOfGuests(request.getGuests()); // Set number of guests
         reservation.setStatus(ReservationStatus.CONFIRMED); // Immediate confirmation
         reservation.setTenantId(room.getHotel().getTenantId()); // Set tenant_id from the hotel so hotel admins can see the booking
         reservation.setPaymentMethod(request.getPaymentMethodId()); // Store the payment method
@@ -645,6 +535,11 @@ public class BookingService {
         Reservation reservation = new Reservation();
         reservation.setRoom(room);
         
+        // Set required fields for validation
+        reservation.setHotel(room.getHotel());
+        reservation.setRoomType(room.getRoomType());
+        reservation.setPricePerNight(room.getPricePerNight());
+        
         // Set user only for authenticated users (will be null for anonymous guests)
         reservation.setGuest(user);
         
@@ -673,6 +568,7 @@ public class BookingService {
         reservation.setCheckOutDate(request.getCheckOutDate());
         reservation.setTotalAmount(totalAmount);
         reservation.setSpecialRequests(request.getSpecialRequests());
+        reservation.setNumberOfGuests(request.getGuests()); // Set number of guests
         reservation.setStatus(ReservationStatus.CONFIRMED); // Immediate confirmation
         reservation.setTenantId(room.getHotel().getTenantId()); // Set tenant_id from the hotel so hotel admins can see the booking
         reservation.setPaymentMethod(request.getPaymentMethodId()); // Store the payment method
@@ -717,7 +613,8 @@ public class BookingService {
         response.setCreatedAt(reservation.getCreatedAt());
         
         Room room = reservation.getRoom();
-        response.setRoomNumber(room.getRoomNumber());
+        // Don't show specific room number for room type bookings - room will be assigned at check-in
+        response.setRoomNumber("To be assigned at check-in");
         response.setRoomType(room.getRoomType().name());
         response.setPricePerNight(room.getPricePerNight());
         response.setHotelName(room.getHotel().getName());
@@ -726,6 +623,7 @@ public class BookingService {
         // Guest details - use guest info which works for both registered and anonymous guests
         response.setGuestName(reservation.getGuestInfo().getName());
         response.setGuestEmail(reservation.getGuestInfo().getEmail());
+        response.setNumberOfGuests(reservation.getNumberOfGuests());
         
         // Special requests
         response.setSpecialRequests(reservation.getSpecialRequests());
@@ -897,16 +795,17 @@ public class BookingService {
                 reservation.setTotalAmount(reservation.getRoom().getPricePerNight().multiply(BigDecimal.valueOf(newNights)));
             }
             
-            // Handle room changes
-            if (request.getNewRoomId() != null && !request.getNewRoomId().equals(reservation.getRoom().getId())) {
-                Room newRoom = roomRepository.findById(request.getNewRoomId())
-                    .orElseThrow(() -> new ResourceNotFoundException("New room not found"));
+            // Handle room changes by room type
+            if (request.getNewRoomType() != null && !request.getNewRoomType().equals(reservation.getRoom().getRoomType().name())) {
+                // Find an available room of the new type
+                Room newRoom = roomRepository.findFirstAvailableRoomOfTypePublic(
+                    reservation.getHotel().getId(),
+                    request.getNewRoomType(),
+                    reservation.getCheckInDate(),
+                    reservation.getCheckOutDate()
+                ).orElseThrow(() -> new BookingException("No available rooms of type " + request.getNewRoomType() + " for your dates"));
                 
-                // Check if new room is available
-                if (!isRoomAvailableForModification(request.getNewRoomId(), 
-                    reservation.getCheckInDate(), reservation.getCheckOutDate(), reservation.getId())) {
-                    return new BookingModificationResponse(false, "Selected room is not available for your dates");
-                }
+                // Room is available if we found one above
                 
                 // Calculate price difference for room upgrade/downgrade
                 long nights = ChronoUnit.DAYS.between(reservation.getCheckInDate(), reservation.getCheckOutDate());
@@ -1003,6 +902,11 @@ public class BookingService {
                     currentGuestInfo.getPhone()
                 );
                 reservation.setGuestInfo(updatedGuestInfo);
+            }
+            
+            // Handle number of guests changes
+            if (request.getNewNumberOfGuests() != null && request.getNewNumberOfGuests() > 0) {
+                reservation.setNumberOfGuests(request.getNewNumberOfGuests());
             }
             
             // Update special requests
@@ -1231,16 +1135,17 @@ public class BookingService {
                 reservation.setTotalAmount(reservation.getRoom().getPricePerNight().multiply(BigDecimal.valueOf(newNights)));
             }
             
-            // Handle room changes by ID
-            if (request.getNewRoomId() != null && !request.getNewRoomId().equals(reservation.getRoom().getId())) {
-                Room newRoom = roomRepository.findById(request.getNewRoomId())
-                    .orElseThrow(() -> new ResourceNotFoundException("New room not found"));
+            // Handle room changes by room type
+            if (request.getNewRoomType() != null && !request.getNewRoomType().equals(reservation.getRoom().getRoomType().name())) {
+                // Find an available room of the new type
+                Room newRoom = roomRepository.findFirstAvailableRoomOfTypePublic(
+                    reservation.getHotel().getId(),
+                    request.getNewRoomType(),
+                    reservation.getCheckInDate(),
+                    reservation.getCheckOutDate()
+                ).orElseThrow(() -> new BookingException("No available rooms of type " + request.getNewRoomType() + " for your dates"));
                 
-                // Check if new room is available
-                if (!isRoomAvailableForModification(request.getNewRoomId(), 
-                    reservation.getCheckInDate(), reservation.getCheckOutDate(), reservation.getId())) {
-                    return new BookingModificationResponse(false, "Selected room is not available for your dates");
-                }
+                // Room is available if we found one above
                 
                 // Calculate price difference for room upgrade/downgrade
                 long nights = ChronoUnit.DAYS.between(reservation.getCheckInDate(), reservation.getCheckOutDate());
@@ -1307,6 +1212,11 @@ public class BookingService {
             // Update special requests
             if (request.getNewSpecialRequests() != null) {
                 reservation.setSpecialRequests(request.getNewSpecialRequests());
+            }
+            
+            // Handle number of guests changes
+            if (request.getNewNumberOfGuests() != null && request.getNewNumberOfGuests() > 0) {
+                reservation.setNumberOfGuests(request.getNewNumberOfGuests());
             }
             
             // Update modification timestamp
@@ -1452,10 +1362,16 @@ public class BookingService {
         LocalDate newCheckIn = request.getNewCheckInDate() != null ? request.getNewCheckInDate() : reservation.getCheckInDate();
         LocalDate newCheckOut = request.getNewCheckOutDate() != null ? request.getNewCheckOutDate() : reservation.getCheckOutDate();
         
-        if (request.getNewRoomId() != null) {
-            // Check if the new room is available for the dates
-            if (!isRoomAvailableForModification(request.getNewRoomId(), newCheckIn, newCheckOut, reservation.getId())) {
-                return new BookingModificationResponse(false, "Requested room is not available for the new dates");
+        if (request.getNewRoomType() != null) {
+            // Check if there are available rooms of the new type for the dates
+            Optional<Room> availableRoom = roomRepository.findFirstAvailableRoomOfTypePublic(
+                reservation.getHotel().getId(),
+                request.getNewRoomType(),
+                newCheckIn,
+                newCheckOut
+            );
+            if (availableRoom.isEmpty()) {
+                return new BookingModificationResponse(false, "No rooms of type " + request.getNewRoomType() + " are available for the new dates");
             }
         } else {
             // Check if current room is available for new dates
@@ -1483,8 +1399,14 @@ public class BookingService {
         long newNights = ChronoUnit.DAYS.between(newCheckIn, newCheckOut);
         
         Room targetRoom = reservation.getRoom();
-        if (request.getNewRoomId() != null) {
-            targetRoom = roomRepository.findById(request.getNewRoomId()).orElse(reservation.getRoom());
+        if (request.getNewRoomType() != null) {
+            // Find a room of the new type for price calculation
+            targetRoom = roomRepository.findFirstAvailableRoomOfTypePublic(
+                reservation.getHotel().getId(),
+                request.getNewRoomType(),
+                newCheckIn,
+                newCheckOut
+            ).orElse(reservation.getRoom());
         }
         
         if (targetRoom != null) {

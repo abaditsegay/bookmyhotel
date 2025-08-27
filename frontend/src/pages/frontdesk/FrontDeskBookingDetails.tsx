@@ -37,7 +37,7 @@ interface BookingData {
   guestEmail: string;
   hotelName: string;
   hotelAddress: string;
-  roomNumber: string;
+  roomNumber?: string;
   roomType: string;
   checkInDate: string;
   checkOutDate: string;
@@ -465,7 +465,7 @@ const FrontDeskBookingDetails: React.FC = () => {
                     <TextField
                       fullWidth
                       label="Room Number"
-                      value={currentBooking?.roomNumber || ''}
+                      value={currentBooking?.roomNumber || 'TBA (To Be Assigned)'}
                       disabled
                       variant="filled"
                     />

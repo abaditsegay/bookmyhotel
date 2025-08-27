@@ -42,7 +42,7 @@ public class BookingController {
     private BookingService bookingService;
     
     /**
-     * Create a new booking
+     * Create a new booking by room type (the only booking method)
      */
     @PostMapping
     public ResponseEntity<BookingResponse> createBooking(@Valid @RequestBody BookingRequest request, Authentication auth) {
@@ -53,16 +53,16 @@ public class BookingController {
     }
     
     /**
-     * Create a new booking by room type (no specific room assignment)
+     * @deprecated Legacy endpoint - use main POST endpoint instead
+     * Kept for API compatibility but delegates to room type booking
      */
     @PostMapping("/room-type")
+    @Deprecated
     public ResponseEntity<BookingResponse> createBookingByRoomType(
             @Valid @RequestBody BookingRequest request, 
             Authentication auth) {
-        String userEmail = (auth != null) ? auth.getName() : null;
-        
-        BookingResponse response = bookingService.createBookingByRoomType(request, userEmail);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        // Delegate to main endpoint
+        return createBooking(request, auth);
     }
     
     /**

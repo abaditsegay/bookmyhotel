@@ -8,7 +8,7 @@ export interface FrontDeskBooking {
   reservationId: number;
   guestName: string;
   guestEmail: string;
-  roomNumber: string;
+  roomNumber?: string;
   roomType: string;
   checkInDate: string;
   checkOutDate: string;

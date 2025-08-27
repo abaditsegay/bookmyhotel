@@ -11,7 +11,7 @@ export interface BookingResponse {
   totalAmount: number;
   paymentIntentId?: string;
   createdAt: string;
-  roomNumber: string;
+  roomNumber?: string;
   roomType: string;
   pricePerNight: number;
   hotelName: string;

@@ -378,12 +378,13 @@ public class StaffScheduleService {
 
         List<User> staffMembers;
         if (admin.getHotel() != null) {
-            // Hotel admin - get staff from their hotel
-            List<UserRole> staffRoles = Arrays.asList(UserRole.FRONTDESK, UserRole.HOUSEKEEPING, UserRole.HOTEL_ADMIN);
-            logger.info("🏨 Searching for staff in hotel {} with roles: {}", admin.getHotel().getId(), staffRoles);
+            // Hotel admin or operations supervisor - get staff from their hotel
+            // Using optimized native query for better performance
+            List<String> staffRoleNames = Arrays.asList("FRONTDESK", "HOUSEKEEPING", "HOTEL_ADMIN", "OPERATIONS_SUPERVISOR");
+            logger.info("🏨 Searching for staff in hotel {} with roles: {}", admin.getHotel().getId(), staffRoleNames);
             
-            staffMembers = userRepository.findStaffByHotelId(admin.getHotel().getId(), staffRoles);
-            logger.info("📋 Found {} staff members", staffMembers.size());
+            staffMembers = userRepository.findStaffByHotelIdNative(admin.getHotel().getId(), staffRoleNames);
+            logger.info("📋 Found {} staff members using optimized query", staffMembers.size());
             
             for (User staff : staffMembers) {
                 logger.info("👤 Staff: id={}, email={}, hotel={}", 

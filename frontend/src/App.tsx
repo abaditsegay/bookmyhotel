@@ -41,6 +41,7 @@ import MyBookings from './components/MyBookings';
 import OperationsPage from './pages/operations/OperationsPage';
 import StaffDashboardPage from './pages/StaffDashboardPage';
 import HomePage from './pages/HomePage';
+import ShopRoutes from './pages/shop/ShopRoutes';
 
 // Role-based Router Component - redirects based on user role
 const RoleBasedRouter: React.FC = () => {
@@ -371,6 +372,13 @@ function App() {
         <Route path="/frontdesk/schedules" element={
           <ProtectedRoute requiredRole="FRONTDESK">
             <StaffScheduleDashboard />
+          </ProtectedRoute>
+        } />
+        
+        {/* Shop Routes - Accessible by Hotel Admin and Front Desk */}
+        <Route path="/shop/*" element={
+          <ProtectedRoute requiredRoles={['HOTEL_ADMIN', 'FRONTDESK']}>
+            <ShopRoutes />
           </ProtectedRoute>
         } />
         

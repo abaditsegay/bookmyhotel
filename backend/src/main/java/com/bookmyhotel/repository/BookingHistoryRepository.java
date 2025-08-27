@@ -61,7 +61,8 @@ public interface BookingHistoryRepository extends JpaRepository<BookingHistory, 
      * Find recent booking modifications for a specific tenant
      */
     @Query("SELECT bh FROM BookingHistory bh " +
-           "WHERE bh.reservation.room.hotel.tenantId = :tenantId " +
+           "WHERE (bh.reservation.assignedRoom IS NOT NULL AND bh.reservation.assignedRoom.hotel.tenantId = :tenantId " +
+           "    OR bh.reservation.assignedRoom IS NULL AND bh.reservation.hotel.tenantId = :tenantId) " +
            "AND bh.actionType IN ('MODIFIED', 'CANCELLED') " +
            "AND bh.createdAt >= :sinceDate " +
            "ORDER BY bh.createdAt DESC")

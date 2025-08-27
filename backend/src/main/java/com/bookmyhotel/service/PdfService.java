@@ -79,13 +79,15 @@ public class PdfService {
             // Guest Information
             addTableRow(table, "Guest Name:", booking.getGuestName());
             addTableRow(table, "Email:", booking.getGuestEmail());
+            addTableRow(table, "Number of Guests:", String.valueOf(booking.getNumberOfGuests() != null ? booking.getNumberOfGuests() : 1));
 
             // Hotel Information
             addTableRow(table, "Hotel:", booking.getHotelName());
             addTableRow(table, "Address:", booking.getHotelAddress());
 
             // Room Information
-            addTableRow(table, "Room:", booking.getRoomNumber() + " (" + booking.getRoomType() + ")");
+            addTableRow(table, "Room Type:", booking.getRoomType());
+            addTableRow(table, "Room Assignment:", "Room will be assigned at check-in");
 
             // Dates
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy");
@@ -110,6 +112,7 @@ public class PdfService {
                 .setFontSize(14)
                 .setBold());
 
+            document.add(new Paragraph("• Your specific room number will be assigned at check-in"));
             document.add(new Paragraph("• Please bring a valid ID for check-in"));
             document.add(new Paragraph("• Check-in time: 3:00 PM | Check-out time: 11:00 AM"));
             document.add(new Paragraph("• For any changes or cancellations, please contact the hotel directly"));

@@ -6,15 +6,15 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 /**
- * Booking request DTO
+ * Booking request DTO - Room Type Booking Only
  */
 public class BookingRequest {
     
-    // For individual room booking (traditional approach)
-    private Long roomId;
-    
-    // For room type booking (new approach)
+    // Required fields for room type booking
+    @NotNull(message = "Hotel ID is required")
     private Long hotelId;
+    
+    @NotNull(message = "Room type is required")
     private String roomType;
     
     @NotNull(message = "Check-in date is required")
@@ -41,13 +41,6 @@ public class BookingRequest {
     // Constructors
     public BookingRequest() {}
     
-    public BookingRequest(Long roomId, LocalDate checkInDate, LocalDate checkOutDate, Integer guests) {
-        this.roomId = roomId;
-        this.checkInDate = checkInDate;
-        this.checkOutDate = checkOutDate;
-        this.guests = guests;
-    }
-    
     // Constructor for room type booking
     public BookingRequest(Long hotelId, String roomType, LocalDate checkInDate, LocalDate checkOutDate, Integer guests) {
         this.hotelId = hotelId;
@@ -58,14 +51,6 @@ public class BookingRequest {
     }
     
     // Getters and Setters
-    public Long getRoomId() {
-        return roomId;
-    }
-    
-    public void setRoomId(Long roomId) {
-        this.roomId = roomId;
-    }
-    
     public Long getHotelId() {
         return hotelId;
     }

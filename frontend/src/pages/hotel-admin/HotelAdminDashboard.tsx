@@ -124,6 +124,87 @@ const HotelAdminDashboard: React.FC = () => {
   
   const [hotelEditDialogOpen, setHotelEditDialogOpen] = useState(false);
 
+  // All useEffect hooks must be defined before any conditional returns
+  // Load initial data on component mount
+  React.useEffect(() => {
+    // Load essential data including statistics for dashboard cards
+    loadBookings();
+    loadBookingStats();
+    loadReportsData(); // Load hotel statistics for dashboard cards
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Load hotel data on initial mount
+  useEffect(() => {
+    if (token) {
+      loadHotelData();
+    }
+  }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Load initial data when component mounts or tab changes
+  useEffect(() => {
+    // Load bookings when Bookings tab (index 3) is selected
+    if (activeTab === 3 && token) {
+      loadBookings();
+      loadBookingStats();
+    }
+  }, [activeTab, token, bookingPage]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Sync tab state with URL parameter changes (for browser back/forward navigation)
+  useEffect(() => {
+    const currentTab = getInitialTab();
+    if (currentTab !== activeTab) {
+      setActiveTab(currentTab);
+    }
+  }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Role-based access control - check after all hooks
+  const hasHotelAdminAccess = user?.roles?.includes('HOTEL_ADMIN') || user?.role === 'HOTEL_ADMIN';
+  
+  // If user doesn't have hotel admin access, show error and redirect
+  if (!hasHotelAdminAccess) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Alert severity="error" sx={{ mb: 2 }}>
+          <Typography variant="h6" gutterBottom>
+            Access Restricted
+          </Typography>
+          <Typography variant="body1" gutterBottom>
+            You need HOTEL_ADMIN role to access the hotel administration dashboard.
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Your current role is: <strong>{user?.roles?.[0] || user?.role || 'Unknown'}</strong>
+          </Typography>
+          <Box sx={{ mt: 2 }}>
+            <Button 
+              variant="contained" 
+              onClick={() => navigate('/')}
+              sx={{ mr: 1 }}
+            >
+              Go to Home
+            </Button>
+            {user?.roles?.includes('OPERATIONS_SUPERVISOR') && (
+              <Button 
+                variant="outlined" 
+                onClick={() => navigate('/operations/dashboard')}
+              >
+                Go to Operations Dashboard
+              </Button>
+            )}
+            {user?.roles?.includes('FRONTDESK') && (
+              <Button 
+                variant="outlined" 
+                onClick={() => navigate('/frontdesk/dashboard')}
+              >
+                Go to Front Desk Dashboard
+              </Button>
+            )}
+          </Box>
+        </Alert>
+      </Box>
+    );
+  }
+
   // Helper function to render breadcrumb navigation
   const renderBackToReportsButton = () => {
     if (!cameFromReports) return null;
@@ -283,16 +364,7 @@ const HotelAdminDashboard: React.FC = () => {
     }
   };
 
-  // Load initial data on component mount
-  React.useEffect(() => {
-    // Load essential data including statistics for dashboard cards
-    loadBookings();
-    loadBookingStats();
-    loadReportsData(); // Load hotel statistics for dashboard cards
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Handle booking search
+  // Helper function to render breadcrumb navigation
   const handleBookingSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setBookingSearch(event.target.value);
   };
@@ -427,30 +499,6 @@ const HotelAdminDashboard: React.FC = () => {
   const handleEditHotel = () => {
     setHotelEditDialogOpen(true);
   };
-
-  // Load hotel data on initial mount
-  useEffect(() => {
-    if (token) {
-      loadHotelData();
-    }
-  }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Load initial data when component mounts or tab changes
-  useEffect(() => {
-    // Load bookings when Bookings tab (index 3) is selected
-    if (activeTab === 3 && token) {
-      loadBookings();
-      loadBookingStats();
-    }
-  }, [activeTab, token, bookingPage]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Sync tab state with URL parameter changes (for browser back/forward navigation)
-  useEffect(() => {
-    const currentTab = getInitialTab();
-    if (currentTab !== activeTab) {
-      setActiveTab(currentTab);
-    }
-  }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Use statistics data from API instead of basic hotel data
   const hotelData = hotel ? {

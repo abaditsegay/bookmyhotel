@@ -37,6 +37,7 @@ interface BookingData {
   confirmationNumber: string;
   guestName: string;
   guestEmail: string;
+  numberOfGuests: number;
   hotelName: string;
   hotelAddress: string;
   roomNumber: string;
@@ -72,6 +73,7 @@ const GuestBookingManagementPage: React.FC = () => {
     newCheckOutDate: booking?.checkOutDate || '',
     newRoomType: booking?.roomType || '',
     newGuestEmail: booking?.guestEmail || '',
+    newNumberOfGuests: booking?.numberOfGuests || 1,
     modificationReason: ''
   });
   
@@ -125,6 +127,7 @@ const GuestBookingManagementPage: React.FC = () => {
         newCheckOutDate: booking.checkOutDate || '',
         newRoomType: booking.roomType || '',
         newGuestEmail: booking.guestEmail || '',
+        newNumberOfGuests: booking.numberOfGuests || 1,
         modificationReason: ''
       });
     }
@@ -213,6 +216,7 @@ const GuestBookingManagementPage: React.FC = () => {
         newCheckInDate: modificationData.newCheckInDate !== booking.checkInDate ? modificationData.newCheckInDate : undefined,
         newCheckOutDate: modificationData.newCheckOutDate !== booking.checkOutDate ? modificationData.newCheckOutDate : undefined,
         newRoomType: modificationData.newRoomType !== booking.roomType ? modificationData.newRoomType : undefined,
+        newNumberOfGuests: modificationData.newNumberOfGuests !== booking.numberOfGuests ? modificationData.newNumberOfGuests : undefined,
         reason: modificationData.modificationReason
       };
       
@@ -462,7 +466,7 @@ const GuestBookingManagementPage: React.FC = () => {
                 <CardContent>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                     <HotelIcon sx={{ mr: 1 }} />
-                    <Typography variant="h6">Hotel & Room</Typography>
+                    <Typography variant="h6">Hotel & Room Type</Typography>
                   </Box>
                   <Typography variant="body1">
                     <strong>Hotel:</strong> {booking.hotelName}
@@ -471,7 +475,10 @@ const GuestBookingManagementPage: React.FC = () => {
                     {booking.hotelAddress}
                   </Typography>
                   <Typography variant="body1">
-                    <strong>Room:</strong> {booking.roomNumber} ({booking.roomType})
+                    <strong>Room Type:</strong> {booking.roomType}
+                  </Typography>
+                  <Typography variant="body1" sx={{ color: 'success.main', fontWeight: 'bold' }}>
+                    <strong>Room Assignment:</strong> Room will be assigned at check-in
                   </Typography>
                   <Typography variant="body1">
                     <strong>Rate:</strong> ${booking.pricePerNight}/night
@@ -497,6 +504,11 @@ const GuestBookingManagementPage: React.FC = () => {
                     <Grid item xs={12} sm={6}>
                       <Typography variant="body1">
                         <strong>Email:</strong> {booking.guestEmail}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <Typography variant="body1">
+                        <strong>Number of Guests:</strong> {booking.numberOfGuests || 1}
                       </Typography>
                     </Grid>
                   </Grid>
@@ -543,6 +555,17 @@ const GuestBookingManagementPage: React.FC = () => {
                 onChange={(e) => setModificationData({ ...modificationData, newCheckOutDate: e.target.value })}
                 InputLabelProps={{ shrink: true }}
                 inputProps={{ min: modificationData.newCheckInDate }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Number of Guests"
+                type="number"
+                fullWidth
+                value={modificationData.newNumberOfGuests}
+                onChange={(e) => setModificationData({ ...modificationData, newNumberOfGuests: parseInt(e.target.value) || 1 })}
+                inputProps={{ min: 1, max: 10 }}
+                helperText="Update the number of guests for your booking"
               />
             </Grid>
             <Grid item xs={12}>

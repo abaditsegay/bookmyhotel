@@ -340,10 +340,7 @@ const BookingPage: React.FC = () => {
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
               <Typography variant="body2">
-                <strong>Room:</strong> {roomData.roomNumber || 'Room Type Booking'}
-              </Typography>
-              <Typography variant="body2">
-                <strong>Type:</strong> {roomData.roomType}
+                <strong>Room Type:</strong> {roomData.roomType}
               </Typography>
               <Typography variant="body2">
                 <strong>Capacity:</strong> Up to {roomData.capacity} guests

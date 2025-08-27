@@ -36,9 +36,10 @@ interface BookingData {
   confirmationNumber: string;
   guestName: string;
   guestEmail: string;
+  numberOfGuests?: number;
   hotelName: string;
   hotelAddress: string;
-  roomNumber: string;
+  roomNumber?: string;
   roomType: string;
   checkInDate: string;
   checkOutDate: string;
@@ -358,13 +359,13 @@ const BookingConfirmationPage: React.FC = () => {
             </Typography>
             <Box sx={{ mb: 2 }}>
               <Typography variant="body1">
-                <strong>Room:</strong> {booking.roomNumber}
-              </Typography>
-              <Typography variant="body1">
-                <strong>Type:</strong> {booking.roomType}
+                <strong>Room Type:</strong> {booking.roomType}
               </Typography>
               <Typography variant="body1">
                 <strong>Rate:</strong> ${booking.pricePerNight}/night
+              </Typography>
+              <Typography variant="body1" sx={{ color: 'success.main', fontWeight: 'bold' }}>
+                <strong>Room Assignment:</strong> Room will be assigned at check-in
               </Typography>
             </Box>
           </Grid>
@@ -380,6 +381,9 @@ const BookingConfirmationPage: React.FC = () => {
               </Typography>
               <Typography variant="body1">
                 <strong>Email:</strong> {booking.guestEmail}
+              </Typography>
+              <Typography variant="body1">
+                <strong>Number of Guests:</strong> {booking.numberOfGuests || 1}
               </Typography>
             </Box>
           </Grid>
@@ -410,6 +414,7 @@ const BookingConfirmationPage: React.FC = () => {
           <strong>Important Information:</strong>
         </Typography>
         <Typography variant="body2">
+          • <strong>Your specific room number will be assigned at check-in</strong><br/>
           • Please bring a valid ID for check-in<br/>
           • Check-in time: 3:00 PM | Check-out time: 11:00 AM<br/>
           • For any changes or cancellations, please contact the hotel directly<br/>

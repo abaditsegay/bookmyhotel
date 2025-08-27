@@ -214,7 +214,7 @@ const FindBookingPage: React.FC = () => {
                     Room
                   </Typography>
                   <Typography variant="body1">
-                    {booking.roomNumber} - {booking.roomType}
+                    {booking.roomType}
                   </Typography>
                 </Box>
                 

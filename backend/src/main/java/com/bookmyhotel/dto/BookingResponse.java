@@ -29,6 +29,7 @@ public class BookingResponse {
     // Guest details
     private String guestName;
     private String guestEmail;
+    private Integer numberOfGuests;
     
     // Special requests
     private String specialRequests;
@@ -172,6 +173,14 @@ public class BookingResponse {
     
     public void setGuestEmail(String guestEmail) {
         this.guestEmail = guestEmail;
+    }
+    
+    public Integer getNumberOfGuests() {
+        return numberOfGuests;
+    }
+    
+    public void setNumberOfGuests(Integer numberOfGuests) {
+        this.numberOfGuests = numberOfGuests;
     }
     
     public String getSpecialRequests() {

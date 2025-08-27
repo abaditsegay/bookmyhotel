@@ -82,10 +82,10 @@ public class StaffScheduleController {
     }
 
     /**
-     * Update schedule status (Hotel Admin, Front Desk, Staff)
+     * Update schedule status (Hotel Admin, Front Desk, Operations Supervisor, Staff)
      */
     @PatchMapping("/{scheduleId}/status")
-    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONT_DESK', 'HOUSEKEEPING')")
+    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONT_DESK', 'OPERATIONS_SUPERVISOR', 'HOUSEKEEPING')")
     public ResponseEntity<StaffScheduleResponse> updateScheduleStatus(
             @PathVariable Long scheduleId,
             @Valid @RequestBody ScheduleStatusUpdateRequest request) {
@@ -108,10 +108,10 @@ public class StaffScheduleController {
     }
 
     /**
-     * Get all schedules with filters (Hotel Admin, Front Desk)
+     * Get all schedules with filters (Hotel Admin, Front Desk, Operations Supervisor)
      */
     @GetMapping
-    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONT_DESK')")
+    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONT_DESK', 'OPERATIONS_SUPERVISOR')")
     public ResponseEntity<List<StaffScheduleResponse>> getSchedules(
             @RequestParam(required = false) Long hotelId,
             @RequestParam(required = false) Department department,
@@ -129,10 +129,10 @@ public class StaffScheduleController {
     }
 
     /**
-     * Get all staff members for scheduling (Hotel Admin, Front Desk)
+     * Get all staff members for scheduling (Hotel Admin, Front Desk, Operations Supervisor)
      */
     @GetMapping("/staff")
-    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONT_DESK')")
+    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONT_DESK', 'OPERATIONS_SUPERVISOR')")
     public ResponseEntity<List<StaffMemberResponse>> getAllStaff(Authentication auth) {
         logger.info("🔍 GET /staff endpoint called by user: {}", auth.getName());
         
@@ -146,7 +146,7 @@ public class StaffScheduleController {
      * Get schedule by ID
      */
     @GetMapping("/{scheduleId}")
-    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONT_DESK', 'HOUSEKEEPING')")
+    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONT_DESK', 'OPERATIONS_SUPERVISOR', 'HOUSEKEEPING')")
     public ResponseEntity<StaffScheduleResponse> getScheduleById(@PathVariable Long scheduleId) {
         StaffScheduleResponse response = staffScheduleService.getScheduleById(scheduleId);
         return ResponseEntity.ok(response);
@@ -156,7 +156,7 @@ public class StaffScheduleController {
      * Get schedules by hotel and date range
      */
     @GetMapping("/hotel/{hotelId}")
-    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONT_DESK')")
+    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONT_DESK', 'OPERATIONS_SUPERVISOR')")
     public ResponseEntity<List<StaffScheduleResponse>> getSchedulesByHotelAndDateRange(
             @PathVariable Long hotelId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
@@ -171,7 +171,7 @@ public class StaffScheduleController {
      * Get schedules by staff and date range
      */
     @GetMapping("/staff/{staffId}")
-    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONT_DESK')")
+    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONT_DESK', 'OPERATIONS_SUPERVISOR')")
     public ResponseEntity<List<StaffScheduleResponse>> getSchedulesByStaffAndDateRange(
             @PathVariable Long staffId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
@@ -186,7 +186,7 @@ public class StaffScheduleController {
      * Get schedules by department and date range
      */
     @GetMapping("/hotel/{hotelId}/department/{department}")
-    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONT_DESK')")
+    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONT_DESK', 'OPERATIONS_SUPERVISOR')")
     public ResponseEntity<List<StaffScheduleResponse>> getSchedulesByDepartmentAndDateRange(
             @PathVariable Long hotelId,
             @PathVariable Department department,
@@ -202,7 +202,7 @@ public class StaffScheduleController {
      * Get schedules for a specific date
      */
     @GetMapping("/hotel/{hotelId}/date/{date}")
-    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONT_DESK')")
+    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONT_DESK', 'OPERATIONS_SUPERVISOR')")
     public ResponseEntity<List<StaffScheduleResponse>> getSchedulesByDate(
             @PathVariable Long hotelId,
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
@@ -215,7 +215,7 @@ public class StaffScheduleController {
      * Get my today's schedule (for staff members)
      */
     @GetMapping("/my-schedule/today")
-    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONT_DESK', 'HOUSEKEEPING')")
+    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONT_DESK', 'OPERATIONS_SUPERVISOR', 'HOUSEKEEPING')")
     public ResponseEntity<List<StaffScheduleResponse>> getMyTodaySchedule(Authentication auth) {
         String staffEmail = auth.getName();
         List<StaffScheduleResponse> schedules = staffScheduleService.getMyTodaySchedule(staffEmail);
@@ -226,7 +226,7 @@ public class StaffScheduleController {
      * Get my upcoming schedules (for staff members)
      */
     @GetMapping("/my-schedule/upcoming")
-    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONT_DESK', 'HOUSEKEEPING')")
+    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONT_DESK', 'OPERATIONS_SUPERVISOR', 'HOUSEKEEPING')")
     public ResponseEntity<List<StaffScheduleResponse>> getMyUpcomingSchedules(Authentication auth) {
         String staffEmail = auth.getName();
         List<StaffScheduleResponse> schedules = staffScheduleService.getMyUpcomingSchedules(staffEmail);
@@ -237,7 +237,7 @@ public class StaffScheduleController {
      * Get schedules with pagination
      */
     @GetMapping("/hotel/{hotelId}/paginated")
-    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONT_DESK')")
+    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONT_DESK', 'OPERATIONS_SUPERVISOR')")
     public ResponseEntity<Page<StaffScheduleResponse>> getSchedulesWithPagination(
             @PathVariable Long hotelId,
             @RequestParam(defaultValue = "0") int page,
@@ -252,7 +252,7 @@ public class StaffScheduleController {
      * Get schedule statistics by department
      */
     @GetMapping("/hotel/{hotelId}/stats/department")
-    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONT_DESK')")
+    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONT_DESK', 'OPERATIONS_SUPERVISOR')")
     public ResponseEntity<Map<Department, Long>> getScheduleStatsByDepartment(
             @PathVariable Long hotelId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,

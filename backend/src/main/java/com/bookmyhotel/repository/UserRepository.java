@@ -116,9 +116,21 @@ public interface UserRepository extends JpaRepository<User, Long> {
     long countByTenantId(String tenantId);
     
     /**
-     * Find staff members by hotel ID (users with staff roles)
+     * Find staff members by hotel ID (users with staff roles) - OPTIMIZED VERSION
+     * Uses INNER JOIN instead of EXISTS for better performance
      */
-    @Query("SELECT u FROM User u WHERE u.hotel.id = :hotelId AND EXISTS (SELECT 1 FROM u.roles r WHERE r IN :staffRoles)")
+    @Query("SELECT DISTINCT u FROM User u " +
+           "INNER JOIN u.roles r " +
+           "WHERE u.hotel.id = :hotelId AND r IN :staffRoles")
     List<User> findStaffByHotelId(@Param("hotelId") Long hotelId, @Param("staffRoles") List<UserRole> staffRoles);
+    
+    /**
+     * Alternative native query for even better performance
+     */
+    @Query(value = "SELECT DISTINCT u.* FROM users u " +
+                   "INNER JOIN user_roles ur ON u.id = ur.user_id " +
+                   "WHERE u.hotel_id = :hotelId AND ur.role IN :staffRoles", 
+           nativeQuery = true)
+    List<User> findStaffByHotelIdNative(@Param("hotelId") Long hotelId, @Param("staffRoles") List<String> staffRoles);
     
 }

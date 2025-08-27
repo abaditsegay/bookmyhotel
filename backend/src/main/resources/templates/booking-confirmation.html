@@ -161,6 +161,10 @@
                 <td>Email</td>
                 <td th:text="${booking.guestEmail}"></td>
             </tr>
+            <tr>
+                <td>Number of Guests</td>
+                <td th:text="${booking.numberOfGuests}"></td>
+            </tr>
         </table>
 
         <table>
@@ -178,6 +182,10 @@
             <tr>
                 <td>Room Type</td>
                 <td th:text="${booking.roomType}"></td>
+            </tr>
+            <tr>
+                <td>Room Assignment</td>
+                <td><strong style="color: #2e7d32;">Room will be assigned at check-in</strong></td>
             </tr>
         </table>
 
@@ -224,6 +232,7 @@
         <div class="important-box">
             <h4>Important Information</h4>
             <ul>
+                <li><strong>Your specific room number will be assigned at check-in</strong></li>
                 <li>Please bring a valid government-issued photo ID</li>
                 <li>Check-in: 3:00 PM | Check-out: 11:00 AM</li>
                 <li>Contact hotel directly for changes or cancellations</li>

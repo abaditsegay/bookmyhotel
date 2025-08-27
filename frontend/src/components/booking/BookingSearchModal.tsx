@@ -282,13 +282,13 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
                 <Grid item xs={12}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                     <HotelIcon sx={{ mr: 1, color: 'primary.main', fontSize: 20 }} />
-                    <Typography variant="body2" color="text.secondary">Hotel & Room</Typography>
+                    <Typography variant="body2" color="text.secondary">Hotel & Room Type</Typography>
                   </Box>
                   <Typography variant="body1" fontWeight="medium">
                     {booking.hotelName}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Room {booking.roomNumber} - {booking.roomType}
+                    Room Type {booking.roomType}
                   </Typography>
                 </Grid>
 

@@ -21,8 +21,6 @@ public class BookingModificationRequest {
     // Remove @Future constraint for admin modifications
     private LocalDate newCheckOutDate;
     
-    private Long newRoomId; // For room type changes
-    
     private String newRoomType; // For room type changes by name
     
     private String newSpecialRequests;
@@ -33,6 +31,9 @@ public class BookingModificationRequest {
     
     // New email address for the guest (if they want to change it)
     private String newGuestEmail;
+    
+    // New number of guests
+    private Integer newNumberOfGuests;
     
     // Modification reason
     private String reason;
@@ -78,14 +79,6 @@ public class BookingModificationRequest {
         this.newCheckOutDate = newCheckOutDate;
     }
     
-    public Long getNewRoomId() {
-        return newRoomId;
-    }
-    
-    public void setNewRoomId(Long newRoomId) {
-        this.newRoomId = newRoomId;
-    }
-    
     public String getNewRoomType() {
         return newRoomType;
     }
@@ -124,6 +117,14 @@ public class BookingModificationRequest {
     
     public void setNewGuestEmail(String newGuestEmail) {
         this.newGuestEmail = newGuestEmail;
+    }
+    
+    public Integer getNewNumberOfGuests() {
+        return newNumberOfGuests;
+    }
+    
+    public void setNewNumberOfGuests(Integer newNumberOfGuests) {
+        this.newNumberOfGuests = newNumberOfGuests;
     }
     
     public String getReason() {
