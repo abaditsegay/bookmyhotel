@@ -61,11 +61,11 @@ const HotelSearchPage: React.FC = () => {
 
   return (
     <Container maxWidth="xl" sx={{ py: 3 }}>
-      {/* Three-column layout with scrollable ad panes on sides and 50% center search form */}
+      {/* Three-column layout with scrollable ad panes on sides and 60% center search form */}
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: isOperationsUser ? '1fr' : '1fr 2fr 1fr', // 25% - 50% - 25% split for non-operations users
+          gridTemplateColumns: isOperationsUser ? '1fr' : '1fr 3fr 1fr', // 20% - 60% - 20% split for non-operations users
           gridTemplateRows: '1fr',
           gridTemplateAreas: isOperationsUser ? `"main"` : `"leftAd main rightAd"`,
           minHeight: 'calc(100vh - 200px)',
@@ -73,7 +73,7 @@ const HotelSearchPage: React.FC = () => {
           gap: 2,
         }}
       >
-        {/* Left Advertisement Pane - 25% Scrollable */}
+        {/* Left Advertisement Pane - 20% Scrollable */}
         {!isOperationsUser && (
           <Box sx={{ gridArea: 'leftAd' }}>
             <Card 
@@ -114,7 +114,7 @@ const HotelSearchPage: React.FC = () => {
           </Box>
         )}
 
-        {/* Center Search Form - 50% */}
+        {/* Center Search Form - 60% */}
         <Box sx={{ gridArea: 'main' }}>
           <Card 
             sx={{ 
@@ -197,7 +197,7 @@ const HotelSearchPage: React.FC = () => {
           </Card>
         </Box>
 
-        {/* Right Advertisement Pane - 25% Scrollable */}
+        {/* Right Advertisement Pane - 20% Scrollable */}
         {!isOperationsUser && (
           <Box sx={{ gridArea: 'rightAd' }}>
             <Card 

@@ -264,7 +264,51 @@ public class ShopOrderService {
     }
 
     public OrderStatistics getOrderStatistics(Long hotelId) {
-        return new OrderStatistics(0, 0, 0, BigDecimal.ZERO, BigDecimal.ZERO);
+        // Calculate actual statistics using repository methods
+        long totalOrders = shopOrderRepository.countByHotelId(hotelId);
+        long completedOrders = shopOrderRepository.countByHotelIdAndStatus(hotelId, OrderStatus.COMPLETED);
+        
+        // Count pending orders (not completed)
+        long pendingOrders = shopOrderRepository.countByHotelIdAndStatus(hotelId, OrderStatus.PENDING);
+        
+        // Count unpaid orders (all orders that are not paid)
+        long unpaidOrders = totalOrders - completedOrders;
+        
+        // Calculate total revenue from paid orders
+        BigDecimal totalRevenue = shopOrderRepository.calculateTotalRevenueByHotelId(hotelId);
+        
+        // Calculate today's statistics
+        long todayOrders = shopOrderRepository.countTodaysOrdersByHotelId(hotelId);
+        BigDecimal todayRevenue = shopOrderRepository.calculateTodaysRevenueByHotelId(hotelId);
+        
+        // Calculate monthly revenue (current month)
+        LocalDateTime startOfMonth = LocalDateTime.now().withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+        LocalDateTime endOfMonth = startOfMonth.plusMonths(1).minusNanos(1);
+        BigDecimal monthlyRevenue = shopOrderRepository.calculateRevenueByHotelIdAndDateRange(hotelId, startOfMonth, endOfMonth);
+        
+        // Calculate pending revenue (total amount of unpaid orders)
+        BigDecimal pendingRevenue;
+        try {
+            // Get all unpaid orders and sum their amounts
+            List<OrderStatus> unpaidStatuses = List.of(
+                OrderStatus.PENDING, 
+                OrderStatus.CONFIRMED, 
+                OrderStatus.PREPARING, 
+                OrderStatus.READY
+            );
+            List<ShopOrder> unpaidOrdersList = shopOrderRepository.findByHotelIdAndStatusIn(hotelId, unpaidStatuses);
+            
+            pendingRevenue = unpaidOrdersList.stream()
+                .filter(order -> !order.getIsPaid())
+                .map(ShopOrder::getTotalAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        } catch (Exception e) {
+            // Fallback to zero if calculation fails
+            pendingRevenue = BigDecimal.ZERO;
+        }
+        
+        return new OrderStatistics(totalOrders, unpaidOrders, completedOrders, totalRevenue, pendingRevenue,
+                todayOrders, todayRevenue, monthlyRevenue, pendingOrders, completedOrders);
     }
 
     /**
@@ -355,6 +399,13 @@ public class ShopOrderService {
         private final long paidOrders;
         private final BigDecimal totalRevenue;
         private final BigDecimal pendingRevenue;
+        
+        // Additional fields for comprehensive dashboard
+        private final long todayOrders;
+        private final BigDecimal todayRevenue;
+        private final BigDecimal monthlyRevenue;
+        private final long pendingOrders;
+        private final long completedOrders;
 
         public OrderStatistics(long totalOrders, long unpaidOrders, long paidOrders,
                 BigDecimal totalRevenue, BigDecimal pendingRevenue) {
@@ -363,6 +414,27 @@ public class ShopOrderService {
             this.paidOrders = paidOrders;
             this.totalRevenue = totalRevenue;
             this.pendingRevenue = pendingRevenue;
+            // Set defaults for additional fields
+            this.todayOrders = 0;
+            this.todayRevenue = BigDecimal.ZERO;
+            this.monthlyRevenue = BigDecimal.ZERO;
+            this.pendingOrders = 0;
+            this.completedOrders = 0;
+        }
+        
+        public OrderStatistics(long totalOrders, long unpaidOrders, long paidOrders,
+                BigDecimal totalRevenue, BigDecimal pendingRevenue, long todayOrders,
+                BigDecimal todayRevenue, BigDecimal monthlyRevenue, long pendingOrders, long completedOrders) {
+            this.totalOrders = totalOrders;
+            this.unpaidOrders = unpaidOrders;
+            this.paidOrders = paidOrders;
+            this.totalRevenue = totalRevenue;
+            this.pendingRevenue = pendingRevenue;
+            this.todayOrders = todayOrders;
+            this.todayRevenue = todayRevenue;
+            this.monthlyRevenue = monthlyRevenue;
+            this.pendingOrders = pendingOrders;
+            this.completedOrders = completedOrders;
         }
 
         // Getters
@@ -384,6 +456,26 @@ public class ShopOrderService {
 
         public BigDecimal getPendingRevenue() {
             return pendingRevenue;
+        }
+        
+        public long getTodayOrders() {
+            return todayOrders;
+        }
+        
+        public BigDecimal getTodayRevenue() {
+            return todayRevenue;
+        }
+        
+        public BigDecimal getMonthlyRevenue() {
+            return monthlyRevenue;
+        }
+        
+        public long getPendingOrders() {
+            return pendingOrders;
+        }
+        
+        public long getCompletedOrders() {
+            return completedOrders;
         }
     }
 }

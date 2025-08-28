@@ -390,6 +390,14 @@ const Navbar: React.FC = () => {
               }}
               onClick={() => handleNavigation('/')}
             >
+              <img 
+                src="/logo-white.svg" 
+                alt="BookMyHotel" 
+                style={{ 
+                  height: '40px', 
+                  marginRight: '8px'
+                }}
+              />
               <Typography 
                 variant="h6" 
                 component="div" 
