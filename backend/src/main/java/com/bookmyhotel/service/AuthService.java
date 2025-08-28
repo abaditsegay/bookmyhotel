@@ -22,28 +22,29 @@ import com.bookmyhotel.util.JwtUtil;
  */
 @Service
 public class AuthService {
-    
+
     @Autowired
     private UserRepository userRepository;
-    
+
     @Autowired
     private PasswordEncoder passwordEncoder;
-    
+
     @Autowired
     private JwtUtil jwtUtil;
-    
+
     @Autowired
     private EmailService emailService;
-    
+
     /**
      * Register a new customer user (system-wide registered users)
      */
     public LoginResponse register(RegisterRequest registerRequest) {
         // Check if user already exists
         if (userRepository.findByEmail(registerRequest.getEmail()).isPresent()) {
-            throw new ResourceAlreadyExistsException("User with email " + registerRequest.getEmail() + " already exists");
+            throw new ResourceAlreadyExistsException(
+                    "User with email " + registerRequest.getEmail() + " already exists");
         }
-        
+
         // Create new user with CUSTOMER role (system-wide registered users)
         User user = new User();
         user.setEmail(registerRequest.getEmail());
@@ -54,60 +55,58 @@ public class AuthService {
         user.setIsActive(true);
         user.setRoles(Set.of(UserRole.CUSTOMER));
         // Do NOT set tenant_id - CUSTOMER users are system-wide (tenant_id = null)
-        
+
         // Save the user
         user = userRepository.save(user);
-        
+
         // Send welcome email to the new user
         try {
             emailService.sendUserWelcomeEmail(
-                user.getEmail(),
-                user.getFirstName(),
-                user.getLastName()
-            );
+                    user.getEmail(),
+                    user.getFirstName(),
+                    user.getLastName());
         } catch (Exception e) {
             // Log the error but don't fail registration
             // Email is nice-to-have, registration success is critical
             System.err.println("Failed to send welcome email to " + user.getEmail() + ": " + e.getMessage());
         }
-        
+
         // Generate token for immediate login
         String token = jwtUtil.generateToken(user);
-        
+
         return new LoginResponse(
-            token,
-            user.getId(),
-            user.getEmail(),
-            user.getFirstName(),
-            user.getLastName(),
-            user.getRoles(),
-            null, // No hotel for guest users
-            null
-        );
+                token,
+                user.getId(),
+                user.getEmail(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getRoles(),
+                null, // No hotel for guest users
+                null);
     }
-    
+
     /**
      * Authenticate user and generate JWT token
      */
     public LoginResponse login(LoginRequest loginRequest) {
         Optional<User> userOpt = userRepository.findByEmail(loginRequest.getEmail());
-        
+
         if (userOpt.isEmpty()) {
             throw new BadCredentialsException("Invalid email or password");
         }
-        
+
         User user = userOpt.get();
-        
+
         if (!user.getIsActive()) {
             throw new BadCredentialsException("Account is disabled");
         }
-        
+
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
             throw new BadCredentialsException("Invalid email or password");
         }
-        
+
         String token = jwtUtil.generateToken(user);
-        
+
         // Include hotel information if user is associated with a hotel
         Long hotelId = null;
         String hotelName = null;
@@ -115,32 +114,31 @@ public class AuthService {
             hotelId = user.getHotel().getId();
             hotelName = user.getHotel().getName();
         }
-        
+
         return new LoginResponse(
-            token,
-            user.getId(),
-            user.getEmail(),
-            user.getFirstName(),
-            user.getLastName(),
-            user.getRoles(),
-            hotelId,
-            hotelName
-        );
+                token,
+                user.getId(),
+                user.getEmail(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getRoles(),
+                hotelId,
+                hotelName);
     }
-    
+
     /**
      * Validate JWT token and return user details
      */
     public User validateToken(String token) {
         String email = jwtUtil.extractEmail(token);
-        
+
         if (email != null && jwtUtil.isTokenValid(token)) {
             Optional<User> userOpt = userRepository.findByEmail(email);
             if (userOpt.isPresent() && userOpt.get().getIsActive()) {
                 return userOpt.get();
             }
         }
-        
+
         return null;
     }
 }

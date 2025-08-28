@@ -90,7 +90,7 @@ public class TodoController {
         String userEmail = authentication.getName();
         Optional<Todo> todo = todoService.getTodoById(userEmail, id);
         return todo.map(ResponseEntity::ok)
-                   .orElse(ResponseEntity.notFound().build());
+                .orElse(ResponseEntity.notFound().build());
     }
 
     /**

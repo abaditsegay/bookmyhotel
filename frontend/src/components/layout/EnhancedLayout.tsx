@@ -130,6 +130,7 @@ const EnhancedLayout: React.FC<EnhancedLayoutProps> = ({
             sx={{
               flexGrow: 1,
               py: { xs: 2, md: 3 },
+              pb: { xs: 10, md: 12 }, // Add bottom padding for fixed footer
               display: 'flex',
               flexDirection: 'column',
             }}
@@ -211,11 +212,14 @@ const EnhancedLayout: React.FC<EnhancedLayoutProps> = ({
         </IconButton>
       )}
       
-      {/* Footer */}
+      {/* Footer - Fixed at bottom */}
       <Box
         component="footer"
         sx={{
-          mt: 'auto',
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
           py: 2,
           px: 2,
           backgroundColor: theme.palette.grey[100],
@@ -223,6 +227,7 @@ const EnhancedLayout: React.FC<EnhancedLayoutProps> = ({
           textAlign: 'center',
           color: theme.palette.text.secondary,
           fontSize: '0.875rem',
+          zIndex: theme.zIndex.appBar - 1,
           // Adjust margin for desktop sidebar
           ...(showSidebar && isDesktop && {
             marginRight: '350px',

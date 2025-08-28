@@ -32,20 +32,19 @@ public class MaintenanceController {
     @PreAuthorize("hasRole('OPERATIONS_SUPERVISOR') or hasRole('HOTEL_ADMIN') or hasRole('SYSTEM_ADMIN')")
     public ResponseEntity<MaintenanceTask> createTask(@Valid @RequestBody CreateMaintenanceTaskRequest request) {
         String tenantId = TenantContext.getTenantId();
-        
+
         MaintenanceTask task = maintenanceService.createTask(
-            tenantId,
-            request.getHotelId(),
-            request.getRoomId(),
-            request.getTaskType(),
-            request.getTitle(),
-            request.getDescription(),
-            request.getPriority(),
-            request.getCreatedByUserId(),
-            request.getLocation(),
-            request.getEquipmentType()
-        );
-        
+                tenantId,
+                request.getHotelId(),
+                request.getRoomId(),
+                request.getTaskType(),
+                request.getTitle(),
+                request.getDescription(),
+                request.getPriority(),
+                request.getCreatedByUserId(),
+                request.getLocation(),
+                request.getEquipmentType());
+
         return ResponseEntity.ok(task);
     }
 
@@ -69,9 +68,9 @@ public class MaintenanceController {
         String tenantId = TenantContext.getTenantId();
         List<MaintenanceTask> tasks = maintenanceService.getAllTasks(tenantId);
         MaintenanceTask task = tasks.stream()
-            .filter(t -> t.getId().equals(taskId))
-            .findFirst()
-            .orElseThrow(() -> new RuntimeException("Task not found"));
+                .filter(t -> t.getId().equals(taskId))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Task not found"));
         return ResponseEntity.ok(task);
     }
 
@@ -102,16 +101,15 @@ public class MaintenanceController {
      */
     @PutMapping("/tasks/{taskId}/complete")
     @PreAuthorize("hasRole('MAINTENANCE') or hasRole('OPERATIONS_SUPERVISOR') or hasRole('HOTEL_ADMIN') or hasRole('SYSTEM_ADMIN')")
-    public ResponseEntity<MaintenanceTask> completeTask(@PathVariable Long taskId, 
-                                                       @RequestBody CompleteMaintenanceTaskRequest request) {
+    public ResponseEntity<MaintenanceTask> completeTask(@PathVariable Long taskId,
+            @RequestBody CompleteMaintenanceTaskRequest request) {
         String tenantId = TenantContext.getTenantId();
         MaintenanceTask task = maintenanceService.completeTask(
-            tenantId, 
-            taskId, 
-            request.getWorkPerformed(), 
-            request.getPartsUsed(),
-            request.getActualCost()
-        );
+                tenantId,
+                taskId,
+                request.getWorkPerformed(),
+                request.getPartsUsed(),
+                request.getActualCost());
         return ResponseEntity.ok(task);
     }
 
@@ -120,8 +118,8 @@ public class MaintenanceController {
      */
     @PutMapping("/tasks/{taskId}")
     @PreAuthorize("hasRole('OPERATIONS_SUPERVISOR') or hasRole('HOTEL_ADMIN') or hasRole('SYSTEM_ADMIN')")
-    public ResponseEntity<MaintenanceTask> updateTask(@PathVariable Long taskId, 
-                                                     @Valid @RequestBody MaintenanceTask updatedTask) {
+    public ResponseEntity<MaintenanceTask> updateTask(@PathVariable Long taskId,
+            @Valid @RequestBody MaintenanceTask updatedTask) {
         String tenantId = TenantContext.getTenantId();
         MaintenanceTask task = maintenanceService.updateTask(tenantId, taskId, updatedTask);
         return ResponseEntity.ok(task);
@@ -132,8 +130,8 @@ public class MaintenanceController {
      */
     @PutMapping("/tasks/{taskId}/cancel")
     @PreAuthorize("hasRole('OPERATIONS_SUPERVISOR') or hasRole('HOTEL_ADMIN') or hasRole('SYSTEM_ADMIN')")
-    public ResponseEntity<MaintenanceTask> cancelTask(@PathVariable Long taskId, 
-                                                     @RequestBody CancelMaintenanceTaskRequest request) {
+    public ResponseEntity<MaintenanceTask> cancelTask(@PathVariable Long taskId,
+            @RequestBody CancelMaintenanceTaskRequest request) {
         String tenantId = TenantContext.getTenantId();
         MaintenanceTask task = maintenanceService.cancelTask(tenantId, taskId, request.getReason());
         return ResponseEntity.ok(task);
@@ -153,32 +151,77 @@ public class MaintenanceController {
         private String equipmentType;
 
         // Getters and setters
-        public Long getHotelId() { return hotelId; }
-        public void setHotelId(Long hotelId) { this.hotelId = hotelId; }
-        
-        public Long getRoomId() { return roomId; }
-        public void setRoomId(Long roomId) { this.roomId = roomId; }
-        
-        public String getTaskType() { return taskType; }
-        public void setTaskType(String taskType) { this.taskType = taskType; }
-        
-        public String getTitle() { return title; }
-        public void setTitle(String title) { this.title = title; }
-        
-        public String getDescription() { return description; }
-        public void setDescription(String description) { this.description = description; }
-        
-        public TaskPriority getPriority() { return priority; }
-        public void setPriority(TaskPriority priority) { this.priority = priority; }
-        
-        public Long getCreatedByUserId() { return createdByUserId; }
-        public void setCreatedByUserId(Long createdByUserId) { this.createdByUserId = createdByUserId; }
-        
-        public String getLocation() { return location; }
-        public void setLocation(String location) { this.location = location; }
-        
-        public String getEquipmentType() { return equipmentType; }
-        public void setEquipmentType(String equipmentType) { this.equipmentType = equipmentType; }
+        public Long getHotelId() {
+            return hotelId;
+        }
+
+        public void setHotelId(Long hotelId) {
+            this.hotelId = hotelId;
+        }
+
+        public Long getRoomId() {
+            return roomId;
+        }
+
+        public void setRoomId(Long roomId) {
+            this.roomId = roomId;
+        }
+
+        public String getTaskType() {
+            return taskType;
+        }
+
+        public void setTaskType(String taskType) {
+            this.taskType = taskType;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public void setTitle(String title) {
+            this.title = title;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
+        }
+
+        public TaskPriority getPriority() {
+            return priority;
+        }
+
+        public void setPriority(TaskPriority priority) {
+            this.priority = priority;
+        }
+
+        public Long getCreatedByUserId() {
+            return createdByUserId;
+        }
+
+        public void setCreatedByUserId(Long createdByUserId) {
+            this.createdByUserId = createdByUserId;
+        }
+
+        public String getLocation() {
+            return location;
+        }
+
+        public void setLocation(String location) {
+            this.location = location;
+        }
+
+        public String getEquipmentType() {
+            return equipmentType;
+        }
+
+        public void setEquipmentType(String equipmentType) {
+            this.equipmentType = equipmentType;
+        }
     }
 
     public static class CompleteMaintenanceTaskRequest {
@@ -186,20 +229,40 @@ public class MaintenanceController {
         private String partsUsed;
         private Double actualCost;
 
-        public String getWorkPerformed() { return workPerformed; }
-        public void setWorkPerformed(String workPerformed) { this.workPerformed = workPerformed; }
-        
-        public String getPartsUsed() { return partsUsed; }
-        public void setPartsUsed(String partsUsed) { this.partsUsed = partsUsed; }
-        
-        public Double getActualCost() { return actualCost; }
-        public void setActualCost(Double actualCost) { this.actualCost = actualCost; }
+        public String getWorkPerformed() {
+            return workPerformed;
+        }
+
+        public void setWorkPerformed(String workPerformed) {
+            this.workPerformed = workPerformed;
+        }
+
+        public String getPartsUsed() {
+            return partsUsed;
+        }
+
+        public void setPartsUsed(String partsUsed) {
+            this.partsUsed = partsUsed;
+        }
+
+        public Double getActualCost() {
+            return actualCost;
+        }
+
+        public void setActualCost(Double actualCost) {
+            this.actualCost = actualCost;
+        }
     }
 
     public static class CancelMaintenanceTaskRequest {
         private String reason;
 
-        public String getReason() { return reason; }
-        public void setReason(String reason) { this.reason = reason; }
+        public String getReason() {
+            return reason;
+        }
+
+        public void setReason(String reason) {
+            this.reason = reason;
+        }
     }
 }

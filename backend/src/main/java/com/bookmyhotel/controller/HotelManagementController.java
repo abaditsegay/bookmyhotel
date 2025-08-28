@@ -29,7 +29,7 @@ public class HotelManagementController {
      * Returns simple hotel information (id, name) for the current tenant
      */
     @GetMapping("/list")
-    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONT_DESK')")
+    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK')")
     public ResponseEntity<List<HotelResponse>> getAllHotels() {
         try {
             String tenantId = TenantContext.getTenantId();

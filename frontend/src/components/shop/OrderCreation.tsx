@@ -30,8 +30,7 @@ import {
   Remove as RemoveIcon,
   Delete as DeleteIcon,
   Search as SearchIcon,
-  Receipt as ReceiptIcon,
-  ArrowBack as ArrowBackIcon
+  Receipt as ReceiptIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { shopApiService } from '../../services/shopApi';
@@ -167,7 +166,7 @@ const OrderCreation: React.FC = () => {
         console.log('Order created with room charging:', createdOrder);
       }
 
-      navigate('/shop/orders', { 
+      navigate('/shop?tab=orders', { 
         state: { 
           message: `Order ${createdOrder.orderNumber} created successfully!`,
           orderId: createdOrder.id 
@@ -200,18 +199,6 @@ const OrderCreation: React.FC = () => {
 
   return (
     <Box>
-      {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <IconButton onClick={() => navigate('/shop?tab=orders')} sx={{ mr: 1 }}>
-            <ArrowBackIcon />
-          </IconButton>
-          <Typography variant="h5" component="h1">
-            Create New Order
-          </Typography>
-        </Box>
-      </Box>
-
       {/* Error Alert */}
       {error && (
         <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>

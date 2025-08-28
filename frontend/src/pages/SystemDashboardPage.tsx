@@ -27,6 +27,7 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import TokenManager from '../utils/tokenManager';
 
 /**
  * Dashboard page for system-wide users (ADMIN and CUSTOMER roles)
@@ -53,21 +54,21 @@ export const SystemDashboardPage: React.FC = () => {
         // Fetch hotels count
         const hotelsResponse = await fetch('http://localhost:8080/api/system/hotels', {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+            ...TokenManager.getAuthHeaders()
           }
         });
         
         // Fetch users count  
         const usersResponse = await fetch('http://localhost:8080/api/system/users', {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+            ...TokenManager.getAuthHeaders()
           }
         });
 
         // Fetch tenants count
         const tenantsResponse = await fetch('http://localhost:8080/api/system/tenants', {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+            ...TokenManager.getAuthHeaders()
           }
         });
 

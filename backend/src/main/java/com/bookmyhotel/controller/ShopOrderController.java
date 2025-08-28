@@ -24,12 +24,12 @@ import jakarta.validation.Valid;
  */
 @RestController
 @RequestMapping("/api/hotels/{hotelId}/shop/orders")
-@PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONT_DESK') or hasRole('SYSTEM_ADMIN')")
+@PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SYSTEM_ADMIN')")
 public class ShopOrderController {
-    
+
     @Autowired
     private ShopOrderService shopOrderService;
-    
+
     /**
      * Create a new shop order
      * POST /api/hotels/{hotelId}/shop/orders
@@ -38,11 +38,11 @@ public class ShopOrderController {
     public ResponseEntity<ShopOrderResponse> createOrder(
             @PathVariable Long hotelId,
             @Valid @RequestBody ShopOrderRequest request) {
-        
+
         ShopOrderResponse response = shopOrderService.createOrder(hotelId, request);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
-    
+
     /**
      * Get order by ID
      * GET /api/hotels/{hotelId}/shop/orders/{orderId}
@@ -51,11 +51,11 @@ public class ShopOrderController {
     public ResponseEntity<ShopOrderResponse> getOrder(
             @PathVariable Long hotelId,
             @PathVariable Long orderId) {
-        
+
         ShopOrderResponse response = shopOrderService.getOrder(hotelId, orderId);
         return ResponseEntity.ok(response);
     }
-    
+
     /**
      * Get order by order number
      * GET /api/hotels/{hotelId}/shop/orders/by-number/{orderNumber}
@@ -64,11 +64,11 @@ public class ShopOrderController {
     public ResponseEntity<ShopOrderResponse> getOrderByNumber(
             @PathVariable Long hotelId,
             @PathVariable String orderNumber) {
-        
+
         ShopOrderResponse response = shopOrderService.getOrderByNumber(hotelId, orderNumber);
         return ResponseEntity.ok(response);
     }
-    
+
     /**
      * Get all orders for a hotel
      * GET /api/hotels/{hotelId}/shop/orders
@@ -82,12 +82,12 @@ public class ShopOrderController {
             @RequestParam(defaultValue = "desc") String sortDir,
             @RequestParam(required = false) OrderStatus status,
             @RequestParam(required = false) String search) {
-        
+
         Sort sort = sortDir.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
         Pageable pageable = PageRequest.of(page, size, sort);
-        
+
         Page<ShopOrderResponse> response;
-        
+
         if (search != null && !search.trim().isEmpty()) {
             response = shopOrderService.searchOrders(hotelId, search.trim(), pageable);
         } else if (status != null) {
@@ -95,10 +95,10 @@ public class ShopOrderController {
         } else {
             response = shopOrderService.getOrders(hotelId, pageable);
         }
-        
+
         return ResponseEntity.ok(response);
     }
-    
+
     /**
      * Get pending orders (orders that need attention)
      * GET /api/hotels/{hotelId}/shop/orders/pending
@@ -108,7 +108,7 @@ public class ShopOrderController {
         List<ShopOrderResponse> response = shopOrderService.getPendingOrders(hotelId);
         return ResponseEntity.ok(response);
     }
-    
+
     /**
      * Get today's orders
      * GET /api/hotels/{hotelId}/shop/orders/today
@@ -118,7 +118,7 @@ public class ShopOrderController {
         List<ShopOrderResponse> response = shopOrderService.getTodaysOrders(hotelId);
         return ResponseEntity.ok(response);
     }
-    
+
     /**
      * Update order status
      * PATCH /api/hotels/{hotelId}/shop/orders/{orderId}/status
@@ -128,11 +128,11 @@ public class ShopOrderController {
             @PathVariable Long hotelId,
             @PathVariable Long orderId,
             @RequestParam OrderStatus status) {
-        
+
         ShopOrderResponse response = shopOrderService.updateOrderStatus(hotelId, orderId, status);
         return ResponseEntity.ok(response);
     }
-    
+
     /**
      * Mark order as paid
      * PATCH /api/hotels/{hotelId}/shop/orders/{orderId}/mark-paid
@@ -142,11 +142,11 @@ public class ShopOrderController {
             @PathVariable Long hotelId,
             @PathVariable Long orderId,
             @RequestParam(required = false) String paymentReference) {
-        
+
         ShopOrderResponse response = shopOrderService.markOrderAsPaid(hotelId, orderId, paymentReference);
         return ResponseEntity.ok(response);
     }
-    
+
     /**
      * Cancel order
      * PATCH /api/hotels/{hotelId}/shop/orders/{orderId}/cancel
@@ -156,12 +156,12 @@ public class ShopOrderController {
             @PathVariable Long hotelId,
             @PathVariable Long orderId,
             @RequestParam(required = false) String reason) {
-        
+
         String cancellationReason = reason != null ? reason : "Cancelled by staff";
         ShopOrderResponse response = shopOrderService.cancelOrder(hotelId, orderId, cancellationReason);
         return ResponseEntity.ok(response);
     }
-    
+
     /**
      * Get order statistics
      * GET /api/hotels/{hotelId}/shop/orders/statistics
@@ -171,7 +171,7 @@ public class ShopOrderController {
         ShopOrderService.OrderStatistics stats = shopOrderService.getOrderStatistics(hotelId);
         return ResponseEntity.ok(stats);
     }
-    
+
     /**
      * Get order statuses
      * GET /api/hotels/{hotelId}/shop/orders/statuses

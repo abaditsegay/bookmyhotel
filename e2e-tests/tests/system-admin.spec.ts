@@ -166,7 +166,7 @@ test.describe('System Admin - User Management', () => {
     expect(systemAdmins).toBeGreaterThanOrEqual(1);
     
     await userManagementPage.filterByRole('HOTEL_ADMIN');
-    await userManagementPage.filterByRole('FRONT_DESK');
+    await userManagementPage.filterByRole('FRONTDESK');
     await userManagementPage.filterByRole('CUSTOMER');
     
     // Reset to all

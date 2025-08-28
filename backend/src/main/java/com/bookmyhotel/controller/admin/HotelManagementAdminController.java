@@ -34,10 +34,10 @@ import jakarta.validation.Valid;
 @PreAuthorize("hasRole('ADMIN')")
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class HotelManagementAdminController {
-    
+
     @Autowired
     private HotelManagementService hotelManagementService;
-    
+
     /**
      * Get all hotels with pagination
      */
@@ -45,12 +45,12 @@ public class HotelManagementAdminController {
     public ResponseEntity<Page<HotelDTO>> getAllHotels(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        
+
         Pageable pageable = PageRequest.of(page, size);
         Page<HotelDTO> hotels = hotelManagementService.getAllHotels(pageable);
         return ResponseEntity.ok(hotels);
     }
-    
+
     /**
      * Search hotels
      */
@@ -59,12 +59,12 @@ public class HotelManagementAdminController {
             @RequestParam String searchTerm,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        
+
         Pageable pageable = PageRequest.of(page, size);
         Page<HotelDTO> hotels = hotelManagementService.searchHotels(searchTerm, pageable);
         return ResponseEntity.ok(hotels);
     }
-    
+
     /**
      * Get hotels by tenant
      */
@@ -73,12 +73,12 @@ public class HotelManagementAdminController {
             @PathVariable String tenantId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        
+
         Pageable pageable = PageRequest.of(page, size);
         Page<HotelDTO> hotels = hotelManagementService.getHotelsByTenant(tenantId, pageable);
         return ResponseEntity.ok(hotels);
     }
-    
+
     /**
      * Get hotel by ID
      */
@@ -87,7 +87,7 @@ public class HotelManagementAdminController {
         HotelDTO hotel = hotelManagementService.getHotelById(id);
         return ResponseEntity.ok(hotel);
     }
-    
+
     /**
      * Create new hotel
      */
@@ -96,7 +96,7 @@ public class HotelManagementAdminController {
         HotelDTO createdHotel = hotelManagementService.createHotel(hotelDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdHotel);
     }
-    
+
     /**
      * Update hotel
      */
@@ -104,11 +104,11 @@ public class HotelManagementAdminController {
     public ResponseEntity<HotelDTO> updateHotel(
             @PathVariable Long id,
             @Valid @RequestBody HotelDTO hotelDTO) {
-        
+
         HotelDTO updatedHotel = hotelManagementService.updateHotel(id, hotelDTO);
         return ResponseEntity.ok(updatedHotel);
     }
-    
+
     /**
      * Delete hotel
      */
@@ -117,7 +117,7 @@ public class HotelManagementAdminController {
         hotelManagementService.deleteHotel(id);
         return ResponseEntity.ok().build();
     }
-    
+
     /**
      * Toggle hotel status
      */
@@ -126,7 +126,7 @@ public class HotelManagementAdminController {
         HotelDTO hotel = hotelManagementService.toggleHotelStatus(id);
         return ResponseEntity.ok(hotel);
     }
-    
+
     /**
      * Get rooms for a hotel
      */
@@ -135,7 +135,7 @@ public class HotelManagementAdminController {
         List<RoomDTO> rooms = hotelManagementService.getHotelRooms(id);
         return ResponseEntity.ok(rooms);
     }
-    
+
     /**
      * Add room to hotel
      */
@@ -143,11 +143,11 @@ public class HotelManagementAdminController {
     public ResponseEntity<RoomDTO> addRoomToHotel(
             @PathVariable Long id,
             @Valid @RequestBody RoomDTO roomDTO) {
-        
+
         RoomDTO createdRoom = hotelManagementService.addRoomToHotel(id, roomDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdRoom);
     }
-    
+
     /**
      * Update room
      */
@@ -155,11 +155,11 @@ public class HotelManagementAdminController {
     public ResponseEntity<RoomDTO> updateRoom(
             @PathVariable Long roomId,
             @Valid @RequestBody RoomDTO roomDTO) {
-        
+
         RoomDTO updatedRoom = hotelManagementService.updateRoom(roomId, roomDTO);
         return ResponseEntity.ok(updatedRoom);
     }
-    
+
     /**
      * Delete room
      */
@@ -168,7 +168,7 @@ public class HotelManagementAdminController {
         hotelManagementService.deleteRoom(roomId);
         return ResponseEntity.ok().build();
     }
-    
+
     /**
      * Assign hotel admin to hotel
      */
@@ -176,11 +176,11 @@ public class HotelManagementAdminController {
     public ResponseEntity<HotelDTO> assignHotelAdmin(
             @PathVariable Long hotelId,
             @PathVariable Long userId) {
-        
+
         HotelDTO hotel = hotelManagementService.assignHotelAdmin(hotelId, userId);
         return ResponseEntity.ok(hotel);
     }
-    
+
     /**
      * Get hotel statistics
      */
@@ -189,7 +189,7 @@ public class HotelManagementAdminController {
         HotelManagementService.HotelStatistics stats = hotelManagementService.getHotelStatistics();
         return ResponseEntity.ok(stats);
     }
-    
+
     /**
      * Get hotels by tenant for user assignment dropdown
      */

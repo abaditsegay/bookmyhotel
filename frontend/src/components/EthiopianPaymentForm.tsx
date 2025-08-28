@@ -24,6 +24,7 @@ import {
   QrCode as QrCodeIcon,
   AccessTime as TimeIcon
 } from '@mui/icons-material';
+import TokenManager from '../utils/tokenManager';
 
 interface EthiopianPaymentFormProps {
   amount: number;
@@ -128,7 +129,7 @@ const EthiopianPaymentForm: React.FC<EthiopianPaymentFormProps> = ({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          ...TokenManager.getAuthHeaders()
         },
         body: JSON.stringify(requestData)
       });

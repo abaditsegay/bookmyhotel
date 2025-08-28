@@ -9,18 +9,16 @@ import {
   Tab,
   Tabs,
   Alert,
-  Chip,
   CircularProgress,
-  Paper,
-  List,
-  ListItem,
-  ListItemText,
-  Divider
+  Paper
 } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
 import { useSearchParams } from 'react-router-dom';
 import { shopApiService } from '../../services/shopApi';
-import { ShopDashboardStats, ProductStock } from '../../types/shop';
+import { ShopDashboardStats } from '../../types/shop';
+import ProductManagement from './ProductManagement';
+import OrderManagement from './OrderManagement';
+import OrderCreation from './OrderCreation';
+import RoomCharges from './RoomCharges';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -43,12 +41,11 @@ function TabPanel({ children, value, index, ...other }: TabPanelProps) {
 }
 
 const ShopDashboard: React.FC = () => {
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [currentTab, setCurrentTab] = useState(() => {
     const tabParam = searchParams.get('tab');
     if (tabParam) {
-      const tabMap = { 'overview': 0, 'products': 1, 'orders': 2, 'room-charges': 3 };
+      const tabMap = { 'new-order': 0, 'products': 1, 'orders': 2, 'room-charges': 3 };
       return tabMap[tabParam as keyof typeof tabMap] ?? 0;
     }
     return 0;
@@ -56,7 +53,6 @@ const ShopDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [dashboardStats, setDashboardStats] = useState<ShopDashboardStats | null>(null);
-  const [lowStockProducts, setLowStockProducts] = useState<ProductStock[]>([]);
 
   // Get hotel ID from context or props (you might need to adjust this based on your auth context)
   const hotelId = 1; // This should come from your auth context
@@ -68,13 +64,9 @@ const ShopDashboard: React.FC = () => {
   const loadDashboardData = async () => {
     try {
       setLoading(true);
-      const [stats, stockResponse] = await Promise.all([
-        shopApiService.getDashboardStats(hotelId),
-        shopApiService.getProductStock(hotelId)
-      ]);
+      const stats = await shopApiService.getDashboardStats(hotelId);
 
       setDashboardStats(stats);
-      setLowStockProducts(stockResponse.content.filter(item => item.isLowStock));
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load dashboard data');
@@ -86,7 +78,7 @@ const ShopDashboard: React.FC = () => {
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setCurrentTab(newValue);
     // Update URL parameter to remember the tab
-    const tabNames = ['overview', 'products', 'orders', 'room-charges'];
+    const tabNames = ['new-order', 'products', 'orders', 'room-charges'];
     setSearchParams({ tab: tabNames[newValue] });
   };
 
@@ -111,20 +103,6 @@ const ShopDashboard: React.FC = () => {
 
   return (
     <Box sx={{ width: '100%' }}>
-      {/* Header */}
-      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h4" component="h1">
-          Hotel Shop Management
-        </Typography>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => navigate('/shop/new-order')}
-        >
-          New Order
-        </Button>
-      </Box>
-
       {/* Quick Stats Cards */}
       {dashboardStats && (
         <Grid container spacing={3} sx={{ mb: 3 }}>
@@ -210,7 +188,7 @@ const ShopDashboard: React.FC = () => {
           variant="scrollable"
           scrollButtons="auto"
         >
-          <Tab label="Overview" />
+          <Tab label="Create New Order" />
           <Tab label="Products" />
           <Tab label="Orders" />
           <Tab label="Room Charges" />
@@ -219,145 +197,19 @@ const ShopDashboard: React.FC = () => {
 
       {/* Tab Panels */}
       <TabPanel value={currentTab} index={0}>
-        <Grid container spacing={3}>
-          {/* Top Selling Products */}
-          <Grid item xs={12} md={6}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  Top Selling Products
-                </Typography>
-                {dashboardStats?.topSellingProducts.length === 0 ? (
-                  <Typography color="text.secondary">No sales data yet</Typography>
-                ) : (
-                  <List dense>
-                    {dashboardStats?.topSellingProducts.map((item, index) => (
-                      <React.Fragment key={item.product.id}>
-                        <ListItem>
-                          <ListItemText
-                            primary={item.product.name}
-                            secondary={
-                              <Box>
-                                <Typography variant="body2" component="span">
-                                  Sold: {item.quantitySold} units
-                                </Typography>
-                                <br />
-                                <Typography variant="body2" component="span" color="success.main">
-                                  Revenue: ETB {(item.revenue * 55).toFixed(0)}
-                                </Typography>
-                              </Box>
-                            }
-                          />
-                          <Chip
-                            label={`#${index + 1}`}
-                            size="small"
-                            color="primary"
-                            variant="outlined"
-                          />
-                        </ListItem>
-                        {index < (dashboardStats?.topSellingProducts.length || 0) - 1 && <Divider />}
-                      </React.Fragment>
-                    ))}
-                  </List>
-                )}
-              </CardContent>
-            </Card>
-          </Grid>
-
-          {/* Low Stock Alert */}
-          <Grid item xs={12} md={6}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  Low Stock Alert
-                </Typography>
-                {lowStockProducts.length === 0 ? (
-                  <Alert severity="success">All products are well stocked!</Alert>
-                ) : (
-                  <List dense>
-                    {lowStockProducts.map((item, index) => (
-                      <React.Fragment key={item.productId}>
-                        <ListItem>
-                          <ListItemText
-                            primary={item.productName}
-                            secondary={
-                              <Box>
-                                <Typography variant="body2" component="span">
-                                  Current: {item.currentStock} units
-                                </Typography>
-                                <br />
-                                <Typography variant="body2" component="span" color="error">
-                                  Minimum: {item.minimumLevel} units
-                                </Typography>
-                              </Box>
-                            }
-                          />
-                          <Chip
-                            label="LOW"
-                            size="small"
-                            color="error"
-                            variant="filled"
-                          />
-                        </ListItem>
-                        {index < lowStockProducts.length - 1 && <Divider />}
-                      </React.Fragment>
-                    ))}
-                  </List>
-                )}
-                {lowStockProducts.length > 0 && (
-                  <Box sx={{ mt: 2 }}>
-                    <Button
-                      variant="outlined"
-                      color="warning"
-                      onClick={() => navigate('/shop/products?filter=low-stock')}
-                    >
-                      Manage Stock
-                    </Button>
-                  </Box>
-                )}
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
+        <OrderCreation />
       </TabPanel>
 
       <TabPanel value={currentTab} index={1}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography variant="h6">Product Management</Typography>
-          <Button
-            variant="contained"
-            onClick={() => navigate('/shop/products')}
-          >
-            Manage Products
-          </Button>
-        </Box>
-        {/* Product management content will be loaded here */}
+        <ProductManagement />
       </TabPanel>
 
       <TabPanel value={currentTab} index={2}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography variant="h6">Order Management</Typography>
-          <Button
-            variant="contained"
-            onClick={() => navigate('/shop/orders')}
-          >
-            View All Orders
-          </Button>
-        </Box>
-        {/* Order management content will be loaded here */}
+        <OrderManagement />
       </TabPanel>
 
       <TabPanel value={currentTab} index={3}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography variant="h6">Room Charges</Typography>
-          <Button
-            variant="contained"
-            onClick={() => navigate('/shop/room-charges')}
-          >
-            View All Charges
-          </Button>
-        </Box>
-        {/* Room charges content will be loaded here */}
+        <RoomCharges />
       </TabPanel>
     </Box>
   );

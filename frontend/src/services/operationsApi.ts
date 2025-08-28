@@ -17,6 +17,7 @@ import {
   HousekeepingTaskStatus,
   MaintenanceTaskStatus
 } from '../types/operations';
+import TokenManager from '../utils/tokenManager';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
 
@@ -25,10 +26,8 @@ class OperationsApiService {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
-    const token = localStorage.getItem('authToken');
     const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-      ...(token && { Authorization: `Bearer ${token}` }),
+      ...TokenManager.getAuthHeaders(),
       ...options.headers,
     };
 
@@ -331,9 +330,7 @@ class OperationsApiService {
     const response = await fetch(
       `${API_BASE_URL}/operations/reports/${taskType}?startDate=${startDate}&endDate=${endDate}`,
       {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('authToken')}`,
-        },
+        headers: TokenManager.getAuthHeaders(),
       }
     );
 
@@ -348,9 +345,7 @@ class OperationsApiService {
     const response = await fetch(
       `${API_BASE_URL}/operations/reports/staff/${staffId}/productivity?period=${period}`,
       {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('authToken')}`,
-        },
+        headers: TokenManager.getAuthHeaders(),
       }
     );
 

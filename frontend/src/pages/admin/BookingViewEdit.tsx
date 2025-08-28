@@ -74,6 +74,7 @@ const BookingViewEdit: React.FC = () => {
 
   // Room selection state
   const [availableRooms, setAvailableRooms] = useState<RoomResponse[]>([]);
+  const [availableRoomTypes, setAvailableRoomTypes] = useState<string[]>(['SINGLE', 'DOUBLE', 'SUITE', 'DELUXE', 'PRESIDENTIAL']);
   const [roomDialogOpen, setRoomDialogOpen] = useState(false);
   const [loadingRooms, setLoadingRooms] = useState(false);
   const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
@@ -285,13 +286,14 @@ const BookingViewEdit: React.FC = () => {
 
     try {
       setLoadingRooms(true);
+      const selectedRoomType = roomType || editedBooking.roomType;
       const result = await hotelAdminApi.getHotelRooms(
         token,
         0, // page
         100, // size - get more rooms for selection
         '', // search
         '', // room number
-        roomType || editedBooking.roomType, // filter by current or selected room type
+        selectedRoomType, // filter by current or selected room type
         'AVAILABLE' // only available rooms
       );
       
@@ -332,7 +334,11 @@ const BookingViewEdit: React.FC = () => {
 
   // Open room selection dialog
   const handleSelectRoom = () => {
-    loadAvailableRooms();
+    if (!editedBooking?.roomType) {
+      setError('Please select a room type first');
+      return;
+    }
+    loadAvailableRooms(editedBooking.roomType);
     setRoomDialogOpen(true);
   };
 
@@ -632,6 +638,36 @@ const BookingViewEdit: React.FC = () => {
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     {isEditing ? (
+                      <FormControl fullWidth>
+                        <InputLabel>Room Type</InputLabel>
+                        <Select
+                          value={currentBooking?.roomType || ''}
+                          onChange={(e) => {
+                            handleFieldChange('roomType', e.target.value);
+                            // Clear room number when room type changes
+                            handleFieldChange('roomNumber', '');
+                            setSelectedRoomId(null);
+                          }}
+                        >
+                          {availableRoomTypes.map((type) => (
+                            <MenuItem key={type} value={type}>
+                              {type}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    ) : (
+                      <TextField
+                        fullWidth
+                        label="Room Type"
+                        value={currentBooking?.roomType || ''}
+                        disabled
+                        variant="filled"
+                      />
+                    )}
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    {isEditing ? (
                       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                         <TextField
                           fullWidth
@@ -659,15 +695,6 @@ const BookingViewEdit: React.FC = () => {
                         variant="filled"
                       />
                     )}
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      label="Room Type"
-                      value={currentBooking?.roomType || ''}
-                      disabled
-                      variant="filled"
-                    />
                   </Grid>
                   {isEditing && selectedRoomId && (
                     <Grid item xs={12}>

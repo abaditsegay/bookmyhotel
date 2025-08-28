@@ -264,7 +264,7 @@ test.describe('Hotel Admin - Staff Management', () => {
     const roleFilter = page.locator('[data-testid="role-filter"]');
     await roleFilter.selectOption('HOUSEKEEPING');
     await roleFilter.selectOption('MAINTENANCE');
-    await roleFilter.selectOption('FRONT_DESK');
+    await roleFilter.selectOption('FRONTDESK');
   });
 });
 

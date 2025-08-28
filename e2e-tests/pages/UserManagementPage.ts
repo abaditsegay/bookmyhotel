@@ -89,7 +89,7 @@ export class UserManagementPage extends BasePage {
     lastName: string;
     email: string;
     phone: string;
-    role: 'SYSTEM_ADMIN' | 'HOTEL_ADMIN' | 'FRONT_DESK' | 'CUSTOMER';
+    role: 'SYSTEM_ADMIN' | 'HOTEL_ADMIN' | 'FRONTDESK' | 'CUSTOMER';
     tenantId?: string;
     status?: 'ACTIVE' | 'INACTIVE';
   }): Promise<void> {
@@ -244,7 +244,7 @@ export class UserManagementPage extends BasePage {
   /**
    * Filter users by role
    */
-  async filterByRole(role: 'ALL' | 'SYSTEM_ADMIN' | 'HOTEL_ADMIN' | 'FRONT_DESK' | 'CUSTOMER'): Promise<void> {
+  async filterByRole(role: 'ALL' | 'SYSTEM_ADMIN' | 'HOTEL_ADMIN' | 'FRONTDESK' | 'CUSTOMER'): Promise<void> {
     await this.roleFilter.selectOption(role);
     await this.waitForApiResponse('/api/admin/users');
   }

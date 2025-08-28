@@ -11,6 +11,7 @@ import {
   ApiResponse,
   PaginatedResponse
 } from '../types/operations';
+import TokenManager from '../utils/tokenManager';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
 
@@ -19,10 +20,8 @@ class OperationsSupervisorApiService {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
-    const token = localStorage.getItem('authToken');
     const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-      ...(token && { Authorization: `Bearer ${token}` }),
+      ...TokenManager.getAuthHeaders(),
       ...options.headers,
     };
 

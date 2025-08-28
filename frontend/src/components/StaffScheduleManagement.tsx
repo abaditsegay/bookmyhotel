@@ -139,7 +139,7 @@ const StaffScheduleManagement: React.FC = () => {
     startTime: '',
     endTime: '',
     shiftType: 'MORNING',
-    department: 'FRONT_DESK',
+    department: 'FRONTDESK',
     role: '',
     notes: ''
   });
@@ -225,14 +225,14 @@ const StaffScheduleManagement: React.FC = () => {
         if (uniqueDepartments.length > 0) {
           setDepartments(uniqueDepartments);
         } else {
-          setDepartments(['FRONT_DESK', 'HOUSEKEEPING', 'MAINTENANCE', 'SECURITY', 'RESTAURANT', 'CONCIERGE', 'MANAGEMENT']);
+          setDepartments(['FRONTDESK', 'HOUSEKEEPING', 'MAINTENANCE', 'SECURITY', 'RESTAURANT', 'CONCIERGE', 'MANAGEMENT']);
         }
         
         setLoading(false);
       } catch (err: any) {
         console.error('Error fetching data:', err);
         setError(`Failed to load data: ${err.response?.data?.message || err.message}`);
-        setDepartments(['FRONT_DESK', 'HOUSEKEEPING', 'MAINTENANCE', 'SECURITY', 'RESTAURANT', 'CONCIERGE', 'MANAGEMENT']);
+        setDepartments(['FRONTDESK', 'HOUSEKEEPING', 'MAINTENANCE', 'SECURITY', 'RESTAURANT', 'CONCIERGE', 'MANAGEMENT']);
         setLoading(false);
       }
     };
@@ -411,7 +411,7 @@ const StaffScheduleManagement: React.FC = () => {
       startTime: '',
       endTime: '',
       shiftType: 'MORNING',
-      department: 'FRONT_DESK',
+      department: 'FRONTDESK',
       notes: ''
     });
   };
@@ -488,7 +488,7 @@ const StaffScheduleManagement: React.FC = () => {
   const downloadTemplate = () => {
     // Create a CSV template
     const csvContent = `Staff Email,Hotel Name,Schedule Date (YYYY-MM-DD),Start Time (HH:MM),End Time (HH:MM),Shift Type,Department,Notes
-john.doe@example.com,Grand Hotel,2024-08-25,09:00,17:00,MORNING,FRONT_DESK,Regular morning shift
+john.doe@example.com,Grand Hotel,2024-08-25,09:00,17:00,MORNING,FRONTDESK,Regular morning shift
 jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,Evening cleaning shift`;
     
     const blob = new Blob([csvContent], { type: 'text/csv' });
@@ -514,13 +514,13 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
   }
 
   // Check if user has permission to access this page
-  if (user && !['HOTEL_ADMIN', 'FRONT_DESK'].includes(user.role)) {
+  if (user && !['HOTEL_ADMIN', 'FRONTDESK'].includes(user.role)) {
     return (
       <Container maxWidth="lg" sx={{ mt: 4 }}>
         <Alert severity="warning">
           <Typography variant="h6">Access Restricted</Typography>
           <Typography>
-            You need HOTEL_ADMIN or FRONT_DESK role to access staff schedule management. 
+            You need HOTEL_ADMIN or FRONTDESK role to access staff schedule management. 
             Your current role is: {user.role}
           </Typography>
         </Alert>
@@ -861,9 +861,9 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
                       }
                       
                       // Map role to department for backend compatibility
-                      let department = 'FRONT_DESK'; // default
+                      let department = 'FRONTDESK'; // default
                       if (selectedRole === 'HOUSEKEEPING') department = 'HOUSEKEEPING';
-                      else if (selectedRole === 'HOTEL_ADMIN' || selectedRole === 'FRONTDESK') department = 'FRONT_DESK';
+                      else if (selectedRole === 'HOTEL_ADMIN' || selectedRole === 'FRONTDESK') department = 'FRONTDESK';
                       
                       setFormData({
                         ...formData, 

@@ -30,9 +30,10 @@ axiosInstance.interceptors.response.use(
   },
   (error: AxiosError) => {
     if (error.response?.status === 401) {
-      // Clear tokens and redirect to login
-      localStorage.removeItem('token');
-      sessionStorage.removeItem('token');
+      // Clear tokens and redirect to login - use correct token keys
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('auth_user');
+      sessionStorage.removeItem('auth_token');
       window.location.href = '/login';
     }
     return Promise.reject(error);

@@ -4,19 +4,19 @@ package com.bookmyhotel.entity;
  * Product categories for hotel shop
  */
 public enum ProductCategory {
-    DRINKS("Drinks"),
+    BEVERAGES("Beverages"),
     SNACKS("Snacks"),
-    CULTURAL_CLOTHES("Cultural Clothes"),
+    CULTURAL_CLOTHING("Cultural Clothing"),
     SOUVENIRS("Souvenirs"),
-    PERSONAL_CARE("Personal Care"),
+    TOILETRIES("Toiletries"),
     OTHER("Other");
-    
+
     private final String displayName;
-    
+
     ProductCategory(String displayName) {
         this.displayName = displayName;
     }
-    
+
     public String getDisplayName() {
         return displayName;
     }

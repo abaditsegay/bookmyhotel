@@ -34,7 +34,7 @@ public class AdService {
 
     @Autowired
     private HotelRepository hotelRepository;
-    
+
     @Autowired
     private TenantRepository tenantRepository;
 
@@ -44,9 +44,9 @@ public class AdService {
     @Transactional(readOnly = true)
     public List<AdResponse> getRandomActiveAds(int limit) {
         logger.debug("Fetching {} random active ads", limit);
-        
+
         List<Ad> ads = adRepository.findRandomActiveAds(LocalDate.now());
-        
+
         return ads.stream()
                 .limit(limit)
                 .map(this::convertToResponse)
@@ -59,17 +59,17 @@ public class AdService {
     @Transactional(readOnly = true)
     public List<AdResponse> getAllAds() {
         logger.debug("Fetching all ads");
-        
+
         String tenantId = TenantContext.getTenantId();
         if (tenantId == null) {
             return List.of();
         }
-        
+
         Tenant tenant = tenantRepository.findById(tenantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Tenant not found"));
-        
+
         List<Ad> ads = adRepository.findByTenantOrderByCreatedAtDesc(tenant);
-        
+
         return ads.stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
@@ -81,9 +81,9 @@ public class AdService {
     @Transactional(readOnly = true)
     public List<AdResponse> getAdsByHotel(Long hotelId) {
         logger.debug("Fetching ads for hotel {}", hotelId);
-        
+
         List<Ad> ads = adRepository.findActiveAdsByHotelId(hotelId, LocalDate.now());
-        
+
         return ads.stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
@@ -95,10 +95,10 @@ public class AdService {
     @Transactional(readOnly = true)
     public AdResponse getAdById(Long id) {
         logger.debug("Fetching ad with id {}", id);
-        
+
         Ad ad = adRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Ad not found"));
-        
+
         return convertToResponse(ad);
     }
 
@@ -107,16 +107,16 @@ public class AdService {
      */
     public AdResponse createAd(AdRequest request) {
         logger.debug("Creating new ad for hotel {}", request.getHotelId());
-        
+
         String tenantId = TenantContext.getTenantId();
         if (tenantId == null) {
             throw new IllegalStateException("No tenant context available");
         }
-        
+
         // Verify hotel exists
         Hotel hotel = hotelRepository.findById(request.getHotelId())
                 .orElseThrow(() -> new ResourceNotFoundException("Hotel not found"));
-        
+
         // Verify tenant exists
         Tenant tenant = tenantRepository.findById(tenantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Tenant not found"));
@@ -145,7 +145,7 @@ public class AdService {
      */
     public AdResponse updateAd(Long id, AdRequest request) {
         logger.debug("Updating ad with id {}", id);
-        
+
         Ad ad = adRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Ad not found"));
 
@@ -190,7 +190,7 @@ public class AdService {
      */
     public void deleteAd(Long id) {
         logger.debug("Deleting ad with id {}", id);
-        
+
         Ad ad = adRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Ad not found"));
 
@@ -203,13 +203,13 @@ public class AdService {
      */
     public AdResponse toggleAdStatus(Long id) {
         logger.debug("Toggling status for ad with id {}", id);
-        
+
         Ad ad = adRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Ad not found"));
 
         ad.setIsActive(!ad.getIsActive());
         Ad savedAd = adRepository.save(ad);
-        
+
         logger.debug("Toggled ad {} status to {}", id, savedAd.getIsActive());
         return convertToResponse(savedAd);
     }
@@ -219,13 +219,13 @@ public class AdService {
      */
     public void trackClick(Long id) {
         logger.debug("Tracking click for ad {}", id);
-        
+
         Ad ad = adRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Ad not found"));
 
         ad.incrementClickCount();
         adRepository.save(ad);
-        
+
         logger.debug("Incremented click count for ad {}", id);
     }
 
@@ -235,17 +235,17 @@ public class AdService {
     @Transactional(readOnly = true)
     public List<AdResponse> getActiveAds() {
         logger.debug("Fetching active ads");
-        
+
         String tenantId = TenantContext.getTenantId();
         if (tenantId == null) {
             return List.of();
         }
-        
+
         Tenant tenant = tenantRepository.findById(tenantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Tenant not found"));
-        
+
         List<Ad> ads = adRepository.findActiveValidAdsByTenant(tenant, LocalDate.now());
-        
+
         return ads.stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
@@ -260,12 +260,12 @@ public class AdService {
         response.setTitle(ad.getTitle());
         response.setDescription(ad.getDescription());
         response.setImageUrl(ad.getImageUrl());
-        
+
         if (ad.getHotel() != null) {
             response.setHotelId(ad.getHotel().getId());
             response.setHotelName(ad.getHotel().getName());
         }
-        
+
         response.setDiscountPercentage(ad.getDiscountPercentage());
         response.setOriginalPrice(ad.getOriginalPrice());
         response.setDiscountedPrice(ad.getDiscountedPrice());
@@ -275,7 +275,7 @@ public class AdService {
         response.setClickCount(ad.getClickCount());
         response.setCreatedAt(ad.getCreatedAt());
         response.setUpdatedAt(ad.getUpdatedAt());
-        
+
         return response;
     }
 }

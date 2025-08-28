@@ -57,10 +57,10 @@ public class StaffScheduleController {
             @Valid @RequestBody StaffScheduleRequest request,
             Authentication auth) {
         logger.info("Creating schedule for staff ID: {}", request.getStaffId());
-        
+
         String adminEmail = auth.getName();
         StaffScheduleResponse response = staffScheduleService.createSchedule(request, adminEmail);
-        
+
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -74,23 +74,24 @@ public class StaffScheduleController {
             @Valid @RequestBody StaffScheduleRequest request,
             Authentication auth) {
         logger.info("Updating schedule ID: {}", scheduleId);
-        
+
         String adminEmail = auth.getName();
         StaffScheduleResponse response = staffScheduleService.updateSchedule(scheduleId, request, adminEmail);
-        
+
         return ResponseEntity.ok(response);
     }
 
     /**
-     * Update schedule status (Hotel Admin, Front Desk, Operations Supervisor, Staff)
+     * Update schedule status (Hotel Admin, Front Desk, Operations Supervisor,
+     * Staff)
      */
     @PatchMapping("/{scheduleId}/status")
-    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONT_DESK', 'OPERATIONS_SUPERVISOR', 'HOUSEKEEPING')")
+    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONTDESK', 'OPERATIONS_SUPERVISOR', 'HOUSEKEEPING')")
     public ResponseEntity<StaffScheduleResponse> updateScheduleStatus(
             @PathVariable Long scheduleId,
             @Valid @RequestBody ScheduleStatusUpdateRequest request) {
         logger.info("Updating schedule status for ID: {} to: {}", scheduleId, request.getStatus());
-        
+
         StaffScheduleResponse response = staffScheduleService.updateScheduleStatus(scheduleId, request);
         return ResponseEntity.ok(response);
     }
@@ -102,42 +103,44 @@ public class StaffScheduleController {
     @PreAuthorize("hasRole('HOTEL_ADMIN')")
     public ResponseEntity<Void> deleteSchedule(@PathVariable Long scheduleId) {
         logger.info("Deleting schedule ID: {}", scheduleId);
-        
+
         staffScheduleService.deleteSchedule(scheduleId);
         return ResponseEntity.noContent().build();
     }
 
     /**
-     * Get all schedules with filters (Hotel Admin, Front Desk, Operations Supervisor)
+     * Get all schedules with filters (Hotel Admin, Front Desk, Operations
+     * Supervisor)
      */
     @GetMapping
-    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONT_DESK', 'OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONTDESK', 'OPERATIONS_SUPERVISOR')")
     public ResponseEntity<List<StaffScheduleResponse>> getSchedules(
             @RequestParam(required = false) Long hotelId,
             @RequestParam(required = false) Department department,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam(required = false) String status,
             Authentication auth) {
-        
-        logger.info("Fetching schedules with filters - hotelId: {}, department: {}, date: {}, status: {}", 
-                    hotelId, department, date, status);
-        
+
+        logger.info("Fetching schedules with filters - hotelId: {}, department: {}, date: {}, status: {}",
+                hotelId, department, date, status);
+
         List<StaffScheduleResponse> schedules = staffScheduleService.getSchedulesWithFilters(
                 hotelId, department, date, status, auth.getName());
-        
+
         return ResponseEntity.ok(schedules);
     }
 
     /**
-     * Get all staff members for scheduling (Hotel Admin, Front Desk, Operations Supervisor)
+     * Get all staff members for scheduling (Hotel Admin, Front Desk, Operations
+     * Supervisor)
      */
     @GetMapping("/staff")
-    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONT_DESK', 'OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONTDESK', 'OPERATIONS_SUPERVISOR')")
     public ResponseEntity<List<StaffMemberResponse>> getAllStaff(Authentication auth) {
         logger.info("🔍 GET /staff endpoint called by user: {}", auth.getName());
-        
+
         List<StaffMemberResponse> staff = staffScheduleService.getAllStaffMembers(auth.getName());
-        
+
         logger.info("📤 Returning {} staff members from controller", staff.size());
         return ResponseEntity.ok(staff);
     }
@@ -146,7 +149,7 @@ public class StaffScheduleController {
      * Get schedule by ID
      */
     @GetMapping("/{scheduleId}")
-    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONT_DESK', 'OPERATIONS_SUPERVISOR', 'HOUSEKEEPING')")
+    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONTDESK', 'OPERATIONS_SUPERVISOR', 'HOUSEKEEPING')")
     public ResponseEntity<StaffScheduleResponse> getScheduleById(@PathVariable Long scheduleId) {
         StaffScheduleResponse response = staffScheduleService.getScheduleById(scheduleId);
         return ResponseEntity.ok(response);
@@ -156,12 +159,12 @@ public class StaffScheduleController {
      * Get schedules by hotel and date range
      */
     @GetMapping("/hotel/{hotelId}")
-    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONT_DESK', 'OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONTDESK', 'OPERATIONS_SUPERVISOR')")
     public ResponseEntity<List<StaffScheduleResponse>> getSchedulesByHotelAndDateRange(
             @PathVariable Long hotelId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-        
+
         List<StaffScheduleResponse> schedules = staffScheduleService.getSchedulesByHotelAndDateRange(
                 hotelId, startDate, endDate);
         return ResponseEntity.ok(schedules);
@@ -171,12 +174,12 @@ public class StaffScheduleController {
      * Get schedules by staff and date range
      */
     @GetMapping("/staff/{staffId}")
-    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONT_DESK', 'OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONTDESK', 'OPERATIONS_SUPERVISOR')")
     public ResponseEntity<List<StaffScheduleResponse>> getSchedulesByStaffAndDateRange(
             @PathVariable Long staffId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-        
+
         List<StaffScheduleResponse> schedules = staffScheduleService.getSchedulesByStaffAndDateRange(
                 staffId, startDate, endDate);
         return ResponseEntity.ok(schedules);
@@ -186,13 +189,13 @@ public class StaffScheduleController {
      * Get schedules by department and date range
      */
     @GetMapping("/hotel/{hotelId}/department/{department}")
-    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONT_DESK', 'OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONTDESK', 'OPERATIONS_SUPERVISOR')")
     public ResponseEntity<List<StaffScheduleResponse>> getSchedulesByDepartmentAndDateRange(
             @PathVariable Long hotelId,
             @PathVariable Department department,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-        
+
         List<StaffScheduleResponse> schedules = staffScheduleService.getSchedulesByDepartmentAndDateRange(
                 hotelId, department, startDate, endDate);
         return ResponseEntity.ok(schedules);
@@ -202,11 +205,11 @@ public class StaffScheduleController {
      * Get schedules for a specific date
      */
     @GetMapping("/hotel/{hotelId}/date/{date}")
-    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONT_DESK', 'OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONTDESK', 'OPERATIONS_SUPERVISOR')")
     public ResponseEntity<List<StaffScheduleResponse>> getSchedulesByDate(
             @PathVariable Long hotelId,
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        
+
         List<StaffScheduleResponse> schedules = staffScheduleService.getSchedulesByDate(hotelId, date);
         return ResponseEntity.ok(schedules);
     }
@@ -215,7 +218,7 @@ public class StaffScheduleController {
      * Get my today's schedule (for staff members)
      */
     @GetMapping("/my-schedule/today")
-    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONT_DESK', 'OPERATIONS_SUPERVISOR', 'HOUSEKEEPING')")
+    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONTDESK', 'OPERATIONS_SUPERVISOR', 'HOUSEKEEPING')")
     public ResponseEntity<List<StaffScheduleResponse>> getMyTodaySchedule(Authentication auth) {
         String staffEmail = auth.getName();
         List<StaffScheduleResponse> schedules = staffScheduleService.getMyTodaySchedule(staffEmail);
@@ -226,7 +229,7 @@ public class StaffScheduleController {
      * Get my upcoming schedules (for staff members)
      */
     @GetMapping("/my-schedule/upcoming")
-    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONT_DESK', 'OPERATIONS_SUPERVISOR', 'HOUSEKEEPING')")
+    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONTDESK', 'OPERATIONS_SUPERVISOR', 'HOUSEKEEPING')")
     public ResponseEntity<List<StaffScheduleResponse>> getMyUpcomingSchedules(Authentication auth) {
         String staffEmail = auth.getName();
         List<StaffScheduleResponse> schedules = staffScheduleService.getMyUpcomingSchedules(staffEmail);
@@ -237,12 +240,12 @@ public class StaffScheduleController {
      * Get schedules with pagination
      */
     @GetMapping("/hotel/{hotelId}/paginated")
-    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONT_DESK', 'OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONTDESK', 'OPERATIONS_SUPERVISOR')")
     public ResponseEntity<Page<StaffScheduleResponse>> getSchedulesWithPagination(
             @PathVariable Long hotelId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        
+
         Page<StaffScheduleResponse> schedules = staffScheduleService.getSchedulesWithPagination(
                 hotelId, page, size);
         return ResponseEntity.ok(schedules);
@@ -252,12 +255,12 @@ public class StaffScheduleController {
      * Get schedule statistics by department
      */
     @GetMapping("/hotel/{hotelId}/stats/department")
-    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONT_DESK', 'OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONTDESK', 'OPERATIONS_SUPERVISOR')")
     public ResponseEntity<Map<Department, Long>> getScheduleStatsByDepartment(
             @PathVariable Long hotelId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-        
+
         Map<Department, Long> stats = staffScheduleService.getScheduleStatsByDepartment(
                 hotelId, startDate, endDate);
         return ResponseEntity.ok(stats);
@@ -272,14 +275,14 @@ public class StaffScheduleController {
             @RequestParam("file") MultipartFile file,
             Authentication auth) {
         logger.info("Uploading schedule file: {}", file.getOriginalFilename());
-        
+
         if (file.isEmpty()) {
             throw new IllegalArgumentException("Please select a file to upload");
         }
-        
+
         String adminEmail = auth.getName();
         Map<String, Object> result = staffScheduleService.uploadScheduleFile(file, adminEmail);
-        
+
         return ResponseEntity.ok(result);
     }
 }

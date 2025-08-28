@@ -25,49 +25,48 @@ import jakarta.validation.constraints.Positive;
  * Reservation entity
  */
 @Entity
-@Table(name = "reservations",
-       indexes = {
-           @Index(name = "idx_reservation_tenant", columnList = "tenant_id"),
-           @Index(name = "idx_reservation_hotel", columnList = "hotel_id"),
-           @Index(name = "idx_reservation_room_type", columnList = "room_type"),
-           @Index(name = "idx_reservation_assigned_room", columnList = "assigned_room_id"),
-           @Index(name = "idx_reservation_guest", columnList = "guest_id"),
-           @Index(name = "idx_reservation_dates", columnList = "check_in_date, check_out_date"),
-           @Index(name = "idx_reservation_status", columnList = "status")
-       })
+@Table(name = "reservations", indexes = {
+        @Index(name = "idx_reservation_tenant", columnList = "tenant_id"),
+        @Index(name = "idx_reservation_hotel", columnList = "hotel_id"),
+        @Index(name = "idx_reservation_room_type", columnList = "room_type"),
+        @Index(name = "idx_reservation_assigned_room", columnList = "assigned_room_id"),
+        @Index(name = "idx_reservation_guest", columnList = "guest_id"),
+        @Index(name = "idx_reservation_dates", columnList = "check_in_date, check_out_date"),
+        @Index(name = "idx_reservation_status", columnList = "status")
+})
 public class Reservation extends TenantEntity {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     @NotNull(message = "Check-in date is required")
     @Column(name = "check_in_date", nullable = false)
     private LocalDate checkInDate;
-    
+
     @NotNull(message = "Check-out date is required")
     @Column(name = "check_out_date", nullable = false)
     private LocalDate checkOutDate;
-    
+
     @NotNull(message = "Total amount is required")
     @Positive(message = "Total amount must be positive")
     @Column(name = "total_amount", nullable = false, precision = 10, scale = 2)
     private BigDecimal totalAmount;
-    
+
     @NotNull(message = "Status is required")
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
     private ReservationStatus status = ReservationStatus.PENDING;
-    
+
     @Column(name = "special_requests", length = 500)
     private String specialRequests;
-    
+
     @Column(name = "payment_intent_id", length = 100)
     private String paymentIntentId;
-    
+
     @Column(name = "payment_method", length = 50)
     private String paymentMethod;
-    
+
     @Column(name = "confirmation_number", length = 20, unique = true)
     private String confirmationNumber;
 
@@ -91,12 +90,12 @@ public class Reservation extends TenantEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "room_type", nullable = false, length = 20)
     private RoomType roomType;
-    
+
     @NotNull(message = "Hotel is required")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "hotel_id", nullable = false)
     private Hotel hotel;
-    
+
     @NotNull(message = "Price per night is required")
     @Positive(message = "Price per night must be positive")
     @Column(name = "price_per_night", nullable = false, precision = 10, scale = 2)
@@ -106,7 +105,7 @@ public class Reservation extends TenantEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assigned_room_id", nullable = true)
     private Room assignedRoom;
-    
+
     @Column(name = "room_assigned_at")
     private LocalDateTime roomAssignedAt;
 
@@ -119,25 +118,26 @@ public class Reservation extends TenantEntity {
     @Valid
     @Embedded
     private GuestInfo guestInfo;
-    
+
     // Number of guests for the reservation
     @NotNull(message = "Number of guests is required")
     @Positive(message = "Number of guests must be positive")
     @Column(name = "number_of_guests", nullable = false)
     private Integer numberOfGuests = 1;
-    
+
     // Constructors
-    public Reservation() {}
-    
+    public Reservation() {
+    }
+
     public Reservation(LocalDate checkInDate, LocalDate checkOutDate, BigDecimal totalAmount) {
         this.checkInDate = checkInDate;
         this.checkOutDate = checkOutDate;
         this.totalAmount = totalAmount;
     }
-    
+
     // Constructor for room type booking (new approach)
-    public Reservation(LocalDate checkInDate, LocalDate checkOutDate, BigDecimal totalAmount, 
-                      RoomType roomType, Hotel hotel, BigDecimal pricePerNight) {
+    public Reservation(LocalDate checkInDate, LocalDate checkOutDate, BigDecimal totalAmount,
+            RoomType roomType, Hotel hotel, BigDecimal pricePerNight) {
         this.checkInDate = checkInDate;
         this.checkOutDate = checkOutDate;
         this.totalAmount = totalAmount;
@@ -145,194 +145,194 @@ public class Reservation extends TenantEntity {
         this.hotel = hotel;
         this.pricePerNight = pricePerNight;
     }
-    
+
     // Getters and Setters
     public Long getId() {
         return id;
     }
-    
+
     public void setId(Long id) {
         this.id = id;
     }
-    
+
     public LocalDate getCheckInDate() {
         return checkInDate;
     }
-    
+
     public void setCheckInDate(LocalDate checkInDate) {
         this.checkInDate = checkInDate;
     }
-    
+
     public LocalDate getCheckOutDate() {
         return checkOutDate;
     }
-    
+
     public void setCheckOutDate(LocalDate checkOutDate) {
         this.checkOutDate = checkOutDate;
     }
-    
+
     public BigDecimal getTotalAmount() {
         return totalAmount;
     }
-    
+
     public void setTotalAmount(BigDecimal totalAmount) {
         this.totalAmount = totalAmount;
     }
-    
+
     public ReservationStatus getStatus() {
         return status;
     }
-    
+
     public void setStatus(ReservationStatus status) {
         this.status = status;
     }
-    
+
     public String getSpecialRequests() {
         return specialRequests;
     }
-    
+
     public void setSpecialRequests(String specialRequests) {
         this.specialRequests = specialRequests;
     }
-    
+
     public String getPaymentIntentId() {
         return paymentIntentId;
     }
-    
+
     public void setPaymentIntentId(String paymentIntentId) {
         this.paymentIntentId = paymentIntentId;
     }
-    
+
     public String getPaymentMethod() {
         return paymentMethod;
     }
-    
+
     public void setPaymentMethod(String paymentMethod) {
         this.paymentMethod = paymentMethod;
     }
-    
+
     public RoomType getRoomType() {
         return roomType;
     }
-    
+
     public void setRoomType(RoomType roomType) {
         this.roomType = roomType;
     }
-    
+
     public Hotel getHotel() {
         return hotel;
     }
-    
+
     public void setHotel(Hotel hotel) {
         this.hotel = hotel;
     }
-    
+
     public BigDecimal getPricePerNight() {
         return pricePerNight;
     }
-    
+
     public void setPricePerNight(BigDecimal pricePerNight) {
         this.pricePerNight = pricePerNight;
     }
-    
+
     public Room getAssignedRoom() {
         return assignedRoom;
     }
-    
+
     public void setAssignedRoom(Room assignedRoom) {
         this.assignedRoom = assignedRoom;
         if (assignedRoom != null) {
             this.roomAssignedAt = LocalDateTime.now();
         }
     }
-    
+
     public LocalDateTime getRoomAssignedAt() {
         return roomAssignedAt;
     }
-    
+
     public void setRoomAssignedAt(LocalDateTime roomAssignedAt) {
         this.roomAssignedAt = roomAssignedAt;
     }
-    
+
     public Room getRoom() {
         return assignedRoom; // For backward compatibility
     }
-    
+
     public void setRoom(Room room) {
         this.assignedRoom = room; // For backward compatibility
         if (room != null) {
             this.roomAssignedAt = LocalDateTime.now();
         }
     }
-    
+
     public User getGuest() {
         return guest;
     }
-    
+
     public void setGuest(User guest) {
         this.guest = guest;
     }
-    
+
     public String getConfirmationNumber() {
         return confirmationNumber;
     }
-    
+
     public void setConfirmationNumber(String confirmationNumber) {
         this.confirmationNumber = confirmationNumber;
     }
-    
+
     public LocalDateTime getActualCheckInTime() {
         return actualCheckInTime;
     }
-    
+
     public void setActualCheckInTime(LocalDateTime actualCheckInTime) {
         this.actualCheckInTime = actualCheckInTime;
     }
-    
+
     public LocalDateTime getActualCheckOutTime() {
         return actualCheckOutTime;
     }
-    
+
     public void setActualCheckOutTime(LocalDateTime actualCheckOutTime) {
         this.actualCheckOutTime = actualCheckOutTime;
     }
-    
+
     public String getCancellationReason() {
         return cancellationReason;
     }
-    
+
     public void setCancellationReason(String cancellationReason) {
         this.cancellationReason = cancellationReason;
     }
-    
+
     public LocalDateTime getCancelledAt() {
         return cancelledAt;
     }
-    
+
     public void setCancelledAt(LocalDateTime cancelledAt) {
         this.cancelledAt = cancelledAt;
     }
-    
+
     public String getPromotionalCode() {
         return promotionalCode;
     }
-    
+
     public void setPromotionalCode(String promotionalCode) {
         this.promotionalCode = promotionalCode;
     }
-    
+
     public GuestInfo getGuestInfo() {
         return guestInfo;
     }
-    
+
     public void setGuestInfo(GuestInfo guestInfo) {
         this.guestInfo = guestInfo;
     }
-    
+
     public Integer getNumberOfGuests() {
         return numberOfGuests;
     }
-    
+
     public void setNumberOfGuests(Integer numberOfGuests) {
         this.numberOfGuests = numberOfGuests;
     }

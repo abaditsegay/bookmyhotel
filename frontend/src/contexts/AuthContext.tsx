@@ -1,5 +1,6 @@
 import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
 import { updateUserProfile, changeUserPassword } from '../services/userApi';
+import TokenManager, { type AuthUser } from '../utils/tokenManager';
 
 interface User {
   id: string;
@@ -54,21 +55,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
 
   // Load authentication state from localStorage on startup
   useEffect(() => {
-    const savedToken = localStorage.getItem('auth_token');
-    const savedUser = localStorage.getItem('auth_user');
+    // Migrate any legacy tokens
+    TokenManager.migrateLegacyTokens();
+    
+    const savedToken = TokenManager.getToken();
+    const savedUser = TokenManager.getUser();
     
     if (savedToken && savedUser) {
       try {
         setToken(savedToken);
-        setUser(JSON.parse(savedUser));
-        console.log('Restored auth state from localStorage');
+        setUser(savedUser as User);
+        console.log('Restored auth state from TokenManager');
         
         // Notify parent component of token change
         onTokenChange?.(savedToken);
       } catch (error) {
         console.error('Failed to restore auth state:', error);
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('auth_user');
+        TokenManager.clearAuth();
       }
     }
     
@@ -126,9 +129,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
       setUser(user);
       setToken(loginData.token);
       
-      // Persist to localStorage
-      localStorage.setItem('auth_token', loginData.token);
-      localStorage.setItem('auth_user', JSON.stringify(user));
+      // Persist to localStorage using TokenManager
+      TokenManager.setAuth(loginData.token, user as AuthUser);
       
       // Notify parent component of token change
       onTokenChange?.(loginData.token);
@@ -146,9 +148,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
     setUser(null);
     setToken(null);
     
-    // Clear localStorage
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('auth_user');
+    // Clear localStorage using TokenManager
+    TokenManager.clearAuth();
     
     // Clear tenant context
     onLogout?.();
@@ -174,8 +175,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
         const updatedUser = { ...user, ...updates };
         setUser(updatedUser);
         
-        // Update localStorage
-        localStorage.setItem('auth_user', JSON.stringify(updatedUser));
+        // Update localStorage using TokenManager
+        TokenManager.setAuth(token, updatedUser as AuthUser);
         
         return true;
       } else {

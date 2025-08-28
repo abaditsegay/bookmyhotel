@@ -26,13 +26,12 @@ public class HousekeepingController {
     public ResponseEntity<HousekeepingTask> createTask(@RequestBody HousekeepingTaskRequest request) {
         String tenantId = TenantContext.getTenantId();
         HousekeepingTask task = housekeepingService.createTask(
-            tenantId,
-            request.getRoomId(),
-            request.getTaskType(),
-            request.getPriority(),
-            request.getDescription(),
-            request.getSpecialInstructions()
-        );
+                tenantId,
+                request.getRoomId(),
+                request.getTaskType(),
+                request.getPriority(),
+                request.getDescription(),
+                request.getSpecialInstructions());
         return ResponseEntity.ok(task);
     }
 
@@ -48,9 +47,9 @@ public class HousekeepingController {
         String tenantId = TenantContext.getTenantId();
         List<HousekeepingTask> tasks = housekeepingService.getAllTasks(tenantId);
         HousekeepingTask task = tasks.stream()
-            .filter(t -> t.getId().equals(id))
-            .findFirst()
-            .orElseThrow(() -> new RuntimeException("Task not found"));
+                .filter(t -> t.getId().equals(id))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Task not found"));
         return ResponseEntity.ok(task);
     }
 
@@ -60,9 +59,9 @@ public class HousekeepingController {
         // Filter by hotel through room relationship
         List<HousekeepingTask> allTasks = housekeepingService.getAllTasks(tenantId);
         List<HousekeepingTask> hotelTasks = allTasks.stream()
-            .filter(task -> task.getRoom() != null && task.getRoom().getHotel() != null && 
-                           task.getRoom().getHotel().getId().equals(hotelId))
-            .toList();
+                .filter(task -> task.getRoom() != null && task.getRoom().getHotel() != null &&
+                        task.getRoom().getHotel().getId().equals(hotelId))
+                .toList();
         return ResponseEntity.ok(hotelTasks);
     }
 
@@ -95,16 +94,20 @@ public class HousekeepingController {
     }
 
     @PostMapping("/tasks/{id}/complete")
-    public ResponseEntity<HousekeepingTask> completeTask(@PathVariable Long id, @RequestBody CompleteTaskRequest request) {
+    public ResponseEntity<HousekeepingTask> completeTask(@PathVariable Long id,
+            @RequestBody CompleteTaskRequest request) {
         String tenantId = TenantContext.getTenantId();
-        HousekeepingTask task = housekeepingService.completeTask(tenantId, id, request.getNotes(), request.getQualityScore());
+        HousekeepingTask task = housekeepingService.completeTask(tenantId, id, request.getNotes(),
+                request.getQualityScore());
         return ResponseEntity.ok(task);
     }
 
     @PostMapping("/tasks/{id}/complete-with-issues")
-    public ResponseEntity<HousekeepingTask> completeTaskWithIssues(@PathVariable Long id, @RequestBody CompleteTaskWithIssuesRequest request) {
+    public ResponseEntity<HousekeepingTask> completeTaskWithIssues(@PathVariable Long id,
+            @RequestBody CompleteTaskWithIssuesRequest request) {
         String tenantId = TenantContext.getTenantId();
-        HousekeepingTask task = housekeepingService.completeTaskWithIssues(tenantId, id, request.getNotes(), request.getIssueDescription());
+        HousekeepingTask task = housekeepingService.completeTaskWithIssues(tenantId, id, request.getNotes(),
+                request.getIssueDescription());
         return ResponseEntity.ok(task);
     }
 
@@ -127,12 +130,11 @@ public class HousekeepingController {
     public ResponseEntity<HousekeepingStaff> createStaff(@RequestBody HousekeepingStaffRequest request) {
         String tenantId = TenantContext.getTenantId();
         HousekeepingStaff staff = housekeepingService.createStaff(
-            tenantId,
-            request.getEmail(),
-            request.getHotelId(),
-            request.getShiftType(),
-            request.getEmployeeId()
-        );
+                tenantId,
+                request.getEmail(),
+                request.getHotelId(),
+                request.getShiftType(),
+                request.getEmployeeId());
         return ResponseEntity.ok(staff);
     }
 
@@ -155,9 +157,9 @@ public class HousekeepingController {
         String tenantId = TenantContext.getTenantId();
         List<HousekeepingStaff> allStaff = housekeepingService.getAllStaff(tenantId);
         HousekeepingStaff staff = allStaff.stream()
-            .filter(s -> s.getId().equals(id))
-            .findFirst()
-            .orElseThrow(() -> new RuntimeException("Staff not found"));
+                .filter(s -> s.getId().equals(id))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Staff not found"));
         return ResponseEntity.ok(staff);
     }
 
@@ -206,16 +208,45 @@ public class HousekeepingController {
         private String specialInstructions;
 
         // Getters and setters
-        public Long getRoomId() { return roomId; }
-        public void setRoomId(Long roomId) { this.roomId = roomId; }
-        public HousekeepingTaskType getTaskType() { return taskType; }
-        public void setTaskType(HousekeepingTaskType taskType) { this.taskType = taskType; }
-        public TaskPriority getPriority() { return priority; }
-        public void setPriority(TaskPriority priority) { this.priority = priority; }
-        public String getDescription() { return description; }
-        public void setDescription(String description) { this.description = description; }
-        public String getSpecialInstructions() { return specialInstructions; }
-        public void setSpecialInstructions(String specialInstructions) { this.specialInstructions = specialInstructions; }
+        public Long getRoomId() {
+            return roomId;
+        }
+
+        public void setRoomId(Long roomId) {
+            this.roomId = roomId;
+        }
+
+        public HousekeepingTaskType getTaskType() {
+            return taskType;
+        }
+
+        public void setTaskType(HousekeepingTaskType taskType) {
+            this.taskType = taskType;
+        }
+
+        public TaskPriority getPriority() {
+            return priority;
+        }
+
+        public void setPriority(TaskPriority priority) {
+            this.priority = priority;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
+        }
+
+        public String getSpecialInstructions() {
+            return specialInstructions;
+        }
+
+        public void setSpecialInstructions(String specialInstructions) {
+            this.specialInstructions = specialInstructions;
+        }
     }
 
     public static class HousekeepingStaffRequest {
@@ -225,47 +256,102 @@ public class HousekeepingController {
         private String employeeId;
 
         // Getters and setters
-        public String getEmail() { return email; }
-        public void setEmail(String email) { this.email = email; }
-        public Long getHotelId() { return hotelId; }
-        public void setHotelId(Long hotelId) { this.hotelId = hotelId; }
-        public com.bookmyhotel.enums.WorkShift getShiftType() { return shiftType; }
-        public void setShiftType(com.bookmyhotel.enums.WorkShift shiftType) { this.shiftType = shiftType; }
-        public String getEmployeeId() { return employeeId; }
-        public void setEmployeeId(String employeeId) { this.employeeId = employeeId; }
+        public String getEmail() {
+            return email;
+        }
+
+        public void setEmail(String email) {
+            this.email = email;
+        }
+
+        public Long getHotelId() {
+            return hotelId;
+        }
+
+        public void setHotelId(Long hotelId) {
+            this.hotelId = hotelId;
+        }
+
+        public com.bookmyhotel.enums.WorkShift getShiftType() {
+            return shiftType;
+        }
+
+        public void setShiftType(com.bookmyhotel.enums.WorkShift shiftType) {
+            this.shiftType = shiftType;
+        }
+
+        public String getEmployeeId() {
+            return employeeId;
+        }
+
+        public void setEmployeeId(String employeeId) {
+            this.employeeId = employeeId;
+        }
     }
 
     public static class AssignTaskRequest {
         private Long staffId;
 
-        public Long getStaffId() { return staffId; }
-        public void setStaffId(Long staffId) { this.staffId = staffId; }
+        public Long getStaffId() {
+            return staffId;
+        }
+
+        public void setStaffId(Long staffId) {
+            this.staffId = staffId;
+        }
     }
 
     public static class CompleteTaskRequest {
         private String notes;
         private Integer qualityScore;
 
-        public String getNotes() { return notes; }
-        public void setNotes(String notes) { this.notes = notes; }
-        public Integer getQualityScore() { return qualityScore; }
-        public void setQualityScore(Integer qualityScore) { this.qualityScore = qualityScore; }
+        public String getNotes() {
+            return notes;
+        }
+
+        public void setNotes(String notes) {
+            this.notes = notes;
+        }
+
+        public Integer getQualityScore() {
+            return qualityScore;
+        }
+
+        public void setQualityScore(Integer qualityScore) {
+            this.qualityScore = qualityScore;
+        }
     }
 
     public static class CompleteTaskWithIssuesRequest {
         private String notes;
         private String issueDescription;
 
-        public String getNotes() { return notes; }
-        public void setNotes(String notes) { this.notes = notes; }
-        public String getIssueDescription() { return issueDescription; }
-        public void setIssueDescription(String issueDescription) { this.issueDescription = issueDescription; }
+        public String getNotes() {
+            return notes;
+        }
+
+        public void setNotes(String notes) {
+            this.notes = notes;
+        }
+
+        public String getIssueDescription() {
+            return issueDescription;
+        }
+
+        public void setIssueDescription(String issueDescription) {
+            this.issueDescription = issueDescription;
+        }
     }
 
     public static class CancelTaskRequest {
         private String reason;
 
-        public String getReason() { return reason; }
-        public void setReason(String reason) { this.reason = reason; }
+        public String getReason() {
+            return reason;
+        }
+
+        public void setReason(String reason) {
+            this.reason = reason;
+        }
     }
 }

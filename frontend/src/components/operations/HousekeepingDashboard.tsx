@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import TokenManager from '../../utils/tokenManager';
 import {
   Box,
   Button,
@@ -132,12 +133,8 @@ const HousekeepingDashboard: React.FC = () => {
     try {
       setLoading(true);
       
-      const token = localStorage.getItem('authToken');
       const response = await fetch(`${API_BASE_URL}/api/housekeeping/tasks`, {
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token && { Authorization: `Bearer ${token}` })
-        }
+        headers: TokenManager.getAuthHeaders()
       });
 
       if (response.ok) {
@@ -164,12 +161,8 @@ const HousekeepingDashboard: React.FC = () => {
 
   const loadStaff = async () => {
     try {
-      const token = localStorage.getItem('authToken');
       const response = await fetch(`${API_BASE_URL}/api/housekeeping/staff`, {
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token && { Authorization: `Bearer ${token}` })
-        }
+        headers: TokenManager.getAuthHeaders()
       });
 
       if (response.ok) {
@@ -234,13 +227,9 @@ const HousekeepingDashboard: React.FC = () => {
     if (!selectedTaskId || !selectedStaffId) return;
     
     try {
-      const token = localStorage.getItem('authToken');
       const response = await fetch(`${API_BASE_URL}/api/housekeeping/tasks/${selectedTaskId}/assign`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token && { Authorization: `Bearer ${token}` })
-        },
+        headers: TokenManager.getAuthHeaders(),
         body: JSON.stringify({ staffId: parseInt(selectedStaffId) })
       });
 
@@ -260,13 +249,9 @@ const HousekeepingDashboard: React.FC = () => {
 
   const handleStartTask = async (taskId: number) => {
     try {
-      const token = localStorage.getItem('authToken');
       const response = await fetch(`${API_BASE_URL}/api/housekeeping/tasks/${taskId}/start`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token && { Authorization: `Bearer ${token}` })
-        }
+        headers: TokenManager.getAuthHeaders()
       });
 
       if (!response.ok) {
@@ -284,13 +269,9 @@ const HousekeepingDashboard: React.FC = () => {
     if (!selectedTaskId) return;
     
     try {
-      const token = localStorage.getItem('authToken');
       const response = await fetch(`${API_BASE_URL}/api/housekeeping/tasks/${selectedTaskId}/complete`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token && { Authorization: `Bearer ${token}` })
-        },
+        headers: TokenManager.getAuthHeaders(),
         body: JSON.stringify({ 
           notes: completionNotes,
           qualityRating: qualityRating 

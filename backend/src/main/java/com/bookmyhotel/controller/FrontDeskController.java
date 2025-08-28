@@ -43,7 +43,7 @@ public class FrontDeskController {
      * Get all bookings with pagination and search
      */
     @GetMapping("/bookings")
-    @PreAuthorize("hasRole('FRONT_DESK') or hasRole('HOTEL_ADMIN')")
+    @PreAuthorize("hasRole('FRONTDESK') or hasRole('HOTEL_ADMIN') or hasRole('SYSTEM_ADMIN')")
     public ResponseEntity<Page<BookingResponse>> getAllBookings(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -58,7 +58,7 @@ public class FrontDeskController {
      * Get a single booking by reservation ID
      */
     @GetMapping("/bookings/{reservationId}")
-    @PreAuthorize("hasRole('FRONT_DESK') or hasRole('HOTEL_ADMIN')")
+    @PreAuthorize("hasRole('FRONTDESK') or hasRole('HOTEL_ADMIN') or hasRole('SYSTEM_ADMIN')")
     public ResponseEntity<BookingResponse> getBookingById(@PathVariable Long reservationId) {
         BookingResponse booking = frontDeskService.getBookingById(reservationId);
         return ResponseEntity.ok(booking);
@@ -68,7 +68,7 @@ public class FrontDeskController {
      * Update booking status
      */
     @PutMapping("/bookings/{reservationId}/status")
-    @PreAuthorize("hasRole('FRONT_DESK') or hasRole('HOTEL_ADMIN')")
+    @PreAuthorize("hasRole('FRONTDESK') or hasRole('HOTEL_ADMIN')")
     public ResponseEntity<BookingResponse> updateBookingStatus(
             @PathVariable Long reservationId,
             @RequestParam String status) {
@@ -80,7 +80,7 @@ public class FrontDeskController {
      * Delete booking
      */
     @DeleteMapping("/bookings/{reservationId}")
-    @PreAuthorize("hasRole('FRONT_DESK') or hasRole('HOTEL_ADMIN')")
+    @PreAuthorize("hasRole('FRONTDESK') or hasRole('HOTEL_ADMIN')")
     public ResponseEntity<Void> deleteBooking(@PathVariable Long reservationId) {
         frontDeskService.deleteBooking(reservationId);
         return ResponseEntity.ok().build();
@@ -90,7 +90,7 @@ public class FrontDeskController {
      * Get today's arrivals
      */
     @GetMapping("/arrivals")
-    @PreAuthorize("hasRole('FRONT_DESK') or hasRole('HOTEL_ADMIN')")
+    @PreAuthorize("hasRole('FRONTDESK') or hasRole('HOTEL_ADMIN')")
     public ResponseEntity<List<BookingResponse>> getTodaysArrivals() {
         List<BookingResponse> arrivals = frontDeskService.getTodaysArrivals();
         return ResponseEntity.ok(arrivals);
@@ -100,7 +100,7 @@ public class FrontDeskController {
      * Get today's departures
      */
     @GetMapping("/departures")
-    @PreAuthorize("hasRole('FRONT_DESK') or hasRole('HOTEL_ADMIN')")
+    @PreAuthorize("hasRole('FRONTDESK') or hasRole('HOTEL_ADMIN')")
     public ResponseEntity<List<BookingResponse>> getTodaysDepartures() {
         List<BookingResponse> departures = frontDeskService.getTodaysDepartures();
         return ResponseEntity.ok(departures);
@@ -110,7 +110,7 @@ public class FrontDeskController {
      * Get all current guests (checked in)
      */
     @GetMapping("/current-guests")
-    @PreAuthorize("hasRole('FRONT_DESK') or hasRole('HOTEL_ADMIN')")
+    @PreAuthorize("hasRole('FRONTDESK') or hasRole('HOTEL_ADMIN')")
     public ResponseEntity<List<BookingResponse>> getCurrentGuests() {
         List<BookingResponse> currentGuests = frontDeskService.getCurrentGuests();
         return ResponseEntity.ok(currentGuests);
@@ -120,7 +120,7 @@ public class FrontDeskController {
      * Check in a guest
      */
     @PutMapping("/checkin/{reservationId}")
-    @PreAuthorize("hasRole('FRONT_DESK') or hasRole('HOTEL_ADMIN')")
+    @PreAuthorize("hasRole('FRONTDESK') or hasRole('HOTEL_ADMIN')")
     public ResponseEntity<BookingResponse> checkInGuest(@PathVariable Long reservationId) {
         BookingResponse response = frontDeskService.checkInGuest(reservationId);
         return ResponseEntity.ok(response);
@@ -130,7 +130,7 @@ public class FrontDeskController {
      * Check out a guest
      */
     @PutMapping("/checkout/{reservationId}")
-    @PreAuthorize("hasRole('FRONT_DESK') or hasRole('HOTEL_ADMIN')")
+    @PreAuthorize("hasRole('FRONTDESK') or hasRole('HOTEL_ADMIN')")
     public ResponseEntity<BookingResponse> checkOutGuest(@PathVariable Long reservationId) {
         BookingResponse response = frontDeskService.checkOutGuest(reservationId);
         return ResponseEntity.ok(response);
@@ -140,7 +140,7 @@ public class FrontDeskController {
      * Mark guest as no-show
      */
     @PutMapping("/no-show/{reservationId}")
-    @PreAuthorize("hasRole('FRONT_DESK') or hasRole('HOTEL_ADMIN')")
+    @PreAuthorize("hasRole('FRONTDESK') or hasRole('HOTEL_ADMIN')")
     public ResponseEntity<BookingResponse> markNoShow(@PathVariable Long reservationId) {
         BookingResponse response = frontDeskService.markNoShow(reservationId);
         return ResponseEntity.ok(response);
@@ -150,7 +150,7 @@ public class FrontDeskController {
      * Cancel booking
      */
     @PutMapping("/cancel/{reservationId}")
-    @PreAuthorize("hasRole('FRONT_DESK') or hasRole('HOTEL_ADMIN')")
+    @PreAuthorize("hasRole('FRONTDESK') or hasRole('HOTEL_ADMIN')")
     public ResponseEntity<BookingResponse> cancelBooking(
             @PathVariable Long reservationId,
             @RequestParam(required = false) String reason) {
@@ -162,7 +162,7 @@ public class FrontDeskController {
      * Search bookings by various criteria
      */
     @GetMapping("/search")
-    @PreAuthorize("hasRole('FRONT_DESK') or hasRole('HOTEL_ADMIN')")
+    @PreAuthorize("hasRole('FRONTDESK') or hasRole('HOTEL_ADMIN')")
     public ResponseEntity<List<BookingResponse>> searchBookings(
             @RequestParam(required = false) String guestName,
             @RequestParam(required = false) String roomNumber,
@@ -179,7 +179,7 @@ public class FrontDeskController {
      * Get front desk statistics
      */
     @GetMapping("/stats")
-    @PreAuthorize("hasRole('FRONT_DESK') or hasRole('HOTEL_ADMIN')")
+    @PreAuthorize("hasRole('FRONTDESK') or hasRole('HOTEL_ADMIN')")
     public ResponseEntity<FrontDeskStats> getFrontDeskStats() {
         FrontDeskStats stats = frontDeskService.getFrontDeskStats();
         return ResponseEntity.ok(stats);
@@ -189,7 +189,7 @@ public class FrontDeskController {
      * Get hotel information for the front desk
      */
     @GetMapping("/hotel")
-    @PreAuthorize("hasRole('FRONT_DESK') or hasRole('HOTEL_ADMIN')")
+    @PreAuthorize("hasRole('FRONTDESK') or hasRole('HOTEL_ADMIN')")
     public ResponseEntity<HotelDTO> getHotelInfo() {
         HotelDTO hotel = frontDeskService.getHotelInfo();
         return ResponseEntity.ok(hotel);
@@ -199,7 +199,7 @@ public class FrontDeskController {
      * Get all rooms with pagination and filtering
      */
     @GetMapping("/rooms")
-    @PreAuthorize("hasRole('FRONT_DESK') or hasRole('HOTEL_ADMIN')")
+    @PreAuthorize("hasRole('FRONTDESK') or hasRole('HOTEL_ADMIN') or hasRole('SYSTEM_ADMIN')")
     public ResponseEntity<Page<RoomResponse>> getAllRooms(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -216,7 +216,7 @@ public class FrontDeskController {
      * Update room status
      */
     @PutMapping("/rooms/{roomId}/status")
-    @PreAuthorize("hasRole('FRONT_DESK') or hasRole('HOTEL_ADMIN')")
+    @PreAuthorize("hasRole('FRONTDESK') or hasRole('HOTEL_ADMIN')")
     public ResponseEntity<RoomResponse> updateRoomStatus(
             @PathVariable Long roomId,
             @RequestParam String status,
@@ -229,7 +229,7 @@ public class FrontDeskController {
      * Toggle room availability
      */
     @PutMapping("/rooms/{roomId}/availability")
-    @PreAuthorize("hasRole('FRONT_DESK') or hasRole('HOTEL_ADMIN')")
+    @PreAuthorize("hasRole('FRONTDESK') or hasRole('HOTEL_ADMIN')")
     public ResponseEntity<RoomResponse> toggleRoomAvailability(
             @PathVariable Long roomId,
             @RequestParam boolean available,
@@ -242,7 +242,7 @@ public class FrontDeskController {
      * Get room details by ID
      */
     @GetMapping("/rooms/{roomId}")
-    @PreAuthorize("hasRole('FRONT_DESK') or hasRole('HOTEL_ADMIN')")
+    @PreAuthorize("hasRole('FRONTDESK') or hasRole('HOTEL_ADMIN')")
     public ResponseEntity<RoomResponse> getRoomById(@PathVariable Long roomId) {
         RoomResponse room = frontDeskService.getRoomById(roomId);
         return ResponseEntity.ok(room);

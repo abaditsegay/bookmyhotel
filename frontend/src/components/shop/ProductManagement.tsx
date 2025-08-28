@@ -35,15 +35,12 @@ import {
   Delete as DeleteIcon,
   Search as SearchIcon,
   Warning as WarningIcon,
-  CheckCircle as CheckCircleIcon,
-  ArrowBack as ArrowBackIcon
+  CheckCircle as CheckCircleIcon
 } from '@mui/icons-material';
 import { shopApiService } from '../../services/shopApi';
-import { useNavigate } from 'react-router-dom';
 import { Product, ProductCreateRequest, ProductCategory } from '../../types/shop';
 
 const ProductManagement: React.FC = () => {
-  const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loading, setLoading] = useState(true);
@@ -51,7 +48,9 @@ const ProductManagement: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('ALL');
   const [openDialog, setOpenDialog] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [productToDelete, setProductToDelete] = useState<Product | null>(null);
   const [formData, setFormData] = useState<ProductCreateRequest>({
     name: '',
     description: '',
@@ -112,11 +111,18 @@ const ProductManagement: React.FC = () => {
     }
   };
 
-  const handleDeleteProduct = async (id: number) => {
-    if (!window.confirm('Are you sure you want to delete this product?')) return;
+  const handleDeleteProduct = (product: Product) => {
+    setProductToDelete(product);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteProduct = async () => {
+    if (!productToDelete) return;
     
     try {
-      await shopApiService.deleteProduct(hotelId, id);
+      await shopApiService.deleteProduct(hotelId, productToDelete.id);
+      setDeleteDialogOpen(false);
+      setProductToDelete(null);
       loadProducts();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete product');
@@ -204,15 +210,7 @@ const ProductManagement: React.FC = () => {
   return (
     <Box>
       {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <IconButton onClick={() => navigate('/shop?tab=products')} sx={{ mr: 1 }}>
-            <ArrowBackIcon />
-          </IconButton>
-          <Typography variant="h5" component="h1">
-            Product Management
-          </Typography>
-        </Box>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mb: 3 }}>
         <Button
           variant="contained"
           onClick={openCreateDialog}
@@ -372,7 +370,7 @@ const ProductManagement: React.FC = () => {
                     <IconButton
                       size="small"
                       color="error"
-                      onClick={() => handleDeleteProduct(product.id)}
+                      onClick={() => handleDeleteProduct(product)}
                     >
                       <DeleteIcon />
                     </IconButton>
@@ -524,6 +522,44 @@ const ProductManagement: React.FC = () => {
             variant="contained"
           >
             {editingProduct ? 'Update' : 'Create'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Delete Product</DialogTitle>
+        <DialogContent>
+          {productToDelete && (
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="body1" gutterBottom>
+                Are you sure you want to delete this product?
+              </Typography>
+              <Typography variant="body2" color="text.secondary" gutterBottom>
+                <strong>Product:</strong> {productToDelete.name}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" gutterBottom>
+                <strong>SKU:</strong> {productToDelete.sku}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" gutterBottom>
+                <strong>Category:</strong> {productToDelete.category.replace('_', ' ')}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" gutterBottom>
+                <strong>Price:</strong> ETB {(productToDelete.price * 55).toFixed(0)} (${productToDelete.price.toFixed(2)})
+              </Typography>
+              <Typography variant="body2" color="text.secondary" gutterBottom>
+                <strong>Stock:</strong> {productToDelete.stockQuantity} units
+              </Typography>
+              <Typography variant="body2" color="error" sx={{ mt: 2 }}>
+                This action cannot be undone.
+              </Typography>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+          <Button onClick={confirmDeleteProduct} variant="contained" color="error">
+            Delete
           </Button>
         </DialogActions>
       </Dialog>

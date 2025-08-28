@@ -9,7 +9,7 @@ export enum ProductCategory {
 
 export enum ShopOrderStatus {
   PENDING = 'PENDING',
-  CONFIRMED = 'CONFIRMED',
+  CONFIRMED = 'CONFIRMED', 
   PREPARING = 'PREPARING',
   READY = 'READY',
   COMPLETED = 'COMPLETED',
@@ -22,13 +22,13 @@ export enum DeliveryType {
 }
 
 export enum PaymentMethod {
+  ROOM_CHARGE = 'ROOM_CHARGE',
+  CASH = 'CASH',
+  CARD = 'CARD',
+  MOBILE = 'MOBILE',
   CREDIT_CARD = 'CREDIT_CARD',
   MOBILE_MONEY = 'MOBILE_MONEY',
-  PAY_AT_FRONT_DESK = 'PAY_AT_FRONT_DESK',
-  MBIRR = 'MBIRR',
-  TELEBIRR = 'TELEBIRR',
-  CASH = 'CASH',
-  ROOM_CHARGE = 'ROOM_CHARGE'
+  PAY_AT_FRONTDESK = 'PAY_AT_FRONTDESK'
 }
 
 export enum RoomChargeType {
@@ -38,6 +38,17 @@ export enum RoomChargeType {
   TELEPHONE = 'TELEPHONE',
   RESTAURANT = 'RESTAURANT',
   SPA = 'SPA',
+  ROOM_SERVICE = 'ROOM_SERVICE',
+  INTERNET = 'INTERNET',
+  PARKING = 'PARKING',
+  BUSINESS_CENTER = 'BUSINESS_CENTER',
+  FITNESS_CENTER = 'FITNESS_CENTER',
+  CONFERENCE_ROOM = 'CONFERENCE_ROOM',
+  EARLY_CHECKIN = 'EARLY_CHECKIN',
+  LATE_CHECKOUT = 'LATE_CHECKOUT',
+  DAMAGE = 'DAMAGE',
+  CLEANING = 'CLEANING',
+  INCIDENTAL = 'INCIDENTAL',
   OTHER = 'OTHER'
 }
 
@@ -179,6 +190,9 @@ export interface RoomCharge {
   createdBy?: number;
   createdAt: string;
   updatedAt: string;
+  guestName?: string;
+  roomNumber?: string;
+  reservationConfirmationNumber?: string;
 }
 
 export interface RoomChargeCreateRequest {

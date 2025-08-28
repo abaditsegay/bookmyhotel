@@ -58,7 +58,8 @@ public class HotelAdminController {
         return ResponseEntity.ok(updated);
     }
 
-    // Staff Management - Hotel admin can manage frontdesk, housekeeping, and other hotel_admin users
+    // Staff Management - Hotel admin can manage frontdesk, housekeeping, and other
+    // hotel_admin users
     @GetMapping("/staff")
     public ResponseEntity<Page<UserDTO>> getHotelStaff(
             @RequestParam(defaultValue = "0") int page,
@@ -188,7 +189,7 @@ public class HotelAdminController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String search,
             Authentication auth) {
-        
+
         // First get the hotel ID from the authenticated user
         HotelDTO hotel = hotelAdminService.getMyHotel(auth.getName());
         Page<BookingResponse> bookings = hotelAdminService.getHotelBookings(hotel.getId(), page, size, search);
@@ -202,7 +203,7 @@ public class HotelAdminController {
     public ResponseEntity<BookingResponse> getBookingById(
             @PathVariable Long reservationId,
             Authentication auth) {
-        
+
         // First get the hotel ID from the authenticated user
         HotelDTO hotel = hotelAdminService.getMyHotel(auth.getName());
         BookingResponse booking = hotelAdminService.getBookingById(reservationId, hotel.getId());
@@ -227,10 +228,10 @@ public class HotelAdminController {
             @PathVariable Long reservationId,
             @RequestParam String status,
             Authentication auth) {
-        
+
         // Verify the reservation belongs to the hotel admin's hotel
         HotelDTO hotel = hotelAdminService.getMyHotel(auth.getName());
-        
+
         // Convert string to enum (case-insensitive, handle spaces)
         ReservationStatus reservationStatus;
         try {
@@ -240,7 +241,7 @@ public class HotelAdminController {
         } catch (IllegalArgumentException e) {
             throw new RuntimeException("Invalid status value: " + status);
         }
-        
+
         BookingResponse updated = hotelAdminService.updateBookingStatus(reservationId, reservationStatus);
         return ResponseEntity.ok(updated);
     }
@@ -253,12 +254,12 @@ public class HotelAdminController {
             @PathVariable Long reservationId,
             @Valid @RequestBody BookingModificationRequest request,
             Authentication auth) {
-        
+
         // Verify the reservation belongs to the hotel admin's hotel
         HotelDTO hotel = hotelAdminService.getMyHotel(auth.getName());
-        
+
         BookingModificationResponse response = hotelAdminService.modifyBooking(reservationId, request, hotel.getId());
-        
+
         if (response.isSuccess()) {
             return ResponseEntity.ok(response);
         } else {
@@ -273,7 +274,7 @@ public class HotelAdminController {
     public ResponseEntity<Void> deleteBooking(
             @PathVariable Long reservationId,
             Authentication auth) {
-        
+
         // Get the hotel ID from the authenticated user
         HotelDTO hotel = hotelAdminService.getMyHotel(auth.getName());
         hotelAdminService.deleteBooking(reservationId, hotel.getId());
@@ -281,7 +282,7 @@ public class HotelAdminController {
     }
 
     // Room Type Pricing Management
-    
+
     /**
      * Get all room type pricing for the hotel
      */
@@ -296,7 +297,7 @@ public class HotelAdminController {
      */
     @PostMapping("/room-type-pricing")
     public ResponseEntity<RoomTypePricingDTO> saveRoomTypePricing(
-            @Valid @RequestBody RoomTypePricingDTO pricingDTO, 
+            @Valid @RequestBody RoomTypePricingDTO pricingDTO,
             Authentication auth) {
         RoomTypePricingDTO saved = roomTypePricingService.saveRoomTypePricing(pricingDTO, auth.getName());
         return ResponseEntity.ok(saved);
@@ -308,7 +309,7 @@ public class HotelAdminController {
     @PutMapping("/room-type-pricing/{id}")
     public ResponseEntity<RoomTypePricingDTO> updateRoomTypePricing(
             @PathVariable Long id,
-            @Valid @RequestBody RoomTypePricingDTO pricingDTO, 
+            @Valid @RequestBody RoomTypePricingDTO pricingDTO,
             Authentication auth) {
         pricingDTO.setId(id);
         RoomTypePricingDTO updated = roomTypePricingService.saveRoomTypePricing(pricingDTO, auth.getName());
@@ -329,7 +330,7 @@ public class HotelAdminController {
      */
     @GetMapping("/room-type-pricing/{roomType}")
     public ResponseEntity<RoomTypePricingDTO> getRoomTypePricing(
-            @PathVariable RoomType roomType, 
+            @PathVariable RoomType roomType,
             Authentication auth) {
         RoomTypePricingDTO pricing = roomTypePricingService.getRoomTypePricing(auth.getName(), roomType);
         return ResponseEntity.ok(pricing);

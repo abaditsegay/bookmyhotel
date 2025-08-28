@@ -1,4 +1,5 @@
 import { HousekeepingTask, MaintenanceRequest } from '../types/operations';
+import TokenManager from '../utils/tokenManager';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
 
@@ -23,13 +24,11 @@ export interface MaintenanceUpdateRequest {
 
 class StaffApiService {
   private async fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> {
-    const token = localStorage.getItem('auth_token');
-    
     try {
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         headers: {
           'Content-Type': 'application/json',
-          ...(token && { Authorization: `Bearer ${token}` }),
+          ...TokenManager.getAuthHeaders(),
         },
         ...options,
       });

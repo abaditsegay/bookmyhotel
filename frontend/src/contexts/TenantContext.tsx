@@ -1,5 +1,6 @@
 import React, { createContext, useContext, ReactNode, useState, useEffect, useMemo, useCallback } from 'react';
 import { getTenantIdFromToken } from '../utils/jwtUtils';
+import TokenManager from '../utils/tokenManager';
 
 interface Tenant {
   id: string;
@@ -67,7 +68,7 @@ export const TenantProvider: React.FC<TenantProviderProps> = ({ children }) => {
   // Initialize tenant on mount
   useEffect(() => {
     // Check if there's a saved token in localStorage and extract tenant from it
-    const savedToken = localStorage.getItem('auth_token');
+    const savedToken = TokenManager.getToken();
     if (savedToken) {
       const extractedTenantId = getTenantIdFromToken(savedToken);
       console.log('Extracted tenant ID from JWT during initialization:', extractedTenantId);

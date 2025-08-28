@@ -19,118 +19,118 @@ import com.bookmyhotel.entity.UserRole;
  */
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
-    
-    /**
-     * Find user by email
-     */
-    Optional<User> findByEmail(String email);
-    
-    /**
-     * Find user by email with hotel eagerly loaded
-     */
-    @Query("SELECT u FROM User u LEFT JOIN FETCH u.hotel WHERE u.email = :email")
-    Optional<User> findByEmailWithHotel(@Param("email") String email);
-    
-    /**
-     * Find user by email (public search across all tenants)
-     */
-    @Query(value = "SELECT * FROM users WHERE email = ?1", nativeQuery = true)
-    Optional<User> findByEmailPublic(String email);
-    
-    /**
-     * Find user by email with hotel loaded (public search across all tenants)
-     */
-    @Query(value = "SELECT u.*, h.* FROM users u LEFT JOIN hotels h ON u.hotel_id = h.id WHERE u.email = ?1", nativeQuery = true)
-    Optional<User> findByEmailWithHotelPublic(String email);
-    
-    /**
-     * Check if user exists by email
-     */
-    boolean existsByEmail(String email);
-    
-    /**
-     * Find users by tenant ID (for tenant-bound users)
-     */
-    Page<User> findByTenantId(String tenantId, Pageable pageable);
-    
-    /**
-     * Find system-wide users (where tenant_id is null)
-     */
-    Page<User> findByTenantIdIsNull(Pageable pageable);
-    
-    /**
-     * Find all tenant-bound users (where tenant_id is not null)
-     */
-    Page<User> findByTenantIdIsNotNull(Pageable pageable);
-    
-    /**
-     * Find system-wide users by role
-     */
-    @Query("SELECT u FROM User u WHERE u.tenantId IS NULL AND EXISTS (SELECT 1 FROM u.roles r WHERE r = :role)")
-    List<User> findSystemWideUsersByRole(@Param("role") UserRole role);
-    
-    /**
-     * Find tenant-bound users by role and tenant
-     */
-    @Query("SELECT u FROM User u WHERE u.tenantId = :tenantId AND EXISTS (SELECT 1 FROM u.roles r WHERE r = :role)")
-    List<User> findTenantBoundUsersByRole(@Param("tenantId") String tenantId, @Param("role") UserRole role);
-    
-    /**
-     * Find users by role
-     */
-    List<User> findByRolesContaining(UserRole role);
-    
-    /**
-     * Count users by active status
-     */
-    long countByIsActive(boolean isActive);
-    
-    /**
-     * Count users by role
-     */
-    long countByRolesContaining(UserRole role);
-    
-    /**
-     * Search users by email, first name, or last name
-     */
-    @Query("SELECT u FROM User u WHERE " +
-           "LOWER(u.email) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
-           "LOWER(u.firstName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
-           "LOWER(u.lastName) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")
-    Page<User> searchUsers(@Param("searchTerm") String searchTerm, Pageable pageable);
-    
-    /**
-     * Find users by hotel
-     */
-    List<User> findByHotel(Hotel hotel);
-    
-    /**
-     * Find users by hotel and roles containing any of the given roles
-     */
-    @Query("SELECT u FROM User u WHERE u.hotel = :hotel AND EXISTS (SELECT 1 FROM u.roles r WHERE r IN :roles)")
-    List<User> findByHotelAndRolesContaining(@Param("hotel") Hotel hotel, @Param("roles") List<UserRole> roles);
-    
-    /**
-     * Count users by tenant ID
-     */
-    long countByTenantId(String tenantId);
-    
-    /**
-     * Find staff members by hotel ID (users with staff roles) - OPTIMIZED VERSION
-     * Uses INNER JOIN instead of EXISTS for better performance
-     */
-    @Query("SELECT DISTINCT u FROM User u " +
-           "INNER JOIN u.roles r " +
-           "WHERE u.hotel.id = :hotelId AND r IN :staffRoles")
-    List<User> findStaffByHotelId(@Param("hotelId") Long hotelId, @Param("staffRoles") List<UserRole> staffRoles);
-    
-    /**
-     * Alternative native query for even better performance
-     */
-    @Query(value = "SELECT DISTINCT u.* FROM users u " +
-                   "INNER JOIN user_roles ur ON u.id = ur.user_id " +
-                   "WHERE u.hotel_id = :hotelId AND ur.role IN :staffRoles", 
-           nativeQuery = true)
-    List<User> findStaffByHotelIdNative(@Param("hotelId") Long hotelId, @Param("staffRoles") List<String> staffRoles);
-    
+
+       /**
+        * Find user by email
+        */
+       Optional<User> findByEmail(String email);
+
+       /**
+        * Find user by email with hotel eagerly loaded
+        */
+       @Query("SELECT u FROM User u LEFT JOIN FETCH u.hotel WHERE u.email = :email")
+       Optional<User> findByEmailWithHotel(@Param("email") String email);
+
+       /**
+        * Find user by email (public search across all tenants)
+        */
+       @Query(value = "SELECT * FROM users WHERE email = ?1", nativeQuery = true)
+       Optional<User> findByEmailPublic(String email);
+
+       /**
+        * Find user by email with hotel loaded (public search across all tenants)
+        */
+       @Query(value = "SELECT u.*, h.* FROM users u LEFT JOIN hotels h ON u.hotel_id = h.id WHERE u.email = ?1", nativeQuery = true)
+       Optional<User> findByEmailWithHotelPublic(String email);
+
+       /**
+        * Check if user exists by email
+        */
+       boolean existsByEmail(String email);
+
+       /**
+        * Find users by tenant ID (for tenant-bound users)
+        */
+       Page<User> findByTenantId(String tenantId, Pageable pageable);
+
+       /**
+        * Find system-wide users (where tenant_id is null)
+        */
+       Page<User> findByTenantIdIsNull(Pageable pageable);
+
+       /**
+        * Find all tenant-bound users (where tenant_id is not null)
+        */
+       Page<User> findByTenantIdIsNotNull(Pageable pageable);
+
+       /**
+        * Find system-wide users by role
+        */
+       @Query("SELECT u FROM User u WHERE u.tenantId IS NULL AND EXISTS (SELECT 1 FROM u.roles r WHERE r = :role)")
+       List<User> findSystemWideUsersByRole(@Param("role") UserRole role);
+
+       /**
+        * Find tenant-bound users by role and tenant
+        */
+       @Query("SELECT u FROM User u WHERE u.tenantId = :tenantId AND EXISTS (SELECT 1 FROM u.roles r WHERE r = :role)")
+       List<User> findTenantBoundUsersByRole(@Param("tenantId") String tenantId, @Param("role") UserRole role);
+
+       /**
+        * Find users by role
+        */
+       List<User> findByRolesContaining(UserRole role);
+
+       /**
+        * Count users by active status
+        */
+       long countByIsActive(boolean isActive);
+
+       /**
+        * Count users by role
+        */
+       long countByRolesContaining(UserRole role);
+
+       /**
+        * Search users by email, first name, or last name
+        */
+       @Query("SELECT u FROM User u WHERE " +
+                     "LOWER(u.email) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+                     "LOWER(u.firstName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+                     "LOWER(u.lastName) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")
+       Page<User> searchUsers(@Param("searchTerm") String searchTerm, Pageable pageable);
+
+       /**
+        * Find users by hotel
+        */
+       List<User> findByHotel(Hotel hotel);
+
+       /**
+        * Find users by hotel and roles containing any of the given roles
+        */
+       @Query("SELECT u FROM User u WHERE u.hotel = :hotel AND EXISTS (SELECT 1 FROM u.roles r WHERE r IN :roles)")
+       List<User> findByHotelAndRolesContaining(@Param("hotel") Hotel hotel, @Param("roles") List<UserRole> roles);
+
+       /**
+        * Count users by tenant ID
+        */
+       long countByTenantId(String tenantId);
+
+       /**
+        * Find staff members by hotel ID (users with staff roles) - OPTIMIZED VERSION
+        * Uses INNER JOIN instead of EXISTS for better performance
+        */
+       @Query("SELECT DISTINCT u FROM User u " +
+                     "INNER JOIN u.roles r " +
+                     "WHERE u.hotel.id = :hotelId AND r IN :staffRoles")
+       List<User> findStaffByHotelId(@Param("hotelId") Long hotelId, @Param("staffRoles") List<UserRole> staffRoles);
+
+       /**
+        * Alternative native query for even better performance
+        */
+       @Query(value = "SELECT DISTINCT u.* FROM users u " +
+                     "INNER JOIN user_roles ur ON u.id = ur.user_id " +
+                     "WHERE u.hotel_id = :hotelId AND ur.role IN :staffRoles", nativeQuery = true)
+       List<User> findStaffByHotelIdNative(@Param("hotelId") Long hotelId,
+                     @Param("staffRoles") List<String> staffRoles);
+
 }

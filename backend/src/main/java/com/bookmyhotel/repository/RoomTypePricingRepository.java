@@ -16,39 +16,40 @@ import java.util.Optional;
  */
 @Repository
 public interface RoomTypePricingRepository extends JpaRepository<RoomTypePricing, Long> {
-    
+
     /**
      * Find room type pricing by hotel and room type
      */
     Optional<RoomTypePricing> findByHotelAndRoomType(Hotel hotel, RoomType roomType);
-    
+
     /**
      * Find all room type pricing for a hotel
      */
     List<RoomTypePricing> findByHotelAndIsActiveTrue(Hotel hotel);
-    
+
     /**
      * Find all room type pricing for a hotel (including inactive)
      */
     List<RoomTypePricing> findByHotel(Hotel hotel);
-    
+
     /**
      * Find room type pricing by hotel ID and room type
      */
     @Query("SELECT rtp FROM RoomTypePricing rtp WHERE rtp.hotel.id = :hotelId AND rtp.roomType = :roomType AND rtp.isActive = true")
-    Optional<RoomTypePricing> findByHotelIdAndRoomType(@Param("hotelId") Long hotelId, @Param("roomType") RoomType roomType);
-    
+    Optional<RoomTypePricing> findByHotelIdAndRoomType(@Param("hotelId") Long hotelId,
+            @Param("roomType") RoomType roomType);
+
     /**
      * Find all active room type pricing for a hotel by hotel ID
      */
     @Query("SELECT rtp FROM RoomTypePricing rtp WHERE rtp.hotel.id = :hotelId AND rtp.isActive = true ORDER BY rtp.roomType")
     List<RoomTypePricing> findActiveByHotelId(@Param("hotelId") Long hotelId);
-    
+
     /**
      * Check if room type pricing exists for hotel and room type
      */
     boolean existsByHotelAndRoomType(Hotel hotel, RoomType roomType);
-    
+
     /**
      * Find room type pricing by tenant ID
      */

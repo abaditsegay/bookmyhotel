@@ -14,7 +14,8 @@ const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api
 
 class ShopApiService {
   private getAuthHeaders() {
-    const token = localStorage.getItem('token');
+    // Use the same token key as AuthContext for consistency
+    const token = localStorage.getItem('auth_token');
     return {
       'Content-Type': 'application/json',
       ...(token && { Authorization: `Bearer ${token}` }),

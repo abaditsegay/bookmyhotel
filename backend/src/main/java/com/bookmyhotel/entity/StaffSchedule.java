@@ -88,7 +88,7 @@ public class StaffSchedule extends TenantEntity {
     }
 
     public enum Department {
-        FRONT_DESK, HOUSEKEEPING, MAINTENANCE, SECURITY, RESTAURANT, CONCIERGE, MANAGEMENT
+        FRONTDESK, HOUSEKEEPING, MAINTENANCE, SECURITY, RESTAURANT, CONCIERGE, MANAGEMENT
     }
 
     public enum ScheduleStatus {
@@ -96,11 +96,12 @@ public class StaffSchedule extends TenantEntity {
     }
 
     // Constructors
-    public StaffSchedule() {}
+    public StaffSchedule() {
+    }
 
-    public StaffSchedule(String tenantId, User staff, Hotel hotel, LocalDate scheduleDate, 
-                        LocalTime startTime, LocalTime endTime, ShiftType shiftType, 
-                        Department department, User createdBy) {
+    public StaffSchedule(String tenantId, User staff, Hotel hotel, LocalDate scheduleDate,
+            LocalTime startTime, LocalTime endTime, ShiftType shiftType,
+            Department department, User createdBy) {
         super();
         this.setTenantId(tenantId);
         this.staff = staff;

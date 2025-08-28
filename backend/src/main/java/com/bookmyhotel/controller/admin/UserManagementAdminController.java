@@ -35,10 +35,10 @@ import jakarta.validation.Valid;
 @PreAuthorize("hasRole('ADMIN')")
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class UserManagementAdminController {
-    
+
     @Autowired
     private UserManagementService userManagementService;
-    
+
     /**
      * Get all users with pagination
      */
@@ -46,12 +46,12 @@ public class UserManagementAdminController {
     public ResponseEntity<Page<UserManagementResponse>> getAllUsers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        
+
         Pageable pageable = PageRequest.of(page, size);
         Page<UserManagementResponse> users = userManagementService.getAllUsers(pageable);
         return ResponseEntity.ok(users);
     }
-    
+
     /**
      * Search users
      */
@@ -60,12 +60,12 @@ public class UserManagementAdminController {
             @RequestParam String searchTerm,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        
+
         Pageable pageable = PageRequest.of(page, size);
         Page<UserManagementResponse> users = userManagementService.searchUsers(searchTerm, pageable);
         return ResponseEntity.ok(users);
     }
-    
+
     /**
      * Get users by role
      */
@@ -74,7 +74,7 @@ public class UserManagementAdminController {
         List<UserManagementResponse> users = userManagementService.getUsersByRole(role);
         return ResponseEntity.ok(users);
     }
-    
+
     /**
      * Get users by tenant
      */
@@ -83,12 +83,12 @@ public class UserManagementAdminController {
             @PathVariable String tenantId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        
+
         Pageable pageable = PageRequest.of(page, size);
         Page<UserManagementResponse> users = userManagementService.getUsersByTenant(tenantId, pageable);
         return ResponseEntity.ok(users);
     }
-    
+
     /**
      * Get user by ID
      */
@@ -97,7 +97,7 @@ public class UserManagementAdminController {
         UserManagementResponse user = userManagementService.getUserById(id);
         return ResponseEntity.ok(user);
     }
-    
+
     /**
      * Create a new user
      */
@@ -106,7 +106,7 @@ public class UserManagementAdminController {
         UserManagementResponse user = userManagementService.createUser(request);
         return ResponseEntity.ok(user);
     }
-    
+
     /**
      * Update user
      */
@@ -114,11 +114,11 @@ public class UserManagementAdminController {
     public ResponseEntity<UserManagementResponse> updateUser(
             @PathVariable Long id,
             @Valid @RequestBody UpdateUserRequest request) {
-        
+
         UserManagementResponse user = userManagementService.updateUser(id, request);
         return ResponseEntity.ok(user);
     }
-    
+
     /**
      * Toggle user active status
      */
@@ -127,7 +127,7 @@ public class UserManagementAdminController {
         UserManagementResponse user = userManagementService.toggleUserStatus(id);
         return ResponseEntity.ok(user);
     }
-    
+
     /**
      * Add role to user
      */
@@ -135,11 +135,11 @@ public class UserManagementAdminController {
     public ResponseEntity<UserManagementResponse> addRoleToUser(
             @PathVariable Long id,
             @PathVariable UserRole role) {
-        
+
         UserManagementResponse user = userManagementService.addRoleToUser(id, role);
         return ResponseEntity.ok(user);
     }
-    
+
     /**
      * Remove role from user
      */
@@ -147,11 +147,11 @@ public class UserManagementAdminController {
     public ResponseEntity<UserManagementResponse> removeRoleFromUser(
             @PathVariable Long id,
             @PathVariable UserRole role) {
-        
+
         UserManagementResponse user = userManagementService.removeRoleFromUser(id, role);
         return ResponseEntity.ok(user);
     }
-    
+
     /**
      * Delete user
      */
@@ -160,7 +160,7 @@ public class UserManagementAdminController {
         userManagementService.deleteUser(id);
         return ResponseEntity.ok().build();
     }
-    
+
     /**
      * Reset user password
      */
@@ -168,11 +168,11 @@ public class UserManagementAdminController {
     public ResponseEntity<Void> resetUserPassword(
             @PathVariable Long id,
             @RequestParam String newPassword) {
-        
+
         userManagementService.resetUserPassword(id, newPassword);
         return ResponseEntity.ok().build();
     }
-    
+
     /**
      * Get user statistics
      */

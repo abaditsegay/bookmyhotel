@@ -7,11 +7,9 @@ import {
   Typography,
   Button,
   Chip,
-  Skeleton,
-  Alert
+  Skeleton
 } from '@mui/material';
 import {
-  LocalOffer as OfferIcon,
   LocationOn as LocationIcon,
   AccessTime as TimeIcon
 } from '@mui/icons-material';
@@ -145,16 +143,12 @@ export default function VerticalHotelAdvertisementBanner({ maxHotels = 3 }: Vert
         display: 'flex', 
         flexDirection: 'column' 
       }}>
-        <Typography variant="h6" sx={{ mb: 1.5, px: 2, pt: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-          <OfferIcon color="primary" />
-          Special Deals
-        </Typography>
         <Box 
           sx={{ 
             px: 2, 
             pb: 2,
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr', // Two column layout for loading
+            display: 'flex',
+            flexDirection: 'column', // Single column layout for loading
             gap: 1
           }}
         >
@@ -183,24 +177,14 @@ export default function VerticalHotelAdvertisementBanner({ maxHotels = 3 }: Vert
       display: 'flex', 
       flexDirection: 'column' 
     }}>
-      <Typography variant="h6" sx={{ mb: 1.5, px: 2, pt: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-        <OfferIcon color="primary" />
-        Special Deals
-        {error && (
-          <Alert severity="info" sx={{ ml: 1, py: 0, fontSize: '0.75rem' }}>
-            Sample
-          </Alert>
-        )}
-      </Typography>
-      
       <Box 
         sx={{ 
           flex: 1,
           px: 2,
           pb: 2,
           overflowY: 'auto',
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr', // Two column layout
+          display: 'flex',
+          flexDirection: 'column', // Single column layout
           gap: 1,
           '&::-webkit-scrollbar': {
             width: 4,

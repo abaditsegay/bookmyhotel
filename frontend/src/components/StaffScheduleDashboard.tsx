@@ -142,7 +142,7 @@ const StaffScheduleDashboard: React.FC = () => {
 
   const getDepartmentColor = (department: string) => {
     const colors: Record<string, string> = {
-      'FRONT_DESK': 'primary',
+      'FRONTDESK': 'primary',
       'HOUSEKEEPING': 'success',
       'MAINTENANCE': 'warning',
       'SECURITY': 'danger',

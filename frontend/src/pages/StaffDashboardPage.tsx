@@ -3,6 +3,7 @@ import { Box, Container, Typography, Alert, CircularProgress } from '@mui/materi
 import HousekeepingStaffDashboard from '../components/Staff/HousekeepingStaffDashboard';
 import MaintenanceStaffDashboard from '../components/Staff/MaintenanceStaffDashboard';
 import { staffApi } from '../services/staffApi';
+import TokenManager from '../utils/tokenManager';
 
 const StaffDashboardPage: React.FC = () => {
   const [user, setUser] = useState<any>(null);
@@ -22,7 +23,7 @@ const StaffDashboardPage: React.FC = () => {
       console.error('Error loading user profile:', err);
       
       // Fallback: determine role from local storage or URL
-      const token = localStorage.getItem('auth_token');
+      const token = TokenManager.getToken();
       if (token) {
         try {
           // Try to decode token to get role info

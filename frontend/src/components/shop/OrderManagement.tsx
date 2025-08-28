@@ -25,7 +25,6 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  InputAdornment,
   List,
   ListItem,
   ListItemText,
@@ -35,16 +34,13 @@ import {
 import {
   Edit as EditIcon,
   Visibility as ViewIcon,
-  Payment as PaymentIcon,
-  ArrowBack as ArrowBackIcon
+  Payment as PaymentIcon
 } from '@mui/icons-material';
 import { format } from 'date-fns';
-import { useNavigate } from 'react-router-dom';
 import { shopApiService } from '../../services/shopApi';
 import { ShopOrder, ShopOrderStatus, PaymentMethod, DeliveryType } from '../../types/shop';
 
 const OrderManagement: React.FC = () => {
-  const navigate = useNavigate();
   const [orders, setOrders] = useState<ShopOrder[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loading, setLoading] = useState(true);
@@ -56,18 +52,6 @@ const OrderManagement: React.FC = () => {
 
   // Get hotel ID from context (adjust based on your auth context)
   const hotelId = 1;
-
-  // Helper function to safely format dates
-  const formatDate = (dateString: string | null | undefined, formatStr: string): string => {
-    if (!dateString) return 'N/A';
-    try {
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) return 'N/A';
-      return format(date, formatStr);
-    } catch {
-      return 'N/A';
-    }
-  };
 
   useEffect(() => {
     loadOrders();
@@ -121,8 +105,8 @@ const OrderManagement: React.FC = () => {
     switch (status) {
       case ShopOrderStatus.PENDING: return 'warning';
       case ShopOrderStatus.CONFIRMED: return 'info';
-      case ShopOrderStatus.PREPARING: return 'primary';
-      case ShopOrderStatus.READY: return 'secondary';
+      case ShopOrderStatus.PREPARING: return 'secondary';
+      case ShopOrderStatus.READY: return 'primary';
       case ShopOrderStatus.COMPLETED: return 'success';
       case ShopOrderStatus.CANCELLED: return 'error';
       default: return 'default';
@@ -135,30 +119,19 @@ const OrderManagement: React.FC = () => {
       case ShopOrderStatus.CONFIRMED: return ShopOrderStatus.PREPARING;
       case ShopOrderStatus.PREPARING: return ShopOrderStatus.READY;
       case ShopOrderStatus.READY: return ShopOrderStatus.COMPLETED;
-      default: return null;
+      default: return null; // No further transitions for COMPLETED/CANCELLED orders
     }
+  };
+
+  const isOrderPaid = (status: ShopOrderStatus): boolean => {
+    return status === ShopOrderStatus.CONFIRMED || 
+           status === ShopOrderStatus.PREPARING || 
+           status === ShopOrderStatus.READY || 
+           status === ShopOrderStatus.COMPLETED;
   };
 
   return (
     <Box>
-      {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <IconButton onClick={() => navigate('/shop?tab=orders')} sx={{ mr: 1 }}>
-            <ArrowBackIcon />
-          </IconButton>
-          <Typography variant="h5" component="h1">
-            Order Management
-          </Typography>
-        </Box>
-        <Button
-          variant="contained"
-          onClick={() => window.open('/shop/new-order', '_blank')}
-        >
-          New Order
-        </Button>
-      </Box>
-
       {/* Filters */}
       <Card sx={{ mb: 3 }}>
         <CardContent>
@@ -267,8 +240,8 @@ const OrderManagement: React.FC = () => {
                       {order.paymentMethod?.replace('_', ' ') || 'Not Set'}
                     </Typography>
                     <Chip
-                      label={order.isPaid ? 'Paid' : 'Unpaid'}
-                      color={order.isPaid ? 'success' : 'warning'}
+                      label={isOrderPaid(order.status) ? 'Paid' : 'Unpaid'}
+                      color={isOrderPaid(order.status) ? 'success' : 'warning'}
                       size="small"
                     />
                   </Box>
@@ -305,7 +278,7 @@ const OrderManagement: React.FC = () => {
                       </IconButton>
                     </Tooltip>
                   )}
-                  {!order.isPaid && order.paymentMethod === PaymentMethod.ROOM_CHARGE && (
+                  {!isOrderPaid(order.status) && order.paymentMethod === PaymentMethod.ROOM_CHARGE && (
                     <Tooltip title="Mark as Paid">
                       <IconButton
                         size="small"
@@ -341,15 +314,15 @@ const OrderManagement: React.FC = () => {
                 <Card>
                   <CardContent>
                     <Typography variant="h6" gutterBottom>Customer Information</Typography>
-                    <Typography><strong>Name:</strong> {selectedOrder.customerName}</Typography>
+                    <Typography component="div"><strong>Name:</strong> {selectedOrder.customerName}</Typography>
                     {selectedOrder.customerEmail && (
-                      <Typography><strong>Email:</strong> {selectedOrder.customerEmail}</Typography>
+                      <Typography component="div"><strong>Email:</strong> {selectedOrder.customerEmail}</Typography>
                     )}
                     {selectedOrder.customerPhone && (
-                      <Typography><strong>Phone:</strong> {selectedOrder.customerPhone}</Typography>
+                      <Typography component="div"><strong>Phone:</strong> {selectedOrder.customerPhone}</Typography>
                     )}
                     {selectedOrder.roomNumber && (
-                      <Typography><strong>Room:</strong> {selectedOrder.roomNumber}</Typography>
+                      <Typography component="div"><strong>Room:</strong> {selectedOrder.roomNumber}</Typography>
                     )}
                   </CardContent>
                 </Card>
@@ -366,11 +339,11 @@ const OrderManagement: React.FC = () => {
                         color={getStatusColor(selectedOrder.status)}
                       />
                     </Box>
-                    <Typography><strong>Order Date:</strong> {selectedOrder.orderDate ? format(new Date(selectedOrder.orderDate), 'MMM dd, yyyy HH:mm') : 'N/A'}</Typography>
-                    <Typography><strong>Payment Method:</strong> {selectedOrder.paymentMethod?.replace('_', ' ') || 'Not Set'}</Typography>
-                    <Typography><strong>Payment Status:</strong> {selectedOrder.isPaid ? 'Paid' : 'Unpaid'}</Typography>
+                    <Typography component="div"><strong>Order Date:</strong> {selectedOrder.orderDate ? format(new Date(selectedOrder.orderDate), 'MMM dd, yyyy HH:mm') : 'N/A'}</Typography>
+                    <Typography component="div"><strong>Payment Method:</strong> {selectedOrder.paymentMethod?.replace('_', ' ') || 'Not Set'}</Typography>
+                    <Typography component="div"><strong>Payment Status:</strong> {isOrderPaid(selectedOrder.status) ? 'Paid' : 'Unpaid'}</Typography>
                     {selectedOrder.deliveryType && (
-                      <Typography><strong>Delivery:</strong> {selectedOrder.deliveryType.replace('_', ' ')}</Typography>
+                      <Typography component="div"><strong>Delivery:</strong> {selectedOrder.deliveryType.replace('_', ' ')}</Typography>
                     )}
                   </CardContent>
                 </Card>
@@ -388,20 +361,20 @@ const OrderManagement: React.FC = () => {
                             <ListItemText
                               primary={
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                  <Typography>{item.productName}</Typography>
-                                  <Typography>ETB {(item.unitPrice * item.quantity * 55).toFixed(0)}</Typography>
+                                  <span>{item.productName}</span>
+                                  <span>ETB {(item.unitPrice * item.quantity * 55).toFixed(0)}</span>
                                 </Box>
                               }
                               secondary={
                                 <Box>
-                                  <Typography variant="body2">
+                                  <div style={{ fontSize: '0.875rem', lineHeight: 1.43 }}>
                                     Quantity: {item.quantity} × ETB {(item.unitPrice * 55).toFixed(0)}
-                                  </Typography>
-                                  <Typography variant="caption">SKU: {item.productSku}</Typography>
+                                  </div>
+                                  <div style={{ fontSize: '0.75rem', lineHeight: 1.66 }}>SKU: {item.productSku}</div>
                                   {item.notes && (
-                                    <Typography variant="caption" sx={{ display: 'block' }}>
+                                    <div style={{ fontSize: '0.75rem', lineHeight: 1.66, display: 'block' }}>
                                       Note: {item.notes}
-                                    </Typography>
+                                    </div>
                                   )}
                                 </Box>
                               }

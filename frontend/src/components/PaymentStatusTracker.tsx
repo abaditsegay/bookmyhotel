@@ -19,6 +19,7 @@ import {
   Refresh as RefreshIcon,
   Phone as PhoneIcon
 } from '@mui/icons-material';
+import TokenManager from '../utils/tokenManager';
 
 interface PaymentStatusProps {
   transactionId: string;
@@ -61,7 +62,7 @@ const PaymentStatusTracker: React.FC<PaymentStatusProps> = ({
       setError('');
       const response = await fetch(`/api/payments/ethiopian/status/${transactionId}`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          ...TokenManager.getAuthHeaders()
         }
       });
 

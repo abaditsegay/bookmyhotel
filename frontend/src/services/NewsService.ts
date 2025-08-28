@@ -1,4 +1,6 @@
 // News Service for hotel news and announcements
+import TokenManager from '../utils/tokenManager';
+
 export interface NewsItem {
   id: number;
   title: string;
@@ -27,10 +29,8 @@ class NewsService {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
-    const token = localStorage.getItem('authToken');
     const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-      ...(token && { Authorization: `Bearer ${token}` }),
+      ...TokenManager.getAuthHeaders(),
       ...options.headers,
     };
 
