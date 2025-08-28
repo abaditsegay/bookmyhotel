@@ -119,8 +119,8 @@ start-backend-with-oauth2.sh
 # Azure deployment files
 azure.yaml
 deploy-azure.sh
-**/application-azure.properties
-application-azure.properties
+**/application-aws.properties
+application-aws.properties
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache

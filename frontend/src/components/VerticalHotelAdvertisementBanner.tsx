@@ -172,7 +172,7 @@ export default function VerticalHotelAdvertisementBanner({ maxHotels = 3 }: Vert
 
   return (
     <Box sx={{ 
-      width: '100%', // Use full width of the container (which will be 50% of main container)
+      width: '100%',
       height: '100%', 
       display: 'flex', 
       flexDirection: 'column' 
@@ -180,22 +180,22 @@ export default function VerticalHotelAdvertisementBanner({ maxHotels = 3 }: Vert
       <Box 
         sx={{ 
           flex: 1,
-          px: 2,
-          pb: 2,
+          px: 1.5,
+          pb: 1,
           overflowY: 'auto',
           display: 'flex',
-          flexDirection: 'column', // Single column layout
-          gap: 1,
+          flexDirection: 'column',
+          gap: 2, // Increased gap between cards
           '&::-webkit-scrollbar': {
-            width: 4,
+            width: 6,
           },
           '&::-webkit-scrollbar-track': {
             backgroundColor: '#f1f1f1',
-            borderRadius: 2,
+            borderRadius: 3,
           },
           '&::-webkit-scrollbar-thumb': {
             backgroundColor: '#c1c1c1',
-            borderRadius: 2,
+            borderRadius: 3,
             '&:hover': {
               backgroundColor: '#a8a8a8',
             },
@@ -208,7 +208,9 @@ export default function VerticalHotelAdvertisementBanner({ maxHotels = 3 }: Vert
             sx={{ 
               cursor: 'pointer',
               transition: 'all 0.3s ease',
-              height: 'fit-content', // Allow cards to size naturally
+              minHeight: '200px', // Set minimum height for each card
+              display: 'flex',
+              flexDirection: 'column',
               '&:hover': {
                 transform: 'translateY(-2px)',
                 boxShadow: '0 4px 15px rgba(0,0,0,0.15)',
@@ -218,19 +220,19 @@ export default function VerticalHotelAdvertisementBanner({ maxHotels = 3 }: Vert
           >
             <CardMedia
               component="img"
-              height="80"
-              image={`https://images.unsplash.com/photo-1566073771259-6a8506099945?w=300&h=80&fit=crop&crop=center&auto=format`}
+              height="100" // Increased image height
+              image={`https://images.unsplash.com/photo-1566073771259-6a8506099945?w=300&h=100&fit=crop&crop=center&auto=format`}
               alt={hotel.name}
               sx={{ objectFit: 'cover' }}
             />
-            <CardContent sx={{ p: 1 }}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 0.5, fontSize: '0.85rem' }}>
+            <CardContent sx={{ p: 2, flex: 1, display: 'flex', flexDirection: 'column' }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, fontSize: '0.9rem', lineHeight: 1.2 }}>
                 {hotel.name}
               </Typography>
               
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                 <LocationIcon fontSize="small" color="action" sx={{ mr: 0.5 }} />
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
                   {hotel.city}, {hotel.country}
                 </Typography>
               </Box>
@@ -240,22 +242,24 @@ export default function VerticalHotelAdvertisementBanner({ maxHotels = 3 }: Vert
                 color="text.secondary" 
                 sx={{ 
                   display: '-webkit-box',
-                  WebkitLineClamp: 1,
+                  WebkitLineClamp: 2, // Allow 2 lines for description
                   WebkitBoxOrient: 'vertical',
                   overflow: 'hidden',
-                  mb: 0.5,
-                  fontSize: '0.7rem',
+                  mb: 1.5,
+                  fontSize: '0.75rem',
+                  lineHeight: 1.3,
+                  flex: 1, // Take available space
                 }}
               >
                 {hotel.description}
               </Typography>
               
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
                 <Box>
-                  <Typography variant="subtitle2" color="primary" sx={{ fontWeight: 600, fontSize: '0.8rem' }}>
+                  <Typography variant="subtitle2" color="primary" sx={{ fontWeight: 600, fontSize: '0.85rem' }}>
                     ${hotel.minPrice}
                   </Typography>
-                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
                     per night
                   </Typography>
                 </Box>
@@ -265,7 +269,7 @@ export default function VerticalHotelAdvertisementBanner({ maxHotels = 3 }: Vert
                     size="small" 
                     variant="outlined" 
                     color="primary"
-                    sx={{ fontSize: '0.65rem', height: '18px' }}
+                    sx={{ fontSize: '0.7rem', height: '20px' }}
                   />
                 )}
               </Box>
@@ -281,8 +285,9 @@ export default function VerticalHotelAdvertisementBanner({ maxHotels = 3 }: Vert
                 sx={{ 
                   textTransform: 'none',
                   fontWeight: 600,
-                  fontSize: '0.7rem',
-                  py: 0.5
+                  fontSize: '0.75rem',
+                  py: 0.75,
+                  mt: 'auto' // Push button to bottom
                 }}
               >
                 View Details

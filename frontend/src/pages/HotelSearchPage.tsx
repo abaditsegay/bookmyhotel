@@ -61,24 +61,42 @@ const HotelSearchPage: React.FC = () => {
 
   return (
     <Container maxWidth="xl" sx={{ py: 3 }}>
-      {/* Three-column layout with scrollable ad panes on sides and 60% center search form */}
+      {/* Responsive layout: Desktop (3-column), Mobile (single column with search top, ads bottom) */}
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: isOperationsUser ? '1fr' : '1fr 3fr 1fr', // 20% - 60% - 20% split for non-operations users
-          gridTemplateRows: '1fr',
-          gridTemplateAreas: isOperationsUser ? `"main"` : `"leftAd main rightAd"`,
-          minHeight: 'calc(100vh - 200px)',
-          maxHeight: 'calc(100vh - 200px)',
+          gridTemplateColumns: {
+            xs: '1fr', // Mobile: single column
+            md: isOperationsUser ? '1fr' : '1fr 3fr 1fr' // Desktop: 20% - 60% - 20% split for non-operations users
+          },
+          gridTemplateRows: {
+            xs: isOperationsUser ? '1fr' : 'auto auto auto', // Mobile: search + 2 ad sections
+            md: '1fr' // Desktop: single row
+          },
+          gridTemplateAreas: {
+            xs: isOperationsUser ? `"main"` : `"main" "leftAd" "rightAd"`, // Mobile: main top, ads bottom
+            md: isOperationsUser ? `"main"` : `"leftAd main rightAd"` // Desktop: side-by-side
+          },
+          minHeight: {
+            xs: 'auto', // Mobile: auto height
+            md: 'calc(100vh - 200px)' // Desktop: fixed viewport height
+          },
+          maxHeight: {
+            xs: 'none', // Mobile: no max height restriction
+            md: 'calc(100vh - 200px)' // Desktop: fixed viewport height
+          },
           gap: 2,
         }}
       >
-        {/* Left Advertisement Pane - 20% Scrollable */}
+        {/* Left Advertisement Pane - Responsive: side pane on desktop, bottom section on mobile */}
         {!isOperationsUser && (
           <Box sx={{ gridArea: 'leftAd' }}>
             <Card 
               sx={{ 
-                height: '100%',
+                height: {
+                  xs: '500px', // Mobile: increased height for better hotel visibility
+                  md: '100%' // Desktop: full height
+                },
                 border: '1px solid #e0e0e0',
                 display: 'flex',
                 flexDirection: 'column',
@@ -94,31 +112,39 @@ const HotelSearchPage: React.FC = () => {
                 flex: 1, 
                 overflowY: 'auto',
                 overflowX: 'hidden',
+                // Enhanced scrollbar styling for mobile
                 '&::-webkit-scrollbar': {
-                  width: '6px',
+                  width: {
+                    xs: '8px', // Wider scrollbar on mobile for easier touch interaction
+                    md: '6px'
+                  }
                 },
                 '&::-webkit-scrollbar-track': {
                   background: '#f1f1f1',
+                  borderRadius: '4px',
                 },
                 '&::-webkit-scrollbar-thumb': {
                   background: '#c1c1c1',
-                  borderRadius: '3px',
-                },
-                '&::-webkit-scrollbar-thumb:hover': {
-                  background: '#a8a8a8',
+                  borderRadius: '4px',
+                  '&:hover': {
+                    background: '#a8a8a8',
+                  }
                 }
               }}>
-                <VerticalHotelAdvertisementBanner maxHotels={8} />
+                <VerticalHotelAdvertisementBanner maxHotels={6} />
               </Box>
             </Card>
           </Box>
         )}
 
-        {/* Center Search Form - 60% */}
+        {/* Center Search Form - Responsive: main content area */}
         <Box sx={{ gridArea: 'main' }}>
           <Card 
             sx={{ 
-              height: '100%',
+              height: {
+                xs: 'auto', // Mobile: auto height
+                md: '100%' // Desktop: full height
+              },
               border: '1px solid #e0e0e0',
               display: 'flex',
               flexDirection: 'column',
@@ -136,7 +162,14 @@ const HotelSearchPage: React.FC = () => {
             </Box>
 
             {/* Search Form Section */}
-            <Box sx={{ flex: 1, p: 4, overflowY: 'auto' }}>
+            <Box sx={{ 
+              flex: 1, 
+              p: { xs: 2, md: 4 }, // Smaller padding on mobile
+              overflowY: {
+                xs: 'visible', // Mobile: no scroll restriction
+                md: 'auto' // Desktop: scrollable
+              }
+            }}>
               <Box sx={{ mb: 4 }}>
                 <HotelSearchForm onSearch={handleSearch} loading={loading} />
               </Box>
@@ -197,12 +230,15 @@ const HotelSearchPage: React.FC = () => {
           </Card>
         </Box>
 
-        {/* Right Advertisement Pane - 20% Scrollable */}
+        {/* Right Advertisement Pane - Responsive: side pane on desktop, bottom section on mobile */}
         {!isOperationsUser && (
           <Box sx={{ gridArea: 'rightAd' }}>
             <Card 
               sx={{ 
-                height: '100%',
+                height: {
+                  xs: '500px', // Mobile: increased height for better hotel visibility
+                  md: '100%' // Desktop: full height
+                },
                 border: '1px solid #e0e0e0',
                 display: 'flex',
                 flexDirection: 'column',
@@ -218,21 +254,26 @@ const HotelSearchPage: React.FC = () => {
                 flex: 1, 
                 overflowY: 'auto',
                 overflowX: 'hidden',
+                // Enhanced scrollbar styling for mobile
                 '&::-webkit-scrollbar': {
-                  width: '6px',
+                  width: {
+                    xs: '8px', // Wider scrollbar on mobile for easier touch interaction
+                    md: '6px'
+                  }
                 },
                 '&::-webkit-scrollbar-track': {
                   background: '#f1f1f1',
+                  borderRadius: '4px',
                 },
                 '&::-webkit-scrollbar-thumb': {
                   background: '#c1c1c1',
-                  borderRadius: '3px',
-                },
-                '&::-webkit-scrollbar-thumb:hover': {
-                  background: '#a8a8a8',
+                  borderRadius: '4px',
+                  '&:hover': {
+                    background: '#a8a8a8',
+                  }
                 }
               }}>
-                <VerticalHotelAdvertisementBanner maxHotels={8} />
+                <VerticalHotelAdvertisementBanner maxHotels={6} />
               </Box>
             </Card>
           </Box>
