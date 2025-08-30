@@ -83,6 +83,9 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
+  // Dialog states
+  const [errorDialogOpen, setErrorDialogOpen] = useState(false);
+
   // Room selection state
   const [availableRooms, setAvailableRooms] = useState<RoomResponse[]>([]);
   const availableRoomTypes = ['SINGLE', 'DOUBLE', 'SUITE', 'DELUXE', 'PRESIDENTIAL'];
@@ -94,6 +97,12 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
   // New state for room type price calculation
   const [, setRoomTypePricing] = useState<any>(null);
   const [loadingRoomTypePricing, setLoadingRoomTypePricing] = useState(false);
+
+  // Helper function to show error in dialog
+  const showErrorDialog = (errorMessage: string) => {
+    setError(errorMessage);
+    setErrorDialogOpen(true);
+  };
 
   useEffect(() => {
     const loadBooking = async () => {
@@ -186,7 +195,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
 
     // Check if booking can be modified based on its status
     if (!canModifyBooking(booking.status)) {
-      setError(`Cannot modify booking with status: ${booking.status}. Only confirmed, pending, or checked-in bookings can be modified.`);
+      showErrorDialog(`Cannot modify booking with status: ${booking.status}. Only confirmed, pending, or checked-in bookings can be modified.`);
       return;
     }
 
@@ -203,7 +212,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
       
       setIsEditing(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update booking');
+      showErrorDialog(err instanceof Error ? err.message : 'Failed to update booking');
       console.error('Error updating booking:', err);
     } finally {
       setPriceCalculating(false);
@@ -656,7 +665,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
   // Open room selection dialog
   const handleSelectRoom = () => {
     if (!editedBooking?.roomType) {
-      setError('Please select a room type first');
+      showErrorDialog('Please select a room type first');
       return;
     }
     loadAvailableRooms(editedBooking.roomType);
@@ -1224,7 +1233,39 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
           </DialogActions>
         </Dialog>
 
-        {/* Success/Error Messages */}
+        {/* Error Dialog */}
+        <Dialog
+          open={errorDialogOpen}
+          onClose={() => {
+            setErrorDialogOpen(false);
+            setError(null);
+          }}
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogTitle>
+            Error
+          </DialogTitle>
+          <DialogContent>
+            <Typography variant="body1" sx={{ mt: 1 }}>
+              {error}
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button 
+              onClick={() => {
+                setErrorDialogOpen(false);
+                setError(null);
+              }}
+              variant="contained"
+              color="primary"
+            >
+              OK
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Success Messages */}
         <Snackbar
           open={!!success}
           autoHideDuration={6000}
@@ -1232,16 +1273,6 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
         >
           <Alert onClose={() => setSuccess(null)} severity="success">
             {success}
-          </Alert>
-        </Snackbar>
-
-        <Snackbar
-          open={!!error}
-          autoHideDuration={6000}
-          onClose={() => setError(null)}
-        >
-          <Alert onClose={() => setError(null)} severity="error">
-            {error}
           </Alert>
         </Snackbar>
       </Box>
