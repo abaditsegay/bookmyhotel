@@ -37,6 +37,7 @@ import {
 } from '@mui/icons-material';
 import { useTenant } from '../../contexts/TenantContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { hotelAdminApi } from '../../services/hotelAdminApi';
 import { frontDeskApiService, CheckoutResponse } from '../../services/frontDeskApi';
 import CheckoutReceiptDialog from '../receipts/CheckoutReceiptDialog';
 
@@ -58,7 +59,7 @@ interface Booking {
 }
 
 interface BookingManagementTableProps {
-  mode: 'hotel-admin' | 'front-desk'; // Note: Both modes have identical functionality
+  mode: 'hotel-admin' | 'front-desk';
   title?: string;
   showActions?: boolean;
   showCheckInOut?: boolean;
@@ -109,39 +110,33 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
   // Manual refresh function (used by refresh button)
   const loadBookings = React.useCallback(async () => {
     if (!token) return;
+    // Front desk mode doesn't need tenant check
+    if (mode === 'hotel-admin' && !tenant) return;
     
     console.log('BookingManagementTable: Manual refresh triggered');
     
     setLoading(true);
     try {
-      // Use front-desk API for both modes (hotel admins have front-desk permissions)
-      const result = await frontDeskApiService.getAllBookings(
-        token,
-        page,
-        size,
-        searchTerm,
-        tenant?.id || 'default'
-      );
+      let result: any;
+      if (mode === 'front-desk') {
+        result = await frontDeskApiService.getAllBookings(
+          token,
+          page,
+          size,
+          searchTerm,
+          tenant?.id || 'default'
+        );
+      } else {
+        result = await hotelAdminApi.getHotelBookings(
+          token,
+          page,
+          size,
+          searchTerm
+        );
+      }
 
       if (result.success && result.data) {
-        // Map FrontDeskBooking to Booking interface
-        const mappedBookings = result.data.content.map((booking: any) => ({
-          reservationId: booking.reservationId,
-          confirmationNumber: booking.confirmationNumber,
-          guestName: booking.guestName,
-          guestEmail: booking.guestEmail,
-          roomNumber: booking.roomNumber || 'TBA',
-          roomType: booking.roomType,
-          checkInDate: booking.checkInDate,
-          checkOutDate: booking.checkOutDate,
-          totalAmount: booking.totalAmount,
-          status: booking.status,
-          adults: booking.numberOfGuests,
-          children: 0,
-          nights: 1,
-          paymentStatus: booking.paymentStatus
-        }));
-        setBookings(mappedBookings);
+        setBookings(result.data.content || []);
         setTotalElements(result.data.page?.totalElements || 0);
       } else {
         throw new Error(result.message || 'Failed to load bookings');
@@ -156,12 +151,14 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [token, page, size, searchTerm, tenant]);
+  }, [token, mode, page, size, searchTerm, tenant]);
 
   // Centralized booking loading logic
   useEffect(() => {
     const loadData = async () => {
       if (!token) return;
+      // Front desk mode doesn't need tenant check
+      if (mode === 'hotel-admin' && !tenant) return;
       
       console.log('BookingManagementTable: Loading bookings with params:', { 
         mode, 
@@ -173,37 +170,31 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
       
       setLoading(true);
       try {
-        // Use front-desk API for both modes (hotel admins have front-desk permissions)
-        const result = await frontDeskApiService.getAllBookings(
-          token,
-          page,
-          size,
-          searchTerm,
-          tenant?.id || 'default'
-        );
+        let result: any;
+        if (mode === 'front-desk') {
+          // Use front desk API with tenant ID
+          result = await frontDeskApiService.getAllBookings(
+            token,
+            page,
+            size,
+            searchTerm,
+            tenant?.id || 'default'
+          );
+        } else {
+          // Use hotel admin API
+          result = await hotelAdminApi.getHotelBookings(
+            token,
+            page,
+            size,
+            searchTerm
+          );
+        }
 
         console.log('BookingManagementTable: API response:', result);
 
         if (result.success && result.data) {
           console.log('BookingManagementTable: Setting bookings:', result.data.content?.length, 'items, total:', result.data.page?.totalElements);
-          // Map FrontDeskBooking to Booking interface
-          const mappedBookings = result.data.content.map((booking: any) => ({
-            reservationId: booking.reservationId,
-            confirmationNumber: booking.confirmationNumber,
-            guestName: booking.guestName,
-            guestEmail: booking.guestEmail,
-            roomNumber: booking.roomNumber || 'TBA',
-            roomType: booking.roomType,
-            checkInDate: booking.checkInDate,
-            checkOutDate: booking.checkOutDate,
-            totalAmount: booking.totalAmount,
-            status: booking.status,
-            adults: booking.numberOfGuests,
-            children: 0,
-            nights: 1,
-            paymentStatus: booking.paymentStatus
-          }));
-          setBookings(mappedBookings);
+          setBookings(result.data.content || []);
           setTotalElements(result.data.page?.totalElements || 0);
         } else {
           throw new Error(result.message || 'Failed to load bookings');
@@ -256,8 +247,12 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
 
   // Handle view booking details
   const handleViewBookingDetails = (booking: Booking) => {
-    // Use front-desk route for both modes (more comprehensive view)
-    navigate(`/frontdesk/bookings/${booking.reservationId}?returnTab=${currentTab}`);
+    // Navigate to the appropriate booking details page based on mode
+    if (mode === 'front-desk') {
+      navigate(`/frontdesk/bookings/${booking.reservationId}?returnTab=${currentTab}`);
+    } else {
+      navigate(`/hotel-admin/bookings/${booking.reservationId}?returnTab=${currentTab}`);
+    }
   };
 
   // Handle delete booking
@@ -265,8 +260,11 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
     if (!selectedBooking || !token) return;
 
     try {
-      // Use front-desk API for both modes
-      await frontDeskApiService.deleteBooking(token, selectedBooking.reservationId);
+      if (mode === 'front-desk') {
+        await frontDeskApiService.deleteBooking(token, selectedBooking.reservationId);
+      } else {
+        await hotelAdminApi.deleteBooking(token, selectedBooking.reservationId);
+      }
       setSnackbar({
         open: true,
         message: 'Booking deleted successfully',
@@ -290,8 +288,8 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
       onBookingAction(booking, action);
     }
     
-    // Make API calls to update status for both modes
-    if (token) {
+    // For front-desk mode, also make API calls to update status
+    if (mode === 'front-desk' && token) {
       try {
         if (action === 'check-in') {
           await frontDeskApiService.updateBookingStatus(token, booking.reservationId, 'CHECKED_IN');
@@ -455,18 +453,19 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
           >
             Refresh
           </Button>
-          {/* Show Walk-in Guest button for both modes */}
-          <Button 
-            variant="contained" 
-            startIcon={<AddGuestIcon />}
-            onClick={() => {
-              console.log('Walk-in Guest button clicked in BookingManagementTable'); // Debug log
-              onWalkInRequest?.();
-            }}
-            disabled={!onWalkInRequest}
-          >
-            Walk-in Guest
-          </Button>
+          {mode === 'front-desk' && (
+            <Button 
+              variant="contained" 
+              startIcon={<AddGuestIcon />}
+              onClick={() => {
+                console.log('Walk-in Guest button clicked in BookingManagementTable'); // Debug log
+                onWalkInRequest?.();
+              }}
+              disabled={!onWalkInRequest}
+            >
+              Walk-in Guest
+            </Button>
+          )}
         </Box>
       </Box>
 
@@ -598,18 +597,20 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                             </>
                           )}
                           
-                          <Tooltip title="Delete Booking">
-                            <IconButton 
-                              size="small"
-                              onClick={() => {
-                                setSelectedBooking(booking);
-                                setDeleteDialogOpen(true);
-                              }}
-                              color="error"
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          </Tooltip>
+                          {(mode === 'hotel-admin' || mode === 'front-desk') && (
+                            <Tooltip title="Delete Booking">
+                              <IconButton 
+                                size="small"
+                                onClick={() => {
+                                  setSelectedBooking(booking);
+                                  setDeleteDialogOpen(true);
+                                }}
+                                color="error"
+                              >
+                                <DeleteIcon />
+                              </IconButton>
+                            </Tooltip>
+                          )}
                         </Box>
                       </TableCell>
                     )}

@@ -359,12 +359,12 @@ function App() {
           </ProtectedRoute>
         } />
         <Route path="/frontdesk/bookings/:id" element={
-          <ProtectedRoute requiredRoles={['FRONTDESK', 'HOTEL_ADMIN']}>
+          <ProtectedRoute requiredRole="FRONTDESK">
             <FrontDeskBookingDetails />
           </ProtectedRoute>
         } />
         <Route path="/frontdesk/bookings/:id/edit" element={
-          <ProtectedRoute requiredRoles={['FRONTDESK', 'HOTEL_ADMIN']}>
+          <ProtectedRoute requiredRole="FRONTDESK">
             <FrontDeskBookingDetails />
           </ProtectedRoute>
         } />

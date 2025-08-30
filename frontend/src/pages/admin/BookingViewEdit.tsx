@@ -476,7 +476,7 @@ const BookingViewEdit: React.FC = () => {
     const normalizedStatus = status.toLowerCase().replace(/_/g, ' ');
     switch (normalizedStatus) {
       case 'confirmed': return 'success';
-      case 'checked in': return 'info';
+      case 'checked in': return 'primary';
       case 'checked out': return 'info';
       case 'cancelled': return 'error';
       case 'pending': return 'warning';

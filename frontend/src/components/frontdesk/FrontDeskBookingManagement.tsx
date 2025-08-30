@@ -198,9 +198,9 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
   const getStatusColor = (status: string) => {
     switch (status.toUpperCase()) {
       case 'PENDING': return 'warning';
-      case 'CONFIRMED': return 'info';
-      case 'CHECKED_IN': return 'success';
-      case 'CHECKED_OUT': return 'default';
+      case 'CONFIRMED': return 'success';
+      case 'CHECKED_IN': return 'primary';
+      case 'CHECKED_OUT': return 'info';
       case 'CANCELLED': return 'error';
       case 'NO_SHOW': return 'error';
       default: return 'default';

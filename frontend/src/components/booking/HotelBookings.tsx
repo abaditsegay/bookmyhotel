@@ -226,13 +226,13 @@ const HotelBookings: React.FC<HotelBookingsProps> = ({
     switch (status.toLowerCase()) {
       case 'confirmed':
       case 'arriving':
-        return 'info';
+        return 'success';
       case 'checked-in':
       case 'checked_in':
-        return 'success';
+        return 'primary';
       case 'checked-out':
       case 'checked_out':
-        return 'default';
+        return 'info';
       case 'cancelled':
       case 'no-show':
         return 'error';
