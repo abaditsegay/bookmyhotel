@@ -277,9 +277,14 @@ public class ShopOrderResponse {
     /**
      * Returns a display-friendly customer name
      * 
-     * @return customer name or "Anonymous Customer" if null/empty
+     * @return customer name, room number for room charges, or "Anonymous Customer" if null/empty
      */
     public String getDisplayCustomerName() {
+        // For room charges, show only room number instead of "Anonymous Customer"
+        if (roomNumber != null && !roomNumber.trim().isEmpty()) {
+            return "Room " + roomNumber;
+        }
+        
         if (isAnonymousOrder()) {
             return "Anonymous Customer";
         }
@@ -293,7 +298,7 @@ public class ShopOrderResponse {
      */
     public String getOrderTypeDescription() {
         if (roomNumber != null && !roomNumber.trim().isEmpty()) {
-            return "Room Charge - Room " + roomNumber;
+            return "Room Charge";
         } else if (isAnonymousOrder()) {
             return "Anonymous Sale";
         } else {

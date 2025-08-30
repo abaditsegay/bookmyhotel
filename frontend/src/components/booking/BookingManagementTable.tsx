@@ -23,7 +23,16 @@ import {
   Tooltip,
   TextField,
   InputAdornment,
-  CircularProgress
+  CircularProgress,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+  Grid
 } from '@mui/material';
 import {
   Visibility as VisibilityIcon,
@@ -33,30 +42,16 @@ import {
   PersonAdd as AddGuestIcon,
   Check as CheckInIcon,
   ExitToApp as CheckOutIcon,
-  Print as PrintIcon
+  Print as PrintIcon,
+  Edit as EditIcon
 } from '@mui/icons-material';
 import { useTenant } from '../../contexts/TenantContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { hotelAdminApi } from '../../services/hotelAdminApi';
-import { frontDeskApiService, CheckoutResponse } from '../../services/frontDeskApi';
+import { frontDeskApiService, CheckoutResponse, FrontDeskRoom } from '../../services/frontDeskApi';
 import CheckoutReceiptDialog from '../receipts/CheckoutReceiptDialog';
-
-interface Booking {
-  reservationId: number;
-  confirmationNumber: string;
-  guestName: string;
-  guestEmail: string;
-  roomNumber: string;
-  roomType: string;
-  checkInDate: string;
-  checkOutDate: string;
-  totalAmount: number;
-  status: string;
-  adults?: number;
-  children?: number;
-  nights?: number;
-  paymentStatus?: string;
-}
+import CheckInDialog from './CheckInDialog';
+import { Booking } from '../../types/booking-shared';
 
 interface BookingManagementTableProps {
   mode: 'hotel-admin' | 'front-desk';
@@ -66,6 +61,7 @@ interface BookingManagementTableProps {
   onBookingAction?: (booking: Booking, action: string) => void;
   onWalkInRequest?: () => void;
   currentTab?: number;
+  refreshTrigger?: number; // When this changes, refresh the data
 }
 
 const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
@@ -75,11 +71,26 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
   showCheckInOut = false,
   onBookingAction,
   onWalkInRequest,
-  currentTab = 0
+  currentTab = 0,
+  refreshTrigger
 }) => {
   const { tenant } = useTenant();
   const { token } = useAuth();
   const navigate = useNavigate();
+  
+  // Memoize InputProps to prevent re-creation on every render
+  const searchInputProps = React.useMemo(() => ({
+    startAdornment: (
+      <InputAdornment position="start">
+        <SearchIcon />
+      </InputAdornment>
+    ),
+  }), []);
+  
+  // Memoize search handler to prevent re-creation on every render
+  const handleSearchChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+  }, []);
   
   // Debug logging for permissions
   console.log('BookingManagementTable: Props received:', { 
@@ -118,6 +129,16 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
   // Receipt dialog state
   const [receiptDialogOpen, setReceiptDialogOpen] = useState(false);
   const [checkoutReceipt, setCheckoutReceipt] = useState<CheckoutResponse | null>(null);
+  const [checkInDialogOpen, setCheckInDialogOpen] = useState(false);
+  const [bookingForCheckIn, setBookingForCheckIn] = useState<Booking | null>(null);
+
+  // Room assignment edit state
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [availableRooms, setAvailableRooms] = useState<FrontDeskRoom[]>([]);
+  const [loadingRooms, setLoadingRooms] = useState(false);
+  const [editingBooking, setEditingBooking] = useState(false);
+  const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
+  const [selectedRoomType, setSelectedRoomType] = useState<string>('');
 
   // Manual refresh function (used by refresh button)
   const loadBookings = React.useCallback(async () => {
@@ -305,7 +326,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
 
     console.log('BookingManagementTable: useEffect triggered - loading bookings');
     loadData();
-  }, [page, size, token, mode, searchTerm, tenant, currentTab]);
+  }, [page, size, token, mode, searchTerm, tenant]);
 
   // Handle search with debounce - only reset page when search changes
   useEffect(() => {
@@ -322,6 +343,14 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
 
     return () => clearTimeout(timeoutId);
   }, [searchTerm]);
+
+  // Handle refresh trigger - when this prop changes, refresh the data
+  useEffect(() => {
+    if (refreshTrigger && refreshTrigger > 0) {
+      console.log('BookingManagementTable: Refresh trigger received:', refreshTrigger);
+      loadBookings();
+    }
+  }, [refreshTrigger, loadBookings]);
 
   // Handle page change
   const handlePageChange = (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
@@ -384,7 +413,9 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
     if (mode === 'front-desk' && token) {
       try {
         if (action === 'check-in') {
-          await frontDeskApiService.updateBookingStatus(token, booking.reservationId, 'CHECKED_IN');
+          // Open check-in dialog for room assignment
+          setBookingForCheckIn(booking);
+          setCheckInDialogOpen(true);
         } else if (action === 'check-out') {
           // Use new checkout with receipt API
           const result = await frontDeskApiService.checkOutGuestWithReceipt(token, booking.reservationId, tenant?.id || 'default');
@@ -437,6 +468,109 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
         message: `Guest ${booking.guestName} checked in successfully`,
         severity: 'success'
       });
+    }
+  };
+
+  // Handle successful check-in
+  const handleCheckInSuccess = (updatedBooking: Booking) => {
+    // Update the booking in the local state
+    setBookings(prev => prev.map(b => 
+      b.reservationId === updatedBooking.reservationId 
+        ? { ...b, ...updatedBooking, status: 'CHECKED_IN' } 
+        : b
+    ));
+    
+    setSnackbar({
+      open: true,
+      message: `Guest ${updatedBooking.guestName} has been successfully checked in!`,
+      severity: 'success'
+    });
+    
+    // Close dialog and reset state
+    setCheckInDialogOpen(false);
+    setBookingForCheckIn(null);
+    
+    // Refresh bookings to get updated data
+    loadBookings();
+  };
+
+  // Handle opening edit dialog for confirmed bookings
+  const handleEditRoomAssignment = async (booking: Booking) => {
+    setSelectedBooking(booking);
+    setSelectedRoomId(null); // Will be set when user selects a room
+    setSelectedRoomType(booking.roomType);
+    setEditDialogOpen(true);
+    
+    // Load available rooms
+    await loadAvailableRooms();
+  };
+
+  // Load available rooms for the hotel
+  const loadAvailableRooms = async () => {
+    if (!token) return;
+    
+    setLoadingRooms(true);
+    try {
+      const result = await frontDeskApiService.getRooms(token, 0, 1000, '', '', '', tenant?.id || 'default');
+      if (result.success && result.data) {
+        setAvailableRooms(result.data.content || []);
+      } else {
+        setSnackbar({
+          open: true,
+          message: 'Failed to load available rooms',
+          severity: 'error'
+        });
+      }
+    } catch (error) {
+      console.error('Error loading rooms:', error);
+      setSnackbar({
+        open: true,
+        message: 'Failed to load available rooms',
+        severity: 'error'
+      });
+    } finally {
+      setLoadingRooms(false);
+    }
+  };
+
+  // Handle saving the room assignment changes
+  const handleSaveRoomAssignment = async () => {
+    if (!selectedBooking || !selectedRoomId || !token) return;
+    
+    setEditingBooking(true);
+    try {
+      const result = await frontDeskApiService.updateBookingRoomAssignment(
+        token,
+        selectedBooking.reservationId,
+        selectedRoomId,
+        selectedRoomType || undefined,
+        tenant?.id || 'default'
+      );
+      
+      if (result.success) {
+        setSnackbar({ 
+          open: true, 
+          message: 'Room assignment updated successfully', 
+          severity: 'success' 
+        });
+        setEditDialogOpen(false);
+        loadBookings(); // Refresh the bookings list
+      } else {
+        setSnackbar({ 
+          open: true, 
+          message: result.message || 'Failed to update room assignment', 
+          severity: 'error' 
+        });
+      }
+    } catch (error) {
+      console.error('Error updating room assignment:', error);
+      setSnackbar({ 
+        open: true, 
+        message: 'Failed to update room assignment', 
+        severity: 'error' 
+      });
+    } finally {
+      setEditingBooking(false);
     }
   };
 
@@ -545,7 +679,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
           >
             Refresh
           </Button>
-          {mode === 'front-desk' && (
+          {(mode === 'front-desk' || mode === 'hotel-admin') && onWalkInRequest && (
             <Button 
               variant="contained" 
               startIcon={<AddGuestIcon />}
@@ -567,14 +701,8 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
           fullWidth
           placeholder="Search by guest name, confirmation number, or room..."
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon />
-              </InputAdornment>
-            ),
-          }}
+          onChange={handleSearchChange}
+          InputProps={searchInputProps}
           disabled={loading}
         />
       </Box>
@@ -648,6 +776,19 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                               <VisibilityIcon />
                             </IconButton>
                           </Tooltip>
+                          
+                          {/* Edit Room Assignment for Confirmed bookings */}
+                          {booking.status.toUpperCase() === 'CONFIRMED' && (
+                            <Tooltip title="Edit Room Assignment">
+                              <IconButton 
+                                size="small" 
+                                color="primary"
+                                onClick={() => handleEditRoomAssignment(booking)}
+                              >
+                                <EditIcon />
+                              </IconButton>
+                            </Tooltip>
+                          )}
                           
                           {showCheckInOut && (
                             <>
@@ -767,6 +908,96 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
         receipt={checkoutReceipt?.receipt || null}
         guestName={checkoutReceipt?.booking?.guestName || 'Guest'}
       />
+
+      {/* Check-in Dialog */}
+      <CheckInDialog
+        open={checkInDialogOpen}
+        onClose={() => {
+          setCheckInDialogOpen(false);
+          setBookingForCheckIn(null);
+        }}
+        booking={bookingForCheckIn}
+        onCheckInSuccess={handleCheckInSuccess}
+      />
+
+      {/* Edit Room Assignment Dialog */}
+      <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} maxWidth="md" fullWidth>
+        <DialogTitle>Edit Room Assignment - {selectedBooking?.confirmationNumber}</DialogTitle>
+        <DialogContent>
+          <Grid container spacing={3} sx={{ mt: 1 }}>
+            <Grid item xs={12}>
+              <Typography variant="subtitle1" gutterBottom>
+                Guest: {selectedBooking?.guestName}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" gutterBottom>
+                Current Room Type: {selectedBooking?.roomType}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" gutterBottom>
+                Current Room Number: {selectedBooking?.roomNumber || 'Not assigned'}
+              </Typography>
+            </Grid>
+            
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth>
+                <InputLabel>Room Type</InputLabel>
+                <Select
+                  value={selectedRoomType}
+                  onChange={(e) => setSelectedRoomType(e.target.value)}
+                  label="Room Type"
+                >
+                  <MenuItem value="SINGLE">Single</MenuItem>
+                  <MenuItem value="DOUBLE">Double</MenuItem>
+                  <MenuItem value="SUITE">Suite</MenuItem>
+                  <MenuItem value="DELUXE">Deluxe</MenuItem>
+                  <MenuItem value="PRESIDENTIAL">Presidential</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            
+            <Grid item xs={12}>
+              <Typography variant="subtitle2" gutterBottom>
+                Available Rooms
+              </Typography>
+              {loadingRooms ? (
+                <CircularProgress size={24} />
+              ) : (
+                <List sx={{ maxHeight: 300, overflow: 'auto', border: '1px solid #e0e0e0', borderRadius: 1 }}>
+                  {availableRooms.map((room) => (
+                    <ListItem key={room.id} disablePadding>
+                      <ListItemButton
+                        selected={selectedRoomId === room.id}
+                        onClick={() => setSelectedRoomId(room.id)}
+                      >
+                        <ListItemText
+                          primary={`Room ${room.roomNumber}`}
+                          secondary={`${room.roomType} - $${room.pricePerNight}/night (${room.status})`}
+                        />
+                      </ListItemButton>
+                    </ListItem>
+                  ))}
+                  {availableRooms.length === 0 && (
+                    <ListItem>
+                      <ListItemText primary="No rooms available" />
+                    </ListItem>
+                  )}
+                </List>
+              )}
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEditDialogOpen(false)} disabled={editingBooking}>
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleSaveRoomAssignment}
+            variant="contained" 
+            disabled={editingBooking || !selectedRoomId}
+          >
+            {editingBooking ? 'Updating...' : 'Update Room Assignment'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

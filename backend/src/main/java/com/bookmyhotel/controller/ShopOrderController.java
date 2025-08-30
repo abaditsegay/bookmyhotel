@@ -148,6 +148,19 @@ public class ShopOrderController {
     }
 
     /**
+     * Toggle order payment status between PAID and PENDING
+     * PATCH /api/hotels/{hotelId}/shop/orders/{orderId}/toggle-status
+     */
+    @PatchMapping("/{orderId}/toggle-status")
+    public ResponseEntity<ShopOrderResponse> toggleOrderStatus(
+            @PathVariable Long hotelId,
+            @PathVariable Long orderId) {
+
+        ShopOrderResponse response = shopOrderService.toggleOrderStatus(hotelId, orderId);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
      * Cancel order
      * PATCH /api/hotels/{hotelId}/shop/orders/{orderId}/cancel
      */

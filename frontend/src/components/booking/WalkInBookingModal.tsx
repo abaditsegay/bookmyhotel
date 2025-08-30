@@ -65,7 +65,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
 }) => {
   console.log('WalkInBookingModal render - open:', open); // Debug log
   
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const { tenantId } = useTenant();
   
   const [activeStep, setActiveStep] = useState(0);
@@ -114,7 +114,14 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
             headers['X-Tenant-ID'] = tenantId;
           }
           
-          const response = await fetch('/api/front-desk/hotel', {
+          // Determine the correct endpoint based on user role
+          // Check if user is hotel admin or has hotel admin role
+          const isHotelAdmin = user?.role === 'HOTEL_ADMIN' || user?.roles?.includes('HOTEL_ADMIN');
+          const endpoint = isHotelAdmin ? '/api/hotel-admin/hotel' : '/api/front-desk/hotel';
+          
+          console.log('Loading hotel info for user role:', user?.role, 'using endpoint:', endpoint);
+          
+          const response = await fetch(endpoint, {
             headers
           });
           
@@ -129,7 +136,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
           }
         } catch (hotelError) {
           console.error('Failed to fetch hotel information:', hotelError);
-          setError('Failed to load hotel information. Please ensure you are logged in as a front desk user.');
+          setError('Failed to load hotel information. Please ensure you are logged in with appropriate permissions.');
           return;
         }
       } catch (error) {
@@ -157,7 +164,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
       // Get hotel ID from user context - we'll need to add this to the front desk API
       loadHotelInfo();
     }
-  }, [open, token, tenantId]);
+  }, [open, token, tenantId, user?.role, user?.roles]);
 
   // Load available rooms when dates/guests change and we're on step 1
   useEffect(() => {
@@ -175,15 +182,82 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
           hotelId,
           checkIn: format(checkInDate, 'yyyy-MM-dd'),
           checkOut: format(checkOutDate, 'yyyy-MM-dd'),
-          guests
+          guests,
+          userRole: user?.role
         });
         
-        const rooms = await hotelApiService.getAvailableRooms(
-          hotelId,
-          format(checkInDate, 'yyyy-MM-dd'),
-          format(checkOutDate, 'yyyy-MM-dd'),
-          guests
-        );
+        // Use different APIs based on user role
+        const isHotelAdmin = user?.role === 'HOTEL_ADMIN' || user?.roles?.includes('HOTEL_ADMIN');
+        
+        let rooms: AvailableRoom[] = [];
+        
+        if (isHotelAdmin) {
+          // For hotel admin, use the hotel admin rooms API with availability filter
+          const headers: Record<string, string> = {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          };
+          
+          if (tenantId) {
+            headers['X-Tenant-ID'] = tenantId;
+          }
+          
+          const params = new URLSearchParams({
+            page: '0',
+            size: '100', // Get all available rooms
+            available: 'true' // Filter for available rooms only
+          });
+          
+          const response = await fetch(`/api/hotel-admin/rooms?${params.toString()}`, {
+            headers
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            // Convert hotel admin room format to AvailableRoom format
+            rooms = data.content.map((room: any) => ({
+              id: room.id,
+              roomNumber: room.roomNumber,
+              roomType: room.roomType,
+              pricePerNight: room.pricePerNight,
+              capacity: room.capacity,
+              description: room.description,
+              isAvailable: room.isAvailable
+            }));
+          } else {
+            throw new Error(`Failed to fetch rooms: ${response.status}`);
+          }
+        } else {
+          // For front desk users, use the front desk available rooms API
+          const headers: Record<string, string> = {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          };
+          
+          if (tenantId) {
+            headers['X-Tenant-ID'] = tenantId;
+          }
+          
+          const response = await fetch(`/api/front-desk/hotels/${hotelId}/available-rooms`, {
+            headers
+          });
+          
+          if (response.ok) {
+            const roomsData = await response.json();
+            // Convert front desk room format to AvailableRoom format
+            rooms = roomsData.map((room: any) => ({
+              id: room.id,
+              roomNumber: room.roomNumber,
+              roomType: room.roomType,
+              pricePerNight: room.pricePerNight,
+              capacity: room.capacity,
+              description: room.description,
+              isAvailable: true // Front desk API only returns available rooms
+            }));
+          } else {
+            throw new Error(`Failed to fetch available rooms: ${response.status}`);
+          }
+        }
         
         console.log('Available rooms loaded:', rooms);
         setAvailableRooms(rooms);
@@ -200,7 +274,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
     if (activeStep === 1 && hotelId && checkInDate && checkOutDate) {
       loadAvailableRooms();
     }
-  }, [activeStep, hotelId, checkInDate, checkOutDate, guests, token]);
+  }, [activeStep, hotelId, checkInDate, checkOutDate, guests, token, user?.role, user?.roles, tenantId]);
 
   const handleNext = () => {
     if (activeStep === 0) {
@@ -252,8 +326,11 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
 
       let response;
       
-      // Use different API endpoints based on context
-      if (apiContext === 'hotel-admin') {
+      // Use different API endpoints based on user role (consistent with hotel info loading)
+      const isHotelAdmin = user?.role === 'HOTEL_ADMIN' || user?.roles?.includes('HOTEL_ADMIN');
+      
+      if (isHotelAdmin) {
+        console.log('Creating walk-in booking via hotel admin API');
         response = await hotelAdminApi.createWalkInBooking(token, bookingRequest);
         if (response.success) {
           response = response.data;
@@ -261,6 +338,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
           throw new Error(response.message || 'Failed to create booking');
         }
       } else {
+        console.log('Creating walk-in booking via front desk API');
         response = await hotelApiService.createBooking(bookingRequest);
       }
       

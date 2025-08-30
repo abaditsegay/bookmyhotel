@@ -29,8 +29,8 @@ import com.bookmyhotel.repository.ReservationRepository;
 import com.bookmyhotel.repository.ShopOrderRepository;
 
 /**
- * Service class for ShopOrder operations - Full lifecycle management from
- * PENDING to COMPLETED
+ * Service class for ShopOrder operations - Simplified PENDING/PAID status
+ * management
  */
 @Service
 @Transactional
@@ -54,7 +54,7 @@ public class ShopOrderService {
      */
     public String getOrderStatusMessage(Long orderId) {
         return "Shop order system is ready - Order #" + orderId + " with simplified " +
-                "PENDING/CONFIRMED/PREPARING/READY/COMPLETED/CANCELLED status workflow";
+                "PENDING/PAID status workflow";
     }
 
     // Stub methods to satisfy controller dependencies
@@ -98,11 +98,10 @@ public class ShopOrderService {
         if (request.getPaymentMethod() == null ||
                 request.getPaymentMethod().toString().equals("CASH") ||
                 request.getPaymentMethod().toString().equals("CARD")) {
-            // For immediate payments (cash/card), mark as completed
-            order.setStatus(OrderStatus.COMPLETED);
+            // For immediate payments (cash/card), mark as paid
+            order.setStatus(OrderStatus.PAID);
             order.setIsPaid(true);
             order.setPaidAt(now);
-            order.setCompletedAt(now);
         } else {
             // For room charges and other deferred payments, keep as pending
             order.setStatus(OrderStatus.PENDING);
@@ -253,14 +252,15 @@ public class ShopOrderService {
         // Update the status
         order.setStatus(newStatus);
 
-        // Update timestamps based on status
+        // Update payment fields based on new status
         LocalDateTime now = LocalDateTime.now();
-        switch (newStatus) {
-            case CONFIRMED -> order.setConfirmedAt(now);
-            case PREPARING -> order.setPreparingAt(now);
-            case READY -> order.setReadyAt(now);
-            case COMPLETED -> order.setCompletedAt(now);
-            case CANCELLED -> order.setCancelledAt(now);
+        if (newStatus == OrderStatus.PAID) {
+            order.setIsPaid(true);
+            order.setPaidAt(now);
+        } else {
+            order.setIsPaid(false);
+            order.setPaidAt(null);
+            order.setPaymentReference(null);
         }
 
         // Save the updated order
@@ -271,23 +271,96 @@ public class ShopOrderService {
     }
 
     public ShopOrderResponse markOrderAsPaid(Long hotelId, Long orderId, String paymentReference) {
-        throw new UnsupportedOperationException("Mark order as paid will be implemented once DTOs are complete");
+        // Find the order and verify it belongs to the hotel
+        ShopOrder order = shopOrderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with ID: " + orderId));
+
+        if (!order.getHotel().getId().equals(hotelId)) {
+            throw new IllegalArgumentException("Order does not belong to the specified hotel");
+        }
+
+        // Mark as paid
+        order.setIsPaid(true);
+        order.setPaidAt(LocalDateTime.now());
+        if (paymentReference != null && !paymentReference.trim().isEmpty()) {
+            order.setPaymentReference(paymentReference.trim());
+        }
+
+        // Update status to PAID (simplified status)
+        order.setStatus(OrderStatus.PAID);
+
+        order = shopOrderRepository.save(order);
+        return convertToResponse(order);
+    }
+
+    /**
+     * Toggle order payment status between PAID and PENDING
+     */
+    public ShopOrderResponse toggleOrderStatus(Long hotelId, Long orderId) {
+        // Find the order and verify it belongs to the hotel
+        ShopOrder order = shopOrderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with ID: " + orderId));
+
+        if (!order.getHotel().getId().equals(hotelId)) {
+            throw new IllegalArgumentException("Order does not belong to the specified hotel");
+        }
+
+        // Toggle status
+        OrderStatus newStatus = order.getStatus().toggle();
+        order.setStatus(newStatus);
+
+        // Update payment fields based on new status
+        if (newStatus == OrderStatus.PAID) {
+            order.setIsPaid(true);
+            order.setPaidAt(LocalDateTime.now());
+        } else {
+            order.setIsPaid(false);
+            order.setPaidAt(null);
+            order.setPaymentReference(null);
+        }
+
+        order = shopOrderRepository.save(order);
+        return convertToResponse(order);
     }
 
     public ShopOrderResponse cancelOrder(Long hotelId, Long orderId, String reason) {
-        throw new UnsupportedOperationException("Cancel order will be implemented once DTOs are complete");
+        // Find the order and verify it belongs to the hotel
+        ShopOrder order = shopOrderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with ID: " + orderId));
+
+        if (!order.getHotel().getId().equals(hotelId)) {
+            throw new IllegalArgumentException("Order does not belong to the specified hotel");
+        }
+
+        // Only allow cancellation if order is not already paid
+        if (order.getStatus() == OrderStatus.PAID) {
+            throw new IllegalStateException("Cannot cancel a paid order");
+        }
+
+        // Cancel the order (simplified: reset to pending and unpaid state)
+        order.setStatus(OrderStatus.PENDING);
+        order.setIsPaid(false);
+        order.setPaidAt(null);
+        order.setPaymentReference(null);
+        if (reason != null && !reason.trim().isEmpty()) {
+            order.setNotes(order.getNotes() != null ? order.getNotes() + " | Cancellation reason: " + reason.trim()
+                    : "Cancellation reason: " + reason.trim());
+        }
+
+        order = shopOrderRepository.save(order);
+        return convertToResponse(order);
     }
 
     public OrderStatistics getOrderStatistics(Long hotelId) {
-        // Calculate actual statistics using repository methods
+        // Calculate actual statistics using repository methods (simplified status)
         long totalOrders = shopOrderRepository.countByHotelId(hotelId);
-        long completedOrders = shopOrderRepository.countByHotelIdAndStatus(hotelId, OrderStatus.COMPLETED);
+        long paidOrders = shopOrderRepository.countByHotelIdAndStatus(hotelId, OrderStatus.PAID);
 
-        // Count pending orders (not completed)
+        // Count pending orders (unpaid)
         long pendingOrders = shopOrderRepository.countByHotelIdAndStatus(hotelId, OrderStatus.PENDING);
 
-        // Count unpaid orders (all orders that are not paid)
-        long unpaidOrders = totalOrders - completedOrders;
+        // Count unpaid orders (same as pending in simplified model)
+        long unpaidOrders = pendingOrders;
 
         // Calculate total revenue from paid orders
         BigDecimal totalRevenue = shopOrderRepository.calculateTotalRevenueByHotelId(hotelId);
@@ -306,13 +379,8 @@ public class ShopOrderService {
         // Calculate pending revenue (total amount of unpaid orders)
         BigDecimal pendingRevenue;
         try {
-            // Get all unpaid orders and sum their amounts
-            List<OrderStatus> unpaidStatuses = List.of(
-                    OrderStatus.PENDING,
-                    OrderStatus.CONFIRMED,
-                    OrderStatus.PREPARING,
-                    OrderStatus.READY);
-            List<ShopOrder> unpaidOrdersList = shopOrderRepository.findByHotelIdAndStatusIn(hotelId, unpaidStatuses);
+            // Get all unpaid orders and sum their amounts (simplified: only PENDING status)
+            List<ShopOrder> unpaidOrdersList = shopOrderRepository.findByHotelIdAndStatus(hotelId, OrderStatus.PENDING);
 
             pendingRevenue = unpaidOrdersList.stream()
                     .filter(order -> !order.getIsPaid())
@@ -323,8 +391,8 @@ public class ShopOrderService {
             pendingRevenue = BigDecimal.ZERO;
         }
 
-        return new OrderStatistics(totalOrders, unpaidOrders, completedOrders, totalRevenue, pendingRevenue,
-                todayOrders, todayRevenue, monthlyRevenue, pendingOrders, completedOrders);
+        return new OrderStatistics(totalOrders, unpaidOrders, paidOrders, totalRevenue, pendingRevenue,
+                todayOrders, todayRevenue, monthlyRevenue, pendingOrders);
     }
 
     /**
@@ -427,7 +495,6 @@ public class ShopOrderService {
         private final BigDecimal todayRevenue;
         private final BigDecimal monthlyRevenue;
         private final long pendingOrders;
-        private final long completedOrders;
 
         public OrderStatistics(long totalOrders, long unpaidOrders, long paidOrders,
                 BigDecimal totalRevenue, BigDecimal pendingRevenue) {
@@ -441,12 +508,11 @@ public class ShopOrderService {
             this.todayRevenue = BigDecimal.ZERO;
             this.monthlyRevenue = BigDecimal.ZERO;
             this.pendingOrders = 0;
-            this.completedOrders = 0;
         }
 
         public OrderStatistics(long totalOrders, long unpaidOrders, long paidOrders,
                 BigDecimal totalRevenue, BigDecimal pendingRevenue, long todayOrders,
-                BigDecimal todayRevenue, BigDecimal monthlyRevenue, long pendingOrders, long completedOrders) {
+                BigDecimal todayRevenue, BigDecimal monthlyRevenue, long pendingOrders) {
             this.totalOrders = totalOrders;
             this.unpaidOrders = unpaidOrders;
             this.paidOrders = paidOrders;
@@ -456,7 +522,6 @@ public class ShopOrderService {
             this.todayRevenue = todayRevenue;
             this.monthlyRevenue = monthlyRevenue;
             this.pendingOrders = pendingOrders;
-            this.completedOrders = completedOrders;
         }
 
         // Getters
@@ -494,10 +559,6 @@ public class ShopOrderService {
 
         public long getPendingOrders() {
             return pendingOrders;
-        }
-
-        public long getCompletedOrders() {
-            return completedOrders;
         }
     }
 }

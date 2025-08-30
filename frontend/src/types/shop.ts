@@ -9,11 +9,7 @@ export enum ProductCategory {
 
 export enum ShopOrderStatus {
   PENDING = 'PENDING',
-  CONFIRMED = 'CONFIRMED', 
-  PREPARING = 'PREPARING',
-  READY = 'READY',
-  COMPLETED = 'COMPLETED',
-  CANCELLED = 'CANCELLED'
+  PAID = 'PAID'
 }
 
 export enum DeliveryType {
@@ -249,6 +245,11 @@ export const ShopOrderUtils = {
    * Returns a display-friendly customer name
    */
   getDisplayCustomerName: (order: ShopOrder): string => {
+    // For room charges, show only room number instead of "Anonymous Customer"
+    if (order.roomNumber && order.roomNumber.trim() !== '') {
+      return `Room ${order.roomNumber}`;
+    }
+    
     if (ShopOrderUtils.isAnonymousOrder(order)) {
       return 'Anonymous Customer';
     }
@@ -260,7 +261,7 @@ export const ShopOrderUtils = {
    */
   getOrderTypeDescription: (order: ShopOrder): string => {
     if (order.roomNumber && order.roomNumber.trim() !== '') {
-      return `Room Charge - Room ${order.roomNumber}`;
+      return 'Room Charge';
     } else if (ShopOrderUtils.isAnonymousOrder(order)) {
       return 'Anonymous Sale';
     } else {
@@ -285,18 +286,39 @@ export const ShopOrderUtils = {
     switch (status) {
       case ShopOrderStatus.PENDING:
         return '#ff9800'; // Orange
-      case ShopOrderStatus.CONFIRMED:
-        return '#2196f3'; // Blue
-      case ShopOrderStatus.PREPARING:
-        return '#9c27b0'; // Purple
-      case ShopOrderStatus.READY:
+      case ShopOrderStatus.PAID:
         return '#4caf50'; // Green
-      case ShopOrderStatus.COMPLETED:
-        return '#8bc34a'; // Light Green
-      case ShopOrderStatus.CANCELLED:
-        return '#f44336'; // Red
       default:
         return '#757575'; // Grey
+    }
+  },
+
+  /**
+   * Formats payment method for user-friendly display
+   */
+  formatPaymentMethod: (paymentMethod: string | null | undefined): string => {
+    if (!paymentMethod) return 'Not Set';
+    
+    const formatted = paymentMethod.replace(/_/g, ' ');
+    
+    // Special cases for better readability
+    switch (paymentMethod) {
+      case 'ROOM_CHARGE':
+        return 'Room Charge';
+      case 'CREDIT_CARD':
+        return 'Credit Card';
+      case 'MOBILE_MONEY':
+        return 'Mobile Money';
+      case 'PAY_AT_FRONTDESK':
+        return 'Pay at Front Desk';
+      case 'CASH':
+        return 'Cash';
+      case 'CARD':
+        return 'Card';
+      case 'MOBILE':
+        return 'Mobile';
+      default:
+        return formatted;
     }
   }
 };

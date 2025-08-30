@@ -201,6 +201,14 @@ class ShopApiService {
     return this.handleResponse<ShopOrder>(response);
   }
 
+  async toggleOrderStatus(hotelId: number, orderId: number): Promise<ShopOrder> {
+    const response = await fetch(`${API_BASE_URL}/hotels/${hotelId}/shop/orders/${orderId}/toggle-status`, {
+      method: 'PATCH',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse<ShopOrder>(response);
+  }
+
   async cancelOrder(hotelId: number, orderId: number, reason?: string): Promise<ShopOrder> {
     const url = `${API_BASE_URL}/hotels/${hotelId}/shop/orders/${orderId}/cancel${reason ? `?reason=${encodeURIComponent(reason)}` : ''}`;
     const response = await fetch(url, {

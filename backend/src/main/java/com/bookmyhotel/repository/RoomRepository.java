@@ -271,6 +271,19 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
                      @Param("roomType") String roomType);
 
        /**
+        * Find first room of a specific type for a hotel (for pricing reference, not
+        * assignment)
+        */
+       @Query("SELECT r FROM Room r " +
+                     "WHERE r.hotel.id = :hotelId " +
+                     "AND r.roomType = :roomType " +
+                     "ORDER BY r.id " +
+                     "LIMIT 1")
+       Optional<Room> findFirstRoomOfTypeForHotel(
+                     @Param("hotelId") Long hotelId,
+                     @Param("roomType") String roomType);
+
+       /**
         * Find hotel by ID (bypasses tenant filter for cross-tenant booking)
         */
        @Query("SELECT h FROM Hotel h WHERE h.id = :hotelId")

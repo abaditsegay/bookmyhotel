@@ -18,7 +18,6 @@ import { ShopDashboardStats } from '../../types/shop';
 import ProductManagement from './ProductManagement';
 import OrderManagement from './OrderManagement';
 import OrderCreation from './OrderCreation';
-import RoomCharges from './RoomCharges';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -45,7 +44,7 @@ const ShopDashboard: React.FC = () => {
   const [currentTab, setCurrentTab] = useState(() => {
     const tabParam = searchParams.get('tab');
     if (tabParam) {
-      const tabMap = { 'new-order': 0, 'products': 1, 'orders': 2, 'room-charges': 3 };
+      const tabMap = { 'new-order': 0, 'products': 1, 'orders': 2 };
       return tabMap[tabParam as keyof typeof tabMap] ?? 0;
     }
     return 0;
@@ -78,7 +77,7 @@ const ShopDashboard: React.FC = () => {
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setCurrentTab(newValue);
     // Update URL parameter to remember the tab
-    const tabNames = ['new-order', 'products', 'orders', 'room-charges'];
+    const tabNames = ['new-order', 'products', 'orders'];
     setSearchParams({ tab: tabNames[newValue] });
   };
 
@@ -191,7 +190,6 @@ const ShopDashboard: React.FC = () => {
           <Tab label="Create New Order" />
           <Tab label="Products" />
           <Tab label="Orders" />
-          <Tab label="Room Charges" />
         </Tabs>
       </Paper>
 
@@ -206,10 +204,6 @@ const ShopDashboard: React.FC = () => {
 
       <TabPanel value={currentTab} index={2}>
         <OrderManagement />
-      </TabPanel>
-
-      <TabPanel value={currentTab} index={3}>
-        <RoomCharges />
       </TabPanel>
     </Box>
   );

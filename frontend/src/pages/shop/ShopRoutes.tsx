@@ -4,7 +4,6 @@ import ShopDashboard from '../../components/shop/ShopDashboard';
 import ProductManagement from '../../components/shop/ProductManagement';
 import OrderManagement from '../../components/shop/OrderManagement';
 import OrderCreation from '../../components/shop/OrderCreation';
-import RoomCharges from '../../components/shop/RoomCharges';
 
 const ShopRoutes: React.FC = () => {
   return (
@@ -14,7 +13,6 @@ const ShopRoutes: React.FC = () => {
       <Route path="products" element={<ProductManagement />} />
       <Route path="orders" element={<OrderManagement />} />
       <Route path="new-order" element={<OrderCreation />} />
-      <Route path="room-charges" element={<RoomCharges />} />
     </Routes>
   );
 };

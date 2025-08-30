@@ -1,16 +1,12 @@
 package com.bookmyhotel.entity;
 
 /**
- * Order status enum matching database ENUM values
- * Represents the lifecycle of a shop order from creation to completion
+ * Simplified order status enum for payment tracking only
+ * Simple sales workflow: PENDING (unpaid) or PAID
  */
 public enum OrderStatus {
     PENDING("Pending"),
-    CONFIRMED("Confirmed"),
-    PREPARING("Preparing"),
-    READY("Ready for Pickup/Delivery"),
-    COMPLETED("Completed"),
-    CANCELLED("Cancelled");
+    PAID("Paid");
 
     private final String displayName;
 
@@ -23,10 +19,10 @@ public enum OrderStatus {
     }
 
     /**
-     * Check if the order is in a paid state (confirmed or later)
+     * Check if the order is in a paid state
      */
     public boolean isPaid() {
-        return this == CONFIRMED || this == PREPARING || this == READY || this == COMPLETED;
+        return this == PAID;
     }
 
     /**
@@ -37,16 +33,9 @@ public enum OrderStatus {
     }
 
     /**
-     * Check if the order is completed
+     * Toggle between PAID and PENDING status
      */
-    public boolean isCompleted() {
-        return this == COMPLETED;
-    }
-
-    /**
-     * Check if the order is cancelled
-     */
-    public boolean isCancelled() {
-        return this == CANCELLED;
+    public OrderStatus toggle() {
+        return this == PAID ? PENDING : PAID;
     }
 }

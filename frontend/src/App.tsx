@@ -24,7 +24,6 @@ import UserManagementAdmin from './pages/admin/UserManagementAdmin';
 import UserRegistrationForm from './pages/admin/UserRegistrationForm';
 import HotelViewEdit from './pages/admin/HotelViewEdit';
 import UserViewEdit from './pages/admin/UserViewEdit';
-import BookingViewEdit from './pages/admin/BookingViewEdit';
 import HotelAdminDashboard from './pages/hotel-admin/HotelAdminDashboard';
 import RoomManagement from './pages/hotel-admin/RoomManagement';
 import RoomViewEdit from './pages/hotel-admin/RoomViewEdit';
@@ -33,7 +32,8 @@ import StaffDetails from './pages/hotel-admin/StaffDetails';
 import StaffScheduleManagement from './components/StaffScheduleManagement';
 import StaffScheduleDashboard from './components/StaffScheduleDashboard';
 import FrontDeskDashboard from './pages/frontdesk/FrontDeskDashboard';
-import FrontDeskBookingDetails from './pages/frontdesk/FrontDeskBookingDetails';
+import FrontDeskUnifiedBookingDetails from './pages/frontdesk/FrontDeskUnifiedBookingDetails';
+import HotelAdminBookingDetails from './pages/hotel-admin/HotelAdminBookingDetails';
 import BookingManagementPage from './pages/BookingManagementPage';
 import GuestBookingManagementPage from './pages/GuestBookingManagementPage';
 import { SystemDashboardPage } from './pages/SystemDashboardPage';
@@ -300,12 +300,12 @@ function App() {
         } />
         <Route path="/hotel-admin/bookings/:id" element={
           <ProtectedRoute requiredRole="HOTEL_ADMIN">
-            <BookingViewEdit />
+            <HotelAdminBookingDetails />
           </ProtectedRoute>
         } />
         <Route path="/hotel-admin/bookings/:id/edit" element={
           <ProtectedRoute requiredRole="HOTEL_ADMIN">
-            <BookingViewEdit />
+            <HotelAdminBookingDetails />
           </ProtectedRoute>
         } />
         <Route path="/hotel-admin/hotel" element={
@@ -360,12 +360,12 @@ function App() {
         } />
         <Route path="/frontdesk/bookings/:id" element={
           <ProtectedRoute requiredRole="FRONTDESK">
-            <FrontDeskBookingDetails />
+            <FrontDeskUnifiedBookingDetails />
           </ProtectedRoute>
         } />
         <Route path="/frontdesk/bookings/:id/edit" element={
           <ProtectedRoute requiredRole="FRONTDESK">
-            <FrontDeskBookingDetails />
+            <FrontDeskUnifiedBookingDetails />
           </ProtectedRoute>
         } />
         <Route path="/frontdesk/schedules" element={

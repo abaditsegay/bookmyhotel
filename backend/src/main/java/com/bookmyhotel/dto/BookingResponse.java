@@ -20,6 +20,7 @@ public class BookingResponse {
     private LocalDateTime createdAt;
 
     // Hotel and room details
+    private Long hotelId;
     private String hotelName;
     private String hotelAddress;
     private String roomNumber;
@@ -118,6 +119,14 @@ public class BookingResponse {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public Long getHotelId() {
+        return hotelId;
+    }
+
+    public void setHotelId(Long hotelId) {
+        this.hotelId = hotelId;
     }
 
     public String getHotelName() {

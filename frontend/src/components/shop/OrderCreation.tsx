@@ -36,7 +36,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { shopApiService } from '../../services/shopApi';
-import { Product, ShopOrderCreateRequest, PaymentMethod, DeliveryType, ProductCategory, ShopOrder } from '../../types/shop';
+import { Product, ShopOrderCreateRequest, PaymentMethod, DeliveryType, ProductCategory, ShopOrder, ShopOrderUtils } from '../../types/shop';
 import ShopReceiptDialog from './ShopReceiptDialog';
 import PaymentDialog from './PaymentDialog';
 
@@ -586,7 +586,7 @@ const OrderCreation: React.FC = () => {
                 <Box sx={{ mb: 2, p: 2, border: 1, borderColor: 'success.main', borderRadius: 1, bgcolor: 'success.light' }}>
                   <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'success.dark' }}>
                     <CheckIcon fontSize="small" />
-                    Payment completed via {completedPaymentMethod.replace('_', ' ')}
+                    Payment completed via {ShopOrderUtils.formatPaymentMethod(completedPaymentMethod)}
                     {paymentReference && (
                       <Typography component="span" variant="caption" sx={{ ml: 1 }}>
                         (Ref: {paymentReference})

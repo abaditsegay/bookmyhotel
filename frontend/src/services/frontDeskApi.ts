@@ -253,6 +253,49 @@ export const frontDeskApiService = {
   },
 
   /**
+   * Update booking room assignment (for confirmed bookings during check-in)
+   */
+  updateBookingRoomAssignment: async (
+    token: string,
+    reservationId: number,
+    roomId: number,
+    roomType?: string,
+    tenantId: string | null = 'default'
+  ): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {
+    try {
+      const params = new URLSearchParams({
+        roomId: roomId.toString(),
+      });
+      
+      if (roomType) {
+        params.append('roomType', roomType);
+      }
+
+      const response = await fetch(
+        `${API_BASE_URL}/front-desk/bookings/${reservationId}/room-assignment?${params}`,
+        {
+          method: 'PUT',
+          headers: getAuthHeaders(token, tenantId),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update room assignment');
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      console.error('Room assignment update error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to update room assignment' 
+      };
+    }
+  },
+
+  /**
    * Delete booking
    */
   deleteBooking: async (
@@ -785,6 +828,82 @@ export const frontDeskApiService = {
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to toggle room availability' 
+      };
+    }
+  },
+
+  /**
+   * Get available rooms for check-in
+   */
+  getAvailableRoomsForCheckin: async (
+    token: string,
+    hotelId: number,
+    tenantId: string | null = 'default'
+  ): Promise<{ success: boolean; data?: any[]; message?: string }> => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/front-desk/hotels/${hotelId}/available-rooms`,
+        {
+          method: 'GET',
+          headers: getAuthHeaders(token, tenantId),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return { success: false, message: errorData.message || 'Failed to get available rooms' };
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      console.error('Get available rooms error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to get available rooms' 
+      };
+    }
+  },
+
+  /**
+   * Check-in with room assignment
+   */
+  checkInWithRoomAssignment: async (
+    token: string,
+    reservationId: number,
+    roomId: number,
+    roomType?: string,
+    tenantId: string | null = 'default'
+  ): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {
+    try {
+      const params = new URLSearchParams({
+        roomId: roomId.toString(),
+      });
+      
+      if (roomType) {
+        params.append('roomType', roomType);
+      }
+
+      const response = await fetch(
+        `${API_BASE_URL}/front-desk/bookings/${reservationId}/checkin?${params}`,
+        {
+          method: 'POST',
+          headers: getAuthHeaders(token, tenantId),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return { success: false, message: errorData.message || 'Failed to check-in guest' };
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      console.error('Check-in with room assignment error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to check-in guest' 
       };
     }
   },

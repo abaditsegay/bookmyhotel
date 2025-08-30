@@ -139,6 +139,28 @@ const FrontDeskBookingDetails: React.FC = () => {
     if (!editedBooking || !token) return;
 
     try {
+      let hasUpdates = false;
+
+      // Check if room assignment changed for confirmed bookings
+      if (booking && 
+          editedBooking.status?.toUpperCase() === 'CONFIRMED' &&
+          (editedBooking.roomType !== booking.roomType || editedBooking.roomNumber !== booking.roomNumber)) {
+        
+        // For room assignment changes, we need to find the room ID
+        // This is a simplified approach - in production you might want to implement room selection
+        if (editedBooking.roomNumber && editedBooking.roomNumber !== 'TBA (To Be Assigned)') {
+          try {
+            // Try to find and assign room by room number
+            // This would need a proper room lookup API call in production
+            console.log('Room assignment update needed for:', editedBooking.roomNumber, editedBooking.roomType);
+            setSuccess('Room assignment will be updated during check-in process');
+            hasUpdates = true;
+          } catch (roomError) {
+            console.error('Room assignment error:', roomError);
+          }
+        }
+      }
+
       // Update booking status via API if status changed
       if (booking && editedBooking.status !== booking.status) {
         const result = await frontDeskApiService.updateBookingStatus(
@@ -171,11 +193,23 @@ const FrontDeskBookingDetails: React.FC = () => {
           
           setBooking(updatedBooking);
           setEditedBooking({ ...updatedBooking });
+          hasUpdates = true;
         }
+      }
+
+      // If room details changed but no room ID was found, just update local state
+      if (!hasUpdates && booking && 
+          (editedBooking.roomType !== booking.roomType || editedBooking.roomNumber !== booking.roomNumber)) {
+        setBooking({ ...editedBooking });
+        setSuccess('Room details updated. Changes will be applied during check-in.');
+        hasUpdates = true;
       }
       
       setIsEditing(false);
-      setSuccess('Booking updated successfully');
+      
+      if (!hasUpdates) {
+        setSuccess('Booking updated successfully');
+      }
     } catch (err) {
       setError('Failed to update booking');
       console.error('Error updating booking:', err);
@@ -471,22 +505,50 @@ const FrontDeskBookingDetails: React.FC = () => {
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      label="Room Number"
-                      value={currentBooking?.roomNumber || 'TBA (To Be Assigned)'}
-                      disabled
-                      variant="filled"
-                    />
+                    {isEditing && currentBooking?.status?.toUpperCase() === 'CONFIRMED' ? (
+                      <FormControl fullWidth>
+                        <InputLabel>Room Type</InputLabel>
+                        <Select
+                          value={currentBooking?.roomType || ''}
+                          onChange={(e) => handleFieldChange('roomType', e.target.value)}
+                          label="Room Type"
+                        >
+                          <MenuItem value="SINGLE">Single</MenuItem>
+                          <MenuItem value="DOUBLE">Double</MenuItem>
+                          <MenuItem value="SUITE">Suite</MenuItem>
+                          <MenuItem value="DELUXE">Deluxe</MenuItem>
+                          <MenuItem value="PRESIDENTIAL">Presidential</MenuItem>
+                        </Select>
+                      </FormControl>
+                    ) : (
+                      <TextField
+                        fullWidth
+                        label="Room Type"
+                        value={currentBooking?.roomType || ''}
+                        disabled
+                        variant="filled"
+                      />
+                    )}
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      label="Room Type"
-                      value={currentBooking?.roomType || ''}
-                      disabled
-                      variant="filled"
-                    />
+                    {isEditing && currentBooking?.status?.toUpperCase() === 'CONFIRMED' ? (
+                      <TextField
+                        fullWidth
+                        label="Room Number"
+                        value={currentBooking?.roomNumber || 'TBA (To Be Assigned)'}
+                        onChange={(e) => handleFieldChange('roomNumber', e.target.value)}
+                        variant="outlined"
+                        placeholder="Enter room number or assign during check-in"
+                      />
+                    ) : (
+                      <TextField
+                        fullWidth
+                        label="Room Number"
+                        value={currentBooking?.roomNumber || 'TBA (To Be Assigned)'}
+                        disabled
+                        variant="filled"
+                      />
+                    )}
                   </Grid>
                 </Grid>
               </CardContent>

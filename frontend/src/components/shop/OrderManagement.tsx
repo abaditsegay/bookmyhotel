@@ -28,17 +28,16 @@ import {
   List,
   ListItem,
   ListItemText,
-  Divider,
-  Tooltip
+  Tooltip,
+  Divider
 } from '@mui/material';
 import {
-  Edit as EditIcon,
   Visibility as ViewIcon,
   Payment as PaymentIcon
 } from '@mui/icons-material';
 import { format } from 'date-fns';
 import { shopApiService } from '../../services/shopApi';
-import { ShopOrder, ShopOrderStatus, PaymentMethod, DeliveryType, ShopOrderUtils } from '../../types/shop';
+import { ShopOrder, ShopOrderStatus, DeliveryType, ShopOrderUtils } from '../../types/shop';
 
 const OrderManagement: React.FC = () => {
   const [orders, setOrders] = useState<ShopOrder[]>([]);
@@ -70,21 +69,12 @@ const OrderManagement: React.FC = () => {
     }
   };
 
-  const handleUpdateOrderStatus = async (orderId: number, newStatus: ShopOrderStatus) => {
+  const handleToggleOrderStatus = async (orderId: number) => {
     try {
-      await shopApiService.updateOrderStatus(hotelId, orderId, newStatus);
+      await shopApiService.toggleOrderStatus(hotelId, orderId);
       loadOrders();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update order status');
-    }
-  };
-
-  const handleMarkPaid = async (orderId: number) => {
-    try {
-      await shopApiService.markOrderAsPaid(hotelId, orderId, `PAID-${Date.now()}`);
-      loadOrders();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to mark order as paid');
+      setError(err instanceof Error ? err.message : 'Failed to toggle order status');
     }
   };
 
@@ -104,30 +94,13 @@ const OrderManagement: React.FC = () => {
   const getStatusColor = (status: ShopOrderStatus) => {
     switch (status) {
       case ShopOrderStatus.PENDING: return 'warning';
-      case ShopOrderStatus.CONFIRMED: return 'info';
-      case ShopOrderStatus.PREPARING: return 'secondary';
-      case ShopOrderStatus.READY: return 'primary';
-      case ShopOrderStatus.COMPLETED: return 'success';
-      case ShopOrderStatus.CANCELLED: return 'error';
+      case ShopOrderStatus.PAID: return 'success';
       default: return 'default';
     }
   };
 
-  const getNextStatus = (currentStatus: ShopOrderStatus): ShopOrderStatus | null => {
-    switch (currentStatus) {
-      case ShopOrderStatus.PENDING: return ShopOrderStatus.CONFIRMED;
-      case ShopOrderStatus.CONFIRMED: return ShopOrderStatus.PREPARING;
-      case ShopOrderStatus.PREPARING: return ShopOrderStatus.READY;
-      case ShopOrderStatus.READY: return ShopOrderStatus.COMPLETED;
-      default: return null; // No further transitions for COMPLETED/CANCELLED orders
-    }
-  };
-
   const isOrderPaid = (status: ShopOrderStatus): boolean => {
-    return status === ShopOrderStatus.CONFIRMED || 
-           status === ShopOrderStatus.PREPARING || 
-           status === ShopOrderStatus.READY || 
-           status === ShopOrderStatus.COMPLETED;
+    return status === ShopOrderStatus.PAID;
   };
 
   return (
@@ -187,7 +160,7 @@ const OrderManagement: React.FC = () => {
               <TableCell>Order Details</TableCell>
               <TableCell>Customer</TableCell>
               <TableCell>Total</TableCell>
-              <TableCell>Payment</TableCell>
+              <TableCell>Payment Method</TableCell>
               <TableCell>Status</TableCell>
               <TableCell>Date</TableCell>
               <TableCell align="center">Actions</TableCell>
@@ -237,16 +210,9 @@ const OrderManagement: React.FC = () => {
                   </Typography>
                 </TableCell>
                 <TableCell>
-                  <Box>
-                    <Typography variant="body2">
-                      {order.paymentMethod?.replace('_', ' ') || 'Not Set'}
-                    </Typography>
-                    <Chip
-                      label={isOrderPaid(order.status) ? 'Paid' : 'Unpaid'}
-                      color={isOrderPaid(order.status) ? 'success' : 'warning'}
-                      size="small"
-                    />
-                  </Box>
+                  <Typography variant="body2">
+                    {ShopOrderUtils.formatPaymentMethod(order.paymentMethod)}
+                  </Typography>
                 </TableCell>
                 <TableCell>
                   <Chip
@@ -269,28 +235,15 @@ const OrderManagement: React.FC = () => {
                       <ViewIcon />
                     </IconButton>
                   </Tooltip>
-                  {getNextStatus(order.status) && (
-                    <Tooltip title={`Mark as ${getNextStatus(order.status)?.replace('_', ' ')}`}>
-                      <IconButton
-                        size="small"
-                        color="primary"
-                        onClick={() => handleUpdateOrderStatus(order.id, getNextStatus(order.status)!)}
-                      >
-                        <EditIcon />
-                      </IconButton>
-                    </Tooltip>
-                  )}
-                  {!isOrderPaid(order.status) && order.paymentMethod === PaymentMethod.ROOM_CHARGE && (
-                    <Tooltip title="Mark as Paid">
-                      <IconButton
-                        size="small"
-                        color="success"
-                        onClick={() => handleMarkPaid(order.id)}
-                      >
-                        <PaymentIcon />
-                      </IconButton>
-                    </Tooltip>
-                  )}
+                  <Tooltip title={`Mark as ${order.status === ShopOrderStatus.PAID ? 'Pending' : 'Paid'}`}>
+                    <IconButton
+                      size="small"
+                      color={order.status === ShopOrderStatus.PAID ? 'warning' : 'success'}
+                      onClick={() => handleToggleOrderStatus(order.id)}
+                    >
+                      <PaymentIcon />
+                    </IconButton>
+                  </Tooltip>
                 </TableCell>
               </TableRow>
             ))}
@@ -343,7 +296,7 @@ const OrderManagement: React.FC = () => {
                       />
                     </Box>
                     <Typography component="div"><strong>Order Date:</strong> {selectedOrder.orderDate ? format(new Date(selectedOrder.orderDate), 'MMM dd, yyyy HH:mm') : 'N/A'}</Typography>
-                    <Typography component="div"><strong>Payment Method:</strong> {selectedOrder.paymentMethod?.replace('_', ' ') || 'Not Set'}</Typography>
+                    <Typography component="div"><strong>Payment Method:</strong> {ShopOrderUtils.formatPaymentMethod(selectedOrder.paymentMethod)}</Typography>
                     <Typography component="div"><strong>Payment Status:</strong> {isOrderPaid(selectedOrder.status) ? 'Paid' : 'Unpaid'}</Typography>
                     {selectedOrder.deliveryType && (
                       <Typography component="div"><strong>Delivery:</strong> {selectedOrder.deliveryType.replace('_', ' ')}</Typography>
@@ -413,16 +366,16 @@ const OrderManagement: React.FC = () => {
           )}
         </DialogContent>
         <DialogActions>
-          {selectedOrder && getNextStatus(selectedOrder.status) && (
+          {selectedOrder && (
             <Button
               variant="contained"
               color="primary"
               onClick={() => {
-                handleUpdateOrderStatus(selectedOrder.id, getNextStatus(selectedOrder.status)!);
+                handleToggleOrderStatus(selectedOrder.id);
                 setViewOrderDialog(false);
               }}
             >
-              Mark as {getNextStatus(selectedOrder.status)?.replace('_', ' ')}
+              Mark as {selectedOrder.status === ShopOrderStatus.PAID ? 'Pending' : 'Paid'}
             </Button>
           )}
           <Button onClick={() => setViewOrderDialog(false)}>Close</Button>

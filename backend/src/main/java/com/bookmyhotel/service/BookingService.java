@@ -104,18 +104,29 @@ public class BookingService {
             // Validate booking request for room type booking
             validateBookingRequestForRoomType(request, userEmail == null);
 
-            // Find an available room of the requested type using public method (bypasses
-            // tenant filter)
-            Room room = roomRepository.findFirstAvailableRoomOfTypePublic(
+            // Check room type availability WITHOUT assigning a specific room
+            // This just verifies that rooms of this type exist and are available for the
+            // dates
+            boolean hasAvailableRooms = roomRepository.hasAvailableRoomsOfType(
                     request.getHotelId(),
-                    request.getRoomType(), // Use string directly for native query
+                    request.getRoomType(),
                     request.getCheckInDate(),
-                    request.getCheckOutDate()).orElseThrow(
-                            () -> new BookingException("No available rooms of type " +
-                                    request.getRoomType() + " for the selected dates"));
+                    request.getCheckOutDate());
+
+            if (!hasAvailableRooms) {
+                throw new BookingException("No available rooms of type " +
+                        request.getRoomType() + " for the selected dates");
+            }
+
+            // Get a sample room of this type for pricing information (don't assign it)
+            Room sampleRoom = roomRepository.findFirstRoomOfTypeForHotel(
+                    request.getHotelId(),
+                    request.getRoomType())
+                    .orElseThrow(() -> new BookingException("Room type " +
+                            request.getRoomType() + " not found in this hotel"));
 
             // Get the hotel to determine the correct tenant context
-            Hotel hotel = room.getHotel();
+            Hotel hotel = sampleRoom.getHotel();
             String hotelTenantId = hotel.getTenantId();
 
             // Set the tenant context to the hotel's tenant for the rest of the booking
@@ -131,11 +142,11 @@ public class BookingService {
             }
             // For anonymous guests, we no longer create User records
 
-            // Calculate total amount
-            BigDecimal totalAmount = calculateTotalAmount(room, request);
+            // Calculate total amount using sample room pricing
+            BigDecimal totalAmount = calculateTotalAmount(sampleRoom, request);
 
-            // Create reservation with guest information
-            Reservation reservation = createReservation(request, room, user, totalAmount);
+            // Create reservation WITHOUT assigning specific room - only room type
+            Reservation reservation = createReservationWithoutRoom(request, sampleRoom, user, totalAmount);
 
             // Process payment if payment method provided
             if (request.getPaymentMethodId() != null) {
@@ -540,6 +551,60 @@ public class BookingService {
     }
 
     /**
+     * Create reservation entity without specific room assignment (room type
+     * booking)
+     * Room will be assigned during check-in by front desk staff
+     */
+    private Reservation createReservationWithoutRoom(BookingRequest request, Room sampleRoom, User user,
+            BigDecimal totalAmount) {
+        Reservation reservation = new Reservation();
+
+        // DO NOT set specific room - reservation.setRoom(null); // Room assigned during
+        // check-in
+
+        // Set required fields for validation using sample room for reference
+        reservation.setHotel(sampleRoom.getHotel());
+        reservation.setRoomType(sampleRoom.getRoomType());
+        reservation.setPricePerNight(sampleRoom.getPricePerNight());
+
+        // Set user only for authenticated users (will be null for anonymous guests)
+        reservation.setGuest(user);
+
+        // Set guest information - use authenticated user's info if guest info is not
+        // provided
+        String guestName = request.getGuestName();
+        String guestEmail = request.getGuestEmail();
+        String guestPhone = request.getGuestPhone();
+
+        // If guest info is not provided but user is authenticated, use user's info
+        if (user != null) {
+            if (guestName == null || guestName.trim().isEmpty()) {
+                guestName = user.getFirstName() + " " + user.getLastName();
+            }
+            if (guestEmail == null || guestEmail.trim().isEmpty()) {
+                guestEmail = user.getEmail();
+            }
+            if (guestPhone == null || guestPhone.trim().isEmpty()) {
+                guestPhone = user.getPhone();
+            }
+        }
+
+        GuestInfo guestInfo = new GuestInfo(guestName, guestEmail, guestPhone);
+        reservation.setGuestInfo(guestInfo);
+
+        reservation.setCheckInDate(request.getCheckInDate());
+        reservation.setCheckOutDate(request.getCheckOutDate());
+        reservation.setTotalAmount(totalAmount);
+        reservation.setSpecialRequests(request.getSpecialRequests());
+        reservation.setNumberOfGuests(request.getGuests()); // Set number of guests
+        reservation.setStatus(ReservationStatus.CONFIRMED); // Immediate confirmation
+        reservation.setTenantId(sampleRoom.getHotel().getTenantId()); // Set tenant_id from the hotel
+        reservation.setPaymentMethod(request.getPaymentMethodId()); // Store the payment method
+
+        return reservation;
+    }
+
+    /**
      * Create reservation entity from room type booking
      */
     private Reservation createReservationFromRoomType(RoomTypeBookingRequest request, Room room, User user,
@@ -627,11 +692,16 @@ public class BookingService {
         response.setCreatedAt(reservation.getCreatedAt());
 
         Room room = reservation.getRoom();
-        // Don't show specific room number for room type bookings - room will be
-        // assigned at check-in
-        response.setRoomNumber("To be assigned at check-in");
-        response.setRoomType(room.getRoomType().name());
+        // Show actual room number if assigned, otherwise indicate assignment at
+        // check-in
+        if (room != null && room.getRoomNumber() != null) {
+            response.setRoomNumber(room.getRoomNumber());
+        } else {
+            response.setRoomNumber("To be assigned at check-in");
+        }
+        response.setRoomType(room != null ? room.getRoomType().name() : reservation.getRoomType().name());
         response.setPricePerNight(room.getPricePerNight());
+        response.setHotelId(room.getHotel().getId());
         response.setHotelName(room.getHotel().getName());
         response.setHotelAddress(room.getHotel().getAddress());
 

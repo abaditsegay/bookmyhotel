@@ -24,7 +24,15 @@ import {
   Grid,
   Card,
   CardContent,
-  Snackbar
+  Snackbar,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText
 } from '@mui/material';
 import {
   Visibility as VisibilityIcon,
@@ -34,10 +42,11 @@ import {
   PersonOff as NoShowIcon,
   Cancel as CancelIcon,
   Refresh as RefreshIcon,
+  Edit as EditIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTenant } from '../../contexts/TenantContext';
-import { frontDeskApiService, FrontDeskBooking } from '../../services/frontDeskApi';
+import { frontDeskApiService, FrontDeskBooking, Room } from '../../services/frontDeskApi';
 
 interface FrontDeskBookingManagementProps {
   onRefresh?: () => void;
@@ -56,6 +65,12 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
   const [selectedBooking, setSelectedBooking] = useState<FrontDeskBooking | null>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [availableRooms, setAvailableRooms] = useState<Room[]>([]);
+  const [loadingRooms, setLoadingRooms] = useState(false);
+  const [editingBooking, setEditingBooking] = useState(false);
+  const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
+  const [selectedRoomType, setSelectedRoomType] = useState<string>('');
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
 
   // Load bookings
@@ -69,10 +84,7 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
     try {
       const result = await frontDeskApiService.getAllBookings(token, page, size, search, tenantId);
       
-      console.log('API response:', result);
-      
       if (result.success && result.data) {
-        console.log('Setting bookings:', result.data.content.length, 'items, total:', result.data.totalElements);
         setBookings(result.data.content);
         setTotalElements(result.data.totalElements || 0);
       } else {
@@ -193,6 +205,93 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
   const handleViewBookingDetails = (booking: FrontDeskBooking) => {
     setSelectedBooking(booking);
     setViewDialogOpen(true);
+  };
+
+  // Handle opening edit dialog for confirmed bookings
+  const handleEditBooking = async (booking: FrontDeskBooking) => {
+    setSelectedBooking(booking);
+    setSelectedRoomId(null);
+    setSelectedRoomType(booking.roomType);
+    setEditDialogOpen(true);
+    
+    // Load available rooms for this hotel
+    if (booking.roomNumber && token) {
+      await loadAvailableRoomsForHotel();
+    }
+  };
+
+  // Load available rooms for the hotel
+  const loadAvailableRoomsForHotel = async () => {
+    if (!token || !selectedBooking) return;
+    
+    try {
+      setLoadingRooms(true);
+      // We'll use hotelId from the booking. For now, let's assume it's available in the context
+      // or we can get it from the booking. If not available, we need to add it to the API response
+      const result = await frontDeskApiService.getAllRooms(token, 0, 100, 'AVAILABLE', tenantId);
+      
+      if (result.success && result.data) {
+        setAvailableRooms(result.data.content || []);
+      } else {
+        setSnackbar({ 
+          open: true, 
+          message: 'Failed to load available rooms', 
+          severity: 'error' 
+        });
+      }
+    } catch (error) {
+      setSnackbar({ 
+        open: true, 
+        message: 'Failed to load available rooms', 
+        severity: 'error' 
+      });
+    } finally {
+      setLoadingRooms(false);
+    }
+  };
+
+  // Handle saving the room assignment changes
+  const handleSaveRoomAssignment = async () => {
+    if (!token || !selectedBooking || !selectedRoomId) return;
+    
+    try {
+      setEditingBooking(true);
+      const result = await frontDeskApiService.updateBookingRoomAssignment(
+        token,
+        selectedBooking.reservationId,
+        selectedRoomId,
+        selectedRoomType,
+        tenantId
+      );
+      
+      if (result.success) {
+        setSnackbar({ 
+          open: true, 
+          message: 'Room assignment updated successfully', 
+          severity: 'success' 
+        });
+        setEditDialogOpen(false);
+        setSelectedBooking(null);
+        setSelectedRoomId(null);
+        setSelectedRoomType('');
+        loadBookings();
+        onRefresh?.();
+      } else {
+        setSnackbar({ 
+          open: true, 
+          message: result.message || 'Failed to update room assignment', 
+          severity: 'error' 
+        });
+      }
+    } catch (error) {
+      setSnackbar({ 
+        open: true, 
+        message: 'Failed to update room assignment', 
+        severity: 'error' 
+      });
+    } finally {
+      setEditingBooking(false);
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -333,15 +432,27 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
                           </Tooltip>
                           
                           {booking.status === 'CONFIRMED' && (
-                            <Tooltip title="Check In">
-                              <IconButton 
-                                size="small"
-                                color="success"
-                                onClick={() => handleStatusUpdate(booking, 'CHECKED_IN')}
-                              >
-                                <CheckInIcon />
-                              </IconButton>
-                            </Tooltip>
+                            <>
+                              <Tooltip title="Edit Room Assignment">
+                                <IconButton 
+                                  size="small"
+                                  color="primary"
+                                  onClick={() => handleEditBooking(booking)}
+                                >
+                                  <EditIcon />
+                                </IconButton>
+                              </Tooltip>
+                              
+                              <Tooltip title="Check In">
+                                <IconButton 
+                                  size="small"
+                                  color="success"
+                                  onClick={() => handleStatusUpdate(booking, 'CHECKED_IN')}
+                                >
+                                  <CheckInIcon />
+                                </IconButton>
+                              </Tooltip>
+                            </>
                           )}
                           
                           {booking.status === 'CHECKED_IN' && (
@@ -462,6 +573,101 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setViewDialogOpen(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Edit Room Assignment Dialog */}
+      <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} maxWidth="md" fullWidth>
+        <DialogTitle>Edit Room Assignment - {selectedBooking?.confirmationNumber}</DialogTitle>
+        <DialogContent>
+          {selectedBooking && (
+            <Grid container spacing={2} sx={{ mt: 1 }}>
+              <Grid item xs={12}>
+                <Typography variant="h6" sx={{ mb: 2 }}>Current Assignment</Typography>
+                <Typography><strong>Guest:</strong> {selectedBooking.guestName}</Typography>
+                <Typography><strong>Current Room:</strong> {selectedBooking.roomNumber || 'Not assigned'} ({selectedBooking.roomType})</Typography>
+                <Typography><strong>Check-in:</strong> {formatDate(selectedBooking.checkInDate)}</Typography>
+                <Typography><strong>Check-out:</strong> {formatDate(selectedBooking.checkOutDate)}</Typography>
+              </Grid>
+              
+              <Grid item xs={12}>
+                <Typography variant="h6" sx={{ mb: 2 }}>Select New Room</Typography>
+                {loadingRooms ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+                    <CircularProgress size={24} />
+                    <Typography sx={{ ml: 2 }}>Loading available rooms...</Typography>
+                  </Box>
+                ) : availableRooms.length > 0 ? (
+                  <List sx={{ maxHeight: 300, overflow: 'auto' }}>
+                    {availableRooms.map((room) => (
+                      <ListItem key={room.id} disablePadding>
+                        <ListItemButton 
+                          selected={selectedRoomId === room.id}
+                          onClick={() => {
+                            setSelectedRoomId(room.id);
+                            setSelectedRoomType(room.roomType);
+                          }}
+                        >
+                          <ListItemText
+                            primary={`Room ${room.roomNumber} - ${room.roomType}`}
+                            secondary={
+                              <span>
+                                <Typography component="span" variant="body2" color="text.primary">
+                                  ${room.pricePerNight}/night
+                                </Typography>
+                                {room.description && (
+                                  <Typography component="span" variant="body2" sx={{ ml: 1 }}>
+                                    • {room.description}
+                                  </Typography>
+                                )}
+                                <Typography component="span" variant="body2" sx={{ ml: 1 }}>
+                                  • Capacity: {room.capacity} guests
+                                </Typography>
+                              </span>
+                            }
+                          />
+                        </ListItemButton>
+                      </ListItem>
+                    ))}
+                  </List>
+                ) : (
+                  <Alert severity="warning">
+                    No available rooms found. Please check room availability or try again later.
+                  </Alert>
+                )}
+              </Grid>
+
+              <Grid item xs={12}>
+                <FormControl fullWidth>
+                  <InputLabel>Room Type</InputLabel>
+                  <Select
+                    value={selectedRoomType}
+                    label="Room Type"
+                    onChange={(e) => setSelectedRoomType(e.target.value)}
+                  >
+                    <MenuItem value="SINGLE">Single</MenuItem>
+                    <MenuItem value="DOUBLE">Double</MenuItem>
+                    <MenuItem value="SUITE">Suite</MenuItem>
+                    <MenuItem value="DELUXE">Deluxe</MenuItem>
+                    <MenuItem value="PRESIDENTIAL">Presidential</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+            </Grid>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEditDialogOpen(false)} disabled={editingBooking}>
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleSaveRoomAssignment}
+            variant="contained" 
+            disabled={editingBooking || !selectedRoomId}
+            startIcon={editingBooking ? <CircularProgress size={16} /> : null}
+          >
+            {editingBooking ? 'Updating...' : 'Update Room Assignment'}
+          </Button>
         </DialogActions>
       </Dialog>
 

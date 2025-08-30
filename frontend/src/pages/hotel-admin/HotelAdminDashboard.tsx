@@ -10,27 +10,10 @@ import {
   Tab,
   Chip,
   Divider,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TablePagination,
-  TextField,
   CircularProgress,
   Alert,
-  IconButton,
-  Tooltip,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
 } from '@mui/material';
 import {
-  Visibility as VisibilityIcon,
-  Delete as DeleteIcon,
   Refresh,
   MeetingRoom,
   TrendingUp,
@@ -40,13 +23,14 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { hotelAdminApi, BookingResponse, BookingStats, HotelStatistics } from '../../services/hotelAdminApi';
+import { hotelAdminApi, BookingStats, HotelStatistics } from '../../services/hotelAdminApi';
 import { Hotel } from '../../types/hotel';
 import RoomManagement from './RoomManagement';
 import StaffManagement from './StaffManagement';
 import StaffScheduleManagement from '../../components/StaffScheduleManagement';
 import HotelEditDialog from '../../components/hotel/HotelEditDialog';
 import WalkInBookingModal from '../../components/booking/WalkInBookingModal';
+import BookingManagementTable from '../../components/booking/BookingManagementTable';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -88,22 +72,9 @@ const HotelAdminDashboard: React.FC = () => {
   
   const [activeTab, setActiveTab] = useState(getInitialTab);
 
-  // Booking state
-  const [bookings, setBookings] = useState<BookingResponse[]>([]);
-  const [bookingStats, setBookingStats] = useState<BookingStats | null>(null);
-  const [bookingPage, setBookingPage] = useState(0);
-  const [bookingSize, setBookingSize] = useState(5); // Make mutable for TablePagination
-  const [bookingSearch, setBookingSearch] = useState('');
-  const [totalBookingElements, setTotalBookingElements] = useState(0); // Add for TablePagination
-  const [bookingsLoading, setBookingsLoading] = useState(false);
-  const [bookingsError, setBookingsError] = useState<string | null>(null);
-
-  // Delete booking dialog state
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [selectedBooking, setSelectedBooking] = useState<BookingResponse | null>(null);
-  
   // Walk-in booking modal state
   const [walkInModalOpen, setWalkInModalOpen] = useState(false);
+  const [bookingRefreshTrigger, setBookingRefreshTrigger] = useState(0);
 
   // Hotel state
   const [hotel, setHotel] = useState<Hotel | null>(null);
@@ -132,8 +103,6 @@ const HotelAdminDashboard: React.FC = () => {
   // Load initial data on component mount
   React.useEffect(() => {
     // Load essential data including statistics for dashboard cards
-    loadBookings();
-    loadBookingStats();
     loadReportsData(); // Load hotel statistics for dashboard cards
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -147,12 +116,8 @@ const HotelAdminDashboard: React.FC = () => {
 
   // Load initial data when component mounts or tab changes
   useEffect(() => {
-    // Load bookings when Bookings tab (index 3) is selected
-    if (activeTab === 3 && token) {
-      loadBookings();
-      loadBookingStats();
-    }
-  }, [activeTab, token, bookingPage]); // eslint-disable-line react-hooks/exhaustive-deps
+    // Tab changes are now handled by individual components
+  }, [activeTab, token]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Sync tab state with URL parameter changes (for browser back/forward navigation)
   useEffect(() => {
@@ -247,88 +212,12 @@ const HotelAdminDashboard: React.FC = () => {
     
     // Load bookings when Bookings tab (index 3) is selected
     if (newValue === 3) {
-      loadBookings();
-      loadBookingStats();
+      // BookingManagementTable handles its own data loading
     }
     
     // Load reports data when Reports tab (index 4) is selected
     if (newValue === 4) {
       loadReportsData();
-    }
-  };
-
-  // Load bookings with current filters
-  const loadBookings = async () => {
-    if (!token) {
-      setBookingsError('Authentication required');
-      return;
-    }
-    
-    setBookingsLoading(true);
-    setBookingsError(null);
-    
-    try {
-      const result = await hotelAdminApi.getHotelBookings(
-        token, 
-        bookingPage, 
-        bookingSize, 
-        bookingSearch
-      );
-      
-      if (result.success && result.data) {
-        console.log('Booking API Response:', result.data);
-        console.log('Spring Boot Page Structure:', { 
-          totalElements: result.data.totalElements, 
-          totalPages: result.data.totalPages,
-          number: result.data.number,
-          size: result.data.size
-        });
-        
-        setBookings(result.data.content || []);
-        
-        // Extract pagination info directly from Spring Boot Page structure
-        const totalPages = result.data.totalPages || 0;
-        const totalElements = result.data.totalElements || 0;
-        const currentPageNumber = result.data.number || 0;
-        
-        console.log('Total Pages from Spring Boot Page:', totalPages);
-        console.log('Total Elements from Spring Boot Page:', totalElements);
-        console.log('Current Page from Spring Boot Page:', currentPageNumber);
-        
-        // Calculate pages if not provided or if we have content but no pagination info
-        const calculatedPages = totalPages > 0 ? totalPages : Math.ceil(Math.max(totalElements, result.data.content?.length || 0) / bookingSize);
-        console.log('Final Total Pages:', calculatedPages);
-        setTotalBookingElements(totalElements);
-      } else {
-        setBookingsError(result.message || 'Failed to load bookings');
-        setBookings([]);
-        setTotalBookingElements(0);
-      }
-    } catch (error) {
-      setBookingsError('Failed to load bookings');
-      setBookings([]);
-      setTotalBookingElements(0);
-    } finally {
-      setBookingsLoading(false);
-    }
-  };
-
-  // Load booking statistics
-  const loadBookingStats = async () => {
-    if (!token) {
-      console.warn('No token available for loading booking stats');
-      return;
-    }
-    
-    try {
-      const result = await hotelAdminApi.getBookingStats(token);
-      if (result.success && result.data) {
-        setBookingStats(result.data);
-      } else {
-        console.error('Failed to load booking stats:', result.message);
-      }
-    } catch (error) {
-      console.error('Failed to load booking stats:', error);
     }
   };
 
@@ -372,38 +261,6 @@ const HotelAdminDashboard: React.FC = () => {
     }
   };
 
-  // Helper function to render breadcrumb navigation
-  const handleBookingSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setBookingSearch(event.target.value);
-  };
-
-  // Handle search submit
-  const handleSearchSubmit = () => {
-    setBookingPage(0);
-    if (token) {
-      loadBookings();
-    }
-  };
-
-  // Handle booking page change
-  const handleBookingPageChange = (event: React.ChangeEvent<unknown> | null, newPage: number) => {
-    setBookingPage(newPage);
-    // Don't call loadBookings here as useEffect will handle it
-  };
-
-  // Handle rows per page change for bookings
-  const handleBookingRowsPerPageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const newSize = parseInt(event.target.value, 10);
-    setBookingSize(newSize);
-    setBookingPage(0); // Reset to first page
-  };
-
-  // Handle view booking details
-  const handleViewBookingDetails = (booking: BookingResponse) => {
-    // Navigate to the booking details page with current tab preserved
-    navigate(`/hotel-admin/bookings/${booking.reservationId}?returnTab=${activeTab}`);
-  };
-
   // Navigation handlers for child components
   const handleRoomNavigation = (roomId: number) => {
     navigate(`/hotel-admin/rooms/${roomId}?returnTab=${activeTab}`);
@@ -411,58 +268,6 @@ const HotelAdminDashboard: React.FC = () => {
 
   const handleStaffNavigation = (staffId: number) => {
     navigate(`/hotel-admin/staff/${staffId}?returnTab=${activeTab}`);
-  };
-
-  const handleDeleteBooking = async () => {
-    if (!selectedBooking || !token) return;
-    
-    try {
-      setBookingsLoading(true);
-      const response = await hotelAdminApi.deleteBooking(token, selectedBooking.reservationId);
-      if (response.success) {
-        setDeleteDialogOpen(false);
-        setSelectedBooking(null);
-        await loadBookings();
-        setBookingsError(null);
-      } else {
-        setBookingsError(response.message || 'Failed to delete booking');
-      }
-    } catch (err) {
-      console.error('Error deleting booking:', err);
-      setBookingsError('Failed to delete booking');
-    } finally {
-      setBookingsLoading(false);
-    }
-  };
-
-  // Get status chip color
-  const getStatusColor = (status: string): "default" | "primary" | "secondary" | "error" | "info" | "success" | "warning" => {
-    switch (status.toUpperCase()) {
-      case 'PENDING': return 'warning';
-      case 'CONFIRMED': return 'success';
-      case 'CHECKED_IN': return 'primary';
-      case 'CHECKED_OUT': return 'info';
-      case 'CANCELLED': return 'error';
-      case 'NO_SHOW': return 'error';
-      default: return 'default';
-    }
-  };
-
-  // Format currency
-  const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount);
-  };
-
-  // Format date
-  const formatDate = (dateString: string): string => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
   };
 
   // Load hotel data
@@ -681,165 +486,23 @@ const HotelAdminDashboard: React.FC = () => {
         <TabPanel value={activeTab} index={3}>
           {/* Bookings Tab */}
           {renderBackToReportsButton()}
-          <Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-                Bookings Management
-              </Typography>
-              {bookingStats && (
-                <Box sx={{ display: 'flex', gap: 2 }}>
-                  <Chip 
-                    label={`Total: ${bookingStats.totalBookings}`} 
-                    color="primary" 
-                    variant="outlined" 
-                  />
-                  <Chip 
-                    label={`Revenue: ${formatCurrency(bookingStats.currentYearRevenue)}`} 
-                    color="success" 
-                    variant="outlined" 
-                  />
-                </Box>
-              )}
-            </Box>
-
-            {/* Error Display */}
-            {bookingsError && (
-              <Alert severity="error" sx={{ mb: 3 }}>
-                {bookingsError}
-              </Alert>
-            )}
-
-            {/* Search Bar */}
-            <Box sx={{ mb: 3, display: 'flex', gap: 2 }}>
-              <TextField
-                placeholder="Search bookings by guest name, email, room number, or status..."
-                variant="outlined"
-                fullWidth
-                value={bookingSearch}
-                onChange={handleBookingSearch}
-                onKeyPress={(e) => e.key === 'Enter' && handleSearchSubmit()}
-              />
-              <Button 
-                variant="contained" 
-                onClick={handleSearchSubmit}
-                disabled={bookingsLoading}
-              >
-                Search
-              </Button>
-              <Button
-                variant="contained"
-                color="secondary"
-                onClick={() => setWalkInModalOpen(true)}
-                disabled={bookingsLoading}
-                sx={{ minWidth: '140px' }}
-              >
-                Walk-in Booking
-              </Button>
-            </Box>
-
-            {/* Loading State */}
-            {bookingsLoading && (
-              <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-                <CircularProgress />
-              </Box>
-            )}
-
-            {/* Bookings Table */}
-            {!bookingsLoading && (
-              <>
-                <TableContainer component={Paper}>
-                  <Table>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>Confirmation #</TableCell>
-                        <TableCell>Guest</TableCell>
-                        <TableCell>Room</TableCell>
-                        <TableCell>Check-in</TableCell>
-                        <TableCell>Check-out</TableCell>
-                        <TableCell>Amount</TableCell>
-                        <TableCell>Status</TableCell>
-                        <TableCell>Actions</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {bookings.length === 0 ? (
-                        <TableRow>
-                          <TableCell colSpan={8} align="center">
-                            <Typography variant="body2" color="text.secondary" sx={{ py: 4 }}>
-                              {bookingSearch ? 'No bookings found matching your search.' : 'No bookings found.'}
-                            </Typography>
-                          </TableCell>
-                        </TableRow>
-                      ) : (
-                        bookings.map((booking) => (
-                          <TableRow key={booking.reservationId}>
-                            <TableCell>{booking.confirmationNumber}</TableCell>
-                            <TableCell>
-                              <Box>
-                                <Typography variant="body2" fontWeight="bold">
-                                  {booking.guestName}
-                                </Typography>
-                                <Typography variant="caption" color="text.secondary">
-                                  {booking.guestEmail}
-                                </Typography>
-                              </Box>
-                            </TableCell>
-                            <TableCell>
-                              {booking.roomNumber} - {booking.roomType}
-                            </TableCell>
-                            <TableCell>{formatDate(booking.checkInDate)}</TableCell>
-                            <TableCell>{formatDate(booking.checkOutDate)}</TableCell>
-                            <TableCell>{formatCurrency(booking.totalAmount)}</TableCell>
-                            <TableCell>
-                              <Chip 
-                                label={booking.status.replace('_', ' ')} 
-                                color={getStatusColor(booking.status)} 
-                                size="small"
-                                variant="filled"
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <Box sx={{ display: 'flex', gap: 0.5 }}>
-                                <Tooltip title="View Details">
-                                  <IconButton 
-                                    size="small"
-                                    onClick={() => handleViewBookingDetails(booking)}
-                                  >
-                                    <VisibilityIcon />
-                                  </IconButton>
-                                </Tooltip>
-                                <Tooltip title="Delete Booking">
-                                  <IconButton 
-                                    size="small"
-                                    onClick={() => {
-                                      setSelectedBooking(booking);
-                                      setDeleteDialogOpen(true);
-                                    }}
-                                    color="error"
-                                  >
-                                    <DeleteIcon />
-                                  </IconButton>
-                                </Tooltip>
-                              </Box>
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      )}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-                <TablePagination
-                  component="div"
-                  count={totalBookingElements}
-                  rowsPerPage={bookingSize}
-                  page={bookingPage}
-                  onPageChange={handleBookingPageChange}
-                  onRowsPerPageChange={handleBookingRowsPerPageChange}
-                  rowsPerPageOptions={[5, 10, 25]}
-                />
-              </>
-            )}
-          </Box>
+          <BookingManagementTable
+            mode="hotel-admin"
+            title="Booking Management"
+            showActions={true}
+            showCheckInOut={true}
+            currentTab={activeTab}
+            refreshTrigger={bookingRefreshTrigger}
+            onBookingAction={(booking, action) => {
+              console.log(`${action} for booking:`, booking);
+              // Handle booking actions like check-in/check-out
+              // BookingManagementTable handles its own data refresh
+            }}
+            onWalkInRequest={() => {
+              console.log('Walk-in booking requested from BookingManagementTable');
+              setWalkInModalOpen(true);
+            }}
+          />
         </TabPanel>
 
         <TabPanel value={activeTab} index={4}>
@@ -1191,37 +854,15 @@ const HotelAdminDashboard: React.FC = () => {
         </Typography>
       </Box>
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog
-        open={deleteDialogOpen}
-        onClose={() => setDeleteDialogOpen(false)}
-      >
-        <DialogTitle>Confirm Delete</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Are you sure you want to delete booking {selectedBooking?.confirmationNumber}? 
-            This action cannot be undone.
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-          <Button 
-            onClick={handleDeleteBooking}
-            color="error"
-            variant="contained"
-          >
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
-
       {/* Walk-in Booking Modal */}
       <WalkInBookingModal
         open={walkInModalOpen}
         onClose={() => setWalkInModalOpen(false)}
         onSuccess={(bookingData) => {
+          console.log('Walk-in booking created successfully:', bookingData);
           setWalkInModalOpen(false);
-          loadBookings(); // Refresh the bookings list
+          // Trigger booking table refresh
+          setBookingRefreshTrigger(prev => prev + 1);
         }}
         apiContext="hotel-admin"
       />

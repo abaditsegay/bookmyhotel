@@ -1,5 +1,6 @@
 package com.bookmyhotel.service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -25,6 +26,7 @@ import com.bookmyhotel.entity.Reservation;
 import com.bookmyhotel.entity.ReservationStatus;
 import com.bookmyhotel.entity.Room;
 import com.bookmyhotel.entity.RoomStatus;
+import com.bookmyhotel.entity.RoomType;
 import com.bookmyhotel.entity.User;
 import com.bookmyhotel.exception.ResourceNotFoundException;
 import com.bookmyhotel.repository.HotelRepository;
@@ -62,6 +64,17 @@ public class FrontDeskService {
     // Phase 3.3
     // @Autowired
     // private BookingHistoryService historyService;
+
+    /**
+     * Get bookings with pagination, status filter, and search (for controller
+     * compatibility)
+     */
+    @Transactional(readOnly = true)
+    public Page<BookingResponse> getBookings(Pageable pageable, String status, String search) {
+        // For now, delegate to the existing method (can be enhanced later to support
+        // status filtering)
+        return getAllBookings(pageable, search);
+    }
 
     /**
      * Get all bookings with pagination and search
@@ -139,6 +152,14 @@ public class FrontDeskService {
     }
 
     /**
+     * Get booking details by reservation ID (for controller compatibility)
+     */
+    @Transactional(readOnly = true)
+    public BookingResponse getBookingDetails(Long reservationId) {
+        return getBookingById(reservationId);
+    }
+
+    /**
      * Get a single booking by reservation ID
      */
     @Transactional(readOnly = true)
@@ -190,6 +211,63 @@ public class FrontDeskService {
     }
 
     /**
+     * Check-in with room assignment
+     */
+    public BookingResponse checkInWithRoomAssignment(Long reservationId, Long roomId, String roomType) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
+
+        Room room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new ResourceNotFoundException("Room not found with id: " + roomId));
+
+        // Verify room is available
+        if (room.getStatus() != RoomStatus.AVAILABLE) {
+            throw new IllegalStateException("Room is not available for check-in");
+        }
+
+        // Update room assignment
+        reservation.setRoom(room);
+
+        // Update room type if provided and different
+        if (roomType != null && !roomType.equals(reservation.getRoomType().name())) {
+            try {
+                RoomType newRoomType = RoomType.valueOf(roomType.toUpperCase());
+                reservation.setRoomType(newRoomType);
+                // Recalculate total based on new room type
+                recalculateBookingTotal(reservation, room.getPricePerNight());
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Invalid room type: " + roomType);
+            }
+        }
+
+        // Set status to checked in
+        reservation.setStatus(ReservationStatus.CHECKED_IN);
+        reservation.setActualCheckInTime(LocalDateTime.now());
+
+        // Update room status
+        room.setStatus(RoomStatus.OCCUPIED);
+
+        roomRepository.save(room);
+        reservation = reservationRepository.save(reservation);
+
+        return convertToBookingResponse(reservation);
+    }
+
+    /**
+     * Recalculate booking total based on new price per night
+     */
+    private void recalculateBookingTotal(Reservation reservation, BigDecimal pricePerNight) {
+        // Calculate number of nights
+        long nights = java.time.temporal.ChronoUnit.DAYS.between(
+                reservation.getCheckInDate(),
+                reservation.getCheckOutDate());
+
+        // Update price per night and total amount
+        reservation.setPricePerNight(pricePerNight);
+        reservation.setTotalAmount(pricePerNight.multiply(BigDecimal.valueOf(nights)));
+    }
+
+    /**
      * Delete booking
      */
     public void deleteBooking(Long reservationId) {
@@ -212,6 +290,59 @@ public class FrontDeskService {
     }
 
     /**
+     * Update booking room assignment (for confirmed bookings during check-in)
+     */
+    public BookingResponse updateBookingRoomAssignment(Long reservationId, Long newRoomId, String newRoomType) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
+
+        // Only allow room assignment updates for confirmed bookings
+        if (reservation.getStatus() != ReservationStatus.CONFIRMED) {
+            throw new IllegalStateException("Room assignment can only be updated for confirmed bookings");
+        }
+
+        // Get the new room
+        Room newRoom = roomRepository.findById(newRoomId)
+                .orElseThrow(() -> new ResourceNotFoundException("Room not found with id: " + newRoomId));
+
+        // Verify new room is available
+        if (newRoom.getStatus() != RoomStatus.AVAILABLE) {
+            throw new IllegalStateException("Selected room is not available");
+        }
+
+        // If there was a previously assigned room, make it available again
+        Room previousRoom = reservation.getRoom();
+        if (previousRoom != null) {
+            previousRoom.setStatus(RoomStatus.AVAILABLE);
+            roomRepository.save(previousRoom);
+        }
+
+        // Assign new room
+        reservation.setRoom(newRoom);
+
+        // Update room type if provided and different
+        if (newRoomType != null && !newRoomType.equals(reservation.getRoomType().name())) {
+            try {
+                RoomType roomType = RoomType.valueOf(newRoomType.toUpperCase());
+                reservation.setRoomType(roomType);
+
+                // Recalculate total based on new room's price
+                recalculateBookingTotal(reservation, newRoom.getPricePerNight());
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Invalid room type: " + newRoomType);
+            }
+        }
+
+        // Reserve the new room (don't mark as occupied until check-in)
+        newRoom.setStatus(RoomStatus.AVAILABLE); // Keep available until actual check-in
+
+        roomRepository.save(newRoom);
+        reservation = reservationRepository.save(reservation);
+
+        return convertToBookingResponse(reservation);
+    }
+
+    /**
      * Get today's arrivals
      */
     @Transactional(readOnly = true)
@@ -226,6 +357,23 @@ public class FrontDeskService {
 
         return arrivals.stream()
                 .map(this::convertToBookingResponse)
+                .toList();
+    }
+
+    /**
+     * Get available rooms for a hotel
+     */
+    @Transactional(readOnly = true)
+    public List<RoomResponse> getAvailableRoomsForHotel(Long hotelId) {
+        String tenantId = TenantContext.getTenantId();
+        if (tenantId == null || tenantId.trim().isEmpty()) {
+            throw new IllegalStateException("Tenant context is not set");
+        }
+
+        List<Room> availableRooms = roomRepository.findByHotelIdAndIsAvailableTrue(hotelId);
+
+        return availableRooms.stream()
+                .map(this::convertToRoomResponse)
                 .toList();
     }
 
@@ -263,6 +411,13 @@ public class FrontDeskService {
         return currentGuests.stream()
                 .map(this::convertToBookingResponse)
                 .toList();
+    }
+
+    /**
+     * Simple check-in (for controller compatibility)
+     */
+    public BookingResponse checkIn(Long reservationId) {
+        return checkInGuest(reservationId);
     }
 
     /**
@@ -311,6 +466,13 @@ public class FrontDeskService {
          */
 
         return convertToBookingResponse(reservation);
+    }
+
+    /**
+     * Check out a guest (for controller compatibility)
+     */
+    public CheckoutResponse checkOut(Long reservationId) {
+        return checkOutGuestWithReceipt(reservationId);
     }
 
     /**
@@ -385,6 +547,18 @@ public class FrontDeskService {
 
             return new CheckoutResponse(bookingResponse, null,
                     "Guest checked out successfully. Receipt generation failed - please generate manually if needed.");
+        }
+    }
+
+    /**
+     * Get consolidated receipt for a reservation (for controller compatibility)
+     */
+    public ConsolidatedReceiptResponse getConsolidatedReceipt(Long reservationId) {
+        try {
+            String generatedByEmail = getCurrentUserEmail();
+            return checkoutReceiptService.generateFinalReceipt(reservationId, generatedByEmail);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to generate consolidated receipt: " + e.getMessage(), e);
         }
     }
 
