@@ -658,11 +658,11 @@ const BookingViewEdit: React.FC = () => {
                           value={currentBooking?.status || ''}
                           onChange={(e) => handleFieldChange('status', e.target.value)}
                         >
-                          <MenuItem value="Confirmed">Confirmed</MenuItem>
-                          <MenuItem value="Checked In">Checked In</MenuItem>
-                          <MenuItem value="Checked Out">Checked Out</MenuItem>
-                          <MenuItem value="Cancelled">Cancelled</MenuItem>
-                          <MenuItem value="Pending">Pending</MenuItem>
+                          <MenuItem value="CONFIRMED">Confirmed</MenuItem>
+                          <MenuItem value="CHECKED_IN">Checked In</MenuItem>
+                          <MenuItem value="CHECKED_OUT">Checked Out</MenuItem>
+                          <MenuItem value="CANCELLED">Cancelled</MenuItem>
+                          <MenuItem value="PENDING">Pending</MenuItem>
                         </Select>
                       </FormControl>
                     ) : (
@@ -671,7 +671,7 @@ const BookingViewEdit: React.FC = () => {
                           Status
                         </Typography>
                         <Chip
-                          label={currentBooking?.status}
+                          label={currentBooking?.status?.replace('_', ' ')}
                           color={getStatusColor(currentBooking?.status || '') as any}
                           variant="filled"
                         />
