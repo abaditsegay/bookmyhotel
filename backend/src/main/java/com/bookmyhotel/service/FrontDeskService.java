@@ -370,7 +370,7 @@ public class FrontDeskService {
             throw new IllegalStateException("Tenant context is not set");
         }
 
-        List<Room> availableRooms = roomRepository.findByHotelIdAndIsAvailableTrue(hotelId);
+        List<Room> availableRooms = roomRepository.findByHotelIdAndIsAvailableTrueAndStatus(hotelId, RoomStatus.AVAILABLE);
 
         return availableRooms.stream()
                 .map(this::convertToRoomResponse)

@@ -69,6 +69,11 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
        List<Room> findByHotelIdAndIsAvailableTrue(Long hotelId);
 
        /**
+        * Find truly available rooms by hotel (both isAvailable=true and status=AVAILABLE)
+        */
+       List<Room> findByHotelIdAndIsAvailableTrueAndStatus(Long hotelId, RoomStatus status);
+
+       /**
         * Check if room is available for given dates
         */
        @Query("SELECT COUNT(res) = 0 FROM Reservation res " +
