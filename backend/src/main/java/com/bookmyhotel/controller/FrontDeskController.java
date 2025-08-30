@@ -125,6 +125,15 @@ public class FrontDeskController {
     }
 
     /**
+     * Check out a guest with receipt generation (for frontend compatibility)
+     */
+    @PutMapping("/checkout-with-receipt/{reservationId}")
+    public ResponseEntity<CheckoutResponse> checkOutWithReceipt(@PathVariable Long reservationId) {
+        CheckoutResponse response = frontDeskService.checkOutGuestWithReceipt(reservationId);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
      * Get consolidated receipt for a reservation
      */
     @GetMapping("/bookings/{reservationId}/receipt")
