@@ -169,15 +169,53 @@ const BookingViewEdit: React.FC = () => {
     try {
       setPriceCalculating(true);
       
-      // Check if any modifiable fields have changed
-      const hasChanges = 
-        editedBooking.checkInDate !== booking.checkInDate ||
-        editedBooking.checkOutDate !== booking.checkOutDate ||
-        editedBooking.guestName !== booking.guestName ||
-        editedBooking.status !== booking.status ||
-        selectedRoomId !== null; // Room change
-
-      if (hasChanges) {
+      // Check what types of changes were made
+      const statusChanged = editedBooking.status !== booking.status;
+      const datesChanged = editedBooking.checkInDate !== booking.checkInDate || editedBooking.checkOutDate !== booking.checkOutDate;
+      const nameChanged = editedBooking.guestName !== booking.guestName;
+      const roomChanged = selectedRoomId !== null;
+      
+      const hasNonStatusChanges = datesChanged || nameChanged || roomChanged;
+      
+      // If only status changed, use the status update API
+      if (statusChanged && !hasNonStatusChanges) {
+        const result = await hotelAdminApi.updateBookingStatus(
+          token,
+          editedBooking.reservationId,
+          editedBooking.status
+        );
+        
+        if (result.success && result.data) {
+          // Update local state with API response
+          const apiBooking = result.data;
+          const updatedBooking: BookingData = {
+            reservationId: apiBooking.reservationId,
+            confirmationNumber: apiBooking.confirmationNumber,
+            guestName: apiBooking.guestName,
+            guestEmail: apiBooking.guestEmail,
+            hotelName: apiBooking.hotelName,
+            hotelAddress: apiBooking.hotelAddress,
+            roomNumber: apiBooking.roomNumber,
+            roomType: apiBooking.roomType,
+            checkInDate: apiBooking.checkInDate,
+            checkOutDate: apiBooking.checkOutDate,
+            totalAmount: apiBooking.totalAmount,
+            pricePerNight: apiBooking.pricePerNight,
+            status: apiBooking.status,
+            createdAt: apiBooking.createdAt,
+            paymentStatus: apiBooking.paymentStatus,
+            paymentIntentId: apiBooking.paymentIntentId
+          };
+          
+          setBooking(updatedBooking);
+          setEditedBooking({ ...updatedBooking });
+          setSuccess('Booking status updated successfully');
+        } else {
+          throw new Error(result.message || 'Failed to update booking status');
+        }
+      } 
+      // For other changes, use the modification API
+      else if (hasNonStatusChanges || statusChanged) {
         // Prepare modification request
         const modificationRequest: any = {
           // Required fields
@@ -245,40 +283,6 @@ const BookingViewEdit: React.FC = () => {
           setSuccess(message);
         } else {
           throw new Error(result.message || 'Failed to modify booking');
-        }
-      } 
-      
-      // Handle status-only changes
-      if (editedBooking.status !== booking.status && !hasChanges) {
-        const statusResult = await hotelAdminApi.updateBookingStatus(
-          token, 
-          editedBooking.reservationId, 
-          editedBooking.status
-        );
-        
-        if (statusResult.success && statusResult.data) {
-          const updatedBooking: BookingData = {
-            reservationId: statusResult.data.reservationId,
-            confirmationNumber: statusResult.data.confirmationNumber,
-            guestName: statusResult.data.guestName,
-            guestEmail: statusResult.data.guestEmail,
-            hotelName: statusResult.data.hotelName,
-            hotelAddress: statusResult.data.hotelAddress,
-            roomNumber: statusResult.data.roomNumber,
-            roomType: statusResult.data.roomType,
-            checkInDate: statusResult.data.checkInDate,
-            checkOutDate: statusResult.data.checkOutDate,
-            totalAmount: statusResult.data.totalAmount,
-            pricePerNight: statusResult.data.pricePerNight,
-            status: statusResult.data.status,
-            createdAt: statusResult.data.createdAt,
-            paymentStatus: statusResult.data.paymentStatus,
-            paymentIntentId: statusResult.data.paymentIntentId
-          };
-          
-          setBooking(updatedBooking);
-          setEditedBooking({ ...updatedBooking });
-          setSuccess('Booking status updated successfully');
         }
       }
       
