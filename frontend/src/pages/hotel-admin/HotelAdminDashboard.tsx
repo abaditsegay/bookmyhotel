@@ -433,12 +433,13 @@ const HotelAdminDashboard: React.FC = () => {
 
   // Get status chip color
   const getStatusColor = (status: string): "default" | "primary" | "secondary" | "error" | "info" | "success" | "warning" => {
-    switch (status.toLowerCase()) {
-      case 'confirmed': return 'success';
-      case 'checked_in': return 'primary';
-      case 'checked_out': return 'info';
-      case 'pending': return 'warning';
-      case 'cancelled': case 'no_show': return 'error';
+    switch (status.toUpperCase()) {
+      case 'PENDING': return 'warning';
+      case 'CONFIRMED': return 'success';
+      case 'CHECKED_IN': return 'primary';
+      case 'CHECKED_OUT': return 'info';
+      case 'CANCELLED': return 'error';
+      case 'NO_SHOW': return 'error';
       default: return 'default';
     }
   };
@@ -789,7 +790,8 @@ const HotelAdminDashboard: React.FC = () => {
                               <Chip 
                                 label={booking.status.replace('_', ' ')} 
                                 color={getStatusColor(booking.status)} 
-                                size="small" 
+                                size="small"
+                                variant="filled"
                               />
                             </TableCell>
                             <TableCell>

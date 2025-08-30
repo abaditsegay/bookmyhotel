@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Token</title>
+</head>
+<body>
+    <h1>Token Debug Tool</h1>
+    <button onclick="showToken()">Show Current Token</button>
+    <button onclick="clearToken()">Clear Token</button>
+    <button onclick="setValidToken()">Set Valid Token</button>
+    <br><br>
+    <textarea id="tokenDisplay" rows="10" cols="80" placeholder="Token will appear here..."></textarea>
+    
+    <script>
+        function showToken() {
+            const token = localStorage.getItem('token');
+            document.getElementById('tokenDisplay').value = token || 'No token found';
+        }
+        
+        function clearToken() {
+            localStorage.removeItem('token');
+            document.getElementById('tokenDisplay').value = 'Token cleared';
+        }
+        
+        function setValidToken() {
+            // Get the valid token from our curl test
+            fetch('/tmp/token.txt')
+                .then(response => response.text())
+                .then(token => {
+                    localStorage.setItem('token', token.trim());
+                    document.getElementById('tokenDisplay').value = 'Valid token set: ' + token.trim();
+                })
+                .catch(error => {
+                    document.getElementById('tokenDisplay').value = 'Error: ' + error.message;
+                });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>COMPREHENSIVE_PROJECT_DOCUMENTATION</title>
+  <style>
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#comprehensive-bookmyhotel-project-documentation-analysis"
+id="toc-comprehensive-bookmyhotel-project-documentation-analysis">Comprehensive
+BookMyHotel Project Documentation &amp; Analysis</a>
+<ul>
+<li><a href="#executive-summary" id="toc-executive-summary">🎯 Executive
+Summary</a></li>
+<li><a href="#system-architecture-overview"
+id="toc-system-architecture-overview">📋 System Architecture
+Overview</a>
+<ul>
+<li><a href="#technology-stack"
+id="toc-technology-stack"><strong>Technology Stack</strong></a></li>
+<li><a href="#multi-tenancy-strategy"
+id="toc-multi-tenancy-strategy"><strong>Multi-Tenancy
+Strategy</strong></a></li>
+</ul></li>
+<li><a href="#hotel-booking-system-analysis"
+id="toc-hotel-booking-system-analysis">🏨 Hotel Booking System
+Analysis</a>
+<ul>
+<li><a href="#booking-flow-architecture"
+id="toc-booking-flow-architecture"><strong>1. Booking Flow
+Architecture</strong></a></li>
+<li><a href="#payment-processing" id="toc-payment-processing"><strong>2.
+Payment Processing</strong></a></li>
+<li><a href="#guest-management" id="toc-guest-management"><strong>3.
+Guest Management</strong></a></li>
+</ul></li>
+<li><a href="#shop-management-system-analysis"
+id="toc-shop-management-system-analysis">🛍️ Shop Management System
+Analysis</a>
+<ul>
+<li><a href="#shop-architecture-overview"
+id="toc-shop-architecture-overview"><strong>1. Shop Architecture
+Overview</strong></a></li>
+<li><a href="#product-inventory-management"
+id="toc-product-inventory-management"><strong>2. Product &amp; Inventory
+Management</strong></a></li>
+<li><a href="#order-processing-system"
+id="toc-order-processing-system"><strong>3. Order Processing
+System</strong></a></li>
+</ul></li>
+<li><a href="#security-architecture-analysis"
+id="toc-security-architecture-analysis">🔐 Security Architecture
+Analysis</a>
+<ul>
+<li><a href="#authentication-authorization"
+id="toc-authentication-authorization"><strong>1. Authentication &amp;
+Authorization</strong></a></li>
+<li><a href="#multi-tenant-security"
+id="toc-multi-tenant-security"><strong>2. Multi-Tenant
+Security</strong></a></li>
+</ul></li>
+<li><a href="#performance-scalability-analysis"
+id="toc-performance-scalability-analysis">📊 Performance &amp;
+Scalability Analysis</a>
+<ul>
+<li><a href="#database-optimization"
+id="toc-database-optimization"><strong>1. Database
+Optimization</strong></a></li>
+<li><a href="#caching-strategy" id="toc-caching-strategy"><strong>2.
+Caching Strategy</strong></a></li>
+</ul></li>
+<li><a href="#identified-gaps-improvement-recommendations"
+id="toc-identified-gaps-improvement-recommendations">🚨 Identified Gaps
+&amp; Improvement Recommendations</a>
+<ul>
+<li><a href="#security-enhancements"
+id="toc-security-enhancements"><strong>1. Security
+Enhancements</strong></a></li>
+<li><a href="#user-experience-improvements"
+id="toc-user-experience-improvements"><strong>2. User Experience
+Improvements</strong></a></li>
+<li><a href="#performance-optimizations"
+id="toc-performance-optimizations"><strong>3. Performance
+Optimizations</strong></a></li>
+<li><a href="#monitoring-observability"
+id="toc-monitoring-observability"><strong>4. Monitoring &amp;
+Observability</strong></a></li>
+</ul></li>
+<li><a href="#business-intelligence-analytics"
+id="toc-business-intelligence-analytics">📈 Business Intelligence &amp;
+Analytics</a>
+<ul>
+<li><a href="#key-performance-indicators-kpis"
+id="toc-key-performance-indicators-kpis"><strong>1. Key Performance
+Indicators (KPIs)</strong></a></li>
+<li><a href="#recommended-dashboard-views"
+id="toc-recommended-dashboard-views"><strong>2. Recommended Dashboard
+Views</strong></a></li>
+</ul></li>
+<li><a href="#integration-opportunities"
+id="toc-integration-opportunities">🔄 Integration Opportunities</a>
+<ul>
+<li><a href="#external-system-integrations"
+id="toc-external-system-integrations"><strong>1. External System
+Integrations</strong></a></li>
+<li><a href="#third-party-service-enhancements"
+id="toc-third-party-service-enhancements"><strong>2. Third-Party Service
+Enhancements</strong></a></li>
+</ul></li>
+<li><a href="#deployment-devops-recommendations"
+id="toc-deployment-devops-recommendations">🚀 Deployment &amp; DevOps
+Recommendations</a>
+<ul>
+<li><a href="#production-deployment-strategy"
+id="toc-production-deployment-strategy"><strong>1. Production Deployment
+Strategy</strong></a></li>
+<li><a href="#security-hardening" id="toc-security-hardening"><strong>2.
+Security Hardening</strong></a></li>
+</ul></li>
+<li><a href="#technical-specifications"
+id="toc-technical-specifications">📊 Technical Specifications</a>
+<ul>
+<li><a href="#database-schema-overview"
+id="toc-database-schema-overview"><strong>Database Schema
+Overview</strong></a></li>
+<li><a href="#api-response-formats"
+id="toc-api-response-formats"><strong>API Response
+Formats</strong></a></li>
+<li><a href="#security-implementation-details"
+id="toc-security-implementation-details"><strong>Security Implementation
+Details</strong></a></li>
+</ul></li>
+<li><a href="#conclusion" id="toc-conclusion">📋 Conclusion</a>
+<ul>
+<li><a href="#immediate-next-steps"
+id="toc-immediate-next-steps"><strong>Immediate Next
+Steps</strong></a></li>
+<li><a href="#long-term-roadmap"
+id="toc-long-term-roadmap"><strong>Long-term Roadmap</strong></a></li>
+</ul></li>
+</ul></li>
+</ul>
+</nav>
+<h1
+id="comprehensive-bookmyhotel-project-documentation-analysis">Comprehensive
+BookMyHotel Project Documentation &amp; Analysis</h1>
+<h2 id="executive-summary">🎯 Executive Summary</h2>
+<p>BookMyHotel is a sophisticated multi-tenant hotel management platform
+with dual functionality covering <strong>hotel booking
+operations</strong> and <strong>in-hotel shop management</strong>. The
+system implements enterprise-grade architecture with robust security,
+multi-tenancy, and comprehensive role-based access control.</p>
+<hr />
+<h2 id="system-architecture-overview">📋 System Architecture
+Overview</h2>
+<h3 id="technology-stack"><strong>Technology Stack</strong></h3>
+<ul>
+<li><strong>Backend</strong>: Spring Boot 3.x (Java 21), Spring
+Security, JPA/Hibernate</li>
+<li><strong>Frontend</strong>: React 18+ TypeScript, Material-UI v5</li>
+<li><strong>Database</strong>: MySQL 8.0 with multi-tenant row-level
+isolation</li>
+<li><strong>Authentication</strong>: JWT-based with role-based access
+control</li>
+<li><strong>Payment</strong>: Stripe integration with webhooks</li>
+<li><strong>Infrastructure</strong>: Docker, Docker Compose</li>
+</ul>
+<h3 id="multi-tenancy-strategy"><strong>Multi-Tenancy
+Strategy</strong></h3>
+<ul>
+<li><strong>Shared Database, Shared Schema</strong> with tenant
+isolation via <code>tenant_id</code></li>
+<li><strong>Automatic Tenant Context</strong> resolution from JWT
+tokens</li>
+<li><strong>Hibernate Filters</strong> for transparent row-level
+security</li>
+<li><strong>Thread-Local Context</strong> management for request
+isolation</li>
+</ul>
+<hr />
+<h2 id="hotel-booking-system-analysis">🏨 Hotel Booking System
+Analysis</h2>
+<h3 id="booking-flow-architecture"><strong>1. Booking Flow
+Architecture</strong></h3>
+<h4 id="guest-booking-journey"><strong>Guest Booking
+Journey</strong></h4>
+<pre><code>Guest Search Hotels → Select Dates &amp; Room Type → Guest Information Form
+    ↓
+Authentication Choice
+    ├── Anonymous → Create Anonymous Booking
+    └── Registered → Login &amp; Create Booking
+    ↓
+Payment Processing → Email Confirmation → Booking Management Token</code></pre>
+<h4 id="key-api-endpoints---hotel-booking"><strong>Key API Endpoints -
+Hotel Booking</strong></h4>
+<table>
+<colgroup>
+<col style="width: 23%" />
+<col style="width: 18%" />
+<col style="width: 20%" />
+<col style="width: 37%" />
+</colgroup>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Method</th>
+<th>Purpose</th>
+<th>Authentication</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/api/bookings</code></td>
+<td>POST</td>
+<td>Create new booking</td>
+<td>Optional</td>
+</tr>
+<tr>
+<td><code>/api/bookings/{id}</code></td>
+<td>GET</td>
+<td>Get booking details</td>
+<td>JWT or Token</td>
+</tr>
+<tr>
+<td><code>/api/bookings/{id}/modify</code></td>
+<td>PUT</td>
+<td>Modify booking</td>
+<td>JWT or Token</td>
+</tr>
+<tr>
+<td><code>/api/bookings/{id}/cancel</code></td>
+<td>PATCH</td>
+<td>Cancel booking</td>
+<td>JWT or Token</td>
+</tr>
+<tr>
+<td><code>/api/bookings/{id}/pdf</code></td>
+<td>GET</td>
+<td>Download booking PDF</td>
+<td>JWT or Token</td>
+</tr>
+<tr>
+<td><code>/api/bookings/{id}/resend-email</code></td>
+<td>POST</td>
+<td>Resend confirmation</td>
+<td>JWT or Token</td>
+</tr>
+<tr>
+<td><code>/api/front-desk/checkin/{id}</code></td>
+<td>PATCH</td>
+<td>Check-in guest</td>
+<td>FRONTDESK role</td>
+</tr>
+<tr>
+<td><code>/api/front-desk/checkout/{id}</code></td>
+<td>PATCH</td>
+<td>Check-out guest</td>
+<td>FRONTDESK role</td>
+</tr>
+</tbody>
+</table>
+<h4 id="requestresponse-examples"><strong>Request/Response
+Examples</strong></h4>
+<p><strong>Create Booking Request:</strong></p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;checkInDate&quot;</span><span class="fu">:</span> <span class="st">&quot;2024-02-15&quot;</span><span class="fu">,</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;checkOutDate&quot;</span><span class="fu">:</span> <span class="st">&quot;2024-02-18&quot;</span><span class="fu">,</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;roomTypeId&quot;</span><span class="fu">:</span> <span class="dv">1</span><span class="fu">,</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;numberOfGuests&quot;</span><span class="fu">:</span> <span class="dv">2</span><span class="fu">,</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;guest&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;firstName&quot;</span><span class="fu">:</span> <span class="st">&quot;John&quot;</span><span class="fu">,</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;lastName&quot;</span><span class="fu">:</span> <span class="st">&quot;Doe&quot;</span><span class="fu">,</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;email&quot;</span><span class="fu">:</span> <span class="st">&quot;john.doe@example.com&quot;</span><span class="fu">,</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;phone&quot;</span><span class="fu">:</span> <span class="st">&quot;+1234567890&quot;</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;paymentMethod&quot;</span><span class="fu">:</span> <span class="st">&quot;STRIPE&quot;</span><span class="fu">,</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;stripePaymentIntentId&quot;</span><span class="fu">:</span> <span class="st">&quot;pi_1234567890&quot;</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Booking Response:</strong></p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;id&quot;</span><span class="fu">:</span> <span class="dv">123</span><span class="fu">,</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;bookingNumber&quot;</span><span class="fu">:</span> <span class="st">&quot;BK-2024-001234&quot;</span><span class="fu">,</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;status&quot;</span><span class="fu">:</span> <span class="st">&quot;CONFIRMED&quot;</span><span class="fu">,</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;checkInDate&quot;</span><span class="fu">:</span> <span class="st">&quot;2024-02-15&quot;</span><span class="fu">,</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;checkOutDate&quot;</span><span class="fu">:</span> <span class="st">&quot;2024-02-18&quot;</span><span class="fu">,</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;totalAmount&quot;</span><span class="fu">:</span> <span class="fl">450.00</span><span class="fu">,</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;currency&quot;</span><span class="fu">:</span> <span class="st">&quot;USD&quot;</span><span class="fu">,</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;guest&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;firstName&quot;</span><span class="fu">:</span> <span class="st">&quot;John&quot;</span><span class="fu">,</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;lastName&quot;</span><span class="fu">:</span> <span class="st">&quot;Doe&quot;</span><span class="fu">,</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;email&quot;</span><span class="fu">:</span> <span class="st">&quot;john.doe@example.com&quot;</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;room&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;number&quot;</span><span class="fu">:</span> <span class="st">&quot;101&quot;</span><span class="fu">,</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;DELUXE&quot;</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;managementUrl&quot;</span><span class="fu">:</span> <span class="st">&quot;https://hotel.com/manage-booking?token=abc123&quot;</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<h3 id="payment-processing"><strong>2. Payment Processing</strong></h3>
+<h4 id="supported-payment-methods"><strong>Supported Payment
+Methods</strong></h4>
+<ul>
+<li><strong>Stripe Credit Cards</strong>: Real-time processing with 3D
+Secure</li>
+<li><strong>Pay at Front Desk</strong>: Deferred payment option</li>
+<li><strong>Ethiopian Mobile Money</strong>: M-birr and Telebirr
+integration</li>
+<li><strong>Cash Payments</strong>: Front desk processing</li>
+</ul>
+<h4 id="payment-security"><strong>Payment Security</strong></h4>
+<ul>
+<li>PCI DSS compliance via Stripe</li>
+<li>Webhook signature verification</li>
+<li>Idempotency keys for duplicate prevention</li>
+<li>Audit logging for all transactions</li>
+</ul>
+<h3 id="guest-management"><strong>3. Guest Management</strong></h3>
+<h4 id="guest-types"><strong>Guest Types</strong></h4>
+<ol type="1">
+<li><strong>Anonymous Guests</strong>: No account, token-based booking
+management</li>
+<li><strong>Registered Users</strong>: Full account with booking
+history</li>
+<li><strong>Corporate Guests</strong>: Business account with billing
+features</li>
+</ol>
+<h4 id="booking-management-for-anonymous-guests"><strong>Booking
+Management for Anonymous Guests</strong></h4>
+<ul>
+<li><strong>One-year validity</strong> booking management tokens</li>
+<li><strong>Email-based access</strong> via management URLs</li>
+<li><strong>Limited operations</strong>: view, modify, cancel only own
+booking</li>
+</ul>
+<hr />
+<h2 id="shop-management-system-analysis">🛍️ Shop Management System
+Analysis</h2>
+<h3 id="shop-architecture-overview"><strong>1. Shop Architecture
+Overview</strong></h3>
+<h4 id="shop-system-components"><strong>Shop System
+Components</strong></h4>
+<pre><code>Product Management → Inventory Control → Order Processing → Payment Tracking → Analytics Dashboard
+    ↑                                         ↑
+Room Service Integration              Front Desk Operations</code></pre>
+<h4 id="key-api-endpoints---shop-management"><strong>Key API Endpoints -
+Shop Management</strong></h4>
+<table>
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 17%" />
+<col style="width: 19%" />
+<col style="width: 41%" />
+</colgroup>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Method</th>
+<th>Purpose</th>
+<th>Role Requirements</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/api/hotels/{hotelId}/shop/products</code></td>
+<td>GET/POST</td>
+<td>Product CRUD</td>
+<td>HOTEL_ADMIN, FRONTDESK</td>
+</tr>
+<tr>
+<td><code>/api/hotels/{hotelId}/shop/products/{id}/stock</code></td>
+<td>PATCH</td>
+<td>Update inventory</td>
+<td>HOTEL_ADMIN, FRONTDESK</td>
+</tr>
+<tr>
+<td><code>/api/hotels/{hotelId}/shop/inventory/summary</code></td>
+<td>GET</td>
+<td>Inventory overview</td>
+<td>HOTEL_ADMIN, FRONTDESK</td>
+</tr>
+<tr>
+<td><code>/api/hotels/{hotelId}/shop/orders</code></td>
+<td>GET/POST</td>
+<td>Order management</td>
+<td>HOTEL_ADMIN, FRONTDESK</td>
+</tr>
+<tr>
+<td><code>/api/hotels/{hotelId}/shop/orders/{id}/status</code></td>
+<td>PATCH</td>
+<td>Update order status</td>
+<td>HOTEL_ADMIN, FRONTDESK</td>
+</tr>
+<tr>
+<td><code>/api/hotels/{hotelId}/shop/orders/statistics</code></td>
+<td>GET</td>
+<td>Order analytics</td>
+<td>HOTEL_ADMIN</td>
+</tr>
+</tbody>
+</table>
+<h3 id="product-inventory-management"><strong>2. Product &amp; Inventory
+Management</strong></h3>
+<h4 id="product-categories"><strong>Product Categories</strong></h4>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">enum</span> ProductCategory {</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  FOOD <span class="op">=</span> <span class="st">&quot;FOOD&quot;</span><span class="op">,</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  BEVERAGE <span class="op">=</span> <span class="st">&quot;BEVERAGE&quot;</span><span class="op">,</span> </span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  TOILETRIES <span class="op">=</span> <span class="st">&quot;TOILETRIES&quot;</span><span class="op">,</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  ELECTRONICS <span class="op">=</span> <span class="st">&quot;ELECTRONICS&quot;</span><span class="op">,</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  SOUVENIRS <span class="op">=</span> <span class="st">&quot;SOUVENIRS&quot;</span><span class="op">,</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  SNACKS <span class="op">=</span> <span class="st">&quot;SNACKS&quot;</span><span class="op">,</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  OTHER <span class="op">=</span> <span class="st">&quot;OTHER&quot;</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h4 id="inventory-control-features"><strong>Inventory Control
+Features</strong></h4>
+<ul>
+<li><strong>Low Stock Alerts</strong>: Configurable threshold
+monitoring</li>
+<li><strong>Out of Stock Management</strong>: Automatic availability
+updates</li>
+<li><strong>Stock Movement Tracking</strong>: Full audit trail</li>
+<li><strong>Bulk Inventory Updates</strong>: Excel import/export
+capabilities</li>
+</ul>
+<h4 id="product-management-requestresponse"><strong>Product Management
+Request/Response</strong></h4>
+<p><strong>Create Product Request:</strong></p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Premium Coffee Beans&quot;</span><span class="fu">,</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;description&quot;</span><span class="fu">:</span> <span class="st">&quot;Ethiopian single-origin coffee&quot;</span><span class="fu">,</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;category&quot;</span><span class="fu">:</span> <span class="st">&quot;BEVERAGE&quot;</span><span class="fu">,</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;price&quot;</span><span class="fu">:</span> <span class="fl">15.99</span><span class="fu">,</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;stockQuantity&quot;</span><span class="fu">:</span> <span class="dv">50</span><span class="fu">,</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;lowStockThreshold&quot;</span><span class="fu">:</span> <span class="dv">10</span><span class="fu">,</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;isActive&quot;</span><span class="fu">:</span> <span class="kw">true</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Product Response:</strong></p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;id&quot;</span><span class="fu">:</span> <span class="dv">456</span><span class="fu">,</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Premium Coffee Beans&quot;</span><span class="fu">,</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;description&quot;</span><span class="fu">:</span> <span class="st">&quot;Ethiopian single-origin coffee&quot;</span><span class="fu">,</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;category&quot;</span><span class="fu">:</span> <span class="st">&quot;BEVERAGE&quot;</span><span class="fu">,</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;price&quot;</span><span class="fu">:</span> <span class="fl">15.99</span><span class="fu">,</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;stockQuantity&quot;</span><span class="fu">:</span> <span class="dv">50</span><span class="fu">,</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;lowStockThreshold&quot;</span><span class="fu">:</span> <span class="dv">10</span><span class="fu">,</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;isActive&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;isAvailable&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;createdAt&quot;</span><span class="fu">:</span> <span class="st">&quot;2024-01-15T10:30:00Z&quot;</span><span class="fu">,</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;updatedAt&quot;</span><span class="fu">:</span> <span class="st">&quot;2024-01-15T10:30:00Z&quot;</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<h3 id="order-processing-system"><strong>3. Order Processing
+System</strong></h3>
+<h4 id="order-status-workflow"><strong>Order Status
+Workflow</strong></h4>
+<pre><code>PENDING → CONFIRMED → PREPARING → READY_FOR_PICKUP → DELIVERED
+    ↓         ↓          ↓                              ↓
+CANCELLED ←   ←          ←                         REFUNDED</code></pre>
+<h4 id="order-management-features"><strong>Order Management
+Features</strong></h4>
+<ul>
+<li><strong>Real-time Status Updates</strong>: Live order tracking</li>
+<li><strong>Room Delivery Integration</strong>: Direct room service</li>
+<li><strong>Payment Tracking</strong>: Multiple payment method
+support</li>
+<li><strong>Automatic Stock Deduction</strong>: Inventory management
+integration</li>
+</ul>
+<h4 id="shop-order-requestresponse"><strong>Shop Order
+Request/Response</strong></h4>
+<p><strong>Create Order Request:</strong></p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;items&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;productId&quot;</span><span class="fu">:</span> <span class="dv">456</span><span class="fu">,</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;quantity&quot;</span><span class="fu">:</span> <span class="dv">2</span><span class="fu">,</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;unitPrice&quot;</span><span class="fu">:</span> <span class="fl">15.99</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;customerName&quot;</span><span class="fu">:</span> <span class="st">&quot;John Doe&quot;</span><span class="fu">,</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;roomNumber&quot;</span><span class="fu">:</span> <span class="st">&quot;205&quot;</span><span class="fu">,</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;deliveryType&quot;</span><span class="fu">:</span> <span class="st">&quot;ROOM_DELIVERY&quot;</span><span class="fu">,</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;paymentMethod&quot;</span><span class="fu">:</span> <span class="st">&quot;ROOM_CHARGE&quot;</span><span class="fu">,</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;specialInstructions&quot;</span><span class="fu">:</span> <span class="st">&quot;Extra sugar packets&quot;</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Order Response:</strong></p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;id&quot;</span><span class="fu">:</span> <span class="dv">789</span><span class="fu">,</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;orderNumber&quot;</span><span class="fu">:</span> <span class="st">&quot;SH-2024-000123&quot;</span><span class="fu">,</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;status&quot;</span><span class="fu">:</span> <span class="st">&quot;PENDING&quot;</span><span class="fu">,</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;totalAmount&quot;</span><span class="fu">:</span> <span class="fl">31.98</span><span class="fu">,</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;customerName&quot;</span><span class="fu">:</span> <span class="st">&quot;John Doe&quot;</span><span class="fu">,</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;roomNumber&quot;</span><span class="fu">:</span> <span class="st">&quot;205&quot;</span><span class="fu">,</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;deliveryType&quot;</span><span class="fu">:</span> <span class="st">&quot;ROOM_DELIVERY&quot;</span><span class="fu">,</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;paymentMethod&quot;</span><span class="fu">:</span> <span class="st">&quot;ROOM_CHARGE&quot;</span><span class="fu">,</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;isPaid&quot;</span><span class="fu">:</span> <span class="kw">false</span><span class="fu">,</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;orderDate&quot;</span><span class="fu">:</span> <span class="st">&quot;2024-01-15T14:30:00Z&quot;</span><span class="fu">,</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;items&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;productName&quot;</span><span class="fu">:</span> <span class="st">&quot;Premium Coffee Beans&quot;</span><span class="fu">,</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;quantity&quot;</span><span class="fu">:</span> <span class="dv">2</span><span class="fu">,</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;unitPrice&quot;</span><span class="fu">:</span> <span class="fl">15.99</span><span class="fu">,</span></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;totalPrice&quot;</span><span class="fu">:</span> <span class="fl">31.98</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<hr />
+<h2 id="security-architecture-analysis">🔐 Security Architecture
+Analysis</h2>
+<h3 id="authentication-authorization"><strong>1. Authentication &amp;
+Authorization</strong></h3>
+<h4 id="jwt-token-structure"><strong>JWT Token Structure</strong></h4>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;sub&quot;</span><span class="fu">:</span> <span class="st">&quot;user@hotel.com&quot;</span><span class="fu">,</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;userId&quot;</span><span class="fu">:</span> <span class="dv">123</span><span class="fu">,</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;email&quot;</span><span class="fu">:</span> <span class="st">&quot;user@hotel.com&quot;</span><span class="fu">,</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;firstName&quot;</span><span class="fu">:</span> <span class="st">&quot;John&quot;</span><span class="fu">,</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;lastName&quot;</span><span class="fu">:</span> <span class="st">&quot;Doe&quot;</span><span class="fu">,</span> </span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;roles&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="st">&quot;HOTEL_ADMIN&quot;</span><span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;tenantId&quot;</span><span class="fu">:</span> <span class="st">&quot;tenant-uuid-123&quot;</span><span class="fu">,</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;iat&quot;</span><span class="fu">:</span> <span class="dv">1642583400</span><span class="fu">,</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;exp&quot;</span><span class="fu">:</span> <span class="dv">1642669800</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<h4 id="role-based-access-control-matrix"><strong>Role-Based Access
+Control Matrix</strong></h4>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>GUEST</th>
+<th>FRONTDESK</th>
+<th>HOTEL_ADMIN</th>
+<th>SYSTEM_ADMIN</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>View own bookings</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Manage all bookings</td>
+<td>❌</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Product management</td>
+<td>❌</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Order management</td>
+<td>❌</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Analytics access</td>
+<td>❌</td>
+<td>❌</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>User management</td>
+<td>❌</td>
+<td>❌</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Cross-tenant access</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+</tbody>
+</table>
+<h3 id="multi-tenant-security"><strong>2. Multi-Tenant
+Security</strong></h3>
+<h4 id="tenant-isolation-mechanisms"><strong>Tenant Isolation
+Mechanisms</strong></h4>
+<ol type="1">
+<li><strong>Row-Level Security</strong>: Hibernate filters on all
+entities</li>
+<li><strong>JWT-Based Context</strong>: Automatic tenant resolution</li>
+<li><strong>API Endpoint Scoping</strong>: Hotel ID in URL paths</li>
+<li><strong>Database Constraints</strong>: Foreign key tenant
+validation</li>
+</ol>
+<h4 id="security-validation-points"><strong>Security Validation
+Points</strong></h4>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode java"><code class="sourceCode java"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Automatic tenant validation in services</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="at">@PreAuthorize</span><span class="op">(</span><span class="st">&quot;hasRole(&#39;HOTEL_ADMIN&#39;) or hasRole(&#39;FRONTDESK&#39;)&quot;</span><span class="op">)</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> BookingResponse <span class="fu">getBooking</span><span class="op">(</span><span class="bu">Long</span> hotelId<span class="op">,</span> <span class="bu">Long</span> bookingId<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Tenant context automatically applied via Hibernate filter</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Cross-tenant access impossible due to row-level security</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<hr />
+<h2 id="performance-scalability-analysis">📊 Performance &amp;
+Scalability Analysis</h2>
+<h3 id="database-optimization"><strong>1. Database
+Optimization</strong></h3>
+<h4 id="key-indexes"><strong>Key Indexes</strong></h4>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode sql"><code class="sourceCode sql"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- Booking system indexes</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">INDEX</span> idx_reservations_tenant_hotel <span class="kw">ON</span> reservations(tenant_id, hotel_id);</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">INDEX</span> idx_reservations_dates <span class="kw">ON</span> reservations(check_in_date, check_out_date);</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">INDEX</span> idx_reservations_status <span class="kw">ON</span> reservations(status, tenant_id);</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="co">-- Shop system indexes  </span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">INDEX</span> idx_shop_orders_tenant_hotel <span class="kw">ON</span> shop_orders(tenant_id, hotel_id);</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">INDEX</span> idx_shop_orders_status <span class="kw">ON</span> shop_orders(status, tenant_id);</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">INDEX</span> idx_products_tenant_active <span class="kw">ON</span> products(tenant_id, is_active);</span></code></pre></div>
+<h4 id="query-performance-optimization"><strong>Query Performance
+Optimization</strong></h4>
+<ul>
+<li><strong>Pagination</strong>: All list endpoints support page/size
+parameters</li>
+<li><strong>Filtered Queries</strong>: Search and status filtering
+capabilities</li>
+<li><strong>Eager Loading</strong>: Strategic use of JOIN FETCH for
+related entities</li>
+<li><strong>Connection Pooling</strong>: HikariCP for optimal database
+connections</li>
+</ul>
+<h3 id="caching-strategy"><strong>2. Caching Strategy</strong></h3>
+<h4 id="recommended-caching-layers"><strong>Recommended Caching
+Layers</strong></h4>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Redis configuration for production</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">spring</span><span class="kw">:</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">cache</span><span class="kw">:</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">type</span><span class="kw">:</span><span class="at"> redis</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">redis</span><span class="kw">:</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">time-to-live</span><span class="kw">:</span><span class="at"> </span><span class="dv">600000</span><span class="co"> # 10 minutes</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">cache-null-values</span><span class="kw">:</span><span class="at"> </span><span class="ch">false</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="at">  </span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">redis</span><span class="kw">:</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">host</span><span class="kw">:</span><span class="at"> localhost</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">port</span><span class="kw">:</span><span class="at"> </span><span class="dv">6379</span></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">password</span><span class="kw">:</span><span class="at"> ${REDIS_PASSWORD}</span></span></code></pre></div>
+<h4 id="cacheable-operations"><strong>Cacheable Operations</strong></h4>
+<ul>
+<li><strong>Hotel Information</strong>: Rarely changes, 1-hour TTL</li>
+<li><strong>Room Types</strong>: Static data, 4-hour TTL<br />
+</li>
+<li><strong>Product Categories</strong>: Static data, 24-hour TTL</li>
+<li><strong>User Permissions</strong>: User-specific, 30-minute TTL</li>
+</ul>
+<hr />
+<h2 id="identified-gaps-improvement-recommendations">🚨 Identified Gaps
+&amp; Improvement Recommendations</h2>
+<h3 id="security-enhancements"><strong>1. Security
+Enhancements</strong></h3>
+<h4 id="high-priority"><strong>High Priority</strong></h4>
+<ul class="task-list">
+<li><label><input type="checkbox" /><strong>Rate Limiting</strong>:
+Implement API rate limiting per tenant/user</label></li>
+<li><label><input type="checkbox" /><strong>Input Validation</strong>:
+Enhanced validation for all user inputs</label></li>
+<li><label><input type="checkbox" /><strong>Audit Logging</strong>:
+Comprehensive action logging for compliance</label></li>
+<li><label><input type="checkbox" /><strong>Session Management</strong>:
+Redis-based session store for scalability</label></li>
+</ul>
+<h4 id="medium-priority"><strong>Medium Priority</strong></h4>
+<ul class="task-list">
+<li><label><input type="checkbox" /><strong>Two-Factor
+Authentication</strong>: SMS/email OTP for admin accounts</label></li>
+<li><label><input type="checkbox" /><strong>API Versioning</strong>:
+Support for backward compatibility</label></li>
+<li><label><input type="checkbox" /><strong>CORS Configuration</strong>:
+Production-ready CORS policies</label></li>
+<li><label><input type="checkbox" /><strong>Security Headers</strong>:
+Implement security headers (HSTS, CSP, etc.)</label></li>
+</ul>
+<h3 id="user-experience-improvements"><strong>2. User Experience
+Improvements</strong></h3>
+<h4 id="hotel-booking-system"><strong>Hotel Booking System</strong></h4>
+<ul class="task-list">
+<li><label><input type="checkbox" /><strong>Real-time
+Availability</strong>: WebSocket-based live room
+availability</label></li>
+<li><label><input type="checkbox" /><strong>Booking
+Modification</strong>: Enhanced modification workflow with pricing
+updates</label></li>
+<li><label><input type="checkbox" /><strong>Guest Portal</strong>:
+Comprehensive self-service portal</label></li>
+<li><label><input type="checkbox" /><strong>Mobile
+Optimization</strong>: Progressive Web App (PWA)
+capabilities</label></li>
+</ul>
+<h4 id="shop-management-system"><strong>Shop Management
+System</strong></h4>
+<ul class="task-list">
+<li><label><input type="checkbox" /><strong>Inventory
+Forecasting</strong>: AI-based demand prediction</label></li>
+<li><label><input type="checkbox" /><strong>Barcode Scanning</strong>:
+Mobile barcode support for inventory</label></li>
+<li><label><input type="checkbox" /><strong>Automated
+Reordering</strong>: Low-stock automatic purchase orders</label></li>
+<li><label><input type="checkbox" /><strong>Customer Analytics</strong>:
+Purchase pattern analysis</label></li>
+</ul>
+<h3 id="performance-optimizations"><strong>3. Performance
+Optimizations</strong></h3>
+<h4 id="backend-improvements"><strong>Backend Improvements</strong></h4>
+<ul class="task-list">
+<li><label><input type="checkbox" /><strong>Database Connection
+Pooling</strong>: Optimize HikariCP settings</label></li>
+<li><label><input type="checkbox" /><strong>Query Optimization</strong>:
+Review and optimize N+1 queries</label></li>
+<li><label><input type="checkbox" /><strong>Async Processing</strong>:
+Background job processing for emails/notifications</label></li>
+<li><label><input type="checkbox" /><strong>CDN Integration</strong>:
+Static asset delivery optimization</label></li>
+</ul>
+<h4 id="frontend-improvements"><strong>Frontend
+Improvements</strong></h4>
+<ul class="task-list">
+<li><label><input type="checkbox" /><strong>Code Splitting</strong>:
+Route-based code splitting for faster loads</label></li>
+<li><label><input type="checkbox" /><strong>Image Optimization</strong>:
+WebP format and lazy loading</label></li>
+<li><label><input type="checkbox" /><strong>State Management</strong>:
+Redux Toolkit for complex state</label></li>
+<li><label><input type="checkbox" /><strong>Error Boundaries</strong>:
+Comprehensive error handling</label></li>
+</ul>
+<h3 id="monitoring-observability"><strong>4. Monitoring &amp;
+Observability</strong></h3>
+<h4 id="metrics-alerting"><strong>Metrics &amp; Alerting</strong></h4>
+<ul class="task-list">
+<li><label><input type="checkbox" /><strong>Business Metrics</strong>:
+Booking conversion rates, revenue tracking</label></li>
+<li><label><input type="checkbox" /><strong>Performance
+Monitoring</strong>: APM integration (New Relic/DataDog)</label></li>
+<li><label><input type="checkbox" /><strong>Error Tracking</strong>:
+Sentry integration for error reporting</label></li>
+<li><label><input type="checkbox" /><strong>Health Checks</strong>:
+Comprehensive health check endpoints</label></li>
+</ul>
+<h4 id="logging-enhancements"><strong>Logging Enhancements</strong></h4>
+<ul class="task-list">
+<li><label><input type="checkbox" /><strong>Structured Logging</strong>:
+JSON-formatted logs with correlation IDs</label></li>
+<li><label><input type="checkbox" /><strong>Log Aggregation</strong>:
+ELK stack for centralized logging</label></li>
+<li><label><input type="checkbox" /><strong>Sensitive Data
+Masking</strong>: PII protection in logs</label></li>
+<li><label><input type="checkbox" /><strong>Log Retention
+Policies</strong>: Compliant log retention</label></li>
+</ul>
+<hr />
+<h2 id="business-intelligence-analytics">📈 Business Intelligence &amp;
+Analytics</h2>
+<h3 id="key-performance-indicators-kpis"><strong>1. Key Performance
+Indicators (KPIs)</strong></h3>
+<h4 id="hotel-booking-metrics"><strong>Hotel Booking
+Metrics</strong></h4>
+<ul>
+<li><strong>Occupancy Rate</strong>: Room utilization percentage</li>
+<li><strong>Average Daily Rate (ADR)</strong>: Revenue per occupied
+room</li>
+<li><strong>Revenue Per Available Room (RevPAR)</strong>: Overall
+revenue efficiency</li>
+<li><strong>Booking Conversion Rate</strong>: Visitor to booking
+conversion</li>
+<li><strong>Cancellation Rate</strong>: Booking cancellation
+percentage</li>
+</ul>
+<h4 id="shop-management-metrics"><strong>Shop Management
+Metrics</strong></h4>
+<ul>
+<li><strong>Inventory Turnover</strong>: Stock movement efficiency</li>
+<li><strong>Order Fulfillment Time</strong>: Average order processing
+time</li>
+<li><strong>Customer Satisfaction</strong>: Order rating and
+feedback</li>
+<li><strong>Revenue Per Guest</strong>: Shop revenue contribution</li>
+<li><strong>Popular Products</strong>: Best-selling item analysis</li>
+</ul>
+<h3 id="recommended-dashboard-views"><strong>2. Recommended Dashboard
+Views</strong></h3>
+<h4 id="executive-dashboard"><strong>Executive Dashboard</strong></h4>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">interface</span> ExecutiveDashboard {</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  hotelMetrics<span class="op">:</span> {</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    occupancyRate<span class="op">:</span> <span class="dt">number</span><span class="op">;</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    totalRevenue<span class="op">:</span> <span class="dt">number</span><span class="op">;</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    activeBookings<span class="op">:</span> <span class="dt">number</span><span class="op">;</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    avgDailyRate<span class="op">:</span> <span class="dt">number</span><span class="op">;</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>  }<span class="op">;</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>  shopMetrics<span class="op">:</span> {</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>    totalOrders<span class="op">:</span> <span class="dt">number</span><span class="op">;</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>    shopRevenue<span class="op">:</span> <span class="dt">number</span><span class="op">;</span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>    inventoryValue<span class="op">:</span> <span class="dt">number</span><span class="op">;</span></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>    lowStockAlerts<span class="op">:</span> <span class="dt">number</span><span class="op">;</span></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>  }<span class="op">;</span></span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>  trends<span class="op">:</span> {</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>    revenueGrowth<span class="op">:</span> <span class="dt">number</span><span class="op">;</span></span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>    bookingTrend<span class="op">:</span> ChartData[]<span class="op">;</span></span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>    popularProducts<span class="op">:</span> ProductSales[]<span class="op">;</span></span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>  }<span class="op">;</span></span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h4 id="operations-dashboard"><strong>Operations Dashboard</strong></h4>
+<ul>
+<li><strong>Real-time Room Status</strong>: Occupancy, cleaning,
+maintenance</li>
+<li><strong>Pending Orders</strong>: Order queue with status
+tracking</li>
+<li><strong>Staff Task Management</strong>: Housekeeping and maintenance
+tasks</li>
+<li><strong>Inventory Alerts</strong>: Low stock and reorder
+notifications</li>
+</ul>
+<hr />
+<h2 id="integration-opportunities">🔄 Integration Opportunities</h2>
+<h3 id="external-system-integrations"><strong>1. External System
+Integrations</strong></h3>
+<h4 id="recommended-integrations"><strong>Recommended
+Integrations</strong></h4>
+<ul>
+<li><strong>Channel Manager</strong>: Booking.com, Expedia
+integration</li>
+<li><strong>Property Management System (PMS)</strong>: Legacy system
+migration</li>
+<li><strong>Accounting Software</strong>: QuickBooks, Xero
+integration</li>
+<li><strong>Customer Relationship Management (CRM)</strong>: Salesforce
+integration</li>
+<li><strong>Business Intelligence</strong>: Power BI, Tableau
+connectors</li>
+</ul>
+<h3 id="third-party-service-enhancements"><strong>2. Third-Party Service
+Enhancements</strong></h3>
+<h4 id="communication-services"><strong>Communication
+Services</strong></h4>
+<ul>
+<li><strong>SMS Notifications</strong>: Twilio integration for booking
+confirmations</li>
+<li><strong>Push Notifications</strong>: Firebase for mobile app
+notifications</li>
+<li><strong>Voice Calls</strong>: Automated booking confirmations</li>
+<li><strong>Live Chat</strong>: Customer support integration</li>
+</ul>
+<h4 id="advanced-features"><strong>Advanced Features</strong></h4>
+<ul>
+<li><strong>AI Chatbot</strong>: Automated customer service</li>
+<li><strong>Dynamic Pricing</strong>: Revenue optimization
+algorithms</li>
+<li><strong>Loyalty Program</strong>: Points and rewards system</li>
+<li><strong>Review Management</strong>: TripAdvisor, Google Reviews
+integration</li>
+</ul>
+<hr />
+<h2 id="deployment-devops-recommendations">🚀 Deployment &amp; DevOps
+Recommendations</h2>
+<h3 id="production-deployment-strategy"><strong>1. Production Deployment
+Strategy</strong></h3>
+<h4 id="infrastructure-requirements"><strong>Infrastructure
+Requirements</strong></h4>
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Production infrastructure spec</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">Production</span><span class="kw">:</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">Application</span><span class="kw">:</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">CPU</span><span class="kw">:</span><span class="at"> 4 cores minimum</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">RAM</span><span class="kw">:</span><span class="at"> 8GB minimum</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">Storage</span><span class="kw">:</span><span class="at"> SSD-based</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">Database</span><span class="kw">:</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> MySQL 8.0 with replication</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">Backup strategy</span><span class="kw">:</span><span class="at"> Daily automated backups</span></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> Read replicas for analytics</span></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">Load Balancer</span><span class="kw">:</span></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> HTTPS termination</span></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> Health check configuration</span></span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> Session affinity support</span></span></code></pre></div>
+<h4 id="cicd-pipeline"><strong>CI/CD Pipeline</strong></h4>
+<ul>
+<li><strong>Source Control</strong>: Git with feature branch
+workflow</li>
+<li><strong>Build Automation</strong>: GitHub Actions or Jenkins</li>
+<li><strong>Testing</strong>: Automated unit, integration, and e2e
+tests</li>
+<li><strong>Deployment</strong>: Blue-green deployment strategy</li>
+<li><strong>Monitoring</strong>: Post-deployment verification</li>
+</ul>
+<h3 id="security-hardening"><strong>2. Security Hardening</strong></h3>
+<h4 id="production-security-checklist"><strong>Production Security
+Checklist</strong></h4>
+<ul class="task-list">
+<li><label><input type="checkbox" /><strong>HTTPS Everywhere</strong>:
+Force HTTPS with HSTS headers</label></li>
+<li><label><input type="checkbox" /><strong>Database Security</strong>:
+Encrypted connections and storage</label></li>
+<li><label><input type="checkbox" /><strong>Secrets Management</strong>:
+HashiCorp Vault or AWS Secrets Manager</label></li>
+<li><label><input type="checkbox" /><strong>Network Security</strong>:
+VPC with private subnets</label></li>
+<li><label><input type="checkbox" /><strong>Backup Encryption</strong>:
+Encrypted backup storage</label></li>
+<li><label><input type="checkbox" /><strong>Compliance</strong>: GDPR,
+PCI DSS compliance verification</label></li>
+</ul>
+<hr />
+<h2 id="technical-specifications">📊 Technical Specifications</h2>
+<h3 id="database-schema-overview"><strong>Database Schema
+Overview</strong></h3>
+<h4 id="core-entities"><strong>Core Entities</strong></h4>
+<div class="sourceCode" id="cb17"><pre
+class="sourceCode sql"><code class="sourceCode sql"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- Multi-tenant base structure</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">TABLE</span> tenants (</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">id</span> <span class="dt">VARCHAR</span>(<span class="dv">50</span>) <span class="kw">PRIMARY</span> <span class="kw">KEY</span>,</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    name <span class="dt">VARCHAR</span>(<span class="dv">255</span>) <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">domain</span> <span class="dt">VARCHAR</span>(<span class="dv">255</span>) <span class="kw">UNIQUE</span>,</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>    created_at <span class="dt">TIMESTAMP</span> <span class="kw">DEFAULT</span> <span class="fu">CURRENT_TIMESTAMP</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>);</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a><span class="co">-- Hotel booking entities</span></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">TABLE</span> hotels (</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>    <span class="kw">id</span> BIGINT AUTO_INCREMENT <span class="kw">PRIMARY</span> <span class="kw">KEY</span>,</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>    tenant_id <span class="dt">VARCHAR</span>(<span class="dv">50</span>) <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>    name <span class="dt">VARCHAR</span>(<span class="dv">255</span>) <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>    address TEXT,</span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>    created_at <span class="dt">TIMESTAMP</span> <span class="kw">DEFAULT</span> <span class="fu">CURRENT_TIMESTAMP</span>,</span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>    <span class="kw">FOREIGN</span> <span class="kw">KEY</span> (tenant_id) <span class="kw">REFERENCES</span> tenants(<span class="kw">id</span>),</span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>    <span class="kw">INDEX</span> idx_hotel_tenant (tenant_id)</span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>);</span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">TABLE</span> reservations (</span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a>    <span class="kw">id</span> BIGINT AUTO_INCREMENT <span class="kw">PRIMARY</span> <span class="kw">KEY</span>,</span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a>    tenant_id <span class="dt">VARCHAR</span>(<span class="dv">50</span>) <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a>    hotel_id BIGINT <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a>    booking_number <span class="dt">VARCHAR</span>(<span class="dv">50</span>) <span class="kw">UNIQUE</span> <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb17-25"><a href="#cb17-25" aria-hidden="true" tabindex="-1"></a>    check_in_date <span class="dt">DATE</span> <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb17-26"><a href="#cb17-26" aria-hidden="true" tabindex="-1"></a>    check_out_date <span class="dt">DATE</span> <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb17-27"><a href="#cb17-27" aria-hidden="true" tabindex="-1"></a>    status ENUM(<span class="st">&#39;PENDING&#39;</span>, <span class="st">&#39;CONFIRMED&#39;</span>, <span class="st">&#39;CHECKED_IN&#39;</span>, <span class="st">&#39;CHECKED_OUT&#39;</span>, <span class="st">&#39;CANCELLED&#39;</span>),</span>
+<span id="cb17-28"><a href="#cb17-28" aria-hidden="true" tabindex="-1"></a>    total_amount <span class="dt">DECIMAL</span>(<span class="dv">10</span>,<span class="dv">2</span>) <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb17-29"><a href="#cb17-29" aria-hidden="true" tabindex="-1"></a>    created_at <span class="dt">TIMESTAMP</span> <span class="kw">DEFAULT</span> <span class="fu">CURRENT_TIMESTAMP</span>,</span>
+<span id="cb17-30"><a href="#cb17-30" aria-hidden="true" tabindex="-1"></a>    <span class="kw">FOREIGN</span> <span class="kw">KEY</span> (tenant_id) <span class="kw">REFERENCES</span> tenants(<span class="kw">id</span>),</span>
+<span id="cb17-31"><a href="#cb17-31" aria-hidden="true" tabindex="-1"></a>    <span class="kw">FOREIGN</span> <span class="kw">KEY</span> (hotel_id) <span class="kw">REFERENCES</span> hotels(<span class="kw">id</span>),</span>
+<span id="cb17-32"><a href="#cb17-32" aria-hidden="true" tabindex="-1"></a>    <span class="kw">INDEX</span> idx_reservation_tenant_hotel (tenant_id, hotel_id),</span>
+<span id="cb17-33"><a href="#cb17-33" aria-hidden="true" tabindex="-1"></a>    <span class="kw">INDEX</span> idx_reservation_dates (check_in_date, check_out_date)</span>
+<span id="cb17-34"><a href="#cb17-34" aria-hidden="true" tabindex="-1"></a>);</span>
+<span id="cb17-35"><a href="#cb17-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-36"><a href="#cb17-36" aria-hidden="true" tabindex="-1"></a><span class="co">-- Shop management entities</span></span>
+<span id="cb17-37"><a href="#cb17-37" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">TABLE</span> products (</span>
+<span id="cb17-38"><a href="#cb17-38" aria-hidden="true" tabindex="-1"></a>    <span class="kw">id</span> BIGINT AUTO_INCREMENT <span class="kw">PRIMARY</span> <span class="kw">KEY</span>,</span>
+<span id="cb17-39"><a href="#cb17-39" aria-hidden="true" tabindex="-1"></a>    tenant_id <span class="dt">VARCHAR</span>(<span class="dv">50</span>) <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb17-40"><a href="#cb17-40" aria-hidden="true" tabindex="-1"></a>    hotel_id BIGINT <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb17-41"><a href="#cb17-41" aria-hidden="true" tabindex="-1"></a>    name <span class="dt">VARCHAR</span>(<span class="dv">255</span>) <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb17-42"><a href="#cb17-42" aria-hidden="true" tabindex="-1"></a>    <span class="kw">category</span> ENUM(<span class="st">&#39;FOOD&#39;</span>, <span class="st">&#39;BEVERAGE&#39;</span>, <span class="st">&#39;TOILETRIES&#39;</span>, <span class="st">&#39;ELECTRONICS&#39;</span>, <span class="st">&#39;SOUVENIRS&#39;</span>, <span class="st">&#39;SNACKS&#39;</span>, <span class="st">&#39;OTHER&#39;</span>),</span>
+<span id="cb17-43"><a href="#cb17-43" aria-hidden="true" tabindex="-1"></a>    price <span class="dt">DECIMAL</span>(<span class="dv">10</span>,<span class="dv">2</span>) <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb17-44"><a href="#cb17-44" aria-hidden="true" tabindex="-1"></a>    stock_quantity <span class="dt">INT</span> <span class="kw">NOT</span> <span class="kw">NULL</span> <span class="kw">DEFAULT</span> <span class="dv">0</span>,</span>
+<span id="cb17-45"><a href="#cb17-45" aria-hidden="true" tabindex="-1"></a>    low_stock_threshold <span class="dt">INT</span> <span class="kw">DEFAULT</span> <span class="dv">5</span>,</span>
+<span id="cb17-46"><a href="#cb17-46" aria-hidden="true" tabindex="-1"></a>    is_active <span class="dt">BOOLEAN</span> <span class="kw">DEFAULT</span> <span class="kw">true</span>,</span>
+<span id="cb17-47"><a href="#cb17-47" aria-hidden="true" tabindex="-1"></a>    created_at <span class="dt">TIMESTAMP</span> <span class="kw">DEFAULT</span> <span class="fu">CURRENT_TIMESTAMP</span>,</span>
+<span id="cb17-48"><a href="#cb17-48" aria-hidden="true" tabindex="-1"></a>    <span class="kw">FOREIGN</span> <span class="kw">KEY</span> (tenant_id) <span class="kw">REFERENCES</span> tenants(<span class="kw">id</span>),</span>
+<span id="cb17-49"><a href="#cb17-49" aria-hidden="true" tabindex="-1"></a>    <span class="kw">FOREIGN</span> <span class="kw">KEY</span> (hotel_id) <span class="kw">REFERENCES</span> hotels(<span class="kw">id</span>),</span>
+<span id="cb17-50"><a href="#cb17-50" aria-hidden="true" tabindex="-1"></a>    <span class="kw">INDEX</span> idx_product_tenant_hotel (tenant_id, hotel_id),</span>
+<span id="cb17-51"><a href="#cb17-51" aria-hidden="true" tabindex="-1"></a>    <span class="kw">INDEX</span> idx_product_category (<span class="kw">category</span>, tenant_id)</span>
+<span id="cb17-52"><a href="#cb17-52" aria-hidden="true" tabindex="-1"></a>);</span>
+<span id="cb17-53"><a href="#cb17-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-54"><a href="#cb17-54" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">TABLE</span> shop_orders (</span>
+<span id="cb17-55"><a href="#cb17-55" aria-hidden="true" tabindex="-1"></a>    <span class="kw">id</span> BIGINT AUTO_INCREMENT <span class="kw">PRIMARY</span> <span class="kw">KEY</span>,</span>
+<span id="cb17-56"><a href="#cb17-56" aria-hidden="true" tabindex="-1"></a>    tenant_id <span class="dt">VARCHAR</span>(<span class="dv">50</span>) <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb17-57"><a href="#cb17-57" aria-hidden="true" tabindex="-1"></a>    hotel_id BIGINT <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb17-58"><a href="#cb17-58" aria-hidden="true" tabindex="-1"></a>    order_number <span class="dt">VARCHAR</span>(<span class="dv">50</span>) <span class="kw">UNIQUE</span> <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb17-59"><a href="#cb17-59" aria-hidden="true" tabindex="-1"></a>    customer_name <span class="dt">VARCHAR</span>(<span class="dv">255</span>) <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb17-60"><a href="#cb17-60" aria-hidden="true" tabindex="-1"></a>    room_number <span class="dt">VARCHAR</span>(<span class="dv">20</span>),</span>
+<span id="cb17-61"><a href="#cb17-61" aria-hidden="true" tabindex="-1"></a>    status ENUM(<span class="st">&#39;PENDING&#39;</span>, <span class="st">&#39;CONFIRMED&#39;</span>, <span class="st">&#39;PREPARING&#39;</span>, <span class="st">&#39;READY_FOR_PICKUP&#39;</span>, <span class="st">&#39;DELIVERED&#39;</span>, <span class="st">&#39;CANCELLED&#39;</span>),</span>
+<span id="cb17-62"><a href="#cb17-62" aria-hidden="true" tabindex="-1"></a>    total_amount <span class="dt">DECIMAL</span>(<span class="dv">10</span>,<span class="dv">2</span>) <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb17-63"><a href="#cb17-63" aria-hidden="true" tabindex="-1"></a>    payment_method ENUM(<span class="st">&#39;CASH&#39;</span>, <span class="st">&#39;CARD&#39;</span>, <span class="st">&#39;ROOM_CHARGE&#39;</span>),</span>
+<span id="cb17-64"><a href="#cb17-64" aria-hidden="true" tabindex="-1"></a>    is_paid <span class="dt">BOOLEAN</span> <span class="kw">DEFAULT</span> <span class="kw">false</span>,</span>
+<span id="cb17-65"><a href="#cb17-65" aria-hidden="true" tabindex="-1"></a>    order_date <span class="dt">TIMESTAMP</span> <span class="kw">DEFAULT</span> <span class="fu">CURRENT_TIMESTAMP</span>,</span>
+<span id="cb17-66"><a href="#cb17-66" aria-hidden="true" tabindex="-1"></a>    <span class="kw">FOREIGN</span> <span class="kw">KEY</span> (tenant_id) <span class="kw">REFERENCES</span> tenants(<span class="kw">id</span>),</span>
+<span id="cb17-67"><a href="#cb17-67" aria-hidden="true" tabindex="-1"></a>    <span class="kw">FOREIGN</span> <span class="kw">KEY</span> (hotel_id) <span class="kw">REFERENCES</span> hotels(<span class="kw">id</span>),</span>
+<span id="cb17-68"><a href="#cb17-68" aria-hidden="true" tabindex="-1"></a>    <span class="kw">INDEX</span> idx_shop_order_tenant_hotel (tenant_id, hotel_id),</span>
+<span id="cb17-69"><a href="#cb17-69" aria-hidden="true" tabindex="-1"></a>    <span class="kw">INDEX</span> idx_shop_order_status (status, tenant_id)</span>
+<span id="cb17-70"><a href="#cb17-70" aria-hidden="true" tabindex="-1"></a>);</span></code></pre></div>
+<h3 id="api-response-formats"><strong>API Response Formats</strong></h3>
+<h4 id="standard-api-response-structure"><strong>Standard API Response
+Structure</strong></h4>
+<div class="sourceCode" id="cb18"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Success Response</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="kw">interface</span> ApiResponse<span class="op">&lt;</span>T<span class="op">&gt;</span> {</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  success<span class="op">:</span> <span class="kw">true</span><span class="op">;</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>  data<span class="op">:</span> T<span class="op">;</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>  message<span class="op">?:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>  timestamp<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a><span class="co">// Error Response</span></span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a><span class="kw">interface</span> ApiErrorResponse {</span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>  success<span class="op">:</span> <span class="kw">false</span><span class="op">;</span></span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>  error<span class="op">:</span> {</span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>    code<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>    message<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>    details<span class="op">?:</span> <span class="dt">any</span><span class="op">;</span></span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>  }<span class="op">;</span></span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>  timestamp<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a><span class="co">// Paginated Response</span></span>
+<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a><span class="kw">interface</span> PaginatedResponse<span class="op">&lt;</span>T<span class="op">&gt;</span> {</span>
+<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a>  content<span class="op">:</span> T[]<span class="op">;</span></span>
+<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a>  totalElements<span class="op">:</span> <span class="dt">number</span><span class="op">;</span></span>
+<span id="cb18-24"><a href="#cb18-24" aria-hidden="true" tabindex="-1"></a>  totalPages<span class="op">:</span> <span class="dt">number</span><span class="op">;</span></span>
+<span id="cb18-25"><a href="#cb18-25" aria-hidden="true" tabindex="-1"></a>  size<span class="op">:</span> <span class="dt">number</span><span class="op">;</span></span>
+<span id="cb18-26"><a href="#cb18-26" aria-hidden="true" tabindex="-1"></a>  number<span class="op">:</span> <span class="dt">number</span><span class="op">;</span></span>
+<span id="cb18-27"><a href="#cb18-27" aria-hidden="true" tabindex="-1"></a>  first<span class="op">:</span> <span class="dt">boolean</span><span class="op">;</span></span>
+<span id="cb18-28"><a href="#cb18-28" aria-hidden="true" tabindex="-1"></a>  last<span class="op">:</span> <span class="dt">boolean</span><span class="op">;</span></span>
+<span id="cb18-29"><a href="#cb18-29" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h3 id="security-implementation-details"><strong>Security Implementation
+Details</strong></h3>
+<h4 id="jwt-token-generation"><strong>JWT Token Generation</strong></h4>
+<div class="sourceCode" id="cb19"><pre
+class="sourceCode java"><code class="sourceCode java"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="at">@Component</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="kw">class</span> JwtUtil <span class="op">{</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">public</span> <span class="bu">String</span> <span class="fu">generateToken</span><span class="op">(</span>User user<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>        <span class="bu">Map</span><span class="op">&lt;</span><span class="bu">String</span><span class="op">,</span> <span class="bu">Object</span><span class="op">&gt;</span> claims <span class="op">=</span> <span class="kw">new</span> <span class="bu">HashMap</span><span class="op">&lt;&gt;();</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>        claims<span class="op">.</span><span class="fu">put</span><span class="op">(</span><span class="st">&quot;userId&quot;</span><span class="op">,</span> user<span class="op">.</span><span class="fu">getId</span><span class="op">());</span></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>        claims<span class="op">.</span><span class="fu">put</span><span class="op">(</span><span class="st">&quot;email&quot;</span><span class="op">,</span> user<span class="op">.</span><span class="fu">getEmail</span><span class="op">());</span></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>        claims<span class="op">.</span><span class="fu">put</span><span class="op">(</span><span class="st">&quot;roles&quot;</span><span class="op">,</span> user<span class="op">.</span><span class="fu">getRoles</span><span class="op">());</span></span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>        claims<span class="op">.</span><span class="fu">put</span><span class="op">(</span><span class="st">&quot;tenantId&quot;</span><span class="op">,</span> user<span class="op">.</span><span class="fu">getTenantId</span><span class="op">());</span></span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> Jwts<span class="op">.</span><span class="fu">builder</span><span class="op">()</span></span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>                <span class="op">.</span><span class="fu">claims</span><span class="op">(</span>claims<span class="op">)</span></span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>                <span class="op">.</span><span class="fu">subject</span><span class="op">(</span>user<span class="op">.</span><span class="fu">getEmail</span><span class="op">())</span></span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>                <span class="op">.</span><span class="fu">issuedAt</span><span class="op">(</span><span class="kw">new</span> <span class="bu">Date</span><span class="op">())</span></span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>                <span class="op">.</span><span class="fu">expiration</span><span class="op">(</span><span class="kw">new</span> <span class="bu">Date</span><span class="op">(</span><span class="bu">System</span><span class="op">.</span><span class="fu">currentTimeMillis</span><span class="op">()</span> <span class="op">+</span> expiration<span class="op">))</span></span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>                <span class="op">.</span><span class="fu">signWith</span><span class="op">(</span><span class="fu">getSignInKey</span><span class="op">())</span></span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>                <span class="op">.</span><span class="fu">compact</span><span class="op">();</span></span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<h4 id="multi-tenant-filter-implementation"><strong>Multi-Tenant Filter
+Implementation</strong></h4>
+<div class="sourceCode" id="cb20"><pre
+class="sourceCode java"><code class="sourceCode java"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="at">@Entity</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="at">@FilterDef</span><span class="op">(</span>name <span class="op">=</span> <span class="st">&quot;tenantFilter&quot;</span><span class="op">,</span> parameters <span class="op">=</span> <span class="at">@ParamDef</span><span class="op">(</span>name <span class="op">=</span> <span class="st">&quot;tenantId&quot;</span><span class="op">,</span> type <span class="op">=</span> <span class="bu">String</span><span class="op">.</span><span class="fu">class</span><span class="op">))</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="at">@Filter</span><span class="op">(</span>name <span class="op">=</span> <span class="st">&quot;tenantFilter&quot;</span><span class="op">,</span> condition <span class="op">=</span> <span class="st">&quot;tenant_id = :tenantId&quot;</span><span class="op">)</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="kw">abstract</span> <span class="kw">class</span> TenantEntity <span class="op">{</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">@Column</span><span class="op">(</span>name <span class="op">=</span> <span class="st">&quot;tenant_id&quot;</span><span class="op">,</span> nullable <span class="op">=</span> <span class="kw">false</span><span class="op">)</span></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">private</span> <span class="bu">String</span> tenantId<span class="op">;</span></span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">@PrePersist</span></span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">public</span> <span class="dt">void</span> <span class="fu">setTenantId</span><span class="op">()</span> <span class="op">{</span></span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="op">(</span><span class="kw">this</span><span class="op">.</span><span class="fu">tenantId</span> <span class="op">==</span> <span class="kw">null</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>            <span class="kw">this</span><span class="op">.</span><span class="fu">tenantId</span> <span class="op">=</span> TenantContext<span class="op">.</span><span class="fu">getCurrentTenantId</span><span class="op">();</span></span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<hr />
+<h2 id="conclusion">📋 Conclusion</h2>
+<p>BookMyHotel represents a well-architected, enterprise-grade hotel
+management platform with robust multi-tenancy, comprehensive security,
+and dual functionality for both booking and shop management. The
+identified improvements focus on enhancing user experience,
+strengthening security, optimizing performance, and adding advanced
+business intelligence capabilities.</p>
+<h3 id="immediate-next-steps"><strong>Immediate Next Steps</strong></h3>
+<ol type="1">
+<li><strong>Implement rate limiting</strong> for API protection</li>
+<li><strong>Add comprehensive audit logging</strong> for compliance</li>
+<li><strong>Optimize database queries</strong> for better
+performance</li>
+<li><strong>Enhance error handling</strong> and user feedback</li>
+<li><strong>Set up production monitoring</strong> and alerting</li>
+</ol>
+<h3 id="long-term-roadmap"><strong>Long-term Roadmap</strong></h3>
+<ol type="1">
+<li><strong>Mobile application development</strong> (React Native)</li>
+<li><strong>Advanced analytics and AI integration</strong></li>
+<li><strong>Multi-language and multi-currency support</strong></li>
+<li><strong>Advanced booking modification workflows</strong></li>
+<li><strong>Integration with major OTA platforms</strong></li>
+</ol>
+<p>The platform provides a solid foundation for scaling hotel operations
+and can accommodate future enhancements while maintaining security and
+performance standards.</p>
+<hr />
+<p><strong>Document Generated</strong>: August 27, 2025<br />
+<strong>Version</strong>: 1.0<br />
+<strong>Project</strong>: BookMyHotel Multi-Tenant Platform<br />
+<strong>Author</strong>: System Analysis &amp; Documentation</p>
+</body>
+</html>

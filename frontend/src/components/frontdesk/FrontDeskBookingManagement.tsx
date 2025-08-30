@@ -317,7 +317,8 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
                         <Chip 
                           label={booking.status.replace('_', ' ')} 
                           color={getStatusColor(booking.status)} 
-                          size="small" 
+                          size="small"
+                          variant="filled"
                         />
                       </TableCell>
                       <TableCell>
