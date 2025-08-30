@@ -170,7 +170,46 @@ const OrderCreation: React.FC = () => {
         console.log('Order created with room charging:', createdOrderResponse);
       }
 
-      // Always show the receipt dialog for simplified flow
+      // If payment is already completed (Complete Sale), finish transaction
+      if (paymentCompleted) {
+        // Transaction is complete, reset form and show success
+        setCreatedOrder(null);
+        setOrderItems([]);
+        setRoomNumber('');
+        setNotes('');
+        setPaymentCompleted(false);
+        setCompletedPaymentMethod(null);
+        setPaymentReference(null);
+        
+        // Show success message
+        navigate('/shop?tab=orders', { 
+          state: { 
+            message: `Order ${createdOrderResponse.orderNumber} completed successfully!`,
+            type: 'success'
+          } 
+        });
+        return;
+      }
+
+      // For room charges, also complete immediately without receipt
+      if (purchaseType === 'ROOM_CHARGE') {
+        // Reset form and show success
+        setCreatedOrder(null);
+        setOrderItems([]);
+        setRoomNumber('');
+        setNotes('');
+        
+        // Show success message
+        navigate('/shop?tab=orders', { 
+          state: { 
+            message: `Order ${createdOrderResponse.orderNumber} charged to room ${roomNumber} successfully!`,
+            type: 'success'
+          } 
+        });
+        return;
+      }
+
+      // For anonymous cash/card orders that need payment, show receipt
       setCreatedOrder(createdOrderResponse);
       setReceiptDialogOpen(true);
       
@@ -192,11 +231,28 @@ const OrderCreation: React.FC = () => {
     setPaymentCompleted(true);
     setPaymentDialogOpen(false);
     setError(null);
+    
+    // After payment is completed, navigate to orders page
+    if (createdOrder) {
+      navigate('/shop?tab=orders', { 
+        state: { 
+          message: `Order ${createdOrder.orderNumber} payment completed successfully!`,
+          orderId: createdOrder.id 
+        }
+      });
+    }
   };
 
   const handlePaymentDialogClose = () => {
     setPaymentDialogOpen(false);
     // Don't reset payment state here in case user wants to try again
+  };
+
+  const handlePaymentRequired = () => {
+    console.log('handlePaymentRequired called - opening payment dialog');
+    // Close receipt dialog and open payment dialog
+    setReceiptDialogOpen(false);
+    setPaymentDialogOpen(true);
   };
 
   const handleReceiptDialogClose = () => {
@@ -212,6 +268,29 @@ const OrderCreation: React.FC = () => {
         }
       });
     }
+  };
+
+  // Determine if payment is required after order creation
+  const requiresPayment = () => {
+    if (!createdOrder) return false;
+    
+    console.log('requiresPayment check:', {
+      purchaseType,
+      paymentMethod,
+      paymentCompleted,
+      createdOrder: createdOrder?.id
+    });
+    
+    // For anonymous customers with CASH or CARD payment methods, payment is required
+    if (purchaseType === 'ANONYMOUS' && 
+        (paymentMethod === PaymentMethod.CASH || paymentMethod === PaymentMethod.CARD) &&
+        !paymentCompleted) {
+      console.log('Payment required: true');
+      return true;
+    }
+    
+    console.log('Payment required: false');
+    return false;
   };
 
   const filteredProducts = products.filter(product => {
@@ -564,6 +643,8 @@ const OrderCreation: React.FC = () => {
           // This will be called when the dialog is closed to refresh order list
           // The navigation will happen in handleReceiptDialogClose
         }}
+        onPaymentRequired={handlePaymentRequired}
+        requiresPayment={requiresPayment()}
       />
 
       {/* Payment Dialog */}

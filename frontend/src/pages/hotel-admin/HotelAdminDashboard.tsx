@@ -277,19 +277,23 @@ const HotelAdminDashboard: React.FC = () => {
       
       if (result.success && result.data) {
         console.log('Booking API Response:', result.data);
-        console.log('Page Object:', result.data.page);
+        console.log('Spring Boot Page Structure:', { 
+          totalElements: result.data.totalElements, 
+          totalPages: result.data.totalPages,
+          number: result.data.number,
+          size: result.data.size
+        });
         
         setBookings(result.data.content || []);
         
-        // Extract pagination info from the page object
-        const pageInfo = result.data.page || {};
-        const totalPages = pageInfo.totalPages || 0;
-        const totalElements = pageInfo.totalElements || 0;
-        const currentPageNumber = pageInfo.number || 0;
+        // Extract pagination info directly from Spring Boot Page structure
+        const totalPages = result.data.totalPages || 0;
+        const totalElements = result.data.totalElements || 0;
+        const currentPageNumber = result.data.number || 0;
         
-        console.log('Total Pages from page object:', totalPages);
-        console.log('Total Elements from page object:', totalElements);
-        console.log('Current Page from page object:', currentPageNumber);
+        console.log('Total Pages from Spring Boot Page:', totalPages);
+        console.log('Total Elements from Spring Boot Page:', totalElements);
+        console.log('Current Page from Spring Boot Page:', currentPageNumber);
         
         // Calculate pages if not provided or if we have content but no pagination info
         const calculatedPages = totalPages > 0 ? totalPages : Math.ceil(Math.max(totalElements, result.data.content?.length || 0) / bookingSize);
@@ -877,15 +881,15 @@ const HotelAdminDashboard: React.FC = () => {
             {!reportsData.loading && !reportsData.error && (
               <>
                 {/* Key Statistics Cards */}
-                <Grid container spacing={3} sx={{ mb: 4 }}>
+                <Grid container spacing={1.5} sx={{ mb: 2 }}>
                   <Grid item xs={12} md={3}>
                     <Card>
-                      <CardContent sx={{ textAlign: 'center' }}>
-                        <MeetingRoom sx={{ fontSize: 40, color: 'primary.main', mb: 1 }} />
-                        <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+                      <CardContent sx={{ textAlign: 'center', py: 1, px: 1.5 }}>
+                        <MeetingRoom sx={{ fontSize: 24, color: 'primary.main', mb: 0.25 }} />
+                        <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'primary.main', lineHeight: 1.2 }}>
                           {reportsData.hotelStats?.totalRooms || 0}
                         </Typography>
-                        <Typography variant="body2" color="text.secondary">
+                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
                           Total Rooms
                         </Typography>
                       </CardContent>
@@ -894,12 +898,12 @@ const HotelAdminDashboard: React.FC = () => {
                   
                   <Grid item xs={12} md={3}>
                     <Card>
-                      <CardContent sx={{ textAlign: 'center' }}>
-                        <TrendingUp sx={{ fontSize: 40, color: 'success.main', mb: 1 }} />
-                        <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'success.main' }}>
+                      <CardContent sx={{ textAlign: 'center', py: 1, px: 1.5 }}>
+                        <TrendingUp sx={{ fontSize: 24, color: 'success.main', mb: 0.25 }} />
+                        <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'success.main', lineHeight: 1.2 }}>
                           {reportsData.hotelStats?.availableRooms || 0}
                         </Typography>
-                        <Typography variant="body2" color="text.secondary">
+                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
                           Available Rooms
                         </Typography>
                       </CardContent>
@@ -908,12 +912,12 @@ const HotelAdminDashboard: React.FC = () => {
                   
                   <Grid item xs={12} md={3}>
                     <Card>
-                      <CardContent sx={{ textAlign: 'center' }}>
-                        <HotelIcon sx={{ fontSize: 40, color: 'warning.main', mb: 1 }} />
-                        <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'warning.main' }}>
+                      <CardContent sx={{ textAlign: 'center', py: 1, px: 1.5 }}>
+                        <HotelIcon sx={{ fontSize: 24, color: 'warning.main', mb: 0.25 }} />
+                        <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'warning.main', lineHeight: 1.2 }}>
                           {reportsData.hotelStats?.bookedRooms || 0}
                         </Typography>
-                        <Typography variant="body2" color="text.secondary">
+                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
                           Occupied Rooms
                         </Typography>
                       </CardContent>
@@ -922,12 +926,12 @@ const HotelAdminDashboard: React.FC = () => {
                   
                   <Grid item xs={12} md={3}>
                     <Card>
-                      <CardContent sx={{ textAlign: 'center' }}>
-                        <People sx={{ fontSize: 40, color: 'info.main', mb: 1 }} />
-                        <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'info.main' }}>
+                      <CardContent sx={{ textAlign: 'center', py: 1, px: 1.5 }}>
+                        <People sx={{ fontSize: 24, color: 'info.main', mb: 0.25 }} />
+                        <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'info.main', lineHeight: 1.2 }}>
                           {reportsData.hotelStats?.activeStaff || 0}
                         </Typography>
-                        <Typography variant="body2" color="text.secondary">
+                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
                           Active Staff
                         </Typography>
                       </CardContent>

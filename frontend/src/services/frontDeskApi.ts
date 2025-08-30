@@ -126,12 +126,10 @@ export interface RoomPage {
 
 export interface BookingPage {
   content: FrontDeskBooking[];
-  page: {
-    size: number;
-    number: number;
-    totalElements: number;
-    totalPages: number;
-  };
+  size: number;
+  number: number;
+  totalElements: number;
+  totalPages: number;
   first: boolean;
   last: boolean;
   numberOfElements: number;

@@ -218,52 +218,52 @@ const StaffScheduleDashboard: React.FC = () => {
 
       {/* Stats Cards */}
       {stats && (
-        <Row className="mb-4">
+        <Row className="mb-3">
           <Col md={2}>
             <Card className="text-center">
-              <Card.Body>
-                <h4 className="text-primary">{stats.totalSchedules}</h4>
-                <small className="text-muted">Total Schedules</small>
+              <Card.Body className="py-2 px-2">
+                <h6 className="text-primary mb-1">{stats.totalSchedules}</h6>
+                <small className="text-muted" style={{ fontSize: '0.7rem' }}>Total Schedules</small>
               </Card.Body>
             </Card>
           </Col>
           <Col md={2}>
             <Card className="text-center">
-              <Card.Body>
-                <h4 className="text-secondary">{stats.scheduledCount}</h4>
-                <small className="text-muted">Scheduled</small>
+              <Card.Body className="py-2 px-2">
+                <h6 className="text-secondary mb-1">{stats.scheduledCount}</h6>
+                <small className="text-muted" style={{ fontSize: '0.7rem' }}>Scheduled</small>
               </Card.Body>
             </Card>
           </Col>
           <Col md={2}>
             <Card className="text-center">
-              <Card.Body>
-                <h4 className="text-primary">{stats.confirmedCount}</h4>
-                <small className="text-muted">Confirmed</small>
+              <Card.Body className="py-2 px-2">
+                <h6 className="text-primary mb-1">{stats.confirmedCount}</h6>
+                <small className="text-muted" style={{ fontSize: '0.7rem' }}>Confirmed</small>
               </Card.Body>
             </Card>
           </Col>
           <Col md={2}>
             <Card className="text-center">
-              <Card.Body>
-                <h4 className="text-success">{stats.completedCount}</h4>
-                <small className="text-muted">Completed</small>
+              <Card.Body className="py-2 px-2">
+                <h6 className="text-success mb-1">{stats.completedCount}</h6>
+                <small className="text-muted" style={{ fontSize: '0.7rem' }}>Completed</small>
               </Card.Body>
             </Card>
           </Col>
           <Col md={2}>
             <Card className="text-center">
-              <Card.Body>
-                <h4 className="text-danger">{stats.cancelledCount}</h4>
-                <small className="text-muted">Cancelled</small>
+              <Card.Body className="py-2 px-2">
+                <h6 className="text-danger mb-1">{stats.cancelledCount}</h6>
+                <small className="text-muted" style={{ fontSize: '0.7rem' }}>Cancelled</small>
               </Card.Body>
             </Card>
           </Col>
           <Col md={2}>
             <Card className="text-center">
-              <Card.Body>
-                <h4 className="text-warning">{stats.noShowCount}</h4>
-                <small className="text-muted">No Show</small>
+              <Card.Body className="py-2 px-2">
+                <h6 className="text-warning mb-1">{stats.noShowCount}</h6>
+                <small className="text-muted" style={{ fontSize: '0.7rem' }}>No Show</small>
               </Card.Body>
             </Card>
           </Col>

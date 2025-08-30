@@ -249,35 +249,35 @@ export const SystemDashboardPage: React.FC = () => {
               onClick={action.action}
               data-testid={`stats-card-${action.title.toLowerCase().replace(/\s+/g, '-')}`}
             >
-              <CardContent sx={{ textAlign: 'center', pb: 2 }}>
+              <CardContent sx={{ textAlign: 'center', pb: 0.75, px: 1.5 }}>
                 <Box 
                   sx={{ 
-                    width: 64, 
-                    height: 64, 
+                    width: 36, 
+                    height: 36, 
                     borderRadius: '50%', 
                     display: 'flex', 
                     alignItems: 'center', 
                     justifyContent: 'center',
-                    margin: '0 auto 16px',
+                    margin: '0 auto 8px',
                     bgcolor: `${action.color}.light`,
                     color: `${action.color}.contrastText`
                   }}
                 >
-                  {React.cloneElement(action.icon, { sx: { fontSize: 32 } })}
+                  {React.cloneElement(action.icon, { sx: { fontSize: 18 } })}
                 </Box>
-                <Typography variant="h6" gutterBottom fontWeight="bold" data-testid={`stat-title-${action.title.toLowerCase().replace(/\s+/g, '-')}`}>
+                <Typography variant="body2" gutterBottom fontWeight="bold" data-testid={`stat-title-${action.title.toLowerCase().replace(/\s+/g, '-')}`} sx={{ lineHeight: 1.2 }}>
                   {action.title}
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
                   {action.description}
                 </Typography>
                 {/* Display real statistics */}
                 {action.stat !== null && action.stat !== undefined && (
-                  <Box sx={{ mt: 2, textAlign: 'center' }}>
-                    <Typography variant="h3" color={action.color} fontWeight="bold" data-testid={action.title === 'Manage Hotels' ? 'total-hotels' : action.title === 'Manage Users' ? 'total-users' : 'active-bookings'}>
+                  <Box sx={{ mt: 1, textAlign: 'center' }}>
+                    <Typography variant="h5" color={action.color} fontWeight="bold" data-testid={action.title === 'Manage Hotels' ? 'total-hotels' : action.title === 'Manage Users' ? 'total-users' : 'active-bookings'} sx={{ lineHeight: 1.2 }}>
                       {stats.loading ? '...' : action.stat}
                     </Typography>
-                    <Typography variant="caption" color="text.secondary">
+                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
                       {action.statLabel}
                     </Typography>
                   </Box>

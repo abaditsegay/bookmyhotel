@@ -124,14 +124,14 @@ const FrontDeskDashboard: React.FC = () => {
   return (
     <Box sx={{ p: 3 }}>
       {/* Today's Statistics */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
+      <Grid container spacing={1.5} sx={{ mb: 2 }}>
         <Grid item xs={12} sm={6} md={2}>
           <Card>
-            <CardContent sx={{ textAlign: 'center', py: 2 }}>
-              <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'info.main' }}>
+            <CardContent sx={{ textAlign: 'center', py: 0.75, px: 1.5 }}>
+              <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'info.main', lineHeight: 1.2 }}>
                 {todayStats.todaysArrivals}
               </Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
                 Arrivals Today
               </Typography>
             </CardContent>
@@ -139,11 +139,11 @@ const FrontDeskDashboard: React.FC = () => {
         </Grid>
         <Grid item xs={12} sm={6} md={2}>
           <Card>
-            <CardContent sx={{ textAlign: 'center', py: 2 }}>
-              <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'warning.main' }}>
+            <CardContent sx={{ textAlign: 'center', py: 0.75, px: 1.5 }}>
+              <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'warning.main', lineHeight: 1.2 }}>
                 {todayStats.todaysDepartures}
               </Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
                 Departures Today
               </Typography>
             </CardContent>
@@ -151,11 +151,11 @@ const FrontDeskDashboard: React.FC = () => {
         </Grid>
         <Grid item xs={12} sm={6} md={2}>
           <Card>
-            <CardContent sx={{ textAlign: 'center', py: 2 }}>
-              <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'success.main' }}>
+            <CardContent sx={{ textAlign: 'center', py: 0.75, px: 1.5 }}>
+              <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'success.main', lineHeight: 1.2 }}>
                 {todayStats.currentOccupancy}
               </Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
                 Current Occupancy
               </Typography>
             </CardContent>
@@ -163,11 +163,11 @@ const FrontDeskDashboard: React.FC = () => {
         </Grid>
         <Grid item xs={12} sm={6} md={2}>
           <Card>
-            <CardContent sx={{ textAlign: 'center', py: 2 }}>
-              <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'error.main' }}>
+            <CardContent sx={{ textAlign: 'center', py: 0.75, px: 1.5 }}>
+              <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'error.main', lineHeight: 1.2 }}>
                 {todayStats.roomsOutOfOrder}
               </Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
                 Out of Order
               </Typography>
             </CardContent>
@@ -175,11 +175,11 @@ const FrontDeskDashboard: React.FC = () => {
         </Grid>
         <Grid item xs={12} sm={6} md={2}>
           <Card>
-            <CardContent sx={{ textAlign: 'center', py: 2 }}>
-              <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'warning.main' }}>
+            <CardContent sx={{ textAlign: 'center', py: 0.75, px: 1.5 }}>
+              <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'warning.main', lineHeight: 1.2 }}>
                 {todayStats.roomsUnderMaintenance}
               </Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
                 Under Maintenance
               </Typography>
             </CardContent>
@@ -187,19 +187,17 @@ const FrontDeskDashboard: React.FC = () => {
         </Grid>
         <Grid item xs={12} sm={6} md={2}>
           <Card>
-            <CardContent sx={{ textAlign: 'center', py: 2 }}>
-              <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'success.main' }}>
+            <CardContent sx={{ textAlign: 'center', py: 0.75, px: 1.5 }}>
+              <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'primary.main', lineHeight: 1.2 }}>
                 {todayStats.availableRooms}
               </Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
                 Available Rooms
               </Typography>
             </CardContent>
           </Card>
         </Grid>
-      </Grid>
-
-      {/* Tabs */}
+      </Grid>      {/* Tabs */}
       <Paper sx={{ mb: 3 }}>
         <Tabs value={activeTab} onChange={handleTabChange} aria-label="front desk tabs">
           <Tab label="Booking Management" />

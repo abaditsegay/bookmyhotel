@@ -72,9 +72,9 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
       console.log('API response:', result);
       
       if (result.success && result.data) {
-        console.log('Setting bookings:', result.data.content.length, 'items, total:', result.data.page?.totalElements);
+        console.log('Setting bookings:', result.data.content.length, 'items, total:', result.data.totalElements);
         setBookings(result.data.content);
-        setTotalElements(result.data.page?.totalElements || 0);
+        setTotalElements(result.data.totalElements || 0);
       } else {
         setError(result.message || 'Failed to load bookings');
         setBookings([]);

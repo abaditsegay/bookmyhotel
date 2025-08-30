@@ -56,12 +56,10 @@ interface RoomResponse {
 
 interface RoomPage {
   content: RoomResponse[];
-  page: {
-    totalElements: number;
-    totalPages: number;
-    number: number;
-    size: number;
-  };
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
 }
 
 const getAuthHeaders = (token: string) => ({
@@ -111,12 +109,10 @@ const frontDeskRoomApi = {
       // Transform backend response to match expected structure
       const transformedData: RoomPage = {
         content: backendData.content || [],
-        page: {
-          totalElements: backendData.page?.totalElements || backendData.totalElements || 0,
-          totalPages: backendData.page?.totalPages || backendData.totalPages || 0,
-          size: backendData.page?.size || backendData.size || size,
-          number: backendData.page?.number || backendData.number || page,
-        },
+        totalElements: backendData.totalElements || 0,
+        totalPages: backendData.totalPages || 0,
+        size: backendData.size || size,
+        number: backendData.number || page,
       };
       
       return { success: true, data: transformedData };
@@ -253,7 +249,7 @@ const FrontDeskRoomManagement: React.FC<FrontDeskRoomManagementProps> = ({ onRoo
       
       if (result.success && result.data) {
         setRooms(result.data.content);
-        setTotalElements(result.data.page.totalElements);
+        setTotalElements(result.data.totalElements);
       } else {
         setError(result.message || 'Failed to load rooms');
       }

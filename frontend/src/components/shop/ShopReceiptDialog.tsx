@@ -35,6 +35,8 @@ interface ShopReceiptDialogProps {
   hotelTaxId?: string;
   frontDeskPerson?: string;
   onOrderAdded?: () => void; // Callback to refresh order list
+  onPaymentRequired?: () => void; // Callback when payment is required
+  requiresPayment?: boolean; // Whether payment is still required
 }
 
 const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
@@ -46,6 +48,8 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
   hotelTaxId,
   frontDeskPerson,
   onOrderAdded,
+  onPaymentRequired,
+  requiresPayment = false,
 }) => {
   if (!order) return null;
 
@@ -259,6 +263,20 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
   };
 
   const handleCloseAndRefresh = () => {
+    console.log('handleCloseAndRefresh called:', {
+      requiresPayment,
+      onPaymentRequired: !!onPaymentRequired,
+      order: order?.id
+    });
+    
+    // If payment is required, trigger payment dialog instead of closing
+    if (requiresPayment && onPaymentRequired) {
+      console.log('Calling onPaymentRequired...');
+      onPaymentRequired();
+      return;
+    }
+    
+    console.log('Closing receipt dialog normally');
     onClose();
     // Call the callback to refresh the order list if provided
     if (onOrderAdded) {
@@ -510,7 +528,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
           Print Receipt
         </Button>
         <Button onClick={handleCloseAndRefresh} variant="contained" color="primary">
-          Close & Continue
+          {requiresPayment ? 'Continue to Payment' : 'Close & Continue'}
         </Button>
       </DialogActions>
     </Dialog>

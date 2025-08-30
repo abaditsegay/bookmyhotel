@@ -105,18 +105,18 @@ const ShopDashboard: React.FC = () => {
     <Box sx={{ width: '100%' }}>
       {/* Quick Stats Cards */}
       {dashboardStats && (
-        <Grid container spacing={3} sx={{ mb: 3 }}>
+        <Grid container spacing={1.5} sx={{ mb: 1.5 }}>
           <Grid item xs={12} sm={6} md={3}>
             <Card>
-              <CardContent>
+              <CardContent sx={{ py: 1, px: 1.5 }}>
                 <Box>
-                  <Typography color="textSecondary" gutterBottom variant="body2">
+                  <Typography color="textSecondary" gutterBottom variant="caption" sx={{ fontSize: '0.7rem' }}>
                     Total Products
                   </Typography>
-                  <Typography variant="h4">
+                  <Typography variant="h6" sx={{ lineHeight: 1.2 }}>
                     {dashboardStats.totalProducts}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
                     {dashboardStats.activeProducts} active
                   </Typography>
                 </Box>
@@ -126,15 +126,15 @@ const ShopDashboard: React.FC = () => {
 
           <Grid item xs={12} sm={6} md={3}>
             <Card>
-              <CardContent>
+              <CardContent sx={{ py: 1, px: 1.5 }}>
                 <Box>
-                  <Typography color="textSecondary" gutterBottom variant="body2">
+                  <Typography color="textSecondary" gutterBottom variant="caption" sx={{ fontSize: '0.7rem' }}>
                     Pending Orders
                   </Typography>
-                  <Typography variant="h4">
+                  <Typography variant="h6" sx={{ lineHeight: 1.2 }}>
                     {dashboardStats.pendingOrders}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
                     of {dashboardStats.totalOrders} total
                   </Typography>
                 </Box>
@@ -144,15 +144,15 @@ const ShopDashboard: React.FC = () => {
 
           <Grid item xs={12} sm={6} md={3}>
             <Card>
-              <CardContent>
+              <CardContent sx={{ py: 1, px: 1.5 }}>
                 <Box>
-                  <Typography color="textSecondary" gutterBottom variant="body2">
+                  <Typography color="textSecondary" gutterBottom variant="caption" sx={{ fontSize: '0.7rem' }}>
                     Today's Revenue
                   </Typography>
-                  <Typography variant="h4">
+                  <Typography variant="h6" sx={{ lineHeight: 1.2 }}>
                     ${dashboardStats.todayRevenue.toFixed(2)}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
                     ETB {(dashboardStats.todayRevenue * 55).toFixed(0)}
                   </Typography>
                 </Box>
@@ -162,15 +162,15 @@ const ShopDashboard: React.FC = () => {
 
           <Grid item xs={12} sm={6} md={3}>
             <Card>
-              <CardContent>
+              <CardContent sx={{ py: 1, px: 1.5 }}>
                 <Box>
-                  <Typography color="textSecondary" gutterBottom variant="body2">
+                  <Typography color="textSecondary" gutterBottom variant="caption" sx={{ fontSize: '0.7rem' }}>
                     Low Stock Items
                   </Typography>
-                  <Typography variant="h4">
+                  <Typography variant="h6" sx={{ lineHeight: 1.2 }}>
                     {dashboardStats.lowStockProducts}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
                     Need restocking
                   </Typography>
                 </Box>

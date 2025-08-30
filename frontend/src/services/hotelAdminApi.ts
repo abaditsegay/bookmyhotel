@@ -23,12 +23,14 @@ export interface BookingResponse {
 
 export interface BookingPage {
   content: BookingResponse[];
-  page: {
-    totalElements: number;
-    totalPages: number;
-    number: number;
-    size: number;
-  };
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
+  numberOfElements: number;
+  first: boolean;
+  last: boolean;
+  empty: boolean;
 }
 
 export interface BookingStats {
@@ -67,12 +69,10 @@ export interface RoomResponse {
 
 export interface RoomPage {
   content: RoomResponse[];
-  page: {
-    totalElements: number;
-    totalPages: number;
-    number: number;
-    size: number;
-  };
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
 }
 
 export interface RoomCreateRequest {
@@ -412,12 +412,10 @@ export const hotelAdminApi = {
       // Transform backend response to match expected structure
       const transformedData: RoomPage = {
         content: backendData.content || [],
-        page: {
-          totalElements: backendData.page?.totalElements || backendData.totalElements || 0,
-          totalPages: backendData.page?.totalPages || backendData.totalPages || 0,
-          size: backendData.page?.size || backendData.size || size,
-          number: backendData.page?.number || backendData.number || page,
-        },
+        totalElements: backendData.totalElements || 0,
+        totalPages: backendData.totalPages || 0,
+        size: backendData.size || size,
+        number: backendData.number || page,
       };
       
       return { success: true, data: transformedData };

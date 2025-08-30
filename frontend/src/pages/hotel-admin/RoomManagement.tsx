@@ -136,15 +136,14 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
       
       if (response.success && response.data) {
         console.log('Room API Response:', response.data);
-        console.log('Page Object:', response.data.page);
+        console.log('Total Elements:', response.data.totalElements);
         
         setRooms(response.data.content);
         
-        // Extract pagination info from the page object
-        const pageInfo = response.data.page || {};
-        const totalElements = pageInfo.totalElements || 0;
+        // Extract pagination info directly from response data
+        const totalElements = response.data.totalElements || 0;
         
-        console.log('Total Elements from page object:', totalElements);
+        console.log('Total Elements from response:', totalElements);
         setTotalElements(totalElements);
       } else {
         setError(response.message || 'Failed to load rooms');

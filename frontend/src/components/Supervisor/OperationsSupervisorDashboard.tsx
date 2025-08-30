@@ -352,34 +352,34 @@ const OperationsSupervisorDashboard: React.FC = () => {
                   </Box>
                   <Grid container spacing={2}>
                     <Grid item xs={6}>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
                         Total Tasks
                       </Typography>
-                      <Typography variant="h4">
+                      <Typography variant="h6" sx={{ lineHeight: 1.2 }}>
                         {stats.housekeeping.totalTasks}
                       </Typography>
                     </Grid>
                     <Grid item xs={6}>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
                         Completion Rate
                       </Typography>
-                      <Typography variant="h4">
+                      <Typography variant="h6" sx={{ lineHeight: 1.2 }}>
                         {getCompletionRate(stats.housekeeping.completedTasks, stats.housekeeping.totalTasks)}%
                       </Typography>
                     </Grid>
                     <Grid item xs={6}>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
                         Active Staff
                       </Typography>
-                      <Typography variant="h6">
+                      <Typography variant="body1" sx={{ fontWeight: 'bold', lineHeight: 1.2 }}>
                         {stats.housekeeping.activeStaff}
                       </Typography>
                     </Grid>
                     <Grid item xs={6}>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
                         Avg. Task Time
                       </Typography>
-                      <Typography variant="h6">
+                      <Typography variant="body1" sx={{ fontWeight: 'bold', lineHeight: 1.2 }}>
                         {stats.housekeeping.averageTaskTime}min
                       </Typography>
                     </Grid>
@@ -407,34 +407,34 @@ const OperationsSupervisorDashboard: React.FC = () => {
                   </Box>
                   <Grid container spacing={2}>
                     <Grid item xs={6}>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
                         Total Tasks
                       </Typography>
-                      <Typography variant="h4">
+                      <Typography variant="h6" sx={{ lineHeight: 1.2 }}>
                         {stats.maintenance.totalTasks}
                       </Typography>
                     </Grid>
                     <Grid item xs={6}>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
                         Completion Rate
                       </Typography>
-                      <Typography variant="h4">
+                      <Typography variant="h6" sx={{ lineHeight: 1.2 }}>
                         {getCompletionRate(stats.maintenance.completedTasks, stats.maintenance.totalTasks)}%
                       </Typography>
                     </Grid>
                     <Grid item xs={6}>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
                         Active Staff
                       </Typography>
-                      <Typography variant="h6">
+                      <Typography variant="body1" sx={{ fontWeight: 'bold', lineHeight: 1.2 }}>
                         {stats.maintenance.activeStaff}
                       </Typography>
                     </Grid>
                     <Grid item xs={6}>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
                         Total Cost
                       </Typography>
-                      <Typography variant="h6">
+                      <Typography variant="body1" sx={{ fontWeight: 'bold', lineHeight: 1.2 }}>
                         ${stats.maintenance.totalCost.toFixed(2)}
                       </Typography>
                     </Grid>

@@ -105,7 +105,7 @@ const RoomManagementTable: React.FC<RoomManagementTableProps> = ({ onRoomUpdate 
       
       if (result.success && result.data) {
         setRooms(result.data.content);
-        setTotalElements(result.data.page.totalElements);
+        setTotalElements(result.data.totalElements);
       } else {
         setError(result.message || 'Failed to load rooms');
       }
