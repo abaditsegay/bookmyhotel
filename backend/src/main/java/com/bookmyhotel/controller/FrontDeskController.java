@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,6 +23,15 @@ import com.bookmyhotel.dto.CheckoutResponse;
 import com.bookmyhotel.dto.ConsolidatedReceiptResponse;
 import com.bookmyhotel.dto.FrontDeskStats;
 import com.bookmyhotel.dto.RoomResponse;
+import com.bookmyhotel.entity.Reservation;
+import com.bookmyhotel.entity.ReservationStatus;
+import com.bookmyhotel.entity.Room;
+import com.bookmyhotel.entity.RoomStatus;
+import com.bookmyhotel.exception.ResourceNotFoundException;
+import com.bookmyhotel.repository.ReservationRepository;
+import com.bookmyhotel.repository.RoomRepository;
+import com.bookmyhotel.service.BookingService;
+import com.bookmyhotel.service.CheckoutReceiptService;
 import com.bookmyhotel.service.FrontDeskService;
 
 /**
@@ -34,6 +44,18 @@ public class FrontDeskController {
 
     @Autowired
     private FrontDeskService frontDeskService;
+
+    @Autowired
+    private CheckoutReceiptService checkoutReceiptService;
+
+    @Autowired
+    private ReservationRepository reservationRepository;
+
+    @Autowired
+    private RoomRepository roomRepository;
+
+    @Autowired
+    private com.bookmyhotel.service.BookingService bookingService;
 
     /**
      * Get paginated bookings for front desk
@@ -125,11 +147,15 @@ public class FrontDeskController {
     }
 
     /**
-     * Check out a guest with receipt generation (for frontend compatibility)
+     * Check out a guest with receipt generation (generic - supports both front desk and hotel admin)
      */
     @PutMapping("/checkout-with-receipt/{reservationId}")
-    public ResponseEntity<CheckoutResponse> checkOutWithReceipt(@PathVariable Long reservationId) {
-        CheckoutResponse response = frontDeskService.checkOutGuestWithReceipt(reservationId);
+    public ResponseEntity<CheckoutResponse> checkOutWithReceipt(
+            @PathVariable Long reservationId,
+            Authentication authentication) {
+        
+        // Use the generic checkout service method that works for both front desk and hotel admin
+        CheckoutResponse response = checkOutGuestWithReceiptGeneric(reservationId, authentication.getName());
         return ResponseEntity.ok(response);
     }
 
@@ -200,5 +226,53 @@ public class FrontDeskController {
     public ResponseEntity<RoomResponse> getRoomById(@PathVariable Long roomId) {
         RoomResponse room = frontDeskService.getRoomById(roomId);
         return ResponseEntity.ok(room);
+    }
+
+    /**
+     * Generic checkout method that can be used by both front desk and hotel admin
+     * This method contains the same business logic as FrontDeskService.checkOutGuestWithReceipt()
+     * but is role-agnostic and can be used by any authorized user
+     */
+    private CheckoutResponse checkOutGuestWithReceiptGeneric(Long reservationId, String generatedByEmail) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
+
+        // Validate that check-out is allowed
+        if (reservation.getStatus() != ReservationStatus.CHECKED_IN) {
+            throw new IllegalStateException("Only checked-in guests can be checked out");
+        }
+
+        // Update reservation status
+        reservation.setStatus(ReservationStatus.CHECKED_OUT);
+        reservation.setActualCheckOutTime(java.time.LocalDateTime.now());
+
+        // Update room status to need cleaning (if room is assigned)
+        Room room = reservation.getRoom();
+        if (room != null) {
+            room.setStatus(RoomStatus.MAINTENANCE); // Assuming rooms need cleaning after checkout
+            roomRepository.save(room);
+        }
+
+        reservation = reservationRepository.save(reservation);
+
+        // Generate booking response
+        BookingResponse bookingResponse = bookingService.convertToBookingResponse(reservation);
+
+        // Generate final receipt with room and shop charges
+        try {
+            ConsolidatedReceiptResponse receipt = checkoutReceiptService.generateFinalReceipt(
+                    reservationId, generatedByEmail);
+
+            return new CheckoutResponse(bookingResponse, receipt,
+                    "Guest checked out successfully. Final receipt generated with room charges and shop charges.");
+
+        } catch (Exception e) {
+            // Log the error but don't fail the checkout process
+            System.err.println("Failed to generate receipt during checkout: " + e.getMessage());
+            e.printStackTrace();
+
+            return new CheckoutResponse(bookingResponse, null,
+                    "Guest checked out successfully. Receipt generation failed - please generate manually if needed.");
+        }
     }
 }
