@@ -1,15 +1,13 @@
 // Operations Supervisor API Service
-import { 
-  HousekeepingTask, 
-  MaintenanceRequest, 
-  HousekeepingStaff,
+import {
+  PaginatedResponse,
+  HousekeepingTask,
+  MaintenanceRequest,
   CreateHousekeepingTaskRequest,
   CreateMaintenanceRequestRequest,
-  DashboardStats,
-  RecentActivity,
   StaffPerformance,
-  ApiResponse,
-  PaginatedResponse
+  DashboardStats,
+  RecentActivity
 } from '../types/operations';
 import TokenManager from '../utils/tokenManager';
 
@@ -53,8 +51,16 @@ class OperationsSupervisorApiService {
   }
 
   // Staff endpoints
-  async getStaff(page: number = 0, size: number = 10): Promise<PaginatedResponse<HousekeepingStaff>> {
-    return this.fetchApi<PaginatedResponse<HousekeepingStaff>>(`/staff?page=${page}&size=${size}`);
+  async getStaff(): Promise<{
+    operationsSupervisor: any[];
+    housekeeping: any[];
+    maintenance: any[];
+  }> {
+    return this.fetchApi<{
+      operationsSupervisor: any[];
+      housekeeping: any[];
+      maintenance: any[];
+    }>(`/staff`);
   }
 
   async getStaffTasks(staffId: number): Promise<HousekeepingTask[]> {

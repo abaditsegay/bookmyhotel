@@ -1001,4 +1001,80 @@ export const hotelAdminApi = {
       };
     }
   },
+
+  // ROOM TYPE PRICING METHODS
+  // ===========================
+
+  // Get room type pricing for specific room type
+  getRoomTypePricing: async (
+    token: string,
+    roomType: string
+  ): Promise<{ success: boolean; data?: any; message?: string }> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/hotel-admin/room-type-pricing/${roomType}`, {
+        method: 'GET',
+        headers: getAuthHeaders(token),
+      });
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          // No pricing found for this room type, return default
+          return { 
+            success: true, 
+            data: { 
+              roomType, 
+              basePricePerNight: 100, // Default price
+              weekendMultiplier: 1.2,
+              holidayMultiplier: 1.5,
+              peakSeasonMultiplier: 1.3,
+              isActive: true,
+              currency: 'USD'
+            } 
+          };
+        }
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to fetch room type pricing');
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      console.error('Room type pricing fetch error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to fetch room type pricing' 
+      };
+    }
+  },
+
+  // WALK-IN BOOKING METHODS
+  // =======================
+
+  // Create walk-in booking (hotel admin only)
+  createWalkInBooking: async (
+    token: string,
+    bookingRequest: any
+  ): Promise<{ success: boolean; data?: any; message?: string }> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/hotel-admin/walk-in-booking`, {
+        method: 'POST',
+        headers: getAuthHeaders(token),
+        body: JSON.stringify(bookingRequest),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to create walk-in booking');
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      console.error('Walk-in booking creation error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to create walk-in booking' 
+      };
+    }
+  },
 };

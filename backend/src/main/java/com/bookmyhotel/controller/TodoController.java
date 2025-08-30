@@ -42,7 +42,7 @@ public class TodoController {
      * Restricted to staff roles only - CUSTOMER and GUEST cannot access
      */
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('HOTEL_ADMIN') or hasRole('HOTEL_MANAGER') or hasRole('FRONTDESK') or hasRole('HOUSEKEEPING')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('HOTEL_ADMIN') or hasRole('HOTEL_MANAGER') or hasRole('FRONTDESK') or hasRole('HOUSEKEEPING') or hasRole('OPERATIONS_SUPERVISOR')")
     public ResponseEntity<List<Todo>> getUserTodos(Authentication authentication) {
         String userEmail = authentication.getName();
         List<Todo> todos = todoService.getUserTodos(userEmail);
@@ -54,7 +54,7 @@ public class TodoController {
      * Restricted to staff roles only - CUSTOMER and GUEST cannot access
      */
     @GetMapping("/filtered")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('HOTEL_ADMIN') or hasRole('HOTEL_MANAGER') or hasRole('FRONTDESK') or hasRole('HOUSEKEEPING')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('HOTEL_ADMIN') or hasRole('HOTEL_MANAGER') or hasRole('FRONTDESK') or hasRole('HOUSEKEEPING') or hasRole('OPERATIONS_SUPERVISOR')")
     public ResponseEntity<List<Todo>> getFilteredTodos(
             Authentication authentication,
             @RequestParam(required = false) Boolean completed,
@@ -69,7 +69,7 @@ public class TodoController {
      * Restricted to staff roles only - CUSTOMER and GUEST cannot access
      */
     @GetMapping("/paginated")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('HOTEL_ADMIN') or hasRole('HOTEL_MANAGER') or hasRole('FRONTDESK') or hasRole('HOUSEKEEPING')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('HOTEL_ADMIN') or hasRole('HOTEL_MANAGER') or hasRole('FRONTDESK') or hasRole('HOUSEKEEPING') or hasRole('OPERATIONS_SUPERVISOR')")
     public ResponseEntity<Page<Todo>> getPaginatedTodos(
             Authentication authentication,
             Pageable pageable) {
@@ -83,7 +83,7 @@ public class TodoController {
      * Restricted to staff roles only - CUSTOMER and GUEST cannot access
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('HOTEL_ADMIN') or hasRole('HOTEL_MANAGER') or hasRole('FRONTDESK') or hasRole('HOUSEKEEPING')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('HOTEL_ADMIN') or hasRole('HOTEL_MANAGER') or hasRole('FRONTDESK') or hasRole('HOUSEKEEPING') or hasRole('OPERATIONS_SUPERVISOR')")
     public ResponseEntity<Todo> getTodoById(
             Authentication authentication,
             @PathVariable Long id) {
@@ -98,7 +98,7 @@ public class TodoController {
      * Restricted to staff roles only - CUSTOMER and GUEST cannot access
      */
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('HOTEL_ADMIN') or hasRole('HOTEL_MANAGER') or hasRole('FRONTDESK') or hasRole('HOUSEKEEPING')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('HOTEL_ADMIN') or hasRole('HOTEL_MANAGER') or hasRole('FRONTDESK') or hasRole('HOUSEKEEPING') or hasRole('OPERATIONS_SUPERVISOR')")
     public ResponseEntity<Todo> createTodo(
             Authentication authentication,
             @Valid @RequestBody Todo todoRequest) {
@@ -112,7 +112,7 @@ public class TodoController {
      * Restricted to staff roles only - CUSTOMER and GUEST cannot access
      */
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('HOTEL_ADMIN') or hasRole('HOTEL_MANAGER') or hasRole('FRONTDESK') or hasRole('HOUSEKEEPING')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('HOTEL_ADMIN') or hasRole('HOTEL_MANAGER') or hasRole('FRONTDESK') or hasRole('HOUSEKEEPING') or hasRole('OPERATIONS_SUPERVISOR')")
     public ResponseEntity<Todo> updateTodo(
             Authentication authentication,
             @PathVariable Long id,
@@ -131,7 +131,7 @@ public class TodoController {
      * Restricted to staff roles only - CUSTOMER and GUEST cannot access
      */
     @PatchMapping("/{id}/toggle")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('HOTEL_ADMIN') or hasRole('HOTEL_MANAGER') or hasRole('FRONTDESK') or hasRole('HOUSEKEEPING')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('HOTEL_ADMIN') or hasRole('HOTEL_MANAGER') or hasRole('FRONTDESK') or hasRole('HOUSEKEEPING') or hasRole('OPERATIONS_SUPERVISOR')")
     public ResponseEntity<Todo> toggleTodoCompletion(
             Authentication authentication,
             @PathVariable Long id) {
@@ -149,7 +149,7 @@ public class TodoController {
      * Restricted to staff roles only - CUSTOMER and GUEST cannot access
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('HOTEL_ADMIN') or hasRole('HOTEL_MANAGER') or hasRole('FRONTDESK') or hasRole('HOUSEKEEPING')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('HOTEL_ADMIN') or hasRole('HOTEL_MANAGER') or hasRole('FRONTDESK') or hasRole('HOUSEKEEPING') or hasRole('OPERATIONS_SUPERVISOR')")
     public ResponseEntity<Void> deleteTodo(
             Authentication authentication,
             @PathVariable Long id) {
@@ -167,7 +167,7 @@ public class TodoController {
      * Restricted to staff roles only - CUSTOMER and GUEST cannot access
      */
     @GetMapping("/pending/count")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('HOTEL_ADMIN') or hasRole('HOTEL_MANAGER') or hasRole('FRONTDESK') or hasRole('HOUSEKEEPING')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('HOTEL_ADMIN') or hasRole('HOTEL_MANAGER') or hasRole('FRONTDESK') or hasRole('HOUSEKEEPING') or hasRole('OPERATIONS_SUPERVISOR')")
     public ResponseEntity<Long> getPendingTodosCount(Authentication authentication) {
         String userEmail = authentication.getName();
         long count = todoService.getPendingTodosCount(userEmail);
@@ -179,7 +179,7 @@ public class TodoController {
      * Restricted to staff roles only - CUSTOMER and GUEST cannot access
      */
     @GetMapping("/overdue")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('HOTEL_ADMIN') or hasRole('HOTEL_MANAGER') or hasRole('FRONTDESK') or hasRole('HOUSEKEEPING')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('HOTEL_ADMIN') or hasRole('HOTEL_MANAGER') or hasRole('FRONTDESK') or hasRole('HOUSEKEEPING') or hasRole('OPERATIONS_SUPERVISOR')")
     public ResponseEntity<List<Todo>> getOverdueTodos(Authentication authentication) {
         String userEmail = authentication.getName();
         List<Todo> overdueTodos = todoService.getOverdueTodos(userEmail);

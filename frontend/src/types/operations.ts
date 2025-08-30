@@ -42,9 +42,10 @@ export enum HousekeepingTaskStatus {
 
 export enum TaskPriority {
   LOW = 'LOW',
-  MEDIUM = 'MEDIUM',
+  NORMAL = 'NORMAL',
   HIGH = 'HIGH',
-  URGENT = 'URGENT'
+  URGENT = 'URGENT',
+  CRITICAL = 'CRITICAL'
 }
 
 export enum ShiftType {

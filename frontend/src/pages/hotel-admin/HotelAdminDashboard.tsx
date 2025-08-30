@@ -46,6 +46,7 @@ import RoomManagement from './RoomManagement';
 import StaffManagement from './StaffManagement';
 import StaffScheduleManagement from '../../components/StaffScheduleManagement';
 import HotelEditDialog from '../../components/hotel/HotelEditDialog';
+import WalkInBookingModal from '../../components/booking/WalkInBookingModal';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -100,6 +101,9 @@ const HotelAdminDashboard: React.FC = () => {
   // Delete booking dialog state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<BookingResponse | null>(null);
+  
+  // Walk-in booking modal state
+  const [walkInModalOpen, setWalkInModalOpen] = useState(false);
 
   // Hotel state
   const [hotel, setHotel] = useState<Hotel | null>(null);
@@ -717,6 +721,15 @@ const HotelAdminDashboard: React.FC = () => {
               >
                 Search
               </Button>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={() => setWalkInModalOpen(true)}
+                disabled={bookingsLoading}
+                sx={{ minWidth: '140px' }}
+              >
+                Walk-in Booking
+              </Button>
             </Box>
 
             {/* Loading State */}
@@ -1195,6 +1208,17 @@ const HotelAdminDashboard: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Walk-in Booking Modal */}
+      <WalkInBookingModal
+        open={walkInModalOpen}
+        onClose={() => setWalkInModalOpen(false)}
+        onSuccess={(bookingData) => {
+          setWalkInModalOpen(false);
+          loadBookings(); // Refresh the bookings list
+        }}
+        apiContext="hotel-admin"
+      />
 
       {/* Hotel Edit Dialog */}
       <HotelEditDialog

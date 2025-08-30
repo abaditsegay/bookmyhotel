@@ -1,0 +1,22 @@
+<!-- Option 5: Minimalist Text with Bed Icon -->
+<svg width="220" height="60" viewBox="0 0 220 60" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bedGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#FF6B35;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#DC2626;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Bed Icon -->
+  <rect x="8" y="25" width="30" height="20" fill="url(#bedGradient)" rx="4"/>
+  <rect x="10" y="27" width="26" height="8" fill="#FEF3C7" rx="2"/>
+  <circle cx="15" cy="31" r="2" fill="#F59E0B"/>
+  <circle cx="25" cy="31" r="2" fill="#F59E0B"/>
+  <rect x="6" y="40" width="34" height="6" fill="#FBBF24" rx="3"/>
+  
+  <!-- Pillow -->
+  <ellipse cx="20" cy="22" rx="8" ry="3" fill="#FEF3C7"/>
+  
+  <!-- Clean Typography -->
+  <text x="50" y="35" font-family="Arial, sans-serif" font-size="20" font-weight="600" fill="#1F2937">BookMyHotel</text>
+</svg>

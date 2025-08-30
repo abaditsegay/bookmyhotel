@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.bookmyhotel.dto.BookingResponse;
+import com.bookmyhotel.dto.CheckoutResponse;
+import com.bookmyhotel.dto.ConsolidatedReceiptResponse;
 import com.bookmyhotel.dto.FrontDeskStats;
 import com.bookmyhotel.dto.HotelDTO;
 import com.bookmyhotel.dto.RoomResponse;
@@ -49,6 +51,9 @@ public class FrontDeskService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private CheckoutReceiptService checkoutReceiptService;
 
     @Autowired
     private BookingService bookingService;
@@ -309,9 +314,17 @@ public class FrontDeskService {
     }
 
     /**
-     * Check out a guest
+     * Check out a guest (backward compatibility)
      */
     public BookingResponse checkOutGuest(Long reservationId) {
+        CheckoutResponse checkoutResponse = checkOutGuestWithReceipt(reservationId);
+        return checkoutResponse.getBooking();
+    }
+
+    /**
+     * Check out a guest and generate final receipt
+     */
+    public CheckoutResponse checkOutGuestWithReceipt(Long reservationId) {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
 
@@ -324,10 +337,12 @@ public class FrontDeskService {
         reservation.setStatus(ReservationStatus.CHECKED_OUT);
         reservation.setActualCheckOutTime(LocalDateTime.now());
 
-        // Update room status to need cleaning
+        // Update room status to need cleaning (if room is assigned)
         Room room = reservation.getRoom();
-        room.setStatus(RoomStatus.MAINTENANCE); // Assuming rooms need cleaning after checkout
-        roomRepository.save(room);
+        if (room != null) {
+            room.setStatus(RoomStatus.MAINTENANCE); // Assuming rooms need cleaning after checkout
+            roomRepository.save(room);
+        }
 
         reservation = reservationRepository.save(reservation);
 
@@ -349,7 +364,43 @@ public class FrontDeskService {
          * }
          */
 
-        return convertToBookingResponse(reservation);
+        // Generate booking response
+        BookingResponse bookingResponse = convertToBookingResponse(reservation);
+
+        // Generate final receipt with room and shop charges
+        try {
+            // Get current user email for receipt generation
+            String generatedByEmail = getCurrentUserEmail();
+
+            ConsolidatedReceiptResponse receipt = checkoutReceiptService.generateFinalReceipt(
+                    reservationId, generatedByEmail);
+
+            return new CheckoutResponse(bookingResponse, receipt,
+                    "Guest checked out successfully. Final receipt generated with room charges and shop charges.");
+
+        } catch (Exception e) {
+            // Log the error but don't fail the checkout process
+            System.err.println("Failed to generate receipt during checkout: " + e.getMessage());
+            e.printStackTrace();
+
+            return new CheckoutResponse(bookingResponse, null,
+                    "Guest checked out successfully. Receipt generation failed - please generate manually if needed.");
+        }
+    }
+
+    /**
+     * Get current authenticated user's email
+     */
+    private String getCurrentUserEmail() {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication != null && authentication.getName() != null) {
+                return authentication.getName();
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to get current user email: " + e.getMessage());
+        }
+        return "front-desk-staff@bookmyhotel.com"; // Fallback
     }
 
     /**

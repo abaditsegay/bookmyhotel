@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.bookmyhotel.dto.BookingModificationRequest;
 import com.bookmyhotel.dto.BookingModificationResponse;
+import com.bookmyhotel.dto.BookingRequest;
 import com.bookmyhotel.dto.BookingResponse;
 import com.bookmyhotel.dto.HotelDTO;
 import com.bookmyhotel.dto.RoomDTO;
@@ -27,6 +29,7 @@ import com.bookmyhotel.dto.RoomTypePricingDTO;
 import com.bookmyhotel.dto.UserDTO;
 import com.bookmyhotel.entity.ReservationStatus;
 import com.bookmyhotel.entity.RoomType;
+import com.bookmyhotel.service.BookingService;
 import com.bookmyhotel.service.HotelAdminService;
 import com.bookmyhotel.service.RoomTypePricingService;
 
@@ -45,6 +48,9 @@ public class HotelAdminController {
 
     @Autowired
     private RoomTypePricingService roomTypePricingService;
+
+    @Autowired
+    private BookingService bookingService;
 
     // Hotel Management
     @GetMapping("/hotel")
@@ -343,5 +349,33 @@ public class HotelAdminController {
     public ResponseEntity<Void> initializeDefaultPricing(Authentication auth) {
         roomTypePricingService.initializeDefaultPricing(auth.getName());
         return ResponseEntity.ok().build();
+    }
+
+    // Walk-in Booking Management
+
+    /**
+     * Create a walk-in booking
+     * Hotel admins can create immediate bookings for walk-in guests
+     */
+    @PostMapping("/walk-in-booking")
+    public ResponseEntity<BookingResponse> createWalkInBooking(
+            @Valid @RequestBody BookingRequest request,
+            Authentication auth) {
+
+        String userEmail = auth.getName();
+
+        // Set payment method to front desk payment for walk-in bookings
+        if (request.getPaymentMethodId() == null || request.getPaymentMethodId().isEmpty()) {
+            request.setPaymentMethodId("pay_at_frontdesk");
+        }
+
+        try {
+            BookingResponse response = bookingService.createBooking(request, userEmail);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (Exception e) {
+            // Log error and return appropriate response
+            System.err.println("Failed to create walk-in booking: " + e.getMessage());
+            throw new RuntimeException("Failed to create walk-in booking: " + e.getMessage());
+        }
     }
 }

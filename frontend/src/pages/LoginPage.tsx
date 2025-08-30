@@ -158,8 +158,8 @@ const LoginPage: React.FC = () => {
           gap: 3,
         }}
       >
-        {/* Four Column Layout for Hotel Staff */}
-        <Box sx={{ display: 'flex', gap: 3, width: '100%', maxWidth: 1800 }}>
+        {/* Two Column Layout for Login */}
+        <Box sx={{ display: 'flex', gap: 3, width: '100%', maxWidth: 900 }}>
           {/* Main Login Form */}
           <Card sx={{ flex: 1, maxWidth: 450, maxHeight: '90vh', overflow: 'auto' }}>
             <CardContent sx={{ p: 4 }}>
@@ -369,506 +369,130 @@ const LoginPage: React.FC = () => {
             </CardContent>
           </Card>
 
-          {/* Ethiopian Heritage Hotels Section */}
+          {/* Addis Sunshine Hotel Section */}
           <Card sx={{ flex: 1, maxWidth: 400, maxHeight: '90vh', overflow: 'auto' }}>
             <CardContent sx={{ p: 3 }}>
               <Typography variant="h5" component="h2" gutterBottom align="center" color="primary">
-                🇪🇹 Ethiopian Heritage Hotels
+                🇪🇹 Addis Sunshine Hotel
               </Typography>
               <Typography variant="body2" color="textSecondary" align="center" sx={{ mb: 3 }}>
-                Authentic Ethiopian hospitality - New!
+                Demo Hotel - Comprehensive Staff & Data
               </Typography>
 
               <Alert severity="success" sx={{ mb: 2 }}>
                 <Typography variant="body2">
-                  🆕 <strong>NEW:</strong> Ethiopian hotels with 68+ staff members! International-ready with English interface ✅
+                  ✨ <strong>DEMO READY:</strong> Complete hotel operation with 5 staff roles, 33 rooms, current guests, and realistic operational data! ✅
                 </Typography>
               </Alert>
 
               <Divider sx={{ my: 2 }}>
-                <Chip label="Ethiopian Hotel Credentials" size="small" />
+                <Chip label="Addis Sunshine Hotel Staff" size="small" />
               </Divider>
 
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <Button
                   variant="outlined"
                   fullWidth
-                  onClick={() => fillSampleUser('hotel.admin@sheraton-addis.et', 'password123')}
-                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
-                >
-                  <Typography variant="body2" fontWeight="bold">🏨 Sheraton Addis Ababa</Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    hotel.admin@sheraton-addis.et
-                  </Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    Password: password123
-                  </Typography>
-                  <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
-                    ✅ Hawaryat Bekele - Hotel Admin
-                  </Typography>
-                </Button>
-
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  onClick={() => fillSampleUser('hotel.admin@lalibela-lodge.et', 'password123')}
-                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
-                >
-                  <Typography variant="body2" fontWeight="bold">🏛️ Lalibela Cultural Lodge</Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    hotel.admin@lalibela-lodge.et
-                  </Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    Password: password123
-                  </Typography>
-                  <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
-                    ✅ Zera Yacob - Hotel Admin
-                  </Typography>
-                </Button>
-
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  onClick={() => fillSampleUser('frontdesk@sheraton-addis.et', 'password123')}
-                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
-                >
-                  <Typography variant="body2" fontWeight="bold">🎯 Sheraton Front Desk</Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    frontdesk@sheraton-addis.et
-                  </Typography>
-                </Button>
-
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  onClick={() => fillSampleUser('frontdesk@lalibela-lodge.et', 'password123')}
-                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
-                >
-                  <Typography variant="body2" fontWeight="bold">🎯 Lalibela Front Desk</Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    frontdesk@lalibela-lodge.et
-                  </Typography>
-                </Button>
-              </Box>
-
-              <Box sx={{ mt: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
-                <Typography variant="caption" color="textSecondary">
-                  <strong>Ethiopian Hotels Info:</strong><br/>
-                  📍 Addis Ababa & Lalibela, Ethiopia<br/>
-                  👥 68 total staff members<br/>
-                  🏨 2 hotels with 19 premium rooms<br/>
-                  ✨ Authentic Ethiopian culture & hospitality
-                </Typography>
-              </Box>
-            </CardContent>
-          </Card>
-
-          {/* Grand Plaza Hotel Credentials */}
-          <Card sx={{ flex: 1, maxWidth: 400, maxHeight: '90vh', overflow: 'auto' }}>
-            <CardContent sx={{ p: 3 }}>
-              <Typography variant="h5" component="h2" gutterBottom align="center" color="primary">
-                🏛️ Grand Plaza Hotel
-              </Typography>
-              <Typography variant="body2" color="textSecondary" align="center" sx={{ mb: 3 }}>
-                Luxury Hotel Chain - New York
-              </Typography>
-
-              <Alert severity="success" sx={{ mb: 2 }}>
-                <Typography variant="body2">
-                  🔧 <strong>UPDATED:</strong> All hotel staff credentials now use standardized password "password" for easy testing! All accounts verified ✅
-                </Typography>
-              </Alert>
-
-              <Divider sx={{ my: 2 }}>
-                <Chip label="Staff Login Credentials" size="small" />
-              </Divider>
-
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  onClick={() => fillSampleUser('hotel.admin@grandplaza.com', 'password')}
+                  onClick={() => fillSampleUser('bookmyhotel2025+newhotel001@gmail.com', 'password')}
                   sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
                 >
                   <Typography variant="body2" fontWeight="bold">🏨 Hotel Administrator</Typography>
                   <Typography variant="caption" color="textSecondary">
-                    hotel.admin@grandplaza.com
+                    bookmyhotel2025+newhotel001@gmail.com
                   </Typography>
                   <Typography variant="caption" color="textSecondary">
                     Password: password
                   </Typography>
                   <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
-                    ✅ John Manager - Working Perfectly
+                    ✅ Almaz Kebede - Hotel Admin
                   </Typography>
                 </Button>
-                
+
                 <Button
                   variant="outlined"
                   fullWidth
-                  onClick={() => fillSampleUser('frontdesk@grandplaza.com', 'password')}
+                  onClick={() => fillSampleUser('bookmyhotel2025+newhotelfd001@gmail.com', 'password')}
                   sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
                 >
                   <Typography variant="body2" fontWeight="bold">🎯 Front Desk Staff</Typography>
                   <Typography variant="caption" color="textSecondary">
-                    frontdesk@grandplaza.com
+                    bookmyhotel2025+newhotelfd001@gmail.com
                   </Typography>
                   <Typography variant="caption" color="textSecondary">
                     Password: password
                   </Typography>
                   <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
-                    ✅ Jane Desk - Working Perfectly
+                    ✅ Dawit Tadesse - Front Desk
                   </Typography>
                 </Button>
 
                 <Button
                   variant="outlined"
                   fullWidth
-                  onClick={() => fillSampleUser('housekeeping@grandplaza.com', 'password')}
+                  onClick={() => fillSampleUser('operations@addissunshine.com', 'password')}
+                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
+                >
+                  <Typography variant="body2" fontWeight="bold">🔧 Operations Supervisor</Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    operations@addissunshine.com
+                  </Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    Password: password
+                  </Typography>
+                  <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
+                    ✅ Yohannes Getachew - Operations
+                  </Typography>
+                </Button>
+
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  onClick={() => fillSampleUser('housekeeping@addissunshine.com', 'password')}
                   sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
                 >
                   <Typography variant="body2" fontWeight="bold">🧹 Housekeeping Staff</Typography>
                   <Typography variant="caption" color="textSecondary">
-                    housekeeping@grandplaza.com
+                    housekeeping@addissunshine.com
                   </Typography>
                   <Typography variant="caption" color="textSecondary">
                     Password: password
                   </Typography>
                   <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
-                    ✅ Anna Miller - Working Perfectly
+                    ✅ Tigist Haile - Housekeeping
                   </Typography>
                 </Button>
 
                 <Button
                   variant="outlined"
                   fullWidth
-                  onClick={() => fillSampleUser('maintenance@grandplaza.com', 'password')}
+                  onClick={() => fillSampleUser('maintenance@addissunshine.com', 'password')}
                   sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
                 >
-                  <Typography variant="body2" fontWeight="bold">🔨 Maintenance Staff</Typography>
+                  <Typography variant="body2" fontWeight="bold">⚙️ Maintenance Staff</Typography>
                   <Typography variant="caption" color="textSecondary">
-                    maintenance@grandplaza.com
+                    maintenance@addissunshine.com
                   </Typography>
                   <Typography variant="caption" color="textSecondary">
                     Password: password
                   </Typography>
                   <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
-                    ✅ Carlos Rodriguez - Working Perfectly
+                    ✅ Bekele Mengistu - Maintenance
                   </Typography>
                 </Button>
               </Box>
 
               <Box sx={{ mt: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
                 <Typography variant="caption" color="textSecondary">
-                  <strong>Hotel Info:</strong><br/>
-                  📍 123 Royal Avenue, New York<br/>
-                  📞 +1-212-555-0101<br/>
-                  ✨ Luxury accommodations & service
-                </Typography>
-              </Box>
-            </CardContent>
-          </Card>
-
-          {/* Operations Supervisor Section */}
-          <Card sx={{ flex: 1, maxWidth: 400, maxHeight: '90vh', overflow: 'auto' }}>
-            <CardContent sx={{ p: 3 }}>
-              <Typography variant="h5" component="h2" gutterBottom align="center" color="primary">
-                🔧 Operations Supervisors
-              </Typography>
-              <Typography variant="body2" color="textSecondary" align="center" sx={{ mb: 3 }}>
-                Staff Schedule Management & Operations
-              </Typography>
-
-              <Alert severity="success" sx={{ mb: 2 }}>
-                <Typography variant="body2">
-                  ✅ <strong>NEW:</strong> Operations Supervisors can now access staff schedule management! All accounts updated with proper permissions ✅
-                </Typography>
-              </Alert>
-
-              <Divider sx={{ my: 2 }}>
-                <Chip label="Operations Supervisor Credentials" size="small" />
-              </Divider>
-
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  onClick={() => fillSampleUser('operations@grandplaza.com', 'password')}
-                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
-                >
-                  <Typography variant="body2" fontWeight="bold">🏨 Grand Plaza Operations</Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    operations@grandplaza.com
-                  </Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    Password: password
-                  </Typography>
-                  <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
-                    ✅ David Operations - Staff Schedule Access
-                  </Typography>
-                </Button>
-
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  onClick={() => fillSampleUser('operations@sheraton-addis.et', 'password123')}
-                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
-                >
-                  <Typography variant="body2" fontWeight="bold">🇪🇹 Sheraton Addis Operations</Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    operations@sheraton-addis.et
-                  </Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    Password: password123
-                  </Typography>
-                  <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
-                    ✅ Tamrat Alemu - Ethiopian Heritage
-                  </Typography>
-                </Button>
-
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  onClick={() => fillSampleUser('operations@lalibela-lodge.et', 'password123')}
-                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
-                >
-                  <Typography variant="body2" fontWeight="bold">🏛️ Lalibela Lodge Operations</Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    operations@lalibela-lodge.et
-                  </Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    Password: password123
-                  </Typography>
-                  <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
-                    ✅ Mihret Kedada - Cultural Heritage
-                  </Typography>
-                </Button>
-
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  onClick={() => fillSampleUser('operations@maritimegrand.com', 'password')}
-                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
-                >
-                  <Typography variant="body2" fontWeight="bold">🌊 Maritime Grand Operations</Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    operations@maritimegrand.com
-                  </Typography>
-                  <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
-                    ✅ Rachel Operations
-                  </Typography>
-                </Button>
-
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  onClick={() => fillSampleUser('operations@urbanbusinesshub.com', 'password')}
-                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
-                >
-                  <Typography variant="body2" fontWeight="bold">🏙️ Urban Business Operations</Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    operations@urbanbusinesshub.com
-                  </Typography>
-                  <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
-                    ✅ Marcus Operations
-                  </Typography>
-                </Button>
-              </Box>
-
-              <Box sx={{ mt: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
-                <Typography variant="caption" color="textSecondary">
-                  <strong>Operations Features:</strong><br/>
-                  👥 Staff schedule management<br/>
-                  📋 Operational oversight<br/>
-                  🔧 System coordination<br/>
-                  ✅ All permissions verified & working
-                </Typography>
-              </Box>
-            </CardContent>
-          </Card>
-
-          {/* Multi-Hotel Credentials Section */}
-          <Card sx={{ flex: 1, maxWidth: 400, maxHeight: '90vh', overflow: 'auto' }}>
-            <CardContent sx={{ p: 3 }}>
-              <Typography variant="h5" component="h2" gutterBottom align="center" color="primary">
-                � More Hotels - All Use "password"
-              </Typography>
-              <Typography variant="body2" color="textSecondary" align="center" sx={{ mb: 3 }}>
-                All 13 hotels standardized with "password"
-              </Typography>
-
-              <Divider sx={{ my: 2 }}>
-                <Chip label="Quick Test Credentials" size="small" />
-              </Divider>
-
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  onClick={() => fillSampleUser('hoteladmin@grandtesthotel.com', 'password')}
-                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
-                >
-                  <Typography variant="body2" fontWeight="bold">🏨 Grand Test Hotel</Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    hoteladmin@grandtesthotel.com
-                  </Typography>
-                </Button>
-                
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  onClick={() => fillSampleUser('hoteladmin@sunshineresort.com', 'password')}
-                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
-                >
-                  <Typography variant="body2" fontWeight="bold">🌞 Sunshine Family Resort</Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    hoteladmin@sunshineresort.com
-                  </Typography>
-                </Button>
-
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  onClick={() => fillSampleUser('hoteladmin@grandluxuryresort.com', 'password')}
-                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
-                >
-                  <Typography variant="body2" fontWeight="bold">✨ Grand Luxury Resort & Spa</Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    hoteladmin@grandluxuryresort.com
-                  </Typography>
-                </Button>
-
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  onClick={() => fillSampleUser('hoteladmin@metrobusinesshotel.com', 'password')}
-                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
-                >
-                  <Typography variant="body2" fontWeight="bold">🏢 Metropolitan Business Hotel</Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    hoteladmin@metrobusinesshotel.com
-                  </Typography>
-                </Button>
-
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  onClick={() => fillSampleUser('admin@maritimegrand.com', 'password')}
-                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
-                >
-                  <Typography variant="body2" fontWeight="bold">🌊 The Maritime Grand Hotel</Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    admin@maritimegrand.com
-                  </Typography>
-                </Button>
-
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  onClick={() => fillSampleUser('admin@urbanbusinesshub.com', 'password')}
-                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
-                >
-                  <Typography variant="body2" fontWeight="bold">🏙️ Urban Business Hub</Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    admin@urbanbusinesshub.com
-                  </Typography>
-                </Button>
-
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  onClick={() => fillSampleUser('hoteladmin@globalhotel.co.uk', 'password')}
-                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
-                >
-                  <Typography variant="body2" fontWeight="bold">🌍 Global International Hotel</Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    hoteladmin@globalhotel.co.uk
-                  </Typography>
-                </Button>
-              </Box>
-
-              <Box sx={{ mt: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
-                <Typography variant="caption" color="textSecondary">
-                  <strong>All Hotels Info:</strong><br/>
-                  � Password: "password" for ALL users<br/>
-                  👥 Each hotel has: hoteladmin, frontdesk, housekeeping, maintenance<br/>
-                  🏨 13 hotels total with comprehensive room data<br/>
-                  📋 See STANDARDIZED_LOGIN_CREDENTIALS.md for complete list
+                  <strong>Addis Sunshine Hotel Info:</strong><br/>
+                  📍 Addis Ababa, Ethiopia<br/>
+                  🏨 33 rooms (Standard, Deluxe, Suite)<br/>
+                  👥 5 staff members with different roles<br/>
+                  ✨ Complete demo data with real bookings
                 </Typography>
               </Box>
             </CardContent>
           </Card>
         </Box>
-
-        {/* Customer Credentials Row - Spans across all four columns */}
-        <Card sx={{ width: '100%', maxWidth: 1800 }}>
-          <CardContent sx={{ p: 3 }}>
-            <Typography variant="h6" component="h3" gutterBottom align="center" color="primary">
-              👤 Customer Portal Access
-            </Typography>
-            <Typography variant="body2" color="textSecondary" align="center" sx={{ mb: 3 }}>
-              Regular customers can book hotels, manage reservations, and access their account
-            </Typography>
-
-            <Divider sx={{ my: 2 }}>
-              <Chip label="Customer Login Credentials" size="small" />
-            </Divider>
-
-            <Box sx={{ display: 'flex', gap: 3, justifyContent: 'center', flexWrap: 'wrap' }}>
-              <Button
-                variant="outlined"
-                onClick={() => fillSampleUser('customer@example.com', 'password')}
-                sx={{ 
-                  textTransform: 'none', 
-                  display: 'flex', 
-                  flexDirection: 'column', 
-                  py: 2,
-                  minWidth: 280
-                }}
-              >
-                <Typography variant="body2" fontWeight="bold">👤 Regular Customer</Typography>
-                <Typography variant="caption" color="textSecondary">
-                  customer@example.com
-                </Typography>
-                <Typography variant="caption" color="textSecondary">
-                  Password: password
-                </Typography>
-                <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
-                  ✅ John Customer - Working
-                </Typography>
-              </Button>
-
-              <Button
-                variant="outlined"
-                onClick={() => fillSampleUser('sarah.guest@email.com', 'password')}
-                sx={{ 
-                  textTransform: 'none', 
-                  display: 'flex', 
-                  flexDirection: 'column', 
-                  py: 2,
-                  minWidth: 280
-                }}
-              >
-                <Typography variant="body2" fontWeight="bold">👩‍💼 Premium Customer</Typography>
-                <Typography variant="caption" color="textSecondary">
-                  sarah.guest@email.com
-                </Typography>
-                <Typography variant="caption" color="textSecondary">
-                  Password: password
-                </Typography>
-                <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
-                  ✅ Sarah Guest - Working
-                </Typography>
-              </Button>
-            </Box>
-
-            <Box sx={{ mt: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
-              <Typography variant="caption" color="textSecondary" align="center" display="block">
-                <strong>Customer Features:</strong><br/>
-                🔍 Search and browse hotels  •  📅 Make reservations  •  💳 Secure payments  •  📱 Manage bookings  •  ⭐ Review hotels
-              </Typography>
-            </Box>
-          </CardContent>
-        </Card>
       </Box>
     </Container>
   );

@@ -34,6 +34,13 @@ interface AuthContextType {
   isAuthenticated: boolean;
   onTokenChange?: (token: string) => void;
   clearError: () => void;
+  // Helper functions for role checking
+  hasRole: (role: string) => boolean;
+  hasAnyRole: (roles: string[]) => boolean;
+  isFrontDesk: () => boolean;
+  isHotelAdmin: () => boolean;
+  canAccessCheckout: () => boolean;
+  canEditBookings: () => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -122,7 +129,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
         lastLogin: new Date().toISOString(),
         isActive: true,
         // Helper properties
-        isSystemWide: !loginData.tenantId, // true if tenantId is null/undefined
+        isSystemWide: !loginData.tenantId && (Array.isArray(loginData.roles) ? loginData.roles : [loginData.roles]).includes('ADMIN'), // true if tenantId is null AND user is ADMIN
         isTenantBound: !!loginData.tenantId, // true if tenantId exists
       };
 
@@ -220,6 +227,35 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
     }
   };
 
+  // Helper functions for role checking
+  const hasRole = (role: string): boolean => {
+    if (!user) return false;
+    const userRoles = user.roles && user.roles.length > 0 ? user.roles : (user.role ? [user.role] : []);
+    return userRoles.includes(role);
+  };
+
+  const hasAnyRole = (roles: string[]): boolean => {
+    if (!user) return false;
+    const userRoles = user.roles && user.roles.length > 0 ? user.roles : (user.role ? [user.role] : []);
+    return roles.some(role => userRoles.includes(role));
+  };
+
+  const isFrontDesk = (): boolean => {
+    return hasRole('FRONTDESK');
+  };
+
+  const isHotelAdmin = (): boolean => {
+    return hasRole('HOTEL_ADMIN');
+  };
+
+  const canAccessCheckout = (): boolean => {
+    return hasAnyRole(['FRONTDESK', 'HOTEL_ADMIN', 'ADMIN']);
+  };
+
+  const canEditBookings = (): boolean => {
+    return hasAnyRole(['FRONTDESK', 'HOTEL_ADMIN', 'ADMIN']);
+  };
+
   const value: AuthContextType = {
     user,
     loading,
@@ -233,6 +269,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
     isAuthenticated: !!user,
     onTokenChange,
     clearError,
+    hasRole,
+    hasAnyRole,
+    isFrontDesk,
+    isHotelAdmin,
+    canAccessCheckout,
+    canEditBookings,
   };
 
   return (

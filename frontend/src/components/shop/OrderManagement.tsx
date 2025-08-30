@@ -38,7 +38,7 @@ import {
 } from '@mui/icons-material';
 import { format } from 'date-fns';
 import { shopApiService } from '../../services/shopApi';
-import { ShopOrder, ShopOrderStatus, PaymentMethod, DeliveryType } from '../../types/shop';
+import { ShopOrder, ShopOrderStatus, PaymentMethod, DeliveryType, ShopOrderUtils } from '../../types/shop';
 
 const OrderManagement: React.FC = () => {
   const [orders, setOrders] = useState<ShopOrder[]>([]);
@@ -95,7 +95,7 @@ const OrderManagement: React.FC = () => {
 
   const filteredOrders = orders.filter(order => {
     const matchesSearch = order.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         ShopOrderUtils.getDisplayCustomerName(order).toLowerCase().includes(searchTerm.toLowerCase()) ||
                          (order.roomNumber && order.roomNumber.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesStatus = statusFilter === 'ALL' || order.status === statusFilter;
     return matchesSearch && matchesStatus;
@@ -213,12 +213,14 @@ const OrderManagement: React.FC = () => {
                 </TableCell>
                 <TableCell>
                   <Box>
-                    <Typography variant="subtitle2">{order.customerName}</Typography>
-                    {order.roomNumber && (
-                      <Typography variant="body2" color="text.secondary">
-                        Room {order.roomNumber}
-                      </Typography>
-                    )}
+                    <TableCell>
+                  <Box>
+                    <Typography variant="subtitle2">{ShopOrderUtils.getDisplayCustomerName(order)}</Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {ShopOrderUtils.getOrderTypeDescription(order)}
+                    </Typography>
+                  </Box>
+                </TableCell>
                     {order.customerEmail && (
                       <Typography variant="caption" color="text.secondary">
                         {order.customerEmail}
@@ -314,7 +316,8 @@ const OrderManagement: React.FC = () => {
                 <Card>
                   <CardContent>
                     <Typography variant="h6" gutterBottom>Customer Information</Typography>
-                    <Typography component="div"><strong>Name:</strong> {selectedOrder.customerName}</Typography>
+                    <Typography component="div"><strong>Name:</strong> {ShopOrderUtils.getDisplayCustomerName(selectedOrder)}</Typography>
+                    <Typography component="div"><strong>Order Type:</strong> {ShopOrderUtils.getOrderTypeDescription(selectedOrder)}</Typography>
                     {selectedOrder.customerEmail && (
                       <Typography component="div"><strong>Email:</strong> {selectedOrder.customerEmail}</Typography>
                     )}

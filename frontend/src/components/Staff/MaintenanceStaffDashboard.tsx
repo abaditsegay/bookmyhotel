@@ -154,7 +154,7 @@ const MaintenanceStaffDashboard: React.FC = () => {
     switch (priority.toUpperCase()) {
       case 'URGENT': return 'error';
       case 'HIGH': return 'warning';
-      case 'MEDIUM': return 'info';
+      case 'NORMAL': return 'info';
       case 'LOW': return 'default';
       default: return 'default';
     }

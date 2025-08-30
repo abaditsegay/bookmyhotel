@@ -303,7 +303,7 @@ const HousekeepingStaffDashboard: React.FC = () => {
                         <TableCell>
                           <Chip
                             label={task.priority}
-                            color={task.priority === 'HIGH' ? 'error' : task.priority === 'MEDIUM' ? 'warning' : 'default'}
+                            color={task.priority === 'HIGH' ? 'error' : task.priority === 'NORMAL' ? 'warning' : 'default'}
                             size="small"
                           />
                         </TableCell>

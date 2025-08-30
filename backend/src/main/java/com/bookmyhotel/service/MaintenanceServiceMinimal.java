@@ -13,10 +13,12 @@ import com.bookmyhotel.entity.Room;
 import com.bookmyhotel.entity.TaskPriority;
 import com.bookmyhotel.entity.TaskStatus;
 import com.bookmyhotel.entity.User;
+import com.bookmyhotel.entity.HousekeepingStaff;
 import com.bookmyhotel.repository.HotelRepository;
 import com.bookmyhotel.repository.MaintenanceTaskRepository;
 import com.bookmyhotel.repository.RoomRepository;
 import com.bookmyhotel.repository.UserRepository;
+import com.bookmyhotel.repository.HousekeepingStaffRepository;
 
 /**
  * Minimal working service class for managing maintenance operations
@@ -37,19 +39,22 @@ public class MaintenanceServiceMinimal {
     @Autowired
     private HotelRepository hotelRepository;
 
+    @Autowired
+    private HousekeepingStaffRepository housekeepingStaffRepository;
+
     // ===== MAINTENANCE TASK MANAGEMENT METHODS =====
 
     /**
      * Create a new maintenance task
      */
-    public MaintenanceTask createTask(String tenantId, Long hotelId, Long roomId, String taskType, 
-                                     String title, String description, TaskPriority priority, 
-                                     Long createdByUserId, String location, String equipmentType) {
+    public MaintenanceTask createTask(String tenantId, Long hotelId, Long roomId, String taskType,
+            String title, String description, TaskPriority priority,
+            Long createdByUserId, String location, String equipmentType) {
         Hotel hotel = hotelRepository.findById(hotelId)
-            .orElseThrow(() -> new RuntimeException("Hotel not found"));
-        
+                .orElseThrow(() -> new RuntimeException("Hotel not found"));
+
         User createdBy = userRepository.findById(createdByUserId)
-            .orElseThrow(() -> new RuntimeException("Creator user not found"));
+                .orElseThrow(() -> new RuntimeException("Creator user not found"));
 
         MaintenanceTask task = new MaintenanceTask();
         task.setTenantId(tenantId);
@@ -61,7 +66,7 @@ public class MaintenanceServiceMinimal {
         task.setCreatedBy(createdBy);
         task.setLocation(location);
         task.setEquipmentType(equipmentType);
-        task.setStatus(TaskStatus.PENDING);
+        task.setStatus(TaskStatus.OPEN);
 
         if (roomId != null) {
             Room room = roomRepository.findById(roomId).orElse(null);
@@ -83,19 +88,19 @@ public class MaintenanceServiceMinimal {
      */
     public MaintenanceTask getTaskById(String tenantId, Long taskId) {
         return maintenanceTaskRepository.findById(taskId)
-            .filter(task -> task.getTenantId().equals(tenantId))
-            .orElseThrow(() -> new RuntimeException("Task not found"));
+                .filter(task -> task.getTenantId().equals(tenantId))
+                .orElseThrow(() -> new RuntimeException("Task not found"));
     }
 
     /**
      * Assign task to maintenance staff
      */
-    public MaintenanceTask assignTask(String tenantId, Long taskId, Long userId) {
+    public MaintenanceTask assignTask(String tenantId, Long taskId, Long staffId) {
         MaintenanceTask task = getTaskById(tenantId, taskId);
-        User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+        HousekeepingStaff staff = housekeepingStaffRepository.findById(staffId)
+                .orElseThrow(() -> new RuntimeException("Housekeeping staff not found"));
 
-        task.setAssignedTo(user);
+        task.setAssignedTo(staff);
         task.setStatus(TaskStatus.ASSIGNED);
 
         return maintenanceTaskRepository.save(task);
@@ -120,8 +125,8 @@ public class MaintenanceServiceMinimal {
     /**
      * Complete a maintenance task
      */
-    public MaintenanceTask completeTask(String tenantId, Long taskId, String workPerformed, 
-                                       String partsUsed, Double actualCost) {
+    public MaintenanceTask completeTask(String tenantId, Long taskId, String workPerformed,
+            String partsUsed, Double actualCost) {
         MaintenanceTask task = getTaskById(tenantId, taskId);
 
         if (task.getStatus() != TaskStatus.IN_PROGRESS) {
@@ -132,7 +137,7 @@ public class MaintenanceServiceMinimal {
         task.setActualEndTime(LocalDateTime.now());
         task.setWorkPerformed(workPerformed);
         task.setPartsUsed(partsUsed);
-        
+
         if (actualCost != null) {
             task.setActualCost(actualCost);
         }

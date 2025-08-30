@@ -47,7 +47,15 @@ const TaskAssignmentDialog: React.FC<TaskAssignmentDialogProps> = ({
     setLoading(true);
     try {
       const staffData = await operationsSupervisorApi.getStaff();
-      setStaff(staffData.content);
+      
+      // Flatten all staff types into one array
+      const allStaff = [
+        ...(staffData.housekeeping || []),
+        ...(staffData.maintenance || []),
+        ...(staffData.operationsSupervisor || [])
+      ];
+      
+      setStaff(allStaff);
     } catch (err) {
       setError('Failed to load staff');
       console.error('Load staff error:', err);

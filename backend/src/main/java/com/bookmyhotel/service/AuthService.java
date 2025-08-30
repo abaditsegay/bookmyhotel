@@ -82,7 +82,8 @@ public class AuthService {
                 user.getLastName(),
                 user.getRoles(),
                 null, // No hotel for guest users
-                null);
+                null, // No hotel name for guest users
+                null); // No tenantId for guest users
     }
 
     /**
@@ -123,7 +124,8 @@ public class AuthService {
                 user.getLastName(),
                 user.getRoles(),
                 hotelId,
-                hotelName);
+                hotelName,
+                user.getTenantId());
     }
 
     /**

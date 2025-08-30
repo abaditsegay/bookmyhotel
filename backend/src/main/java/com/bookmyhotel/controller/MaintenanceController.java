@@ -6,6 +6,7 @@ import com.bookmyhotel.tenant.TenantContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
@@ -72,6 +73,18 @@ public class MaintenanceController {
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("Task not found"));
         return ResponseEntity.ok(task);
+    }
+
+    /**
+     * Get tasks assigned to the current user
+     */
+    @GetMapping("/my-tasks")
+    @PreAuthorize("hasRole('MAINTENANCE') or hasRole('OPERATIONS_SUPERVISOR') or hasRole('HOTEL_ADMIN') or hasRole('SYSTEM_ADMIN')")
+    public ResponseEntity<List<MaintenanceTask>> getMyTasks(Authentication authentication) {
+        String tenantId = TenantContext.getTenantId();
+        String userEmail = authentication.getName();
+        List<MaintenanceTask> myTasks = maintenanceService.getTasksAssignedToUser(tenantId, userEmail);
+        return ResponseEntity.ok(myTasks);
     }
 
     /**

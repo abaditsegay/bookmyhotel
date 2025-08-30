@@ -20,16 +20,22 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-  Alert
+  Alert,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem
 } from '@mui/material';
 import {
   CheckCircle as CheckCircleIcon,
   PlayArrow as PlayArrowIcon,
   Info as InfoIcon,
-  CleaningServices as CleaningIcon
+  CleaningServices as CleaningIcon,
+  Assignment as AssignmentIcon,
+  Visibility as VisibilityIcon
 } from '@mui/icons-material';
 import { housekeepingSupervisorApi } from '../../services/housekeepingSupervisorApi';
-import { HousekeepingTask } from '../../types/operations';
+import { HousekeepingTask, HousekeepingStaff } from '../../types/operations';
 
 const HousekeepingDashboard: React.FC = () => {
   const [tasks, setTasks] = useState<HousekeepingTask[]>([]);
@@ -38,6 +44,12 @@ const HousekeepingDashboard: React.FC = () => {
   const [selectedTask, setSelectedTask] = useState<HousekeepingTask | null>(null);
   const [statusDialog, setStatusDialog] = useState(false);
   const [notes, setNotes] = useState('');
+  
+  // Assignment-related state
+  const [assignDialog, setAssignDialog] = useState(false);
+  const [assignTaskId, setAssignTaskId] = useState<number | null>(null);
+  const [availableStaff, setAvailableStaff] = useState<HousekeepingStaff[]>([]);
+  const [selectedStaffId, setSelectedStaffId] = useState<string>('');
 
   useEffect(() => {
     loadTasks();

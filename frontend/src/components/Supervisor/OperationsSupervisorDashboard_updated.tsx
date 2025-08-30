@@ -119,56 +119,40 @@ const OperationsSupervisorDashboard: React.FC = () => {
         headers: TokenManager.getAuthHeaders()
       });
 
-      let housekeepingTasks = [];
-      let allMaintenanceTasks = [];
+      if (housekeepingResponse.ok && maintenanceResponse.ok) {
+        const housekeepingTasks = await housekeepingResponse.json();
+        const allMaintenanceTasks = await maintenanceResponse.json();
+        
+        // Filter maintenance tasks by hotel
+        const maintenanceTasks = allMaintenanceTasks.filter((task: any) => 
+          task.room?.hotel?.id === hotelId || !task.room?.hotel?.id
+        );
 
-      if (housekeepingResponse.ok) {
-        try {
-          housekeepingTasks = await housekeepingResponse.json();
-        } catch (jsonError) {
-          console.error('Failed to parse housekeeping response JSON:', jsonError);
-          housekeepingTasks = [];
-        }
+        const housekeepingStats = {
+          totalTasks: housekeepingTasks.length,
+          pendingTasks: housekeepingTasks.filter((t: any) => t.status === 'PENDING').length,
+          activeTasks: housekeepingTasks.filter((t: any) => ['ASSIGNED', 'IN_PROGRESS'].includes(t.status)).length,
+          completedTasks: housekeepingTasks.filter((t: any) => t.status === 'COMPLETED').length,
+          activeStaff: 2, // This could be calculated from staff API
+          averageTaskTime: 45
+        };
+
+        const maintenanceStats = {
+          totalTasks: maintenanceTasks.length,
+          pendingTasks: maintenanceTasks.filter((t: any) => t.status === 'OPEN').length,
+          activeTasks: maintenanceTasks.filter((t: any) => ['ASSIGNED', 'IN_PROGRESS'].includes(t.status)).length,
+          completedTasks: maintenanceTasks.filter((t: any) => t.status === 'COMPLETED').length,
+          activeStaff: 1,
+          totalCost: maintenanceTasks.reduce((sum: number, task: any) => 
+            sum + (task.actualCost || task.estimatedCost || 0), 0
+          )
+        };
+
+        setStats({
+          housekeeping: housekeepingStats,
+          maintenance: maintenanceStats
+        });
       }
-
-      if (maintenanceResponse.ok) {
-        try {
-          allMaintenanceTasks = await maintenanceResponse.json();
-        } catch (jsonError) {
-          console.error('Failed to parse maintenance response JSON:', jsonError);
-          allMaintenanceTasks = [];
-        }
-      }
-      
-      // Filter maintenance tasks by hotel
-      const maintenanceTasks = allMaintenanceTasks.filter((task: any) => 
-        task.room?.hotel?.id === hotelId || !task.room?.hotel?.id
-      );
-
-      const housekeepingStats = {
-        totalTasks: housekeepingTasks.length,
-        pendingTasks: housekeepingTasks.filter((t: any) => t.status === 'PENDING').length,
-        activeTasks: housekeepingTasks.filter((t: any) => ['ASSIGNED', 'IN_PROGRESS'].includes(t.status)).length,
-        completedTasks: housekeepingTasks.filter((t: any) => t.status === 'COMPLETED').length,
-        activeStaff: 2, // This could be calculated from staff API
-        averageTaskTime: 45
-      };
-
-      const maintenanceStats = {
-        totalTasks: maintenanceTasks.length,
-        pendingTasks: maintenanceTasks.filter((t: any) => t.status === 'OPEN').length,
-        activeTasks: maintenanceTasks.filter((t: any) => ['ASSIGNED', 'IN_PROGRESS'].includes(t.status)).length,
-        completedTasks: maintenanceTasks.filter((t: any) => t.status === 'COMPLETED').length,
-        activeStaff: 1,
-        totalCost: maintenanceTasks.reduce((sum: number, task: any) => 
-          sum + (task.actualCost || task.estimatedCost || 0), 0
-        )
-      };
-
-      setStats({
-        housekeeping: housekeepingStats,
-        maintenance: maintenanceStats
-      });
     } catch (err) {
       console.error('Failed to load operations stats:', err);
     }
@@ -210,66 +194,50 @@ const OperationsSupervisorDashboard: React.FC = () => {
         })
       ]);
 
-      let housekeepingTasks = [];
-      let allMaintenanceTasks = [];
+      if (housekeepingResponse.ok && maintenanceResponse.ok) {
+        const housekeepingTasks = await housekeepingResponse.json();
+        const allMaintenanceTasks = await maintenanceResponse.json();
+        
+        const maintenanceTasks = allMaintenanceTasks.filter((task: any) => 
+          task.room?.hotel?.id === hotelId
+        );
 
-      if (housekeepingResponse.ok) {
-        try {
-          housekeepingTasks = await housekeepingResponse.json();
-        } catch (jsonError) {
-          console.error('Failed to parse housekeeping response JSON:', jsonError);
-          housekeepingTasks = [];
-        }
+        // Create activity feed from recent tasks
+        const activities = [];
+        
+        // Add recent housekeeping activities
+        const recentHousekeeping = housekeepingTasks
+          .filter((task: any) => task.status === 'COMPLETED')
+          .slice(0, 3)
+          .map((task: any) => ({
+            id: `hk-${task.id}`,
+            type: 'housekeeping' as const,
+            action: 'Task Completed',
+            description: `${task.taskType} completed for Room ${task.room?.roomNumber || 'Unknown'}`,
+            timestamp: task.completedAt || task.createdAt,
+            priority: task.priority
+          }));
+
+        // Add recent maintenance activities
+        const recentMaintenance = maintenanceTasks
+          .filter((task: any) => ['COMPLETED', 'IN_PROGRESS'].includes(task.status))
+          .slice(0, 3)
+          .map((task: any) => ({
+            id: `mt-${task.id}`,
+            type: 'maintenance' as const,
+            action: task.status === 'COMPLETED' ? 'Task Completed' : 'Task In Progress',
+            description: `${task.title} - ${task.room ? `Room ${task.room.roomNumber}` : task.location}`,
+            timestamp: task.status === 'COMPLETED' ? task.completedAt : task.startedAt || task.createdAt,
+            priority: task.priority
+          }));
+
+        activities.push(...recentHousekeeping, ...recentMaintenance);
+        
+        // Sort by timestamp and take the most recent
+        activities.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+        
+        setRecentActivity(activities.slice(0, 6));
       }
-
-      if (maintenanceResponse.ok) {
-        try {
-          allMaintenanceTasks = await maintenanceResponse.json();
-        } catch (jsonError) {
-          console.error('Failed to parse maintenance response JSON:', jsonError);
-          allMaintenanceTasks = [];
-        }
-      }
-      
-      const maintenanceTasks = allMaintenanceTasks.filter((task: any) => 
-        task.room?.hotel?.id === hotelId
-      );
-
-      // Create activity feed from recent tasks
-      const activities = [];
-      
-      // Add recent housekeeping activities
-      const recentHousekeeping = housekeepingTasks
-        .filter((task: any) => task.status === 'COMPLETED')
-        .slice(0, 3)
-        .map((task: any) => ({
-          id: `hk-${task.id}`,
-          type: 'housekeeping' as const,
-          action: 'Task Completed',
-          description: `${task.taskType} completed for Room ${task.room?.roomNumber || 'Unknown'}`,
-          timestamp: task.completedAt || task.createdAt,
-          priority: task.priority
-        }));
-
-      // Add recent maintenance activities
-      const recentMaintenance = maintenanceTasks
-        .filter((task: any) => ['COMPLETED', 'IN_PROGRESS'].includes(task.status))
-        .slice(0, 3)
-        .map((task: any) => ({
-          id: `mt-${task.id}`,
-          type: 'maintenance' as const,
-          action: task.status === 'COMPLETED' ? 'Task Completed' : 'Task In Progress',
-          description: `${task.title} - ${task.room ? `Room ${task.room.roomNumber}` : task.location}`,
-          timestamp: task.status === 'COMPLETED' ? task.completedAt : task.startedAt || task.createdAt,
-          priority: task.priority
-        }));
-
-      activities.push(...recentHousekeeping, ...recentMaintenance);
-      
-      // Sort by timestamp and take the most recent
-      activities.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-      
-      setRecentActivity(activities.slice(0, 6));
     } catch (err) {
       console.error('Failed to load recent activity:', err);
     }
@@ -278,11 +246,10 @@ const OperationsSupervisorDashboard: React.FC = () => {
   const getPriorityColor = (priority: string) => {
     switch (priority.toLowerCase()) {
       case 'urgent':
-      case 'critical':
         return 'error';
       case 'high':
         return 'warning';
-      case 'normal':
+      case 'medium':
         return 'info';
       case 'low':
         return 'success';

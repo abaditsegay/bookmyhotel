@@ -119,10 +119,13 @@ export interface ShopOrder {
   id: number;
   tenantId: string;
   hotelId: number;
+  hotelName?: string;
+  hotelAddress?: string;
+  hotelTaxId?: string;
   orderNumber: string;
   guestId?: number;
   reservationId?: number;
-  customerName: string;
+  customerName?: string;
   customerEmail?: string;
   customerPhone?: string;
   roomNumber?: string;
@@ -147,7 +150,7 @@ export interface ShopOrder {
 }
 
 export interface ShopOrderCreateRequest {
-  customerName: string;
+  customerName?: string;
   customerEmail?: string;
   customerPhone?: string;
   roomNumber?: string;
@@ -232,3 +235,68 @@ export interface ProductStock {
   isLowStock: boolean;
   lastRestocked?: string;
 }
+
+// Utility functions for shop orders
+export const ShopOrderUtils = {
+  /**
+   * Checks if an order is from an anonymous customer
+   */
+  isAnonymousOrder: (order: ShopOrder): boolean => {
+    return !order.customerName || order.customerName.trim() === '';
+  },
+
+  /**
+   * Returns a display-friendly customer name
+   */
+  getDisplayCustomerName: (order: ShopOrder): string => {
+    if (ShopOrderUtils.isAnonymousOrder(order)) {
+      return 'Anonymous Customer';
+    }
+    return order.customerName!;
+  },
+
+  /**
+   * Returns order type description for display purposes
+   */
+  getOrderTypeDescription: (order: ShopOrder): string => {
+    if (order.roomNumber && order.roomNumber.trim() !== '') {
+      return `Room Charge - Room ${order.roomNumber}`;
+    } else if (ShopOrderUtils.isAnonymousOrder(order)) {
+      return 'Anonymous Sale';
+    } else {
+      return 'Customer Order';
+    }
+  },
+
+  /**
+   * Formats order amount with currency
+   */
+  formatOrderAmount: (amount: number, currency: string = 'USD'): string => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: currency
+    }).format(amount);
+  },
+
+  /**
+   * Gets order status color for UI display
+   */
+  getStatusColor: (status: ShopOrderStatus): string => {
+    switch (status) {
+      case ShopOrderStatus.PENDING:
+        return '#ff9800'; // Orange
+      case ShopOrderStatus.CONFIRMED:
+        return '#2196f3'; // Blue
+      case ShopOrderStatus.PREPARING:
+        return '#9c27b0'; // Purple
+      case ShopOrderStatus.READY:
+        return '#4caf50'; // Green
+      case ShopOrderStatus.COMPLETED:
+        return '#8bc34a'; // Light Green
+      case ShopOrderStatus.CANCELLED:
+        return '#f44336'; // Red
+      default:
+        return '#757575'; // Grey
+    }
+  }
+};

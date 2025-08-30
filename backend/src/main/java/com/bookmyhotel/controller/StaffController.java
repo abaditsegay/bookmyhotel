@@ -59,7 +59,7 @@ public class StaffController {
 
     // Get current staff profile
     @GetMapping("/profile")
-    @PreAuthorize("hasAnyRole('HOUSEKEEPING', 'MAINTENANCE', 'STAFF')")
+    @PreAuthorize("hasAnyRole('HOUSEKEEPING', 'MAINTENANCE', 'STAFF', 'OPERATIONS_SUPERVISOR')")
     public ResponseEntity<?> getCurrentUserProfile(Authentication authentication) {
         try {
             String username = authentication.getName();
@@ -102,7 +102,7 @@ public class StaffController {
 
     // Housekeeping Staff Endpoints
     @GetMapping("/housekeeping/my-tasks")
-    @PreAuthorize("hasAnyRole('HOUSEKEEPING', 'STAFF')")
+    @PreAuthorize("hasAnyRole('HOUSEKEEPING', 'STAFF', 'OPERATIONS_SUPERVISOR')")
     public ResponseEntity<?> getMyHousekeepingTasks(
             Authentication authentication,
             @RequestParam(defaultValue = "0") int page,
@@ -137,7 +137,7 @@ public class StaffController {
     }
 
     @PutMapping("/housekeeping/tasks/{taskId}/status")
-    @PreAuthorize("hasAnyRole('HOUSEKEEPING', 'STAFF')")
+    @PreAuthorize("hasAnyRole('HOUSEKEEPING', 'STAFF', 'OPERATIONS_SUPERVISOR')")
     public ResponseEntity<?> updateHousekeepingTaskStatus(
             @PathVariable Long taskId,
             @RequestBody TaskUpdateRequest updateRequest,
@@ -187,7 +187,7 @@ public class StaffController {
     }
 
     @PutMapping("/housekeeping/tasks/{taskId}/start")
-    @PreAuthorize("hasAnyRole('HOUSEKEEPING', 'STAFF')")
+    @PreAuthorize("hasAnyRole('HOUSEKEEPING', 'STAFF', 'OPERATIONS_SUPERVISOR')")
     public ResponseEntity<?> startHousekeepingTask(@PathVariable Long taskId, Authentication authentication) {
         try {
             String username = authentication.getName();
@@ -220,7 +220,7 @@ public class StaffController {
     }
 
     @PutMapping("/housekeeping/tasks/{taskId}/complete")
-    @PreAuthorize("hasAnyRole('HOUSEKEEPING', 'STAFF')")
+    @PreAuthorize("hasAnyRole('HOUSEKEEPING', 'STAFF', 'OPERATIONS_SUPERVISOR')")
     public ResponseEntity<?> completeHousekeepingTask(
             @PathVariable Long taskId,
             @RequestBody(required = false) Map<String, String> request,
@@ -348,7 +348,7 @@ public class StaffController {
 
     // Common Stats Endpoints
     @GetMapping("/housekeeping/stats")
-    @PreAuthorize("hasAnyRole('HOUSEKEEPING', 'STAFF')")
+    @PreAuthorize("hasAnyRole('HOUSEKEEPING', 'STAFF', 'OPERATIONS_SUPERVISOR')")
     public ResponseEntity<?> getHousekeepingStats(Authentication authentication) {
         try {
             String username = authentication.getName();

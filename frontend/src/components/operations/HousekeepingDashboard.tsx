@@ -39,9 +39,9 @@ import {
   PlayArrow as StartIcon,
   CheckCircle as CompleteIcon
 } from '@mui/icons-material';
-import { getCurrentHotel, getCurrentHotelKey, generateHousekeepingTasks } from '../../data/operationsMockData';
+import { getCurrentHotel } from '../../data/operationsMockData';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+const API_BASE_URL = 'http://localhost:8080/api';
 
 interface HousekeepingTask {
   id: number;
@@ -98,7 +98,7 @@ const HousekeepingDashboard: React.FC = () => {
     roomId: '',
     taskType: '',
     description: '',
-    priority: 'MEDIUM',
+    priority: 'NORMAL',
     specialInstructions: ''
   });
 
@@ -118,6 +118,8 @@ const HousekeepingDashboard: React.FC = () => {
   
   // Task detail dialog states
   const [taskDetailOpen, setTaskDetailOpen] = useState(false);
+  const [isEditingTask, setIsEditingTask] = useState(false);
+  const [editTaskData, setEditTaskData] = useState<any>({});
   // const [editTaskOpen, setEditTaskOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<HousekeepingTask | null>(null);
 
@@ -133,27 +135,50 @@ const HousekeepingDashboard: React.FC = () => {
     try {
       setLoading(true);
       
-      const response = await fetch(`${API_BASE_URL}/api/housekeeping/tasks`, {
+      // Get current hotel ID for filtering
+      const hotel = getCurrentHotel();
+      const hotelId = hotel?.id || 12; // Default to Addis Sunshine (ID: 12)
+      
+      // Load tasks directly from API endpoint
+      const response = await fetch(`${API_BASE_URL}/housekeeping/tasks/hotel/${hotelId}`, {
         headers: TokenManager.getAuthHeaders()
       });
 
       if (response.ok) {
         const backendTasks = await response.json();
-        setTasks(backendTasks);
+        // Transform the backend data to match the component's interface
+        const transformedTasks = backendTasks.map((task: any) => ({
+          id: task.id,
+          room: {
+            roomNumber: task.room?.roomNumber || 'Unknown',
+            floor: task.room?.floor || Math.floor(parseInt(task.room?.roomNumber || '0') / 100)
+          },
+          taskType: task.taskType || task.task_type,
+          status: task.status,
+          priority: task.priority,
+          description: task.description,
+          assignedStaff: task.assignedStaff ? {
+            id: task.assignedStaff.id,
+            name: `${task.assignedStaff.firstName || task.assignedStaff.user?.firstName || ''} ${task.assignedStaff.lastName || task.assignedStaff.user?.lastName || ''}`.trim()
+          } : undefined,
+          specialInstructions: task.specialInstructions,
+          estimatedDuration: task.estimatedDuration,
+          estimatedDurationMinutes: task.estimatedDurationMinutes || task.estimatedDuration,
+          createdAt: task.createdAt,
+          assignedAt: task.assignedAt,
+          startedAt: task.startedAt,
+          completedAt: task.completedAt
+        }));
+        
+        setTasks(transformedTasks);
+        setError(null);
       } else {
-        // Fallback to mock data if API fails
-        const hotelKey = getCurrentHotelKey();
-        const mockTasks = generateHousekeepingTasks(hotelKey);
-        setTasks(mockTasks as any);
-        console.warn('Using mock data due to API error:', response.status);
+        throw new Error(`API error: ${response.status}`);
       }
     } catch (err) {
-      // Fallback to mock data if API fails
-      const hotelKey = getCurrentHotelKey();
-      const mockTasks = generateHousekeepingTasks(hotelKey);
-      setTasks(mockTasks as any);
-      console.warn('Using mock data due to network error:', err);
-      setError('Using demo data - API connection failed');
+      console.error('Failed to load housekeeping tasks:', err);
+      setError('Unable to load tasks - please check your connection');
+      setTasks([]); // Set empty array instead of mock data
     } finally {
       setLoading(false);
     }
@@ -161,42 +186,35 @@ const HousekeepingDashboard: React.FC = () => {
 
   const loadStaff = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/housekeeping/staff`, {
+      // Get current hotel ID for filtering
+      const hotel = getCurrentHotel();
+      const hotelId = hotel?.id || 12; // Default to Addis Sunshine (ID: 12)
+      
+      const response = await fetch(`${API_BASE_URL}/housekeeping/staff/hotel/${hotelId}`, {
         headers: TokenManager.getAuthHeaders()
       });
 
       if (response.ok) {
         const backendStaff = await response.json();
-        setStaff(backendStaff);
+        // Transform the backend data to match the component's interface
+        const transformedStaff = backendStaff.map((member: any) => ({
+          id: member.id,
+          user: {
+            id: member.user?.id || member.id,
+            firstName: member.user?.firstName || member.firstName,
+            lastName: member.user?.lastName || member.lastName
+          },
+          employeeId: member.employeeId,
+          isActive: member.isActive !== undefined ? member.isActive : member.active
+        }));
+        setStaff(transformedStaff);
       } else {
-        // Fallback to mock data if API fails
-        const hotel = getCurrentHotel();
-        const mockStaff: HousekeepingStaff[] = hotel.operationsTeam.housekeepingStaff.map((name, index) => {
-          const [firstName, lastName] = name.split(' ');
-          return {
-            id: index + 1,
-            user: { id: index + 1, firstName, lastName },
-            employeeId: `HK${String(index + 1).padStart(3, '0')}`,
-            isActive: true
-          };
-        });
-        setStaff(mockStaff);
-        console.warn('Using mock staff data due to API error:', response.status);
+        console.error('Failed to load staff data:', response.status);
+        setStaff([]); // Set empty array instead of mock data
       }
     } catch (err) {
-      // Fallback to mock data if API fails
-      const hotel = getCurrentHotel();
-      const mockStaff: HousekeepingStaff[] = hotel.operationsTeam.housekeepingStaff.map((name, index) => {
-        const [firstName, lastName] = name.split(' ');
-        return {
-          id: index + 1,
-          user: { id: index + 1, firstName, lastName },
-          employeeId: `HK${String(index + 1).padStart(3, '0')}`,
-          isActive: true
-        };
-      });
-      setStaff(mockStaff);
-      console.warn('Using mock staff data due to network error:', err);
+      console.error('Failed to load housekeeping staff:', err);
+      setStaff([]); // Set empty array instead of mock data
     }
   };
 
@@ -214,7 +232,7 @@ const HousekeepingDashboard: React.FC = () => {
         roomId: '',
         taskType: '',
         description: '',
-        priority: 'MEDIUM',
+        priority: 'NORMAL',
         specialInstructions: ''
       });
       await loadTasks();
@@ -227,10 +245,9 @@ const HousekeepingDashboard: React.FC = () => {
     if (!selectedTaskId || !selectedStaffId) return;
     
     try {
-      const response = await fetch(`${API_BASE_URL}/api/housekeeping/tasks/${selectedTaskId}/assign`, {
-        method: 'POST',
-        headers: TokenManager.getAuthHeaders(),
-        body: JSON.stringify({ staffId: parseInt(selectedStaffId) })
+      const response = await fetch(`${API_BASE_URL}/supervisor/tasks/housekeeping/${selectedTaskId}/assign/${selectedStaffId}`, {
+        method: 'PUT',
+        headers: TokenManager.getAuthHeaders()
       });
 
       if (!response.ok) {
@@ -249,7 +266,7 @@ const HousekeepingDashboard: React.FC = () => {
 
   const handleStartTask = async (taskId: number) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/housekeeping/tasks/${taskId}/start`, {
+      const response = await fetch(`${API_BASE_URL}/housekeeping/tasks/${taskId}/start`, {
         method: 'POST',
         headers: TokenManager.getAuthHeaders()
       });
@@ -269,7 +286,7 @@ const HousekeepingDashboard: React.FC = () => {
     if (!selectedTaskId) return;
     
     try {
-      const response = await fetch(`${API_BASE_URL}/api/housekeeping/tasks/${selectedTaskId}/complete`, {
+      const response = await fetch(`${API_BASE_URL}/housekeeping/tasks/${selectedTaskId}/complete`, {
         method: 'POST',
         headers: TokenManager.getAuthHeaders(),
         body: JSON.stringify({ 
@@ -301,6 +318,50 @@ const HousekeepingDashboard: React.FC = () => {
   const openCompleteDialog = (taskId: number) => {
     setSelectedTaskId(taskId);
     setCompleteTaskOpen(true);
+  };
+
+  const handleEditTask = () => {
+    if (selectedTask) {
+      setEditTaskData({
+        description: selectedTask.description || '',
+        specialInstructions: selectedTask.specialInstructions || '',
+        priority: selectedTask.priority || 'NORMAL',
+        estimatedDuration: selectedTask.estimatedDuration || selectedTask.estimatedDurationMinutes || 45
+      });
+      setIsEditingTask(true);
+    }
+  };
+
+  const handleSaveTaskEdit = async () => {
+    if (!selectedTask) return;
+    
+    try {
+      // TODO: Call API to update task
+      console.log('Saving task edit:', editTaskData);
+      
+      // For now, just update the local task
+      const updatedTask = {
+        ...selectedTask,
+        description: editTaskData.description,
+        specialInstructions: editTaskData.specialInstructions,
+        priority: editTaskData.priority,
+        estimatedDuration: editTaskData.estimatedDuration
+      };
+      
+      setSelectedTask(updatedTask);
+      setIsEditingTask(false);
+      
+      // TODO: Refresh tasks list when API is implemented
+      // await loadTasks();
+      
+    } catch (error) {
+      console.error('Error updating task:', error);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditingTask(false);
+    setEditTaskData({});
   };
 
   const getStatusColor = (status: string) => {
@@ -508,7 +569,7 @@ const HousekeepingDashboard: React.FC = () => {
                       </IconButton>
                     </Tooltip>
                     
-                    {task.status === 'pending' && (
+                    {(task.status === 'pending' || task.status === 'PENDING') && (
                       <Tooltip title="Assign Task">
                         <IconButton 
                           size="small"
@@ -520,7 +581,7 @@ const HousekeepingDashboard: React.FC = () => {
                       </Tooltip>
                     )}
                     
-                    {task.status === 'assigned' && (
+                    {(task.status === 'assigned' || task.status === 'ASSIGNED') && (
                       <Tooltip title="Start Task">
                         <IconButton 
                           size="small"
@@ -532,7 +593,7 @@ const HousekeepingDashboard: React.FC = () => {
                       </Tooltip>
                     )}
                     
-                    {task.status === 'in_progress' && (
+                    {(task.status === 'in_progress' || task.status === 'IN_PROGRESS') && (
                       <Tooltip title="Complete Task">
                         <IconButton 
                           size="small"
@@ -540,6 +601,21 @@ const HousekeepingDashboard: React.FC = () => {
                           onClick={() => openCompleteDialog(task.id)}
                         >
                           <CompleteIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                    
+                    {/* Reassign button for assigned or in-progress tasks */}
+                    {currentUserRole === 'OPERATIONS_SUPERVISOR' && 
+                     (task.status === 'assigned' || task.status === 'ASSIGNED' || 
+                      task.status === 'in_progress' || task.status === 'IN_PROGRESS') && (
+                      <Tooltip title="Reassign Task">
+                        <IconButton 
+                          size="small"
+                          color="secondary"
+                          onClick={() => openAssignDialog(task.id)}
+                        >
+                          <AssignIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>
                     )}
@@ -652,7 +728,7 @@ const HousekeepingDashboard: React.FC = () => {
               >
                 {staff.filter(s => s.isActive).map((staffMember) => (
                   <MenuItem key={staffMember.id} value={staffMember.id.toString()}>
-                    {staffMember.user.firstName} {staffMember.user.lastName} - {staffMember.employeeId}
+                    {staffMember.user?.firstName || 'Unknown'} {staffMember.user?.lastName || 'User'} - {staffMember.employeeId}
                   </MenuItem>
                 ))}
               </Select>
@@ -708,13 +784,25 @@ const HousekeepingDashboard: React.FC = () => {
 
       {/* Task Detail Dialog */}
       <Dialog open={taskDetailOpen} onClose={() => setTaskDetailOpen(false)} maxWidth="md" fullWidth>
-        <DialogTitle>Task Details</DialogTitle>
+        <DialogTitle>
+          Task Details
+          {!isEditingTask && currentUserRole === 'OPERATIONS_SUPERVISOR' && (
+            <Button 
+              startIcon={<EditIcon />} 
+              onClick={handleEditTask}
+              sx={{ ml: 2 }}
+            >
+              Edit
+            </Button>
+          )}
+        </DialogTitle>
         <DialogContent>
           {selectedTask && (
             <Box sx={{ pt: 2 }}>
               <Typography variant="h6" gutterBottom>
                 Task #{selectedTask.id} - Room {selectedTask.room.roomNumber}
               </Typography>
+              
               <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mt: 2 }}>
                 <Box>
                   <Typography variant="subtitle2" color="text.secondary">Task Type</Typography>
@@ -730,15 +818,40 @@ const HousekeepingDashboard: React.FC = () => {
                 </Box>
                 <Box>
                   <Typography variant="subtitle2" color="text.secondary">Priority</Typography>
-                  <Chip 
-                    label={selectedTask.priority}
-                    size="small"
-                    color={getPriorityColor(selectedTask.priority) as any}
-                  />
+                  {isEditingTask ? (
+                    <FormControl fullWidth size="small">
+                      <Select
+                        value={editTaskData.priority || 'NORMAL'}
+                        onChange={(e) => setEditTaskData({...editTaskData, priority: e.target.value})}
+                      >
+                        <MenuItem value="LOW">Low</MenuItem>
+                        <MenuItem value="NORMAL">Normal</MenuItem>
+                        <MenuItem value="HIGH">High</MenuItem>
+                        <MenuItem value="URGENT">Urgent</MenuItem>
+                      </Select>
+                    </FormControl>
+                  ) : (
+                    <Chip 
+                      label={selectedTask.priority}
+                      size="small"
+                      color={getPriorityColor(selectedTask.priority) as any}
+                    />
+                  )}
                 </Box>
                 <Box>
                   <Typography variant="subtitle2" color="text.secondary">Estimated Duration</Typography>
-                  <Typography>{selectedTask.estimatedDuration || selectedTask.estimatedDurationMinutes || 0} minutes</Typography>
+                  {isEditingTask ? (
+                    <TextField
+                      fullWidth
+                      size="small"
+                      type="number"
+                      value={editTaskData.estimatedDuration || 45}
+                      onChange={(e) => setEditTaskData({...editTaskData, estimatedDuration: parseInt(e.target.value)})}
+                      InputProps={{ endAdornment: 'min' }}
+                    />
+                  ) : (
+                    <Typography>{selectedTask.estimatedDuration || selectedTask.estimatedDurationMinutes || 0} minutes</Typography>
+                  )}
                 </Box>
                 <Box>
                   <Typography variant="subtitle2" color="text.secondary">Assigned Staff</Typography>
@@ -751,21 +864,65 @@ const HousekeepingDashboard: React.FC = () => {
                   <Typography>{new Date(selectedTask.createdAt).toLocaleString()}</Typography>
                 </Box>
               </Box>
+              
               <Box sx={{ mt: 2 }}>
                 <Typography variant="subtitle2" color="text.secondary">Description</Typography>
-                <Typography>{selectedTask.description}</Typography>
+                {isEditingTask ? (
+                  <TextField
+                    fullWidth
+                    multiline
+                    rows={3}
+                    value={editTaskData.description || ''}
+                    onChange={(e) => setEditTaskData({...editTaskData, description: e.target.value})}
+                    sx={{ mt: 1 }}
+                  />
+                ) : (
+                  <Typography>{selectedTask.description}</Typography>
+                )}
               </Box>
-              {selectedTask.specialInstructions && (
-                <Box sx={{ mt: 2 }}>
-                  <Typography variant="subtitle2" color="text.secondary">Special Instructions</Typography>
-                  <Typography>{selectedTask.specialInstructions}</Typography>
-                </Box>
-              )}
+              
+              <Box sx={{ mt: 2 }}>
+                <Typography variant="subtitle2" color="text.secondary">Special Instructions</Typography>
+                {isEditingTask ? (
+                  <TextField
+                    fullWidth
+                    multiline
+                    rows={2}
+                    value={editTaskData.specialInstructions || ''}
+                    onChange={(e) => setEditTaskData({...editTaskData, specialInstructions: e.target.value})}
+                    sx={{ mt: 1 }}
+                  />
+                ) : (
+                  <Typography>{selectedTask.specialInstructions || 'None'}</Typography>
+                )}
+              </Box>
             </Box>
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setTaskDetailOpen(false)}>Close</Button>
+          {isEditingTask ? (
+            <>
+              <Button onClick={handleCancelEdit}>Cancel</Button>
+              <Button onClick={handleSaveTaskEdit} variant="contained">Save Changes</Button>
+            </>
+          ) : (
+            <>
+              {selectedTask && currentUserRole === 'OPERATIONS_SUPERVISOR' && (
+                <Button 
+                  onClick={() => {
+                    setTaskDetailOpen(false);
+                    openAssignDialog(selectedTask.id);
+                  }}
+                  variant="contained"
+                  startIcon={<AssignIcon />}
+                  sx={{ mr: 'auto' }}
+                >
+                  {selectedTask.assignedStaff ? 'Reassign' : 'Assign'} Task
+                </Button>
+              )}
+              <Button onClick={() => setTaskDetailOpen(false)}>Close</Button>
+            </>
+          )}
         </DialogActions>
       </Dialog>
     </Box>

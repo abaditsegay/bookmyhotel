@@ -139,10 +139,13 @@ public class HousekeepingController {
     }
 
     @GetMapping("/staff")
-    public ResponseEntity<List<HousekeepingStaff>> getAllStaff() {
+    public ResponseEntity<List<HousekeepingStaffDTO>> getAllStaff() {
         String tenantId = TenantContext.getTenantId();
         List<HousekeepingStaff> staff = housekeepingService.getAllStaff(tenantId);
-        return ResponseEntity.ok(staff);
+        List<HousekeepingStaffDTO> staffDTOs = staff.stream()
+                .map(this::convertToStaffDTO)
+                .toList();
+        return ResponseEntity.ok(staffDTOs);
     }
 
     @GetMapping("/staff/hotel/{hotelId}")
@@ -353,5 +356,133 @@ public class HousekeepingController {
         public void setReason(String reason) {
             this.reason = reason;
         }
+    }
+
+    // DTO for frontend compatibility
+    public static class HousekeepingStaffDTO {
+        private Long id;
+        private String employeeId;
+        private UserDTO user;
+        private String shiftType;
+        private boolean isActive;
+        private Double averageRating;
+        private Integer totalTasksCompleted;
+        private String tenantId;
+
+        // Getters and setters
+        public Long getId() {
+            return id;
+        }
+
+        public void setId(Long id) {
+            this.id = id;
+        }
+
+        public String getEmployeeId() {
+            return employeeId;
+        }
+
+        public void setEmployeeId(String employeeId) {
+            this.employeeId = employeeId;
+        }
+
+        public UserDTO getUser() {
+            return user;
+        }
+
+        public void setUser(UserDTO user) {
+            this.user = user;
+        }
+
+        public String getShiftType() {
+            return shiftType;
+        }
+
+        public void setShiftType(String shiftType) {
+            this.shiftType = shiftType;
+        }
+
+        public boolean isActive() {
+            return isActive;
+        }
+
+        public void setActive(boolean active) {
+            isActive = active;
+        }
+
+        public Double getAverageRating() {
+            return averageRating;
+        }
+
+        public void setAverageRating(Double averageRating) {
+            this.averageRating = averageRating;
+        }
+
+        public Integer getTotalTasksCompleted() {
+            return totalTasksCompleted;
+        }
+
+        public void setTotalTasksCompleted(Integer totalTasksCompleted) {
+            this.totalTasksCompleted = totalTasksCompleted;
+        }
+
+        public String getTenantId() {
+            return tenantId;
+        }
+
+        public void setTenantId(String tenantId) {
+            this.tenantId = tenantId;
+        }
+    }
+
+    public static class UserDTO {
+        private Long id;
+        private String firstName;
+        private String lastName;
+
+        public UserDTO(Long id, String firstName, String lastName) {
+            this.id = id;
+            this.firstName = firstName;
+            this.lastName = lastName;
+        }
+
+        // Getters and setters
+        public Long getId() {
+            return id;
+        }
+
+        public void setId(Long id) {
+            this.id = id;
+        }
+
+        public String getFirstName() {
+            return firstName;
+        }
+
+        public void setFirstName(String firstName) {
+            this.firstName = firstName;
+        }
+
+        public String getLastName() {
+            return lastName;
+        }
+
+        public void setLastName(String lastName) {
+            this.lastName = lastName;
+        }
+    }
+
+    // Conversion method
+    private HousekeepingStaffDTO convertToStaffDTO(HousekeepingStaff staff) {
+        HousekeepingStaffDTO dto = new HousekeepingStaffDTO();
+        dto.setId(staff.getId());
+        dto.setEmployeeId(staff.getEmployeeId());
+        dto.setUser(new UserDTO(staff.getId(), staff.getFirstName(), staff.getLastName()));
+        dto.setShiftType(staff.getShift() != null ? staff.getShift().toString() : "DAY");
+        dto.setActive(staff.getIsActive() != null ? staff.getIsActive() : true);
+        dto.setAverageRating(staff.getAverageRating() != null ? staff.getAverageRating() : 0.0);
+        dto.setTotalTasksCompleted(staff.getTasksCompletedToday() != null ? staff.getTasksCompletedToday() : 0);
+        dto.setTenantId(staff.getTenantId());
+        return dto;
     }
 }

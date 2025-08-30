@@ -60,10 +60,11 @@ interface MaintenanceTaskCardProps {
 const getPriorityColor = (priority: string) => {
   switch (priority.toLowerCase()) {
     case 'urgent':
+    case 'critical':
       return 'error';
     case 'high':
       return 'warning';
-    case 'medium':
+    case 'normal':
       return 'info';
     case 'low':
       return 'success';

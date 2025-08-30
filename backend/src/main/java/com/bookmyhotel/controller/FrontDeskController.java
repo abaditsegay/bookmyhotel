@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bookmyhotel.dto.BookingResponse;
+import com.bookmyhotel.dto.CheckoutResponse;
 import com.bookmyhotel.dto.FrontDeskStats;
 import com.bookmyhotel.dto.HotelDTO;
 import com.bookmyhotel.dto.RoomResponse;
@@ -35,10 +36,10 @@ import com.bookmyhotel.service.FrontDeskService;
 @RequestMapping("/api/front-desk")
 @CrossOrigin(origins = "*")
 public class FrontDeskController {
-    
+
     @Autowired
     private FrontDeskService frontDeskService;
-    
+
     /**
      * Get all bookings with pagination and search
      */
@@ -48,7 +49,7 @@ public class FrontDeskController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String search) {
-        
+
         Pageable pageable = PageRequest.of(page, size, Sort.by("checkInDate").descending());
         Page<BookingResponse> bookings = frontDeskService.getAllBookings(pageable, search);
         return ResponseEntity.ok(bookings);
@@ -95,7 +96,7 @@ public class FrontDeskController {
         List<BookingResponse> arrivals = frontDeskService.getTodaysArrivals();
         return ResponseEntity.ok(arrivals);
     }
-    
+
     /**
      * Get today's departures
      */
@@ -105,7 +106,7 @@ public class FrontDeskController {
         List<BookingResponse> departures = frontDeskService.getTodaysDepartures();
         return ResponseEntity.ok(departures);
     }
-    
+
     /**
      * Get all current guests (checked in)
      */
@@ -115,7 +116,7 @@ public class FrontDeskController {
         List<BookingResponse> currentGuests = frontDeskService.getCurrentGuests();
         return ResponseEntity.ok(currentGuests);
     }
-    
+
     /**
      * Check in a guest
      */
@@ -125,9 +126,9 @@ public class FrontDeskController {
         BookingResponse response = frontDeskService.checkInGuest(reservationId);
         return ResponseEntity.ok(response);
     }
-    
+
     /**
-     * Check out a guest
+     * Check out a guest (backward compatibility)
      */
     @PutMapping("/checkout/{reservationId}")
     @PreAuthorize("hasRole('FRONTDESK') or hasRole('HOTEL_ADMIN')")
@@ -135,7 +136,17 @@ public class FrontDeskController {
         BookingResponse response = frontDeskService.checkOutGuest(reservationId);
         return ResponseEntity.ok(response);
     }
-    
+
+    /**
+     * Check out a guest with final receipt generation
+     */
+    @PutMapping("/checkout-with-receipt/{reservationId}")
+    @PreAuthorize("hasRole('FRONTDESK') or hasRole('HOTEL_ADMIN')")
+    public ResponseEntity<CheckoutResponse> checkOutGuestWithReceipt(@PathVariable Long reservationId) {
+        CheckoutResponse response = frontDeskService.checkOutGuestWithReceipt(reservationId);
+        return ResponseEntity.ok(response);
+    }
+
     /**
      * Mark guest as no-show
      */
@@ -145,7 +156,7 @@ public class FrontDeskController {
         BookingResponse response = frontDeskService.markNoShow(reservationId);
         return ResponseEntity.ok(response);
     }
-    
+
     /**
      * Cancel booking
      */
@@ -157,7 +168,7 @@ public class FrontDeskController {
         BookingResponse response = frontDeskService.cancelBooking(reservationId, reason);
         return ResponseEntity.ok(response);
     }
-    
+
     /**
      * Search bookings by various criteria
      */
@@ -169,12 +180,12 @@ public class FrontDeskController {
             @RequestParam(required = false) String confirmationNumber,
             @RequestParam(required = false) LocalDate checkInDate,
             @RequestParam(required = false) ReservationStatus status) {
-        
+
         List<BookingResponse> results = frontDeskService.searchBookings(
-            guestName, roomNumber, confirmationNumber, checkInDate, status);
+                guestName, roomNumber, confirmationNumber, checkInDate, status);
         return ResponseEntity.ok(results);
     }
-    
+
     /**
      * Get front desk statistics
      */
@@ -206,7 +217,7 @@ public class FrontDeskController {
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String roomType,
             @RequestParam(required = false) String status) {
-        
+
         Pageable pageable = PageRequest.of(page, size, Sort.by("roomNumber"));
         Page<RoomResponse> rooms = frontDeskService.getAllRooms(pageable, search, roomType, status);
         return ResponseEntity.ok(rooms);
@@ -237,7 +248,7 @@ public class FrontDeskController {
         RoomResponse response = frontDeskService.toggleRoomAvailability(roomId, available, reason);
         return ResponseEntity.ok(response);
     }
-    
+
     /**
      * Get room details by ID
      */

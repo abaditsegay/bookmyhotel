@@ -61,8 +61,7 @@ public class ShopOrder extends TenantEntity {
     private User guest;
 
     // Customer information (for both registered and walk-in customers)
-    @NotBlank(message = "Customer name is required")
-    @Column(name = "customer_name", nullable = false, length = 100)
+    @Column(name = "customer_name", nullable = true, length = 100)
     private String customerName;
 
     @Column(name = "customer_email", length = 100)

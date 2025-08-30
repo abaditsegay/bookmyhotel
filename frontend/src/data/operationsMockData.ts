@@ -37,20 +37,32 @@ export const HOTELS: Record<string, HotelInfo> = {
       housekeepingStaff: ['Lisa Chen', 'Carmen Martinez', 'Rachel Kim', 'Isabella Santos'],
       maintenanceStaff: ['Carlos Rivera', 'Daniel Brooks', 'Alex Johnson', 'Tony Garcia']
     }
+  },
+  'addissunshine': {
+    id: 12,
+    name: 'Addis Sunshine Hotel',
+    address: '123 Bole Road, Kirkos Sub-City, Addis Ababa',
+    totalRooms: 150,
+    floors: 8,
+    operationsTeam: {
+      supervisor: 'Yohannes Getachew',
+      housekeepingStaff: ['Tigist Haile'],
+      maintenanceStaff: ['Bekele Mengistu']
+    }
   }
 };
 
 // Get current hotel based on user context (simplified)
 export const getCurrentHotel = (): HotelInfo => {
   // In a real app, this would be determined by the user's hotel assignment
-  // For demo, we'll use Grand Plaza as default
-  return HOTELS.grandplaza;
+  // For demo, we'll use Addis Sunshine for operations testing
+  return HOTELS.addissunshine;
 };
 
 export const getCurrentHotelKey = (): string => {
   // In a real app, this would be determined by the user's hotel assignment
-  // For demo, we'll use Grand Plaza as default
-  return 'grandplaza';
+  // For demo, we'll use Addis Sunshine for operations testing
+  return 'addissunshine';
 };
 
 // Sample rooms for each hotel
@@ -66,6 +78,15 @@ export const SAMPLE_ROOMS: Record<string, string[]> = {
     '301', '302', '303', '304', '305', '401', '402', '403', '404', '405',
     '501', '502', '503', '504', '505', '801', '802', '803', '804', '805',
     '1201', '1202', '1203', '1204', '1205', '1501', '1502', '1503', '1504', '1505'
+  ],
+  addissunshine: [
+    '101', '102', '103', '104', '105', '106', '107', '108', '109', '110',
+    '201', '202', '203', '204', '205', '206', '207', '208', '209', '210',
+    '301', '302', '303', '304', '305', '306', '307', '308', '309', '310',
+    '401', '402', '403', '404', '405', '406', '407', '408', '409', '410',
+    '501', '502', '503', '504', '505', '506', '507', '508', '509', '510',
+    '601', '602', '603', '604', '605', '701', '702', '703', '704', '705',
+    '801', '802', '803', '804', '805'
   ]
 };
 
@@ -91,7 +112,7 @@ export const generateHousekeepingTasks = (hotelKey: string) => {
       room: { roomNumber: rooms[5], floor: Math.floor(parseInt(rooms[5]) / 100) },
       taskType: 'DEEP_CLEANING',
       status: 'ASSIGNED',
-      priority: 'MEDIUM',
+      priority: 'NORMAL',
       description: 'Deep cleaning for maintenance',
       assignedStaff: {
         id: 1,
@@ -135,7 +156,7 @@ export const generateHousekeepingTasks = (hotelKey: string) => {
       room: { roomNumber: rooms[8], floor: Math.floor(parseInt(rooms[8]) / 100) },
       taskType: 'PUBLIC_AREA_CLEANING',
       status: 'PENDING',
-      priority: 'MEDIUM',
+      priority: 'NORMAL',
       description: 'Lobby and common area cleaning',
       createdAt: new Date(Date.now() - 21600000).toISOString(),
       estimatedDurationMinutes: 60,
@@ -169,7 +190,7 @@ export const generateMaintenanceTasks = (hotelKey: string) => {
       title: 'AC Unit Maintenance',
       description: 'Routine maintenance for HVAC system',
       status: 'ASSIGNED',
-      priority: 'MEDIUM',
+      priority: 'NORMAL',
       location: 'Building Rooftop',
       equipmentType: 'HVAC System',
       estimatedCost: 200,
@@ -185,7 +206,7 @@ export const generateMaintenanceTasks = (hotelKey: string) => {
       title: 'Outlet Replacement',
       description: `Replace damaged electrical outlet in room ${rooms[7]}`,
       status: 'COMPLETED',
-      priority: 'MEDIUM',
+      priority: 'NORMAL',
       location: `Room ${rooms[7]}`,
       equipmentType: 'Electrical Outlets',
       estimatedCost: 25,
@@ -221,7 +242,7 @@ export const generateMaintenanceTasks = (hotelKey: string) => {
       title: 'Elevator Monthly Inspection',
       description: 'Monthly safety and performance inspection of main elevator',
       status: 'PENDING',
-      priority: 'MEDIUM',
+      priority: 'NORMAL',
       location: 'Main Elevator Shaft',
       equipmentType: 'Elevator System',
       estimatedCost: 150,
@@ -293,7 +314,7 @@ export const generateRecentActivity = (hotelKey: string) => {
       action: 'Task Assigned',
       description: `HVAC maintenance assigned to ${hotel.operationsTeam.maintenanceStaff[0]}`,
       timestamp: new Date(Date.now() - 600000).toISOString(),
-      priority: 'MEDIUM'
+      priority: 'NORMAL'
     },
     {
       id: 3,
@@ -317,7 +338,7 @@ export const generateRecentActivity = (hotelKey: string) => {
       action: 'Task Assigned',
       description: `Laundry service assigned to ${hotel.operationsTeam.housekeepingStaff[1]}`,
       timestamp: new Date(Date.now() - 1500000).toISOString(),
-      priority: 'MEDIUM'
+      priority: 'NORMAL'
     },
     {
       id: 6,

@@ -29,6 +29,7 @@ import { format, addDays } from 'date-fns';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTenant } from '../../contexts/TenantContext';
 import { hotelApiService } from '../../services/hotelApi';
+import { hotelAdminApi } from '../../services/hotelAdminApi';
 
 // Define interfaces for walk-in booking
 interface WalkInGuestInfo {
@@ -51,6 +52,7 @@ interface WalkInBookingModalProps {
   open: boolean;
   onClose: () => void;
   onSuccess: (bookingData: any) => void;
+  apiContext?: 'frontdesk' | 'hotel-admin'; // To distinguish which API to use
 }
 
 const steps = ['Guest Information', 'Room Selection', 'Confirmation'];
@@ -59,6 +61,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
   open,
   onClose,
   onSuccess,
+  apiContext = 'frontdesk', // Default to frontdesk for backwards compatibility
 }) => {
   console.log('WalkInBookingModal render - open:', open); // Debug log
   
@@ -228,14 +231,15 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
   };
 
   const handleCreateBooking = async () => {
-    if (!selectedRoom || !token) return;
+    if (!selectedRoom || !token || !hotelId) return;
     
     setLoading(true);
     setError(null);
     
     try {
       const bookingRequest = {
-        roomId: selectedRoom.id,
+        hotelId: hotelId,
+        roomType: selectedRoom.roomType,
         checkInDate: format(checkInDate, 'yyyy-MM-dd'),
         checkOutDate: format(checkOutDate, 'yyyy-MM-dd'),
         guests: guests,
@@ -246,7 +250,19 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
         guestPhone: guestInfo.phone,
       };
 
-      const response = await hotelApiService.createBooking(bookingRequest);
+      let response;
+      
+      // Use different API endpoints based on context
+      if (apiContext === 'hotel-admin') {
+        response = await hotelAdminApi.createWalkInBooking(token, bookingRequest);
+        if (response.success) {
+          response = response.data;
+        } else {
+          throw new Error(response.message || 'Failed to create booking');
+        }
+      } else {
+        response = await hotelApiService.createBooking(bookingRequest);
+      }
       
       if (response) {
         onSuccess(response);

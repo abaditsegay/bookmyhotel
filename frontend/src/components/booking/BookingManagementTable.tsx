@@ -37,8 +37,8 @@ import {
 } from '@mui/icons-material';
 import { useTenant } from '../../contexts/TenantContext';
 import { useAuth } from '../../contexts/AuthContext';
-import { hotelAdminApi } from '../../services/hotelAdminApi';
-import { frontDeskApiService } from '../../services/frontDeskApi';
+import { frontDeskApiService, CheckoutResponse } from '../../services/frontDeskApi';
+import CheckoutReceiptDialog from '../receipts/CheckoutReceiptDialog';
 
 interface Booking {
   reservationId: number;
@@ -58,7 +58,7 @@ interface Booking {
 }
 
 interface BookingManagementTableProps {
-  mode: 'hotel-admin' | 'front-desk';
+  mode: 'hotel-admin' | 'front-desk'; // Note: Both modes have identical functionality
   title?: string;
   showActions?: boolean;
   showCheckInOut?: boolean;
@@ -79,6 +79,15 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
   const { tenant } = useTenant();
   const { token } = useAuth();
   const navigate = useNavigate();
+  
+  // Debug logging for permissions
+  console.log('BookingManagementTable: Props received:', { 
+    mode, 
+    showActions, 
+    showCheckInOut,
+    title 
+  });
+  
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
@@ -92,37 +101,47 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
     message: '', 
     severity: 'success' as 'success' | 'error' 
   });
+  
+  // Receipt dialog state
+  const [receiptDialogOpen, setReceiptDialogOpen] = useState(false);
+  const [checkoutReceipt, setCheckoutReceipt] = useState<CheckoutResponse | null>(null);
 
   // Manual refresh function (used by refresh button)
   const loadBookings = React.useCallback(async () => {
     if (!token) return;
-    // Front desk mode doesn't need tenant check
-    if (mode === 'hotel-admin' && !tenant) return;
     
     console.log('BookingManagementTable: Manual refresh triggered');
     
     setLoading(true);
     try {
-      let result: any;
-      if (mode === 'front-desk') {
-        result = await frontDeskApiService.getAllBookings(
-          token,
-          page,
-          size,
-          searchTerm,
-          tenant?.id || 'default'
-        );
-      } else {
-        result = await hotelAdminApi.getHotelBookings(
-          token,
-          page,
-          size,
-          searchTerm
-        );
-      }
+      // Use front-desk API for both modes (hotel admins have front-desk permissions)
+      const result = await frontDeskApiService.getAllBookings(
+        token,
+        page,
+        size,
+        searchTerm,
+        tenant?.id || 'default'
+      );
 
       if (result.success && result.data) {
-        setBookings(result.data.content || []);
+        // Map FrontDeskBooking to Booking interface
+        const mappedBookings = result.data.content.map((booking: any) => ({
+          reservationId: booking.reservationId,
+          confirmationNumber: booking.confirmationNumber,
+          guestName: booking.guestName,
+          guestEmail: booking.guestEmail,
+          roomNumber: booking.roomNumber || 'TBA',
+          roomType: booking.roomType,
+          checkInDate: booking.checkInDate,
+          checkOutDate: booking.checkOutDate,
+          totalAmount: booking.totalAmount,
+          status: booking.status,
+          adults: booking.numberOfGuests,
+          children: 0,
+          nights: 1,
+          paymentStatus: booking.paymentStatus
+        }));
+        setBookings(mappedBookings);
         setTotalElements(result.data.page?.totalElements || 0);
       } else {
         throw new Error(result.message || 'Failed to load bookings');
@@ -137,14 +156,12 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [token, mode, page, size, searchTerm, tenant]);
+  }, [token, page, size, searchTerm, tenant]);
 
   // Centralized booking loading logic
   useEffect(() => {
     const loadData = async () => {
       if (!token) return;
-      // Front desk mode doesn't need tenant check
-      if (mode === 'hotel-admin' && !tenant) return;
       
       console.log('BookingManagementTable: Loading bookings with params:', { 
         mode, 
@@ -156,31 +173,37 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
       
       setLoading(true);
       try {
-        let result: any;
-        if (mode === 'front-desk') {
-          // Use front desk API with tenant ID
-          result = await frontDeskApiService.getAllBookings(
-            token,
-            page,
-            size,
-            searchTerm,
-            tenant?.id || 'default'
-          );
-        } else {
-          // Use hotel admin API
-          result = await hotelAdminApi.getHotelBookings(
-            token,
-            page,
-            size,
-            searchTerm
-          );
-        }
+        // Use front-desk API for both modes (hotel admins have front-desk permissions)
+        const result = await frontDeskApiService.getAllBookings(
+          token,
+          page,
+          size,
+          searchTerm,
+          tenant?.id || 'default'
+        );
 
         console.log('BookingManagementTable: API response:', result);
 
         if (result.success && result.data) {
           console.log('BookingManagementTable: Setting bookings:', result.data.content?.length, 'items, total:', result.data.page?.totalElements);
-          setBookings(result.data.content || []);
+          // Map FrontDeskBooking to Booking interface
+          const mappedBookings = result.data.content.map((booking: any) => ({
+            reservationId: booking.reservationId,
+            confirmationNumber: booking.confirmationNumber,
+            guestName: booking.guestName,
+            guestEmail: booking.guestEmail,
+            roomNumber: booking.roomNumber || 'TBA',
+            roomType: booking.roomType,
+            checkInDate: booking.checkInDate,
+            checkOutDate: booking.checkOutDate,
+            totalAmount: booking.totalAmount,
+            status: booking.status,
+            adults: booking.numberOfGuests,
+            children: 0,
+            nights: 1,
+            paymentStatus: booking.paymentStatus
+          }));
+          setBookings(mappedBookings);
           setTotalElements(result.data.page?.totalElements || 0);
         } else {
           throw new Error(result.message || 'Failed to load bookings');
@@ -233,12 +256,8 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
 
   // Handle view booking details
   const handleViewBookingDetails = (booking: Booking) => {
-    // Navigate to the appropriate booking details page based on mode
-    if (mode === 'front-desk') {
-      navigate(`/frontdesk/bookings/${booking.reservationId}?returnTab=${currentTab}`);
-    } else {
-      navigate(`/hotel-admin/bookings/${booking.reservationId}?returnTab=${currentTab}`);
-    }
+    // Use front-desk route for both modes (more comprehensive view)
+    navigate(`/frontdesk/bookings/${booking.reservationId}?returnTab=${currentTab}`);
   };
 
   // Handle delete booking
@@ -246,11 +265,8 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
     if (!selectedBooking || !token) return;
 
     try {
-      if (mode === 'front-desk') {
-        await frontDeskApiService.deleteBooking(token, selectedBooking.reservationId);
-      } else {
-        await hotelAdminApi.deleteBooking(token, selectedBooking.reservationId);
-      }
+      // Use front-desk API for both modes
+      await frontDeskApiService.deleteBooking(token, selectedBooking.reservationId);
       setSnackbar({
         open: true,
         message: 'Booking deleted successfully',
@@ -274,35 +290,56 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
       onBookingAction(booking, action);
     }
     
-    // For front-desk mode, also make API calls to update status
-    if (mode === 'front-desk' && token) {
+    // Make API calls to update status for both modes
+    if (token) {
       try {
-        let newStatus = '';
         if (action === 'check-in') {
-          newStatus = 'CHECKED_IN';
+          await frontDeskApiService.updateBookingStatus(token, booking.reservationId, 'CHECKED_IN');
         } else if (action === 'check-out') {
-          newStatus = 'CHECKED_OUT';
-        }
-        
-        if (newStatus) {
-          await frontDeskApiService.updateBookingStatus(token, booking.reservationId, newStatus);
+          // Use new checkout with receipt API
+          const result = await frontDeskApiService.checkOutGuestWithReceipt(token, booking.reservationId, tenant?.id || 'default');
+          
+          if (result.success && result.data) {
+            setCheckoutReceipt(result.data);
+            
+            // Show receipt dialog if receipt was generated
+            if (result.data.receiptGenerated && result.data.receipt) {
+              setReceiptDialogOpen(true);
+            }
+            
+            // Update local state
+            setBookings(prev => prev.map(b => 
+              b.reservationId === booking.reservationId 
+                ? { ...b, status: 'CHECKED_OUT' } 
+                : b
+            ));
+            
+            setSnackbar({
+              open: true,
+              message: result.data.message || `Guest ${booking.guestName} checked out successfully. ${result.data.receiptGenerated ? 'Final receipt generated.' : ''}`,
+              severity: 'success'
+            });
+            return; // Don't execute the rest of the checkout logic
+          } else {
+            throw new Error(result.message || 'Failed to check out guest with receipt');
+          }
         }
       } catch (error) {
         console.error('Error updating booking status:', error);
         setSnackbar({
           open: true,
-          message: 'Failed to update booking status',
+          message: error instanceof Error ? error.message : 'Failed to update booking status',
           severity: 'error'
         });
         return; // Don't update local state if API call failed
       }
     }
     
-    // Update local state optimistically
+    // Update local state optimistically for other actions
     if (action === 'check-in') {
       setBookings(prev => prev.map(b => 
         b.reservationId === booking.reservationId 
-          ? { ...b, status: 'checked-in' } 
+          ? { ...b, status: 'CHECKED_IN' } 
           : b
       ));
       setSnackbar({
@@ -310,34 +347,79 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
         message: `Guest ${booking.guestName} checked in successfully`,
         severity: 'success'
       });
-    } else if (action === 'check-out') {
-      setBookings(prev => prev.map(b => 
-        b.reservationId === booking.reservationId 
-          ? { ...b, status: 'checked-out' } 
-          : b
-      ));
+    }
+  };
+
+  // Handle print receipt for any booking
+  const handlePrintReceipt = async (booking: Booking) => {
+    if (!token) return;
+
+    try {
+      // Use the receipt preview API that doesn't change booking status
+      const result = await frontDeskApiService.generateReceiptPreview(token, booking.reservationId, tenant?.id || 'default');
+      
+      if (result.success && result.data) {
+        // Create a mock CheckoutResponse structure to work with the existing dialog
+        const checkoutResponse = {
+          booking: {
+            reservationId: booking.reservationId,
+            status: booking.status as 'PENDING' | 'CONFIRMED' | 'CHECKED_IN' | 'CHECKED_OUT' | 'CANCELLED' | 'NO_SHOW',
+            confirmationNumber: booking.confirmationNumber || '',
+            checkInDate: booking.checkInDate,
+            checkOutDate: booking.checkOutDate,
+            totalAmount: booking.totalAmount,
+            paymentStatus: booking.paymentStatus || 'PENDING',
+            paymentIntentId: undefined,
+            createdAt: new Date().toISOString(),
+            hotelName: result.data.hotelName || 'Hotel',
+            hotelAddress: result.data.hotelAddress || '',
+            roomNumber: booking.roomNumber || 'TBA',
+            roomType: booking.roomType,
+            pricePerNight: result.data.roomChargePerNight || 0,
+            guestName: booking.guestName,
+            guestEmail: booking.guestEmail,
+            numberOfGuests: result.data.numberOfGuests || 1,
+            specialRequests: '',
+            managementUrl: undefined
+          },
+          receipt: result.data,
+          receiptGenerated: true,
+          message: 'Receipt generated successfully'
+        };
+        
+        setCheckoutReceipt(checkoutResponse);
+        setReceiptDialogOpen(true);
+      } else {
+        setSnackbar({
+          open: true,
+          message: result.message || 'Unable to generate receipt for this booking',
+          severity: 'error'
+        });
+      }
+    } catch (error) {
+      console.error('Error generating receipt:', error);
       setSnackbar({
         open: true,
-        message: `Guest ${booking.guestName} checked out successfully`,
-        severity: 'success'
+        message: 'Failed to generate receipt',
+        severity: 'error'
       });
     }
   };
 
   // Get status color
   const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'confirmed':
-      case 'arriving':
+    switch (status.toUpperCase()) {
+      case 'CONFIRMED':
+      case 'ARRIVING':
         return 'info';
-      case 'checked-in':
-      case 'checked_in':
+      case 'CHECKED_IN':
+      case 'CHECKED-IN':
         return 'success';
-      case 'checked-out':
-      case 'checked_out':
+      case 'CHECKED_OUT':
+      case 'CHECKED-OUT':
         return 'default';
-      case 'cancelled':
-      case 'no-show':
+      case 'CANCELLED':
+      case 'NO-SHOW':
         return 'error';
       default:
         return 'default';
@@ -373,19 +455,18 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
           >
             Refresh
           </Button>
-          {mode === 'front-desk' && (
-            <Button 
-              variant="contained" 
-              startIcon={<AddGuestIcon />}
-              onClick={() => {
-                console.log('Walk-in Guest button clicked in BookingManagementTable'); // Debug log
-                onWalkInRequest?.();
-              }}
-              disabled={!onWalkInRequest}
-            >
-              Walk-in Guest
-            </Button>
-          )}
+          {/* Show Walk-in Guest button for both modes */}
+          <Button 
+            variant="contained" 
+            startIcon={<AddGuestIcon />}
+            onClick={() => {
+              console.log('Walk-in Guest button clicked in BookingManagementTable'); // Debug log
+              onWalkInRequest?.();
+            }}
+            disabled={!onWalkInRequest}
+          >
+            Walk-in Guest
+          </Button>
         </Box>
       </Box>
 
@@ -479,7 +560,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                           
                           {showCheckInOut && (
                             <>
-                              {(booking.status === 'confirmed' || booking.status === 'arriving') && (
+                              {(booking.status.toUpperCase() === 'CONFIRMED' || booking.status.toUpperCase() === 'ARRIVING') && (
                                 <Tooltip title="Check In">
                                   <IconButton 
                                     size="small" 
@@ -492,7 +573,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                                   </IconButton>
                                 </Tooltip>
                               )}
-                              {(booking.status === 'checked-in' || booking.status === 'checked_in') && (
+                              {(booking.status.toUpperCase() === 'CHECKED_IN') && (
                                 <Tooltip title="Check Out">
                                   <IconButton 
                                     size="small" 
@@ -506,27 +587,29 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                                 </Tooltip>
                               )}
                               <Tooltip title="Print Receipt">
-                                <IconButton size="small">
+                                <IconButton 
+                                  size="small"
+                                  onClick={() => handlePrintReceipt(booking)}
+                                  color="primary"
+                                >
                                   <PrintIcon />
                                 </IconButton>
                               </Tooltip>
                             </>
                           )}
                           
-                          {(mode === 'hotel-admin' || mode === 'front-desk') && (
-                            <Tooltip title="Delete Booking">
-                              <IconButton 
-                                size="small"
-                                onClick={() => {
-                                  setSelectedBooking(booking);
-                                  setDeleteDialogOpen(true);
-                                }}
-                                color="error"
-                              >
-                                <DeleteIcon />
-                              </IconButton>
-                            </Tooltip>
-                          )}
+                          <Tooltip title="Delete Booking">
+                            <IconButton 
+                              size="small"
+                              onClick={() => {
+                                setSelectedBooking(booking);
+                                setDeleteDialogOpen(true);
+                              }}
+                              color="error"
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </Tooltip>
                         </Box>
                       </TableCell>
                     )}
@@ -580,6 +663,17 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
           {snackbar.message}
         </Alert>
       </Snackbar>
+
+      {/* Checkout Receipt Dialog */}
+      <CheckoutReceiptDialog
+        open={receiptDialogOpen}
+        onClose={() => {
+          setReceiptDialogOpen(false);
+          setCheckoutReceipt(null);
+        }}
+        receipt={checkoutReceipt?.receipt || null}
+        guestName={checkoutReceipt?.booking?.guestName || 'Guest'}
+      />
     </Box>
   );
 };

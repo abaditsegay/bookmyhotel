@@ -40,7 +40,6 @@ import { SystemDashboardPage } from './pages/SystemDashboardPage';
 import MyBookings from './components/MyBookings';
 import OperationsPage from './pages/operations/OperationsPage';
 import StaffDashboardPage from './pages/StaffDashboardPage';
-import HomePage from './pages/HomePage';
 import ShopRoutes from './pages/shop/ShopRoutes';
 
 // Role-based Router Component - redirects based on user role
@@ -139,7 +138,7 @@ function App() {
     <EnhancedLayout hideSidebar={!isAuthenticated}>
       <Routes>
         <Route path="/" element={<RoleBasedRouter />} />
-        <Route path="/home" element={<HomePage />} />
+        <Route path="/home" element={<HotelSearchPage />} />
         <Route path="/hotels" element={
           <PlaceholderPage 
             title="Hotels" 
@@ -360,12 +359,12 @@ function App() {
           </ProtectedRoute>
         } />
         <Route path="/frontdesk/bookings/:id" element={
-          <ProtectedRoute requiredRole="FRONTDESK">
+          <ProtectedRoute requiredRoles={['FRONTDESK', 'HOTEL_ADMIN']}>
             <FrontDeskBookingDetails />
           </ProtectedRoute>
         } />
         <Route path="/frontdesk/bookings/:id/edit" element={
-          <ProtectedRoute requiredRole="FRONTDESK">
+          <ProtectedRoute requiredRoles={['FRONTDESK', 'HOTEL_ADMIN']}>
             <FrontDeskBookingDetails />
           </ProtectedRoute>
         } />

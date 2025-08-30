@@ -23,6 +23,58 @@ export interface FrontDeskBooking {
   paymentIntentId?: string;
 }
 
+export interface ConsolidatedReceipt {
+  guestName: string;
+  guestEmail: string;
+  guestPhone?: string;
+  reservationId: number;
+  confirmationNumber: string;
+  checkInDate: string;
+  checkOutDate: string;
+  actualCheckInTime?: string;
+  actualCheckOutTime?: string;
+  status: string;
+  numberOfNights: number;
+  numberOfGuests: number;
+  hotelName: string;
+  hotelAddress: string;
+  hotelPhone?: string;
+  hotelEmail?: string;
+  roomNumber: string;
+  roomType: string;
+  roomChargePerNight: number;
+  totalRoomCharges: number;
+  additionalCharges: Array<{
+    chargeId?: number;
+    description: string;
+    amount: number;
+    chargeType?: string;
+    chargeDate?: string;
+    notes?: string;
+  }>;
+  totalAdditionalCharges: number;
+  taxesAndFees: Array<{
+    chargeId?: number;
+    description: string;
+    amount: number;
+    chargeType?: string;
+    chargeDate?: string;
+    notes?: string;
+  }>;
+  totalTaxesAndFees: number;
+  grandTotal: number;
+  receiptNumber: string;
+  generatedAt: string;
+  generatedBy?: string;
+}
+
+export interface CheckoutResponse {
+  booking: FrontDeskBooking;
+  receipt?: ConsolidatedReceipt;
+  receiptGenerated: boolean;
+  message?: string;
+}
+
 export interface FrontDeskStats {
   todaysArrivals: number;
   todaysDepartures: number;
@@ -357,6 +409,58 @@ export const frontDeskApiService = {
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to check out guest' 
+      };
+    }
+  },
+
+  /**
+   * Check out a guest with final receipt generation
+   */
+  checkOutGuestWithReceipt: async (token: string, reservationId: number, tenantId: string | null = 'default'): Promise<{ success: boolean; data?: CheckoutResponse; message?: string }> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/front-desk/checkout-with-receipt/${reservationId}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(token, tenantId),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to check out guest with receipt');
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      console.error('Check out with receipt error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to check out guest with receipt' 
+      };
+    }
+  },
+
+  /**
+   * Generate receipt preview for any booking (without changing status)
+   */
+  generateReceiptPreview: async (token: string, reservationId: number, tenantId: string | null = 'default'): Promise<{ success: boolean; data?: ConsolidatedReceipt; message?: string }> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/checkout/receipt/${reservationId}/preview`, {
+        method: 'GET',
+        headers: getAuthHeaders(token, tenantId),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to generate receipt preview');
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      console.error('Receipt preview error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to generate receipt preview' 
       };
     }
   },

@@ -74,11 +74,16 @@ const BookingViewEdit: React.FC = () => {
 
   // Room selection state
   const [availableRooms, setAvailableRooms] = useState<RoomResponse[]>([]);
-  const [availableRoomTypes, setAvailableRoomTypes] = useState<string[]>(['SINGLE', 'DOUBLE', 'SUITE', 'DELUXE', 'PRESIDENTIAL']);
+  const availableRoomTypes = ['SINGLE', 'DOUBLE', 'SUITE', 'DELUXE', 'PRESIDENTIAL'];
   const [roomDialogOpen, setRoomDialogOpen] = useState(false);
   const [loadingRooms, setLoadingRooms] = useState(false);
   const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
   const [priceCalculating, setPriceCalculating] = useState(false);
+  
+  // New state for room type price calculation
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [roomTypePricing, setRoomTypePricing] = useState<any>(null);
+  const [loadingRoomTypePricing, setLoadingRoomTypePricing] = useState(false);
 
   useEffect(() => {
     const loadBooking = async () => {
@@ -154,6 +159,12 @@ const BookingViewEdit: React.FC = () => {
 
   const handleSave = async () => {
     if (!editedBooking || !booking || !token) return;
+
+    // Check if booking can be modified based on its status
+    if (!canModifyBooking(booking.status)) {
+      setError(`Cannot modify booking with status: ${booking.status}. Only confirmed, pending, or checked-in bookings can be modified.`);
+      return;
+    }
 
     try {
       setPriceCalculating(true);
@@ -310,6 +321,40 @@ const BookingViewEdit: React.FC = () => {
     }
   };
 
+  // Load room type pricing for automatic price calculation
+  const loadRoomTypePricing = async (roomType: string) => {
+    if (!token) return null;
+
+    try {
+      setLoadingRoomTypePricing(true);
+      const result = await hotelAdminApi.getRoomTypePricing(token, roomType);
+      
+      if (result.success && result.data) {
+        setRoomTypePricing(result.data);
+        return result.data;
+      } else {
+        console.warn('No pricing found for room type:', roomType);
+        return null;
+      }
+    } catch (err) {
+      console.error('Error loading room type pricing:', err);
+      return null;
+    } finally {
+      setLoadingRoomTypePricing(false);
+    }
+  };
+
+  // Calculate total amount based on room type pricing
+  const calculateTotalWithRoomTypePricing = (roomType: string, checkInDate: string, checkOutDate: string, pricing?: any) => {
+    if (!pricing) return 0;
+    
+    const checkIn = new Date(checkInDate);
+    const checkOut = new Date(checkOutDate);
+    const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
+    
+    return pricing.basePricePerNight * nights;
+  };
+
   // Handle room selection
   const handleRoomSelect = (room: RoomResponse) => {
     if (!editedBooking) return;
@@ -365,6 +410,36 @@ const BookingViewEdit: React.FC = () => {
         }
       }
       
+      // Handle room type change with automatic price calculation
+      if (field === 'roomType') {
+        // Clear room number when room type changes
+        updatedBooking.roomNumber = '';
+        setSelectedRoomId(null);
+        
+        // Load new pricing for the selected room type
+        loadRoomTypePricing(value).then((pricing) => {
+          if (pricing && editedBooking) {
+            const newPricePerNight = pricing.basePricePerNight;
+            const newTotal = calculateTotalWithRoomTypePricing(
+              value, 
+              editedBooking.checkInDate, 
+              editedBooking.checkOutDate, 
+              pricing
+            );
+            
+            setEditedBooking({
+              ...updatedBooking,
+              pricePerNight: newPricePerNight,
+              totalAmount: newTotal
+            });
+          } else {
+            setEditedBooking(updatedBooking);
+          }
+        });
+        
+        return; // Exit early to prevent setting state twice
+      }
+      
       setEditedBooking(updatedBooking);
     }
   };
@@ -397,10 +472,12 @@ const BookingViewEdit: React.FC = () => {
   };
 
   const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
+    // Handle both API format (CHECKED_OUT) and display format (Checked Out)
+    const normalizedStatus = status.toLowerCase().replace(/_/g, ' ');
+    switch (normalizedStatus) {
       case 'confirmed': return 'success';
       case 'checked in': return 'info';
-      case 'checked out': return 'default';
+      case 'checked out': return 'info';
       case 'cancelled': return 'error';
       case 'pending': return 'warning';
       default: return 'default';
@@ -416,6 +493,14 @@ const BookingViewEdit: React.FC = () => {
       case 'refunded': return 'info';
       default: return 'default';
     }
+  };
+
+  const canModifyBooking = (status: string) => {
+    // Only allow modifications for certain statuses
+    // Handle both API format (CHECKED_OUT) and display format (Checked Out)
+    const normalizedStatus = status.toLowerCase().replace(/_/g, ' ');
+    const modifiableStatuses = ['confirmed', 'pending', 'checked in'];
+    return modifiableStatuses.includes(normalizedStatus);
   };
 
   const currentBooking = isEditing ? editedBooking : booking;
@@ -483,6 +568,8 @@ const BookingViewEdit: React.FC = () => {
                 variant="outlined"
                 startIcon={<EditIcon />}
                 onClick={handleEdit}
+                disabled={!booking || !canModifyBooking(booking.status)}
+                title={booking && !canModifyBooking(booking.status) ? `Cannot edit booking with status: ${booking.status}` : undefined}
               >
                 Edit
               </Button>
@@ -672,9 +759,10 @@ const BookingViewEdit: React.FC = () => {
                         <TextField
                           fullWidth
                           label="Room Number"
-                          value={currentBooking?.roomNumber || 'TBA (To Be Assigned)'}
-                          disabled
-                          variant="filled"
+                          value={currentBooking?.roomNumber || ''}
+                          onChange={(e) => handleFieldChange('roomNumber', e.target.value)}
+                          variant="outlined"
+                          placeholder="Enter room number or select from available rooms"
                         />
                         <Button
                           variant="outlined"
@@ -701,6 +789,13 @@ const BookingViewEdit: React.FC = () => {
                       <Alert severity="info">
                         Room selection will be applied when you save the booking. 
                         {priceCalculating && ' Calculating price changes...'}
+                      </Alert>
+                    </Grid>
+                  )}
+                  {isEditing && loadingRoomTypePricing && (
+                    <Grid item xs={12}>
+                      <Alert severity="info">
+                        Calculating new pricing for room type...
                       </Alert>
                     </Grid>
                   )}
@@ -747,18 +842,24 @@ const BookingViewEdit: React.FC = () => {
                     <TextField
                       fullWidth
                       label="Price per Night"
-                      value={formatCurrency(currentBooking?.pricePerNight || 0)}
+                      value={loadingRoomTypePricing ? 'Calculating...' : formatCurrency(currentBooking?.pricePerNight || 0)}
                       disabled
                       variant="filled"
+                      InputProps={{
+                        endAdornment: loadingRoomTypePricing ? <CircularProgress size={20} /> : undefined
+                      }}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
                       label="Total Amount"
-                      value={formatCurrency(currentBooking?.totalAmount || 0)}
+                      value={loadingRoomTypePricing ? 'Calculating...' : formatCurrency(currentBooking?.totalAmount || 0)}
                       disabled
                       variant="filled"
+                      InputProps={{
+                        endAdornment: loadingRoomTypePricing ? <CircularProgress size={20} /> : undefined
+                      }}
                     />
                   </Grid>
                 </Grid>
@@ -822,7 +923,7 @@ const BookingViewEdit: React.FC = () => {
                       <ListItemText
                         primary={`Room ${room.roomNumber} - ${room.roomType}`}
                         secondary={
-                          <Box>
+                          <span>
                             <Typography component="span" variant="body2" color="text.primary">
                               ${room.pricePerNight}/night
                             </Typography>
@@ -834,7 +935,7 @@ const BookingViewEdit: React.FC = () => {
                             <Typography component="span" variant="body2" sx={{ ml: 1 }}>
                               • Capacity: {room.capacity} guests
                             </Typography>
-                          </Box>
+                          </span>
                         }
                       />
                     </ListItemButton>

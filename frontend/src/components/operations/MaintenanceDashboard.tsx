@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import TokenManager from '../../utils/tokenManager';
 import {
   Box,
   Typography,
@@ -39,7 +40,9 @@ import {
   PlayArrow as StartIcon,
   CheckCircle as CompleteIcon
 } from '@mui/icons-material';
-import { getCurrentHotel, getCurrentHotelKey, generateMaintenanceTasks } from '../../data/operationsMockData';
+import { getCurrentHotel } from '../../data/operationsMockData';
+
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
 
 interface MaintenanceTask {
   id: number;
@@ -101,7 +104,7 @@ const MAINTENANCE_TASK_TYPES = [
   'PREVENTIVE_MAINTENANCE'
 ];
 
-const PRIORITIES = ['LOW', 'MEDIUM', 'HIGH', 'URGENT'];
+const PRIORITIES = ['LOW', 'NORMAL', 'HIGH', 'URGENT', 'CRITICAL'];
 
 const MaintenanceDashboard: React.FC = () => {
   const [tasks, setTasks] = useState<MaintenanceTask[]>([]);
@@ -122,7 +125,7 @@ const MaintenanceDashboard: React.FC = () => {
     taskType: '',
     title: '',
     description: '',
-    priority: 'MEDIUM',
+    priority: 'NORMAL',
     location: '',
     equipmentType: '',
     estimatedCost: ''
@@ -138,10 +141,14 @@ const MaintenanceDashboard: React.FC = () => {
   
   // Task detail dialog states
   const [taskDetailOpen, setTaskDetailOpen] = useState(false);
+  const [isEditingTask, setIsEditingTask] = useState(false);
+  const [editTaskData, setEditTaskData] = useState<any>({});
   const [selectedTask, setSelectedTask] = useState<MaintenanceTask | null>(null);
 
   // Get current user role (from auth context)
-  const currentUserRole = 'OPERATIONS_SUPERVISOR'; // This would come from auth context
+  const currentUser = TokenManager.getUser();
+  const currentUserRole = currentUser?.role || 'GUEST';
+  const isMaintenanceWorker = currentUserRole === 'MAINTENANCE' || currentUserRole === 'MAINTENANCE_WORKER';
 
   useEffect(() => {
     loadTasks();
@@ -152,13 +159,70 @@ const MaintenanceDashboard: React.FC = () => {
     try {
       setLoading(true);
       
-      // Get current hotel and generate realistic data
-      const hotelKey = getCurrentHotelKey();
-      const mockTasks = generateMaintenanceTasks(hotelKey);
+      // Get current hotel ID for filtering
+      const hotel = getCurrentHotel();
+      const hotelId = hotel?.id || 12; // Default to Addis Sunshine (ID: 12)
       
-      setTasks(mockTasks);
+      // Choose endpoint based on user role
+      let endpoint = `${API_BASE_URL}/api/maintenance/tasks`;
+      if (isMaintenanceWorker) {
+        // Maintenance workers only see their assigned tasks
+        endpoint = `${API_BASE_URL}/api/maintenance/my-tasks`;
+      }
+      
+      // Load maintenance tasks from API
+      const response = await fetch(endpoint, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...TokenManager.getAuthHeaders(),
+        }
+      });
+
+      if (response.ok) {
+        const backendTasks = await response.json();
+        
+        // Filter by hotel and transform the data
+        const hotelTasks = backendTasks.filter((task: any) => 
+          task.room?.hotel?.id === hotelId || !task.room?.hotel?.id
+        );
+        
+        const transformedTasks = hotelTasks.map((task: any) => ({
+          id: task.id,
+          taskType: task.category || task.taskType,
+          title: task.title,
+          description: task.description,
+          status: task.status,
+          priority: task.priority, // Use backend priority values directly
+          location: task.location || (task.room ? `Room ${task.room.roomNumber}` : 'Unknown'),
+          equipmentType: task.equipmentType,
+          estimatedCost: task.estimatedCost,
+          actualCost: task.actualCost,
+          room: task.room ? {
+            roomNumber: task.room.roomNumber,
+            floor: task.room.floor || Math.floor(parseInt(task.room.roomNumber) / 100)
+          } : undefined,
+          assignedStaff: task.assignedTo ? {
+            id: task.assignedTo.id,
+            user: {
+              id: task.assignedTo.user?.id || task.assignedTo.id,
+              firstName: task.assignedTo.user?.firstName || task.assignedTo.firstName,
+              lastName: task.assignedTo.user?.lastName || task.assignedTo.lastName
+            }
+          } : undefined,
+          workPerformed: task.workNotes,
+          partsUsed: task.partsNeeded,
+          createdAt: task.createdAt
+        }));
+        
+        setTasks(transformedTasks);
+        setError(null);
+      } else {
+        throw new Error(`API error: ${response.status}`);
+      }
     } catch (err) {
-      setError('Failed to load maintenance tasks');
+      console.error('Failed to load maintenance tasks:', err);
+      setError('Unable to load maintenance tasks - please check your connection');
+      setTasks([]); // Set empty array instead of mock data
     } finally {
       setLoading(false);
     }
@@ -166,48 +230,120 @@ const MaintenanceDashboard: React.FC = () => {
 
   const loadStaff = async () => {
     try {
-      // Get current hotel and generate realistic data
+      // Get current hotel ID for filtering
       const hotel = getCurrentHotel();
-      const mockStaff: MaintenanceStaff[] = hotel.operationsTeam.maintenanceStaff.map((name, index) => {
-        const [firstName, lastName] = name.split(' ');
-        return {
-          id: index + 1,
-          user: { id: index + 3, firstName, lastName },
-          employeeId: `MT${String(index + 1).padStart(3, '0')}`,
-          isActive: true
-        };
-      });
+      const hotelId = hotel?.id || 12; // Default to Addis Sunshine (ID: 12)
       
-      setStaff(mockStaff);
+      // Load housekeeping staff that can do maintenance work
+      const response = await fetch(`${API_BASE_URL}/api/housekeeping/staff/hotel/${hotelId}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...TokenManager.getAuthHeaders(),
+        }
+      });
+
+      if (response.ok) {
+        const backendStaff = await response.json();
+        
+        // Filter for maintenance workers and transform the data
+        const maintenanceStaff = backendStaff
+          .filter((member: any) => 
+            member.role === 'MAINTENANCE_WORKER' || 
+            member.firstName?.toLowerCase().includes('maintenance') ||
+            member.lastName?.toLowerCase().includes('maintenance') ||
+            member.email?.toLowerCase().includes('maintenance')
+          )
+          .map((member: any) => ({
+            id: member.id,
+            user: {
+              id: member.user?.id || member.id,
+              firstName: member.user?.firstName || member.firstName,
+              lastName: member.user?.lastName || member.lastName
+            },
+            employeeId: member.employeeId,
+            isActive: member.isActive !== undefined ? member.isActive : true
+          }));
+        
+        setStaff(maintenanceStaff);
+      } else {
+        console.error('Failed to load staff data:', response.status);
+        setStaff([]); // Set empty array instead of mock data
+      }
     } catch (err) {
-      console.error('Failed to load staff');
+      console.error('Failed to load maintenance staff:', err);
+      setStaff([]); // Set empty array instead of mock data
     }
   };
 
   const handleCreateTask = async () => {
     try {
-      // API call would go here
-      // const response = await fetch('/api/maintenance/tasks', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({
-      //     ...createTaskForm,
-      //     estimatedCost: parseFloat(createTaskForm.estimatedCost) || 0
-      //   })
-      // });
+      // Get current hotel and user data
+      const hotel = getCurrentHotel();
+      const hotelId = hotel?.id;
+      const currentUser = TokenManager.getUser();
       
-      setCreateTaskOpen(false);
-      setCreateTaskForm({
-        roomId: '',
-        taskType: '',
-        title: '',
-        description: '',
-        priority: 'MEDIUM',
-        location: '',
-        equipmentType: '',
-        estimatedCost: ''
+      console.log('Creating maintenance task with data:', {
+        hotelId,
+        currentUser,
+        createTaskForm
       });
-      await loadTasks();
+      
+      // Validate required data
+      if (!hotelId) {
+        setError('Hotel ID is required');
+        return;
+      }
+      
+      if (!currentUser?.id) {
+        setError('User authentication required');
+        return;
+      }
+      
+      const requestBody = {
+        ...createTaskForm,
+        hotelId: hotelId,
+        createdByUserId: parseInt(currentUser.id),
+        estimatedCost: createTaskForm.estimatedCost ? parseFloat(createTaskForm.estimatedCost) : null,
+        roomId: createTaskForm.roomId ? parseInt(createTaskForm.roomId) : null
+      };
+      
+      console.log('Request body:', requestBody);
+      
+      const response = await fetch(`${API_BASE_URL}/api/maintenance/tasks`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...TokenManager.getAuthHeaders()
+        },
+        body: JSON.stringify(requestBody)
+      });
+      
+      console.log('Response status:', response.status);
+      console.log('Response ok:', response.ok);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error response:', errorText);
+        setError(`Failed to create maintenance task: ${errorText}`);
+        return;
+      }
+      
+      if (response.ok) {
+        setCreateTaskOpen(false);
+        setCreateTaskForm({
+          roomId: '',
+          taskType: '',
+          title: '',
+          description: '',
+          priority: 'NORMAL',
+          location: '',
+          equipmentType: '',
+          estimatedCost: ''
+        });
+        await loadTasks();
+      } else {
+        setError('Failed to create maintenance task');
+      }
     } catch (err) {
       setError('Failed to create maintenance task');
     }
@@ -217,15 +353,19 @@ const MaintenanceDashboard: React.FC = () => {
     if (!selectedTaskId || !selectedStaffId) return;
     
     try {
-      // API call would go here
-      // await fetch(`/api/maintenance/tasks/${selectedTaskId}/assign/${selectedStaffId}`, {
-      //   method: 'PUT'
-      // });
+      const response = await fetch(`${API_BASE_URL}/api/maintenance/tasks/${selectedTaskId}/assign/${selectedStaffId}`, {
+        method: 'PUT',
+        headers: TokenManager.getAuthHeaders()
+      });
       
-      setAssignTaskOpen(false);
-      setSelectedTaskId(null);
-      setSelectedStaffId('');
-      await loadTasks();
+      if (response.ok) {
+        setAssignTaskOpen(false);
+        setSelectedTaskId(null);
+        setSelectedStaffId('');
+        await loadTasks();
+      } else {
+        setError('Failed to assign maintenance task');
+      }
     } catch (err) {
       setError('Failed to assign maintenance task');
     }
@@ -233,12 +373,16 @@ const MaintenanceDashboard: React.FC = () => {
 
   const handleStartTask = async (taskId: number) => {
     try {
-      // API call would go here
-      // await fetch(`/api/maintenance/tasks/${taskId}/start`, {
-      //   method: 'PUT'
-      // });
+      const response = await fetch(`/api/maintenance/tasks/${taskId}/start`, {
+        method: 'PUT',
+        headers: TokenManager.getAuthHeaders()
+      });
       
-      await loadTasks();
+      if (response.ok) {
+        await loadTasks();
+      } else {
+        setError('Failed to start maintenance task');
+      }
     } catch (err) {
       setError('Failed to start maintenance task');
     }
@@ -248,23 +392,29 @@ const MaintenanceDashboard: React.FC = () => {
     if (!selectedTaskId) return;
     
     try {
-      // API call would go here
-      // await fetch(`/api/maintenance/tasks/${selectedTaskId}/complete`, {
-      //   method: 'PUT',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({
-      //     workPerformed,
-      //     partsUsed,
-      //     actualCost: parseFloat(actualCost) || 0
-      //   })
-      // });
+      const response = await fetch(`/api/maintenance/tasks/${selectedTaskId}/complete`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...TokenManager.getAuthHeaders()
+        },
+        body: JSON.stringify({
+          workPerformed,
+          partsUsed,
+          actualCost: actualCost ? parseFloat(actualCost) : 0
+        })
+      });
       
-      setCompleteTaskOpen(false);
-      setSelectedTaskId(null);
-      setWorkPerformed('');
-      setPartsUsed('');
-      setActualCost('');
-      await loadTasks();
+      if (response.ok) {
+        setCompleteTaskOpen(false);
+        setSelectedTaskId(null);
+        setWorkPerformed('');
+        setPartsUsed('');
+        setActualCost('');
+        await loadTasks();
+      } else {
+        setError('Failed to complete maintenance task');
+      }
     } catch (err) {
       setError('Failed to complete maintenance task');
     }
@@ -308,10 +458,11 @@ const MaintenanceDashboard: React.FC = () => {
   const getPriorityColor = (priority: string) => {
     switch (priority.toLowerCase()) {
       case 'urgent':
+      case 'critical':
         return 'error';
       case 'high':
         return 'warning';
-      case 'medium':
+      case 'normal':
         return 'info';
       case 'low':
         return 'success';
@@ -328,6 +479,54 @@ const MaintenanceDashboard: React.FC = () => {
   const openCompleteDialog = (taskId: number) => {
     setSelectedTaskId(taskId);
     setCompleteTaskOpen(true);
+  };
+
+  const handleEditTask = () => {
+    if (selectedTask) {
+      setEditTaskData({
+        title: selectedTask.title || '',
+        description: selectedTask.description || '',
+        priority: selectedTask.priority || 'NORMAL',
+        location: selectedTask.location || '',
+        equipmentType: selectedTask.equipmentType || '',
+        estimatedCost: selectedTask.estimatedCost || 0
+      });
+      setIsEditingTask(true);
+    }
+  };
+
+  const handleSaveTaskEdit = async () => {
+    if (!selectedTask) return;
+    
+    try {
+      // TODO: Call API to update task
+      console.log('Saving task edit:', editTaskData);
+      
+      // For now, just update the local task
+      const updatedTask = {
+        ...selectedTask,
+        title: editTaskData.title,
+        description: editTaskData.description,
+        priority: editTaskData.priority,
+        location: editTaskData.location,
+        equipmentType: editTaskData.equipmentType,
+        estimatedCost: editTaskData.estimatedCost
+      };
+      
+      setSelectedTask(updatedTask);
+      setIsEditingTask(false);
+      
+      // TODO: Refresh tasks list when API is implemented
+      // await loadTasks();
+      
+    } catch (error) {
+      console.error('Error updating task:', error);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditingTask(false);
+    setEditTaskData({});
   };
 
   const filteredTasks = getFilteredTasks();
@@ -507,7 +706,7 @@ const MaintenanceDashboard: React.FC = () => {
                       </IconButton>
                     </Tooltip>
                     
-                    {task.status === 'PENDING' && (
+                    {(task.status === 'PENDING' || task.status === 'pending') && (
                       <Tooltip title="Assign Task">
                         <IconButton 
                           size="small"
@@ -519,7 +718,22 @@ const MaintenanceDashboard: React.FC = () => {
                       </Tooltip>
                     )}
                     
-                    {task.status === 'ASSIGNED' && (
+                    {/* Reassign button for assigned or in-progress tasks */}
+                    {currentUserRole === 'OPERATIONS_SUPERVISOR' && 
+                     (task.status === 'ASSIGNED' || task.status === 'assigned' || 
+                      task.status === 'IN_PROGRESS' || task.status === 'in_progress') && (
+                      <Tooltip title="Reassign Task">
+                        <IconButton 
+                          size="small"
+                          color="secondary"
+                          onClick={() => openAssignDialog(task.id)}
+                        >
+                          <AssignIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                    
+                    {(task.status === 'ASSIGNED' || task.status === 'assigned') && (
                       <Tooltip title="Start Task">
                         <IconButton 
                           size="small"
@@ -531,7 +745,7 @@ const MaintenanceDashboard: React.FC = () => {
                       </Tooltip>
                     )}
                     
-                    {task.status === 'IN_PROGRESS' && (
+                    {(task.status === 'IN_PROGRESS' || task.status === 'in_progress') && (
                       <Tooltip title="Complete Task">
                         <IconButton 
                           size="small"
@@ -731,7 +945,18 @@ const MaintenanceDashboard: React.FC = () => {
 
       {/* Task Detail Dialog */}
       <Dialog open={taskDetailOpen} onClose={() => setTaskDetailOpen(false)} maxWidth="md" fullWidth>
-        <DialogTitle>Task Details</DialogTitle>
+        <DialogTitle>
+          Task Details
+          {!isEditingTask && currentUserRole === 'OPERATIONS_SUPERVISOR' && (
+            <Button 
+              startIcon={<EditIcon />} 
+              onClick={handleEditTask}
+              sx={{ ml: 2 }}
+            >
+              Edit
+            </Button>
+          )}
+        </DialogTitle>
         <DialogContent>
           {selectedTask && (
             <Box sx={{ pt: 2 }}>
@@ -753,15 +978,39 @@ const MaintenanceDashboard: React.FC = () => {
                 </Box>
                 <Box>
                   <Typography variant="subtitle2" color="text.secondary">Priority</Typography>
-                  <Chip 
-                    label={selectedTask.priority}
-                    size="small"
-                    color={getPriorityColor(selectedTask.priority) as any}
-                  />
+                  {isEditingTask ? (
+                    <FormControl fullWidth size="small">
+                      <Select
+                        value={editTaskData.priority || 'NORMAL'}
+                        onChange={(e) => setEditTaskData({...editTaskData, priority: e.target.value})}
+                      >
+                        <MenuItem value="LOW">Low</MenuItem>
+                        <MenuItem value="NORMAL">Normal</MenuItem>
+                        <MenuItem value="HIGH">High</MenuItem>
+                        <MenuItem value="URGENT">Urgent</MenuItem>
+                        <MenuItem value="CRITICAL">Critical</MenuItem>
+                      </Select>
+                    </FormControl>
+                  ) : (
+                    <Chip 
+                      label={selectedTask.priority}
+                      size="small"
+                      color={getPriorityColor(selectedTask.priority) as any}
+                    />
+                  )}
                 </Box>
                 <Box>
                   <Typography variant="subtitle2" color="text.secondary">Location</Typography>
-                  <Typography>{selectedTask.location || 'N/A'}</Typography>
+                  {isEditingTask ? (
+                    <TextField
+                      fullWidth
+                      size="small"
+                      value={editTaskData.location || ''}
+                      onChange={(e) => setEditTaskData({...editTaskData, location: e.target.value})}
+                    />
+                  ) : (
+                    <Typography>{selectedTask.location || 'N/A'}</Typography>
+                  )}
                 </Box>
                 <Box>
                   <Typography variant="subtitle2" color="text.secondary">Assigned Staff</Typography>
@@ -774,11 +1023,31 @@ const MaintenanceDashboard: React.FC = () => {
                 </Box>
                 <Box>
                   <Typography variant="subtitle2" color="text.secondary">Estimated Cost</Typography>
-                  <Typography>${selectedTask.estimatedCost?.toFixed(2) || '0.00'}</Typography>
+                  {isEditingTask ? (
+                    <TextField
+                      fullWidth
+                      size="small"
+                      type="number"
+                      value={editTaskData.estimatedCost || 0}
+                      onChange={(e) => setEditTaskData({...editTaskData, estimatedCost: parseFloat(e.target.value) || 0})}
+                      InputProps={{ startAdornment: '$' }}
+                    />
+                  ) : (
+                    <Typography>${selectedTask.estimatedCost?.toFixed(2) || '0.00'}</Typography>
+                  )}
                 </Box>
                 <Box>
                   <Typography variant="subtitle2" color="text.secondary">Equipment Type</Typography>
-                  <Typography>{selectedTask.equipmentType || 'N/A'}</Typography>
+                  {isEditingTask ? (
+                    <TextField
+                      fullWidth
+                      size="small"
+                      value={editTaskData.equipmentType || ''}
+                      onChange={(e) => setEditTaskData({...editTaskData, equipmentType: e.target.value})}
+                    />
+                  ) : (
+                    <Typography>{selectedTask.equipmentType || 'N/A'}</Typography>
+                  )}
                 </Box>
                 <Box>
                   <Typography variant="subtitle2" color="text.secondary">Created</Typography>
@@ -787,7 +1056,18 @@ const MaintenanceDashboard: React.FC = () => {
               </Box>
               <Box sx={{ mt: 2 }}>
                 <Typography variant="subtitle2" color="text.secondary">Description</Typography>
-                <Typography>{selectedTask.description}</Typography>
+                {isEditingTask ? (
+                  <TextField
+                    fullWidth
+                    multiline
+                    rows={3}
+                    value={editTaskData.description || ''}
+                    onChange={(e) => setEditTaskData({...editTaskData, description: e.target.value})}
+                    sx={{ mt: 1 }}
+                  />
+                ) : (
+                  <Typography>{selectedTask.description}</Typography>
+                )}
               </Box>
               {selectedTask.workPerformed && (
                 <Box sx={{ mt: 2 }}>
@@ -811,7 +1091,29 @@ const MaintenanceDashboard: React.FC = () => {
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setTaskDetailOpen(false)}>Close</Button>
+          {isEditingTask ? (
+            <>
+              <Button onClick={handleCancelEdit}>Cancel</Button>
+              <Button onClick={handleSaveTaskEdit} variant="contained">Save Changes</Button>
+            </>
+          ) : (
+            <>
+              {selectedTask && currentUserRole === 'OPERATIONS_SUPERVISOR' && (
+                <Button 
+                  onClick={() => {
+                    setTaskDetailOpen(false);
+                    openAssignDialog(selectedTask.id);
+                  }}
+                  variant="contained"
+                  startIcon={<AssignIcon />}
+                  sx={{ mr: 'auto' }}
+                >
+                  {selectedTask.assignedStaff ? 'Reassign' : 'Assign'} Task
+                </Button>
+              )}
+              <Button onClick={() => setTaskDetailOpen(false)}>Close</Button>
+            </>
+          )}
         </DialogActions>
       </Dialog>
     </Box>

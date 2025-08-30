@@ -5,6 +5,7 @@ import com.bookmyhotel.repository.MaintenanceTaskRepository;
 import com.bookmyhotel.repository.RoomRepository;
 import com.bookmyhotel.repository.UserRepository;
 import com.bookmyhotel.repository.HotelRepository;
+import com.bookmyhotel.repository.HousekeepingStaffRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -33,19 +34,22 @@ public class MaintenanceService {
     @Autowired
     private HotelRepository hotelRepository;
 
+    @Autowired
+    private HousekeepingStaffRepository housekeepingStaffRepository;
+
     // ===== MAINTENANCE TASK MANAGEMENT METHODS =====
 
     /**
      * Create a new maintenance task
      */
-    public MaintenanceTask createTask(String tenantId, Long hotelId, Long roomId, String taskType, 
-                                     String title, String description, TaskPriority priority, 
-                                     Long createdByUserId, String location, String equipmentType) {
+    public MaintenanceTask createTask(String tenantId, Long hotelId, Long roomId, String taskType,
+            String title, String description, TaskPriority priority,
+            Long createdByUserId, String location, String equipmentType) {
         Hotel hotel = hotelRepository.findById(hotelId)
-            .orElseThrow(() -> new RuntimeException("Hotel not found"));
-        
+                .orElseThrow(() -> new RuntimeException("Hotel not found"));
+
         User createdBy = userRepository.findById(createdByUserId)
-            .orElseThrow(() -> new RuntimeException("Creator user not found"));
+                .orElseThrow(() -> new RuntimeException("Creator user not found"));
 
         MaintenanceTask task = new MaintenanceTask();
         task.setTenantId(tenantId);
@@ -57,12 +61,12 @@ public class MaintenanceService {
         task.setCreatedBy(createdBy);
         task.setLocation(location);
         task.setEquipmentType(equipmentType);
-        task.setStatus(TaskStatus.PENDING);
+        task.setStatus(TaskStatus.OPEN);
         task.setCreatedAt(LocalDateTime.now());
 
         if (roomId != null) {
             Room room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new RuntimeException("Room not found"));
+                    .orElseThrow(() -> new RuntimeException("Room not found"));
             task.setRoom(room);
         }
 
@@ -81,6 +85,13 @@ public class MaintenanceService {
      */
     public Page<MaintenanceTask> getAllTasks(String tenantId, Pageable pageable) {
         return maintenanceTaskRepository.findByTenantIdOrderByCreatedAtDesc(tenantId, pageable);
+    }
+
+    /**
+     * Get tasks assigned to a specific user by email
+     */
+    public List<MaintenanceTask> getTasksAssignedToUser(String tenantId, String userEmail) {
+        return maintenanceTaskRepository.findByTenantIdAndAssignedTo_EmailOrderByCreatedAtDesc(tenantId, userEmail);
     }
 
     /**
@@ -119,29 +130,29 @@ public class MaintenanceService {
     }
 
     /**
-     * Get tasks assigned to a specific user
+     * Get tasks assigned to a specific housekeeping staff member
      */
-    public List<MaintenanceTask> getTasksByAssignedUser(String tenantId, Long userId) {
-        User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
-        return maintenanceTaskRepository.findByTenantIdAndAssignedTo(tenantId, user);
+    public List<MaintenanceTask> getTasksByAssignedStaff(String tenantId, Long staffId) {
+        HousekeepingStaff staff = housekeepingStaffRepository.findById(staffId)
+                .orElseThrow(() -> new RuntimeException("Housekeeping staff not found"));
+        return maintenanceTaskRepository.findByTenantIdAndAssignedTo(tenantId, staff);
     }
 
     /**
-     * Assign a maintenance task to a user
+     * Assign a maintenance task to a housekeeping staff member
      */
-    public MaintenanceTask assignTask(String tenantId, Long taskId, Long userId) {
+    public MaintenanceTask assignTask(String tenantId, Long taskId, Long staffId) {
         MaintenanceTask task = maintenanceTaskRepository.findById(taskId)
-            .orElseThrow(() -> new RuntimeException("Maintenance task not found"));
-        
-        User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("Maintenance task not found"));
+
+        HousekeepingStaff staff = housekeepingStaffRepository.findById(staffId)
+                .orElseThrow(() -> new RuntimeException("Housekeeping staff not found"));
 
         if (!task.getTenantId().equals(tenantId)) {
             throw new RuntimeException("Task not found for this tenant");
         }
 
-        task.setAssignedTo(user);
+        task.setAssignedTo(staff);
         task.setStatus(TaskStatus.ASSIGNED);
 
         return maintenanceTaskRepository.save(task);
@@ -152,7 +163,7 @@ public class MaintenanceService {
      */
     public MaintenanceTask startTask(String tenantId, Long taskId) {
         MaintenanceTask task = maintenanceTaskRepository.findById(taskId)
-            .orElseThrow(() -> new RuntimeException("Maintenance task not found"));
+                .orElseThrow(() -> new RuntimeException("Maintenance task not found"));
 
         if (!task.getTenantId().equals(tenantId)) {
             throw new RuntimeException("Task not found for this tenant");
@@ -175,9 +186,10 @@ public class MaintenanceService {
     /**
      * Complete a maintenance task
      */
-    public MaintenanceTask completeTask(String tenantId, Long taskId, String workPerformed, String partsUsed, Double actualCost) {
+    public MaintenanceTask completeTask(String tenantId, Long taskId, String workPerformed, String partsUsed,
+            Double actualCost) {
         MaintenanceTask task = maintenanceTaskRepository.findById(taskId)
-            .orElseThrow(() -> new RuntimeException("Maintenance task not found"));
+                .orElseThrow(() -> new RuntimeException("Maintenance task not found"));
 
         if (!task.getTenantId().equals(tenantId)) {
             throw new RuntimeException("Task not found for this tenant");
@@ -207,7 +219,7 @@ public class MaintenanceService {
      */
     public MaintenanceTask cancelTask(String tenantId, Long taskId, String reason) {
         MaintenanceTask task = maintenanceTaskRepository.findById(taskId)
-            .orElseThrow(() -> new RuntimeException("Maintenance task not found"));
+                .orElseThrow(() -> new RuntimeException("Maintenance task not found"));
 
         if (!task.getTenantId().equals(tenantId)) {
             throw new RuntimeException("Task not found for this tenant");
@@ -228,7 +240,7 @@ public class MaintenanceService {
      */
     public MaintenanceTask updateTask(String tenantId, Long taskId, MaintenanceTask updatedTask) {
         MaintenanceTask existingTask = maintenanceTaskRepository.findById(taskId)
-            .orElseThrow(() -> new RuntimeException("Maintenance task not found"));
+                .orElseThrow(() -> new RuntimeException("Maintenance task not found"));
 
         if (!existingTask.getTenantId().equals(tenantId)) {
             throw new RuntimeException("Task not found for this tenant");
@@ -282,7 +294,7 @@ public class MaintenanceService {
      */
     public List<MaintenanceTask> getTasksByRoom(String tenantId, Long roomId) {
         Room room = roomRepository.findById(roomId)
-            .orElseThrow(() -> new RuntimeException("Room not found"));
+                .orElseThrow(() -> new RuntimeException("Room not found"));
         return maintenanceTaskRepository.findByTenantIdAndRoom(tenantId, room);
     }
 
@@ -322,12 +334,12 @@ public class MaintenanceService {
     public Double getTaskCompletionRate(String tenantId, LocalDateTime start, LocalDateTime end) {
         long totalTasks = maintenanceTaskRepository.countByTenantIdAndCreatedAtBetween(tenantId, start, end);
         long completedTasks = maintenanceTaskRepository.countByTenantIdAndStatusAndActualEndTimeBetween(
-            tenantId, TaskStatus.COMPLETED, start, end);
-        
+                tenantId, TaskStatus.COMPLETED, start, end);
+
         if (totalTasks == 0) {
             return 0.0;
         }
-        
+
         return (double) completedTasks / totalTasks * 100.0;
     }
 

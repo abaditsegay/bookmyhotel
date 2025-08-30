@@ -30,11 +30,15 @@ import {
   Remove as RemoveIcon,
   Delete as DeleteIcon,
   Search as SearchIcon,
-  Receipt as ReceiptIcon
+  Receipt as ReceiptIcon,
+  CheckCircle as CheckIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import { shopApiService } from '../../services/shopApi';
-import { Product, ShopOrderCreateRequest, PaymentMethod, DeliveryType, ProductCategory } from '../../types/shop';
+import { Product, ShopOrderCreateRequest, PaymentMethod, DeliveryType, ProductCategory, ShopOrder } from '../../types/shop';
+import ShopReceiptDialog from './ShopReceiptDialog';
+import PaymentDialog from './PaymentDialog';
 
 interface OrderItem {
   product: Product;
@@ -44,6 +48,7 @@ interface OrderItem {
 
 const OrderCreation: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -51,16 +56,24 @@ const OrderCreation: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('ALL');
 
-  // Order form data
-  const [customerName, setCustomerName] = useState('');
-  const [customerEmail, setCustomerEmail] = useState('');
-  const [customerPhone, setCustomerPhone] = useState('');
+  // Order form data - simplified for purchase types
+  const [purchaseType, setPurchaseType] = useState<'ROOM_CHARGE' | 'ANONYMOUS'>('ANONYMOUS');
   const [roomNumber, setRoomNumber] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(PaymentMethod.CASH);
   const [isDelivery, setIsDelivery] = useState(false);
   const [deliveryType, setDeliveryType] = useState<DeliveryType>(DeliveryType.PICKUP);
   const [deliveryAddress, setDeliveryAddress] = useState('');
   const [notes, setNotes] = useState('');
+
+  // Receipt dialog state
+  const [receiptDialogOpen, setReceiptDialogOpen] = useState(false);
+  const [createdOrder, setCreatedOrder] = useState<ShopOrder | null>(null);
+
+  // Payment dialog state
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [paymentCompleted, setPaymentCompleted] = useState(false);
+  const [completedPaymentMethod, setCompletedPaymentMethod] = useState<PaymentMethod | null>(null);
+  const [paymentReference, setPaymentReference] = useState<string | null>(null);
 
   // Get hotel ID from context (adjust based on your auth context)
   const hotelId = 1;
@@ -122,60 +135,82 @@ const OrderCreation: React.FC = () => {
   };
 
   const handleCreateOrder = async () => {
-    if (!customerName.trim()) {
-      setError('Customer name is required');
-      return;
-    }
-
     if (orderItems.length === 0) {
-      setError('Please add at least one item to the order');
+      setError('Cart is empty');
       return;
     }
 
-    if (paymentMethod === PaymentMethod.ROOM_CHARGE && !roomNumber.trim()) {
-      setError('Room number is required for room charges');
-      return;
-    }
-
+    setLoading(true);
     try {
-      setLoading(true);
-      
-      const orderRequest: ShopOrderCreateRequest = {
-        customerName: customerName.trim(),
-        customerEmail: customerEmail.trim() || undefined,
-        customerPhone: customerPhone.trim() || undefined,
+      const orderData: ShopOrderCreateRequest = {
+        customerName: undefined, // Anonymous sale - no customer name required
+        customerEmail: undefined,
+        customerPhone: undefined,
         roomNumber: roomNumber.trim() || undefined,
+        reservationId: undefined, // TODO: Add reservation lookup by room number if needed
         paymentMethod,
-        isDelivery,
-        deliveryType,
-        deliveryAddress: deliveryAddress.trim() || undefined,
         notes: notes.trim() || undefined,
+        isDelivery: deliveryType === DeliveryType.ROOM_DELIVERY,
+        deliveryAddress: deliveryType === DeliveryType.ROOM_DELIVERY ? deliveryAddress.trim() || undefined : undefined,
+        deliveryTime: undefined, // No delivery time selection in current UI
+        deliveryType,
         items: orderItems.map(item => ({
           productId: item.product.id,
           quantity: item.quantity,
-          notes: item.notes?.trim() || undefined
+          notes: item.notes || undefined
         }))
       };
 
-      const createdOrder = await shopApiService.createOrder(hotelId, orderRequest);
+      const createdOrderResponse = await shopApiService.createOrder(hotelId, orderData);
       
       // If payment method is ROOM_CHARGE, create room charge
-      if (paymentMethod === PaymentMethod.ROOM_CHARGE && roomNumber) {
+      if (purchaseType === 'ROOM_CHARGE' && roomNumber) {
         // This would typically involve finding the reservation ID for the room
         // For now, we'll assume there's a way to get it
-        console.log('Order created with room charging:', createdOrder);
+        console.log('Order created with room charging:', createdOrderResponse);
       }
 
+      // Always show the receipt dialog for simplified flow
+      setCreatedOrder(createdOrderResponse);
+      setReceiptDialogOpen(true);
+      
+      // Reset payment state for next order
+      setPaymentCompleted(false);
+      setCompletedPaymentMethod(null);
+      setPaymentReference(null);
+      
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create order');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePaymentComplete = (method: PaymentMethod, reference?: string) => {
+    setCompletedPaymentMethod(method);
+    setPaymentReference(reference || null);
+    setPaymentCompleted(true);
+    setPaymentDialogOpen(false);
+    setError(null);
+  };
+
+  const handlePaymentDialogClose = () => {
+    setPaymentDialogOpen(false);
+    // Don't reset payment state here in case user wants to try again
+  };
+
+  const handleReceiptDialogClose = () => {
+    setReceiptDialogOpen(false);
+    setCreatedOrder(null);
+    
+    // Navigate to orders page after closing the receipt dialog
+    if (createdOrder) {
       navigate('/shop?tab=orders', { 
         state: { 
           message: `Order ${createdOrder.orderNumber} created successfully!`,
           orderId: createdOrder.id 
         }
       });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create order');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -299,58 +334,51 @@ const OrderCreation: React.FC = () => {
                 Order Summary
               </Typography>
 
-              {/* Customer Information */}
+              {/* Purchase Type */}
               <Box sx={{ mb: 3 }}>
-                <Typography variant="subtitle2" gutterBottom>Customer Information</Typography>
-                <TextField
-                  fullWidth
-                  label="Customer Name"
-                  value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
-                  required
-                  sx={{ mb: 2 }}
-                />
-                <TextField
-                  fullWidth
-                  label="Email (Optional)"
-                  value={customerEmail}
-                  onChange={(e) => setCustomerEmail(e.target.value)}
-                  sx={{ mb: 2 }}
-                />
-                <TextField
-                  fullWidth
-                  label="Phone (Optional)"
-                  value={customerPhone}
-                  onChange={(e) => setCustomerPhone(e.target.value)}
-                  sx={{ mb: 2 }}
-                />
-                <TextField
-                  fullWidth
-                  label="Room Number"
-                  value={roomNumber}
-                  onChange={(e) => setRoomNumber(e.target.value)}
-                  required={paymentMethod === PaymentMethod.ROOM_CHARGE}
-                  sx={{ mb: 2 }}
-                />
-              </Box>
-
-              {/* Payment Method */}
-              <Box sx={{ mb: 3 }}>
+                <Typography variant="subtitle2" gutterBottom>Purchase Type</Typography>
                 <FormControl fullWidth sx={{ mb: 2 }}>
-                  <InputLabel>Payment Method</InputLabel>
+                  <InputLabel>Purchase Type</InputLabel>
                   <Select
-                    value={paymentMethod}
-                    label="Payment Method"
-                    onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
+                    value={purchaseType}
+                    label="Purchase Type"
+                    onChange={(e) => {
+                      const newPurchaseType = e.target.value as 'ROOM_CHARGE' | 'ANONYMOUS';
+                      setPurchaseType(newPurchaseType);
+                      // Reset room number when switching to anonymous
+                      if (newPurchaseType === 'ANONYMOUS') {
+                        setRoomNumber('');
+                      }
+                      // Reset payment method when switching to room charge
+                      if (newPurchaseType === 'ROOM_CHARGE') {
+                        setPaymentMethod(PaymentMethod.ROOM_CHARGE);
+                      } else {
+                        setPaymentMethod(PaymentMethod.CASH);
+                      }
+                    }}
                   >
-                    {Object.values(PaymentMethod).map((method) => (
-                      <MenuItem key={method} value={method}>
-                        {method.replace('_', ' ')}
-                      </MenuItem>
-                    ))}
+                    <MenuItem value="ANONYMOUS">Anonymous Sale (Cash/Card)</MenuItem>
+                    <MenuItem value="ROOM_CHARGE">Charge to Room</MenuItem>
                   </Select>
                 </FormControl>
 
+                {/* Room Number - only show for room charges */}
+                {purchaseType === 'ROOM_CHARGE' && (
+                  <TextField
+                    fullWidth
+                    label="Room Number"
+                    value={roomNumber}
+                    onChange={(e) => setRoomNumber(e.target.value)}
+                    required
+                    placeholder="Enter room number"
+                    sx={{ mb: 2 }}
+                  />
+                )}
+              </Box>
+
+              {/* Delivery Options */}
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="subtitle2" gutterBottom>Delivery Options</Typography>
                 <FormControlLabel
                   control={
                     <Switch
@@ -474,6 +502,21 @@ const OrderCreation: React.FC = () => {
                 sx={{ mb: 3 }}
               />
 
+              {/* Payment Status Indicator for Anonymous Sales */}
+              {purchaseType === 'ANONYMOUS' && paymentCompleted && completedPaymentMethod && (
+                <Box sx={{ mb: 2, p: 2, border: 1, borderColor: 'success.main', borderRadius: 1, bgcolor: 'success.light' }}>
+                  <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'success.dark' }}>
+                    <CheckIcon fontSize="small" />
+                    Payment completed via {completedPaymentMethod.replace('_', ' ')}
+                    {paymentReference && (
+                      <Typography component="span" variant="caption" sx={{ ml: 1 }}>
+                        (Ref: {paymentReference})
+                      </Typography>
+                    )}
+                  </Typography>
+                </Box>
+              )}
+
               {/* Total */}
               <Divider sx={{ mb: 2 }} />
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
@@ -492,14 +535,45 @@ const OrderCreation: React.FC = () => {
                 variant="contained"
                 size="large"
                 onClick={handleCreateOrder}
-                disabled={loading || orderItems.length === 0 || !customerName.trim()}
+                disabled={loading || orderItems.length === 0}
               >
-                {loading ? 'Creating Order...' : 'Create Order'}
+                {loading 
+                  ? 'Processing...' 
+                  : purchaseType === 'ROOM_CHARGE' 
+                    ? `Charge to Room ${roomNumber || ''}` 
+                    : paymentCompleted
+                      ? 'Complete Sale'
+                      : 'Proceed to Payment'
+                }
               </Button>
             </CardContent>
           </Card>
         </Grid>
       </Grid>
+
+      {/* Shop Receipt Dialog */}
+      <ShopReceiptDialog
+        open={receiptDialogOpen}
+        onClose={handleReceiptDialogClose}
+        order={createdOrder}
+        hotelName={createdOrder?.hotelName || user?.hotelName}
+        hotelAddress={createdOrder?.hotelAddress || ""} // Hotel address from order
+        hotelTaxId={createdOrder?.hotelTaxId || ""} // Hotel tax ID from order
+        frontDeskPerson={user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : undefined}
+        onOrderAdded={() => {
+          // This will be called when the dialog is closed to refresh order list
+          // The navigation will happen in handleReceiptDialogClose
+        }}
+      />
+
+      {/* Payment Dialog */}
+      <PaymentDialog
+        open={paymentDialogOpen}
+        onClose={handlePaymentDialogClose}
+        onPaymentComplete={handlePaymentComplete}
+        totalAmount={calculateTotal()}
+        selectedPaymentMethod={paymentMethod}
+      />
     </Box>
   );
 };

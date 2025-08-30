@@ -12,10 +12,11 @@ import {
 export const getPriorityColor = (priority: TaskPriority): 'error' | 'warning' | 'info' | 'success' => {
   switch (priority) {
     case TaskPriority.URGENT:
+    case TaskPriority.CRITICAL:
       return 'error';
     case TaskPriority.HIGH:
       return 'warning';
-    case TaskPriority.MEDIUM:
+    case TaskPriority.NORMAL:
       return 'info';
     case TaskPriority.LOW:
       return 'success';
@@ -28,29 +29,33 @@ export const getPriorityLabel = (priority: TaskPriority): string => {
   switch (priority) {
     case TaskPriority.URGENT:
       return 'Urgent';
+    case TaskPriority.CRITICAL:
+      return 'Critical';
     case TaskPriority.HIGH:
       return 'High';
-    case TaskPriority.MEDIUM:
-      return 'Medium';
+    case TaskPriority.NORMAL:
+      return 'Normal';
     case TaskPriority.LOW:
       return 'Low';
     default:
-      return 'Medium';
+      return 'Normal';
   }
 };
 
 export const getPriorityWeight = (priority: TaskPriority): number => {
   switch (priority) {
     case TaskPriority.URGENT:
-      return 4;
+      return 5;
+    case TaskPriority.CRITICAL:
+      return 5;
     case TaskPriority.HIGH:
+      return 4;
+    case TaskPriority.NORMAL:
       return 3;
-    case TaskPriority.MEDIUM:
-      return 2;
     case TaskPriority.LOW:
-      return 1;
-    default:
       return 2;
+    default:
+      return 3;
   }
 };
 

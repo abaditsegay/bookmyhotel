@@ -5,7 +5,7 @@ export interface Todo {
   title: string;
   description?: string;
   completed: boolean;
-  priority: 'HIGH' | 'MEDIUM' | 'LOW';
+  priority: 'HIGH' | 'NORMAL' | 'LOW';
   dueDate?: string;
   category?: string;
   createdAt?: string;
