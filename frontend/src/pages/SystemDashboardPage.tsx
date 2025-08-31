@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Container,
   Typography,
   Grid,
   Card,
@@ -200,7 +199,7 @@ export const SystemDashboardPage: React.FC = () => {
   // If statistics are still loading, show loading indicator
   if (stats.loading) {
     return (
-      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <Box sx={{ width: '100%', p: 3, mt: 4, mb: 4 }}>
         <Box 
           display="flex" 
           justifyContent="center" 
@@ -214,12 +213,12 @@ export const SystemDashboardPage: React.FC = () => {
             Loading dashboard statistics...
           </Typography>
         </Box>
-      </Container>
+      </Box>
     );
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }} data-testid="system-dashboard">
+    <Box sx={{ width: '100%', p: 3 }} data-testid="system-dashboard">
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mb: 3 }}>
         <Button
@@ -415,6 +414,6 @@ export const SystemDashboardPage: React.FC = () => {
           </Paper>
         </Grid>
       </Grid>
-    </Container>
+    </Box>
   );
 };

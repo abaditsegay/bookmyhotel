@@ -109,13 +109,14 @@ export enum MaintenanceTaskType {
 }
 
 export enum MaintenanceTaskStatus {
-  PENDING = 'PENDING',
+  OPEN = 'OPEN',
   ASSIGNED = 'ASSIGNED',
   IN_PROGRESS = 'IN_PROGRESS',
   WAITING_FOR_PARTS = 'WAITING_FOR_PARTS',
   COMPLETED = 'COMPLETED',
   CANCELLED = 'CANCELLED',
-  ON_HOLD = 'ON_HOLD'
+  ON_HOLD = 'ON_HOLD',
+  VERIFIED = 'VERIFIED'
 }
 
 export interface MaintenanceTask {

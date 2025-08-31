@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  Container,
   Paper,
   Table,
   TableBody,
@@ -274,16 +273,16 @@ const TenantManagementAdmin: React.FC = () => {
 
   if (!token) {
     return (
-      <Container maxWidth="xl">
+      <Box sx={{ width: '100%', p: 3 }}>
         <Alert severity="error">
           Authentication required. Please log in.
         </Alert>
-      </Container>
+      </Box>
     );
   }
 
   return (
-    <Container maxWidth="xl">
+    <Box sx={{ width: '100%', p: 3 }}>
       <Box sx={{ py: 4 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
           <IconButton
@@ -292,7 +291,7 @@ const TenantManagementAdmin: React.FC = () => {
           >
             <ArrowBackIcon />
           </IconButton>
-          <Typography variant="h4" component="h1" sx={{ flexGrow: 1 }}>
+          <Typography variant="h5" component="h1" sx={{ flexGrow: 1 }}>
             Tenant Management
           </Typography>
           <Button
@@ -705,7 +704,7 @@ const TenantManagementAdmin: React.FC = () => {
           </DialogActions>
         </Dialog>
       </Box>
-    </Container>
+    </Box>
   );
 };
 

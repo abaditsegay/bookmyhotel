@@ -66,6 +66,9 @@ public class Product extends TenantEntity {
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 
+    @Column(name = "is_available", nullable = false)
+    private Boolean isAvailable = true;
+
     @Column(name = "weight_grams")
     private Integer weightGrams; // For shipping calculations if needed
 
@@ -161,6 +164,14 @@ public class Product extends TenantEntity {
         this.isActive = isActive;
     }
 
+    public Boolean getIsAvailable() {
+        return isAvailable;
+    }
+
+    public void setIsAvailable(Boolean isAvailable) {
+        this.isAvailable = isAvailable;
+    }
+
     public BigDecimal getWeightKg() {
         return weightGrams != null ? new BigDecimal(weightGrams).divide(new BigDecimal(1000)) : null;
     }
@@ -186,10 +197,10 @@ public class Product extends TenantEntity {
     }
 
     /**
-     * Check if product is available (active and in stock)
+     * Check if product is available (active, explicitly available, and in stock)
      */
     public boolean isAvailable() {
-        return isActive && stockQuantity > 0;
+        return isActive && isAvailable && stockQuantity > 0;
     }
 
     /**

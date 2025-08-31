@@ -156,12 +156,26 @@ public class ProductController {
      * PATCH /api/hotels/{hotelId}/shop/products/{productId}/toggle-active
      */
     @PatchMapping("/{productId}/toggle-active")
-    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('SYSTEM_ADMIN')")
+    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SYSTEM_ADMIN')")
     public ResponseEntity<ProductResponse> toggleActiveStatus(
             @PathVariable Long hotelId,
             @PathVariable Long productId) {
 
         ProductResponse response = productService.toggleActiveStatus(hotelId, productId);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Toggle product availability status
+     * PATCH /api/hotels/{hotelId}/shop/products/{productId}/toggle-available
+     */
+    @PatchMapping("/{productId}/toggle-available")
+    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SYSTEM_ADMIN')")
+    public ResponseEntity<ProductResponse> toggleAvailableStatus(
+            @PathVariable Long hotelId,
+            @PathVariable Long productId) {
+
+        ProductResponse response = productService.toggleAvailableStatus(hotelId, productId);
         return ResponseEntity.ok(response);
     }
 

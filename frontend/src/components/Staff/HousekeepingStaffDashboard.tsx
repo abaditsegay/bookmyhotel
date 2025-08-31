@@ -21,7 +21,6 @@ import {
   DialogActions,
   TextField,
   Alert,
-  Container,
   CircularProgress,
   Select,
   MenuItem,
@@ -160,18 +159,18 @@ const HousekeepingStaffDashboard: React.FC = () => {
 
   if (loading && tasks.length === 0) {
     return (
-      <Container>
+      <Box sx={{ width: '100%', p: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
           <CircularProgress />
         </Box>
-      </Container>
+      </Box>
     );
   }
 
   return (
-    <Container maxWidth="xl">
+    <Box sx={{ width: '100%', p: 3 }}>
       <Box sx={{ py: 3 }}>
-        <Typography variant="h4" component="h1" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+        <Typography variant="h5" component="h1" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <CleaningIcon color="primary" />
           My Housekeeping Tasks
         </Typography>
@@ -401,7 +400,7 @@ const HousekeepingStaffDashboard: React.FC = () => {
           </DialogActions>
         </Dialog>
       </Box>
-    </Container>
+    </Box>
   );
 };
 

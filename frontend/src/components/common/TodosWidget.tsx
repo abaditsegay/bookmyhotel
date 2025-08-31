@@ -39,7 +39,7 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [newTodoTitle, setNewTodoTitle] = useState('');
-  const [priority, setPriority] = useState<'HIGH' | 'NORMAL' | 'LOW'>('NORMAL');
+  const [priority, setPriority] = useState<'HIGH' | 'MEDIUM' | 'LOW'>('MEDIUM');
 
   // Check if user has access to TODO functionality
   // CUSTOMER and GUEST roles should not have access to TODOs
@@ -90,7 +90,7 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
       
       // Reset form
       setNewTodoTitle('');
-      setPriority('NORMAL');
+      setPriority('MEDIUM');
     } catch (err) {
       setError('Failed to create todo');
       console.error('Error creating todo:', err);
@@ -122,14 +122,14 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
   const getPriorityIcon = (priority: string) => {
     switch (priority) {
       case 'HIGH': return '🔴';
-      case 'NORMAL': return '🟡';
+      case 'MEDIUM': return '🟡';
       case 'LOW': return '🟢';
       default: return '⚪';
     }
   };
 
   const handlePriorityChange = (event: SelectChangeEvent<string>) => {
-    setPriority(event.target.value as 'HIGH' | 'NORMAL' | 'LOW');
+    setPriority(event.target.value as 'HIGH' | 'MEDIUM' | 'LOW');
   };
 
   if (loading) {
@@ -175,7 +175,7 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
               onChange={handlePriorityChange}
             >
               <MenuItem value="HIGH">🔴 High</MenuItem>
-              <MenuItem value="NORMAL">🟡 Normal</MenuItem>
+              <MenuItem value="MEDIUM">🟡 Medium</MenuItem>
               <MenuItem value="LOW">🟢 Low</MenuItem>
             </Select>
           </FormControl>

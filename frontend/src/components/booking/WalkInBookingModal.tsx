@@ -31,6 +31,9 @@ import { useTenant } from '../../contexts/TenantContext';
 import { hotelApiService } from '../../services/hotelApi';
 import { hotelAdminApi } from '../../services/hotelAdminApi';
 
+// API base URL for backend calls
+const API_BASE_URL = 'http://localhost:8080';
+
 // Define interfaces for walk-in booking
 interface WalkInGuestInfo {
   firstName: string;
@@ -117,7 +120,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
           // Determine the correct endpoint based on user role
           // Check if user is hotel admin or has hotel admin role
           const isHotelAdmin = user?.role === 'HOTEL_ADMIN' || user?.roles?.includes('HOTEL_ADMIN');
-          const endpoint = isHotelAdmin ? '/api/hotel-admin/hotel' : '/api/front-desk/hotel';
+          const endpoint = isHotelAdmin ? `${API_BASE_URL}/api/hotel-admin/hotel` : `${API_BASE_URL}/api/front-desk/hotel`;
           
           console.log('Loading hotel info for user role:', user?.role, 'using endpoint:', endpoint);
           
@@ -208,7 +211,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
             available: 'true' // Filter for available rooms only
           });
           
-          const response = await fetch(`/api/hotel-admin/rooms?${params.toString()}`, {
+          const response = await fetch(`${API_BASE_URL}/api/hotel-admin/rooms?${params.toString()}`, {
             headers
           });
           
@@ -238,7 +241,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
             headers['X-Tenant-ID'] = tenantId;
           }
           
-          const response = await fetch(`/api/front-desk/hotels/${hotelId}/available-rooms`, {
+          const response = await fetch(`${API_BASE_URL}/api/front-desk/hotels/${hotelId}/available-rooms`, {
             headers
           });
           

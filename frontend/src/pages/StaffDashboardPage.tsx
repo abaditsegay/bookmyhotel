@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Container, Typography, Alert, CircularProgress } from '@mui/material';
+import { Box, Typography, Alert, CircularProgress } from '@mui/material';
 import HousekeepingStaffDashboard from '../components/Staff/HousekeepingStaffDashboard';
 import MaintenanceStaffDashboard from '../components/Staff/MaintenanceStaffDashboard';
 import { staffApi } from '../services/staffApi';
@@ -58,35 +58,35 @@ const StaffDashboardPage: React.FC = () => {
 
   if (loading) {
     return (
-      <Container>
+      <Box sx={{ width: '100%', p: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
           <CircularProgress />
         </Box>
-      </Container>
+      </Box>
     );
   }
 
   if (error) {
     return (
-      <Container>
+      <Box sx={{ width: '100%', p: 3 }}>
         <Box sx={{ mt: 4 }}>
           <Alert severity="error">
             {error}
           </Alert>
         </Box>
-      </Container>
+      </Box>
     );
   }
 
   if (!user) {
     return (
-      <Container>
+      <Box sx={{ width: '100%', p: 3 }}>
         <Box sx={{ mt: 4 }}>
           <Alert severity="warning">
             Unable to load user profile. Please try logging in again.
           </Alert>
         </Box>
-      </Container>
+      </Box>
     );
   }
 
@@ -101,9 +101,9 @@ const StaffDashboardPage: React.FC = () => {
 
   // If role is ambiguous, show both options
   return (
-    <Container maxWidth="xl">
+    <Box sx={{ width: '100%', p: 3 }}>
       <Box sx={{ py: 3 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
+        <Typography variant="h5" component="h1" gutterBottom>
           Staff Dashboard
         </Typography>
         
@@ -122,7 +122,7 @@ const StaffDashboardPage: React.FC = () => {
           </Typography>
         </Box>
       </Box>
-    </Container>
+    </Box>
   );
 };
 

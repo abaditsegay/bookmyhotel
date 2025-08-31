@@ -22,6 +22,7 @@ import com.bookmyhotel.dto.BookingResponse;
 import com.bookmyhotel.dto.CheckoutResponse;
 import com.bookmyhotel.dto.ConsolidatedReceiptResponse;
 import com.bookmyhotel.dto.FrontDeskStats;
+import com.bookmyhotel.dto.HotelDTO;
 import com.bookmyhotel.dto.RoomResponse;
 import com.bookmyhotel.entity.Reservation;
 import com.bookmyhotel.entity.ReservationStatus;
@@ -147,14 +148,16 @@ public class FrontDeskController {
     }
 
     /**
-     * Check out a guest with receipt generation (generic - supports both front desk and hotel admin)
+     * Check out a guest with receipt generation (generic - supports both front desk
+     * and hotel admin)
      */
     @PutMapping("/checkout-with-receipt/{reservationId}")
     public ResponseEntity<CheckoutResponse> checkOutWithReceipt(
             @PathVariable Long reservationId,
             Authentication authentication) {
-        
-        // Use the generic checkout service method that works for both front desk and hotel admin
+
+        // Use the generic checkout service method that works for both front desk and
+        // hotel admin
         CheckoutResponse response = checkOutGuestWithReceiptGeneric(reservationId, authentication.getName());
         return ResponseEntity.ok(response);
     }
@@ -230,7 +233,8 @@ public class FrontDeskController {
 
     /**
      * Generic checkout method that can be used by both front desk and hotel admin
-     * This method contains the same business logic as FrontDeskService.checkOutGuestWithReceipt()
+     * This method contains the same business logic as
+     * FrontDeskService.checkOutGuestWithReceipt()
      * but is role-agnostic and can be used by any authorized user
      */
     private CheckoutResponse checkOutGuestWithReceiptGeneric(Long reservationId, String generatedByEmail) {
@@ -274,5 +278,15 @@ public class FrontDeskController {
             return new CheckoutResponse(bookingResponse, null,
                     "Guest checked out successfully. Receipt generation failed - please generate manually if needed.");
         }
+    }
+
+    /**
+     * Get hotel information for the front desk
+     */
+    @GetMapping("/hotel")
+    @PreAuthorize("hasRole('FRONTDESK') or hasRole('HOTEL_ADMIN') or hasRole('SYSTEM_ADMIN')")
+    public ResponseEntity<HotelDTO> getHotelInfo() {
+        HotelDTO hotel = frontDeskService.getHotelInfo();
+        return ResponseEntity.ok(hotel);
     }
 }

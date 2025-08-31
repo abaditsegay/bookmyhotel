@@ -10,17 +10,19 @@ import java.util.List;
 
 @Repository
 public interface MaintenanceRequestRepository extends JpaRepository<MaintenanceRequest, Long> {
-    
+
     Page<MaintenanceRequest> findByTenantId(String tenantId, Pageable pageable);
-    
+
     List<MaintenanceRequest> findByTenantId(String tenantId);
-    
+
     List<MaintenanceRequest> findByTenantIdAndStatus(String tenantId, MaintenanceRequest.MaintenanceStatus status);
-    
-    List<MaintenanceRequest> findByAssignedToIdAndTenantId(Long staffId, String tenantId);
-    
+
+    List<MaintenanceRequest> findByAssignedTo_IdAndTenantId(Long staffId, String tenantId);
+
     // Staff-specific queries for the StaffController
-    Page<MaintenanceRequest> findByAssignedToId(Long staffId, Pageable pageable);
-    long countByAssignedToId(Long staffId);
-    long countByAssignedToIdAndStatus(Long staffId, MaintenanceRequest.MaintenanceStatus status);
+    Page<MaintenanceRequest> findByAssignedTo_Id(Long staffId, Pageable pageable);
+
+    long countByAssignedTo_Id(Long staffId);
+
+    long countByAssignedTo_IdAndStatus(Long staffId, MaintenanceRequest.MaintenanceStatus status);
 }

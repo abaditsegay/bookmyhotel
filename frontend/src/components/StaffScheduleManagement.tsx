@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Container,
   Paper,
   Typography,
   Box,
@@ -504,19 +503,19 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
 
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ mt: 4, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+      <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
         <Box textAlign="center">
           <CircularProgress size={60} />
           <Typography variant="h6" sx={{ mt: 2 }}>Loading staff schedules...</Typography>
         </Box>
-      </Container>
+      </Box>
     );
   }
 
   // Check if user has permission to access this page
   if (user && !['HOTEL_ADMIN', 'FRONTDESK'].includes(user.role)) {
     return (
-      <Container maxWidth="lg" sx={{ mt: 4 }}>
+      <Box sx={{ mt: 4 }}>
         <Alert severity="warning">
           <Typography variant="h6">Access Restricted</Typography>
           <Typography>
@@ -524,18 +523,18 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
             Your current role is: {user.role}
           </Typography>
         </Alert>
-      </Container>
+      </Box>
     );
   }
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+    <Box sx={{ mt: 4, mb: 4 }}>
       {/* Header Section */}
       <Paper elevation={0} sx={{ p: 3, mb: 3, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white' }}>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Box display="flex" alignItems="center">
             <ScheduleIcon sx={{ mr: 2, fontSize: 32 }} />
-            <Typography variant="h4" component="h1" fontWeight="bold">
+            <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
               Staff Schedule Management
             </Typography>
           </Box>
@@ -1177,7 +1176,7 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
           </Button>
         </DialogActions>
       </Dialog>
-    </Container>
+    </Box>
   );
 };
 

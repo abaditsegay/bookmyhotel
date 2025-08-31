@@ -42,8 +42,7 @@ import {
   PersonAdd as AddGuestIcon,
   Check as CheckInIcon,
   ExitToApp as CheckOutIcon,
-  Print as PrintIcon,
-  Edit as EditIcon
+  Print as PrintIcon
 } from '@mui/icons-material';
 import { useTenant } from '../../contexts/TenantContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -776,19 +775,6 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                               <VisibilityIcon />
                             </IconButton>
                           </Tooltip>
-                          
-                          {/* Edit Room Assignment for Confirmed bookings */}
-                          {booking.status.toUpperCase() === 'CONFIRMED' && (
-                            <Tooltip title="Edit Room Assignment">
-                              <IconButton 
-                                size="small" 
-                                color="primary"
-                                onClick={() => handleEditRoomAssignment(booking)}
-                              >
-                                <EditIcon />
-                              </IconButton>
-                            </Tooltip>
-                          )}
                           
                           {showCheckInOut && (
                             <>

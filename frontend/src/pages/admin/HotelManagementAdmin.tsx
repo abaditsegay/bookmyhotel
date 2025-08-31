@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Container,
   Typography,
   Box,
   Button,
@@ -684,7 +683,7 @@ const HotelManagementAdmin: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="xl">
+    <Box sx={{ width: '100%', p: 3 }}>
       <Box sx={{ py: 4 }}>
         {/* Header */}
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
@@ -694,7 +693,7 @@ const HotelManagementAdmin: React.FC = () => {
           >
             <ArrowBackIcon />
           </IconButton>
-          <Typography variant="h4" component="h1" sx={{ flexGrow: 1 }}>
+          <Typography variant="h5" component="h1" sx={{ flexGrow: 1 }}>
             Hotel Management
           </Typography>
           <Button
@@ -1812,7 +1811,7 @@ const HotelManagementAdmin: React.FC = () => {
           </DialogActions>
         </Dialog>
       </Box>
-    </Container>
+    </Box>
   );
 };
 

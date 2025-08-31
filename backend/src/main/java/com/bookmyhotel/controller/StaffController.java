@@ -2,6 +2,7 @@ package com.bookmyhotel.controller;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -23,16 +24,18 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bookmyhotel.dto.HousekeepingTaskDTO;
-import com.bookmyhotel.dto.MaintenanceRequestDTO;
+import com.bookmyhotel.dto.MaintenanceTaskDTO;
 import com.bookmyhotel.dto.MaintenanceUpdateRequest;
 import com.bookmyhotel.dto.TaskUpdateRequest;
 import com.bookmyhotel.entity.HousekeepingStaff;
 import com.bookmyhotel.entity.HousekeepingTask;
 import com.bookmyhotel.entity.HousekeepingTaskStatus;
-import com.bookmyhotel.entity.MaintenanceRequest;
+import com.bookmyhotel.entity.MaintenanceTask;
+import com.bookmyhotel.entity.TaskStatus;
 import com.bookmyhotel.entity.User;
+import com.bookmyhotel.repository.HousekeepingStaffRepository;
 import com.bookmyhotel.repository.HousekeepingTaskRepository;
-import com.bookmyhotel.repository.MaintenanceRequestRepository;
+import com.bookmyhotel.repository.MaintenanceTaskRepository;
 import com.bookmyhotel.repository.UserRepository;
 import com.bookmyhotel.service.HousekeepingService;
 import com.bookmyhotel.service.UserManagementService;
@@ -55,7 +58,10 @@ public class StaffController {
     private HousekeepingTaskRepository housekeepingTaskRepository;
 
     @Autowired
-    private MaintenanceRequestRepository maintenanceRequestRepository;
+    private HousekeepingStaffRepository housekeepingStaffRepository;
+
+    @Autowired
+    private MaintenanceTaskRepository maintenanceTaskRepository;
 
     // Get current staff profile
     @GetMapping("/profile")
@@ -278,22 +284,143 @@ public class StaffController {
                 return ResponseEntity.badRequest().body("User not found");
             }
 
-            // Find the corresponding HousekeepingStaff record by email
+            // Find the corresponding HousekeepingStaff record by email for maintenance
+            // tasks
+            Optional<HousekeepingStaff> staffOpt = housekeepingService.findStaffByEmail(user.getEmail());
+            if (!staffOpt.isPresent()) {
+                return ResponseEntity.badRequest().body("Maintenance staff record not found");
+            }
+
+            // Get maintenance tasks (not maintenance requests) assigned to this staff
+            // member
+            List<MaintenanceTask> tasks = maintenanceTaskRepository
+                    .findByTenantIdAndAssignedToOrderByScheduledStartTimeAsc(
+                            user.getTenantId(), staffOpt.get());
+
+            // Convert to DTOs to avoid JSON serialization issues
+            List<MaintenanceTaskDTO> taskDTOs = tasks.stream()
+                    .map(this::convertToMaintenanceTaskDTO)
+                    .collect(Collectors.toList());
+
+            // Create a pageable response
+            int start = page * size;
+            int end = Math.min((start + size), taskDTOs.size());
+            List<MaintenanceTaskDTO> pageContent = start >= taskDTOs.size() ? List.of() : taskDTOs.subList(start, end);
+
+            // Create a simple page response
+            Map<String, Object> response = new HashMap<>();
+            response.put("content", pageContent);
+            response.put("totalElements", taskDTOs.size());
+            response.put("totalPages", (int) Math.ceil((double) taskDTOs.size() / size));
+            response.put("number", page);
+            response.put("size", size);
+            response.put("numberOfElements", pageContent.size());
+            response.put("first", page == 0);
+            response.put("last", end >= taskDTOs.size());
+            response.put("empty", taskDTOs.isEmpty());
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error getting maintenance tasks: " + e.getMessage());
+        }
+    }
+
+    @PutMapping("/maintenance/tasks/{taskId}/start")
+    @PreAuthorize("hasAnyRole('MAINTENANCE', 'STAFF')")
+    public ResponseEntity<?> startMaintenanceTask(@PathVariable Long taskId, Authentication authentication) {
+        try {
+            String username = authentication.getName();
+            Optional<User> userOpt = userRepository.findByEmail(username);
+            if (!userOpt.isPresent()) {
+                return ResponseEntity.badRequest().body("User not found");
+            }
+            User user = userOpt.get();
+
+            Optional<MaintenanceTask> taskOpt = maintenanceTaskRepository.findById(taskId);
+            if (!taskOpt.isPresent()) {
+                return ResponseEntity.badRequest().body("Maintenance task not found");
+            }
+
+            MaintenanceTask task = taskOpt.get();
+
+            // Verify the task is assigned to this user by checking staff record
             Optional<HousekeepingStaff> staffOpt = housekeepingService.findStaffByEmail(user.getEmail());
             if (!staffOpt.isPresent()) {
                 return ResponseEntity.badRequest().body("Staff record not found");
             }
 
-            Pageable pageable = PageRequest.of(page, size);
-            Page<MaintenanceRequest> tasks = maintenanceRequestRepository.findByAssignedToId(staffOpt.get().getId(),
-                    pageable);
+            if (task.getAssignedTo() == null || !task.getAssignedTo().getId().equals(staffOpt.get().getId())) {
+                return ResponseEntity.badRequest().body("Task not assigned to you");
+            }
 
-            // Convert to DTOs to avoid JSON serialization issues
-            Page<MaintenanceRequestDTO> taskDTOs = tasks.map(this::convertToMaintenanceRequestDTO);
+            // Start the task
+            task.setStatus(TaskStatus.IN_PROGRESS);
+            task.setActualStartTime(LocalDateTime.now());
+            task.setUpdatedAt(LocalDateTime.now());
+            maintenanceTaskRepository.save(task);
 
-            return ResponseEntity.ok(taskDTOs);
+            return ResponseEntity.ok("Maintenance task started successfully");
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error getting maintenance tasks: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Error starting maintenance task: " + e.getMessage());
+        }
+    }
+
+    @PutMapping("/maintenance/tasks/{taskId}/complete")
+    @PreAuthorize("hasAnyRole('MAINTENANCE', 'STAFF')")
+    public ResponseEntity<?> completeMaintenanceTask(
+            @PathVariable Long taskId,
+            @RequestBody(required = false) Map<String, String> request,
+            Authentication authentication) {
+        try {
+            String username = authentication.getName();
+            Optional<User> userOpt = userRepository.findByEmail(username);
+            if (!userOpt.isPresent()) {
+                return ResponseEntity.badRequest().body("User not found");
+            }
+            User user = userOpt.get();
+
+            Optional<MaintenanceTask> taskOpt = maintenanceTaskRepository.findById(taskId);
+            if (!taskOpt.isPresent()) {
+                return ResponseEntity.badRequest().body("Maintenance task not found");
+            }
+
+            MaintenanceTask task = taskOpt.get();
+
+            // Verify the task is assigned to this user by checking staff record
+            Optional<HousekeepingStaff> staffOpt = housekeepingService.findStaffByEmail(user.getEmail());
+            if (!staffOpt.isPresent()) {
+                return ResponseEntity.badRequest().body("Staff record not found");
+            }
+
+            if (task.getAssignedTo() == null || !task.getAssignedTo().getId().equals(staffOpt.get().getId())) {
+                return ResponseEntity.badRequest().body("Task not assigned to you");
+            }
+
+            // Complete the task
+            String workPerformed = request != null ? request.get("workPerformed")
+                    : "Task completed by maintenance staff";
+            String partsUsed = request != null ? request.get("partsUsed") : "";
+
+            task.setStatus(TaskStatus.COMPLETED);
+            task.setActualEndTime(LocalDateTime.now());
+            if (task.getActualStartTime() != null) {
+                // Calculate actual duration if start time was set
+                long minutes = java.time.Duration.between(task.getActualStartTime(), task.getActualEndTime())
+                        .toMinutes();
+                task.setActualDurationMinutes((int) minutes);
+            }
+            if (workPerformed != null) {
+                task.setWorkPerformed(workPerformed);
+            }
+            if (partsUsed != null) {
+                task.setPartsUsed(partsUsed);
+            }
+            task.setUpdatedAt(LocalDateTime.now());
+            maintenanceTaskRepository.save(task);
+
+            return ResponseEntity.ok("Maintenance task completed successfully");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error completing maintenance task: " + e.getMessage());
         }
     }
 
@@ -311,34 +438,47 @@ public class StaffController {
             }
             User user = userOpt.get();
 
-            Optional<MaintenanceRequest> taskOpt = maintenanceRequestRepository.findById(taskId);
+            Optional<MaintenanceTask> taskOpt = maintenanceTaskRepository.findById(taskId);
             if (!taskOpt.isPresent()) {
                 return ResponseEntity.badRequest().body("Maintenance task not found");
             }
 
-            MaintenanceRequest task = taskOpt.get();
+            MaintenanceTask task = taskOpt.get();
 
-            // Verify the task is assigned to this user
-            // Note: Since entity no longer has User relationship, we compare by email
-            if (task.getAssignedTo() == null || !task.getAssignedTo().getEmail().equals(user.getEmail())) {
+            // Verify the task is assigned to this user by checking staff record
+            Optional<HousekeepingStaff> staffOpt = housekeepingService.findStaffByEmail(user.getEmail());
+            if (!staffOpt.isPresent()) {
+                return ResponseEntity.badRequest().body("Staff record not found");
+            }
+
+            if (task.getAssignedTo() == null || !task.getAssignedTo().getId().equals(staffOpt.get().getId())) {
                 return ResponseEntity.badRequest().body("Task not assigned to you");
             }
 
             // Convert string status to enum
-            MaintenanceRequest.MaintenanceStatus status;
+            TaskStatus status;
             try {
-                status = MaintenanceRequest.MaintenanceStatus.valueOf(updateRequest.getStatus().toUpperCase());
+                status = TaskStatus.valueOf(updateRequest.getStatus().toUpperCase());
             } catch (IllegalArgumentException e) {
                 return ResponseEntity.badRequest().body("Invalid status: " + updateRequest.getStatus());
             }
 
             task.setStatus(status);
 
-            if (status == MaintenanceRequest.MaintenanceStatus.COMPLETED) {
-                task.setCompletedAt(LocalDateTime.now());
+            if (status == TaskStatus.COMPLETED) {
+                task.setActualEndTime(LocalDateTime.now());
+                if (task.getActualStartTime() != null) {
+                    // Calculate actual duration if start time was set
+                    long minutes = java.time.Duration.between(task.getActualStartTime(), task.getActualEndTime())
+                            .toMinutes();
+                    task.setActualDurationMinutes((int) minutes);
+                }
+            } else if (status == TaskStatus.IN_PROGRESS && task.getActualStartTime() == null) {
+                task.setActualStartTime(LocalDateTime.now());
             }
 
-            maintenanceRequestRepository.save(task);
+            task.setUpdatedAt(LocalDateTime.now());
+            maintenanceTaskRepository.save(task);
 
             return ResponseEntity.ok("Maintenance task status updated successfully");
         } catch (Exception e) {
@@ -391,20 +531,27 @@ public class StaffController {
             }
             User user = userOpt.get();
 
-            // Find the corresponding HousekeepingStaff record by email
+            // Find the corresponding HousekeepingStaff record by email for maintenance
+            // tasks
             Optional<HousekeepingStaff> staffOpt = housekeepingService.findStaffByEmail(user.getEmail());
             if (!staffOpt.isPresent()) {
-                return ResponseEntity.badRequest().body("Staff record not found");
+                return ResponseEntity.badRequest().body("Maintenance staff record not found");
             }
 
+            // Get maintenance tasks assigned to this staff member and calculate stats
+            List<MaintenanceTask> allTasks = maintenanceTaskRepository.findByTenantIdAndAssignedTo(
+                    user.getTenantId(), staffOpt.get());
+
+            long totalTasks = allTasks.size();
+            long pendingTasks = allTasks.stream().filter(t -> t.getStatus() == TaskStatus.OPEN).count();
+            long inProgressTasks = allTasks.stream().filter(t -> t.getStatus() == TaskStatus.IN_PROGRESS).count();
+            long completedTasks = allTasks.stream().filter(t -> t.getStatus() == TaskStatus.COMPLETED).count();
+
             Map<String, Object> stats = new HashMap<>();
-            stats.put("totalTasks", maintenanceRequestRepository.countByAssignedToId(staffOpt.get().getId()));
-            stats.put("pendingTasks", maintenanceRequestRepository.countByAssignedToIdAndStatus(staffOpt.get().getId(),
-                    MaintenanceRequest.MaintenanceStatus.PENDING));
-            stats.put("inProgressTasks", maintenanceRequestRepository.countByAssignedToIdAndStatus(
-                    staffOpt.get().getId(), MaintenanceRequest.MaintenanceStatus.IN_PROGRESS));
-            stats.put("completedTasks", maintenanceRequestRepository.countByAssignedToIdAndStatus(
-                    staffOpt.get().getId(), MaintenanceRequest.MaintenanceStatus.COMPLETED));
+            stats.put("totalTasks", totalTasks);
+            stats.put("pendingTasks", pendingTasks);
+            stats.put("inProgressTasks", inProgressTasks);
+            stats.put("completedTasks", completedTasks);
 
             return ResponseEntity.ok(stats);
         } catch (Exception e) {
@@ -444,48 +591,71 @@ public class StaffController {
         return dto;
     }
 
-    // Helper method to convert MaintenanceRequest to DTO
-    private MaintenanceRequestDTO convertToMaintenanceRequestDTO(MaintenanceRequest request) {
-        MaintenanceRequestDTO dto = new MaintenanceRequestDTO();
-        dto.setId(request.getId());
-        dto.setTitle(request.getTitle());
-        dto.setDescription(request.getDescription());
-        dto.setCategory(request.getCategory());
-        dto.setPriority(request.getPriority());
-        dto.setStatus(request.getStatus());
-        dto.setEstimatedCost(request.getEstimatedCost());
-        dto.setActualCost(request.getActualCost());
-        dto.setEstimatedDurationHours(request.getEstimatedDurationHours());
-        dto.setActualDurationHours(request.getActualDurationHours());
-        dto.setScheduledDate(request.getScheduledDate());
-        dto.setAssignedAt(request.getAssignedAt());
-        dto.setStartedAt(request.getStartedAt());
-        dto.setCompletedAt(request.getCompletedAt());
-        dto.setCreatedAt(request.getCreatedAt());
+    // Helper method to convert MaintenanceTask to DTO
+    private MaintenanceTaskDTO convertToMaintenanceTaskDTO(MaintenanceTask task) {
+        MaintenanceTaskDTO dto = new MaintenanceTaskDTO();
+        dto.setId(task.getId());
+        dto.setTaskType(task.getTaskType());
+        dto.setTitle(task.getTitle());
+        dto.setDescription(task.getDescription());
+        dto.setStatus(task.getStatus());
+        dto.setPriority(task.getPriority());
+        dto.setLocation(task.getLocation());
+        dto.setEquipmentType(task.getEquipmentType());
+        dto.setEstimatedDurationMinutes(task.getEstimatedDurationMinutes());
+        dto.setActualDurationMinutes(task.getActualDurationMinutes());
+        dto.setEstimatedCost(task.getEstimatedCost());
+        dto.setActualCost(task.getActualCost());
+        dto.setScheduledStartTime(task.getScheduledStartTime());
+        dto.setActualStartTime(task.getActualStartTime());
+        dto.setActualEndTime(task.getActualEndTime());
+        dto.setPartsRequired(task.getPartsRequired());
+        dto.setToolsRequired(task.getToolsRequired());
+        dto.setSafetyRequirements(task.getSafetyRequirements());
+        dto.setWorkPerformed(task.getWorkPerformed());
+        dto.setPartsUsed(task.getPartsUsed());
+        dto.setFollowUpRequired(task.getFollowUpRequired());
+        dto.setFollowUpDate(task.getFollowUpDate());
+        dto.setFollowUpNotes(task.getFollowUpNotes());
+        dto.setVerificationNotes(task.getVerificationNotes());
+        dto.setVerificationTime(task.getVerificationTime());
+        dto.setCreatedAt(task.getCreatedAt());
+        dto.setUpdatedAt(task.getUpdatedAt());
 
         // Extract room and hotel details safely
-        if (request.getRoom() != null) {
-            dto.setRoomId(request.getRoom().getId());
-            dto.setRoomNumber(request.getRoom().getRoomNumber());
+        if (task.getRoom() != null) {
+            dto.setRoomId(task.getRoom().getId());
+            dto.setRoomNumber(task.getRoom().getRoomNumber());
             dto.setRoomType(
-                    request.getRoom().getRoomType() != null ? request.getRoom().getRoomType().toString() : null);
+                    task.getRoom().getRoomType() != null ? task.getRoom().getRoomType().toString() : null);
 
-            if (request.getRoom().getHotel() != null) {
-                dto.setHotelName(request.getRoom().getHotel().getName());
+            if (task.getRoom().getHotel() != null) {
+                dto.setHotelName(task.getRoom().getHotel().getName());
             }
         }
 
-        // Extract requested by details safely
-        if (request.getRequestedBy() != null) {
-            dto.setRequestedByName(
-                    request.getRequestedBy().getFirstName() + " " + request.getRequestedBy().getLastName());
-            dto.setRequestedByEmail(request.getRequestedBy().getEmail());
+        // Extract created by details safely
+        if (task.getCreatedBy() != null) {
+            dto.setCreatedByName(task.getCreatedBy().getFirstName() + " " + task.getCreatedBy().getLastName());
+            dto.setCreatedByEmail(task.getCreatedBy().getEmail());
+        }
+
+        // Extract reported by details safely
+        if (task.getReportedBy() != null) {
+            dto.setReportedByName(task.getReportedBy().getFirstName() + " " + task.getReportedBy().getLastName());
+            dto.setReportedByEmail(task.getReportedBy().getEmail());
         }
 
         // Extract assigned staff details safely
-        if (request.getAssignedTo() != null) {
-            dto.setAssignedToName(request.getAssignedTo().getFirstName() + " " + request.getAssignedTo().getLastName());
-            dto.setAssignedToEmail(request.getAssignedTo().getEmail());
+        if (task.getAssignedTo() != null) {
+            dto.setAssignedToName(task.getAssignedTo().getFirstName() + " " + task.getAssignedTo().getLastName());
+            dto.setAssignedToEmail(task.getAssignedTo().getEmail());
+        }
+
+        // Extract verified by details safely
+        if (task.getVerifiedBy() != null) {
+            dto.setVerifiedByName(task.getVerifiedBy().getFirstName() + " " + task.getVerifiedBy().getLastName());
+            dto.setVerifiedByEmail(task.getVerifiedBy().getEmail());
         }
 
         return dto;

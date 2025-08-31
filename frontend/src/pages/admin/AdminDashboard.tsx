@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  Container,
   Typography,
   Button,
   Box,
@@ -219,7 +218,7 @@ const AdminDashboard: React.FC = () => {
   );
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
+    <Box sx={{ width: '100%', p: 3 }}>
       {/* Main Management Tabs */}
       <Paper sx={{ width: '100%', mb: 4 }}>
         <Tabs
@@ -594,7 +593,7 @@ const AdminDashboard: React.FC = () => {
           Secure administration interface for platform management
         </Typography>
       </Box>
-    </Container>
+    </Box>
   );
 };
 

@@ -241,7 +241,7 @@ export const generateMaintenanceTasks = (hotelKey: string) => {
       taskType: 'PREVENTIVE_MAINTENANCE',
       title: 'Elevator Monthly Inspection',
       description: 'Monthly safety and performance inspection of main elevator',
-      status: 'PENDING',
+      status: 'OPEN',
       priority: 'NORMAL',
       location: 'Main Elevator Shaft',
       equipmentType: 'Elevator System',

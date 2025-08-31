@@ -126,13 +126,19 @@ const EnhancedLayout: React.FC<EnhancedLayoutProps> = ({
         >
           <Container
             maxWidth={maxWidth}
-            disableGutters={disableGutters}
+            disableGutters={maxWidth === false ? true : disableGutters} // Force no gutters when maxWidth is false
             sx={{
               flexGrow: 1,
               py: { xs: 2, md: 3 },
               pb: { xs: 10, md: 12 }, // Add bottom padding for fixed footer
               display: 'flex',
               flexDirection: 'column',
+              // When maxWidth is false, expand to full width minus sidebar
+              ...(maxWidth === false && {
+                maxWidth: 'none',
+                width: '100%',
+                px: { xs: 2, md: 3 }, // Add some padding when full width
+              }),
             }}
           >
             {children}

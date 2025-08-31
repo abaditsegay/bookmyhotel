@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box,
-  Container,
   Typography,
   Alert,
   Snackbar
@@ -45,29 +44,29 @@ const OperationsPage: React.FC = () => {
 
   if (!user) {
     return (
-      <Container>
+      <Box sx={{ width: '100%', p: 3 }}>
         <Box sx={{ p: 3 }}>
           <Typography variant="h6">Loading...</Typography>
         </Box>
-      </Container>
+      </Box>
     );
   }
 
   if (!hasPermission('VIEW_OPERATIONS_DASHBOARD')) {
     return (
-      <Container>
+      <Box sx={{ width: '100%', p: 3 }}>
         <Box sx={{ p: 3 }}>
           <Alert severity="error">
             You don't have permission to access the operations dashboard.
           </Alert>
         </Box>
-      </Container>
+      </Box>
     );
   }
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50' }}>
-      <Container maxWidth="xl" sx={{ py: 3 }}>
+      <Box sx={{ width: '100%', p: 3 }}>
         <OperationsSupervisorDashboard />
 
         {/* Success/Error Messages */}
@@ -90,7 +89,7 @@ const OperationsPage: React.FC = () => {
             {error}
           </Alert>
         </Snackbar>
-      </Container>
+      </Box>
     </Box>
   );
 };

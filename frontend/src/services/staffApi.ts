@@ -1,4 +1,4 @@
-import { HousekeepingTask, MaintenanceRequest } from '../types/operations';
+import { HousekeepingTask, MaintenanceTask } from '../types/operations';
 import TokenManager from '../utils/tokenManager';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
@@ -81,8 +81,8 @@ class StaffApiService {
   }
 
   // Maintenance Staff Methods
-  async getMyMaintenanceTasks(): Promise<MaintenanceRequest[]> {
-    const response = await this.fetchApi<{ content?: MaintenanceRequest[] } | MaintenanceRequest[]>('/staff/maintenance/my-tasks');
+  async getMyMaintenanceTasks(): Promise<MaintenanceTask[]> {
+    const response = await this.fetchApi<{ content?: MaintenanceTask[] } | MaintenanceTask[]>('/staff/maintenance/my-tasks');
     return Array.isArray(response) ? response : (response.content || []);
   }
 

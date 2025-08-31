@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  Container,
   Paper,
   Table,
   TableBody,
@@ -356,21 +355,20 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
 
   if (!token) {
     return (
-      <Container maxWidth="xl">
+      <Box>
         <Alert severity="error">
           Authentication required. Please log in.
         </Alert>
-      </Container>
+      </Box>
     );
   }
 
   return (
-    <Container maxWidth="xl">
-      <Box sx={{ py: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-          <Typography variant="h4" component="h1">
-            Room Management
-          </Typography>
+    <Box>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+          Room Management
+        </Typography>
           {tabValue === 0 && (
             <Button
               variant="contained"
@@ -870,8 +868,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
             </Button>
           </DialogActions>
         </Dialog>
-      </Box>
-    </Container>
+    </Box>
   );
 };
 

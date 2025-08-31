@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  Container,
   Paper,
   Table,
   TableBody,
@@ -278,21 +277,20 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
 
   if (!token) {
     return (
-      <Container maxWidth="xl">
+      <Box>
         <Alert severity="error">
           Authentication required. Please log in.
         </Alert>
-      </Container>
+      </Box>
     );
   }
 
   return (
-    <Container maxWidth="xl">
-      <Box sx={{ py: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-          <Typography variant="h4" component="h1">
-            Staff Management
-          </Typography>
+    <Box>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+          Staff Management
+        </Typography>
           <Button
             variant="contained"
             startIcon={<PersonAddIcon />}
@@ -608,8 +606,7 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
             </Button>
           </DialogActions>
         </Dialog>
-      </Box>
-    </Container>
+    </Box>
   );
 };
 

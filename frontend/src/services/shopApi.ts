@@ -102,6 +102,22 @@ class ShopApiService {
     return this.handleResponse<Product>(response);
   }
 
+  async toggleProductActive(hotelId: number, productId: number): Promise<Product> {
+    const response = await fetch(`${API_BASE_URL}/hotels/${hotelId}/shop/products/${productId}/toggle-active`, {
+      method: 'PATCH',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse<Product>(response);
+  }
+
+  async toggleProductAvailable(hotelId: number, productId: number): Promise<Product> {
+    const response = await fetch(`${API_BASE_URL}/hotels/${hotelId}/shop/products/${productId}/toggle-available`, {
+      method: 'PATCH',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse<Product>(response);
+  }
+
   async updateProductStock(hotelId: number, productId: number, newStock: number): Promise<Product> {
     const response = await fetch(`${API_BASE_URL}/hotels/${hotelId}/shop/products/${productId}/stock?quantity=${newStock}`, {
       method: 'PATCH',

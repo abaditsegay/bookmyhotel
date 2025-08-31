@@ -1,6 +1,6 @@
 import React from 'react';
 import { Typography, Box } from '@mui/material';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import EnhancedLayout from './components/layout/EnhancedLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import { useAuth } from './contexts/AuthContext';
@@ -133,9 +133,22 @@ const PlaceholderPage: React.FC<{ title: string; message: string }> = ({ title, 
 
 function App() {
   const { isAuthenticated } = useAuth();
+  const location = useLocation();
+  
+  // Check if we're on a route that should use full width layout
+  const isFullWidthRoute = location.pathname.startsWith('/frontdesk') || 
+                           location.pathname.startsWith('/hotel-admin') ||
+                           location.pathname.startsWith('/admin') ||
+                           location.pathname.startsWith('/system-dashboard') ||
+                           location.pathname.startsWith('/system/') ||
+                           location.pathname.startsWith('/operations') ||
+                           location.pathname.startsWith('/staff') ||
+                           location.pathname.startsWith('/shop') ||
+                           location.pathname.startsWith('/hotels/search') ||
+                           location.pathname === '/home';
   
   return (
-    <EnhancedLayout hideSidebar={!isAuthenticated}>
+    <EnhancedLayout hideSidebar={!isAuthenticated} maxWidth={isFullWidthRoute ? false : 'xl'}>
       <Routes>
         <Route path="/" element={<RoleBasedRouter />} />
         <Route path="/home" element={<HotelSearchPage />} />

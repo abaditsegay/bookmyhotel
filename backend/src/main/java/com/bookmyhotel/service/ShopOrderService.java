@@ -18,6 +18,7 @@ import com.bookmyhotel.dto.ShopOrderRequest;
 import com.bookmyhotel.dto.ShopOrderResponse;
 import com.bookmyhotel.entity.Hotel;
 import com.bookmyhotel.entity.OrderStatus;
+import com.bookmyhotel.entity.PaymentMethod;
 import com.bookmyhotel.entity.Product;
 import com.bookmyhotel.entity.Reservation;
 import com.bookmyhotel.entity.ShopOrder;
@@ -47,6 +48,9 @@ public class ShopOrderService {
 
     @Autowired
     private ReservationRepository reservationRepository;
+
+    @Autowired
+    private RoomChargeService roomChargeService;
 
     /**
      * Simple method to demonstrate shop order functionality
@@ -138,6 +142,20 @@ public class ShopOrderService {
 
         // Save the order
         ShopOrder savedOrder = shopOrderRepository.save(order);
+
+        // If payment method is ROOM_CHARGE and order is linked to a reservation,
+        // create a room charge automatically
+        if (request.getPaymentMethod() == PaymentMethod.ROOM_CHARGE &&
+                savedOrder.getReservation() != null) {
+            try {
+                roomChargeService.createChargeFromShopOrder(savedOrder);
+            } catch (Exception e) {
+                // Log the error but don't fail the order creation
+                // The room charge can be created manually later if needed
+                System.err.println(
+                        "Failed to create room charge for shop order " + savedOrder.getId() + ": " + e.getMessage());
+            }
+        }
 
         // Convert to response
         return convertToResponse(savedOrder);

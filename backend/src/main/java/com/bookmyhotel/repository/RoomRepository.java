@@ -69,7 +69,8 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
        List<Room> findByHotelIdAndIsAvailableTrue(Long hotelId);
 
        /**
-        * Find truly available rooms by hotel (both isAvailable=true and status=AVAILABLE)
+        * Find truly available rooms by hotel (both isAvailable=true and
+        * status=AVAILABLE)
         */
        List<Room> findByHotelIdAndIsAvailableTrueAndStatus(Long hotelId, RoomStatus status);
 
@@ -150,7 +151,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
                      "  AND NOT (res.checkOutDate <= :checkInDate OR res.checkInDate >= :checkOutDate)" +
                      ")")
        List<Room> findAvailableRoomsOfType(
-                     @Param("roomType") String roomType,
+                     @Param("roomType") RoomType roomType,
                      @Param("checkInDate") LocalDate checkInDate,
                      @Param("checkOutDate") LocalDate checkOutDate,
                      @Param("excludeReservationId") Long excludeReservationId);
@@ -258,7 +259,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
                      ")")
        boolean hasAvailableRoomsOfType(
                      @Param("hotelId") Long hotelId,
-                     @Param("roomType") String roomType,
+                     @Param("roomType") RoomType roomType,
                      @Param("checkInDate") LocalDate checkInDate,
                      @Param("checkOutDate") LocalDate checkOutDate);
 
@@ -273,7 +274,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
                      "LIMIT 1")
        Optional<BigDecimal> getPriceForRoomType(
                      @Param("hotelId") Long hotelId,
-                     @Param("roomType") String roomType);
+                     @Param("roomType") RoomType roomType);
 
        /**
         * Find first room of a specific type for a hotel (for pricing reference, not
@@ -286,7 +287,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
                      "LIMIT 1")
        Optional<Room> findFirstRoomOfTypeForHotel(
                      @Param("hotelId") Long hotelId,
-                     @Param("roomType") String roomType);
+                     @Param("roomType") RoomType roomType);
 
        /**
         * Find hotel by ID (bypasses tenant filter for cross-tenant booking)

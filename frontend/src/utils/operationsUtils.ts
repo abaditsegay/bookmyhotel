@@ -81,7 +81,7 @@ export const getHousekeepingStatusColor = (status: HousekeepingTaskStatus): 'def
 
 export const getMaintenanceStatusColor = (status: MaintenanceTaskStatus): 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' => {
   switch (status) {
-    case MaintenanceTaskStatus.PENDING:
+    case MaintenanceTaskStatus.OPEN:
       return 'default';
     case MaintenanceTaskStatus.ASSIGNED:
       return 'info';
@@ -103,8 +103,8 @@ export const getMaintenanceStatusColor = (status: MaintenanceTaskStatus): 'defau
 export const getStatusLabel = (status: HousekeepingTaskStatus | MaintenanceTaskStatus): string => {
   switch (status) {
     case HousekeepingTaskStatus.PENDING:
-    case MaintenanceTaskStatus.PENDING:
-      return 'Pending';
+    case MaintenanceTaskStatus.OPEN:
+      return 'Open';
     case HousekeepingTaskStatus.ASSIGNED:
     case MaintenanceTaskStatus.ASSIGNED:
       return 'Assigned';
@@ -399,7 +399,7 @@ export const sortTasksByStatus = <T extends { status: HousekeepingTaskStatus | M
   const getStatusOrder = (status: HousekeepingTaskStatus | MaintenanceTaskStatus): number => {
     switch (status) {
       case HousekeepingTaskStatus.PENDING:
-      case MaintenanceTaskStatus.PENDING:
+      case MaintenanceTaskStatus.OPEN:
         return 1;
       case HousekeepingTaskStatus.ASSIGNED:
       case MaintenanceTaskStatus.ASSIGNED:

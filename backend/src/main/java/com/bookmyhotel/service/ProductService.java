@@ -60,6 +60,7 @@ public class ProductService {
         product.setSku(request.getSku());
         product.setImageUrl(request.getImageUrl());
         product.setIsActive(request.getIsActive() != null ? request.getIsActive() : true);
+        product.setIsAvailable(request.getIsAvailable() != null ? request.getIsAvailable() : true);
         product.setWeightKg(request.getWeightKg());
         product.setHotel(hotel);
         product.setCreatedAt(LocalDateTime.now());
@@ -104,6 +105,7 @@ public class ProductService {
         product.setSku(request.getSku());
         product.setImageUrl(request.getImageUrl());
         product.setIsActive(request.getIsActive() != null ? request.getIsActive() : product.getIsActive());
+        product.setIsAvailable(request.getIsAvailable() != null ? request.getIsAvailable() : product.getIsAvailable());
         product.setWeightKg(request.getWeightKg());
         product.setUpdatedAt(LocalDateTime.now());
 
@@ -237,6 +239,25 @@ public class ProductService {
         }
 
         product.setIsActive(!product.getIsActive());
+        product.setUpdatedAt(LocalDateTime.now());
+
+        Product updatedProduct = productRepository.save(product);
+        return convertToResponse(updatedProduct);
+    }
+
+    /**
+     * Toggle product availability status
+     */
+    public ProductResponse toggleAvailableStatus(Long hotelId, Long productId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with ID: " + productId));
+
+        // Verify product belongs to hotel
+        if (!product.getHotel().getId().equals(hotelId)) {
+            throw new BadRequestException("Product does not belong to the specified hotel");
+        }
+
+        product.setIsAvailable(!product.getIsAvailable());
         product.setUpdatedAt(LocalDateTime.now());
 
         Product updatedProduct = productRepository.save(product);

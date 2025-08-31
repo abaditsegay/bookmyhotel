@@ -107,9 +107,10 @@ public class BookingService {
             // Check room type availability WITHOUT assigning a specific room
             // This just verifies that rooms of this type exist and are available for the
             // dates
+            RoomType roomTypeEnum = RoomType.valueOf(request.getRoomType().toUpperCase());
             boolean hasAvailableRooms = roomRepository.hasAvailableRoomsOfType(
                     request.getHotelId(),
-                    request.getRoomType(),
+                    roomTypeEnum,
                     request.getCheckInDate(),
                     request.getCheckOutDate());
 
@@ -121,7 +122,7 @@ public class BookingService {
             // Get a sample room of this type for pricing information (don't assign it)
             Room sampleRoom = roomRepository.findFirstRoomOfTypeForHotel(
                     request.getHotelId(),
-                    request.getRoomType())
+                    roomTypeEnum)
                     .orElseThrow(() -> new BookingException("Room type " +
                             request.getRoomType() + " not found in this hotel"));
 

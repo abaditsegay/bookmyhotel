@@ -131,9 +131,11 @@ const ProductManagement: React.FC = () => {
 
   const handleToggleStatus = async (product: Product, field: 'isActive' | 'isAvailable') => {
     try {
-      await shopApiService.updateProduct(hotelId, product.id, {
-        [field]: !product[field]
-      });
+      if (field === 'isActive') {
+        await shopApiService.toggleProductActive(hotelId, product.id);
+      } else if (field === 'isAvailable') {
+        await shopApiService.toggleProductAvailable(hotelId, product.id);
+      }
       loadProducts();
     } catch (err) {
       setError(err instanceof Error ? err.message : `Failed to update product ${field}`);

@@ -21,7 +21,6 @@ import {
   DialogActions,
   TextField,
   Alert,
-  Container,
   CircularProgress,
   Select,
   MenuItem,
@@ -38,13 +37,13 @@ import {
   Warning as WarningIcon
 } from '@mui/icons-material';
 import { staffApi } from '../../services/staffApi';
-import { MaintenanceRequest } from '../../types/operations';
+import { MaintenanceTask } from '../../types/operations';
 
 const MaintenanceStaffDashboard: React.FC = () => {
-  const [tasks, setTasks] = useState<MaintenanceRequest[]>([]);
+  const [tasks, setTasks] = useState<MaintenanceTask[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedTask, setSelectedTask] = useState<MaintenanceRequest | null>(null);
+  const [selectedTask, setSelectedTask] = useState<MaintenanceTask | null>(null);
   const [statusDialog, setStatusDialog] = useState(false);
   const [notes, setNotes] = useState('');
   const [newStatus, setNewStatus] = useState('');
@@ -100,7 +99,7 @@ const MaintenanceStaffDashboard: React.FC = () => {
     }
   };
 
-  const handleStartTask = async (task: MaintenanceRequest) => {
+  const handleStartTask = async (task: MaintenanceTask) => {
     try {
       await staffApi.startMaintenanceTask(task.id);
       await loadMyTasks();
@@ -111,7 +110,7 @@ const MaintenanceStaffDashboard: React.FC = () => {
     }
   };
 
-  const handleCompleteTask = async (task: MaintenanceRequest, completionNotes?: string) => {
+  const handleCompleteTask = async (task: MaintenanceTask, completionNotes?: string) => {
     try {
       await staffApi.completeMaintenanceTask(task.id, completionNotes);
       await loadMyTasks();
@@ -122,7 +121,7 @@ const MaintenanceStaffDashboard: React.FC = () => {
     }
   };
 
-  const openStatusDialog = (task: MaintenanceRequest) => {
+  const openStatusDialog = (task: MaintenanceTask) => {
     setSelectedTask(task);
     setNewStatus(task.status);
     setNotes('');
@@ -131,7 +130,7 @@ const MaintenanceStaffDashboard: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status.toUpperCase()) {
-      case 'PENDING': return 'warning';
+      case 'OPEN': return 'warning';
       case 'IN_PROGRESS': return 'info';
       case 'COMPLETED': return 'success';
       case 'CANCELLED': return 'error';
@@ -141,10 +140,13 @@ const MaintenanceStaffDashboard: React.FC = () => {
   };
 
   const getCategoryColor = (category: string) => {
+    if (!category) return 'default';
     switch (category.toUpperCase()) {
       case 'PLUMBING': return 'primary';
       case 'ELECTRICAL': return 'secondary';
       case 'HVAC': return 'info';
+      case 'APPLIANCE': return 'warning';
+      case 'SAFETY': return 'error';
       case 'GENERAL': return 'default';
       default: return 'default';
     }
@@ -160,32 +162,32 @@ const MaintenanceStaffDashboard: React.FC = () => {
     }
   };
 
-  const canStartTask = (task: MaintenanceRequest) => {
-    return task.status === 'PENDING' || task.status === 'ASSIGNED';
+  const canStartTask = (task: MaintenanceTask) => {
+    return task.status === 'OPEN' || task.status === 'ASSIGNED';
   };
 
-  const canCompleteTask = (task: MaintenanceRequest) => {
+  const canCompleteTask = (task: MaintenanceTask) => {
     return task.status === 'IN_PROGRESS';
   };
 
-  const canUpdateStatus = (task: MaintenanceRequest) => {
+  const canUpdateStatus = (task: MaintenanceTask) => {
     return task.status !== 'COMPLETED' && task.status !== 'CANCELLED';
   };
 
   if (loading && tasks.length === 0) {
     return (
-      <Container>
+      <Box sx={{ width: '100%', p: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
           <CircularProgress />
         </Box>
-      </Container>
+      </Box>
     );
   }
 
   return (
-    <Container maxWidth="xl">
+    <Box sx={{ width: '100%', p: 3 }}>
       <Box sx={{ py: 3 }}>
-        <Typography variant="h4" component="h1" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+        <Typography variant="h5" component="h1" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <BuildIcon color="primary" />
           My Maintenance Tasks
         </Typography>
@@ -214,7 +216,7 @@ const MaintenanceStaffDashboard: React.FC = () => {
                   <ScheduleIcon color="warning" />
                   <Box>
                     <Typography color="textSecondary" gutterBottom>
-                      Pending
+                      Open
                     </Typography>
                     <Typography variant="h4">
                       {stats.pendingTasks || 0}
@@ -304,8 +306,8 @@ const MaintenanceStaffDashboard: React.FC = () => {
                         </TableCell>
                         <TableCell>
                           <Chip
-                            label={task.category}
-                            color={getCategoryColor(task.category)}
+                            label={task.taskType || 'General'}
+                            color={getCategoryColor(task.taskType)}
                             size="small"
                           />
                         </TableCell>
@@ -389,7 +391,7 @@ const MaintenanceStaffDashboard: React.FC = () => {
                     onChange={(e) => setNewStatus(e.target.value)}
                     label="Status"
                   >
-                    <MenuItem value="PENDING">Pending</MenuItem>
+                    <MenuItem value="OPEN">Open</MenuItem>
                     <MenuItem value="IN_PROGRESS">In Progress</MenuItem>
                     <MenuItem value="ON_HOLD">On Hold</MenuItem>
                     <MenuItem value="COMPLETED">Completed</MenuItem>
@@ -417,7 +419,7 @@ const MaintenanceStaffDashboard: React.FC = () => {
           </DialogActions>
         </Dialog>
       </Box>
-    </Container>
+    </Box>
   );
 };
 
