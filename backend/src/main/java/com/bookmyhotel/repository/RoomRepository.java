@@ -34,7 +34,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
                      "  SELECT res.assignedRoom.id FROM Reservation res " +
                      "  WHERE res.assignedRoom IS NOT NULL " +
                      "  AND res.status NOT IN ('CANCELLED', 'NO_SHOW') " +
-                     "  AND NOT (res.checkOutDate <= :checkInDate OR res.checkInDate >= :checkOutDate)" +
+                     "  AND (res.checkInDate < :checkOutDate AND res.checkOutDate > :checkInDate)" +
                      ")")
        List<Room> findAvailableRooms(
                      @Param("hotelId") Long hotelId,
@@ -80,7 +80,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
        @Query("SELECT COUNT(res) = 0 FROM Reservation res " +
                      "WHERE res.assignedRoom.id = :roomId " +
                      "AND res.status NOT IN ('CANCELLED', 'NO_SHOW') " +
-                     "AND NOT (res.checkOutDate <= :checkInDate OR res.checkInDate >= :checkOutDate)")
+                     "AND (res.checkInDate < :checkOutDate AND res.checkOutDate > :checkInDate)")
        boolean isRoomAvailable(
                      @Param("roomId") Long roomId,
                      @Param("checkInDate") LocalDate checkInDate,
@@ -148,7 +148,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
                      "  WHERE res.assignedRoom IS NOT NULL " +
                      "  AND res.id != :excludeReservationId " +
                      "  AND res.status NOT IN ('CANCELLED', 'NO_SHOW') " +
-                     "  AND NOT (res.checkOutDate <= :checkInDate OR res.checkInDate >= :checkOutDate)" +
+                     "  AND (res.checkInDate < :checkOutDate AND res.checkOutDate > :checkInDate)" +
                      ")")
        List<Room> findAvailableRoomsOfType(
                      @Param("roomType") RoomType roomType,
@@ -169,7 +169,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
                      "  SELECT res.assignedRoom.id FROM Reservation res " +
                      "  WHERE res.assignedRoom IS NOT NULL " +
                      "  AND res.status NOT IN ('CANCELLED', 'NO_SHOW') " +
-                     "  AND NOT (res.checkOutDate <= :checkInDate OR res.checkInDate >= :checkOutDate)" +
+                     "  AND (res.checkInDate < :checkOutDate AND res.checkOutDate > :checkInDate)" +
                      ")")
        long countAvailableRoomsByType(
                      @Param("hotelId") Long hotelId,
@@ -210,7 +210,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
                      "  SELECT res.assignedRoom.id FROM Reservation res " +
                      "  WHERE res.assignedRoom IS NOT NULL " +
                      "  AND res.status NOT IN ('CANCELLED', 'NO_SHOW') " +
-                     "  AND NOT (res.checkOutDate <= :checkInDate OR res.checkInDate >= :checkOutDate)" +
+                     "  AND (res.checkInDate < :checkOutDate AND res.checkOutDate > :checkInDate)" +
                      ") " +
                      "ORDER BY r.roomNumber")
        Optional<Room> findFirstAvailableRoomOfType(
@@ -232,7 +232,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
                      "  SELECT res.assigned_room_id FROM reservations res " +
                      "  WHERE res.assigned_room_id IS NOT NULL " +
                      "  AND res.status NOT IN ('CANCELLED', 'NO_SHOW') " +
-                     "  AND NOT (res.check_out_date <= :checkInDate OR res.check_in_date >= :checkOutDate)" +
+                     "  AND (res.check_in_date < :checkOutDate AND res.check_out_date > :checkInDate)" +
                      ") " +
                      "ORDER BY r.room_number " +
                      "LIMIT 1", nativeQuery = true)
@@ -255,7 +255,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
                      "  SELECT res.assignedRoom.id FROM Reservation res " +
                      "  WHERE res.assignedRoom.id IS NOT NULL " +
                      "  AND res.status NOT IN ('CANCELLED', 'NO_SHOW') " +
-                     "  AND NOT (res.checkOutDate <= :checkInDate OR res.checkInDate >= :checkOutDate)" +
+                     "  AND (res.checkInDate < :checkOutDate AND res.checkOutDate > :checkInDate)" +
                      ")")
        boolean hasAvailableRoomsOfType(
                      @Param("hotelId") Long hotelId,

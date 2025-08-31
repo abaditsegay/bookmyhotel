@@ -83,7 +83,8 @@ public class SecurityConfig {
         // Allow specific origins instead of wildcard when using credentials
         configuration.setAllowedOrigins(Arrays.asList(
                 "http://localhost:3000",
-                "http://127.0.0.1:3000"));
+                "http://localhost:9090",
+                "http://127.0.0.1:9090")); // Mobile app origin alternative
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
