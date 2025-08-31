@@ -37,10 +37,13 @@ import {
   Warning as WarningIcon,
   CheckCircle as CheckCircleIcon
 } from '@mui/icons-material';
+import { useTranslation } from 'react-i18next';
 import { shopApiService } from '../../services/shopApi';
 import { Product, ProductCreateRequest, ProductCategory } from '../../types/shop';
+import { translateProducts } from '../../utils/productTranslation';
 
 const ProductManagement: React.FC = () => {
+  const { t } = useTranslation();
   const [products, setProducts] = useState<Product[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loading, setLoading] = useState(true);
@@ -184,7 +187,10 @@ const ProductManagement: React.FC = () => {
     });
   };
 
-  const filteredProducts = products.filter(product => {
+  // Translate products for display
+  const translatedProducts = translateProducts(products, t);
+
+  const filteredProducts = translatedProducts.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          product.sku.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = categoryFilter === 'ALL' || product.category === categoryFilter;
@@ -217,7 +223,7 @@ const ProductManagement: React.FC = () => {
           variant="contained"
           onClick={openCreateDialog}
         >
-          Add Product
+          {t('shop.products.addProduct')}
         </Button>
       </Box>
 
@@ -228,7 +234,7 @@ const ProductManagement: React.FC = () => {
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
-                label="Search Products"
+                label={t('shop.products.searchPlaceholder')}
                 variant="outlined"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -243,16 +249,16 @@ const ProductManagement: React.FC = () => {
             </Grid>
             <Grid item xs={12} md={3}>
               <FormControl fullWidth>
-                <InputLabel>Category</InputLabel>
+                <InputLabel>{t('shop.products.form.category')}</InputLabel>
                 <Select
                   value={categoryFilter}
-                  label="Category"
+                  label={t('shop.products.form.category')}
                   onChange={(e) => setCategoryFilter(e.target.value)}
                 >
-                  <MenuItem value="ALL">All Categories</MenuItem>
+                  <MenuItem value="ALL">{t('shop.products.categories.all')}</MenuItem>
                   {Object.values(ProductCategory).map((category) => (
                     <MenuItem key={category} value={category}>
-                      {category.replace('_', ' ')}
+                      {t(`categoryNames.${category}`)}
                     </MenuItem>
                   ))}
                 </Select>
@@ -260,7 +266,7 @@ const ProductManagement: React.FC = () => {
             </Grid>
             <Grid item xs={12} md={3}>
               <Typography variant="body2" color="text.secondary">
-                {filteredProducts.length} of {products.length} products
+                {filteredProducts.length} of {translatedProducts.length} {t('shop.dashboard.tabs.products').toLowerCase()}
               </Typography>
             </Grid>
           </Grid>
@@ -279,12 +285,12 @@ const ProductManagement: React.FC = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Product</TableCell>
-              <TableCell>Category</TableCell>
-              <TableCell>Price (ETB)</TableCell>
-              <TableCell>Stock</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell align="center">Actions</TableCell>
+              <TableCell>{t('shop.products.table.name')}</TableCell>
+              <TableCell>{t('shop.products.form.category')}</TableCell>
+              <TableCell>{t('shop.products.table.price')}</TableCell>
+              <TableCell>{t('shop.products.table.stock')}</TableCell>
+              <TableCell>{t('shop.products.table.status')}</TableCell>
+              <TableCell align="center">{t('shop.products.table.actions')}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -307,7 +313,7 @@ const ProductManagement: React.FC = () => {
                 </TableCell>
                 <TableCell>
                   <Chip
-                    label={product.category.replace('_', ' ')}
+                    label={t(`categoryNames.${product.category}`)}
                     color={getCategoryColor(product.category)}
                     size="small"
                   />
@@ -354,13 +360,13 @@ const ProductManagement: React.FC = () => {
                           size="small"
                         />
                       }
-                      label="Available"
+                      label={t('shop.products.form.availability')}
                       componentsProps={{ typography: { variant: 'caption' } }}
                     />
                   </Box>
                 </TableCell>
                 <TableCell align="center">
-                  <Tooltip title="Edit Product">
+                  <Tooltip title={t('shop.products.editProduct')}>
                     <IconButton
                       size="small"
                       onClick={() => openEditDialog(product)}
@@ -368,7 +374,7 @@ const ProductManagement: React.FC = () => {
                       <EditIcon />
                     </IconButton>
                   </Tooltip>
-                  <Tooltip title="Delete Product">
+                  <Tooltip title={t('shop.products.deleteProduct')}>
                     <IconButton
                       size="small"
                       color="error"
@@ -387,14 +393,14 @@ const ProductManagement: React.FC = () => {
       {/* Create/Edit Dialog */}
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="md" fullWidth>
         <DialogTitle>
-          {editingProduct ? 'Edit Product' : 'Create New Product'}
+          {editingProduct ? t('shop.products.editProduct') : t('shop.products.addProduct')}
         </DialogTitle>
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 1 }}>
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
-                label="Product Name"
+                label={t('shop.products.form.name')}
                 value={formData.name}
                 onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                 required
@@ -412,7 +418,7 @@ const ProductManagement: React.FC = () => {
             <Grid item xs={12}>
               <TextField
                 fullWidth
-                label="Description"
+                label={t('shop.products.form.description')}
                 value={formData.description}
                 onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                 multiline
@@ -421,15 +427,15 @@ const ProductManagement: React.FC = () => {
             </Grid>
             <Grid item xs={12} md={6}>
               <FormControl fullWidth required>
-                <InputLabel>Category</InputLabel>
+                <InputLabel>{t('shop.products.form.category')}</InputLabel>
                 <Select
                   value={formData.category}
-                  label="Category"
+                  label={t('shop.products.form.category')}
                   onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value as ProductCategory }))}
                 >
                   {Object.values(ProductCategory).map((category) => (
                     <MenuItem key={category} value={category}>
-                      {category.replace('_', ' ')}
+                      {t(`categoryNames.${category}`)}
                     </MenuItem>
                   ))}
                 </Select>
@@ -438,7 +444,7 @@ const ProductManagement: React.FC = () => {
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
-                label="Price (USD)"
+                label={t('shop.products.form.price')}
                 type="number"
                 value={formData.price}
                 onChange={(e) => setFormData(prev => ({ ...prev, price: parseFloat(e.target.value) || 0 }))}
@@ -463,7 +469,7 @@ const ProductManagement: React.FC = () => {
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
-                label="Stock Quantity"
+                label={t('shop.products.form.stock')}
                 type="number"
                 value={formData.stockQuantity}
                 onChange={(e) => setFormData(prev => ({ ...prev, stockQuantity: parseInt(e.target.value) || 0 }))}
@@ -518,24 +524,24 @@ const ProductManagement: React.FC = () => {
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
+          <Button onClick={() => setOpenDialog(false)}>{t('common.cancel')}</Button>
           <Button
             onClick={editingProduct ? handleUpdateProduct : handleCreateProduct}
             variant="contained"
           >
-            {editingProduct ? 'Update' : 'Create'}
+            {editingProduct ? t('common.save') : t('common.add')}
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Delete Product</DialogTitle>
+        <DialogTitle>{t('shop.products.deleteProduct')}</DialogTitle>
         <DialogContent>
           {productToDelete && (
             <Box sx={{ mt: 2 }}>
               <Typography variant="body1" gutterBottom>
-                Are you sure you want to delete this product?
+                {t('shop.products.confirmDelete')}
               </Typography>
               <Typography variant="body2" color="text.secondary" gutterBottom>
                 <strong>Product:</strong> {productToDelete.name}
@@ -559,9 +565,9 @@ const ProductManagement: React.FC = () => {
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+          <Button onClick={() => setDeleteDialogOpen(false)}>{t('common.cancel')}</Button>
           <Button onClick={confirmDeleteProduct} variant="contained" color="error">
-            Delete
+            {t('common.delete')}
           </Button>
         </DialogActions>
       </Dialog>

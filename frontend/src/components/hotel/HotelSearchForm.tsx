@@ -17,6 +17,7 @@ import {
   LocationOn as LocationIcon, 
   People as PeopleIcon 
 } from '@mui/icons-material';
+import { useTranslation } from 'react-i18next';
 import { HotelSearchRequest } from '../../types/hotel';
 
 interface HotelSearchFormProps {
@@ -25,6 +26,7 @@ interface HotelSearchFormProps {
 }
 
 const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = false }) => {
+  const { t } = useTranslation();
   const [location, setLocation] = useState('');
   const [checkInDate, setCheckInDate] = useState<Dayjs | null>(dayjs().add(7, 'day'));
   const [checkOutDate, setCheckOutDate] = useState<Dayjs | null>(dayjs().add(9, 'day'));
@@ -78,8 +80,8 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
-                label="Destination"
-                placeholder="Where do you want to stay?"
+                label={t('hotelSearch.form.destination')}
+                placeholder={t('hotelSearch.form.destinationPlaceholder')}
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 InputProps={{
@@ -97,7 +99,7 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
               <TextField
                 fullWidth
                 type="number"
-                label="Guests"
+                label={t('hotelSearch.form.guests')}
                 value={guests}
                 onChange={(e) => setGuests(Number(e.target.value))}
                 inputProps={{ min: 1, max: 10 }}
@@ -114,7 +116,7 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
             {/* Check-in Date */}
             <Grid item xs={12} md={6}>
               <DatePicker
-                label="Check-in Date"
+                label={t('hotelSearch.form.checkin')}
                 value={checkInDate}
                 onChange={handleCheckInDateChange}
                 minDate={dayjs()}
@@ -131,7 +133,7 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
             {/* Check-out Date */}
             <Grid item xs={12} md={6}>
               <DatePicker
-                label="Check-out Date"
+                label={t('hotelSearch.form.checkout')}
                 value={checkOutDate}
                 onChange={handleCheckOutDateChange}
                 minDate={checkInDate || dayjs().add(1, 'day')}
@@ -167,7 +169,7 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
                     },
                   }}
                 >
-                  {loading ? 'Searching...' : 'Search Hotels'}
+                  {loading ? t('hotelSearch.form.searching') : t('hotelSearch.form.searchButton')}
                 </Button>
               </Box>
             </Grid>

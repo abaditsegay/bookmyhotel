@@ -13,6 +13,7 @@ import {
   Paper
 } from '@mui/material';
 import { useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { shopApiService } from '../../services/shopApi';
 import { ShopDashboardStats } from '../../types/shop';
 import ProductManagement from './ProductManagement';
@@ -40,6 +41,7 @@ function TabPanel({ children, value, index, ...other }: TabPanelProps) {
 }
 
 const ShopDashboard: React.FC = () => {
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [currentTab, setCurrentTab] = useState(() => {
     const tabParam = searchParams.get('tab');
@@ -94,7 +96,7 @@ const ShopDashboard: React.FC = () => {
       <Alert severity="error" sx={{ mb: 2 }}>
         {error}
         <Button onClick={loadDashboardData} size="small" sx={{ ml: 2 }}>
-          Retry
+          {t('common.refresh')}
         </Button>
       </Alert>
     );
@@ -110,13 +112,13 @@ const ShopDashboard: React.FC = () => {
               <CardContent sx={{ py: 1, px: 1.5 }}>
                 <Box>
                   <Typography color="textSecondary" gutterBottom variant="caption" sx={{ fontSize: '0.7rem' }}>
-                    Total Products
+                    {t('shop.dashboard.stats.totalProducts')}
                   </Typography>
                   <Typography variant="h6" sx={{ lineHeight: 1.2 }}>
                     {dashboardStats.totalProducts}
                   </Typography>
                   <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                    {dashboardStats.activeProducts} active
+                    {dashboardStats.activeProducts} {t('shop.dashboard.stats.activeProducts').toLowerCase()}
                   </Typography>
                 </Box>
               </CardContent>
@@ -128,13 +130,13 @@ const ShopDashboard: React.FC = () => {
               <CardContent sx={{ py: 1, px: 1.5 }}>
                 <Box>
                   <Typography color="textSecondary" gutterBottom variant="caption" sx={{ fontSize: '0.7rem' }}>
-                    Pending Orders
+                    {t('shop.orders.status.pending')} {t('shop.dashboard.tabs.orders')}
                   </Typography>
                   <Typography variant="h6" sx={{ lineHeight: 1.2 }}>
                     {dashboardStats.pendingOrders}
                   </Typography>
                   <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                    of {dashboardStats.totalOrders} total
+                    of {dashboardStats.totalOrders} {t('shop.dashboard.stats.totalOrders').toLowerCase()}
                   </Typography>
                 </Box>
               </CardContent>
@@ -146,7 +148,7 @@ const ShopDashboard: React.FC = () => {
               <CardContent sx={{ py: 1, px: 1.5 }}>
                 <Box>
                   <Typography color="textSecondary" gutterBottom variant="caption" sx={{ fontSize: '0.7rem' }}>
-                    Today's Revenue
+                    {t('shop.dashboard.stats.revenue')}
                   </Typography>
                   <Typography variant="h6" sx={{ lineHeight: 1.2 }}>
                     ${dashboardStats.todayRevenue.toFixed(2)}
@@ -164,7 +166,7 @@ const ShopDashboard: React.FC = () => {
               <CardContent sx={{ py: 1, px: 1.5 }}>
                 <Box>
                   <Typography color="textSecondary" gutterBottom variant="caption" sx={{ fontSize: '0.7rem' }}>
-                    Low Stock Items
+                    {t('shop.products.status.outOfStock')} {t('shop.dashboard.tabs.products')}
                   </Typography>
                   <Typography variant="h6" sx={{ lineHeight: 1.2 }}>
                     {dashboardStats.lowStockProducts}
@@ -187,9 +189,9 @@ const ShopDashboard: React.FC = () => {
           variant="scrollable"
           scrollButtons="auto"
         >
-          <Tab label="Create New Order" />
-          <Tab label="Products" />
-          <Tab label="Orders" />
+          <Tab label={t('shop.dashboard.tabs.newOrder')} />
+          <Tab label={t('shop.dashboard.tabs.products')} />
+          <Tab label={t('shop.dashboard.tabs.orders')} />
         </Tabs>
       </Paper>
 

@@ -29,6 +29,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import LanguageSwitcher from '../common/LanguageSwitcher';
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
@@ -433,6 +434,9 @@ const Navbar: React.FC = () => {
 
           {/* Right Section: User Actions */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1, justifyContent: 'flex-end' }}>
+            {/* Language Switcher - Always visible */}
+            <LanguageSwitcher variant="menu" size="small" color="white" />
+            
             {/* Show navigation on right for users with hotel name displayed */}
             {user && user.hotelName && shouldShowHotelName() && !isMobile && (
               <DesktopNavigation />

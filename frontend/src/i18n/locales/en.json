@@ -1,0 +1,75 @@
+{
+  "hotelSearch": {
+    "title": "Hotel Search",
+    "subtitle": "Find and book your perfect stay worldwide",
+    "form": {
+      "destination": "Destination",
+      "destinationPlaceholder": "Where are you going?",
+      "checkin": "Check-in Date",
+      "checkout": "Check-out Date",
+      "guests": "Guests",
+      "guestsPlaceholder": "Number of guests",
+      "rooms": "Rooms",
+      "roomsPlaceholder": "Number of rooms",
+      "searchButton": "Search Hotels",
+      "searching": "Searching..."
+    },
+    "alreadyHaveBooking": {
+      "title": "📋 Already Have a Booking?",
+      "subtitle": "Manage your existing reservation or view booking details",
+      "button": "Find My Booking"
+    },
+    "whyChooseUs": {
+      "title": "🌟 Why Choose BookMyHotel?",
+      "security": {
+        "title": "🔒 Bank-Level Security",
+        "description": "Your personal data and payment information are protected with enterprise-grade encryption and secure payment gateways."
+      },
+      "performance": {
+        "title": "⚡ Lightning Performance",
+        "description": "Advanced caching and optimized search algorithms deliver instant results and seamless booking experience."
+      },
+      "modern": {
+        "title": "📱 Modern Experience",
+        "description": "Intuitive design that works flawlessly across all devices - mobile, tablet, and desktop with responsive layouts."
+      },
+      "support": {
+        "title": "🎧 24/7 Support",
+        "description": "Round-the-clock customer support team ready to assist you with bookings, changes, or any travel concerns."
+      },
+      "trustMessage": "Join thousands of satisfied travelers who trust BookMyHotel for their accommodation needs"
+    },
+    "errors": {
+      "searchFailed": "Search failed. Please try again.",
+      "invalidDates": "Please check your dates.",
+      "networkError": "Network error. Please check your connection."
+    }
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "close": "Close",
+    "yes": "Yes",
+    "no": "No",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit"
+  },
+  "navigation": {
+    "home": "Home",
+    "hotels": "Hotels",
+    "bookings": "Bookings",
+    "profile": "Profile",
+    "logout": "Logout",
+    "dashboard": "Dashboard"
+  },
+  "language": {
+    "english": "English",
+    "amharic": "አማርኛ",
+    "changeLanguage": "Change Language"
+  }
+}

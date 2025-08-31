@@ -1,6 +1,7 @@
 import React from 'react';
 import { Typography, Box } from '@mui/material';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import './i18n'; // Initialize i18n
 import EnhancedLayout from './components/layout/EnhancedLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import { useAuth } from './contexts/AuthContext';

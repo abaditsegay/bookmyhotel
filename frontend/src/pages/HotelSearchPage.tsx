@@ -13,6 +13,7 @@ import {
   Search as SearchIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import VerticalHotelAdvertisementBanner from '../components/VerticalHotelAdvertisementBanner';
 import HotelSearchForm from '../components/hotel/HotelSearchForm';
 import { hotelApiService } from '../services/hotelApi';
@@ -23,6 +24,7 @@ import {
 
 const HotelSearchPage: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const { user } = useAuth();
@@ -52,7 +54,7 @@ const HotelSearchPage: React.FC = () => {
       });
     } catch (err) {
       console.error('❌ Hotel search failed:', err);
-      setError(err instanceof Error ? err.message : 'An error occurred while searching for hotels');
+      setError(err instanceof Error ? err.message : t('hotelSearch.errors.searchFailed'));
     } finally {
       setLoading(false);
     }
@@ -180,10 +182,10 @@ const HotelSearchPage: React.FC = () => {
               textAlign: 'center' 
             }}>
               <Typography variant="h4" component="h2" gutterBottom sx={{ fontWeight: 'bold' }}>
-                🏨 Hotel Search
+                🏨 {t('hotelSearch.title')}
               </Typography>
               <Typography variant="subtitle1" sx={{ opacity: 0.9 }}>
-                Find and book your perfect stay worldwide
+                {t('hotelSearch.subtitle')}
               </Typography>
             </Box>
 
@@ -231,10 +233,10 @@ const HotelSearchPage: React.FC = () => {
                 }}
               >
                 <Typography variant="h5" component="h3" gutterBottom sx={{ fontWeight: 'bold' }}>
-                  📋 Already Have a Booking?
+                  {t('hotelSearch.alreadyHaveBooking.title')}
                 </Typography>
                 <Typography variant="body1" sx={{ mb: 3, opacity: 0.9, fontSize: '1.1rem' }}>
-                  Manage your existing reservation or view booking details
+                  {t('hotelSearch.alreadyHaveBooking.subtitle')}
                 </Typography>
                 <Button
                   variant="outlined"
@@ -257,7 +259,7 @@ const HotelSearchPage: React.FC = () => {
                     }
                   }}
                 >
-                  Find My Booking
+                  {t('hotelSearch.alreadyHaveBooking.button')}
                 </Button>
               </Paper>
 
@@ -279,7 +281,7 @@ const HotelSearchPage: React.FC = () => {
                   textAlign: 'center',
                   mb: 3
                 }}>
-                  🌟 Why Choose BookMyHotel?
+                  {t('hotelSearch.whyChooseUs.title')}
                 </Typography>
                 
                 <Box sx={{ 
@@ -298,10 +300,10 @@ const HotelSearchPage: React.FC = () => {
                       justifyContent: 'center',
                       gap: 1
                     }}>
-                      🔒 Bank-Level Security
+                      {t('hotelSearch.whyChooseUs.security.title')}
                     </Typography>
                     <Typography variant="body2" sx={{ color: '#555', lineHeight: 1.6 }}>
-                      Your personal data and payment information are protected with enterprise-grade encryption and secure payment gateways.
+                      {t('hotelSearch.whyChooseUs.security.description')}
                     </Typography>
                   </Box>
 
@@ -315,10 +317,10 @@ const HotelSearchPage: React.FC = () => {
                       justifyContent: 'center',
                       gap: 1
                     }}>
-                      ⚡ Lightning Performance
+                      {t('hotelSearch.whyChooseUs.performance.title')}
                     </Typography>
                     <Typography variant="body2" sx={{ color: '#555', lineHeight: 1.6 }}>
-                      Advanced caching and optimized search algorithms deliver instant results and seamless booking experience.
+                      {t('hotelSearch.whyChooseUs.performance.description')}
                     </Typography>
                   </Box>
 
@@ -332,10 +334,10 @@ const HotelSearchPage: React.FC = () => {
                       justifyContent: 'center',
                       gap: 1
                     }}>
-                      📱 Modern Experience
+                      {t('hotelSearch.whyChooseUs.modern.title')}
                     </Typography>
                     <Typography variant="body2" sx={{ color: '#555', lineHeight: 1.6 }}>
-                      Intuitive design that works flawlessly across all devices - mobile, tablet, and desktop with responsive layouts.
+                      {t('hotelSearch.whyChooseUs.modern.description')}
                     </Typography>
                   </Box>
 
@@ -349,10 +351,10 @@ const HotelSearchPage: React.FC = () => {
                       justifyContent: 'center',
                       gap: 1
                     }}>
-                      🎧 24/7 Support
+                      {t('hotelSearch.whyChooseUs.support.title')}
                     </Typography>
                     <Typography variant="body2" sx={{ color: '#555', lineHeight: 1.6 }}>
-                      Round-the-clock customer support team ready to assist you with bookings, changes, or any travel concerns.
+                      {t('hotelSearch.whyChooseUs.support.description')}
                     </Typography>
                   </Box>
                 </Box>
@@ -363,7 +365,7 @@ const HotelSearchPage: React.FC = () => {
                     fontWeight: 'medium',
                     fontStyle: 'italic'
                   }}>
-                    Join thousands of satisfied travelers who trust BookMyHotel for their accommodation needs
+                    {t('hotelSearch.whyChooseUs.trustMessage')}
                   </Typography>
                 </Box>
               </Paper>
