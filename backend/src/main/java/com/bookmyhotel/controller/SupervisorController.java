@@ -3,6 +3,7 @@ package com.bookmyhotel.controller;
 import com.bookmyhotel.entity.*;
 import com.bookmyhotel.enums.*;
 import com.bookmyhotel.service.HousekeepingService;
+import com.bookmyhotel.service.HotelService;
 import com.bookmyhotel.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -30,6 +31,9 @@ public class SupervisorController {
 
     @Autowired
     private HousekeepingService housekeepingService;
+
+    @Autowired
+    private HotelService hotelService;
 
     @Autowired
     private UserRepository userRepository;
@@ -103,7 +107,7 @@ public class SupervisorController {
                 dashboard.put("staffSummary", new ArrayList<>());
 
                 // Get completed tasks for recent tasks display
-                List<HousekeepingTask> completedTasks = housekeepingService.getTasksByStatus(tenantId,
+                List<HousekeepingTask> completedTasks = housekeepingService.getTasksByStatus(hotelId,
                         HousekeepingTaskStatus.COMPLETED);
 
                 // Simple task summary
@@ -179,9 +183,10 @@ public class SupervisorController {
             }
 
             // Get recent tasks (same as in dashboard but more detailed)
-            List<HousekeepingTask> completedTasks = housekeepingService.getTasksByStatus(tenantId,
+            Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
+            List<HousekeepingTask> completedTasks = housekeepingService.getTasksByStatus(hotelId,
                     HousekeepingTaskStatus.COMPLETED);
-            List<HousekeepingTask> inProgressTasks = housekeepingService.getTasksByStatus(tenantId,
+            List<HousekeepingTask> inProgressTasks = housekeepingService.getTasksByStatus(hotelId,
                     HousekeepingTaskStatus.IN_PROGRESS);
 
             List<Map<String, Object>> recentTasks = new ArrayList<>();
@@ -359,7 +364,7 @@ public class SupervisorController {
             // 2. Get additional staff from housekeeping_staff table (if any)
             try {
                 List<HousekeepingStaff> housekeepingStaffEntries = housekeepingService
-                        .getAllActiveStaff(tenantId, Pageable.unpaged()).getContent();
+                        .getAllActiveStaff(hotelId, Pageable.unpaged()).getContent();
 
                 for (HousekeepingStaff staff : housekeepingStaffEntries) {
                     Map<String, Object> staffMap = new HashMap<>();
@@ -418,11 +423,12 @@ public class SupervisorController {
             }
 
             // Get all housekeeping tasks for the tenant
-            List<HousekeepingTask> pendingTasks = housekeepingService.getTasksByStatus(tenantId,
+            Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
+            List<HousekeepingTask> pendingTasks = housekeepingService.getTasksByStatus(hotelId,
                     HousekeepingTaskStatus.PENDING);
-            List<HousekeepingTask> inProgressTasks = housekeepingService.getTasksByStatus(tenantId,
+            List<HousekeepingTask> inProgressTasks = housekeepingService.getTasksByStatus(hotelId,
                     HousekeepingTaskStatus.IN_PROGRESS);
-            List<HousekeepingTask> completedTasks = housekeepingService.getTasksByStatus(tenantId,
+            List<HousekeepingTask> completedTasks = housekeepingService.getTasksByStatus(hotelId,
                     HousekeepingTaskStatus.COMPLETED);
 
             List<HousekeepingTask> allTasks = new ArrayList<>();
@@ -672,16 +678,18 @@ public class SupervisorController {
             // Handle special case for "Other" areas (roomId = 999)
             if (request.getRoomId() == 999) {
                 // For "Other" areas, we'll create a task without a specific room
+                Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
                 task = housekeepingService.createTaskWithoutRoom(
-                        tenantId,
+                        hotelId,
                         taskType,
                         priority,
                         request.getDescription(),
                         request.getSpecialInstructions());
             } else {
                 // Normal room-based task
+                Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
                 task = housekeepingService.createTask(
-                        tenantId,
+                        hotelId,
                         request.getRoomId(),
                         taskType,
                         priority,
@@ -789,12 +797,13 @@ public class SupervisorController {
             List<HousekeepingTask> tasks;
 
             // Get tasks based on time filter
+            Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
             if ("TODAY".equals(timeFilter)) {
-                tasks = housekeepingService.getTodaysTasksForStaff(staffId, tenantId);
+                tasks = housekeepingService.getTodaysTasksForStaff(staffId, hotelId);
             } else {
                 // Get all tasks for the staff member
                 Pageable pageable = PageRequest.of(page, size);
-                Page<HousekeepingTask> taskPage = housekeepingService.getTasksForStaff(tenantId, staffId, pageable);
+                Page<HousekeepingTask> taskPage = housekeepingService.getTasksForStaff(hotelId, staffId, pageable);
                 tasks = taskPage.getContent();
             }
 
@@ -863,9 +872,10 @@ public class SupervisorController {
             Map<String, Object> performance = new HashMap<>();
 
             // Get all tasks for the staff member
+            Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
             List<HousekeepingTask> allTasks = housekeepingService
-                    .getTasksForStaff(tenantId, staffId, Pageable.unpaged()).getContent();
-            List<HousekeepingTask> todaysTasks = housekeepingService.getTodaysTasksForStaff(staffId, tenantId);
+                    .getTasksForStaff(hotelId, staffId, Pageable.unpaged()).getContent();
+            List<HousekeepingTask> todaysTasks = housekeepingService.getTodaysTasksForStaff(staffId, hotelId);
 
             // Calculate statistics
             long completedTasks = allTasks.stream().filter(t -> t.getStatus() == HousekeepingTaskStatus.COMPLETED)
@@ -920,7 +930,8 @@ public class SupervisorController {
 
             // Use the simplified service that supports both housekeeping_staff and users
             // table assignments
-            HousekeepingTask assignedTask = housekeepingService.assignTask(tenantId, taskId, staffId);
+            Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
+            HousekeepingTask assignedTask = housekeepingService.assignTask(hotelId, taskId, staffId);
 
             // Convert to simplified format to avoid circular references
             Map<String, Object> taskMap = new HashMap<>();
@@ -1041,7 +1052,8 @@ public class SupervisorController {
                         .body(Map.of("error", "Operations supervisor must be associated with a tenant"));
             }
 
-            HousekeepingTask assignedTask = housekeepingService.assignTaskAutomatically(taskId, tenantId);
+            Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
+            HousekeepingTask assignedTask = housekeepingService.assignTaskAutomatically(taskId, hotelId);
 
             // Convert to simplified format to avoid circular references
             Map<String, Object> taskMap = new HashMap<>();

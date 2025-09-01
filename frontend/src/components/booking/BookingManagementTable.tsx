@@ -23,16 +23,7 @@ import {
   Tooltip,
   TextField,
   InputAdornment,
-  CircularProgress,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
-  Grid
+  CircularProgress
 } from '@mui/material';
 import {
   Visibility as VisibilityIcon,
@@ -47,7 +38,7 @@ import {
 import { useTenant } from '../../contexts/TenantContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { hotelAdminApi } from '../../services/hotelAdminApi';
-import { frontDeskApiService, CheckoutResponse, FrontDeskRoom } from '../../services/frontDeskApi';
+import { frontDeskApiService, CheckoutResponse } from '../../services/frontDeskApi';
 import CheckoutReceiptDialog from '../receipts/CheckoutReceiptDialog';
 import CheckInDialog from './CheckInDialog';
 import { Booking } from '../../types/booking-shared';
@@ -73,7 +64,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
   currentTab = 0,
   refreshTrigger
 }) => {
-  const { tenant } = useTenant();
+  const { tenant, tenantId } = useTenant();
   const { token } = useAuth();
   const navigate = useNavigate();
   
@@ -131,19 +122,27 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
   const [checkInDialogOpen, setCheckInDialogOpen] = useState(false);
   const [bookingForCheckIn, setBookingForCheckIn] = useState<Booking | null>(null);
 
-  // Room assignment edit state
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [availableRooms, setAvailableRooms] = useState<FrontDeskRoom[]>([]);
-  const [loadingRooms, setLoadingRooms] = useState(false);
-  const [editingBooking, setEditingBooking] = useState(false);
-  const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
-  const [selectedRoomType, setSelectedRoomType] = useState<string>('');
-
   // Manual refresh function (used by refresh button)
   const loadBookings = React.useCallback(async () => {
-    if (!token) return;
-    // Front desk mode doesn't need tenant check
-    if (mode === 'hotel-admin' && !tenant) return;
+    if (!token) {
+      setLoading(false);
+      setSnackbar({
+        open: true,
+        message: 'Authentication required to load bookings',
+        severity: 'error'
+      });
+      return;
+    }
+    // For hotel-admin mode, we need tenant context (tenantId should be available from JWT)
+    if (mode === 'hotel-admin' && !tenantId) {
+      setLoading(false);
+      setSnackbar({
+        open: true,
+        message: 'Tenant authentication required. Please log in again.',
+        severity: 'error'
+      });
+      return;
+    }
     
     console.log('BookingManagementTable: Manual refresh triggered');
     
@@ -187,47 +186,42 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
     } catch (error) {
       console.error('Error loading bookings:', error);
       
-      // Add mock data for testing pagination when API fails
-      if (process.env.NODE_ENV === 'development') {
-        console.log('BookingManagementTable: Manual refresh API failed, using mock data for testing');
-        const mockBookings = Array.from({ length: Math.min(size, 3) }, (_, i) => ({
-          reservationId: i + 1,
-          guestName: `Test Guest ${i + 1}`,
-          guestEmail: `guest${i + 1}@test.com`,
-          roomNumber: `${100 + i}`,
-          roomType: 'Standard',
-          checkInDate: '2025-08-30',
-          checkOutDate: '2025-09-02',
-          status: 'CONFIRMED',
-          totalAmount: 250.00 + (i * 50),
-          confirmationNumber: `TEST${String(i + 1).padStart(3, '0')}`,
-          paymentStatus: 'PAID',
-          createdAt: new Date().toISOString(),
-          hotelName: 'Test Hotel',
-          hotelAddress: 'Test Address',
-          pricePerNight: 125.00
-        }));
-        
-        setBookings(mockBookings);
-        setTotalElements(17); // Mock total to test pagination
-      } else {
-        setSnackbar({
-          open: true,
-          message: 'Failed to load bookings',
-          severity: 'error'
-        });
-      }
+      setSnackbar({
+        open: true,
+        message: `Failed to load bookings: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        severity: 'error'
+      });
+      
+      // Set empty state when API fails
+      setBookings([]);
+      setTotalElements(0);
     } finally {
       setLoading(false);
     }
-  }, [token, mode, page, size, searchTerm, tenant]);
+  }, [token, mode, page, size, searchTerm, tenant, tenantId]);
 
   // Centralized booking loading logic
   useEffect(() => {
     const loadData = async () => {
-      if (!token) return;
-      // Front desk mode doesn't need tenant check
-      if (mode === 'hotel-admin' && !tenant) return;
+      if (!token) {
+        setLoading(false);
+        setSnackbar({
+          open: true,
+          message: 'Authentication required to load bookings',
+          severity: 'error'
+        });
+        return;
+      }
+      // For hotel-admin mode, we need tenant context (tenantId should be available from JWT)
+      if (mode === 'hotel-admin' && !tenantId) {
+        setLoading(false);
+        setSnackbar({
+          open: true,
+          message: 'Tenant authentication required. Please log in again.',
+          severity: 'error'
+        });
+        return;
+      }
       
       console.log('BookingManagementTable: Loading bookings with params:', { 
         mode, 
@@ -284,40 +278,15 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
       } catch (error) {
         console.error('Error loading bookings:', error);
         
-        // Add mock data for testing pagination when API fails
-        if (process.env.NODE_ENV === 'development') {
-          console.log('BookingManagementTable: API failed, using mock data for testing');
-          const mockBookings = Array.from({ length: Math.min(size, 3) }, (_, i) => ({
-            reservationId: i + 1,
-            guestName: `Test Guest ${i + 1}`,
-            guestEmail: `guest${i + 1}@test.com`,
-            roomNumber: `${100 + i}`,
-            roomType: 'Standard',
-            checkInDate: '2025-08-30',
-            checkOutDate: '2025-09-02',
-            status: 'CONFIRMED',
-            totalAmount: 250.00 + (i * 50),
-            confirmationNumber: `TEST${String(i + 1).padStart(3, '0')}`,
-            paymentStatus: 'PAID',
-            createdAt: new Date().toISOString(),
-            hotelName: 'Test Hotel',
-            hotelAddress: 'Test Address',
-            pricePerNight: 125.00
-          }));
-          
-          setBookings(mockBookings);
-          setTotalElements(17); // Mock total to test pagination
-          console.log('BookingManagementTable: Set mock data:', mockBookings.length, 'items, total: 17');
-        } else {
-          setSnackbar({
-            open: true,
-            message: 'Failed to load bookings',
-            severity: 'error'
-          });
-          // Set fallback state to prevent "0-0 of 0" display
-          setBookings([]);
-          setTotalElements(0);
-        }
+        setSnackbar({
+          open: true,
+          message: `Failed to load bookings: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          severity: 'error'
+        });
+        
+        // Set empty state when API fails
+        setBookings([]);
+        setTotalElements(0);
       } finally {
         setLoading(false);
       }
@@ -325,7 +294,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
 
     console.log('BookingManagementTable: useEffect triggered - loading bookings');
     loadData();
-  }, [page, size, token, mode, searchTerm, tenant]);
+  }, [page, size, token, mode, searchTerm, tenant, tenantId]);
 
   // Handle search with debounce - only reset page when search changes
   useEffect(() => {
@@ -412,9 +381,10 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
     if (mode === 'front-desk' && token) {
       try {
         if (action === 'check-in') {
-          // Open check-in dialog for room assignment
+          // Open check-in dialog for room assignment - don't update status yet
           setBookingForCheckIn(booking);
           setCheckInDialogOpen(true);
+          return; // Return early to prevent status update until dialog completes
         } else if (action === 'check-out') {
           // Use new checkout with receipt API
           const result = await frontDeskApiService.checkOutGuestWithReceipt(token, booking.reservationId, tenant?.id || 'default');
@@ -455,19 +425,8 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
       }
     }
     
-    // Update local state optimistically for other actions
-    if (action === 'check-in') {
-      setBookings(prev => prev.map(b => 
-        b.reservationId === booking.reservationId 
-          ? { ...b, status: 'CHECKED_IN' } 
-          : b
-      ));
-      setSnackbar({
-        open: true,
-        message: `Guest ${booking.guestName} checked in successfully`,
-        severity: 'success'
-      });
-    }
+    // Note: Check-in status update is now handled by handleCheckInSuccess callback
+    // from the CheckInDialog component, not here
   };
 
   // Handle successful check-in
@@ -491,86 +450,6 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
     
     // Refresh bookings to get updated data
     loadBookings();
-  };
-
-  // Handle opening edit dialog for confirmed bookings
-  const handleEditRoomAssignment = async (booking: Booking) => {
-    setSelectedBooking(booking);
-    setSelectedRoomId(null); // Will be set when user selects a room
-    setSelectedRoomType(booking.roomType);
-    setEditDialogOpen(true);
-    
-    // Load available rooms
-    await loadAvailableRooms();
-  };
-
-  // Load available rooms for the hotel
-  const loadAvailableRooms = async () => {
-    if (!token) return;
-    
-    setLoadingRooms(true);
-    try {
-      const result = await frontDeskApiService.getRooms(token, 0, 1000, '', '', '', tenant?.id || 'default');
-      if (result.success && result.data) {
-        setAvailableRooms(result.data.content || []);
-      } else {
-        setSnackbar({
-          open: true,
-          message: 'Failed to load available rooms',
-          severity: 'error'
-        });
-      }
-    } catch (error) {
-      console.error('Error loading rooms:', error);
-      setSnackbar({
-        open: true,
-        message: 'Failed to load available rooms',
-        severity: 'error'
-      });
-    } finally {
-      setLoadingRooms(false);
-    }
-  };
-
-  // Handle saving the room assignment changes
-  const handleSaveRoomAssignment = async () => {
-    if (!selectedBooking || !selectedRoomId || !token) return;
-    
-    setEditingBooking(true);
-    try {
-      const result = await frontDeskApiService.updateBookingRoomAssignment(
-        token,
-        selectedBooking.reservationId,
-        selectedRoomId,
-        selectedRoomType || undefined,
-        tenant?.id || 'default'
-      );
-      
-      if (result.success) {
-        setSnackbar({ 
-          open: true, 
-          message: 'Room assignment updated successfully', 
-          severity: 'success' 
-        });
-        setEditDialogOpen(false);
-        loadBookings(); // Refresh the bookings list
-      } else {
-        setSnackbar({ 
-          open: true, 
-          message: result.message || 'Failed to update room assignment', 
-          severity: 'error' 
-        });
-      }
-    } catch (error) {
-      console.error('Error updating room assignment:', error);
-      setSnackbar({ 
-        open: true, 
-        message: 'Failed to update room assignment', 
-        severity: 'error' 
-      });
-    } finally {
-      setEditingBooking(false);
-    }
   };
 
   // Handle print receipt for any booking
@@ -906,84 +785,6 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
         onCheckInSuccess={handleCheckInSuccess}
       />
 
-      {/* Edit Room Assignment Dialog */}
-      <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} maxWidth="md" fullWidth>
-        <DialogTitle>Edit Room Assignment - {selectedBooking?.confirmationNumber}</DialogTitle>
-        <DialogContent>
-          <Grid container spacing={3} sx={{ mt: 1 }}>
-            <Grid item xs={12}>
-              <Typography variant="subtitle1" gutterBottom>
-                Guest: {selectedBooking?.guestName}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                Current Room Type: {selectedBooking?.roomType}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                Current Room Number: {selectedBooking?.roomNumber || 'Not assigned'}
-              </Typography>
-            </Grid>
-            
-            <Grid item xs={12} md={6}>
-              <FormControl fullWidth>
-                <InputLabel>Room Type</InputLabel>
-                <Select
-                  value={selectedRoomType}
-                  onChange={(e) => setSelectedRoomType(e.target.value)}
-                  label="Room Type"
-                >
-                  <MenuItem value="SINGLE">Single</MenuItem>
-                  <MenuItem value="DOUBLE">Double</MenuItem>
-                  <MenuItem value="SUITE">Suite</MenuItem>
-                  <MenuItem value="DELUXE">Deluxe</MenuItem>
-                  <MenuItem value="PRESIDENTIAL">Presidential</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            
-            <Grid item xs={12}>
-              <Typography variant="subtitle2" gutterBottom>
-                Available Rooms
-              </Typography>
-              {loadingRooms ? (
-                <CircularProgress size={24} />
-              ) : (
-                <List sx={{ maxHeight: 300, overflow: 'auto', border: '1px solid #e0e0e0', borderRadius: 1 }}>
-                  {availableRooms.map((room) => (
-                    <ListItem key={room.id} disablePadding>
-                      <ListItemButton
-                        selected={selectedRoomId === room.id}
-                        onClick={() => setSelectedRoomId(room.id)}
-                      >
-                        <ListItemText
-                          primary={`Room ${room.roomNumber}`}
-                          secondary={`${room.roomType} - $${room.pricePerNight}/night (${room.status})`}
-                        />
-                      </ListItemButton>
-                    </ListItem>
-                  ))}
-                  {availableRooms.length === 0 && (
-                    <ListItem>
-                      <ListItemText primary="No rooms available" />
-                    </ListItem>
-                  )}
-                </List>
-              )}
-            </Grid>
-          </Grid>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setEditDialogOpen(false)} disabled={editingBooking}>
-            Cancel
-          </Button>
-          <Button 
-            onClick={handleSaveRoomAssignment}
-            variant="contained" 
-            disabled={editingBooking || !selectedRoomId}
-          >
-            {editingBooking ? 'Updating...' : 'Update Room Assignment'}
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 };

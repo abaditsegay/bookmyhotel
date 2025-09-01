@@ -24,12 +24,11 @@ import jakarta.validation.constraints.PositiveOrZero;
  */
 @Entity
 @Table(name = "products", indexes = {
-        @Index(name = "idx_product_tenant", columnList = "tenant_id"),
         @Index(name = "idx_product_hotel", columnList = "hotel_id"),
         @Index(name = "idx_product_category", columnList = "category"),
         @Index(name = "idx_product_active", columnList = "is_active")
 })
-public class Product extends TenantEntity {
+public class Product extends HotelScopedEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -72,11 +71,6 @@ public class Product extends TenantEntity {
     @Column(name = "weight_grams")
     private Integer weightGrams; // For shipping calculations if needed
 
-    @NotNull(message = "Hotel is required")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "hotel_id", nullable = false)
-    private Hotel hotel;
-
     // Constructors
     public Product() {
     }
@@ -88,7 +82,7 @@ public class Product extends TenantEntity {
         this.category = category;
         this.price = price;
         this.stockQuantity = stockQuantity;
-        this.hotel = hotel;
+        this.setHotel(hotel);
     }
 
     // Getters and Setters
@@ -186,14 +180,6 @@ public class Product extends TenantEntity {
 
     public void setWeightGrams(Integer weightGrams) {
         this.weightGrams = weightGrams;
-    }
-
-    public Hotel getHotel() {
-        return hotel;
-    }
-
-    public void setHotel(Hotel hotel) {
-        this.hotel = hotel;
     }
 
     /**

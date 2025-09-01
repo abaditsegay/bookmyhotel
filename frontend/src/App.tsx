@@ -7,6 +7,8 @@ import ProtectedRoute from './components/ProtectedRoute';
 import { useAuth } from './contexts/AuthContext';
 import HotelSearchPage from './pages/HotelSearchPage';
 import SearchResultsPage from './pages/SearchResultsPage';
+import HotelListPage from './pages/HotelListPage';
+import HotelDetailPage from './pages/HotelDetailPage';
 import BookingPage from './pages/BookingPage';
 import BookingConfirmationPage from './pages/BookingConfirmationPage';
 import FindBookingPage from './pages/FindBookingPage';
@@ -67,21 +69,19 @@ const RoleBasedRouter: React.FC = () => {
   
   // If user is authenticated, check their roles and redirect to appropriate dashboard
   if (isAuthenticated && user?.roles) {
-    // Check if user is system-wide (no tenant binding)
-    if (user.isSystemWide) {
-      if (user.roles.includes('ADMIN')) {
-        return <Navigate to="/system-dashboard" replace />;
-      }
+    // System-wide users (no tenant binding) - SYSTEM_ADMIN only
+    if (user.roles.includes('SYSTEM_ADMIN')) {
+      return <Navigate to="/system-dashboard" replace />;
     }
     
-    // For tenant-bound users - redirect to their respective dashboards
-    // Priority order: ADMIN > HOTEL_ADMIN > FRONTDESK > OPERATIONS_SUPERVISOR > HOUSEKEEPING/MAINTENANCE
-    if (user.roles.includes('ADMIN') && !user.isSystemWide) {
-      return <Navigate to="/admin/dashboard" replace />;
-    }
-    
+    // Tenant-bound users - redirect to their respective dashboards
+    // Priority order: HOTEL_ADMIN > ADMIN (tenant-bound) > FRONTDESK > OPERATIONS_SUPERVISOR > HOUSEKEEPING/MAINTENANCE
     if (user.roles.includes('HOTEL_ADMIN')) {
       return <Navigate to="/hotel-admin/dashboard" replace />;
+    }
+    
+    if (user.roles.includes('ADMIN') && user.tenantId) {
+      return <Navigate to="/admin/dashboard" replace />;
     }
     
     if (user.roles.includes('FRONTDESK')) {
@@ -96,13 +96,21 @@ const RoleBasedRouter: React.FC = () => {
       return <Navigate to="/staff/dashboard" replace />;
     }
     
-    // Legacy role handling for backward compatibility
-    if (user.role === 'ADMIN' && !user.isSystemWide) {
-      return <Navigate to="/admin/dashboard" replace />;
+    // Legacy single role handling for backward compatibility
+    if (user.role === 'SYSTEM_ADMIN') {
+      return <Navigate to="/system-dashboard" replace />;
     }
     
     if (user.role === 'HOTEL_ADMIN') {
       return <Navigate to="/hotel-admin/dashboard" replace />;
+    }
+    
+    if (user.role === 'ADMIN' && user.tenantId) {
+      return <Navigate to="/admin/dashboard" replace />;
+    }
+    
+    if (user.role === 'ADMIN' && !user.tenantId) {
+      return <Navigate to="/system-dashboard" replace />;
     }
     
     if (user.role === 'FRONTDESK') {
@@ -160,6 +168,8 @@ function App() {
           />
         } />
         <Route path="/hotels/search" element={<HotelSearchPage />} />
+        <Route path="/hotels/search-results" element={<HotelListPage />} />
+        <Route path="/hotels/:hotelId" element={<HotelDetailPage />} />
         <Route path="/search-results" element={<SearchResultsPage />} />
         <Route path="/find-booking" element={<FindBookingPage />} />
         <Route path="/booking" element={<BookingPage />} />

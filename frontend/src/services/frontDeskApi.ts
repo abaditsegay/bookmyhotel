@@ -48,6 +48,7 @@ export interface ConsolidatedReceipt {
     chargeId?: number;
     description: string;
     amount: number;
+    quantity?: number;
     chargeType?: string;
     chargeDate?: string;
     notes?: string;
@@ -57,6 +58,7 @@ export interface ConsolidatedReceipt {
     chargeId?: number;
     description: string;
     amount: number;
+    quantity?: number;
     chargeType?: string;
     chargeDate?: string;
     notes?: string;

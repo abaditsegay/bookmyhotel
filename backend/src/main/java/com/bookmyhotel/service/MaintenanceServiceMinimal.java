@@ -57,7 +57,6 @@ public class MaintenanceServiceMinimal {
                 .orElseThrow(() -> new RuntimeException("Creator user not found"));
 
         MaintenanceTask task = new MaintenanceTask();
-        task.setTenantId(tenantId);
         task.setHotel(hotel);
         task.setTaskType(taskType);
         task.setTitle(title);
@@ -77,18 +76,21 @@ public class MaintenanceServiceMinimal {
     }
 
     /**
-     * Get all maintenance tasks for a tenant
+     * Get all maintenance tasks for a tenant (legacy method - needs hotel
+     * conversion)
      */
     public List<MaintenanceTask> getAllTasks(String tenantId) {
-        return maintenanceTaskRepository.findByTenantId(tenantId);
+        // This method should be deprecated and replaced with hotel-based queries
+        throw new UnsupportedOperationException("This method needs to be updated to use hotelId instead of tenantId");
     }
 
     /**
-     * Get task by ID
+     * Get task by ID (legacy method - needs hotel conversion)
      */
     public MaintenanceTask getTaskById(String tenantId, Long taskId) {
+        // Since MaintenanceTask no longer has tenantId, we can't filter by it
+        // This method should be updated to use hotelId validation
         return maintenanceTaskRepository.findById(taskId)
-                .filter(task -> task.getTenantId().equals(tenantId))
                 .orElseThrow(() -> new RuntimeException("Task not found"));
     }
 

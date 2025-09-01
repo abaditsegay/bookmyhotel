@@ -29,7 +29,6 @@ import {
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import LanguageSwitcher from '../common/LanguageSwitcher';
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
@@ -130,7 +129,7 @@ const Navbar: React.FC = () => {
       // For hotel admin, show shop navigation
       if (user.role === 'HOTEL_ADMIN') {
         const hotelAdminItems = [
-          { label: 'Hotel Shop', path: '/shop', icon: <StoreIcon /> },
+          { label: 'Shop', path: '/shop', icon: <StoreIcon /> },
         ];
         return [...baseItems, ...hotelAdminItems];
       }
@@ -138,7 +137,7 @@ const Navbar: React.FC = () => {
       // For front desk staff, show shop navigation
       if (user.role === 'FRONTDESK') {
         const frontdeskItems = [
-          { label: 'Hotel Shop', path: '/shop', icon: <StoreIcon /> },
+          { label: 'Shop', path: '/shop', icon: <StoreIcon /> },
         ];
         return [...baseItems, ...frontdeskItems];
       }
@@ -160,8 +159,8 @@ const Navbar: React.FC = () => {
       // For customers and guests, show bookings (without dashboard or profile)
       if (user.role === 'CUSTOMER') {
         const customerItems = [
-          { label: 'Hotel Search', path: '/hotels/search', icon: <SearchIcon /> },
-          { label: 'My Bookings', path: '/my-bookings', icon: <BusinessIcon /> },
+          { label: 'Search', path: '/hotels/search', icon: <SearchIcon /> },
+          { label: 'Bookings', path: '/my-bookings', icon: <BusinessIcon /> },
           { label: 'Profile', path: '/profile', icon: <PersonIcon /> },
         ];
         return [...baseItems, ...customerItems];
@@ -193,13 +192,14 @@ const Navbar: React.FC = () => {
           sx={{
             mx: 0.5,
             borderRadius: 2,
-            backgroundColor: item.label === 'Hotel Shop' 
+            fontSize: '0.8rem', // Smaller font size
+            backgroundColor: item.label === 'Shop' 
               ? 'red' 
               : item.path && isActivePath(item.path) 
                 ? 'rgba(255, 255, 255, 0.1)' 
                 : 'transparent',
             '&:hover': {
-              backgroundColor: item.label === 'Hotel Shop' 
+              backgroundColor: item.label === 'Shop' 
                 ? '#cc0000' 
                 : 'rgba(255, 255, 255, 0.1)',
             },
@@ -288,13 +288,13 @@ const Navbar: React.FC = () => {
               <ListItemIcon>
                 <BusinessIcon />
               </ListItemIcon>
-              <ListItemText primary="Find My Booking" />
+              <ListItemText primary="Find Booking" />
             </ListItem>
             <ListItem onClick={() => handleNavigation('/register-hotel-admin')} sx={{ cursor: 'pointer' }}>
               <ListItemIcon>
                 <RegisterIcon />
               </ListItemIcon>
-              <ListItemText primary="Register Hotel" />
+              <ListItemText primary="Register" />
             </ListItem>
           </>
         )}
@@ -434,9 +434,6 @@ const Navbar: React.FC = () => {
 
           {/* Right Section: User Actions */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1, justifyContent: 'flex-end' }}>
-            {/* Language Switcher - Always visible */}
-            <LanguageSwitcher variant="menu" size="small" color="white" />
-            
             {/* Show navigation on right for users with hotel name displayed */}
             {user && user.hotelName && shouldShowHotelName() && !isMobile && (
               <DesktopNavigation />
@@ -476,20 +473,22 @@ const Navbar: React.FC = () => {
                       onClick={() => handleNavigation('/find-booking')}
                       sx={{
                         borderRadius: 2,
+                        fontSize: '0.8rem', // Smaller font size
                         '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
                       }}
                     >
-                      Find My Booking
+                      Find Booking
                     </Button>
                     <Button
                       color="inherit"
                       onClick={() => handleNavigation('/register-hotel-admin')}
                       sx={{
                         borderRadius: 2,
+                        fontSize: '0.8rem', // Smaller font size
                         '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
                       }}
                     >
-                      Register Hotel
+                      Register
                     </Button>
                   </>
                 )}
@@ -498,6 +497,7 @@ const Navbar: React.FC = () => {
                   onClick={() => handleNavigation('/login')}
                   sx={{
                     borderRadius: 2,
+                    fontSize: '0.8rem', // Smaller font size
                     '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
                   }}
                 >

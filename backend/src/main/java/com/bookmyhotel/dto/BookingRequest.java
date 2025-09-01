@@ -17,6 +17,9 @@ public class BookingRequest {
     @NotNull(message = "Room type is required")
     private String roomType;
 
+    // Optional specific room ID for walk-in bookings with immediate assignment
+    private Long roomId;
+
     @NotNull(message = "Check-in date is required")
     private LocalDate checkInDate;
 
@@ -68,6 +71,14 @@ public class BookingRequest {
 
     public void setRoomType(String roomType) {
         this.roomType = roomType;
+    }
+
+    public Long getRoomId() {
+        return roomId;
+    }
+
+    public void setRoomId(Long roomId) {
+        this.roomId = roomId;
     }
 
     public LocalDate getCheckInDate() {

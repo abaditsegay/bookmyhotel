@@ -88,7 +88,7 @@ const BookingPage: React.FC = () => {
   // Redirect if no booking data
   useEffect(() => {
     if (!bookingData?.room && !bookingData?.roomType) {
-      navigate('/search-results');
+      navigate('/hotels/search-results');
       return;
     }
     
@@ -246,11 +246,11 @@ const BookingPage: React.FC = () => {
   const handleBackToResults = () => {
     // Try to go back to search results with the data we have
     if (bookingData?.searchRequest) {
-      navigate('/search-results', { 
+      navigate('/hotels/search-results', { 
         state: { 
           searchRequest: bookingData.searchRequest,
-          // If we don't have hotels data, SearchResultsPage will perform a new search
-          hotels: [] // This will trigger a search in SearchResultsPage
+          // If we don't have hotels data, HotelListPage will perform a new search
+          hotels: [] // This will trigger a search in HotelListPage
         } 
       });
     } else {

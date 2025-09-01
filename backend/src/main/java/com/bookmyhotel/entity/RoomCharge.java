@@ -15,6 +15,7 @@ import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -24,7 +25,6 @@ import jakarta.validation.constraints.Positive;
  */
 @Entity
 @Table(name = "room_charges", indexes = {
-        @Index(name = "idx_room_charge_tenant", columnList = "tenant_id"),
         @Index(name = "idx_room_charge_hotel", columnList = "hotel_id"),
         @Index(name = "idx_room_charge_reservation", columnList = "reservation_id"),
         @Index(name = "idx_room_charge_order", columnList = "shop_order_id"),
@@ -32,16 +32,11 @@ import jakarta.validation.constraints.Positive;
         @Index(name = "idx_room_charge_date", columnList = "charge_date"),
         @Index(name = "idx_room_charge_paid", columnList = "is_paid")
 })
-public class RoomCharge extends TenantEntity {
+public class RoomCharge extends HotelScopedEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @NotNull(message = "Hotel is required")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "hotel_id", nullable = false)
-    private Hotel hotel;
 
     @NotNull(message = "Reservation is required")
     @ManyToOne(fetch = FetchType.LAZY)
@@ -74,11 +69,8 @@ public class RoomCharge extends TenantEntity {
     @Column(name = "is_paid", nullable = false)
     private Boolean isPaid = false;
 
-    @Column(name = "paid_at")
+    @Column(name = "payment_date")
     private LocalDateTime paidAt;
-
-    @Column(name = "payment_reference", length = 100)
-    private String paymentReference;
 
     @Column(name = "notes", length = 1000)
     private String notes;
@@ -91,25 +83,25 @@ public class RoomCharge extends TenantEntity {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false)
+    // Override inherited updatedAt field to exclude it from database mapping
+    // since room_charges table doesn't have updated_at column
+    @Transient
     private LocalDateTime updatedAt;
 
     // Constructors
     public RoomCharge() {
         this.chargeDate = LocalDateTime.now();
         this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
     }
 
     public RoomCharge(Hotel hotel, Reservation reservation, String description,
             BigDecimal amount, RoomChargeType chargeType) {
         this();
-        this.hotel = hotel;
+        this.setHotel(hotel);
         this.reservation = reservation;
         this.description = description;
         this.amount = amount;
         this.chargeType = chargeType;
-        this.setTenantId(hotel.getTenantId());
     }
 
     // Getters and Setters
@@ -119,17 +111,6 @@ public class RoomCharge extends TenantEntity {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public Hotel getHotel() {
-        return hotel;
-    }
-
-    public void setHotel(Hotel hotel) {
-        this.hotel = hotel;
-        if (hotel != null) {
-            this.setTenantId(hotel.getTenantId());
-        }
     }
 
     public Reservation getReservation() {
@@ -196,14 +177,6 @@ public class RoomCharge extends TenantEntity {
         this.paidAt = paidAt;
     }
 
-    public String getPaymentReference() {
-        return paymentReference;
-    }
-
-    public void setPaymentReference(String paymentReference) {
-        this.paymentReference = paymentReference;
-    }
-
     public String getNotes() {
         return notes;
     }
@@ -228,10 +201,13 @@ public class RoomCharge extends TenantEntity {
         this.createdAt = createdAt;
     }
 
+    // Override inherited getUpdatedAt/setUpdatedAt to handle @Transient field
+    @Override
     public LocalDateTime getUpdatedAt() {
-        return updatedAt;
+        return this.updatedAt;
     }
 
+    @Override
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
@@ -242,8 +218,6 @@ public class RoomCharge extends TenantEntity {
     public void markAsPaid(String paymentReference) {
         this.isPaid = true;
         this.paidAt = LocalDateTime.now();
-        this.paymentReference = paymentReference;
-        this.updatedAt = LocalDateTime.now();
     }
 
     /**
@@ -252,8 +226,6 @@ public class RoomCharge extends TenantEntity {
     public void markAsUnpaid() {
         this.isPaid = false;
         this.paidAt = null;
-        this.paymentReference = null;
-        this.updatedAt = LocalDateTime.now();
     }
 
     @Override

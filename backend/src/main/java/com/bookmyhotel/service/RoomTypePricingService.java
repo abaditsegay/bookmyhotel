@@ -70,16 +70,12 @@ public class RoomTypePricingService {
         pricing.setHotel(hotel);
         pricing.setRoomType(dto.getRoomType());
         pricing.setBasePricePerNight(dto.getBasePricePerNight());
-        pricing.setWeekendMultiplier(
-                dto.getWeekendMultiplier() != null ? dto.getWeekendMultiplier() : BigDecimal.valueOf(1.2));
-        pricing.setHolidayMultiplier(
-                dto.getHolidayMultiplier() != null ? dto.getHolidayMultiplier() : BigDecimal.valueOf(1.5));
-        pricing.setPeakSeasonMultiplier(
-                dto.getPeakSeasonMultiplier() != null ? dto.getPeakSeasonMultiplier() : BigDecimal.valueOf(1.3));
+        pricing.setWeekendPrice(dto.getWeekendPrice());
+        pricing.setHolidayPrice(dto.getHolidayPrice());
+        pricing.setPeakSeasonPrice(dto.getPeakSeasonPrice());
         pricing.setIsActive(dto.getIsActive() != null ? dto.getIsActive() : true);
         pricing.setCurrency(dto.getCurrency() != null ? dto.getCurrency() : "USD");
         pricing.setDescription(dto.getDescription());
-        pricing.setTenantId(hotel.getTenantId());
 
         if (pricing.getId() == null) {
             pricing.setCreatedAt(LocalDateTime.now());
@@ -187,9 +183,9 @@ public class RoomTypePricingService {
         dto.setId(pricing.getId());
         dto.setRoomType(pricing.getRoomType());
         dto.setBasePricePerNight(pricing.getBasePricePerNight());
-        dto.setWeekendMultiplier(pricing.getWeekendMultiplier());
-        dto.setHolidayMultiplier(pricing.getHolidayMultiplier());
-        dto.setPeakSeasonMultiplier(pricing.getPeakSeasonMultiplier());
+        dto.setWeekendPrice(pricing.getWeekendPrice());
+        dto.setHolidayPrice(pricing.getHolidayPrice());
+        dto.setPeakSeasonPrice(pricing.getPeakSeasonPrice());
         dto.setIsActive(pricing.getIsActive());
         dto.setCurrency(pricing.getCurrency());
         dto.setDescription(pricing.getDescription());

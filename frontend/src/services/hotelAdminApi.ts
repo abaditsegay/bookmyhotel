@@ -1,4 +1,5 @@
 import { Hotel } from '../types/hotel';
+import TokenManager from '../utils/tokenManager';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
 
@@ -135,13 +136,14 @@ export interface StaffUpdateRequest {
   password?: string;
 }
 
-/**
- * Create authenticated fetch request headers
- */
-const getAuthHeaders = (token: string) => ({
-  'Content-Type': 'application/json',
-  'Authorization': `Bearer ${token}`,
-});
+// Helper function to get authorization headers
+const getAuthHeaders = (providedToken?: string) => {
+  const token = providedToken || TokenManager.getToken();
+  return {
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json',
+  };
+};
 
 export const hotelAdminApi = {
   // ===========================
@@ -245,7 +247,7 @@ export const hotelAdminApi = {
         `${API_BASE_URL}/api/hotel-admin/bookings/${reservationId}/status?status=${status}`,
         {
           method: 'PUT',
-          headers: getAuthHeaders(token),
+          headers: getAuthHeaders(),
         }
       );
 
@@ -287,7 +289,7 @@ export const hotelAdminApi = {
         `${API_BASE_URL}/api/hotel-admin/bookings/${reservationId}`,
         {
           method: 'PUT',
-          headers: getAuthHeaders(token),
+          headers: getAuthHeaders(),
           body: JSON.stringify(modificationRequest),
         }
       );
@@ -316,7 +318,7 @@ export const hotelAdminApi = {
     try {
       const response = await fetch(`${API_BASE_URL}/api/hotel-admin/bookings/${reservationId}`, {
         method: 'DELETE',
-        headers: getAuthHeaders(token),
+        headers: getAuthHeaders(),
       });
 
       if (!response.ok) {
@@ -342,7 +344,7 @@ export const hotelAdminApi = {
     try {
       const response = await fetch(`${API_BASE_URL}/api/hotel-admin/bookings/${reservationId}`, {
         method: 'GET',
-        headers: getAuthHeaders(token),
+        headers: getAuthHeaders(),
       });
 
       if (!response.ok) {
@@ -399,7 +401,7 @@ export const hotelAdminApi = {
 
       const response = await fetch(`${API_BASE_URL}/api/hotel-admin/rooms?${params.toString()}`, {
         method: 'GET',
-        headers: getAuthHeaders(token),
+        headers: getAuthHeaders(),
       });
 
       if (!response.ok) {
@@ -436,7 +438,7 @@ export const hotelAdminApi = {
     try {
       const response = await fetch(`${API_BASE_URL}/api/hotel-admin/rooms/${roomId}`, {
         method: 'GET',
-        headers: getAuthHeaders(token),
+        headers: getAuthHeaders(),
       });
 
       if (!response.ok) {
@@ -463,7 +465,7 @@ export const hotelAdminApi = {
     try {
       const response = await fetch(`${API_BASE_URL}/api/hotel-admin/rooms`, {
         method: 'POST',
-        headers: getAuthHeaders(token),
+        headers: getAuthHeaders(),
         body: JSON.stringify(roomData),
       });
 
@@ -492,7 +494,7 @@ export const hotelAdminApi = {
     try {
       const response = await fetch(`${API_BASE_URL}/api/hotel-admin/rooms/${roomId}`, {
         method: 'PUT',
-        headers: getAuthHeaders(token),
+        headers: getAuthHeaders(),
         body: JSON.stringify(roomData),
       });
 
@@ -520,7 +522,7 @@ export const hotelAdminApi = {
     try {
       const response = await fetch(`${API_BASE_URL}/api/hotel-admin/rooms/${roomId}`, {
         method: 'DELETE',
-        headers: getAuthHeaders(token),
+        headers: getAuthHeaders(),
       });
 
       if (!response.ok) {
@@ -549,7 +551,7 @@ export const hotelAdminApi = {
         `${API_BASE_URL}/api/hotel-admin/rooms/${roomId}/availability?available=${available}`,
         {
           method: 'PUT',
-          headers: getAuthHeaders(token),
+          headers: getAuthHeaders(),
         }
       );
 
@@ -586,7 +588,7 @@ export const hotelAdminApi = {
         `${API_BASE_URL}/api/hotel-admin/rooms/${roomId}/status?${params.toString()}`,
         {
           method: 'PUT',
-          headers: getAuthHeaders(token),
+          headers: getAuthHeaders(),
         }
       );
 
@@ -633,7 +635,7 @@ export const hotelAdminApi = {
         `${API_BASE_URL}/api/hotel-admin/staff?${params.toString()}`,
         {
           method: 'GET',
-          headers: getAuthHeaders(token),
+          headers: getAuthHeaders(),
         }
       );
 
@@ -688,7 +690,7 @@ export const hotelAdminApi = {
         `${API_BASE_URL}/api/hotel-admin/staff/${staffId}`,
         {
           method: 'GET',
-          headers: getAuthHeaders(token),
+          headers: getAuthHeaders(),
         }
       );
 
@@ -744,7 +746,7 @@ export const hotelAdminApi = {
 
       const response = await fetch(`${API_BASE_URL}/api/hotel-admin/staff`, {
         method: 'POST',
-        headers: getAuthHeaders(token),
+        headers: getAuthHeaders(),
         body: JSON.stringify(userDTO),
       });
 
@@ -821,7 +823,7 @@ export const hotelAdminApi = {
     try {
       const response = await fetch(`${API_BASE_URL}/api/hotel-admin/staff/${staffId}`, {
         method: 'PUT',
-        headers: getAuthHeaders(token),
+        headers: getAuthHeaders(),
         body: JSON.stringify(staffData),
       });
 
@@ -866,7 +868,7 @@ export const hotelAdminApi = {
     try {
       const response = await fetch(`${API_BASE_URL}/api/hotel-admin/staff/${staffId}`, {
         method: 'DELETE',
-        headers: getAuthHeaders(token),
+        headers: getAuthHeaders(),
       });
 
       if (!response.ok) {
@@ -894,7 +896,7 @@ export const hotelAdminApi = {
         `${API_BASE_URL}/api/hotel-admin/staff/${staffId}/activate`,
         {
           method: 'PUT',
-          headers: getAuthHeaders(token),
+          headers: getAuthHeaders(),
         }
       );
 
@@ -924,7 +926,7 @@ export const hotelAdminApi = {
         `${API_BASE_URL}/api/hotel-admin/staff/${staffId}/deactivate`,
         {
           method: 'PUT',
-          headers: getAuthHeaders(token),
+          headers: getAuthHeaders(),
         }
       );
 
@@ -953,7 +955,7 @@ export const hotelAdminApi = {
     try {
       const response = await fetch(`${API_BASE_URL}/api/hotel-admin/hotel`, {
         method: 'GET',
-        headers: getAuthHeaders(token),
+        headers: getAuthHeaders(),
       });
 
       if (!response.ok) {
@@ -980,7 +982,7 @@ export const hotelAdminApi = {
     try {
       const response = await fetch(`${API_BASE_URL}/api/hotel-admin/hotel`, {
         method: 'PUT',
-        headers: getAuthHeaders(token),
+        headers: getAuthHeaders(),
         body: JSON.stringify(hotelData),
       });
 
@@ -1011,7 +1013,7 @@ export const hotelAdminApi = {
     try {
       const response = await fetch(`${API_BASE_URL}/api/hotel-admin/room-type-pricing/${roomType}`, {
         method: 'GET',
-        headers: getAuthHeaders(token),
+        headers: getAuthHeaders(),
       });
 
       if (!response.ok) {
@@ -1056,7 +1058,7 @@ export const hotelAdminApi = {
     try {
       const response = await fetch(`${API_BASE_URL}/api/hotel-admin/walk-in-booking`, {
         method: 'POST',
-        headers: getAuthHeaders(token),
+        headers: getAuthHeaders(),
         body: JSON.stringify(bookingRequest),
       });
 

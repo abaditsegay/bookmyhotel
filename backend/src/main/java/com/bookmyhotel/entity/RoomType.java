@@ -4,9 +4,10 @@ package com.bookmyhotel.entity;
  * Room type enumeration
  */
 public enum RoomType {
-    SINGLE,
-    DOUBLE,
-    SUITE,
+    STANDARD,
     DELUXE,
-    PRESIDENTIAL
+    SUITE,
+    PRESIDENTIAL,
+    FAMILY,
+    ACCESSIBLE
 }

@@ -28,10 +28,8 @@ import {
 import HousekeepingDashboard from '../operations/HousekeepingDashboard';
 import MaintenanceDashboard from '../operations/MaintenanceDashboard';
 import StaffDashboard from '../operations/StaffDashboard';
-import { 
-  getCurrentHotel
-} from '../../data/operationsMockData';
 import TokenManager from '../../utils/tokenManager';
+import { useTenant } from '../../contexts/TenantContext';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
 
@@ -73,6 +71,7 @@ interface RecentActivity {
 }
 
 const OperationsSupervisorDashboard: React.FC = () => {
+  const { tenant } = useTenant();
   const [activeTab, setActiveTab] = useState(0);
   const [stats, setStats] = useState<OperationsStats | null>(null);
   const [staffPerformance, setStaffPerformance] = useState<StaffPerformance[]>([]);
@@ -80,43 +79,22 @@ const OperationsSupervisorDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadDashboardData = useCallback(async () => {
-    try {
-      setLoading(true);
-      
-      // Get current hotel ID for filtering
-      const hotel = getCurrentHotel();
-      const hotelId = hotel?.id || 12; // Default to Addis Sunshine (ID: 12)
-      
-      // Load real data from APIs
-      await Promise.all([
-        loadOperationsStats(hotelId),
-        loadStaffPerformance(hotelId),
-        loadRecentActivity(hotelId)
-      ]);
-      
-    } catch (err) {
-      console.error('Failed to load dashboard data:', err);
-      setError('Failed to load dashboard data');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadDashboardData();
-  }, [loadDashboardData]);
-
-  const loadOperationsStats = async (hotelId: number) => {
+  const loadOperationsStats = useCallback(async () => {
     try {
       // Load housekeeping tasks
-      const housekeepingResponse = await fetch(`${API_BASE_URL}/api/housekeeping/tasks/hotel/${hotelId}`, {
-        headers: TokenManager.getAuthHeaders()
+      const housekeepingResponse = await fetch(`${API_BASE_URL}/api/housekeeping/tasks`, {
+        headers: {
+          ...TokenManager.getAuthHeaders(),
+          'X-Tenant-ID': tenant?.id || ''
+        }
       });
       
       // Load maintenance tasks  
       const maintenanceResponse = await fetch(`${API_BASE_URL}/api/maintenance/tasks`, {
-        headers: TokenManager.getAuthHeaders()
+        headers: {
+          ...TokenManager.getAuthHeaders(),
+          'X-Tenant-ID': tenant?.id || ''
+        }
       });
 
       let housekeepingTasks = [];
@@ -140,10 +118,8 @@ const OperationsSupervisorDashboard: React.FC = () => {
         }
       }
       
-      // Filter maintenance tasks by hotel
-      const maintenanceTasks = allMaintenanceTasks.filter((task: any) => 
-        task.room?.hotel?.id === hotelId || !task.room?.hotel?.id
-      );
+      // Use maintenance tasks from tenant context (already filtered by tenant via headers)
+      const maintenanceTasks = allMaintenanceTasks;
 
       const housekeepingStats = {
         totalTasks: housekeepingTasks.length,
@@ -172,12 +148,15 @@ const OperationsSupervisorDashboard: React.FC = () => {
     } catch (err) {
       console.error('Failed to load operations stats:', err);
     }
-  };
+  }, [tenant?.id]);
 
-  const loadStaffPerformance = async (hotelId: number) => {
+  const loadStaffPerformance = useCallback(async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/housekeeping/staff/hotel/${hotelId}`, {
-        headers: TokenManager.getAuthHeaders()
+      const response = await fetch(`${API_BASE_URL}/api/housekeeping/staff`, {
+        headers: {
+          ...TokenManager.getAuthHeaders(),
+          'X-Tenant-ID': tenant?.id || ''
+        }
       });
 
       if (response.ok) {
@@ -196,17 +175,23 @@ const OperationsSupervisorDashboard: React.FC = () => {
     } catch (err) {
       console.error('Failed to load staff performance:', err);
     }
-  };
+  }, [tenant?.id]);
 
-  const loadRecentActivity = async (hotelId: number) => {
+  const loadRecentActivity = useCallback(async () => {
     try {
       // Get recent tasks from both housekeeping and maintenance
       const [housekeepingResponse, maintenanceResponse] = await Promise.all([
-        fetch(`${API_BASE_URL}/api/housekeeping/tasks/hotel/${hotelId}`, {
-          headers: TokenManager.getAuthHeaders()
+        fetch(`${API_BASE_URL}/api/housekeeping/tasks`, {
+          headers: {
+            ...TokenManager.getAuthHeaders(),
+            'X-Tenant-ID': tenant?.id || ''
+          }
         }),
         fetch(`${API_BASE_URL}/api/maintenance/tasks`, {
-          headers: TokenManager.getAuthHeaders()
+          headers: {
+            ...TokenManager.getAuthHeaders(),
+            'X-Tenant-ID': tenant?.id || ''
+          }
         })
       ]);
 
@@ -231,9 +216,8 @@ const OperationsSupervisorDashboard: React.FC = () => {
         }
       }
       
-      const maintenanceTasks = allMaintenanceTasks.filter((task: any) => 
-        task.room?.hotel?.id === hotelId
-      );
+      // Use maintenance tasks from tenant context (already filtered by tenant via headers)
+      const maintenanceTasks = allMaintenanceTasks;
 
       // Create activity feed from recent tasks
       const activities = [];
@@ -273,7 +257,36 @@ const OperationsSupervisorDashboard: React.FC = () => {
     } catch (err) {
       console.error('Failed to load recent activity:', err);
     }
-  };
+  }, [tenant?.id]);
+
+  const loadDashboardData = useCallback(async () => {
+    try {
+      setLoading(true);
+      
+      // Use tenant ID instead of mock hotel data
+      if (!tenant?.id) {
+        setError('No tenant context available');
+        return;
+      }
+      
+      // Load real data from APIs
+      await Promise.all([
+        loadOperationsStats(),
+        loadStaffPerformance(),
+        loadRecentActivity()
+      ]);
+      
+    } catch (err) {
+      console.error('Failed to load dashboard data:', err);
+      setError('Failed to load dashboard data');
+    } finally {
+      setLoading(false);
+    }
+  }, [tenant?.id, loadOperationsStats, loadStaffPerformance, loadRecentActivity]);
+
+  useEffect(() => {
+    loadDashboardData();
+  }, [loadDashboardData]);
 
   const getPriorityColor = (priority: string) => {
     switch (priority.toLowerCase()) {

@@ -21,11 +21,9 @@ public class RoomChargeResponse {
     private LocalDateTime chargeDate;
     private Boolean isPaid;
     private LocalDateTime paidAt;
-    private String paymentReference;
     private String notes;
     private Long createdBy;
     private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 
     // Guest information for convenience
     private String guestName;
@@ -139,14 +137,6 @@ public class RoomChargeResponse {
         this.paidAt = paidAt;
     }
 
-    public String getPaymentReference() {
-        return paymentReference;
-    }
-
-    public void setPaymentReference(String paymentReference) {
-        this.paymentReference = paymentReference;
-    }
-
     public String getNotes() {
         return notes;
     }
@@ -169,14 +159,6 @@ public class RoomChargeResponse {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
     }
 
     public String getGuestName() {

@@ -245,7 +245,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                 {receipt.additionalCharges?.map((charge, index) => (
                   <TableRow key={`additional-${index}`}>
                     <TableCell>{charge.description || 'N/A'}</TableCell>
-                    <TableCell align="center">1</TableCell>
+                    <TableCell align="center">{charge.quantity || 1}</TableCell>
                     <TableCell align="right">${(charge.amount || 0).toFixed(2)}</TableCell>
                     <TableCell align="right">${(charge.amount || 0).toFixed(2)}</TableCell>
                   </TableRow>
@@ -255,7 +255,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                 {receipt.taxesAndFees?.map((tax, index) => (
                   <TableRow key={`tax-${index}`}>
                     <TableCell>{tax.description || 'N/A'}</TableCell>
-                    <TableCell align="center">1</TableCell>
+                    <TableCell align="center">{tax.quantity || 1}</TableCell>
                     <TableCell align="right">${(tax.amount || 0).toFixed(2)}</TableCell>
                     <TableCell align="right">${(tax.amount || 0).toFixed(2)}</TableCell>
                   </TableRow>

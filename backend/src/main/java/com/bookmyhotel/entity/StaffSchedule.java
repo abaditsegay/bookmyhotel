@@ -26,8 +26,7 @@ import jakarta.validation.constraints.NotNull;
  */
 @Entity
 @Table(name = "staff_schedules")
-@Filter(name = "tenantFilter", condition = "tenant_id = :tenantId")
-public class StaffSchedule extends TenantEntity {
+public class StaffSchedule extends HotelScopedEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,11 +36,6 @@ public class StaffSchedule extends TenantEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "staff_id", nullable = false)
     private User staff;
-
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "hotel_id", nullable = false)
-    private Hotel hotel;
 
     @NotNull
     @Column(name = "schedule_date", nullable = false)
@@ -103,9 +97,8 @@ public class StaffSchedule extends TenantEntity {
             LocalTime startTime, LocalTime endTime, ShiftType shiftType,
             Department department, User createdBy) {
         super();
-        this.setTenantId(tenantId);
         this.staff = staff;
-        this.hotel = hotel;
+        this.setHotel(hotel);
         this.scheduleDate = scheduleDate;
         this.startTime = startTime;
         this.endTime = endTime;
@@ -133,11 +126,11 @@ public class StaffSchedule extends TenantEntity {
     }
 
     public Hotel getHotel() {
-        return hotel;
+        return super.getHotel();
     }
 
     public void setHotel(Hotel hotel) {
-        this.hotel = hotel;
+        super.setHotel(hotel);
     }
 
     public LocalDate getScheduleDate() {

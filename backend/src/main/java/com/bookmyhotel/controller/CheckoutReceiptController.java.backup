@@ -1,0 +1,122 @@
+package com.bookmyhotel.controller;
+
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.bookmyhotel.dto.ConsolidatedReceiptResponse;
+import com.bookmyhotel.entity.ShopOrder;
+import com.bookmyhotel.entity.ShopOrderItem;
+import com.bookmyhotel.entity.OrderStatus;
+import com.bookmyhotel.repository.ShopOrderRepository;
+import com.bookmyhotel.service.CheckoutReceiptService;
+
+/**
+ * REST controller for checkout receipt management
+ */
+@RestController
+@RequestMapping("/api/checkout")
+@PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SYSTEM_ADMIN')")
+@CrossOrigin(origins = "*")
+public class CheckoutReceiptController {
+
+    @Autowired
+    private CheckoutReceiptService checkoutReceiptService;
+
+    @Autowired
+    private ShopOrderRepository shopOrderRepository;
+
+    /**
+     * Generate a preview receipt for a reservation (before checkout)
+     */
+    @GetMapping("/receipt/{reservationId}/preview")
+    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SYSTEM_ADMIN')")
+    public ResponseEntity<ConsolidatedReceiptResponse> generateReceiptPreview(
+            @PathVariable Long reservationId,
+            Authentication auth) {
+
+        ConsolidatedReceiptResponse receipt = checkoutReceiptService
+                .generateCheckoutReceipt(reservationId, auth.getName());
+
+        return ResponseEntity.ok(receipt);
+    }
+
+    /**
+     * Generate final receipt after checkout completion
+     */
+    @PostMapping("/receipt/{reservationId}/final")
+    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SYSTEM_ADMIN')")
+    public ResponseEntity<ConsolidatedReceiptResponse> generateFinalReceipt(
+            @PathVariable Long reservationId,
+            Authentication auth) {
+
+        ConsolidatedReceiptResponse receipt = checkoutReceiptService
+                .generateFinalReceipt(reservationId, auth.getName());
+
+        return ResponseEntity.ok(receipt);
+    }
+
+    /**
+     * TEST ENDPOINT: Create a multi-item shop order for testing
+     */
+    @PostMapping("/receipt/{reservationId}/test-multi-item-shop-order")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
+    public ResponseEntity<String> createTestMultiItemShopOrder(@PathVariable Long reservationId) {
+        
+        // Create a shop order with multiple items
+        ShopOrder shopOrder = new ShopOrder();
+        shopOrder.setReservationId(reservationId);
+        shopOrder.setCustomerName("Test Customer");
+        shopOrder.setTotalAmount(75.00);
+        shopOrder.setStatus(OrderStatus.COMPLETED);
+        shopOrder.setCreatedAt(LocalDateTime.now());
+        shopOrder.setUpdatedAt(LocalDateTime.now());
+        shopOrder.setHotelId(1L);
+
+        // Create multiple shop order items
+        ShopOrderItem item1 = new ShopOrderItem();
+        item1.setItemName("Hotel Laundry Service Voucher");
+        item1.setUnitPrice(25.00);
+        item1.setQuantity(1);
+        item1.setTotalPrice(25.00);
+        item1.setCreatedAt(LocalDateTime.now());
+        item1.setUpdatedAt(LocalDateTime.now());
+
+        ShopOrderItem item2 = new ShopOrderItem();
+        item2.setItemName("Late Night Snack Package");
+        item2.setUnitPrice(35.00);
+        item2.setQuantity(1);
+        item2.setTotalPrice(35.00);
+        item2.setCreatedAt(LocalDateTime.now());
+        item2.setUpdatedAt(LocalDateTime.now());
+
+        ShopOrderItem item3 = new ShopOrderItem();
+        item3.setItemName("Premium Coffee Package");
+        item3.setUnitPrice(15.00);
+        item3.setQuantity(1);
+        item3.setTotalPrice(15.00);
+        item3.setCreatedAt(LocalDateTime.now());
+        item3.setUpdatedAt(LocalDateTime.now());
+
+        // Set the shop order for all items
+        List<ShopOrderItem> items = Arrays.asList(item1, item2, item3);
+        items.forEach(item -> item.setShopOrder(shopOrder));
+        shopOrder.setItems(items);
+
+        // Save the shop order (this will cascade save the items)
+        ShopOrder saved = shopOrderRepository.save(shopOrder);
+
+        return ResponseEntity.ok("Created test shop order with ID: " + saved.getId() + " containing " + items.size() + " items");
+    }
+}

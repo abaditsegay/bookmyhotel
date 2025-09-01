@@ -42,7 +42,7 @@ public class MaintenanceService {
     /**
      * Create a new maintenance task
      */
-    public MaintenanceTask createTask(String tenantId, Long hotelId, Long roomId, String taskType,
+    public MaintenanceTask createTask(Long hotelId, Long roomId, String taskType,
             String title, String description, TaskPriority priority,
             Long createdByUserId, String location, String equipmentType) {
         Hotel hotel = hotelRepository.findById(hotelId)
@@ -52,7 +52,6 @@ public class MaintenanceService {
                 .orElseThrow(() -> new RuntimeException("Creator user not found"));
 
         MaintenanceTask task = new MaintenanceTask();
-        task.setTenantId(tenantId);
         task.setHotel(hotel);
         task.setTaskType(taskType);
         task.setTitle(title);
@@ -67,6 +66,12 @@ public class MaintenanceService {
         if (roomId != null) {
             Room room = roomRepository.findById(roomId)
                     .orElseThrow(() -> new RuntimeException("Room not found"));
+
+            // Verify room belongs to the specified hotel
+            if (!room.getHotel().getId().equals(hotelId)) {
+                throw new RuntimeException("Room does not belong to the specified hotel");
+            }
+
             task.setRoom(room);
         }
 
@@ -74,82 +79,87 @@ public class MaintenanceService {
     }
 
     /**
-     * Get all maintenance tasks for a tenant
+     * Get all maintenance tasks for a hotel
      */
-    public List<MaintenanceTask> getAllTasks(String tenantId) {
-        return maintenanceTaskRepository.findByTenantIdOrderByCreatedAtDesc(tenantId);
+    public List<MaintenanceTask> getAllTasks(Long hotelId) {
+        return maintenanceTaskRepository.findByHotelIdOrderByCreatedAtDesc(hotelId);
     }
 
     /**
      * Get maintenance tasks with pagination
      */
-    public Page<MaintenanceTask> getAllTasks(String tenantId, Pageable pageable) {
-        return maintenanceTaskRepository.findByTenantIdOrderByCreatedAtDesc(tenantId, pageable);
+    public Page<MaintenanceTask> getAllTasks(Long hotelId, Pageable pageable) {
+        return maintenanceTaskRepository.findByHotelIdOrderByCreatedAtDesc(hotelId, pageable);
     }
 
     /**
      * Get tasks assigned to a specific user by email
      */
-    public List<MaintenanceTask> getTasksAssignedToUser(String tenantId, String userEmail) {
-        return maintenanceTaskRepository.findByTenantIdAndAssignedTo_EmailOrderByCreatedAtDesc(tenantId, userEmail);
-    }
-
-    /**
-     * Get tasks by hotel
-     */
-    public List<MaintenanceTask> getTasksByHotel(String tenantId, Long hotelId) {
-        return maintenanceTaskRepository.findByTenantIdAndHotelIdOrderByCreatedAtDesc(tenantId, hotelId);
+    public List<MaintenanceTask> getTasksAssignedToUser(Long hotelId, String userEmail) {
+        return maintenanceTaskRepository.findByHotelIdAndAssignedTo_EmailOrderByCreatedAtDesc(hotelId, userEmail);
     }
 
     /**
      * Get tasks by status
      */
-    public List<MaintenanceTask> getTasksByStatus(String tenantId, TaskStatus status) {
-        return maintenanceTaskRepository.findByTenantIdAndStatusOrderByCreatedAtDesc(tenantId, status);
+    public List<MaintenanceTask> getTasksByStatus(Long hotelId, TaskStatus status) {
+        return maintenanceTaskRepository.findByHotelIdAndStatusOrderByCreatedAtDesc(hotelId, status);
     }
 
     /**
      * Get tasks by priority
      */
-    public List<MaintenanceTask> getTasksByPriority(String tenantId, TaskPriority priority) {
-        return maintenanceTaskRepository.findByTenantIdAndPriorityOrderByCreatedAtDesc(tenantId, priority);
+    public List<MaintenanceTask> getTasksByPriority(Long hotelId, TaskPriority priority) {
+        return maintenanceTaskRepository.findByHotelIdAndPriorityOrderByCreatedAtDesc(hotelId, priority);
     }
 
     /**
      * Get tasks by task type
      */
-    public List<MaintenanceTask> getTasksByType(String tenantId, String taskType) {
-        return maintenanceTaskRepository.findByTenantIdAndTaskTypeOrderByCreatedAtDesc(tenantId, taskType);
+    public List<MaintenanceTask> getTasksByType(Long hotelId, String taskType) {
+        return maintenanceTaskRepository.findByHotelIdAndTaskTypeOrderByCreatedAtDesc(hotelId, taskType);
     }
 
     /**
      * Get tasks by equipment type
      */
-    public List<MaintenanceTask> getTasksByEquipmentType(String tenantId, String equipmentType) {
-        return maintenanceTaskRepository.findByTenantIdAndEquipmentTypeOrderByCreatedAtDesc(tenantId, equipmentType);
+    public List<MaintenanceTask> getTasksByEquipmentType(Long hotelId, String equipmentType) {
+        return maintenanceTaskRepository.findByHotelIdAndEquipmentTypeOrderByCreatedAtDesc(hotelId, equipmentType);
     }
 
     /**
      * Get tasks assigned to a specific housekeeping staff member
      */
-    public List<MaintenanceTask> getTasksByAssignedStaff(String tenantId, Long staffId) {
+    public List<MaintenanceTask> getTasksByAssignedStaff(Long hotelId, Long staffId) {
         HousekeepingStaff staff = housekeepingStaffRepository.findById(staffId)
                 .orElseThrow(() -> new RuntimeException("Housekeeping staff not found"));
-        return maintenanceTaskRepository.findByTenantIdAndAssignedTo(tenantId, staff);
+
+        // Verify staff belongs to the specified hotel
+        if (!staff.getHotel().getId().equals(hotelId)) {
+            throw new RuntimeException("Staff member does not belong to this hotel");
+        }
+
+        return maintenanceTaskRepository.findByHotelIdAndAssignedTo(hotelId, staff);
     }
 
     /**
      * Assign a maintenance task to a housekeeping staff member
      */
-    public MaintenanceTask assignTask(String tenantId, Long taskId, Long staffId) {
+    public MaintenanceTask assignTask(Long hotelId, Long taskId, Long staffId) {
         MaintenanceTask task = maintenanceTaskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Maintenance task not found"));
 
         HousekeepingStaff staff = housekeepingStaffRepository.findById(staffId)
                 .orElseThrow(() -> new RuntimeException("Housekeeping staff not found"));
 
-        if (!task.getTenantId().equals(tenantId)) {
-            throw new RuntimeException("Task not found for this tenant");
+        // Verify task belongs to the specified hotel
+        if (!task.getHotel().getId().equals(hotelId)) {
+            throw new RuntimeException("Task not found for this hotel");
+        }
+
+        // Verify staff belongs to the same hotel
+        if (!staff.getHotel().getId().equals(hotelId)) {
+            throw new RuntimeException("Staff member does not belong to this hotel");
         }
 
         task.setAssignedTo(staff);
@@ -161,12 +171,13 @@ public class MaintenanceService {
     /**
      * Start a maintenance task
      */
-    public MaintenanceTask startTask(String tenantId, Long taskId) {
+    public MaintenanceTask startTask(Long hotelId, Long taskId) {
         MaintenanceTask task = maintenanceTaskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Maintenance task not found"));
 
-        if (!task.getTenantId().equals(tenantId)) {
-            throw new RuntimeException("Task not found for this tenant");
+        // Verify task belongs to the specified hotel
+        if (!task.getHotel().getId().equals(hotelId)) {
+            throw new RuntimeException("Task not found for this hotel");
         }
 
         if (task.getAssignedTo() == null) {
@@ -186,13 +197,14 @@ public class MaintenanceService {
     /**
      * Complete a maintenance task
      */
-    public MaintenanceTask completeTask(String tenantId, Long taskId, String workPerformed, String partsUsed,
+    public MaintenanceTask completeTask(Long hotelId, Long taskId, String workPerformed, String partsUsed,
             Double actualCost) {
         MaintenanceTask task = maintenanceTaskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Maintenance task not found"));
 
-        if (!task.getTenantId().equals(tenantId)) {
-            throw new RuntimeException("Task not found for this tenant");
+        // Verify task belongs to the specified hotel
+        if (!task.getHotel().getId().equals(hotelId)) {
+            throw new RuntimeException("Task not found for this hotel");
         }
 
         if (task.getStatus() != TaskStatus.IN_PROGRESS) {
@@ -217,12 +229,13 @@ public class MaintenanceService {
     /**
      * Cancel a maintenance task
      */
-    public MaintenanceTask cancelTask(String tenantId, Long taskId, String reason) {
+    public MaintenanceTask cancelTask(Long hotelId, Long taskId, String reason) {
         MaintenanceTask task = maintenanceTaskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Maintenance task not found"));
 
-        if (!task.getTenantId().equals(tenantId)) {
-            throw new RuntimeException("Task not found for this tenant");
+        // Verify task belongs to the specified hotel
+        if (!task.getHotel().getId().equals(hotelId)) {
+            throw new RuntimeException("Task not found for this hotel");
         }
 
         if (task.getStatus() == TaskStatus.COMPLETED) {
@@ -233,6 +246,68 @@ public class MaintenanceService {
         task.setVerificationNotes(reason);
 
         return maintenanceTaskRepository.save(task);
+    }
+
+    /**
+     * Update maintenance task details
+     */
+    public MaintenanceTask updateTask(Long hotelId, Long taskId, MaintenanceTask updatedTask) {
+        MaintenanceTask existingTask = maintenanceTaskRepository.findById(taskId)
+                .orElseThrow(() -> new RuntimeException("Maintenance task not found"));
+
+        // Verify task belongs to the specified hotel
+        if (!existingTask.getHotel().getId().equals(hotelId)) {
+            throw new RuntimeException("Task not found for this hotel");
+        }
+
+        // Update allowed fields
+        if (updatedTask.getDescription() != null) {
+            existingTask.setDescription(updatedTask.getDescription());
+        }
+        if (updatedTask.getLocation() != null) {
+            existingTask.setLocation(updatedTask.getLocation());
+        }
+        if (updatedTask.getPriority() != null) {
+            existingTask.setPriority(updatedTask.getPriority());
+        }
+        if (updatedTask.getTaskType() != null) {
+            existingTask.setTaskType(updatedTask.getTaskType());
+        }
+        if (updatedTask.getEstimatedDurationMinutes() != null) {
+            existingTask.setEstimatedDurationMinutes(updatedTask.getEstimatedDurationMinutes());
+        }
+
+        return maintenanceTaskRepository.save(existingTask);
+    }
+
+    // ===== QUERY METHODS =====
+
+    /**
+     * Get unassigned maintenance tasks
+     */
+    public List<MaintenanceTask> getUnassignedTasks(Long hotelId) {
+        return maintenanceTaskRepository.findByHotelIdAndAssignedToIsNull(hotelId);
+    }
+
+    /**
+     * Get overdue maintenance tasks
+     */
+    public List<MaintenanceTask> getOverdueTasks(Long hotelId) {
+        return maintenanceTaskRepository.findOverdueTasks(hotelId, LocalDateTime.now());
+    }
+
+    /**
+     * Get urgent maintenance tasks
+     */
+    public List<MaintenanceTask> getUrgentTasks(Long hotelId) {
+        return maintenanceTaskRepository.findByHotelIdAndPriorityOrderByCreatedAtDesc(hotelId, TaskPriority.URGENT);
+    }
+
+    /**
+     * Get tasks for a specific room
+     */
+    public List<MaintenanceTask> getTasksByRoom(Long hotelId, Long roomId) {
+        return maintenanceTaskRepository.findByHotelIdAndRoomIdOrderByCreatedAtDesc(hotelId, roomId);
     }
 
     /**
@@ -269,40 +344,10 @@ public class MaintenanceService {
     // ===== QUERY METHODS =====
 
     /**
-     * Get unassigned maintenance tasks
-     */
-    public List<MaintenanceTask> getUnassignedTasks(String tenantId) {
-        return maintenanceTaskRepository.findByTenantIdAndAssignedToIsNull(tenantId);
-    }
-
-    /**
-     * Get overdue maintenance tasks
-     */
-    public List<MaintenanceTask> getOverdueTasks(String tenantId) {
-        return maintenanceTaskRepository.findOverdueTasks(tenantId, LocalDateTime.now());
-    }
-
-    /**
-     * Get urgent maintenance tasks
-     */
-    public List<MaintenanceTask> getUrgentTasks(String tenantId) {
-        return maintenanceTaskRepository.findByTenantIdAndPriorityOrderByCreatedAtAsc(tenantId, TaskPriority.URGENT);
-    }
-
-    /**
-     * Get tasks for a specific room
-     */
-    public List<MaintenanceTask> getTasksByRoom(String tenantId, Long roomId) {
-        Room room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new RuntimeException("Room not found"));
-        return maintenanceTaskRepository.findByTenantIdAndRoom(tenantId, room);
-    }
-
-    /**
      * Get tasks within a date range
      */
-    public List<MaintenanceTask> getTasksByDateRange(String tenantId, LocalDateTime start, LocalDateTime end) {
-        return maintenanceTaskRepository.findByTenantIdAndCreatedAtBetween(tenantId, start, end);
+    public List<MaintenanceTask> getTasksByDateRange(Long hotelId, LocalDateTime start, LocalDateTime end) {
+        return maintenanceTaskRepository.findByHotelIdAndCreatedAtBetween(hotelId, start, end);
     }
 
     // ===== STATISTICS METHODS =====
@@ -310,31 +355,31 @@ public class MaintenanceService {
     /**
      * Get task count by status
      */
-    public long getTaskCountByStatus(String tenantId, TaskStatus status) {
-        return maintenanceTaskRepository.countByTenantIdAndStatus(tenantId, status);
+    public long getTaskCountByStatus(Long hotelId, TaskStatus status) {
+        return maintenanceTaskRepository.countByHotelIdAndStatus(hotelId, status);
     }
 
     /**
      * Get task count by priority
      */
-    public long getTaskCountByPriority(String tenantId, TaskPriority priority) {
-        return maintenanceTaskRepository.countByTenantIdAndPriority(tenantId, priority);
+    public long getTaskCountByPriority(Long hotelId, TaskPriority priority) {
+        return maintenanceTaskRepository.countByHotelIdAndPriority(hotelId, priority);
     }
 
     /**
      * Get average completion time by category
      */
-    public Double getAverageCompletionTimeByCategory(String tenantId, String category) {
-        return maintenanceTaskRepository.findAverageDurationByCategory(tenantId, category);
+    public Double getAverageCompletionTimeByCategory(Long hotelId, String category) {
+        return maintenanceTaskRepository.findAverageDurationByCategory(hotelId, category);
     }
 
     /**
      * Get task completion rate
      */
-    public Double getTaskCompletionRate(String tenantId, LocalDateTime start, LocalDateTime end) {
-        long totalTasks = maintenanceTaskRepository.countByTenantIdAndCreatedAtBetween(tenantId, start, end);
-        long completedTasks = maintenanceTaskRepository.countByTenantIdAndStatusAndActualEndTimeBetween(
-                tenantId, TaskStatus.COMPLETED, start, end);
+    public Double getTaskCompletionRate(Long hotelId, LocalDateTime start, LocalDateTime end) {
+        long totalTasks = maintenanceTaskRepository.countByHotelIdAndCreatedAtBetween(hotelId, start, end);
+        long completedTasks = maintenanceTaskRepository.countByHotelIdAndStatusAndActualEndTimeBetween(
+                hotelId, TaskStatus.COMPLETED, start, end);
 
         if (totalTasks == 0) {
             return 0.0;
@@ -346,14 +391,14 @@ public class MaintenanceService {
     /**
      * Get most common maintenance categories
      */
-    public List<Object[]> getMostCommonCategories(String tenantId, int limit) {
-        return maintenanceTaskRepository.findMostCommonCategories(tenantId);
+    public List<Object[]> getMostCommonCategories(Long hotelId, int limit) {
+        return maintenanceTaskRepository.findMostCommonCategories(hotelId);
     }
 
     /**
      * Get staff workload statistics
      */
-    public List<Object[]> getStaffWorkloadStats(String tenantId, LocalDateTime start, LocalDateTime end) {
-        return maintenanceTaskRepository.findStaffWorkloadStats(tenantId, start, end);
+    public List<Object[]> getStaffWorkloadStats(Long hotelId, LocalDateTime start, LocalDateTime end) {
+        return maintenanceTaskRepository.findStaffWorkloadStats(hotelId, start, end);
     }
 }

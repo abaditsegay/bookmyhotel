@@ -45,8 +45,8 @@ const HotelSearchPage: React.FC = () => {
       
       console.log('✅ Hotel search results:', results);
       
-      // Navigate to search results page with the data
-      navigate('/search-results', {
+      // Navigate to hotel list page with the data
+      navigate('/hotels/search-results', {
         state: {
           searchRequest,
           hotels: results

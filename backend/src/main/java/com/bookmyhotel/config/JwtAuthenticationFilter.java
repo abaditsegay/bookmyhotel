@@ -13,6 +13,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.bookmyhotel.entity.User;
 import com.bookmyhotel.tenant.TenantContext;
+import com.bookmyhotel.tenant.HotelContext;
 import com.bookmyhotel.util.JwtUtil;
 
 import jakarta.servlet.FilterChain;
@@ -21,7 +22,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
- * JWT Authentication Filter to validate tokens and set authentication in SecurityContext
+ * JWT Authentication Filter to validate tokens and set authentication in
+ * SecurityContext
  */
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -35,18 +37,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
             FilterChain filterChain) throws ServletException, IOException {
-        
+
         final String authorizationHeader = request.getHeader("Authorization");
 
         String username = null;
         String jwt = null;
         String tenantId = null;
+        Long hotelId = null;
+        String hotelName = null;
 
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             jwt = authorizationHeader.substring(7);
             try {
                 username = jwtUtil.extractUsername(jwt);
                 tenantId = jwtUtil.extractTenantId(jwt); // Extract tenant ID from JWT
+                hotelId = jwtUtil.extractHotelId(jwt); // Extract hotel ID from JWT
+                hotelName = jwtUtil.extractClaim(jwt, claims -> (String) claims.get("hotelName"));
             } catch (Exception e) {
                 logger.warn("JWT token extraction failed: " + e.getMessage());
             }
@@ -55,26 +61,37 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // Handle tenant context for authenticated users
         if (username != null) {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
-            
+
             if (jwtUtil.validateToken(jwt, userDetails)) {
                 // Check if user is system-wide (GUEST or ADMIN with null tenant_id)
                 User user = (User) userDetails;
                 boolean isSystemWideUser = user.isSystemWideUser();
-                
+
                 if (isSystemWideUser) {
-                    // System-wide users don't need tenant context
-                    logger.debug("🌐 System-wide user detected: " + user.getEmail() + " - skipping tenant context");
-                    // Don't set tenant context for system-wide users
+                    // System-wide users don't need tenant or hotel context
+                    logger.debug(
+                            "🌐 System-wide user detected: " + user.getEmail() + " - skipping tenant/hotel context");
+                    // Don't set tenant or hotel context for system-wide users
                 } else {
-                    // Tenant-bound user - set tenant context from JWT
+                    // Hotel staff - set both tenant and hotel context from JWT
                     if (tenantId != null && !tenantId.trim().isEmpty()) {
-                        logger.debug("🏢 Setting tenant context for tenant-bound user: " + user.getEmail() + " -> " + tenantId);
+                        logger.debug(
+                                "🏢 Setting tenant context for hotel staff: " + user.getEmail() + " -> " + tenantId);
                         TenantContext.setTenantId(tenantId);
+                    }
+
+                    if (hotelId != null) {
+                        logger.debug("🏨 Setting hotel context for hotel staff: " + user.getEmail() + " -> Hotel ID: "
+                                + hotelId);
+                        HotelContext.setHotelId(hotelId);
+                        if (hotelName != null) {
+                            HotelContext.setHotelName(hotelName);
+                        }
                     } else {
-                        logger.warn("⚠️ Tenant-bound user " + user.getEmail() + " has no tenant ID in JWT");
+                        logger.warn("⚠️ Hotel staff user " + user.getEmail() + " has no hotel ID in JWT");
                     }
                 }
-                
+
                 // Set authentication in security context
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());

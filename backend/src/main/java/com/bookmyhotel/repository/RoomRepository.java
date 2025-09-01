@@ -46,33 +46,42 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
        /**
         * Find rooms by hotel
         */
-       List<Room> findByHotelId(Long hotelId);
+       @Query("SELECT r FROM Room r WHERE r.hotel.id = :hotelId")
+       List<Room> findByHotelId(@Param("hotelId") Long hotelId);
 
        /**
         * Find rooms by hotel ordered by room number
         */
-       List<Room> findByHotelIdOrderByRoomNumber(Long hotelId);
+       @Query("SELECT r FROM Room r WHERE r.hotel.id = :hotelId ORDER BY r.roomNumber")
+       List<Room> findByHotelIdOrderByRoomNumber(@Param("hotelId") Long hotelId);
 
        /**
         * Find rooms by hotel and room type
         */
-       List<Room> findByHotelIdAndRoomType(Long hotelId, com.bookmyhotel.entity.RoomType roomType);
+       @Query("SELECT r FROM Room r WHERE r.hotel.id = :hotelId AND r.roomType = :roomType")
+       List<Room> findByHotelIdAndRoomType(@Param("hotelId") Long hotelId,
+                     @Param("roomType") com.bookmyhotel.entity.RoomType roomType);
 
        /**
         * Find first room by hotel and room type (for pricing lookup)
         */
-       Optional<Room> findFirstByHotelIdAndRoomType(Long hotelId, RoomType roomType);
+       @Query("SELECT r FROM Room r WHERE r.hotel.id = :hotelId AND r.roomType = :roomType ORDER BY r.id LIMIT 1")
+       Optional<Room> findFirstByHotelIdAndRoomType(@Param("hotelId") Long hotelId,
+                     @Param("roomType") RoomType roomType);
 
        /**
         * Find available rooms by hotel
         */
-       List<Room> findByHotelIdAndIsAvailableTrue(Long hotelId);
+       @Query("SELECT r FROM Room r WHERE r.hotel.id = :hotelId AND r.isAvailable = true")
+       List<Room> findByHotelIdAndIsAvailableTrue(@Param("hotelId") Long hotelId);
 
        /**
         * Find truly available rooms by hotel (both isAvailable=true and
         * status=AVAILABLE)
         */
-       List<Room> findByHotelIdAndIsAvailableTrueAndStatus(Long hotelId, RoomStatus status);
+       @Query("SELECT r FROM Room r WHERE r.hotel.id = :hotelId AND r.isAvailable = true AND r.status = :status")
+       List<Room> findByHotelIdAndIsAvailableTrueAndStatus(@Param("hotelId") Long hotelId,
+                     @Param("status") RoomStatus status);
 
        /**
         * Check if room is available for given dates
@@ -87,15 +96,15 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
                      @Param("checkOutDate") LocalDate checkOutDate);
 
        /**
-        * Check if room is currently booked (has active reservations) - tenant aware
+        * Check if room is currently booked (has active reservations) - hotel aware
         */
        @Query("SELECT COUNT(res) > 0 FROM Reservation res " +
                      "WHERE res.assignedRoom.id = :roomId " +
-                     "AND res.tenantId = :tenantId " +
+                     "AND res.hotel.id = :hotelId " +
                      "AND res.status NOT IN ('CANCELLED', 'NO_SHOW') " +
                      "AND res.checkInDate <= CURRENT_DATE " +
                      "AND res.checkOutDate > CURRENT_DATE")
-       boolean isRoomCurrentlyBooked(@Param("roomId") Long roomId, @Param("tenantId") String tenantId);
+       boolean isRoomCurrentlyBooked(@Param("roomId") Long roomId, @Param("hotelId") Long hotelId);
 
        /**
         * Find rooms by hotel
@@ -115,7 +124,8 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
        /**
         * Count rooms by hotel ID
         */
-       long countByHotelId(Long hotelId);
+       @Query("SELECT COUNT(r) FROM Room r WHERE r.hotel.id = :hotelId")
+       long countByHotelId(@Param("hotelId") Long hotelId);
 
        /**
         * Count available rooms
@@ -128,14 +138,10 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
        long countByStatus(RoomStatus status);
 
        /**
-        * Count rooms by status and tenant ID
+        * Count rooms by status and hotel ID
         */
-       long countByStatusAndTenantId(RoomStatus status, String tenantId);
-
-       /**
-        * Count total rooms by tenant ID
-        */
-       long countByTenantId(String tenantId);
+       @Query("SELECT COUNT(r) FROM Room r WHERE r.status = :status AND r.hotel.id = :hotelId")
+       long countByStatusAndHotelId(@Param("status") RoomStatus status, @Param("hotelId") Long hotelId);
 
        /**
         * Find available rooms of specific type excluding a reservation
@@ -298,5 +304,6 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
        /**
         * Find all rooms ordered by hotel ID and room number (for SYSTEM_ADMIN)
         */
+       @Query("SELECT r FROM Room r ORDER BY r.hotel.id ASC, r.roomNumber ASC")
        List<Room> findAllByOrderByHotelIdAscRoomNumberAsc();
 }

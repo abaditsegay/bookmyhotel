@@ -29,9 +29,7 @@ import {
 import HousekeepingDashboard from './HousekeepingDashboard';
 import MaintenanceDashboard from './MaintenanceDashboard';
 import StaffDashboard from './StaffDashboard';
-import { 
-  getCurrentHotel
-} from '../../data/operationsMockData';
+
 import TokenManager from '../../utils/tokenManager';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
@@ -83,15 +81,19 @@ const OperationsSupervisorDashboard: React.FC = () => {
 
   useEffect(() => {
     loadDashboardData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadDashboardData = async () => {
     try {
       setLoading(true);
       
-      // Get current hotel ID for filtering
-      const hotel = getCurrentHotel();
-      const hotelId = hotel?.id || 12; // Default to Addis Sunshine (ID: 12)
+      // Get current hotel ID from user profile
+      const currentUser = TokenManager.getUser();
+      if (!currentUser?.hotelId) {
+        throw new Error('No hotel ID found in user profile. User must be assigned to a hotel.');
+      }
+      const hotelId = parseInt(currentUser.hotelId);
       
       // Load real data from APIs
       await Promise.all([
@@ -199,8 +201,9 @@ const OperationsSupervisorDashboard: React.FC = () => {
         const housekeepingTasks = await housekeepingResponse.json();
         const allMaintenanceTasks = await maintenanceResponse.json();
         
+        // Filter maintenance tasks by hotel
         const maintenanceTasks = allMaintenanceTasks.filter((task: any) => 
-          task.room?.hotel?.id === hotelId
+          task.room?.hotel?.id === hotelId || !task.room?.hotel?.id
         );
 
         // Create activity feed from recent tasks

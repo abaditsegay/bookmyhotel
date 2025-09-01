@@ -1,6 +1,7 @@
 package com.bookmyhotel.entity;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -11,6 +12,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -20,11 +23,10 @@ import jakarta.validation.constraints.Positive;
  */
 @Entity
 @Table(name = "shop_order_items", indexes = {
-        @Index(name = "idx_order_item_tenant", columnList = "tenant_id"),
         @Index(name = "idx_order_item_order", columnList = "order_id"),
         @Index(name = "idx_order_item_product", columnList = "product_id")
 })
-public class ShopOrderItem extends TenantEntity {
+public class ShopOrderItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -69,8 +71,25 @@ public class ShopOrderItem extends TenantEntity {
     @Column(name = "notes", length = 500)
     private String notes; // Special instructions for this item
 
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
     // Constructors
     public ShopOrderItem() {
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
     }
 
     public ShopOrderItem(ShopOrder order, Product product, Integer quantity, BigDecimal unitPrice) {
@@ -169,6 +188,22 @@ public class ShopOrderItem extends TenantEntity {
 
     public void setNotes(String notes) {
         this.notes = notes;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
     /**

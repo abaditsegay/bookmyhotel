@@ -11,9 +11,12 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -26,7 +29,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
         @Index(name = "idx_hotel_tenant", columnList = "tenant_id"),
         @Index(name = "idx_hotel_name", columnList = "name")
 })
-public class Hotel extends TenantEntity {
+public class Hotel extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -49,6 +52,12 @@ public class Hotel extends TenantEntity {
     @Size(max = 50, message = "City must not exceed 50 characters")
     @Column(name = "city", length = 50)
     private String city;
+
+    @NotNull(message = "Tenant is required")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tenant_id", nullable = false)
+    @JsonIgnore
+    private Tenant tenant;
 
     @Size(max = 50, message = "Country must not exceed 50 characters")
     @Column(name = "country", length = 50)
@@ -117,6 +126,18 @@ public class Hotel extends TenantEntity {
 
     public void setCity(String city) {
         this.city = city;
+    }
+
+    public Tenant getTenant() {
+        return tenant;
+    }
+
+    public void setTenant(Tenant tenant) {
+        this.tenant = tenant;
+    }
+
+    public String getTenantId() {
+        return tenant != null ? tenant.getId() : null;
     }
 
     public String getCountry() {

@@ -202,13 +202,8 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
     try {
       setPriceCalculating(true);
       
-      if (mode === 'hotel-admin') {
-        // Use Hotel Admin API for comprehensive booking modification
-        await handleHotelAdminSave();
-      } else {
-        // Use Front Desk API for simpler updates
-        await handleFrontDeskSave();
-      }
+      // Use unified save logic for both roles since they perform the same actions
+      await handleUnifiedSave();
       
       setIsEditing(false);
     } catch (err) {
@@ -219,323 +214,141 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
     }
   };
 
-  const handleHotelAdminSave = async () => {
+  const handleUnifiedSave = async () => {
     if (!editedBooking || !booking || !token) {
-      throw new Error('Missing required data for hotel admin save');
+      throw new Error('Missing required data for save');
     }
 
     try {
-
-    // Check what types of changes were made
-    const statusChanged = editedBooking.status !== booking.status;
-    const datesChanged = editedBooking.checkInDate !== booking.checkInDate || 
-                        editedBooking.checkOutDate !== booking.checkOutDate;
-    const guestInfoChanged = editedBooking.guestName !== booking.guestName || 
-                            editedBooking.guestEmail !== booking.guestEmail;
-    const roomChanged = selectedRoomId !== null || editedBooking.roomType !== booking.roomType;
-
-    let hasUpdates = false;
-    let finalBooking = { ...editedBooking };
-
-    // Handle status changes first (separate API call)
-    if (statusChanged) {
-      try {
-        const statusResult = await hotelAdminApi.updateBookingStatus(
-          token,
-          editedBooking.reservationId,
-          editedBooking.status
-        );
-        
-        if (statusResult.success && statusResult.data) {
-          const apiBooking = statusResult.data;
-          finalBooking = {
-            reservationId: apiBooking.reservationId,
-            confirmationNumber: apiBooking.confirmationNumber,
-            guestName: apiBooking.guestName,
-            guestEmail: apiBooking.guestEmail,
-            hotelName: apiBooking.hotelName,
-            hotelAddress: apiBooking.hotelAddress,
-            roomNumber: apiBooking.roomNumber,
-            roomType: apiBooking.roomType,
-            checkInDate: apiBooking.checkInDate,
-            checkOutDate: apiBooking.checkOutDate,
-            totalAmount: apiBooking.totalAmount,
-            pricePerNight: apiBooking.pricePerNight,
-            status: apiBooking.status,
-            createdAt: apiBooking.createdAt,
-            paymentStatus: apiBooking.paymentStatus,
-            paymentIntentId: apiBooking.paymentIntentId
-          };
-          hasUpdates = true;
-        } else {
-          throw new Error(statusResult.message || 'Failed to update booking status');
-        }
-      } catch (err) {
-        console.error('Error updating booking status:', err);
-        throw new Error('Failed to update booking status');
-      }
-    }
-
-    // Handle other booking modifications (dates, guest info, room changes)
-    if (datesChanged || guestInfoChanged || roomChanged) {
-      try {
-        const modificationRequest: any = {
-          // Required fields for validation
-          confirmationNumber: booking.confirmationNumber,
-          guestEmail: booking.guestEmail,
-          reason: 'Admin modification'
-        };
-        
-        if (editedBooking.checkInDate !== booking.checkInDate) {
-          modificationRequest.newCheckInDate = editedBooking.checkInDate;
-        }
-        
-        if (editedBooking.checkOutDate !== booking.checkOutDate) {
-          modificationRequest.newCheckOutDate = editedBooking.checkOutDate;
-        }
-        
-        if (editedBooking.guestName !== booking.guestName) {
-          modificationRequest.guestName = editedBooking.guestName;
-        }
-        
-        if (selectedRoomId !== null) {
-          modificationRequest.newRoomId = selectedRoomId;
-        }
-
-        const result = await hotelAdminApi.modifyBooking(
-          token,
-          editedBooking.reservationId,
-          modificationRequest
-        );
-        
-        if (result.success && result.data?.updatedBooking) {
-          // Update with modification API response
-          const apiBooking = result.data.updatedBooking;
-          finalBooking = {
-            reservationId: apiBooking.reservationId,
-            confirmationNumber: apiBooking.confirmationNumber,
-            guestName: apiBooking.guestName,
-            guestEmail: apiBooking.guestEmail,
-            hotelName: apiBooking.hotelName,
-            hotelAddress: apiBooking.hotelAddress,
-            roomNumber: apiBooking.roomNumber,
-            roomType: apiBooking.roomType,
-            checkInDate: apiBooking.checkInDate,
-            checkOutDate: apiBooking.checkOutDate,
-            totalAmount: apiBooking.totalAmount,
-            pricePerNight: apiBooking.pricePerNight,
-            status: statusChanged ? finalBooking.status : apiBooking.status, // Keep status from status update if changed
-            createdAt: apiBooking.createdAt,
-            paymentStatus: apiBooking.paymentStatus,
-            paymentIntentId: apiBooking.paymentIntentId
-          };
-          
-          hasUpdates = true;
-          
-          let message = 'Booking updated successfully';
-          if (result.data.additionalCharges && result.data.additionalCharges > 0) {
-            message += ` (Additional charges: $${result.data.additionalCharges})`;
-          } else if (result.data.refundAmount && result.data.refundAmount > 0) {
-            message += ` (Refund amount: $${result.data.refundAmount})`;
-          }
-          setSuccess(message);
-        } else {
-          throw new Error(result.message || 'Failed to modify booking');
-        }
-      } catch (err) {
-        console.error('Error modifying booking:', err);
-        throw new Error('Failed to modify booking details');
-      }
-    }
-
-    // Update local state with final booking data
-    if (hasUpdates) {
-      setBooking(finalBooking);
-      setEditedBooking({ ...finalBooking });
-      setSelectedRoomId(null);
-      
-      if (!datesChanged && !guestInfoChanged && !roomChanged && statusChanged) {
-        setSuccess('Booking status updated successfully');
-      }
-    } else {
-      setSuccess('No changes detected');
-    }
-    } catch (error) {
-      console.error('🚨 Hotel Admin Save Error:', error);
-      throw error; // Re-throw to be caught by main handleSave
-    }
-  };
-
-  const handleFrontDeskSave = async () => {
-    if (!editedBooking || !booking || !token) {
-      throw new Error('Missing required data for front desk save');
-    }
-
-    try {
-      console.log('🔍 Frontend Debug - Save initiated');
-      console.log('📋 Current booking:', booking);
-      console.log('✏️ Edited booking:', editedBooking);
-      console.log('🏠 Selected room ID:', selectedRoomId);
+      // Check what types of changes were made
+      const statusChanged = editedBooking.status !== booking.status;
+      const roomChanged = selectedRoomId !== null || editedBooking.roomType !== booking.roomType;
 
       let hasUpdates = false;
-      let finalBookingData = { ...editedBooking }; // Track the final booking state
+      let finalBookingData = { ...editedBooking };
 
-    // Check if room assignment changed for confirmed or pending bookings (front desk can assign rooms during check-in)
-    if ((editedBooking.status?.toUpperCase() === 'CONFIRMED' || editedBooking.status?.toUpperCase() === 'PENDING') &&
-        (editedBooking.roomType !== booking.roomType || editedBooking.roomNumber !== booking.roomNumber)) {
-      
-      console.log('🏠 Room assignment logic triggered');
-      console.log('📊 Booking status:', editedBooking.status);
-      console.log('🏠 Room changes detected:', {
-        roomTypeChanged: editedBooking.roomType !== booking.roomType,
-        roomNumberChanged: editedBooking.roomNumber !== booking.roomNumber,
-        oldRoom: booking.roomNumber,
-        newRoom: editedBooking.roomNumber
-      });
-      
-      // For room assignment changes with room ID
-      if (selectedRoomId) {
-        console.log('🎯 Calling room assignment API with room ID:', selectedRoomId);
-        const result = await frontDeskApiService.updateBookingRoomAssignment(
-          token,
-          editedBooking.reservationId,
-          selectedRoomId,
-          editedBooking.roomType,
-          tenant?.id || 'default'
-        );
-        
-        console.log('📡 Room assignment API result:', result);
-        
-        if (result.success && result.data) {
-          const updatedBooking: BookingData = {
-            reservationId: result.data.reservationId,
-            confirmationNumber: result.data.confirmationNumber,
-            guestName: result.data.guestName,
-            guestEmail: result.data.guestEmail,
-            hotelName: result.data.hotelName,
-            hotelAddress: result.data.hotelAddress,
-            roomNumber: result.data.roomNumber,
-            roomType: result.data.roomType,
-            checkInDate: result.data.checkInDate,
-            checkOutDate: result.data.checkOutDate,
-            totalAmount: result.data.totalAmount,
-            pricePerNight: result.data.pricePerNight,
-            status: result.data.status,
-            createdAt: result.data.createdAt,
-            paymentStatus: result.data.paymentStatus,
-            paymentIntentId: result.data.paymentIntentId
-          };
+      // STEP 1: Handle status changes first using Front Desk API (works for both roles)
+      if (statusChanged) {
+        console.log('🔄 Status change detected:', booking.status, '→', editedBooking.status);
+        try {
+          const result = await frontDeskApiService.updateBookingStatus(
+            token,
+            editedBooking.reservationId,
+            editedBooking.status,
+            tenant?.id || 'default'
+          );
           
-          console.log('✅ Room assignment successful:', updatedBooking);
-          
-          // Update final booking data and current state
-          finalBookingData = { ...updatedBooking };
-          setBooking(updatedBooking);
-          setEditedBooking({ ...updatedBooking });
-          setSuccess('Room assignment updated successfully');
-          hasUpdates = true;
-        } else {
-          console.log('❌ Room assignment API failed:', result);
+          if (result.success && result.data) {
+            const apiBooking = result.data;
+            finalBookingData = {
+              reservationId: apiBooking.reservationId,
+              confirmationNumber: apiBooking.confirmationNumber,
+              guestName: apiBooking.guestName,
+              guestEmail: apiBooking.guestEmail,
+              hotelName: apiBooking.hotelName,
+              hotelAddress: apiBooking.hotelAddress,
+              roomNumber: apiBooking.roomNumber,
+              roomType: apiBooking.roomType,
+              checkInDate: apiBooking.checkInDate,
+              checkOutDate: apiBooking.checkOutDate,
+              totalAmount: apiBooking.totalAmount,
+              pricePerNight: apiBooking.pricePerNight,
+              status: apiBooking.status,
+              createdAt: apiBooking.createdAt,
+              paymentStatus: apiBooking.paymentStatus,
+              paymentIntentId: apiBooking.paymentIntentId
+            };
+            hasUpdates = true;
+            console.log('✅ Status updated successfully');
+          } else {
+            throw new Error(result.message || 'Failed to update booking status');
+          }
+        } catch (err) {
+          console.error('❌ Error updating booking status:', err);
+          throw new Error('Failed to update booking status');
         }
-      } else if (editedBooking.roomNumber && 
-                 editedBooking.roomNumber !== 'TBA (To Be Assigned)' && 
-                 editedBooking.roomNumber !== 'To be assigned at check-in') {
-        console.log('📝 Local room update (no room ID):', editedBooking.roomNumber);
-        // Local update for manual room number entry
-        setBooking({ ...editedBooking });
-        setSuccess('Room details updated. Changes will be applied during check-in.');
-        hasUpdates = true;
-      } else {
-        console.log('⚠️ No room assignment action taken:', {
-          selectedRoomId,
-          roomNumber: editedBooking.roomNumber,
-          hasRoomChanges: editedBooking.roomType !== booking.roomType || editedBooking.roomNumber !== booking.roomNumber
-        });
       }
-    } else {
-      console.log('⏭️ Room assignment logic skipped:', {
-        status: editedBooking.status,
-        isValidStatus: (editedBooking.status?.toUpperCase() === 'CONFIRMED' || editedBooking.status?.toUpperCase() === 'PENDING'),
-        hasRoomChanges: (editedBooking.roomType !== booking.roomType || editedBooking.roomNumber !== booking.roomNumber)
-      });
-    }
 
-    // Update booking status via API if status changed
-    if (editedBooking.status !== booking.status) {
-      console.log('📊 Status update initiated:', {
-        oldStatus: booking.status,
-        newStatus: editedBooking.status
-      });
-      
-      const result = await frontDeskApiService.updateBookingStatus(
-        token, 
-        editedBooking.reservationId, 
-        editedBooking.status,
-        tenant?.id || 'default'
-      );
-      
-      console.log('📡 Status update API result:', result);
-      
-      if (result.success && result.data) {
-        const responseData = result.data as any;
-        
-        // Merge status update with previous room assignment data
-        const updatedBooking: BookingData = {
-          reservationId: responseData.reservationId || responseData.id,
-          confirmationNumber: responseData.confirmationNumber,
-          guestName: responseData.guestName,
-          guestEmail: responseData.guestEmail,
-          hotelName: responseData.hotelName,
-          hotelAddress: responseData.hotelAddress,
-          // Preserve room data from previous updates if available
-          roomNumber: finalBookingData.roomNumber || responseData.roomNumber,
-          roomType: finalBookingData.roomType || responseData.roomType,
-          checkInDate: responseData.checkInDate,
-          checkOutDate: responseData.checkOutDate,
-          totalAmount: finalBookingData.totalAmount || responseData.totalAmount,
-          pricePerNight: finalBookingData.pricePerNight || responseData.pricePerNight,
-          status: responseData.status,
-          createdAt: responseData.createdAt,
-          paymentStatus: responseData.paymentStatus,
-          paymentIntentId: responseData.paymentIntentId
-        };
-        
-        console.log('✅ Status update completed, final booking state:', updatedBooking);
-        
-        finalBookingData = { ...updatedBooking };
-        setBooking(updatedBooking);
-        setEditedBooking({ ...updatedBooking });
-        hasUpdates = true;
-      } else {
-        console.log('❌ Status update failed:', result);
+      // STEP 2: Handle room assignment changes using Front Desk API (works for both roles)
+      if (roomChanged && selectedRoomId) {
+        console.log('🏠 Room assignment change detected, using room ID:', selectedRoomId);
+        try {
+          const result = await frontDeskApiService.updateBookingRoomAssignment(
+            token,
+            editedBooking.reservationId,
+            selectedRoomId,
+            editedBooking.roomType,
+            tenant?.id || 'default'
+          );
+          
+          if (result.success && result.data) {
+            const updatedBooking: BookingData = {
+              reservationId: result.data.reservationId,
+              confirmationNumber: result.data.confirmationNumber,
+              guestName: result.data.guestName,
+              guestEmail: result.data.guestEmail,
+              hotelName: result.data.hotelName,
+              hotelAddress: result.data.hotelAddress,
+              roomNumber: result.data.roomNumber,
+              roomType: result.data.roomType,
+              checkInDate: result.data.checkInDate,
+              checkOutDate: result.data.checkOutDate,
+              totalAmount: result.data.totalAmount,
+              pricePerNight: result.data.pricePerNight,
+              status: result.data.status,
+              createdAt: result.data.createdAt,
+              paymentStatus: result.data.paymentStatus,
+              paymentIntentId: result.data.paymentIntentId
+            };
+            
+            console.log('✅ Room assignment successful:', updatedBooking);
+            
+            // Update final booking data and current state
+            finalBookingData = { ...updatedBooking };
+            setSuccess('Room assignment updated successfully');
+            hasUpdates = true;
+          } else {
+            console.log('❌ Room assignment API failed:', result);
+            throw new Error(result.message || 'Failed to update room assignment');
+          }
+        } catch (err) {
+          console.error('❌ Error updating room assignment:', err);
+          
+          // Check if the error is about room availability
+          const errorMessage = err instanceof Error ? err.message : 'Failed to update room assignment';
+          if (errorMessage.includes('not available') || errorMessage.includes('Selected room is not available')) {
+            throw new Error(`The selected room is not available for the booking dates (${editedBooking.checkInDate} to ${editedBooking.checkOutDate}). Please select a different room.`);
+          } else {
+            throw new Error(errorMessage);
+          }
+        }
       }
-    }
 
-    // If no API updates but other fields changed, update local state
-    if (!hasUpdates && (
-        editedBooking.guestName !== booking.guestName ||
-        editedBooking.guestEmail !== booking.guestEmail ||
-        editedBooking.checkInDate !== booking.checkInDate ||
-        editedBooking.checkOutDate !== booking.checkOutDate
-      )) {
-      setBooking({ ...editedBooking });
-      setSuccess('Booking details updated locally');
-      hasUpdates = true;
-    }
-    
-    if (!hasUpdates) {
-      setSuccess('Booking updated successfully');
-    }
-    
-    // Clear selected room ID after successful save
-    if (hasUpdates) {
-      setSelectedRoomId(null);
-    }
+      // Update local state with final booking data
+      if (hasUpdates) {
+        setBooking(finalBookingData);
+        setEditedBooking({ ...finalBookingData });
+        setSelectedRoomId(null);
+        
+        if (statusChanged && !roomChanged) {
+          setSuccess('Booking status updated successfully');
+        } else if (!statusChanged && roomChanged) {
+          setSuccess('Room assignment updated successfully');
+        } else if (statusChanged && roomChanged) {
+          setSuccess('Booking status and room assignment updated successfully');
+        } else {
+          setSuccess('Booking updated successfully');
+        }
+      } else {
+        setSuccess('No changes detected');
+      }
     } catch (error) {
-      console.error('🚨 Front Desk Save Error:', error);
-      throw error; // Re-throw to be caught by main handleSave
+      console.error('🚨 Unified Save Error:', error);
+      throw error;
     }
   };
+
+
 
   // Load available rooms for room selection
   const loadAvailableRooms = async (roomType?: string) => {
@@ -1193,6 +1006,13 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
             )}
           </DialogTitle>
           <DialogContent>
+            <Alert severity="warning" sx={{ mb: 2 }}>
+              <Typography variant="body2">
+                <strong>Important:</strong> Rooms shown are generally available but may not be available for the specific dates 
+                ({editedBooking?.checkInDate} to {editedBooking?.checkOutDate}). 
+                The system will verify availability when you save the assignment.
+              </Typography>
+            </Alert>
             {availableRooms.length > 0 ? (
               <List>
                 {availableRooms.map((room) => (

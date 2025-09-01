@@ -52,6 +52,9 @@ public class FrontDeskService {
     private HotelRepository hotelRepository;
 
     @Autowired
+    private HotelService hotelService;
+
+    @Autowired
     private UserRepository userRepository;
 
     @Autowired
@@ -181,27 +184,31 @@ public class FrontDeskService {
             ReservationStatus newStatus = ReservationStatus.valueOf(status.toUpperCase());
             reservation.setStatus(newStatus);
 
-            // Update room status based on reservation status
+            // Update room status based on reservation status (only if room is assigned)
             Room room = reservation.getRoom();
-            switch (newStatus) {
-                case CHECKED_IN:
-                    room.setStatus(RoomStatus.OCCUPIED);
-                    reservation.setActualCheckInTime(LocalDateTime.now());
-                    break;
-                case CHECKED_OUT:
-                    room.setStatus(RoomStatus.MAINTENANCE);
-                    reservation.setActualCheckOutTime(LocalDateTime.now());
-                    break;
-                case CANCELLED:
-                case NO_SHOW:
-                    room.setStatus(RoomStatus.AVAILABLE);
-                    break;
-                default:
-                    // For other statuses, keep room status as is
-                    break;
+            if (room != null) {
+                switch (newStatus) {
+                    case CHECKED_IN:
+                        room.setStatus(RoomStatus.OCCUPIED);
+                        reservation.setActualCheckInTime(LocalDateTime.now());
+                        break;
+                    case CHECKED_OUT:
+                        room.setStatus(RoomStatus.MAINTENANCE);
+                        reservation.setActualCheckOutTime(LocalDateTime.now());
+                        break;
+                    case CANCELLED:
+                    case NO_SHOW:
+                        room.setStatus(RoomStatus.AVAILABLE);
+                        break;
+                    default:
+                        // For other statuses, keep room status as is
+                        break;
+                }
+                roomRepository.save(room);
             }
+            // If no room assigned yet (e.g., PENDING -> CONFIRMED), just update reservation
+            // status
 
-            roomRepository.save(room);
             reservation = reservationRepository.save(reservation);
 
             return convertToBookingResponse(reservation);
@@ -296,9 +303,10 @@ public class FrontDeskService {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
 
-        // Only allow room assignment updates for confirmed bookings
-        if (reservation.getStatus() != ReservationStatus.CONFIRMED) {
-            throw new IllegalStateException("Room assignment can only be updated for confirmed bookings");
+        // Allow room assignment updates for confirmed bookings and checked-in guests
+        if (reservation.getStatus() != ReservationStatus.CONFIRMED &&
+                reservation.getStatus() != ReservationStatus.CHECKED_IN) {
+            throw new IllegalStateException("Room assignment can only be updated for confirmed or checked-in bookings");
         }
 
         // Get the new room
@@ -310,9 +318,27 @@ public class FrontDeskService {
             throw new IllegalStateException("Selected room is not available");
         }
 
-        // If there was a previously assigned room, make it available again
+        // Additional check: Ensure room is not currently booked (occupied)
+        // This is important because convertToRoomResponse may show rooms as OCCUPIED
+        // even if their database status is AVAILABLE due to active bookings
+        Long hotelId = hotelService.getHotelIdByTenantId(TenantContext.getTenantId());
+        boolean isCurrentlyBooked = roomRepository.isRoomCurrentlyBooked(newRoomId, hotelId);
+        if (isCurrentlyBooked) {
+            throw new IllegalStateException("Selected room is currently occupied");
+        }
+
+        // Also check if the room is administratively available (isAvailable flag)
+        if (!newRoom.getIsAvailable()) {
+            throw new IllegalStateException("Selected room is not available for booking");
+        }
+
+        // If there was a previously assigned room, handle its status based on
+        // reservation status
         Room previousRoom = reservation.getRoom();
         if (previousRoom != null) {
+            // For checked-in guests, the previous room becomes available again
+            // For confirmed bookings, the room was already available, so just ensure it
+            // stays available
             previousRoom.setStatus(RoomStatus.AVAILABLE);
             roomRepository.save(previousRoom);
         }
@@ -333,8 +359,14 @@ public class FrontDeskService {
             }
         }
 
-        // Reserve the new room (don't mark as occupied until check-in)
-        newRoom.setStatus(RoomStatus.AVAILABLE); // Keep available until actual check-in
+        // Set room status based on reservation status
+        if (reservation.getStatus() == ReservationStatus.CHECKED_IN) {
+            // For checked-in guests, immediately mark the new room as occupied
+            newRoom.setStatus(RoomStatus.OCCUPIED);
+        } else {
+            // For confirmed bookings, keep room available until actual check-in
+            newRoom.setStatus(RoomStatus.AVAILABLE);
+        }
 
         roomRepository.save(newRoom);
         reservation = reservationRepository.save(reservation);
@@ -352,8 +384,9 @@ public class FrontDeskService {
             throw new IllegalStateException("Tenant context is not set");
         }
 
+        Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
         LocalDate today = LocalDate.now();
-        List<Reservation> arrivals = reservationRepository.findUpcomingCheckInsByTenantId(today, tenantId);
+        List<Reservation> arrivals = reservationRepository.findUpcomingCheckInsByHotelId(today, hotelId);
 
         return arrivals.stream()
                 .map(this::convertToBookingResponse)
@@ -388,8 +421,9 @@ public class FrontDeskService {
             throw new IllegalStateException("Tenant context is not set");
         }
 
+        Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
         LocalDate today = LocalDate.now();
-        List<Reservation> departures = reservationRepository.findUpcomingCheckOutsByTenantId(today, tenantId);
+        List<Reservation> departures = reservationRepository.findUpcomingCheckOutsByHotelId(today, hotelId);
 
         return departures.stream()
                 .map(this::convertToBookingResponse)
@@ -406,8 +440,9 @@ public class FrontDeskService {
             throw new IllegalStateException("Tenant context is not set");
         }
 
-        List<Reservation> currentGuests = reservationRepository.findByStatusAndTenantId(ReservationStatus.CHECKED_IN,
-                tenantId);
+        Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
+        List<Reservation> currentGuests = reservationRepository.findByStatusAndHotelId(ReservationStatus.CHECKED_IN,
+                hotelId);
 
         return currentGuests.stream()
                 .map(this::convertToBookingResponse)
@@ -853,6 +888,7 @@ public class FrontDeskService {
                 .toList();
 
         // Apply search and filters on the computed responses
+        // Important: Filter by the computed status, not the original room status
         List<RoomResponse> filteredRooms = allRoomResponses.stream()
                 .filter(room -> search == null || search.trim().isEmpty() ||
                         room.getRoomNumber().toLowerCase().contains(search.toLowerCase()) ||
@@ -1020,8 +1056,9 @@ public class FrontDeskService {
         response.setCapacity(room.getCapacity());
         response.setDescription(room.getDescription());
 
-        // Check if room is currently booked (tenant-aware)
-        boolean isCurrentlyBooked = roomRepository.isRoomCurrentlyBooked(room.getId(), tenantId);
+        // Check if room is currently booked (hotel-aware)
+        Long hotelId = hotelService.getHotelIdByTenantId(TenantContext.getTenantId());
+        boolean isCurrentlyBooked = roomRepository.isRoomCurrentlyBooked(room.getId(), hotelId);
 
         // Update room status to OCCUPIED if currently booked and status is AVAILABLE
         // This ensures consistent status display across Hotel Admin and Front Desk

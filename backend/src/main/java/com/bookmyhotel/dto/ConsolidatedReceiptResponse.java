@@ -69,6 +69,7 @@ public class ConsolidatedReceiptResponse {
         private Long chargeId;
         private String description;
         private BigDecimal amount;
+        private Integer quantity;
         private String chargeType;
         private LocalDateTime chargeDate;
         private String notes;
@@ -81,6 +82,7 @@ public class ConsolidatedReceiptResponse {
             this.description = description;
             this.amount = amount;
             this.chargeType = chargeType;
+            this.quantity = 1; // Default quantity for backward compatibility
         }
 
         // Getters and Setters
@@ -106,6 +108,14 @@ public class ConsolidatedReceiptResponse {
 
         public void setAmount(BigDecimal amount) {
             this.amount = amount;
+        }
+
+        public Integer getQuantity() {
+            return quantity;
+        }
+
+        public void setQuantity(Integer quantity) {
+            this.quantity = quantity;
         }
 
         public String getChargeType() {

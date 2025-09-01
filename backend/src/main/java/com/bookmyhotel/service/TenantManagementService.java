@@ -28,10 +28,10 @@ public class TenantManagementService {
 
     @Autowired
     private TenantRepository tenantRepository;
-    
+
     @Autowired
     private UserRepository userRepository;
-    
+
     @Autowired
     private HotelRepository hotelRepository;
 
@@ -41,21 +41,18 @@ public class TenantManagementService {
     @Transactional(readOnly = true)
     public Page<TenantDTO> getAllTenants(Pageable pageable, String search, Boolean isActive) {
         Specification<Tenant> spec = Specification.where(null);
-        
+
         if (search != null && !search.trim().isEmpty()) {
-            spec = spec.and((root, query, cb) -> 
-                cb.or(
+            spec = spec.and((root, query, cb) -> cb.or(
                     cb.like(cb.lower(root.get("name")), "%" + search.toLowerCase() + "%"),
                     cb.like(cb.lower(root.get("subdomain")), "%" + search.toLowerCase() + "%"),
-                    cb.like(cb.lower(root.get("description")), "%" + search.toLowerCase() + "%")
-                )
-            );
+                    cb.like(cb.lower(root.get("description")), "%" + search.toLowerCase() + "%")));
         }
-        
+
         if (isActive != null) {
             spec = spec.and((root, query, cb) -> cb.equal(root.get("isActive"), isActive));
         }
-        
+
         Page<Tenant> tenants = tenantRepository.findAll(spec, pageable);
         return tenants.map(this::convertToDTO);
     }
@@ -78,7 +75,7 @@ public class TenantManagementService {
         if (tenantRepository.existsByName(request.getName())) {
             throw new RuntimeException("Tenant with name '" + request.getName() + "' already exists");
         }
-        
+
         // Clean and validate subdomain (if provided)
         String cleanSubdomain = null;
         if (request.getSubdomain() != null && !request.getSubdomain().trim().isEmpty()) {
@@ -108,8 +105,8 @@ public class TenantManagementService {
         // Update fields if provided
         if (request.getName() != null && !request.getName().trim().isEmpty()) {
             // Check if new name conflicts with existing tenant
-            if (!request.getName().equals(tenant.getName()) && 
-                tenantRepository.existsByName(request.getName())) {
+            if (!request.getName().equals(tenant.getName()) &&
+                    tenantRepository.existsByName(request.getName())) {
                 throw new RuntimeException("Tenant with name '" + request.getName() + "' already exists");
             }
             tenant.setName(request.getName());
@@ -118,11 +115,12 @@ public class TenantManagementService {
         if (request.getSubdomain() != null) {
             // Clean subdomain - convert empty strings to null
             String cleanSubdomain = request.getSubdomain().trim().isEmpty() ? null : request.getSubdomain().trim();
-            
-            // Check if new subdomain conflicts with existing tenant (only if not null/empty)
-            if (cleanSubdomain != null && 
-                !cleanSubdomain.equals(tenant.getSubdomain()) && 
-                tenantRepository.findBySubdomain(cleanSubdomain).isPresent()) {
+
+            // Check if new subdomain conflicts with existing tenant (only if not
+            // null/empty)
+            if (cleanSubdomain != null &&
+                    !cleanSubdomain.equals(tenant.getSubdomain()) &&
+                    tenantRepository.findBySubdomain(cleanSubdomain).isPresent()) {
                 throw new RuntimeException("Tenant with subdomain '" + cleanSubdomain + "' already exists");
             }
             tenant.setSubdomain(cleanSubdomain);
@@ -161,11 +159,11 @@ public class TenantManagementService {
 
         // Check if tenant has associated users or hotels
         long userCount = userRepository.countByTenantId(tenantId);
-        long hotelCount = hotelRepository.countByTenantId(tenantId);
+        long hotelCount = hotelRepository.countByTenant_Id(tenantId);
 
         if (userCount > 0 || hotelCount > 0) {
-            throw new RuntimeException("Cannot delete tenant with associated users (" + userCount + 
-                                     ") or hotels (" + hotelCount + "). Please reassign or remove them first.");
+            throw new RuntimeException("Cannot delete tenant with associated users (" + userCount +
+                    ") or hotels (" + hotelCount + "). Please reassign or remove them first.");
         }
 
         tenantRepository.delete(tenant);
@@ -190,7 +188,7 @@ public class TenantManagementService {
         long totalTenants = tenantRepository.count();
         long activeTenants = tenantRepository.countByIsActiveTrue();
         long inactiveTenants = totalTenants - activeTenants;
-        
+
         // Get total users and hotels across all tenants
         long totalUsers = userRepository.count();
         long totalHotels = hotelRepository.count();
@@ -203,19 +201,18 @@ public class TenantManagementService {
      */
     private TenantDTO convertToDTO(Tenant tenant) {
         TenantDTO dto = new TenantDTO(
-            tenant.getId(),
-            tenant.getId(),  // Both id and tenantId are the same now
-            tenant.getName(),
-            tenant.getSubdomain(),
-            tenant.getDescription(),
-            tenant.getIsActive(),
-            tenant.getCreatedAt(),
-            tenant.getUpdatedAt()
-        );
+                tenant.getId(),
+                tenant.getId(), // Both id and tenantId are the same now
+                tenant.getName(),
+                tenant.getSubdomain(),
+                tenant.getDescription(),
+                tenant.getIsActive(),
+                tenant.getCreatedAt(),
+                tenant.getUpdatedAt());
 
         // Add statistics
         dto.setTotalUsers(userRepository.countByTenantId(tenant.getId()));
-        dto.setTotalHotels(hotelRepository.countByTenantId(tenant.getId()));
+        dto.setTotalHotels(hotelRepository.countByTenant_Id(tenant.getId()));
 
         return dto;
     }
@@ -230,8 +227,8 @@ public class TenantManagementService {
         private final long totalUsers;
         private final long totalHotels;
 
-        public TenantStatistics(long totalTenants, long activeTenants, long inactiveTenants, 
-                               long totalUsers, long totalHotels) {
+        public TenantStatistics(long totalTenants, long activeTenants, long inactiveTenants,
+                long totalUsers, long totalHotels) {
             this.totalTenants = totalTenants;
             this.activeTenants = activeTenants;
             this.inactiveTenants = inactiveTenants;
@@ -239,10 +236,24 @@ public class TenantManagementService {
             this.totalHotels = totalHotels;
         }
 
-        public long getTotalTenants() { return totalTenants; }
-        public long getActiveTenants() { return activeTenants; }
-        public long getInactiveTenants() { return inactiveTenants; }
-        public long getTotalUsers() { return totalUsers; }
-        public long getTotalHotels() { return totalHotels; }
+        public long getTotalTenants() {
+            return totalTenants;
+        }
+
+        public long getActiveTenants() {
+            return activeTenants;
+        }
+
+        public long getInactiveTenants() {
+            return inactiveTenants;
+        }
+
+        public long getTotalUsers() {
+            return totalUsers;
+        }
+
+        public long getTotalHotels() {
+            return totalHotels;
+        }
     }
 }

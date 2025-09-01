@@ -19,15 +19,16 @@ import com.bookmyhotel.entity.User;
 import com.bookmyhotel.service.SystemWideUserService;
 
 /**
- * Controller for managing system-wide users (GUEST and ADMIN roles)
+ * Controller for managing system-wide users (SYSTEM_ADMIN, ADMIN, GUEST, and
+ * CUSTOMER roles)
  */
 @RestController
 @RequestMapping("/api/system-users")
 public class SystemUserController {
-    
+
     @Autowired
     private SystemWideUserService systemWideUserService;
-    
+
     /**
      * Get all system-wide users (GUEST and ADMIN)
      * Only system admins can access this
@@ -38,7 +39,7 @@ public class SystemUserController {
         Page<User> users = systemWideUserService.getAllSystemWideUsers(pageable);
         return ResponseEntity.ok(users);
     }
-    
+
     /**
      * Get all GUEST users
      * Only system admins can access this
@@ -49,7 +50,7 @@ public class SystemUserController {
         List<User> guests = systemWideUserService.getAllGuestUsers();
         return ResponseEntity.ok(guests);
     }
-    
+
     /**
      * Get all system admins
      * Only system admins can access this
@@ -60,7 +61,7 @@ public class SystemUserController {
         List<User> admins = systemWideUserService.getAllAdminUsers();
         return ResponseEntity.ok(admins);
     }
-    
+
     /**
      * Create a new system admin
      * Only existing system admins can create new ones
@@ -70,17 +71,16 @@ public class SystemUserController {
     public ResponseEntity<User> createSystemAdmin(@RequestBody SystemAdminRequest request) {
         try {
             User admin = systemWideUserService.createSystemAdmin(
-                request.getEmail(),
-                request.getFirstName(),
-                request.getLastName(),
-                request.getPassword()
-            );
+                    request.getEmail(),
+                    request.getFirstName(),
+                    request.getLastName(),
+                    request.getPassword());
             return ResponseEntity.ok(admin);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
         }
     }
-    
+
     /**
      * Promote a user to system admin
      * Only existing system admins can promote users
@@ -95,7 +95,7 @@ public class SystemUserController {
             return ResponseEntity.badRequest().build();
         }
     }
-    
+
     /**
      * Demote a system admin to regular guest
      * Only existing system admins can demote other admins

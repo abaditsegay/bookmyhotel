@@ -102,8 +102,8 @@ export default function VerticalHotelAdvertisementBanner({ maxHotels = 3 }: Vert
       rooms: 1
     };
 
-    // Navigate to search results page with the selected hotel
-    navigate('/search-results', {
+    // Navigate to hotel list page with the selected hotel
+    navigate('/hotels/search-results', {
       state: {
         searchRequest,
         hotels: [hotel], // Pass the selected hotel as the search result

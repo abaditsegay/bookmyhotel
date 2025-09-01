@@ -8,8 +8,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import com.bookmyhotel.tenant.TenantContext;
-
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -33,13 +31,14 @@ import jakarta.validation.constraints.Size;
 /**
  * User entity for authentication and authorization
  * Supports both tenant-bound users (HOTEL_ADMIN, FRONTDESK, etc.)
- * and system-wide users (CUSTOMER, ADMIN)
- * CUSTOMER: Registered users with accounts
- * GUEST: Anonymous users (don't have User records)
+ * and system-wide users (SYSTEM_ADMIN, ADMIN, CUSTOMER, GUEST)
+ * CUSTOMER: Registered users with accounts (can book across hotels)
+ * GUEST: Anonymous users without accounts (temporary token-based access)
+ * SYSTEM_ADMIN: System administrators with global access
+ * ADMIN: Regular administrators with global access
  */
 @Entity
 @Table(name = "users", indexes = {
-        @Index(name = "idx_user_tenant", columnList = "tenant_id"),
         @Index(name = "idx_user_email", columnList = "email", unique = true)
 })
 public class User extends BaseEntity implements UserDetails {
@@ -48,9 +47,8 @@ public class User extends BaseEntity implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Tenant ID - nullable for system-wide users (GUEST, ADMIN)
-    @Column(name = "tenant_id", length = 50)
-    private String tenantId;
+    // NOTE: Tenant access is now through hotel.tenant_id relationship
+    // No direct tenant_id field - users belong to hotels, hotels belong to tenants
 
     @NotBlank(message = "Email is required")
     @Email(message = "Email should be valid")
@@ -99,42 +97,15 @@ public class User extends BaseEntity implements UserDetails {
         this.lastName = lastName;
     }
 
-    // Lifecycle methods for tenant management
+    // Lifecycle methods for hotel management
     @PrePersist
     public void prePersist() {
         super.prePersist(); // Call BaseEntity's prePersist first
-        System.err.println("🚨🚨🚨 USER PRE_PERSIST: STARTING prePersist() method 🚨🚨🚨");
-        System.err.println("🚨🚨🚨 USER PRE_PERSIST: User email = " + this.email + " 🚨🚨🚨");
-        System.err.println("🚨🚨🚨 USER PRE_PERSIST: User roles = " + this.roles + " 🚨🚨🚨");
-        System.err.println("🚨🚨🚨 USER PRE_PERSIST: Current tenant_id before logic = " + this.tenantId + " 🚨🚨🚨");
-        System.err.println(
-                "🚨🚨🚨 USER PRE_PERSIST: TenantContext.getTenantId() = " + TenantContext.getTenantId() + " 🚨🚨🚨");
 
-        if (isTenantBoundUser()) {
-            // Only set tenant ID from context if not explicitly set
-            // This prevents overriding explicitly assigned tenant IDs during user creation
-            if (this.tenantId == null || this.tenantId.trim().isEmpty()) {
-                String contextTenantId = TenantContext.getTenantId();
-                if (contextTenantId != null && !contextTenantId.trim().isEmpty()) {
-                    System.err.println(
-                            "🚨🚨🚨 USER PRE_PERSIST: User is TENANT BOUND, setting tenant ID from context 🚨🚨🚨");
-                    this.tenantId = contextTenantId;
-                } else {
-                    System.err.println(
-                            "🚨🚨🚨 USER PRE_PERSIST: User is TENANT BOUND but no context tenant available 🚨🚨🚨");
-                }
-            } else {
-                System.err.println(
-                        "🚨🚨🚨 USER PRE_PERSIST: User is TENANT BOUND but tenant_id already explicitly set, preserving it 🚨🚨🚨");
-            }
-        } else {
-            System.err.println(
-                    "🚨🚨🚨 USER PRE_PERSIST: User is NOT tenant bound (guest/admin), keeping tenant_id as null 🚨🚨🚨");
-            // Explicitly set to null for guest users
-            this.tenantId = null;
+        // For hotel-bound users, ensure they have a hotel assigned
+        if (isTenantBoundUser() && hotel == null) {
+            throw new IllegalStateException("Hotel-bound users must have a hotel assigned");
         }
-        System.err.println("🚨🚨🚨 USER PRE_PERSIST: Final tenant_id = " + this.tenantId + " 🚨🚨🚨");
-        System.err.println("🚨🚨🚨 USER PRE_PERSIST: ENDING prePersist() method 🚨🚨🚨");
     }
 
     @PreUpdate
@@ -143,23 +114,50 @@ public class User extends BaseEntity implements UserDetails {
     }
 
     /**
-     * Determines if this user should be bound to a tenant
-     * GUEST and ADMIN users are system-wide (not tenant-bound)
-     * All other roles are tenant-bound
+     * Determines if this user should be bound to a hotel
+     * SYSTEM_ADMIN, GUEST, and CUSTOMER users are system-wide (no hotel)
+     * All other roles (HOTEL_ADMIN, FRONTDESK, etc.) are hotel-bound
      */
     public boolean isTenantBoundUser() {
-        // Check if user has system-wide roles (GUEST or ADMIN)
+        // Check if user has system-wide roles
         if (roles != null) {
-            return !roles.contains(UserRole.CUSTOMER) && !roles.contains(UserRole.ADMIN);
+            boolean hasSystemWideRole = roles.contains(UserRole.SYSTEM_ADMIN) ||
+                    roles.contains(UserRole.GUEST) ||
+                    roles.contains(UserRole.CUSTOMER) ||
+                    roles.contains(UserRole.ADMIN);
+            return !hasSystemWideRole;
         }
-        return false; // If no roles, not tenant-bound
+        return false; // If no roles, not hotel-bound
     }
 
     /**
-     * Checks if this user is a system-wide user (not bound to any tenant)
+     * Checks if this user is a system-wide user (not bound to any hotel)
+     * SYSTEM_ADMIN, ADMIN, GUEST, and CUSTOMER users are system-wide
      */
     public boolean isSystemWideUser() {
-        return this.tenantId == null;
+        if (roles != null) {
+            boolean hasSystemWideRole = roles.stream()
+                    .anyMatch(role -> role == UserRole.SYSTEM_ADMIN ||
+                            role == UserRole.ADMIN ||
+                            role == UserRole.GUEST ||
+                            role == UserRole.CUSTOMER);
+            return hasSystemWideRole;
+        }
+
+        // Fallback: if no hotel, consider system-wide
+        return this.hotel == null;
+    }
+
+    /**
+     * Gets the tenant ID through hotel relationship
+     * For hotel-bound users: returns hotel.tenant_id
+     * For system-wide users: returns null
+     */
+    public String getTenantId() {
+        if (hotel != null) {
+            return hotel.getTenantId();
+        }
+        return null; // System-wide users have no tenant
     }
 
     // UserDetails implementation
@@ -202,14 +200,6 @@ public class User extends BaseEntity implements UserDetails {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getTenantId() {
-        return tenantId;
-    }
-
-    public void setTenantId(String tenantId) {
-        this.tenantId = tenantId;
     }
 
     public String getEmail() {

@@ -16,18 +16,19 @@ import com.bookmyhotel.entity.UserRole;
 import com.bookmyhotel.repository.UserRepository;
 
 /**
- * Service for managing system-wide users (GUEST and ADMIN)
+ * Service for managing system-wide users (SYSTEM_ADMIN, ADMIN, GUEST, and
+ * CUSTOMER)
  * These users are not bound to any specific tenant and have global access
  */
 @Service
 public class SystemWideUserService {
-    
+
     @Autowired
     private UserRepository userRepository;
-    
+
     @Autowired
     private PasswordEncoder passwordEncoder;
-    
+
     /**
      * Create a new system-wide ADMIN user
      */
@@ -37,7 +38,7 @@ public class SystemWideUserService {
         if (existingUser.isPresent()) {
             throw new IllegalArgumentException("User with email " + email + " already exists");
         }
-        
+
         User admin = new User();
         admin.setEmail(email);
         admin.setPassword(passwordEncoder.encode(password));
@@ -46,17 +47,17 @@ public class SystemWideUserService {
         admin.setIsActive(true);
         admin.setRoles(Set.of(UserRole.ADMIN));
         // tenant_id remains null for system-wide users
-        
+
         return userRepository.save(admin);
     }
-    
+
     /**
-     * Get all system-wide users (where tenant_id is null)
+     * Get all system-wide users (users not bound to any tenant/hotel)
      */
     public Page<User> getAllSystemWideUsers(Pageable pageable) {
-        return userRepository.findByTenantIdIsNull(pageable);
+        return userRepository.findByHotelIsNull(pageable);
     }
-    
+
     /**
      * Get all users in the system (both system-wide and tenant users)
      */
@@ -64,7 +65,7 @@ public class SystemWideUserService {
         Page<User> users = userRepository.findAll(pageable);
         return users.map(this::convertToUserManagementResponse);
     }
-    
+
     /**
      * Convert User entity to UserManagementResponse DTO
      */
@@ -81,28 +82,28 @@ public class SystemWideUserService {
         response.setUpdatedAt(user.getUpdatedAt());
         return response;
     }
-    
+
     /**
      * Get system-wide users by role
      */
     public List<User> getSystemWideUsersByRole(UserRole role) {
         return userRepository.findSystemWideUsersByRole(role);
     }
-    
+
     /**
      * Get all GUEST users (system-wide)
      */
     public List<User> getAllGuestUsers() {
         return userRepository.findSystemWideUsersByRole(UserRole.CUSTOMER);
     }
-    
+
     /**
      * Get all ADMIN users (system-wide)
      */
     public List<User> getAllAdminUsers() {
         return userRepository.findSystemWideUsersByRole(UserRole.ADMIN);
     }
-    
+
     /**
      * Find system-wide user by email
      */
@@ -113,7 +114,7 @@ public class SystemWideUserService {
         }
         return Optional.empty();
     }
-    
+
     /**
      * Check if a user is system-wide based on email
      */
@@ -121,7 +122,7 @@ public class SystemWideUserService {
         Optional<User> userOpt = userRepository.findByEmail(email);
         return userOpt.isPresent() && userOpt.get().isSystemWideUser();
     }
-    
+
     /**
      * Promote a user to system admin (removes tenant binding)
      */
@@ -130,21 +131,20 @@ public class SystemWideUserService {
         if (userOpt.isEmpty()) {
             throw new IllegalArgumentException("User not found with ID: " + userId);
         }
-        
+
         User user = userOpt.get();
-        
+
         // Only system-wide users can be promoted to system admin
         if (user.isTenantBoundUser()) {
             throw new IllegalArgumentException("Cannot promote tenant-bound user to system admin");
         }
-        
+
         user.setRoles(Set.of(UserRole.ADMIN));
-        user.setTenantId(null); // Ensure no tenant binding
         user.setHotel(null); // Remove hotel association
-        
+
         return userRepository.save(user);
     }
-    
+
     /**
      * Demote a system admin to regular guest user
      */
@@ -153,18 +153,16 @@ public class SystemWideUserService {
         if (userOpt.isEmpty()) {
             throw new IllegalArgumentException("User not found with ID: " + userId);
         }
-        
+
         User user = userOpt.get();
         if (!user.getRoles().contains(UserRole.ADMIN)) {
             throw new IllegalArgumentException("User is not a system admin");
         }
-        
+
         user.setRoles(Set.of(UserRole.CUSTOMER));
-        // If tenantId is provided, bind to tenant; otherwise keep as system-wide GUEST
-        if (tenantId != null && !tenantId.trim().isEmpty()) {
-            user.setTenantId(tenantId);
-        }
-        
+        // For tenant binding, this would need to be handled through hotel relationships
+        // in a proper multi-tenant architecture
+
         return userRepository.save(user);
     }
 }

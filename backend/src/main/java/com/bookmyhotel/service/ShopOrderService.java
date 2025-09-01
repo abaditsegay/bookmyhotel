@@ -21,6 +21,7 @@ import com.bookmyhotel.entity.OrderStatus;
 import com.bookmyhotel.entity.PaymentMethod;
 import com.bookmyhotel.entity.Product;
 import com.bookmyhotel.entity.Reservation;
+import com.bookmyhotel.entity.ReservationStatus;
 import com.bookmyhotel.entity.ShopOrder;
 import com.bookmyhotel.entity.ShopOrderItem;
 import com.bookmyhotel.exception.ResourceNotFoundException;
@@ -82,14 +83,49 @@ public class ShopOrderService {
         order.setRoomNumber(request.getRoomNumber());
 
         // Set reservation if provided
+        Reservation targetReservation = null;
+
         if (request.getReservationId() != null) {
-            Reservation reservation = reservationRepository.findById(request.getReservationId())
+            // Direct reservation ID provided
+            targetReservation = reservationRepository.findById(request.getReservationId())
                     .orElseThrow(() -> new ResourceNotFoundException(
                             "Reservation not found with ID: " + request.getReservationId()));
-            order.setReservation(reservation);
+        } else if (request.getPaymentMethod() == PaymentMethod.ROOM_CHARGE && request.getRoomNumber() != null) {
+            // Room charge with room number - find current checked-in reservation for this
+            // room
+            targetReservation = findCheckedInReservationByRoomNumber(hotelId, request.getRoomNumber());
+            if (targetReservation == null) {
+                throw new IllegalArgumentException(
+                        "No checked-in guest found in room " + request.getRoomNumber() +
+                                ". Room charges can only be applied to currently occupied rooms.");
+            }
+        }
+
+        if (targetReservation != null) {
+            // Validate that reservation is currently checked in
+            if (targetReservation.getStatus() != ReservationStatus.CHECKED_IN) {
+                throw new IllegalArgumentException(
+                        "Shop orders can only be charged to currently checked-in guests. " +
+                                "Reservation status: " + targetReservation.getStatus() +
+                                ". For other purchases, please use cash or card payment.");
+            }
+
+            order.setReservation(targetReservation);
         }
 
         order.setPaymentMethod(request.getPaymentMethod() != null ? request.getPaymentMethod().toString() : null);
+
+        // Validate payment method constraints
+        if (request.getPaymentMethod() == PaymentMethod.ROOM_CHARGE) {
+            if (request.getReservationId() == null &&
+                    (request.getRoomNumber() == null || request.getRoomNumber().trim().isEmpty())) {
+                throw new IllegalArgumentException(
+                        "Room charge payment method requires either a valid reservation ID or room number. " +
+                                "For anonymous purchases, please use cash or card payment.");
+            }
+            // Additional validation already handled above (reservation must be CHECKED_IN)
+        }
+
         order.setNotes(request.getNotes());
         order.setIsDelivery(request.getIsDelivery());
         order.setDeliveryAddress(request.getDeliveryAddress());
@@ -148,7 +184,7 @@ public class ShopOrderService {
         if (request.getPaymentMethod() == PaymentMethod.ROOM_CHARGE &&
                 savedOrder.getReservation() != null) {
             try {
-                roomChargeService.createChargeFromShopOrder(savedOrder);
+                roomChargeService.createChargeFromShopOrder(savedOrder, hotelId);
             } catch (Exception e) {
                 // Log the error but don't fail the order creation
                 // The room charge can be created manually later if needed
@@ -496,6 +532,23 @@ public class ShopOrderService {
         response.setItems(itemResponses);
 
         return response;
+    }
+
+    /**
+     * Find the current checked-in reservation for a specific room number
+     */
+    private Reservation findCheckedInReservationByRoomNumber(Long hotelId, String roomNumber) {
+        // Find all reservations for this hotel that are currently checked in
+        List<Reservation> checkedInReservations = reservationRepository.findAll()
+                .stream()
+                .filter(r -> r.getHotel().getId().equals(hotelId))
+                .filter(r -> r.getStatus() == ReservationStatus.CHECKED_IN)
+                .filter(r -> r.getRoom() != null &&
+                        roomNumber.equalsIgnoreCase(r.getRoom().getRoomNumber()))
+                .collect(Collectors.toList());
+
+        // Return the first match (there should only be one checked-in guest per room)
+        return checkedInReservations.isEmpty() ? null : checkedInReservations.get(0);
     }
 
     /**

@@ -49,31 +49,63 @@ public interface UserRepository extends JpaRepository<User, Long> {
        boolean existsByEmail(String email);
 
        /**
-        * Find users by tenant ID (for tenant-bound users)
+        * Find users by hotel (for hotel-bound users)
         */
-       Page<User> findByTenantId(String tenantId, Pageable pageable);
+       Page<User> findByHotel_Id(Long hotelId, Pageable pageable);
 
        /**
-        * Find system-wide users (where tenant_id is null)
+        * Find system-wide users (where hotel is null)
         */
-       Page<User> findByTenantIdIsNull(Pageable pageable);
+       Page<User> findByHotelIsNull(Pageable pageable);
 
        /**
-        * Find all tenant-bound users (where tenant_id is not null)
+        * Find all hotel-bound users (where hotel is not null)
         */
-       Page<User> findByTenantIdIsNotNull(Pageable pageable);
+       Page<User> findByHotelIsNotNull(Pageable pageable);
 
        /**
         * Find system-wide users by role
         */
-       @Query("SELECT u FROM User u WHERE u.tenantId IS NULL AND EXISTS (SELECT 1 FROM u.roles r WHERE r = :role)")
+       @Query("SELECT u FROM User u WHERE u.hotel IS NULL AND EXISTS (SELECT 1 FROM u.roles r WHERE r = :role)")
        List<User> findSystemWideUsersByRole(@Param("role") UserRole role);
 
        /**
-        * Find tenant-bound users by role and tenant
+        * Find tenant-bound users by role and tenant (through hotel relationship)
         */
-       @Query("SELECT u FROM User u WHERE u.tenantId = :tenantId AND EXISTS (SELECT 1 FROM u.roles r WHERE r = :role)")
+       @Query("SELECT u FROM User u JOIN u.hotel h JOIN h.tenant t WHERE t.id = :tenantId AND EXISTS (SELECT 1 FROM u.roles r WHERE r = :role)")
        List<User> findTenantBoundUsersByRole(@Param("tenantId") String tenantId, @Param("role") UserRole role);
+
+       /**
+        * Find users by hotel ID
+        */
+       @Query("SELECT u FROM User u WHERE u.hotel.id = :hotelId")
+       Page<User> findByHotelId(@Param("hotelId") Long hotelId, Pageable pageable);
+
+       /**
+        * Count users by hotel ID
+        */
+       @Query("SELECT COUNT(u) FROM User u WHERE u.hotel.id = :hotelId")
+       long countByHotelId(@Param("hotelId") Long hotelId);
+
+       /**
+        * Find users by hotel ID and role
+        */
+       @Query("SELECT u FROM User u WHERE u.hotel.id = :hotelId AND EXISTS (SELECT 1 FROM u.roles r WHERE r = :role)")
+       List<User> findByHotelIdAndRole(@Param("hotelId") Long hotelId, @Param("role") UserRole role);
+
+       /**
+        * Find users by tenant ID (through hotel relationship) - for backward
+        * compatibility
+        */
+       @Query("SELECT u FROM User u JOIN u.hotel h JOIN h.tenant t WHERE t.id = :tenantId")
+       Page<User> findByTenantId(@Param("tenantId") String tenantId, Pageable pageable);
+
+       /**
+        * Count users by tenant ID (through hotel relationship) - for backward
+        * compatibility
+        */
+       @Query("SELECT COUNT(u) FROM User u JOIN u.hotel h JOIN h.tenant t WHERE t.id = :tenantId")
+       long countByTenantId(@Param("tenantId") String tenantId);
 
        /**
         * Find users by role
@@ -111,9 +143,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
        List<User> findByHotelAndRolesContaining(@Param("hotel") Hotel hotel, @Param("roles") List<UserRole> roles);
 
        /**
-        * Count users by tenant ID
+        * Count users by hotel ID
         */
-       long countByTenantId(String tenantId);
+       long countByHotel_Id(Long hotelId);
 
        /**
         * Find staff members by hotel ID (users with staff roles) - OPTIMIZED VERSION

@@ -1,6 +1,21 @@
-import React, { createContext, useContext, ReactNode, useState, useEffect, useMemo, useCallback } from 'react';
+import React, { createContext, useContext, ReactNode, useState, useEffect, useCallback } from 'react';
 import { getTenantIdFromToken } from '../utils/jwtUtils';
 import TokenManager from '../utils/tokenManager';
+
+/**
+ * TenantContext - Manages tenant information for multi-tenant application
+ * 
+ * Architecture:
+ * - Tenants are top-level organizations (e.g., hotel chains)
+ * - Users belong to specific tenants (extracted from JWT token)
+ * - System admins can be tenant-less (system-wide access)
+ * 
+ * The context extracts tenantId from JWT tokens and creates a basic tenant object.
+ * Detailed tenant information (name, settings) can be fetched via API when needed.
+ * 
+ * This approach eliminates the need for hardcoded tenant lists while maintaining
+ * proper tenant isolation and validation.
+ */
 
 interface Tenant {
   id: string;
@@ -12,7 +27,6 @@ interface TenantContextType {
   tenantId: string | null; // Can be null for system-wide users
   tenant: Tenant | null;
   setTenantId: (tenantId: string | null) => void;
-  availableTenants: Tenant[];
   updateTenantFromToken: (token: string) => void;
   clearTenant: () => void; // Add method to clear tenant context
   isSystemWideContext: boolean; // True when no tenant is set (system-wide user)
@@ -28,25 +42,22 @@ export const TenantProvider: React.FC<TenantProviderProps> = ({ children }) => {
   const [tenantId, setTenantIdState] = useState<string | null>(null); // Start with null for anonymous users
   const [tenant, setTenant] = useState<Tenant | null>(null);
   
-  // Mock available tenants - in real app, this would come from an API
-  const availableTenants: Tenant[] = useMemo(() => [
-    { id: 'd7b7e673-6788-45b2-8dad-4d48944a144e', name: 'Grand Plaza Hotel', subdomain: 'grandplaza' },
-    { id: 'ed55191d-36e0-4cd4-8b53-0aa6306b802b', name: 'The Maritime Grand Hotel', subdomain: 'maritimegrand' },
-    { id: 'f60a5bc4-7c91-11f0-8a72-6abc1ea96c43', name: 'Downtown Business Hotel', subdomain: 'downtown' },
-    { id: 'f60a5c04-7c91-11f0-8a72-6abc1ea96c43', name: 'Seaside Resort', subdomain: 'seaside' },
-    { id: 'a1b2c3d4-5e6f-7g8h-9i0j-k1l2m3n4o5p6', name: 'Luxury Hotel Group', subdomain: 'luxury' },
-  ], []);
-
   const setTenantId = useCallback((newTenantId: string | null) => {
     setTenantIdState(newTenantId);
     if (newTenantId) {
-      const foundTenant = availableTenants.find(t => t.id === newTenantId);
-      setTenant(foundTenant || null);
+      // Create a tenant object with the available information
+      // In a production app, you might want to fetch additional tenant details from an API
+      // but for validation purposes, having the tenantId is sufficient
+      setTenant({
+        id: newTenantId,
+        name: `Tenant ${newTenantId.substring(0, 8)}...`, // Fallback display name
+        subdomain: 'current' // Placeholder - would come from API if needed
+      });
     } else {
       // System-wide user - no tenant context
       setTenant(null);
     }
-  }, [availableTenants]);
+  }, []);
 
   const updateTenantFromToken = useCallback((token: string) => {
     const extractedTenantId = getTenantIdFromToken(token);
@@ -80,7 +91,6 @@ export const TenantProvider: React.FC<TenantProviderProps> = ({ children }) => {
     tenantId,
     tenant,
     setTenantId,
-    availableTenants,
     updateTenantFromToken,
     clearTenant,
     isSystemWideContext: tenantId === null,

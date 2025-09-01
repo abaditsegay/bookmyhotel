@@ -3,8 +3,6 @@ package com.bookmyhotel.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,45 +12,57 @@ import org.springframework.web.bind.annotation.RestController;
 import com.bookmyhotel.dto.ConsolidatedReceiptResponse;
 import com.bookmyhotel.service.CheckoutReceiptService;
 
-/**
- * REST controller for checkout receipt management
- */
 @RestController
-@RequestMapping("/api/checkout")
-@PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SYSTEM_ADMIN')")
-@CrossOrigin(origins = "*")
+@RequestMapping("/api/checkout/receipt")
+@PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONTDESK', 'SYSTEM_ADMIN')")
 public class CheckoutReceiptController {
 
     @Autowired
     private CheckoutReceiptService checkoutReceiptService;
 
-    /**
-     * Generate a preview receipt for a reservation (before checkout)
-     */
-    @GetMapping("/receipt/{reservationId}/preview")
-    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SYSTEM_ADMIN')")
-    public ResponseEntity<ConsolidatedReceiptResponse> generateReceiptPreview(
-            @PathVariable Long reservationId,
-            Authentication auth) {
-
-        ConsolidatedReceiptResponse receipt = checkoutReceiptService
-                .generateCheckoutReceipt(reservationId, auth.getName());
-
-        return ResponseEntity.ok(receipt);
+    @PostMapping("/{reservationId}/final")
+    public ResponseEntity<ConsolidatedReceiptResponse> generateCheckoutReceipt(
+            @PathVariable Long reservationId) {
+        try {
+            ConsolidatedReceiptResponse receipt = checkoutReceiptService.generateFinalReceipt(reservationId, "system");
+            return ResponseEntity.ok(receipt);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).build();
+        }
     }
 
-    /**
-     * Generate final receipt after checkout completion
-     */
-    @PostMapping("/receipt/{reservationId}/final")
-    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SYSTEM_ADMIN')")
-    public ResponseEntity<ConsolidatedReceiptResponse> generateFinalReceipt(
-            @PathVariable Long reservationId,
-            Authentication auth) {
+    @PostMapping("/{tenantName}/{reservationId}/final")
+    public ResponseEntity<ConsolidatedReceiptResponse> generateTenantCheckoutReceipt(
+            @PathVariable String tenantName,
+            @PathVariable Long reservationId) {
+        try {
+            ConsolidatedReceiptResponse receipt = checkoutReceiptService.generateFinalReceipt(reservationId, "system");
+            return ResponseEntity.ok(receipt);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).build();
+        }
+    }
 
-        ConsolidatedReceiptResponse receipt = checkoutReceiptService
-                .generateFinalReceipt(reservationId, auth.getName());
+    @GetMapping("/{reservationId}/preview")
+    public ResponseEntity<ConsolidatedReceiptResponse> generateReceiptPreview(
+            @PathVariable Long reservationId) {
+        try {
+            ConsolidatedReceiptResponse receipt = checkoutReceiptService.generateFinalReceipt(reservationId, "system");
+            return ResponseEntity.ok(receipt);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).build();
+        }
+    }
 
-        return ResponseEntity.ok(receipt);
+    @GetMapping("/{tenantName}/{reservationId}/preview")
+    public ResponseEntity<ConsolidatedReceiptResponse> generateTenantReceiptPreview(
+            @PathVariable String tenantName,
+            @PathVariable Long reservationId) {
+        try {
+            ConsolidatedReceiptResponse receipt = checkoutReceiptService.generateFinalReceipt(reservationId, "system");
+            return ResponseEntity.ok(receipt);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).build();
+        }
     }
 }

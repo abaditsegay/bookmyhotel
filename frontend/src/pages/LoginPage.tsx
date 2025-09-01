@@ -158,11 +158,9 @@ const LoginPage: React.FC = () => {
           gap: 3,
         }}
       >
-        {/* Two Column Layout for Login */}
-        <Box sx={{ display: 'flex', gap: 3, width: '100%', maxWidth: 900 }}>
-          {/* Main Login Form */}
-          <Card sx={{ flex: 1, maxWidth: 450, maxHeight: '90vh', overflow: 'auto' }}>
-            <CardContent sx={{ p: 4 }}>
+        {/* Clean Login Form - System Admin Only */}
+        <Card sx={{ maxWidth: 500, width: '100%' }}>
+          <CardContent sx={{ p: 4 }}>
             <Typography variant="h4" component="h1" gutterBottom align="center">
               BookMyHotel
             </Typography>
@@ -322,177 +320,76 @@ const LoginPage: React.FC = () => {
               )}
             </Typography>
 
-            {/* Test Users Section - Only show on Sign In */}
+            {/* Test Credentials - Only show on Sign In */}
             {!showSignUp && (
               <>
                 <Divider sx={{ my: 3 }}>
-                  <Chip label="Quick Login - System Administrators" size="small" color="primary" />
+                  <Chip label="Quick Login - Test Credentials" size="small" color="primary" />
                 </Divider>
                 
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                   <Typography variant="body2" color="textSecondary" align="center" sx={{ mb: 1 }}>
-                    ✅ System administrators - Click to auto-fill and test:
+                    Click any button below to auto-fill credentials for testing:
                   </Typography>
                   
                   <Button
                     variant="outlined"
-                    size="small"
-                    onClick={() => fillSampleUser('admin@bookmyhotel.com', 'password')}
-                    sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
+                    fullWidth
+                    onClick={() => fillSampleUser('admin@bookmyhotel.com', 'password123')}
+                    sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
                   >
-                    <Typography variant="body2" fontWeight="bold">🔧 System Administrator 1</Typography>
+                    <Typography variant="body2" fontWeight="bold">🔧 System Admin</Typography>
+                    <Typography variant="caption" color="textSecondary" sx={{ mt: 0.5 }}>
+                      admin@bookmyhotel.com
+                    </Typography>
                     <Typography variant="caption" color="textSecondary">
-                      admin@bookmyhotel.com / password
+                      Password: password123
                     </Typography>
                     <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
-                      ✅ Primary System Admin
+                      ✅ Full System Access
                     </Typography>
                   </Button>
-                  
+
                   <Button
                     variant="outlined"
-                    size="small"
-                    onClick={() => fillSampleUser('admin2@bookmyhotel.com', 'password123')}
-                    sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 1.5 }}
+                    fullWidth
+                    onClick={() => fillSampleUser('admin@addissunshine.com', 'password123')}
+                    sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
                   >
-                    <Typography variant="body2" fontWeight="bold">🔧 System Administrator 2</Typography>
-                    <Typography variant="caption" color="textSecondary">
-                      admin2@bookmyhotel.com / password123
+                    <Typography variant="body2" fontWeight="bold">🏨 Hotel Admin</Typography>
+                    <Typography variant="caption" color="textSecondary" sx={{ mt: 0.5 }}>
+                      admin@addissunshine.com
                     </Typography>
-                    <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
-                      ✅ Secondary System Admin
+                    <Typography variant="caption" color="textSecondary">
+                      Password: password123
+                    </Typography>
+                    <Typography variant="caption" color="info.main" sx={{ mt: 0.5 }}>
+                      🏨 Addis Sunshine Grand Hotel (50 rooms)
+                    </Typography>
+                  </Button>
+
+                  <Button
+                    variant="outlined"
+                    fullWidth
+                    onClick={() => fillSampleUser('frontdesk@addissunshine.com', 'password123')}
+                    sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
+                  >
+                    <Typography variant="body2" fontWeight="bold">🎯 Front Desk</Typography>
+                    <Typography variant="caption" color="textSecondary" sx={{ mt: 0.5 }}>
+                      frontdesk@addissunshine.com
+                    </Typography>
+                    <Typography variant="caption" color="textSecondary">
+                      Password: password123
+                    </Typography>
+                    <Typography variant="caption" color="warning.main" sx={{ mt: 0.5 }}>
+                      🎯 Addis Sunshine Grand Hotel Front Desk
                     </Typography>
                   </Button>
                 </Box>
               </>
             )}
-            </CardContent>
-          </Card>
-
-          {/* Addis Sunshine Hotel Section */}
-          <Card sx={{ flex: 1, maxWidth: 400, maxHeight: '90vh', overflow: 'auto' }}>
-            <CardContent sx={{ p: 3 }}>
-              <Typography variant="h5" component="h2" gutterBottom align="center" color="primary">
-                🇪🇹 Addis Sunshine Hotel
-              </Typography>
-              <Typography variant="body2" color="textSecondary" align="center" sx={{ mb: 3 }}>
-                Demo Hotel - Comprehensive Staff & Data
-              </Typography>
-
-              <Alert severity="success" sx={{ mb: 2 }}>
-                <Typography variant="body2">
-                  ✨ <strong>DEMO READY:</strong> Complete hotel operation with 5 staff roles, 33 rooms, current guests, and realistic operational data! ✅
-                </Typography>
-              </Alert>
-
-              <Divider sx={{ my: 2 }}>
-                <Chip label="Addis Sunshine Hotel Staff" size="small" />
-              </Divider>
-
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  onClick={() => fillSampleUser('bookmyhotel2025+newhotel001@gmail.com', 'password')}
-                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
-                >
-                  <Typography variant="body2" fontWeight="bold">🏨 Hotel Administrator</Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    bookmyhotel2025+newhotel001@gmail.com
-                  </Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    Password: password
-                  </Typography>
-                  <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
-                    ✅ Almaz Kebede - Hotel Admin
-                  </Typography>
-                </Button>
-
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  onClick={() => fillSampleUser('bookmyhotel2025+newhotelfd001@gmail.com', 'password')}
-                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
-                >
-                  <Typography variant="body2" fontWeight="bold">🎯 Front Desk Staff</Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    bookmyhotel2025+newhotelfd001@gmail.com
-                  </Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    Password: password
-                  </Typography>
-                  <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
-                    ✅ Dawit Tadesse - Front Desk
-                  </Typography>
-                </Button>
-
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  onClick={() => fillSampleUser('operations@addissunshine.com', 'password')}
-                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
-                >
-                  <Typography variant="body2" fontWeight="bold">🔧 Operations Supervisor</Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    operations@addissunshine.com
-                  </Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    Password: password
-                  </Typography>
-                  <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
-                    ✅ Yohannes Getachew - Operations
-                  </Typography>
-                </Button>
-
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  onClick={() => fillSampleUser('housekeeping@addissunshine.com', 'password')}
-                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
-                >
-                  <Typography variant="body2" fontWeight="bold">🧹 Housekeeping Staff</Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    housekeeping@addissunshine.com
-                  </Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    Password: password
-                  </Typography>
-                  <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
-                    ✅ Tigist Haile - Housekeeping
-                  </Typography>
-                </Button>
-
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  onClick={() => fillSampleUser('maintenance@addissunshine.com', 'password')}
-                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
-                >
-                  <Typography variant="body2" fontWeight="bold">⚙️ Maintenance Staff</Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    maintenance@addissunshine.com
-                  </Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    Password: password
-                  </Typography>
-                  <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
-                    ✅ Bekele Mengistu - Maintenance
-                  </Typography>
-                </Button>
-              </Box>
-
-              <Box sx={{ mt: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
-                <Typography variant="caption" color="textSecondary">
-                  <strong>Addis Sunshine Hotel Info:</strong><br/>
-                  📍 Addis Ababa, Ethiopia<br/>
-                  🏨 33 rooms (Standard, Deluxe, Suite)<br/>
-                  👥 5 staff members with different roles<br/>
-                  ✨ Complete demo data with real bookings
-                </Typography>
-              </Box>
-            </CardContent>
-          </Card>
-        </Box>
+          </CardContent>
+        </Card>
       </Box>
     </Container>
   );

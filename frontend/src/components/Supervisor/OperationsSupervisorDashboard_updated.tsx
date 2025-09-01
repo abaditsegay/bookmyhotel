@@ -28,9 +28,6 @@ import {
 import HousekeepingDashboard from '../operations/HousekeepingDashboard';
 import MaintenanceDashboard from '../operations/MaintenanceDashboard';
 import StaffDashboard from '../operations/StaffDashboard';
-import { 
-  getCurrentHotel
-} from '../../data/operationsMockData';
 import TokenManager from '../../utils/tokenManager';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
@@ -84,9 +81,12 @@ const OperationsSupervisorDashboard: React.FC = () => {
     try {
       setLoading(true);
       
-      // Get current hotel ID for filtering
-      const hotel = getCurrentHotel();
-      const hotelId = hotel?.id || 12; // Default to Addis Sunshine (ID: 12)
+      // Get current hotel ID from user profile
+      const currentUser = TokenManager.getUser();
+      if (!currentUser?.hotelId) {
+        throw new Error('No hotel ID found in user profile. User must be assigned to a hotel.');
+      }
+      const hotelId = parseInt(currentUser.hotelId);
       
       // Load real data from APIs
       await Promise.all([

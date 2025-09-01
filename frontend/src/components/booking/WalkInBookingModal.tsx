@@ -317,6 +317,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
       const bookingRequest = {
         hotelId: hotelId,
         roomType: selectedRoom.roomType,
+        roomId: selectedRoom.id, // Add specific room ID for immediate assignment
         checkInDate: format(checkInDate, 'yyyy-MM-dd'),
         checkOutDate: format(checkOutDate, 'yyyy-MM-dd'),
         guests: guests,
@@ -351,7 +352,34 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
       }
     } catch (error) {
       console.error('Failed to create walk-in booking:', error);
-      setError('Failed to create booking. Please try again.');
+      
+      // Extract meaningful error message
+      let errorMessage = 'Failed to create booking. Please try again.';
+      
+      if (error instanceof Error) {
+        const message = error.message.toLowerCase();
+        
+        if (message.includes('no available rooms') || 
+            message.includes('room not available') ||
+            message.includes('room is not available') ||
+            message.includes('room does not belong') ||
+            message.includes('room already occupied')) {
+          errorMessage = 'The selected room is no longer available. Please choose a different room or refresh the available rooms.';
+        } else if (message.includes('room not found')) {
+          errorMessage = 'The selected room could not be found. Please refresh and try again.';
+        } else if (message.includes('guest information') || message.includes('invalid guest')) {
+          errorMessage = 'Please check the guest information and try again.';
+        } else if (message.includes('payment')) {
+          errorMessage = 'There was an issue processing the payment information. Please try again.';
+        } else if (message.includes('date') || message.includes('check-in') || message.includes('check-out')) {
+          errorMessage = 'Please check the check-in and check-out dates and try again.';
+        } else if (error.message !== 'Failed to create booking. Please try again.') {
+          // Use the actual error message if it's not the generic one
+          errorMessage = error.message;
+        }
+      }
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

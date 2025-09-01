@@ -28,14 +28,13 @@ import jakarta.validation.constraints.Positive;
  */
 @Entity
 @Table(name = "shop_orders", indexes = {
-        @Index(name = "idx_order_tenant", columnList = "tenant_id"),
         @Index(name = "idx_order_hotel", columnList = "hotel_id"),
         @Index(name = "idx_order_guest", columnList = "guest_id"),
         @Index(name = "idx_order_reservation", columnList = "reservation_id"),
         @Index(name = "idx_order_status", columnList = "status"),
         @Index(name = "idx_order_number", columnList = "order_number")
 })
-public class ShopOrder extends TenantEntity {
+public class ShopOrder extends HotelScopedEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,11 +43,6 @@ public class ShopOrder extends TenantEntity {
     @NotBlank(message = "Order number is required")
     @Column(name = "order_number", nullable = false, unique = true, length = 20)
     private String orderNumber;
-
-    @NotNull(message = "Hotel is required")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "hotel_id", nullable = false)
-    private Hotel hotel;
 
     // Optional: Link to reservation if guest is staying at hotel
     @ManyToOne(fetch = FetchType.LAZY)
@@ -86,7 +80,7 @@ public class ShopOrder extends TenantEntity {
     @Column(name = "tax_amount", precision = 10, scale = 2)
     private BigDecimal taxAmount = BigDecimal.ZERO;
 
-    @Column(name = "payment_method", length = 50)
+    @Column(name = "payment_method", length = 100)
     private String paymentMethod;
 
     @Column(name = "payment_intent_id", length = 100)
@@ -144,7 +138,7 @@ public class ShopOrder extends TenantEntity {
 
     public ShopOrder(String orderNumber, Hotel hotel, String customerName, BigDecimal totalAmount) {
         this.orderNumber = orderNumber;
-        this.hotel = hotel;
+        this.setHotel(hotel);
         this.customerName = customerName;
         this.totalAmount = totalAmount;
     }
@@ -167,11 +161,11 @@ public class ShopOrder extends TenantEntity {
     }
 
     public Hotel getHotel() {
-        return hotel;
+        return super.getHotel();
     }
 
     public void setHotel(Hotel hotel) {
-        this.hotel = hotel;
+        super.setHotel(hotel);
     }
 
     public Reservation getReservation() {

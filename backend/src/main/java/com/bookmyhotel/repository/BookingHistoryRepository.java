@@ -18,65 +18,68 @@ import com.bookmyhotel.entity.BookingHistory;
  */
 @Repository
 public interface BookingHistoryRepository extends JpaRepository<BookingHistory, Long> {
-    
+
     /**
      * Find booking history by reservation ID
      */
     @Query("SELECT bh FROM BookingHistory bh WHERE bh.reservation.id = :reservationId ORDER BY bh.createdAt DESC")
     List<BookingHistory> findByReservationIdOrderByCreatedAtDesc(@Param("reservationId") Long reservationId);
-    
+
     /**
      * Find booking history by reservation ID with pagination
      */
     @Query("SELECT bh FROM BookingHistory bh WHERE bh.reservation.id = :reservationId ORDER BY bh.createdAt DESC")
-    Page<BookingHistory> findByReservationIdOrderByCreatedAtDesc(@Param("reservationId") Long reservationId, Pageable pageable);
-    
+    Page<BookingHistory> findByReservationIdOrderByCreatedAtDesc(@Param("reservationId") Long reservationId,
+            Pageable pageable);
+
     /**
      * Find booking history by action type
      */
     @Query("SELECT bh FROM BookingHistory bh WHERE bh.actionType = :actionType ORDER BY bh.createdAt DESC")
     List<BookingHistory> findByActionTypeOrderByCreatedAtDesc(@Param("actionType") BookingActionType actionType);
-    
+
     /**
      * Find booking history by performer (guest email or admin username)
      */
     @Query("SELECT bh FROM BookingHistory bh WHERE bh.changedBy = :changedBy ORDER BY bh.createdAt DESC")
     List<BookingHistory> findByChangedByOrderByCreatedAtDesc(@Param("changedBy") String changedBy);
-    
+
     /**
      * Find booking history within date range
      */
     @Query("SELECT bh FROM BookingHistory bh WHERE bh.createdAt BETWEEN :startDate AND :endDate ORDER BY bh.createdAt DESC")
     List<BookingHistory> findByCreatedAtBetweenOrderByCreatedAtDesc(
-        @Param("startDate") LocalDateTime startDate, 
-        @Param("endDate") LocalDateTime endDate);
-    
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate);
+
     /**
      * Find booking history by confirmation number
      */
     @Query("SELECT bh FROM BookingHistory bh WHERE bh.reservation.confirmationNumber = :confirmationNumber ORDER BY bh.createdAt DESC")
-    List<BookingHistory> findByConfirmationNumberOrderByCreatedAtDesc(@Param("confirmationNumber") String confirmationNumber);
-    
+    List<BookingHistory> findByConfirmationNumberOrderByCreatedAtDesc(
+            @Param("confirmationNumber") String confirmationNumber);
+
     /**
-     * Find recent booking modifications for a specific tenant
+     * Find recent booking modifications for a specific hotel
+     * Updated to use hotel ID directly
      */
     @Query("SELECT bh FROM BookingHistory bh " +
-           "WHERE (bh.reservation.assignedRoom IS NOT NULL AND bh.reservation.assignedRoom.hotel.tenantId = :tenantId " +
-           "    OR bh.reservation.assignedRoom IS NULL AND bh.reservation.hotel.tenantId = :tenantId) " +
-           "AND bh.actionType IN ('MODIFIED', 'CANCELLED') " +
-           "AND bh.createdAt >= :sinceDate " +
-           "ORDER BY bh.createdAt DESC")
-    List<BookingHistory> findRecentModificationsByTenant(
-        @Param("tenantId") String tenantId, 
-        @Param("sinceDate") LocalDateTime sinceDate);
-    
+            "WHERE ((bh.reservation.assignedRoom IS NOT NULL AND bh.reservation.assignedRoom.hotel.id = :hotelId) " +
+            "    OR (bh.reservation.assignedRoom IS NULL AND bh.reservation.hotel.id = :hotelId)) " +
+            "AND bh.actionType IN ('MODIFIED', 'CANCELLED') " +
+            "AND bh.createdAt >= :sinceDate " +
+            "ORDER BY bh.createdAt DESC")
+    List<BookingHistory> findRecentModificationsByHotel(
+            @Param("hotelId") String hotelId,
+            @Param("sinceDate") LocalDateTime sinceDate);
+
     /**
      * Count booking actions by type for analytics
      */
     @Query("SELECT bh.actionType, COUNT(bh) FROM BookingHistory bh " +
-           "WHERE bh.createdAt BETWEEN :startDate AND :endDate " +
-           "GROUP BY bh.actionType")
+            "WHERE bh.createdAt BETWEEN :startDate AND :endDate " +
+            "GROUP BY bh.actionType")
     List<Object[]> countActionsByType(
-        @Param("startDate") LocalDateTime startDate, 
-        @Param("endDate") LocalDateTime endDate);
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate);
 }

@@ -22,22 +22,26 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
        /**
         * Find all products by hotel ID
         */
-       List<Product> findByHotelId(Long hotelId);
+       @Query("SELECT p FROM Product p WHERE p.hotel.id = :hotelId")
+       List<Product> findByHotelId(@Param("hotelId") Long hotelId);
 
        /**
         * Find all products by hotel ID with pagination
         */
-       Page<Product> findByHotelId(Long hotelId, Pageable pageable);
+       @Query("SELECT p FROM Product p WHERE p.hotel.id = :hotelId")
+       Page<Product> findByHotelId(@Param("hotelId") Long hotelId, Pageable pageable);
 
        /**
         * Find all active products by hotel ID
         */
-       List<Product> findByHotelIdAndIsActiveTrue(Long hotelId);
+       @Query("SELECT p FROM Product p WHERE p.hotel.id = :hotelId AND p.isActive = true")
+       List<Product> findByHotelIdAndIsActiveTrue(@Param("hotelId") Long hotelId);
 
        /**
         * Find all active products by hotel ID with pagination
         */
-       Page<Product> findByHotelIdAndIsActiveTrue(Long hotelId, Pageable pageable);
+       @Query("SELECT p FROM Product p WHERE p.hotel.id = :hotelId AND p.isActive = true")
+       Page<Product> findByHotelIdAndIsActiveTrue(@Param("hotelId") Long hotelId, Pageable pageable);
 
        /**
         * Find all available products by hotel ID (active and in stock)
@@ -54,17 +58,23 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
        /**
         * Find products by hotel ID and category
         */
-       List<Product> findByHotelIdAndCategory(Long hotelId, ProductCategory category);
+       @Query("SELECT p FROM Product p WHERE p.hotel.id = :hotelId AND p.category = :category")
+       List<Product> findByHotelIdAndCategory(@Param("hotelId") Long hotelId,
+                     @Param("category") ProductCategory category);
 
        /**
         * Find products by hotel ID and category with pagination
         */
-       Page<Product> findByHotelIdAndCategory(Long hotelId, ProductCategory category, Pageable pageable);
+       @Query("SELECT p FROM Product p WHERE p.hotel.id = :hotelId AND p.category = :category")
+       Page<Product> findByHotelIdAndCategory(@Param("hotelId") Long hotelId,
+                     @Param("category") ProductCategory category, Pageable pageable);
 
        /**
         * Find active products by hotel ID and category
         */
-       List<Product> findByHotelIdAndCategoryAndIsActiveTrue(Long hotelId, ProductCategory category);
+       @Query("SELECT p FROM Product p WHERE p.hotel.id = :hotelId AND p.category = :category AND p.isActive = true")
+       List<Product> findByHotelIdAndCategoryAndIsActiveTrue(@Param("hotelId") Long hotelId,
+                     @Param("category") ProductCategory category);
 
        /**
         * Find available products by hotel ID and category
@@ -76,7 +86,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
        /**
         * Find product by hotel ID and SKU
         */
-       Optional<Product> findByHotelIdAndSku(Long hotelId, String sku);
+       @Query("SELECT p FROM Product p WHERE p.hotel.id = :hotelId AND p.sku = :sku")
+       Optional<Product> findByHotelIdAndSku(@Param("hotelId") Long hotelId, @Param("sku") String sku);
 
        /**
         * Find products by hotel ID and name containing (case insensitive)
@@ -114,12 +125,14 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
        /**
         * Count products by hotel ID
         */
-       long countByHotelId(Long hotelId);
+       @Query("SELECT COUNT(p) FROM Product p WHERE p.hotel.id = :hotelId")
+       long countByHotelId(@Param("hotelId") Long hotelId);
 
        /**
         * Count active products by hotel ID
         */
-       long countByHotelIdAndIsActiveTrue(Long hotelId);
+       @Query("SELECT COUNT(p) FROM Product p WHERE p.hotel.id = :hotelId AND p.isActive = true")
+       long countByHotelIdAndIsActiveTrue(@Param("hotelId") Long hotelId);
 
        /**
         * Count available products by hotel ID
@@ -130,7 +143,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
        /**
         * Count products by hotel ID and category
         */
-       long countByHotelIdAndCategory(Long hotelId, ProductCategory category);
+       @Query("SELECT COUNT(p) FROM Product p WHERE p.hotel.id = :hotelId AND p.category = :category")
+       long countByHotelIdAndCategory(@Param("hotelId") Long hotelId, @Param("category") ProductCategory category);
 
        /**
         * Find products with low stock by hotel ID
@@ -160,10 +174,13 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
        /**
         * Check if SKU exists for hotel (excluding specific product ID for updates)
         */
-       boolean existsByHotelIdAndSkuAndIdNot(Long hotelId, String sku, Long productId);
+       @Query("SELECT COUNT(p) > 0 FROM Product p WHERE p.hotel.id = :hotelId AND p.sku = :sku AND p.id != :productId")
+       boolean existsByHotelIdAndSkuAndIdNot(@Param("hotelId") Long hotelId, @Param("sku") String sku,
+                     @Param("productId") Long productId);
 
        /**
         * Check if SKU exists for hotel
         */
-       boolean existsByHotelIdAndSku(Long hotelId, String sku);
+       @Query("SELECT COUNT(p) > 0 FROM Product p WHERE p.hotel.id = :hotelId AND p.sku = :sku")
+       boolean existsByHotelIdAndSku(@Param("hotelId") Long hotelId, @Param("sku") String sku);
 }

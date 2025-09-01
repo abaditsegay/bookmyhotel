@@ -13,20 +13,11 @@ import java.time.LocalDateTime;
  */
 @Entity
 @Table(name = "maintenance_tasks")
-public class MaintenanceTask {
+public class MaintenanceTask extends HotelScopedEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @NotBlank
-    @Column(name = "tenant_id", nullable = false)
-    private String tenantId;
-
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "hotel_id", nullable = false)
-    private Hotel hotel;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id")
@@ -139,10 +130,9 @@ public class MaintenanceTask {
     public MaintenanceTask() {
     }
 
-    public MaintenanceTask(String tenantId, Hotel hotel, String taskType, String title,
+    public MaintenanceTask(Hotel hotel, String taskType, String title,
             String description, TaskPriority priority, User createdBy) {
-        this.tenantId = tenantId;
-        this.hotel = hotel;
+        setHotel(hotel);
         this.taskType = taskType;
         this.title = title;
         this.description = description;
@@ -157,22 +147,6 @@ public class MaintenanceTask {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getTenantId() {
-        return tenantId;
-    }
-
-    public void setTenantId(String tenantId) {
-        this.tenantId = tenantId;
-    }
-
-    public Hotel getHotel() {
-        return hotel;
-    }
-
-    public void setHotel(Hotel hotel) {
-        this.hotel = hotel;
     }
 
     public Room getRoom() {

@@ -45,9 +45,6 @@ import {
   Build,
   SupervisorAccount
 } from '@mui/icons-material';
-import { 
-  getCurrentHotel
-} from '../../data/operationsMockData';
 import TokenManager from '../../utils/tokenManager';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
@@ -120,9 +117,12 @@ const StaffDashboard: React.FC<StaffDashboardProps> = ({ currentUserRole = 'OPER
       setLoading(true);
       setError(null);
       
-      // Get current hotel ID for filtering
-      const hotel = getCurrentHotel();
-      const hotelId = hotel?.id || 12; // Default to Addis Sunshine (ID: 12)
+      // Get current hotel ID from user profile
+      const currentUser = TokenManager.getUser();
+      if (!currentUser?.hotelId) {
+        throw new Error('No hotel ID found in user profile. User must be assigned to a hotel.');
+      }
+      const hotelId = parseInt(currentUser.hotelId);
       
       // Load housekeeping staff data from API
       const response = await fetch(`${API_BASE_URL}/api/housekeeping/staff/hotel/${hotelId}`, {

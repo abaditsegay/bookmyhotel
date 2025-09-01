@@ -4,6 +4,7 @@ import { useTenant } from '../contexts/TenantContext';
 import { hotelApiService } from '../services/hotelApi';
 import { adminApiService } from '../services/adminApi';
 import { todoApiService } from '../services/todoApi';
+import { shopApiService } from '../services/shopApi';
 
 /**
  * Hook to automatically set the authentication token in API services
@@ -18,11 +19,13 @@ export const useAuthenticatedApi = () => {
     hotelApiService.setToken(token);
     adminApiService.setToken(token);
     todoApiService.setToken(token);
+    shopApiService.setToken(token);
     
     // Update tenant ID for services that support it
     if (tenantId) {
       hotelApiService.setTenantId(tenantId);
       todoApiService.setTenantId(tenantId);
+      shopApiService.setTenantId(tenantId);
     }
     
     if (!token || !user) {
@@ -46,6 +49,7 @@ export const useAuthenticatedApi = () => {
     hotelApiService, 
     adminApiService,
     todoApiService,
+    shopApiService,
     isSystemWideUser: user?.isSystemWide || false,
     tenantId
   };

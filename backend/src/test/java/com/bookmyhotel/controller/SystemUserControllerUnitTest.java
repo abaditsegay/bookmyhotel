@@ -64,7 +64,7 @@ public class SystemUserControllerUnitTest {
         user.setFirstName(firstName);
         user.setLastName(lastName);
         user.setRoles(roles);
-        user.setTenantId(null); // System-wide user
+        user.setHotel(null); // System-wide user (no hotel association)
         return user;
     }
 

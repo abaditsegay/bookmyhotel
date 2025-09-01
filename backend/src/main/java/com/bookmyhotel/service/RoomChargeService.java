@@ -27,7 +27,6 @@ import com.bookmyhotel.repository.ReservationRepository;
 import com.bookmyhotel.repository.RoomChargeRepository;
 import com.bookmyhotel.repository.ShopOrderRepository;
 import com.bookmyhotel.repository.UserRepository;
-import com.bookmyhotel.tenant.TenantContext;
 
 /**
  * Service for managing room charges
@@ -56,17 +55,15 @@ public class RoomChargeService {
     /**
      * Create a new room charge
      */
-    public RoomChargeResponse createRoomCharge(RoomChargeCreateRequest request, String userEmail) {
+    public RoomChargeResponse createRoomCharge(RoomChargeCreateRequest request, String userEmail, Long hotelId) {
         try {
-            String tenantId = TenantContext.getTenantId();
-
             // Find the reservation
             Reservation reservation = reservationRepository.findById(request.getReservationId())
                     .orElseThrow(() -> new RoomChargeException("Reservation not found"));
 
-            // Verify reservation belongs to current tenant
-            if (!tenantId.equals(reservation.getHotel().getTenantId())) {
-                throw new RoomChargeException("Reservation not found");
+            // Verify reservation belongs to the specified hotel
+            if (!hotelId.equals(reservation.getHotel().getId())) {
+                throw new RoomChargeException("Reservation not found for this hotel");
             }
 
             // Get the hotel from the reservation
@@ -82,9 +79,9 @@ public class RoomChargeService {
                 ShopOrder shopOrder = shopOrderRepository.findById(request.getShopOrderId())
                         .orElseThrow(() -> new RoomChargeException("Shop order not found"));
 
-                // Verify shop order belongs to current tenant
-                if (!tenantId.equals(shopOrder.getHotel().getTenantId())) {
-                    throw new RoomChargeException("Shop order not found");
+                // Verify shop order belongs to the same hotel
+                if (!hotelId.equals(shopOrder.getHotel().getId())) {
+                    throw new RoomChargeException("Shop order not found for this hotel");
                 }
                 roomCharge.setShopOrder(shopOrder);
             }
@@ -97,8 +94,8 @@ public class RoomChargeService {
 
             roomCharge = roomChargeRepository.save(roomCharge);
 
-            logger.info("Created room charge {} for reservation {} by user {}",
-                    roomCharge.getId(), reservation.getId(), userEmail);
+            logger.info("Created room charge {} for reservation {} by user {} in hotel {}",
+                    roomCharge.getId(), reservation.getId(), userEmail, hotelId);
 
             return convertToResponse(roomCharge);
 
@@ -113,18 +110,11 @@ public class RoomChargeService {
      */
     @Transactional(readOnly = true)
     public Page<RoomChargeResponse> getRoomChargesForHotel(Long hotelId, Pageable pageable) {
-        String tenantId = TenantContext.getTenantId();
-
-        // Verify hotel belongs to current tenant
+        // Verify hotel exists
         Hotel hotel = hotelRepository.findById(hotelId)
                 .orElseThrow(() -> new RoomChargeException("Hotel not found"));
 
-        if (!tenantId.equals(hotel.getTenantId())) {
-            throw new RoomChargeException("Hotel not found");
-        }
-
-        Page<RoomCharge> roomCharges = roomChargeRepository.findByHotelWithReservationDetails(hotelId, tenantId,
-                pageable);
+        Page<RoomCharge> roomCharges = roomChargeRepository.findByHotelWithReservationDetails(hotelId, pageable);
 
         return roomCharges.map(this::convertToResponse);
     }
@@ -133,19 +123,17 @@ public class RoomChargeService {
      * Get room charges for a specific reservation
      */
     @Transactional(readOnly = true)
-    public List<RoomChargeResponse> getRoomChargesForReservation(Long reservationId) {
-        String tenantId = TenantContext.getTenantId();
-
-        // Verify reservation belongs to current tenant
+    public List<RoomChargeResponse> getRoomChargesForReservation(Long hotelId, Long reservationId) {
+        // Verify reservation belongs to the specified hotel
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new RoomChargeException("Reservation not found"));
 
-        if (!tenantId.equals(reservation.getHotel().getTenantId())) {
-            throw new RoomChargeException("Reservation not found");
+        if (!hotelId.equals(reservation.getHotel().getId())) {
+            throw new RoomChargeException("Reservation not found for this hotel");
         }
 
         List<RoomCharge> roomCharges = roomChargeRepository
-                .findByReservationIdAndTenantIdOrderByChargeDateDesc(reservationId, tenantId);
+                .findByReservationIdOrderByChargeDateDesc(reservationId);
 
         return roomCharges.stream()
                 .map(this::convertToResponse)
@@ -156,10 +144,16 @@ public class RoomChargeService {
      * Get unpaid room charges for a reservation
      */
     @Transactional(readOnly = true)
-    public List<RoomChargeResponse> getUnpaidChargesForReservation(Long reservationId) {
-        String tenantId = TenantContext.getTenantId();
+    public List<RoomChargeResponse> getUnpaidChargesForReservation(Long hotelId, Long reservationId) {
+        // Verify reservation belongs to the specified hotel
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new RoomChargeException("Reservation not found"));
 
-        List<RoomCharge> unpaidCharges = roomChargeRepository.findUnpaidChargesByReservation(reservationId, tenantId);
+        if (!hotelId.equals(reservation.getHotel().getId())) {
+            throw new RoomChargeException("Reservation not found for this hotel");
+        }
+
+        List<RoomCharge> unpaidCharges = roomChargeRepository.findUnpaidChargesByReservation(reservationId);
 
         return unpaidCharges.stream()
                 .map(this::convertToResponse)
@@ -170,30 +164,36 @@ public class RoomChargeService {
      * Get total unpaid amount for a reservation
      */
     @Transactional(readOnly = true)
-    public BigDecimal getTotalUnpaidAmount(Long reservationId) {
-        String tenantId = TenantContext.getTenantId();
-        return roomChargeRepository.getTotalUnpaidChargesByReservation(reservationId, tenantId);
+    public BigDecimal getTotalUnpaidAmount(Long hotelId, Long reservationId) {
+        // Verify reservation belongs to the specified hotel
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new RoomChargeException("Reservation not found"));
+
+        if (!hotelId.equals(reservation.getHotel().getId())) {
+            throw new RoomChargeException("Reservation not found for this hotel");
+        }
+
+        return roomChargeRepository.getTotalUnpaidChargesByReservation(reservationId);
     }
 
     /**
      * Mark a room charge as paid
      */
-    public RoomChargeResponse markChargeAsPaid(Long chargeId, String paymentReference) {
+    public RoomChargeResponse markChargeAsPaid(Long hotelId, Long chargeId, String paymentReference) {
         try {
-            String tenantId = TenantContext.getTenantId();
-
             RoomCharge roomCharge = roomChargeRepository.findById(chargeId)
                     .orElseThrow(() -> new RoomChargeException("Room charge not found"));
 
-            // Verify room charge belongs to current tenant
-            if (!tenantId.equals(roomCharge.getHotel().getTenantId())) {
-                throw new RoomChargeException("Room charge not found");
+            // Verify room charge belongs to the specified hotel
+            if (!hotelId.equals(roomCharge.getHotel().getId())) {
+                throw new RoomChargeException("Room charge not found for this hotel");
             }
 
             roomCharge.markAsPaid(paymentReference);
             roomCharge = roomChargeRepository.save(roomCharge);
 
-            logger.info("Marked room charge {} as paid with reference {}", chargeId, paymentReference);
+            logger.info("Marked room charge {} as paid with reference {} in hotel {}", chargeId, paymentReference,
+                    hotelId);
 
             return convertToResponse(roomCharge);
 
@@ -206,22 +206,20 @@ public class RoomChargeService {
     /**
      * Mark a room charge as unpaid
      */
-    public RoomChargeResponse markChargeAsUnpaid(Long chargeId) {
+    public RoomChargeResponse markChargeAsUnpaid(Long hotelId, Long chargeId) {
         try {
-            String tenantId = TenantContext.getTenantId();
-
             RoomCharge roomCharge = roomChargeRepository.findById(chargeId)
                     .orElseThrow(() -> new RoomChargeException("Room charge not found"));
 
-            // Verify room charge belongs to current tenant
-            if (!tenantId.equals(roomCharge.getHotel().getTenantId())) {
-                throw new RoomChargeException("Room charge not found");
+            // Verify room charge belongs to the specified hotel
+            if (!hotelId.equals(roomCharge.getHotel().getId())) {
+                throw new RoomChargeException("Room charge not found for this hotel");
             }
 
             roomCharge.markAsUnpaid();
             roomCharge = roomChargeRepository.save(roomCharge);
 
-            logger.info("Marked room charge {} as unpaid", chargeId);
+            logger.info("Marked room charge {} as unpaid in hotel {}", chargeId, hotelId);
 
             return convertToResponse(roomCharge);
 
@@ -234,21 +232,19 @@ public class RoomChargeService {
     /**
      * Delete a room charge
      */
-    public void deleteRoomCharge(Long chargeId) {
+    public void deleteRoomCharge(Long hotelId, Long chargeId) {
         try {
-            String tenantId = TenantContext.getTenantId();
-
             RoomCharge roomCharge = roomChargeRepository.findById(chargeId)
                     .orElseThrow(() -> new RoomChargeException("Room charge not found"));
 
-            // Verify room charge belongs to current tenant
-            if (!tenantId.equals(roomCharge.getHotel().getTenantId())) {
-                throw new RoomChargeException("Room charge not found");
+            // Verify room charge belongs to the specified hotel
+            if (!hotelId.equals(roomCharge.getHotel().getId())) {
+                throw new RoomChargeException("Room charge not found for this hotel");
             }
 
             roomChargeRepository.delete(roomCharge);
 
-            logger.info("Deleted room charge {}", chargeId);
+            logger.info("Deleted room charge {} from hotel {}", chargeId, hotelId);
 
         } catch (Exception e) {
             logger.error("Failed to delete room charge: {}", e.getMessage(), e);
@@ -261,9 +257,11 @@ public class RoomChargeService {
      */
     @Transactional(readOnly = true)
     public Page<RoomChargeResponse> searchRoomCharges(Long hotelId, String searchTerm, Pageable pageable) {
-        String tenantId = TenantContext.getTenantId();
+        // Verify hotel exists
+        Hotel hotel = hotelRepository.findById(hotelId)
+                .orElseThrow(() -> new RoomChargeException("Hotel not found"));
 
-        Page<RoomCharge> roomCharges = roomChargeRepository.searchRoomCharges(hotelId, tenantId, searchTerm, pageable);
+        Page<RoomCharge> roomCharges = roomChargeRepository.searchRoomCharges(hotelId, searchTerm, pageable);
 
         return roomCharges.map(this::convertToResponse);
     }
@@ -271,10 +269,15 @@ public class RoomChargeService {
     /**
      * Create room charge from shop order
      */
-    public RoomChargeResponse createChargeFromShopOrder(ShopOrder shopOrder) {
+    public RoomChargeResponse createChargeFromShopOrder(ShopOrder shopOrder, Long hotelId) {
         try {
             if (shopOrder.getReservation() == null) {
                 throw new RoomChargeException("Cannot create room charge: Shop order is not linked to a reservation");
+            }
+
+            // Verify shop order belongs to the specified hotel
+            if (!hotelId.equals(shopOrder.getHotel().getId())) {
+                throw new RoomChargeException("Shop order not found for this hotel");
             }
 
             RoomChargeCreateRequest request = new RoomChargeCreateRequest();
@@ -285,7 +288,7 @@ public class RoomChargeService {
             request.setChargeType(RoomChargeType.SHOP_PURCHASE);
             request.setNotes("Automatically created from shop order");
 
-            return createRoomCharge(request, null);
+            return createRoomCharge(request, null, hotelId);
 
         } catch (Exception e) {
             logger.error("Failed to create room charge from shop order: {}", e.getMessage(), e);
@@ -300,7 +303,6 @@ public class RoomChargeService {
         RoomChargeResponse response = new RoomChargeResponse();
 
         response.setId(roomCharge.getId());
-        response.setTenantId(roomCharge.getTenantId());
         response.setHotelId(roomCharge.getHotel().getId());
         response.setReservationId(roomCharge.getReservation().getId());
         response.setShopOrderId(roomCharge.getShopOrder() != null ? roomCharge.getShopOrder().getId() : null);
@@ -310,11 +312,9 @@ public class RoomChargeService {
         response.setChargeDate(roomCharge.getChargeDate());
         response.setIsPaid(roomCharge.getIsPaid());
         response.setPaidAt(roomCharge.getPaidAt());
-        response.setPaymentReference(roomCharge.getPaymentReference());
         response.setNotes(roomCharge.getNotes());
         response.setCreatedBy(roomCharge.getCreatedBy() != null ? roomCharge.getCreatedBy().getId() : null);
         response.setCreatedAt(roomCharge.getCreatedAt());
-        response.setUpdatedAt(roomCharge.getUpdatedAt());
 
         // Add guest and room information for convenience
         Reservation reservation = roomCharge.getReservation();

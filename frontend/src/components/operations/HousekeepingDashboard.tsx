@@ -39,7 +39,7 @@ import {
   PlayArrow as StartIcon,
   CheckCircle as CompleteIcon
 } from '@mui/icons-material';
-import { getCurrentHotel } from '../../data/operationsMockData';
+
 
 const API_BASE_URL = 'http://localhost:8080/api';
 
@@ -135,9 +135,12 @@ const HousekeepingDashboard: React.FC = () => {
     try {
       setLoading(true);
       
-      // Get current hotel ID for filtering
-      const hotel = getCurrentHotel();
-      const hotelId = hotel?.id || 12; // Default to Addis Sunshine (ID: 12)
+      // Get current hotel ID from user profile
+      const currentUser = TokenManager.getUser();
+      if (!currentUser?.hotelId) {
+        throw new Error('No hotel ID found in user profile. User must be assigned to a hotel.');
+      }
+      const hotelId = parseInt(currentUser.hotelId);
       
       // Load tasks directly from API endpoint
       const response = await fetch(`${API_BASE_URL}/housekeeping/tasks/hotel/${hotelId}`, {
@@ -186,9 +189,12 @@ const HousekeepingDashboard: React.FC = () => {
 
   const loadStaff = async () => {
     try {
-      // Get current hotel ID for filtering
-      const hotel = getCurrentHotel();
-      const hotelId = hotel?.id || 12; // Default to Addis Sunshine (ID: 12)
+      // Get current hotel ID from user profile
+      const currentUser = TokenManager.getUser();
+      if (!currentUser?.hotelId) {
+        throw new Error('No hotel ID found in user profile. User must be assigned to a hotel.');
+      }
+      const hotelId = parseInt(currentUser.hotelId);
       
       const response = await fetch(`${API_BASE_URL}/housekeeping/staff/hotel/${hotelId}`, {
         headers: TokenManager.getAuthHeaders()

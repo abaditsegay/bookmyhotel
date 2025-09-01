@@ -7,6 +7,7 @@ import com.bookmyhotel.entity.HousekeepingTaskType;
 import com.bookmyhotel.entity.TaskPriority;
 import com.bookmyhotel.enums.WorkShift;
 import com.bookmyhotel.service.HousekeepingService;
+import com.bookmyhotel.service.HotelService;
 import com.bookmyhotel.tenant.TenantContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -21,12 +22,16 @@ public class HousekeepingController {
     @Autowired
     private HousekeepingService housekeepingService;
 
+    @Autowired
+    private HotelService hotelService;
+
     // Task endpoints
     @PostMapping("/tasks")
     public ResponseEntity<HousekeepingTask> createTask(@RequestBody HousekeepingTaskRequest request) {
         String tenantId = TenantContext.getTenantId();
+        Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
         HousekeepingTask task = housekeepingService.createTask(
-                tenantId,
+                hotelId,
                 request.getRoomId(),
                 request.getTaskType(),
                 request.getPriority(),
@@ -38,14 +43,16 @@ public class HousekeepingController {
     @GetMapping("/tasks")
     public ResponseEntity<List<HousekeepingTask>> getAllTasks() {
         String tenantId = TenantContext.getTenantId();
-        List<HousekeepingTask> tasks = housekeepingService.getAllTasks(tenantId);
+        Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
+        List<HousekeepingTask> tasks = housekeepingService.getAllTasks(hotelId);
         return ResponseEntity.ok(tasks);
     }
 
     @GetMapping("/tasks/{id}")
     public ResponseEntity<HousekeepingTask> getTaskById(@PathVariable Long id) {
         String tenantId = TenantContext.getTenantId();
-        List<HousekeepingTask> tasks = housekeepingService.getAllTasks(tenantId);
+        Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
+        List<HousekeepingTask> tasks = housekeepingService.getAllTasks(hotelId);
         HousekeepingTask task = tasks.stream()
                 .filter(t -> t.getId().equals(id))
                 .findFirst()
@@ -57,7 +64,7 @@ public class HousekeepingController {
     public ResponseEntity<List<HousekeepingTask>> getTasksByHotel(@PathVariable Long hotelId) {
         String tenantId = TenantContext.getTenantId();
         // Filter by hotel through room relationship
-        List<HousekeepingTask> allTasks = housekeepingService.getAllTasks(tenantId);
+        List<HousekeepingTask> allTasks = housekeepingService.getAllTasks(hotelId);
         List<HousekeepingTask> hotelTasks = allTasks.stream()
                 .filter(task -> task.getRoom() != null && task.getRoom().getHotel() != null &&
                         task.getRoom().getHotel().getId().equals(hotelId))
@@ -68,28 +75,32 @@ public class HousekeepingController {
     @GetMapping("/tasks/status/{status}")
     public ResponseEntity<List<HousekeepingTask>> getTasksByStatus(@PathVariable HousekeepingTaskStatus status) {
         String tenantId = TenantContext.getTenantId();
-        List<HousekeepingTask> tasks = housekeepingService.getTasksByStatus(tenantId, status);
+        Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
+        List<HousekeepingTask> tasks = housekeepingService.getTasksByStatus(hotelId, status);
         return ResponseEntity.ok(tasks);
     }
 
     @GetMapping("/tasks/assigned/{staffId}")
     public ResponseEntity<List<HousekeepingTask>> getTasksByAssignedUser(@PathVariable Long staffId) {
         String tenantId = TenantContext.getTenantId();
-        List<HousekeepingTask> tasks = housekeepingService.getTasksByStaff(tenantId, staffId);
+        Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
+        List<HousekeepingTask> tasks = housekeepingService.getTasksByStaff(hotelId, staffId);
         return ResponseEntity.ok(tasks);
     }
 
     @PostMapping("/tasks/{id}/assign")
     public ResponseEntity<HousekeepingTask> assignTask(@PathVariable Long id, @RequestBody AssignTaskRequest request) {
         String tenantId = TenantContext.getTenantId();
-        HousekeepingTask task = housekeepingService.assignTask(tenantId, id, request.getStaffId());
+        Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
+        HousekeepingTask task = housekeepingService.assignTask(hotelId, id, request.getStaffId());
         return ResponseEntity.ok(task);
     }
 
     @PostMapping("/tasks/{id}/start")
     public ResponseEntity<HousekeepingTask> startTask(@PathVariable Long id) {
         String tenantId = TenantContext.getTenantId();
-        HousekeepingTask task = housekeepingService.startTask(tenantId, id);
+        Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
+        HousekeepingTask task = housekeepingService.startTask(hotelId, id);
         return ResponseEntity.ok(task);
     }
 
@@ -97,7 +108,8 @@ public class HousekeepingController {
     public ResponseEntity<HousekeepingTask> completeTask(@PathVariable Long id,
             @RequestBody CompleteTaskRequest request) {
         String tenantId = TenantContext.getTenantId();
-        HousekeepingTask task = housekeepingService.completeTask(tenantId, id, request.getNotes(),
+        Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
+        HousekeepingTask task = housekeepingService.completeTask(hotelId, id, request.getNotes(),
                 request.getQualityScore());
         return ResponseEntity.ok(task);
     }
@@ -106,7 +118,8 @@ public class HousekeepingController {
     public ResponseEntity<HousekeepingTask> completeTaskWithIssues(@PathVariable Long id,
             @RequestBody CompleteTaskWithIssuesRequest request) {
         String tenantId = TenantContext.getTenantId();
-        HousekeepingTask task = housekeepingService.completeTaskWithIssues(tenantId, id, request.getNotes(),
+        Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
+        HousekeepingTask task = housekeepingService.completeTaskWithIssues(hotelId, id, request.getNotes(),
                 request.getIssueDescription());
         return ResponseEntity.ok(task);
     }
@@ -114,14 +127,16 @@ public class HousekeepingController {
     @PutMapping("/tasks/{id}")
     public ResponseEntity<HousekeepingTask> updateTask(@PathVariable Long id, @RequestBody HousekeepingTask task) {
         String tenantId = TenantContext.getTenantId();
-        HousekeepingTask updatedTask = housekeepingService.updateTask(tenantId, id, task);
+        Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
+        HousekeepingTask updatedTask = housekeepingService.updateTask(hotelId, id, task);
         return ResponseEntity.ok(updatedTask);
     }
 
     @PostMapping("/tasks/{id}/cancel")
     public ResponseEntity<HousekeepingTask> cancelTask(@PathVariable Long id, @RequestBody CancelTaskRequest request) {
         String tenantId = TenantContext.getTenantId();
-        HousekeepingTask task = housekeepingService.cancelTask(tenantId, id, request.getReason());
+        Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
+        HousekeepingTask task = housekeepingService.cancelTask(hotelId, id, request.getReason());
         return ResponseEntity.ok(task);
     }
 
@@ -129,19 +144,23 @@ public class HousekeepingController {
     @PostMapping("/staff")
     public ResponseEntity<HousekeepingStaff> createStaff(@RequestBody HousekeepingStaffRequest request) {
         String tenantId = TenantContext.getTenantId();
+        Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
         HousekeepingStaff staff = housekeepingService.createStaff(
-                tenantId,
+                hotelId,
                 request.getEmail(),
-                request.getHotelId(),
                 request.getShiftType(),
-                request.getEmployeeId());
+                request.getEmployeeId(),
+                request.getFirstName(),
+                request.getLastName(),
+                request.getPhone());
         return ResponseEntity.ok(staff);
     }
 
     @GetMapping("/staff")
     public ResponseEntity<List<HousekeepingStaffDTO>> getAllStaff() {
         String tenantId = TenantContext.getTenantId();
-        List<HousekeepingStaff> staff = housekeepingService.getAllStaff(tenantId);
+        Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
+        List<HousekeepingStaff> staff = housekeepingService.getAllStaff(hotelId);
         List<HousekeepingStaffDTO> staffDTOs = staff.stream()
                 .map(this::convertToStaffDTO)
                 .toList();
@@ -151,14 +170,20 @@ public class HousekeepingController {
     @GetMapping("/staff/hotel/{hotelId}")
     public ResponseEntity<List<HousekeepingStaff>> getStaffByHotel(@PathVariable Long hotelId) {
         String tenantId = TenantContext.getTenantId();
-        List<HousekeepingStaff> staff = housekeepingService.getStaffByHotel(tenantId, hotelId);
+        // Validate that the provided hotelId matches the tenant's hotel
+        Long userHotelId = hotelService.getHotelIdByTenantId(tenantId);
+        if (!hotelId.equals(userHotelId)) {
+            return ResponseEntity.badRequest().build();
+        }
+        List<HousekeepingStaff> staff = housekeepingService.getAllStaff(hotelId);
         return ResponseEntity.ok(staff);
     }
 
     @GetMapping("/staff/{id}")
     public ResponseEntity<HousekeepingStaff> getStaffById(@PathVariable Long id) {
         String tenantId = TenantContext.getTenantId();
-        List<HousekeepingStaff> allStaff = housekeepingService.getAllStaff(tenantId);
+        Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
+        List<HousekeepingStaff> allStaff = housekeepingService.getAllStaff(hotelId);
         HousekeepingStaff staff = allStaff.stream()
                 .filter(s -> s.getId().equals(id))
                 .findFirst()
@@ -169,14 +194,16 @@ public class HousekeepingController {
     @PutMapping("/staff/{id}")
     public ResponseEntity<HousekeepingStaff> updateStaff(@PathVariable Long id, @RequestBody HousekeepingStaff staff) {
         String tenantId = TenantContext.getTenantId();
-        HousekeepingStaff updatedStaff = housekeepingService.updateStaff(tenantId, id, staff);
+        Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
+        HousekeepingStaff updatedStaff = housekeepingService.updateStaff(hotelId, id, staff);
         return ResponseEntity.ok(updatedStaff);
     }
 
     @PostMapping("/staff/{id}/deactivate")
     public ResponseEntity<HousekeepingStaff> deactivateStaff(@PathVariable Long id) {
         String tenantId = TenantContext.getTenantId();
-        HousekeepingStaff staff = housekeepingService.deactivateStaff(tenantId, id);
+        Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
+        HousekeepingStaff staff = housekeepingService.deactivateStaff(hotelId, id);
         return ResponseEntity.ok(staff);
     }
 
@@ -184,21 +211,24 @@ public class HousekeepingController {
     @GetMapping("/stats/tasks/status/{status}/count")
     public ResponseEntity<Long> getTaskCountByStatus(@PathVariable HousekeepingTaskStatus status) {
         String tenantId = TenantContext.getTenantId();
-        long count = housekeepingService.getTaskCountByStatus(tenantId, status);
+        Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
+        long count = housekeepingService.getTaskCountByStatus(hotelId, status);
         return ResponseEntity.ok(count);
     }
 
     @GetMapping("/stats/quality-score")
     public ResponseEntity<Double> getAverageQualityScore() {
         String tenantId = TenantContext.getTenantId();
-        Double score = housekeepingService.getAverageQualityScore(tenantId);
+        Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
+        Double score = housekeepingService.getAverageQualityScore(hotelId);
         return ResponseEntity.ok(score);
     }
 
     @GetMapping("/stats/staff/count")
     public ResponseEntity<Long> getActiveStaffCount() {
         String tenantId = TenantContext.getTenantId();
-        Long count = housekeepingService.getActiveStaffCount(tenantId);
+        Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
+        Long count = housekeepingService.getActiveStaffCount(hotelId);
         return ResponseEntity.ok(count);
     }
 
@@ -257,6 +287,9 @@ public class HousekeepingController {
         private Long hotelId;
         private com.bookmyhotel.enums.WorkShift shiftType;
         private String employeeId;
+        private String firstName;
+        private String lastName;
+        private String phone;
 
         // Getters and setters
         public String getEmail() {
@@ -289,6 +322,30 @@ public class HousekeepingController {
 
         public void setEmployeeId(String employeeId) {
             this.employeeId = employeeId;
+        }
+
+        public String getFirstName() {
+            return firstName;
+        }
+
+        public void setFirstName(String firstName) {
+            this.firstName = firstName;
+        }
+
+        public String getLastName() {
+            return lastName;
+        }
+
+        public void setLastName(String lastName) {
+            this.lastName = lastName;
+        }
+
+        public String getPhone() {
+            return phone;
+        }
+
+        public void setPhone(String phone) {
+            this.phone = phone;
         }
     }
 

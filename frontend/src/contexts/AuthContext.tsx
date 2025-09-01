@@ -8,7 +8,7 @@ interface User {
   firstName?: string;
   lastName?: string;
   phone?: string;
-  role: 'ADMIN' | 'HOTEL_ADMIN' | 'HOTEL_MANAGER' | 'FRONTDESK' | 'HOUSEKEEPING' | 'OPERATIONS_SUPERVISOR' | 'MAINTENANCE' | 'CUSTOMER' | 'GUEST';
+  role: 'ADMIN' | 'HOTEL_ADMIN' | 'HOTEL_MANAGER' | 'FRONTDESK' | 'HOUSEKEEPING' | 'OPERATIONS_SUPERVISOR' | 'MAINTENANCE' | 'CUSTOMER' | 'GUEST' | 'SYSTEM_ADMIN';
   roles: string[]; // Support multiple roles
   tenantId?: string | null; // null for system-wide users
   hotelId?: string;
@@ -129,8 +129,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
         lastLogin: new Date().toISOString(),
         isActive: true,
         // Helper properties
-        isSystemWide: !loginData.tenantId && (Array.isArray(loginData.roles) ? loginData.roles : [loginData.roles]).includes('ADMIN'), // true if tenantId is null AND user is ADMIN
-        isTenantBound: !!loginData.tenantId, // true if tenantId exists
+        isSystemWide: (loginData.tenantId === null || loginData.tenantId === undefined) && 
+                      (Array.isArray(loginData.roles) ? loginData.roles : [loginData.roles])
+                      .some((role: string) => ['SYSTEM_ADMIN', 'ADMIN', 'GUEST', 'CUSTOMER'].includes(role)), // true if no tenant AND has system-wide role
+        isTenantBound: (loginData.tenantId !== null && loginData.tenantId !== undefined), // true if user has a tenant assignment
       };
 
       setUser(user);

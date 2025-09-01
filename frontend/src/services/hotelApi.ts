@@ -52,7 +52,17 @@ class HotelApiService {
     });
 
     if (!response.ok) {
-      throw new Error(`API Error: ${response.status} ${response.statusText}`);
+      // Try to parse error message from response body
+      let errorMessage = `API Error: ${response.status} ${response.statusText}`;
+      
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorData.error || errorMessage;
+      } catch (parseError) {
+        // If JSON parsing fails, use the default error message
+      }
+      
+      throw new Error(errorMessage);
     }
 
     return response.json();
@@ -99,6 +109,77 @@ class HotelApiService {
 
     const query = params.toString() ? `?${params.toString()}` : '';
     return this.fetchApi<HotelSearchResult>(`/hotels/${hotelId}${query}`);
+  }
+
+  // Public hotel details (without tenant context for anonymous users)
+  async getHotelDetailsPublic(
+    hotelId: number, 
+    checkInDate?: string, 
+    checkOutDate?: string, 
+    guests?: number
+  ): Promise<HotelSearchResult> {
+    const params = new URLSearchParams();
+    if (checkInDate) params.append('checkInDate', checkInDate);
+    if (checkOutDate) params.append('checkOutDate', checkOutDate);
+    if (guests) params.append('guests', guests.toString());
+
+    const query = params.toString() ? `?${params.toString()}` : '';
+    
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    // Deliberately NOT adding Authorization or X-Tenant-ID headers for public access
+    const response = await fetch(`${API_BASE_URL}/hotels/${hotelId}${query}`, {
+      method: 'GET',
+      headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Public Hotel Details Error: ${response.status} ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+
+  // Public hotel rooms (without tenant context for anonymous users)
+  async getHotelRoomsPublic(
+    hotelId: number,
+    searchRequest: HotelSearchRequest
+  ): Promise<HotelSearchResult> {
+    const params = new URLSearchParams();
+    if (searchRequest.checkInDate) params.append('checkInDate', searchRequest.checkInDate);
+    if (searchRequest.checkOutDate) params.append('checkOutDate', searchRequest.checkOutDate);
+    if (searchRequest.guests) params.append('guests', searchRequest.guests.toString());
+    if (searchRequest.roomType) params.append('roomType', searchRequest.roomType);
+    if (searchRequest.location) params.append('location', searchRequest.location);
+
+    const query = params.toString() ? `?${params.toString()}` : '';
+    
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    // Deliberately NOT adding Authorization or X-Tenant-ID headers for public access
+    const response = await fetch(`${API_BASE_URL}/hotels/${hotelId}/rooms${query}`, {
+      method: 'GET',
+      headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Public Hotel Rooms Error: ${response.status} ${response.statusText}`);
+    }
+
+    const rooms = await response.json();
+    
+    // The backend returns an array of rooms, but we need to structure it like HotelSearchResult
+    // We'll get the hotel details first and then combine with room data
+    const hotelDetails = await this.getHotelDetailsPublic(hotelId, searchRequest.checkInDate, searchRequest.checkOutDate, searchRequest.guests);
+    
+    return {
+      ...hotelDetails,
+      availableRooms: rooms || [],
+    };
   }
 
   // Public random hotels for advertisement display

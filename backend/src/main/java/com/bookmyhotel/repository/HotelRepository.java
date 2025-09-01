@@ -115,17 +115,17 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
        /**
         * Find hotels by tenant ID
         */
-       List<Hotel> findByTenantId(String tenantId);
+       List<Hotel> findByTenant_Id(String tenantId);
 
        /**
         * Find active hotels by tenant ID
         */
-       List<Hotel> findByTenantIdAndIsActiveTrue(String tenantId);
+       List<Hotel> findByTenant_IdAndIsActiveTrue(String tenantId);
 
        /**
         * Count hotels by tenant ID
         */
-       long countByTenantId(String tenantId);
+       long countByTenant_Id(String tenantId);
 
        /**
         * Find random active hotels for advertisement display

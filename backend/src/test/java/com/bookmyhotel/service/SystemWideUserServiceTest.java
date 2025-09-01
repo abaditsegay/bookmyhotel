@@ -32,10 +32,20 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.bookmyhotel.entity.User;
 import com.bookmyhotel.entity.UserRole;
+import com.bookmyhotel.entity.Hotel;
+import com.bookmyhotel.entity.Tenant;
 import com.bookmyhotel.repository.UserRepository;
 
 @ExtendWith(MockitoExtension.class)
 class SystemWideUserServiceTest {
+
+    // Test constants to avoid hardcoded values
+    private static final String TEST_TENANT_ID = "test-tenant-uuid";
+    private static final String TEST_HOTEL_NAME = "Test Hotel Name";
+    private static final String TEST_TENANT_NAME = "Test Tenant Name";
+    private static final Long TEST_USER_ID = 1L;
+    private static final Long TEST_HOTEL_ID = 100L;
+    private static final String TEST_EMAIL_DOMAIN = "@testdomain.com";
 
     @Mock
     private UserRepository userRepository;
@@ -61,10 +71,10 @@ class SystemWideUserServiceTest {
         Set<UserRole> adminRoles = new HashSet<>();
         adminRoles.add(UserRole.ADMIN);
         systemAdmin.setRoles(adminRoles);
-        systemAdmin.setTenantId(null);
+        systemAdmin.setHotel(null); // System-wide user (no hotel association)
         systemAdmin.setPassword("hashedPassword");
 
-        // System-wide guest user (tenantId = null)
+        // System-wide guest user (hotel = null)
         systemGuest = new User();
         systemGuest.setId(2L);
         systemGuest.setEmail("guest@system.com");
@@ -73,10 +83,10 @@ class SystemWideUserServiceTest {
         Set<UserRole> guestRoles = new HashSet<>();
         guestRoles.add(UserRole.CUSTOMER);
         systemGuest.setRoles(guestRoles);
-        systemGuest.setTenantId(null);
+        systemGuest.setHotel(null); // System-wide user (no hotel association)
         systemGuest.setPassword("hashedPassword");
 
-        // Tenant-bound user (has tenantId)
+        // Tenant-bound user (has hotel with tenant)
         tenantUser = new User();
         tenantUser.setId(3L);
         tenantUser.setEmail("user@hotel.com");
@@ -85,7 +95,16 @@ class SystemWideUserServiceTest {
         Set<UserRole> tenantGuestRoles = new HashSet<>();
         tenantGuestRoles.add(UserRole.CUSTOMER);
         tenantUser.setRoles(tenantGuestRoles);
-        tenantUser.setTenantId("hotel-tenant-1");
+        
+        // Create a mock hotel with tenant for tenant-bound user
+        Hotel mockHotel = new Hotel();
+        mockHotel.setId(TEST_HOTEL_ID);
+        mockHotel.setName(TEST_HOTEL_NAME);
+        Tenant mockTenant = new Tenant();
+        mockTenant.setId(TEST_TENANT_ID);
+        mockTenant.setName(TEST_TENANT_NAME);
+        mockHotel.setTenant(mockTenant);
+        tenantUser.setHotel(mockHotel);
         tenantUser.setPassword("hashedPassword");
     }
 
@@ -120,7 +139,7 @@ class SystemWideUserServiceTest {
         Page<User> page = new PageImpl<>(systemUsers);
         Pageable pageable = PageRequest.of(0, 10);
         
-        when(userRepository.findByTenantIdIsNull(pageable)).thenReturn(page);
+        when(userRepository.findByHotelIsNull(pageable)).thenReturn(page);
 
         // Act
         Page<User> result = systemWideUserService.getAllSystemWideUsers(pageable);
@@ -130,7 +149,7 @@ class SystemWideUserServiceTest {
         assertEquals(2, result.getContent().size());
         assertTrue(result.getContent().stream().allMatch(user -> user.getTenantId() == null));
         
-        verify(userRepository).findByTenantIdIsNull(pageable);
+        verify(userRepository).findByHotelIsNull(pageable);
     }
 
     @Test
@@ -257,14 +276,14 @@ class SystemWideUserServiceTest {
         Set<UserRole> guestRoles = new HashSet<>();
         guestRoles.add(UserRole.CUSTOMER);
         guestToPromote.setRoles(guestRoles);
-        guestToPromote.setTenantId(null);
+        guestToPromote.setHotel(null); // System-wide user (no hotel association)
         
         User promotedAdmin = new User();
         promotedAdmin.setId(2L);
         Set<UserRole> adminRoles = new HashSet<>();
         adminRoles.add(UserRole.ADMIN);
         promotedAdmin.setRoles(adminRoles);
-        promotedAdmin.setTenantId(null);
+        promotedAdmin.setHotel(null); // System-wide user (no hotel association)
         
         when(userRepository.findById(2L)).thenReturn(Optional.of(guestToPromote));
         when(userRepository.save(any(User.class))).thenReturn(promotedAdmin);
@@ -315,63 +334,77 @@ class SystemWideUserServiceTest {
     @Test
     void testDemoteFromSystemAdmin() {
         // Arrange
+        Long adminId = TEST_USER_ID;
+        String targetTenantId = TEST_TENANT_ID;
+        
         User adminToDemote = new User();
-        adminToDemote.setId(1L);
+        adminToDemote.setId(adminId);
         Set<UserRole> adminRoles = new HashSet<>();
         adminRoles.add(UserRole.ADMIN);
         adminToDemote.setRoles(adminRoles);
-        adminToDemote.setTenantId(null);
+        adminToDemote.setHotel(null); // System-wide user (no hotel association)
         
         User demotedUser = new User();
-        demotedUser.setId(1L);
+        demotedUser.setId(adminId);
         Set<UserRole> guestRoles = new HashSet<>();
         guestRoles.add(UserRole.CUSTOMER);
         demotedUser.setRoles(guestRoles);
-        demotedUser.setTenantId("hotel-tenant-1");
         
-        when(userRepository.findById(1L)).thenReturn(Optional.of(adminToDemote));
+        // Create hotel with tenant for demoted user using test constants
+        Hotel demotedUserHotel = new Hotel();
+        demotedUserHotel.setId(TEST_HOTEL_ID);
+        demotedUserHotel.setName(TEST_HOTEL_NAME);
+        Tenant demotedUserTenant = new Tenant();
+        demotedUserTenant.setId(targetTenantId);
+        demotedUserTenant.setName(TEST_TENANT_NAME);
+        demotedUserHotel.setTenant(demotedUserTenant);
+        demotedUser.setHotel(demotedUserHotel);
+        
+        when(userRepository.findById(adminId)).thenReturn(Optional.of(adminToDemote));
         when(userRepository.save(any(User.class))).thenReturn(demotedUser);
 
         // Act
-        User result = systemWideUserService.demoteFromSystemAdmin(1L, "hotel-tenant-1");
+        User result = systemWideUserService.demoteFromSystemAdmin(adminId, targetTenantId);
 
         // Assert
         assertNotNull(result);
         assertTrue(result.getRoles().contains(UserRole.CUSTOMER));
-        assertEquals("hotel-tenant-1", result.getTenantId());
+        assertEquals(targetTenantId, result.getTenantId());
         
-        verify(userRepository).findById(1L);
+        verify(userRepository).findById(adminId);
         verify(userRepository).save(argThat(user -> 
             user.getRoles().contains(UserRole.CUSTOMER) && 
-            "hotel-tenant-1".equals(user.getTenantId())
+            targetTenantId.equals(user.getTenantId())
         ));
     }
 
     @Test
     void testDemoteFromSystemAdmin_UserNotFound() {
         // Arrange
-        when(userRepository.findById(999L)).thenReturn(Optional.empty());
+        Long nonExistentUserId = 999L;
+        when(userRepository.findById(nonExistentUserId)).thenReturn(Optional.empty());
 
         // Act & Assert
         assertThrows(IllegalArgumentException.class, () -> {
-            systemWideUserService.demoteFromSystemAdmin(999L, "hotel-tenant-1");
+            systemWideUserService.demoteFromSystemAdmin(nonExistentUserId, TEST_TENANT_ID);
         });
         
-        verify(userRepository).findById(999L);
+        verify(userRepository).findById(nonExistentUserId);
         verify(userRepository, never()).save(any(User.class));
     }
 
     @Test
     void testDemoteFromSystemAdmin_NotSystemAdmin() {
         // Arrange
-        when(userRepository.findById(2L)).thenReturn(Optional.of(systemGuest));
+        Long guestUserId = 2L;
+        when(userRepository.findById(guestUserId)).thenReturn(Optional.of(systemGuest));
 
         // Act & Assert
         assertThrows(IllegalArgumentException.class, () -> {
-            systemWideUserService.demoteFromSystemAdmin(2L, "hotel-tenant-1");
+            systemWideUserService.demoteFromSystemAdmin(guestUserId, TEST_TENANT_ID);
         });
         
-        verify(userRepository).findById(2L);
+        verify(userRepository).findById(guestUserId);
         verify(userRepository, never()).save(any(User.class));
     }
 }

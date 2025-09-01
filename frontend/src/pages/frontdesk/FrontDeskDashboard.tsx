@@ -49,6 +49,9 @@ const FrontDeskDashboard: React.FC = () => {
   const [stats, setStats] = useState<FrontDeskStats | null>(null);
   const [walkInModalOpen, setWalkInModalOpen] = useState(false);
   
+  // Booking refresh trigger for walk-in bookings
+  const [bookingRefreshTrigger, setBookingRefreshTrigger] = useState(0);
+  
   // Snackbar state for success notifications
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -102,8 +105,10 @@ const FrontDeskDashboard: React.FC = () => {
       severity: 'success'
     });
     
-    // Refresh stats and switch to booking management tab
+    // Refresh stats and trigger booking list refresh
     loadStats();
+    setBookingRefreshTrigger(prev => prev + 1);
+    
     // Switch to booking management tab to see the new booking (now index 0)
     setActiveTab(0);
     setSearchParams({ tab: '0' });
@@ -214,6 +219,7 @@ const FrontDeskDashboard: React.FC = () => {
           showActions={true}
           showCheckInOut={true}
           currentTab={activeTab}
+          refreshTrigger={bookingRefreshTrigger}
           onBookingAction={(booking, action) => {
             console.log(`${action} for booking:`, booking);
             // Handle booking actions like check-in/check-out

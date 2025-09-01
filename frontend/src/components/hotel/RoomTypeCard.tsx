@@ -75,7 +75,7 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
       <Box sx={{ position: 'relative' }}>
         <CardMedia
           component="img"
-          height="200"
+          height="160"
           image={getRoomImage(roomType.roomType)}
           alt={`${roomType.roomType} room`}
           sx={{ objectFit: 'cover' }}
@@ -120,10 +120,10 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
         )}
       </Box>
       
-      <CardContent sx={{ p: 2 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+      <CardContent sx={{ p: 1.5 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}>
           <Box>
-            <Typography variant="h6" component="h3" gutterBottom>
+            <Typography variant="subtitle1" component="h3" gutterBottom>
               {formatRoomTypeName(roomType.roomType)}
             </Typography>
             <Chip 
@@ -131,11 +131,11 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
               color="primary" 
               variant="outlined" 
               size="small"
-              sx={{ mb: 1 }}
+              sx={{ mb: 1, fontSize: '0.7rem' }}
             />
           </Box>
           <Box sx={{ textAlign: 'right' }}>
-            <Typography variant="h5" color="primary.main" sx={{ fontWeight: 'bold' }}>
+            <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold' }}>
               ${roomType.pricePerNight}
             </Typography>
             <Typography variant="caption" color="text.secondary">
@@ -145,13 +145,13 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
         </Box>
 
         {/* Room Details */}
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-          <PeopleIcon sx={{ fontSize: 18, mr: 1, color: 'text.secondary' }} />
-          <Typography variant="body2" color="text.secondary">
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+          <PeopleIcon sx={{ fontSize: 16, mr: 1, color: 'text.secondary' }} />
+          <Typography variant="caption" color="text.secondary">
             Up to {roomType.capacity} guests
           </Typography>
-          <BedIcon sx={{ fontSize: 18, ml: 2, mr: 1, color: 'text.secondary' }} />
-          <Typography variant="body2" color="text.secondary">
+          <BedIcon sx={{ fontSize: 16, ml: 2, mr: 1, color: 'text.secondary' }} />
+          <Typography variant="caption" color="text.secondary">
             {roomType.roomType === 'SINGLE' ? '1 bed' : 
              roomType.roomType === 'DOUBLE' ? '2 beds' :
              roomType.roomType === 'SUITE' ? 'Multiple rooms' :
@@ -161,9 +161,9 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
         </Box>
 
         {/* Availability Message */}
-        <Box sx={{ mb: 2 }}>
+        <Box sx={{ mb: 1 }}>
           <Typography 
-            variant="body2" 
+            variant="caption" 
             color={isAvailable ? "success.main" : "error.main"} 
             sx={{ fontWeight: 'medium' }}
           >
@@ -173,35 +173,26 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
 
         {/* Description */}
         {roomType.description && (
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          <Typography variant="caption" color="text.secondary" sx={{ mb: 1 }}>
             {roomType.description}
           </Typography>
         )}
 
         {/* Amenities */}
-        <Box sx={{ mb: 2 }}>
-          <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 'bold', fontSize: '0.875rem' }}>
+        <Box sx={{ mb: 1.5 }}>
+          <Typography variant="caption" gutterBottom sx={{ fontWeight: 'bold', fontSize: '0.75rem' }}>
             Room Amenities
           </Typography>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-            {amenities.slice(0, 4).map((amenity, index) => (
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.25 }}>
+            {amenities.map((amenity, index) => (
               <Chip 
                 key={index} 
                 label={amenity} 
                 size="small" 
                 variant="outlined"
-                sx={{ fontSize: '0.75rem', height: 24 }}
+                sx={{ fontSize: '0.65rem', height: 20 }}
               />
             ))}
-            {amenities.length > 4 && (
-              <Chip 
-                label={`+${amenities.length - 4} more`} 
-                size="small" 
-                variant="filled"
-                color="secondary"
-                sx={{ fontSize: '0.75rem', height: 24 }}
-              />
-            )}
           </Box>
         </Box>
 

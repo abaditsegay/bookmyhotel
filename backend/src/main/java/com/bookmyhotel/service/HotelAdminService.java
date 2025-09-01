@@ -236,7 +236,6 @@ public class HotelAdminService {
         newUser.setIsActive(true);
         newUser.setRoles(userDTO.getRoles());
         newUser.setHotel(hotel);
-        newUser.setTenantId(admin.getTenantId());
         newUser.setCreatedAt(LocalDateTime.now());
         newUser.setUpdatedAt(LocalDateTime.now());
 
@@ -422,7 +421,6 @@ public class HotelAdminService {
         newRoom.setDescription(roomDTO.getDescription());
         newRoom.setIsAvailable(true);
         newRoom.setHotel(hotel);
-        newRoom.setTenantId(admin.getTenantId());
         newRoom.setCreatedAt(LocalDateTime.now());
         newRoom.setUpdatedAt(LocalDateTime.now());
 
@@ -734,8 +732,8 @@ public class HotelAdminService {
         dto.setCapacity(room.getCapacity());
         dto.setDescription(room.getDescription());
 
-        // Check if room is currently booked (use room's tenant ID)
-        boolean isCurrentlyBooked = roomRepository.isRoomCurrentlyBooked(room.getId(), room.getTenantId());
+        // Check if room is currently booked (use room's hotel ID)
+        boolean isCurrentlyBooked = roomRepository.isRoomCurrentlyBooked(room.getId(), room.getHotelId());
 
         // Update room status to OCCUPIED if currently booked and status is AVAILABLE
         if (isCurrentlyBooked && room.getStatus() == RoomStatus.AVAILABLE) {
@@ -825,10 +823,15 @@ public class HotelAdminService {
                                     : "";
                         }
 
+                        // For room number search, handle null room (walk-in bookings)
+                        String roomNumber = (reservation.getRoom() != null)
+                                ? reservation.getRoom().getRoomNumber()
+                                : "To be assigned";
+
                         return firstName.toLowerCase().contains(searchLower) ||
                                 lastName.toLowerCase().contains(searchLower) ||
                                 email.toLowerCase().contains(searchLower) ||
-                                reservation.getRoom().getRoomNumber().toLowerCase().contains(searchLower) ||
+                                roomNumber.toLowerCase().contains(searchLower) ||
                                 reservation.getStatus().name().toLowerCase().contains(searchLower);
                     })
                     .collect(Collectors.toList());
@@ -866,7 +869,16 @@ public class HotelAdminService {
                 .orElseThrow(() -> new RuntimeException("Booking not found with id: " + reservationId));
 
         // Verify the reservation belongs to the specified hotel
-        if (!reservation.getRoom().getHotel().getId().equals(hotelId)) {
+        // Handle both assigned and unassigned reservations
+        Long reservationHotelId;
+        if (reservation.getRoom() != null) {
+            reservationHotelId = reservation.getRoom().getHotel().getId();
+        } else {
+            // For reservations without assigned rooms, use the hotel_id field directly
+            reservationHotelId = reservation.getHotelId();
+        }
+
+        if (!reservationHotelId.equals(hotelId)) {
             throw new RuntimeException("Booking does not belong to your hotel");
         }
 
@@ -1027,8 +1039,9 @@ public class HotelAdminService {
 
         try {
             // Use native query to bypass tenant filtering for guest users
+            // Guest users are those without hotel_id (not staff members)
             Query query = entityManager.createNativeQuery(
-                    "SELECT id, email, first_name, last_name, phone, tenant_id FROM users WHERE id = ? AND tenant_id IS NULL");
+                    "SELECT id, email, first_name, last_name, phone FROM users WHERE id = ? AND hotel_id IS NULL");
             query.setParameter(1, guestId);
             Object[] result = (Object[]) query.getSingleResult();
 
@@ -1060,11 +1073,26 @@ public class HotelAdminService {
 
         // Room details
         Room room = reservation.getRoom();
-        response.setRoomNumber(room.getRoomNumber());
-        response.setRoomType(room.getRoomType().name());
-        response.setPricePerNight(room.getPricePerNight());
-        response.setHotelName(room.getHotel().getName());
-        response.setHotelAddress(room.getHotel().getAddress());
+        if (room != null) {
+            response.setRoomNumber(room.getRoomNumber());
+            response.setRoomType(room.getRoomType().name());
+            response.setPricePerNight(room.getPricePerNight());
+            response.setHotelName(room.getHotel().getName());
+            response.setHotelAddress(room.getHotel().getAddress());
+        } else {
+            // For bookings without assigned rooms yet
+            response.setRoomNumber("To be assigned");
+            response.setRoomType(reservation.getRoomType() != null ? reservation.getRoomType().name() : "Unknown");
+            response.setPricePerNight(reservation.getPricePerNight());
+            // Get hotel details from reservation's hotel field
+            if (reservation.getHotel() != null) {
+                response.setHotelName(reservation.getHotel().getName());
+                response.setHotelAddress(reservation.getHotel().getAddress());
+            } else {
+                response.setHotelName("Unknown Hotel");
+                response.setHotelAddress("Unknown Address");
+            }
+        }
 
         // Guest details - handle both registered users and guest bookings
         if (reservation.getGuest() != null) {

@@ -35,6 +35,7 @@ import com.bookmyhotel.exception.ResourceNotFoundException;
 import com.bookmyhotel.repository.ReservationRepository;
 import com.bookmyhotel.repository.RoomRepository;
 import com.bookmyhotel.repository.UserRepository;
+import com.bookmyhotel.repository.HotelRepository;
 import com.bookmyhotel.service.payment.EthiopianMobilePaymentService;
 import com.bookmyhotel.dto.payment.PaymentInitiationResponse;
 import com.bookmyhotel.dto.payment.PaymentInitiationRequest;
@@ -82,6 +83,12 @@ public class BookingService {
     @Autowired
     private EthiopianMobilePaymentService ethiopianPaymentService;
 
+    @Autowired
+    private RoomTypePricingService roomTypePricingService;
+
+    @Autowired
+    private HotelRepository hotelRepository;
+
     @Value("${stripe.api.key:}")
     private String stripeApiKey;
 
@@ -119,20 +126,9 @@ public class BookingService {
                         request.getRoomType() + " for the selected dates");
             }
 
-            // Get a sample room of this type for pricing information (don't assign it)
-            Room sampleRoom = roomRepository.findFirstRoomOfTypeForHotel(
-                    request.getHotelId(),
-                    roomTypeEnum)
-                    .orElseThrow(() -> new BookingException("Room type " +
-                            request.getRoomType() + " not found in this hotel"));
-
-            // Get the hotel to determine the correct tenant context
-            Hotel hotel = sampleRoom.getHotel();
-            String hotelTenantId = hotel.getTenantId();
-
-            // Set the tenant context to the hotel's tenant for the rest of the booking
-            // process
-            com.bookmyhotel.tenant.TenantContext.setTenantId(hotelTenantId);
+            // Get hotel entity
+            Hotel hotel = hotelRepository.findById(request.getHotelId())
+                    .orElseThrow(() -> new BookingException("Hotel not found with ID: " + request.getHotelId()));
 
             // Get or create user (authenticated or guest)
             User user = null;
@@ -143,11 +139,18 @@ public class BookingService {
             }
             // For anonymous guests, we no longer create User records
 
-            // Calculate total amount using sample room pricing
-            BigDecimal totalAmount = calculateTotalAmount(sampleRoom, request);
+            // Calculate total amount using room type pricing instead of sample room
+            BigDecimal totalAmount = calculateTotalAmountByRoomType(request.getHotelId(), roomTypeEnum, request);
 
-            // Create reservation WITHOUT assigning specific room - only room type
-            Reservation reservation = createReservationWithoutRoom(request, sampleRoom, user, totalAmount);
+            // Create reservation - check if specific room is requested (walk-in scenario)
+            Reservation reservation;
+            if (request.getRoomId() != null) {
+                // Walk-in booking with specific room assignment
+                reservation = createReservationWithSpecificRoom(request, hotel, roomTypeEnum, user, totalAmount);
+            } else {
+                // Regular booking without specific room - room assigned during check-in
+                reservation = createReservationWithoutRoom(request, hotel, roomTypeEnum, user, totalAmount);
+            }
 
             // Process payment if payment method provided
             if (request.getPaymentMethodId() != null) {
@@ -240,14 +243,22 @@ public class BookingService {
             // Validate booking request
             validateRoomTypeBookingRequest(request, userEmail == null);
 
-            // Find an available room of the requested type
-            Room room = roomRepository.findFirstAvailableRoomOfType(
+            // Check room type availability WITHOUT assigning a specific room
+            RoomType roomTypeEnum = request.getRoomType();
+            boolean hasAvailableRooms = roomRepository.hasAvailableRoomsOfType(
                     request.getHotelId(),
-                    request.getRoomType(),
+                    roomTypeEnum,
                     request.getCheckInDate(),
-                    request.getCheckOutDate()).orElseThrow(
-                            () -> new BookingException("No available rooms of type " +
-                                    request.getRoomType() + " for the selected dates"));
+                    request.getCheckOutDate());
+
+            if (!hasAvailableRooms) {
+                throw new BookingException("No available rooms of type " +
+                        request.getRoomType() + " for the selected dates");
+            }
+
+            // Get hotel entity
+            Hotel hotel = hotelRepository.findById(request.getHotelId())
+                    .orElseThrow(() -> new BookingException("Hotel not found with ID: " + request.getHotelId()));
 
             // Get or create user (authenticated or guest)
             User user = null;
@@ -258,11 +269,13 @@ public class BookingService {
             }
             // For anonymous guests, we no longer create User records
 
-            // Calculate total amount
-            BigDecimal totalAmount = calculateTotalAmountForRoomType(room, request);
+            // Calculate total amount using room type pricing
+            BigDecimal totalAmount = calculateTotalAmountForRoomTypeByPricing(request.getHotelId(), roomTypeEnum,
+                    request);
 
             // Create reservation with guest information
-            Reservation reservation = createReservationFromRoomType(request, room, user, totalAmount);
+            Reservation reservation = createReservationFromRoomTypeByPricing(request, hotel, roomTypeEnum, user,
+                    totalAmount);
 
             // Process payment if payment method provided
             if (request.getPaymentMethodId() != null) {
@@ -459,9 +472,62 @@ public class BookingService {
     }
 
     /**
+     * Calculate total amount for the booking using room type pricing
+     */
+    private BigDecimal calculateTotalAmountByRoomType(Long hotelId, RoomType roomType, BookingRequest request) {
+        logger.debug("Calculating total amount for hotel {} and room type {}", hotelId, roomType);
+
+        // Get base price from room type pricing configuration
+        BigDecimal pricePerNight = roomTypePricingService.getBasePriceForRoomType(hotelId, roomType);
+
+        if (pricePerNight == null) {
+            logger.warn("No pricing found for hotel {} and room type {}, using default price", hotelId, roomType);
+            pricePerNight = BigDecimal.valueOf(100); // Default fallback
+        }
+
+        long numberOfNights = ChronoUnit.DAYS.between(request.getCheckInDate(), request.getCheckOutDate());
+        BigDecimal totalAmount = pricePerNight.multiply(BigDecimal.valueOf(numberOfNights));
+
+        logger.debug("Calculated pricing: {} per night x {} nights = {}", pricePerNight, numberOfNights, totalAmount);
+        return totalAmount;
+    }
+
+    /**
+     * Calculate total amount for room type booking using room type pricing
+     */
+    private BigDecimal calculateTotalAmountForRoomTypeByPricing(Long hotelId, RoomType roomType,
+            RoomTypeBookingRequest request) {
+        logger.debug("Calculating total amount for hotel {} and room type {}", hotelId, roomType);
+
+        // Get base price from room type pricing configuration
+        BigDecimal pricePerNight = roomTypePricingService.getBasePriceForRoomType(hotelId, roomType);
+
+        if (pricePerNight == null) {
+            logger.warn("No pricing found for hotel {} and room type {}, using default price", hotelId, roomType);
+            pricePerNight = BigDecimal.valueOf(100); // Default fallback
+        }
+
+        long numberOfNights = ChronoUnit.DAYS.between(request.getCheckInDate(), request.getCheckOutDate());
+        BigDecimal totalAmount = pricePerNight.multiply(BigDecimal.valueOf(numberOfNights));
+
+        logger.debug("Calculated pricing: {} per night x {} nights = {}", pricePerNight, numberOfNights, totalAmount);
+        return totalAmount;
+    }
+
+    /**
      * Calculate total amount for the booking
      */
     private BigDecimal calculateTotalAmount(Room room, BookingRequest request) {
+        if (room == null) {
+            logger.error("Cannot calculate total amount: room is null for request: {}", request);
+            throw new BookingException("Unable to calculate pricing - no room found for the specified criteria");
+        }
+
+        if (room.getPricePerNight() == null) {
+            logger.error("Cannot calculate total amount: room price is null for room ID: {}", room.getId());
+            throw new BookingException("Unable to calculate pricing - room price not configured");
+        }
+
         long numberOfNights = ChronoUnit.DAYS.between(request.getCheckInDate(), request.getCheckOutDate());
         return room.getPricePerNight().multiply(BigDecimal.valueOf(numberOfNights));
     }
@@ -497,6 +563,16 @@ public class BookingService {
      * Calculate total amount for room type booking
      */
     private BigDecimal calculateTotalAmountForRoomType(Room room, RoomTypeBookingRequest request) {
+        if (room == null) {
+            logger.error("Cannot calculate total amount: room is null for room type booking request: {}", request);
+            throw new BookingException("Unable to calculate pricing - no room found for the specified room type");
+        }
+
+        if (room.getPricePerNight() == null) {
+            logger.error("Cannot calculate total amount: room price is null for room ID: {}", room.getId());
+            throw new BookingException("Unable to calculate pricing - room price not configured");
+        }
+
         long numberOfNights = ChronoUnit.DAYS.between(request.getCheckInDate(), request.getCheckOutDate());
         return room.getPricePerNight().multiply(BigDecimal.valueOf(numberOfNights));
     }
@@ -544,9 +620,15 @@ public class BookingService {
         reservation.setSpecialRequests(request.getSpecialRequests());
         reservation.setNumberOfGuests(request.getGuests()); // Set number of guests
         reservation.setStatus(ReservationStatus.CONFIRMED); // Immediate confirmation
-        reservation.setTenantId(room.getHotel().getTenantId()); // Set tenant_id from the hotel so hotel admins can see
-                                                                // the booking
-        reservation.setPaymentMethod(request.getPaymentMethodId()); // Store the payment method
+
+        // Debug: Log payment method before setting it and truncate if needed
+        String paymentMethodId = request.getPaymentMethodId();
+        if (paymentMethodId != null && paymentMethodId.length() > 50) {
+            logger.warn("Payment method ID is too long ({} chars): '{}'", paymentMethodId.length(), paymentMethodId);
+            // Truncate to 50 characters to prevent database error
+            paymentMethodId = paymentMethodId.substring(0, 50);
+        }
+        reservation.setPaymentMethod(paymentMethodId); // Store the payment method
 
         return reservation;
     }
@@ -556,17 +638,20 @@ public class BookingService {
      * booking)
      * Room will be assigned during check-in by front desk staff
      */
-    private Reservation createReservationWithoutRoom(BookingRequest request, Room sampleRoom, User user,
+    private Reservation createReservationWithoutRoom(BookingRequest request, Hotel hotel, RoomType roomType, User user,
             BigDecimal totalAmount) {
         Reservation reservation = new Reservation();
 
         // DO NOT set specific room - reservation.setRoom(null); // Room assigned during
         // check-in
 
-        // Set required fields for validation using sample room for reference
-        reservation.setHotel(sampleRoom.getHotel());
-        reservation.setRoomType(sampleRoom.getRoomType());
-        reservation.setPricePerNight(sampleRoom.getPricePerNight());
+        // Set required fields for validation using room type pricing
+        reservation.setHotel(hotel);
+        reservation.setRoomType(roomType);
+
+        // Get price per night from room type pricing service
+        BigDecimal pricePerNight = roomTypePricingService.getBasePriceForRoomType(hotel.getId(), roomType);
+        reservation.setPricePerNight(pricePerNight);
 
         // Set user only for authenticated users (will be null for anonymous guests)
         reservation.setGuest(user);
@@ -599,8 +684,169 @@ public class BookingService {
         reservation.setSpecialRequests(request.getSpecialRequests());
         reservation.setNumberOfGuests(request.getGuests()); // Set number of guests
         reservation.setStatus(ReservationStatus.CONFIRMED); // Immediate confirmation
-        reservation.setTenantId(sampleRoom.getHotel().getTenantId()); // Set tenant_id from the hotel
-        reservation.setPaymentMethod(request.getPaymentMethodId()); // Store the payment method
+
+        // Debug: Log payment method before setting it and truncate if needed
+        String paymentMethodId = request.getPaymentMethodId();
+        if (paymentMethodId != null && paymentMethodId.length() > 50) {
+            logger.warn("Payment method ID is too long ({} chars): '{}'", paymentMethodId.length(), paymentMethodId);
+            // Truncate to 50 characters to prevent database error
+            paymentMethodId = paymentMethodId.substring(0, 50);
+        }
+        reservation.setPaymentMethod(paymentMethodId); // Store the payment method
+
+        return reservation;
+    }
+
+    /**
+     * Create reservation entity with specific room assignment for walk-in customers
+     * Room is immediately assigned and status set to CHECKED_IN
+     */
+    private Reservation createReservationWithSpecificRoom(BookingRequest request, Hotel hotel, RoomType roomType,
+            User user,
+            BigDecimal totalAmount) {
+
+        // Validate that the specified room exists and is available
+        Room specificRoom = roomRepository.findById(request.getRoomId())
+                .orElseThrow(() -> new BookingException("Room not found with ID: " + request.getRoomId()));
+
+        // Verify room belongs to the same hotel
+        if (!specificRoom.getHotel().getId().equals(hotel.getId())) {
+            throw new BookingException("Room does not belong to the specified hotel");
+        }
+
+        // Verify room type matches the requested room type
+        if (!specificRoom.getRoomType().equals(roomType)) {
+            throw new BookingException(
+                    "Room type mismatch: requested " + roomType + " but room is " + specificRoom.getRoomType());
+        }
+
+        // Check if room is available for the dates
+        boolean isRoomAvailable = roomRepository.isRoomAvailable(
+                request.getRoomId(),
+                request.getCheckInDate(),
+                request.getCheckOutDate());
+
+        if (!isRoomAvailable) {
+            throw new BookingException(
+                    "Room " + specificRoom.getRoomNumber() + " is not available for the selected dates");
+        }
+
+        // Create reservation with specific room assignment
+        Reservation reservation = new Reservation();
+
+        // Assign the specific room
+        reservation.setRoom(specificRoom);
+        reservation.setHotel(hotel);
+        reservation.setRoomType(roomType);
+
+        // Use the specific room's price per night
+        reservation.setPricePerNight(specificRoom.getPricePerNight());
+
+        // Set user only for authenticated users
+        reservation.setGuest(user);
+
+        // Set guest information
+        String guestName = request.getGuestName();
+        String guestEmail = request.getGuestEmail();
+        String guestPhone = request.getGuestPhone();
+
+        // If guest info is not provided but user is authenticated, use user's info
+        if (user != null) {
+            if (guestName == null || guestName.trim().isEmpty()) {
+                guestName = user.getFirstName() + " " + user.getLastName();
+            }
+            if (guestEmail == null || guestEmail.trim().isEmpty()) {
+                guestEmail = user.getEmail();
+            }
+            if (guestPhone == null || guestPhone.trim().isEmpty()) {
+                guestPhone = user.getPhone();
+            }
+        }
+
+        GuestInfo guestInfo = new GuestInfo(guestName, guestEmail, guestPhone);
+        reservation.setGuestInfo(guestInfo);
+
+        reservation.setCheckInDate(request.getCheckInDate());
+        reservation.setCheckOutDate(request.getCheckOutDate());
+        reservation.setTotalAmount(totalAmount);
+        reservation.setSpecialRequests(request.getSpecialRequests());
+        reservation.setNumberOfGuests(request.getGuests());
+
+        // For walk-in customers with specific room assignment, set status to CHECKED_IN
+        // and set actual check-in time
+        reservation.setStatus(ReservationStatus.CHECKED_IN);
+        reservation.setActualCheckInTime(LocalDateTime.now());
+
+        // Handle payment method
+        String paymentMethodId = request.getPaymentMethodId();
+        if (paymentMethodId != null && paymentMethodId.length() > 50) {
+            logger.warn("Payment method ID is too long ({} chars): '{}'", paymentMethodId.length(), paymentMethodId);
+            paymentMethodId = paymentMethodId.substring(0, 50);
+        }
+        reservation.setPaymentMethod(paymentMethodId);
+
+        return reservation;
+    }
+
+    /**
+     * Create reservation entity from room type booking using room type pricing
+     */
+    private Reservation createReservationFromRoomTypeByPricing(RoomTypeBookingRequest request, Hotel hotel,
+            RoomType roomType, User user,
+            BigDecimal totalAmount) {
+        Reservation reservation = new Reservation();
+
+        // Do not set specific room - room will be assigned during check-in
+        // reservation.setRoom(null);
+
+        // Set required fields for validation using room type pricing
+        reservation.setHotel(hotel);
+        reservation.setRoomType(roomType);
+
+        // Get price per night from room type pricing service
+        BigDecimal pricePerNight = roomTypePricingService.getBasePriceForRoomType(hotel.getId(), roomType);
+        reservation.setPricePerNight(pricePerNight);
+
+        // Set user only for authenticated users (will be null for anonymous guests)
+        reservation.setGuest(user);
+
+        // Set guest information - use authenticated user's info if guest info is not
+        // provided
+        String guestName = request.getGuestName();
+        String guestEmail = request.getGuestEmail();
+        String guestPhone = request.getGuestPhone();
+
+        // If guest info is not provided but user is authenticated, use user's info
+        if (user != null) {
+            if (guestName == null || guestName.trim().isEmpty()) {
+                guestName = user.getFirstName() + " " + user.getLastName();
+            }
+            if (guestEmail == null || guestEmail.trim().isEmpty()) {
+                guestEmail = user.getEmail();
+            }
+            if (guestPhone == null || guestPhone.trim().isEmpty()) {
+                guestPhone = user.getPhone();
+            }
+        }
+
+        GuestInfo guestInfo = new GuestInfo(guestName, guestEmail, guestPhone);
+        reservation.setGuestInfo(guestInfo);
+
+        reservation.setCheckInDate(request.getCheckInDate());
+        reservation.setCheckOutDate(request.getCheckOutDate());
+        reservation.setTotalAmount(totalAmount);
+        reservation.setSpecialRequests(request.getSpecialRequests());
+        reservation.setNumberOfGuests(request.getGuests()); // Set number of guests
+        reservation.setStatus(ReservationStatus.CONFIRMED); // Immediate confirmation
+
+        // Debug: Log payment method before setting it and truncate if needed
+        String paymentMethodId = request.getPaymentMethodId();
+        if (paymentMethodId != null && paymentMethodId.length() > 50) {
+            logger.warn("Payment method ID is too long ({} chars): '{}'", paymentMethodId.length(), paymentMethodId);
+            // Truncate to 50 characters to prevent database error
+            paymentMethodId = paymentMethodId.substring(0, 50);
+        }
+        reservation.setPaymentMethod(paymentMethodId); // Store the payment method
 
         return reservation;
     }
@@ -649,9 +895,15 @@ public class BookingService {
         reservation.setSpecialRequests(request.getSpecialRequests());
         reservation.setNumberOfGuests(request.getGuests()); // Set number of guests
         reservation.setStatus(ReservationStatus.CONFIRMED); // Immediate confirmation
-        reservation.setTenantId(room.getHotel().getTenantId()); // Set tenant_id from the hotel so hotel admins can see
-                                                                // the booking
-        reservation.setPaymentMethod(request.getPaymentMethodId()); // Store the payment method
+
+        // Debug: Log payment method before setting it and truncate if needed
+        String paymentMethodId = request.getPaymentMethodId();
+        if (paymentMethodId != null && paymentMethodId.length() > 50) {
+            logger.warn("Payment method ID is too long ({} chars): '{}'", paymentMethodId.length(), paymentMethodId);
+            // Truncate to 50 characters to prevent database error
+            paymentMethodId = paymentMethodId.substring(0, 50);
+        }
+        reservation.setPaymentMethod(paymentMethodId); // Store the payment method
 
         return reservation;
     }
@@ -693,18 +945,35 @@ public class BookingService {
         response.setCreatedAt(reservation.getCreatedAt());
 
         Room room = reservation.getRoom();
-        // Show actual room number if assigned, otherwise indicate assignment at
-        // check-in
-        if (room != null && room.getRoomNumber() != null) {
+        // Show actual room number if assigned, otherwise indicate assignment pending
+        if (room != null && room.getRoomNumber() != null && !room.getRoomNumber().trim().isEmpty()) {
             response.setRoomNumber(room.getRoomNumber());
         } else {
-            response.setRoomNumber("To be assigned at check-in");
+            response.setRoomNumber("To be assigned");
         }
         response.setRoomType(room != null ? room.getRoomType().name() : reservation.getRoomType().name());
-        response.setPricePerNight(room.getPricePerNight());
-        response.setHotelId(room.getHotel().getId());
-        response.setHotelName(room.getHotel().getName());
-        response.setHotelAddress(room.getHotel().getAddress());
+
+        // Handle price and hotel information for both room-specific and room-type
+        // bookings
+        if (room != null && room.getHotel() != null) {
+            response.setPricePerNight(room.getPricePerNight());
+            response.setHotelId(room.getHotel().getId());
+            response.setHotelName(room.getHotel().getName());
+            response.setHotelAddress(room.getHotel().getAddress());
+        } else {
+            // For room type bookings without specific room assignment or when room.hotel is
+            // null
+            response.setPricePerNight(reservation.getPricePerNight());
+
+            // Use the convenience method to get hotel ID even with lazy loading
+            response.setHotelId(reservation.getHotelId());
+
+            // Use the loaded hotel object for name and address
+            if (reservation.getHotel() != null) {
+                response.setHotelName(reservation.getHotel().getName());
+                response.setHotelAddress(reservation.getHotel().getAddress());
+            }
+        }
 
         // Guest details - use guest info which works for both registered and anonymous
         // guests

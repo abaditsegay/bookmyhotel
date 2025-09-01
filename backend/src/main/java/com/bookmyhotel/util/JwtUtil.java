@@ -22,13 +22,13 @@ import io.jsonwebtoken.security.Keys;
  */
 @Component
 public class JwtUtil {
-    
+
     @Value("${app.jwt.secret}")
     private String secret;
-    
+
     @Value("${app.jwt.expiration}")
     private Long expiration;
-    
+
     /**
      * Generate JWT token for user
      */
@@ -39,11 +39,23 @@ public class JwtUtil {
         claims.put("firstName", user.getFirstName());
         claims.put("lastName", user.getLastName());
         claims.put("roles", user.getRoles());
-        claims.put("tenantId", user.getTenantId());
-        
+
+        // For hotel-bound users, include hotelId; for system-wide users, include
+        // tenantId (null)
+        if (user.getHotel() != null) {
+            claims.put("hotelId", user.getHotel().getId());
+            claims.put("hotelName", user.getHotel().getName());
+            // Tenant ID derived from hotel for hotel staff
+            claims.put("tenantId", user.getHotel().getTenantId());
+        } else {
+            // System-wide users (GUEST, CUSTOMER, ADMIN) have no hotel or tenant
+            claims.put("hotelId", null);
+            claims.put("tenantId", null);
+        }
+
         return createToken(claims, user.getEmail());
     }
-    
+
     /**
      * Create JWT token with claims
      */
@@ -56,35 +68,50 @@ public class JwtUtil {
                 .signWith(getSignInKey())
                 .compact();
     }
-    
+
     /**
      * Extract email from token
      */
     public String extractEmail(String token) {
         return extractClaim(token, Claims::getSubject);
     }
-    
+
     /**
      * Extract username from token (alias for extractEmail)
      */
     public String extractUsername(String token) {
         return extractEmail(token);
     }
-    
+
     /**
      * Extract tenant ID from token
      */
     public String extractTenantId(String token) {
         return extractClaim(token, claims -> (String) claims.get("tenantId"));
     }
-    
+
+    /**
+     * Extract hotel ID from token (for hotel staff)
+     */
+    public Long extractHotelId(String token) {
+        return extractClaim(token, claims -> {
+            Object hotelId = claims.get("hotelId");
+            if (hotelId instanceof Integer) {
+                return ((Integer) hotelId).longValue();
+            } else if (hotelId instanceof Long) {
+                return (Long) hotelId;
+            }
+            return null;
+        });
+    }
+
     /**
      * Extract expiration date from token
      */
     public Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
-    
+
     /**
      * Extract specific claim from token
      */
@@ -92,7 +119,7 @@ public class JwtUtil {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
     }
-    
+
     /**
      * Extract all claims from token
      */
@@ -103,14 +130,14 @@ public class JwtUtil {
                 .parseSignedClaims(token)
                 .getPayload();
     }
-    
+
     /**
      * Check if token is expired
      */
     private Boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
-    
+
     /**
      * Validate token
      */
@@ -121,7 +148,7 @@ public class JwtUtil {
             return false;
         }
     }
-    
+
     /**
      * Validate token against user details
      */
@@ -129,7 +156,7 @@ public class JwtUtil {
         final String username = extractUsername(token);
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
-    
+
     /**
      * Get signing key
      */

@@ -10,65 +10,62 @@ import com.bookmyhotel.enums.WorkShift;
  */
 @Entity
 @Table(name = "housekeeping_staff")
-public class HousekeepingStaff {
-    
+public class HousekeepingStaff extends HotelScopedEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     @Column(name = "employee_id", nullable = false)
     private String employeeId;
-    
+
     @Column(name = "first_name", nullable = false)
     private String firstName;
-    
+
     @Column(name = "last_name", nullable = false)
     private String lastName;
-    
+
     @Column(name = "email")
     private String email;
-    
+
     @Column(name = "phone")
     private String phone;
-    
+
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     private HousekeepingRole role;
-    
+
     @Enumerated(EnumType.STRING)
     @Column(name = "shift", nullable = false)
     private WorkShift shift;
-    
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private StaffStatus status;
-    
+
     @Column(name = "hourly_rate")
     private Double hourlyRate;
-    
+
     @Column(name = "performance_rating")
     private Double performanceRating;
-    
+
     @Column(name = "tasks_completed_today")
     private Integer tasksCompletedToday;
-    
+
     @Column(name = "average_task_duration")
     private Double averageTaskDuration;
-    
+
     @Column(name = "quality_score_average")
     private Double qualityScoreAverage;
-    
+
     @Column(name = "is_active", nullable = false)
     private Boolean isActive;
-    
+
     @Column(name = "current_workload")
     private Integer currentWorkload;
-    
+
     @Column(name = "average_rating")
     private Double averageRating;
-    
-    @Column(name = "tenant_id", nullable = false)
-    private String tenantId;
 
     // Default constructor
     public HousekeepingStaff() {
@@ -217,10 +214,8 @@ public class HousekeepingStaff {
     }
 
     public String getTenantId() {
-        return tenantId;
+        return this.getHotel() != null ? this.getHotel().getTenantId() : null;
     }
 
-    public void setTenantId(String tenantId) {
-        this.tenantId = tenantId;
-    }
+    // Note: setTenantId is removed as tenantId is now accessed through hotel
 }

@@ -7,10 +7,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,8 +25,11 @@ import com.bookmyhotel.entity.Hotel;
 import com.bookmyhotel.entity.Reservation;
 import com.bookmyhotel.entity.ReservationStatus;
 import com.bookmyhotel.entity.Room;
+import com.bookmyhotel.entity.ShopOrder;
+import com.bookmyhotel.entity.ShopOrderItem;
 import com.bookmyhotel.entity.User;
 import com.bookmyhotel.repository.ReservationRepository;
+import com.bookmyhotel.repository.ShopOrderRepository;
 import com.bookmyhotel.repository.UserRepository;
 import com.bookmyhotel.tenant.TenantContext;
 
@@ -43,6 +49,9 @@ public class CheckoutReceiptService {
     private RoomChargeService roomChargeService;
 
     @Autowired
+    private ShopOrderRepository shopOrderRepository;
+
+    @Autowired
     private UserRepository userRepository;
 
     /**
@@ -57,8 +66,25 @@ public class CheckoutReceiptService {
             Reservation reservation = reservationRepository.findById(reservationId)
                     .orElseThrow(() -> new RuntimeException("Reservation not found"));
 
-            // Verify tenant access
-            if (!tenantId.equals(reservation.getHotel().getTenantId())) {
+            // Check if current user is system-wide (e.g., system admin)
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            boolean isSystemWideUser = false;
+            String currentUserEmail = null;
+
+            if (authentication != null) {
+                currentUserEmail = authentication.getName();
+                // System admin users have hotel_id = null and SYSTEM_ADMIN role
+                if (currentUserEmail != null && (currentUserEmail.equals("admin@bookmyhotel.com") ||
+                        currentUserEmail.contains("system"))) {
+                    isSystemWideUser = true;
+                    logger.info("System-wide user detected: {} - bypassing tenant validation", currentUserEmail);
+                }
+            }
+
+            // Verify tenant access (skip for system-wide users)
+            if (!isSystemWideUser && !tenantId.equals(reservation.getHotel().getTenantId())) {
+                logger.warn("Tenant access denied for user {} - required: {}, current: {}",
+                        currentUserEmail, reservation.getHotel().getTenantId(), tenantId);
                 throw new RuntimeException("Access denied");
             }
 
@@ -87,7 +113,7 @@ public class CheckoutReceiptService {
             calculateRoomCharges(receipt, reservation);
 
             // Get additional charges from RoomChargeService
-            setAdditionalCharges(receipt, reservationId);
+            setAdditionalCharges(receipt, reservation);
 
             // Set taxes and fees (if applicable)
             setTaxesAndFees(receipt, reservation);
@@ -182,11 +208,12 @@ public class CheckoutReceiptService {
         receipt.setTotalRoomCharges(totalRoomCharges);
     }
 
-    private void setAdditionalCharges(ConsolidatedReceiptResponse receipt, Long reservationId) {
-        List<RoomChargeResponse> roomCharges = roomChargeService.getRoomChargesForReservation(reservationId);
+    private void setAdditionalCharges(ConsolidatedReceiptResponse receipt, Reservation reservation) {
+        List<RoomChargeResponse> roomCharges = roomChargeService.getRoomChargesForReservation(
+                reservation.getHotel().getId(), reservation.getId());
 
         List<ReceiptChargeItem> additionalCharges = roomCharges.stream()
-                .map(this::convertToReceiptChargeItem)
+                .flatMap(this::convertToReceiptChargeItems)
                 .collect(Collectors.toList());
 
         receipt.setAdditionalCharges(additionalCharges);
@@ -235,7 +262,8 @@ public class CheckoutReceiptService {
         }
 
         // Add payments for room charges (if any are marked as paid)
-        List<RoomChargeResponse> paidCharges = roomChargeService.getRoomChargesForReservation(reservation.getId())
+        List<RoomChargeResponse> paidCharges = roomChargeService.getRoomChargesForReservation(
+                reservation.getHotel().getId(), reservation.getId())
                 .stream()
                 .filter(charge -> charge.getIsPaid() != null && charge.getIsPaid())
                 .collect(Collectors.toList());
@@ -246,7 +274,6 @@ public class CheckoutReceiptService {
                     charge.getAmount(),
                     "Payment for " + charge.getDescription());
             chargePayment.setPaymentDate(charge.getPaidAt());
-            chargePayment.setPaymentReference(charge.getPaymentReference());
             payments.add(chargePayment);
         }
 
@@ -274,15 +301,139 @@ public class CheckoutReceiptService {
         receipt.setBalanceDue(balanceDue);
     }
 
+    /**
+     * Convert room charge to one or more receipt charge items.
+     * For shop orders with multiple items, each item becomes a separate line.
+     */
+    private Stream<ReceiptChargeItem> convertToReceiptChargeItems(RoomChargeResponse roomCharge) {
+        // If this room charge is linked to a shop order with multiple items, break it
+        // down
+        if (roomCharge.getShopOrderId() != null) {
+            try {
+                ShopOrder shopOrder = shopOrderRepository.findByIdWithOrderItems(roomCharge.getShopOrderId())
+                        .orElse(null);
+
+                if (shopOrder != null && shopOrder.getOrderItems() != null && !shopOrder.getOrderItems().isEmpty()) {
+                    logger.info("Shop order {} has {} items: {}",
+                            shopOrder.getId(),
+                            shopOrder.getOrderItems().size(),
+                            shopOrder.getOrderItems().stream()
+                                    .map(item -> item.getProductName())
+                                    .collect(java.util.stream.Collectors.joining(", ")));
+
+                    // If there's only one item, treat it normally
+                    if (shopOrder.getOrderItems().size() == 1) {
+                        logger.info("Single item detected, using normal processing");
+                        return Stream.of(convertSingleItemToReceiptItem(roomCharge, shopOrder,
+                                shopOrder.getOrderItems().get(0)));
+                    }
+
+                    // For multiple items, create separate line items
+                    logger.info("Multiple items detected ({}), creating separate line items",
+                            shopOrder.getOrderItems().size());
+                    return shopOrder.getOrderItems().stream()
+                            .map(orderItem -> convertSingleItemToReceiptItem(roomCharge, shopOrder, orderItem));
+                }
+            } catch (Exception e) {
+                logger.warn("Failed to fetch shop order details for room charge {}: {}",
+                        roomCharge.getId(), e.getMessage());
+            }
+        }
+
+        // For non-shop-order charges or when shop order details aren't available,
+        // use the original single item approach
+        return Stream.of(convertToReceiptChargeItem(roomCharge));
+    }
+
+    /**
+     * Convert a single shop order item to a receipt charge item
+     */
+    private ReceiptChargeItem convertSingleItemToReceiptItem(RoomChargeResponse roomCharge, ShopOrder shopOrder,
+            ShopOrderItem orderItem) {
+        ReceiptChargeItem item = new ReceiptChargeItem();
+        item.setChargeId(roomCharge.getId());
+
+        // Create description for individual item
+        String description = String.format("Shop Order #%s: %s",
+                shopOrder.getOrderNumber(), orderItem.getProductName());
+        item.setDescription(description);
+
+        // Set the quantity from the order item
+        item.setQuantity(orderItem.getQuantity());
+
+        // Calculate proportional amount for this item
+        BigDecimal itemTotal = orderItem.getUnitPrice().multiply(BigDecimal.valueOf(orderItem.getQuantity()));
+        item.setAmount(itemTotal);
+
+        item.setChargeType(roomCharge.getChargeType().getDisplayName());
+        item.setChargeDate(roomCharge.getChargeDate());
+        item.setNotes(roomCharge.getNotes());
+
+        return item;
+    }
+
     private ReceiptChargeItem convertToReceiptChargeItem(RoomChargeResponse roomCharge) {
         ReceiptChargeItem item = new ReceiptChargeItem();
         item.setChargeId(roomCharge.getId());
-        item.setDescription(roomCharge.getDescription());
+
+        // Build enhanced description that includes shop order item names
+        String description = buildEnhancedDescription(roomCharge);
+        item.setDescription(description);
+
+        // Set default quantity of 1 for non-itemized charges
+        item.setQuantity(1);
+
         item.setAmount(roomCharge.getAmount());
         item.setChargeType(roomCharge.getChargeType().getDisplayName());
         item.setChargeDate(roomCharge.getChargeDate());
         item.setNotes(roomCharge.getNotes());
         return item;
+    }
+
+    /**
+     * Build enhanced description that includes shop order item names when
+     * applicable
+     */
+    private String buildEnhancedDescription(RoomChargeResponse roomCharge) {
+        String baseDescription = roomCharge.getDescription();
+
+        // If this room charge is linked to a shop order, add item details
+        if (roomCharge.getShopOrderId() != null) {
+            try {
+                ShopOrder shopOrder = shopOrderRepository.findById(roomCharge.getShopOrderId())
+                        .orElse(null);
+
+                if (shopOrder != null && shopOrder.getOrderItems() != null && !shopOrder.getOrderItems().isEmpty()) {
+                    StringBuilder itemNames = new StringBuilder();
+
+                    // Collect all item names
+                    for (int i = 0; i < shopOrder.getOrderItems().size(); i++) {
+                        if (i > 0) {
+                            itemNames.append(", ");
+                        }
+                        String productName = shopOrder.getOrderItems().get(i).getProductName();
+                        int quantity = shopOrder.getOrderItems().get(i).getQuantity();
+
+                        if (quantity > 1) {
+                            itemNames.append(quantity).append("x ").append(productName);
+                        } else {
+                            itemNames.append(productName);
+                        }
+                    }
+
+                    // Format: "Shop Order #ORD-1-076741: Ethiopian Coffee Beans (250g), 2x Mineral
+                    // Water (1L)"
+                    return String.format("Shop Order #%s: %s", shopOrder.getOrderNumber(), itemNames.toString());
+                }
+            } catch (Exception e) {
+                // Log error but don't fail receipt generation
+                logger.warn("Failed to fetch shop order details for room charge {}: {}",
+                        roomCharge.getId(), e.getMessage());
+            }
+        }
+
+        // Return original description if no shop order or error occurred
+        return baseDescription;
     }
 
     private String generateReceiptNumber(Long reservationId) {

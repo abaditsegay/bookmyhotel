@@ -13,13 +13,33 @@ import {
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
 
 class ShopApiService {
+  private token: string | null = null;
+  private tenantId: string | null = null;
+
+  setToken(token: string | null) {
+    this.token = token;
+  }
+
+  setTenantId(tenantId: string | null) {
+    this.tenantId = tenantId;
+  }
+
   private getAuthHeaders() {
-    // Use the same token key as AuthContext for consistency
-    const token = localStorage.getItem('auth_token');
-    return {
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      ...(token && { Authorization: `Bearer ${token}` }),
     };
+
+    // Add Authorization header if token is available
+    if (this.token) {
+      headers['Authorization'] = `Bearer ${this.token}`;
+    }
+
+    // Add tenant ID header if available
+    if (this.tenantId) {
+      headers['X-Tenant-ID'] = this.tenantId;
+    }
+
+    return headers;
   }
 
   private async handleResponse<T>(response: Response): Promise<T> {

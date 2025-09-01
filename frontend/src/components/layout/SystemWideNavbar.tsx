@@ -97,6 +97,7 @@ export const SystemWideNavbar: React.FC = () => {
               color="inherit" 
               startIcon={<Hotel />}
               onClick={() => navigate('/system/hotels')}
+              sx={{ fontSize: '0.8rem' }}
             >
               Hotels
             </Button>
@@ -104,6 +105,7 @@ export const SystemWideNavbar: React.FC = () => {
               color="inherit" 
               startIcon={<People />}
               onClick={() => navigate('/system/users')}
+              sx={{ fontSize: '0.8rem' }}
             >
               Users
             </Button>
@@ -111,6 +113,7 @@ export const SystemWideNavbar: React.FC = () => {
               color="inherit" 
               startIcon={<Settings />}
               onClick={handleSystemSettings}
+              sx={{ fontSize: '0.8rem' }}
             >
               Settings
             </Button>
@@ -124,6 +127,7 @@ export const SystemWideNavbar: React.FC = () => {
               color="inherit" 
               startIcon={<Hotel />}
               onClick={() => navigate('/search')}
+              sx={{ fontSize: '0.8rem' }}
             >
               Search Hotels
             </Button>

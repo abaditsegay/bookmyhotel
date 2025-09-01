@@ -2,6 +2,7 @@ package com.bookmyhotel.controller;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -23,6 +24,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.bookmyhotel.dto.RoomChargeCreateRequest;
 import com.bookmyhotel.dto.RoomChargeResponse;
+import com.bookmyhotel.entity.User;
+import com.bookmyhotel.repository.UserRepository;
+import com.bookmyhotel.service.HotelService;
 import com.bookmyhotel.service.RoomChargeService;
 
 import jakarta.validation.Valid;
@@ -38,6 +42,12 @@ public class RoomChargeController {
     @Autowired
     private RoomChargeService roomChargeService;
 
+    @Autowired
+    private HotelService hotelService;
+
+    @Autowired
+    private UserRepository userRepository;
+
     /**
      * Create a new room charge
      */
@@ -48,7 +58,18 @@ public class RoomChargeController {
             Authentication authentication) {
 
         String userEmail = authentication.getName();
-        RoomChargeResponse response = roomChargeService.createRoomCharge(request, userEmail);
+        Optional<User> userOpt = userRepository.findByEmail(userEmail);
+        if (!userOpt.isPresent()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        // Get hotel ID directly from user's hotel relationship
+        Long hotelId = userOpt.get().getHotel() != null ? userOpt.get().getHotel().getId() : null;
+        if (hotelId == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        RoomChargeResponse response = roomChargeService.createRoomCharge(request, userEmail, hotelId);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -73,9 +94,22 @@ public class RoomChargeController {
     @GetMapping("/reservation/{reservationId}")
     @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SYSTEM_ADMIN')")
     public ResponseEntity<List<RoomChargeResponse>> getRoomChargesForReservation(
-            @PathVariable Long reservationId) {
+            @PathVariable Long reservationId,
+            Authentication authentication) {
 
-        List<RoomChargeResponse> roomCharges = roomChargeService.getRoomChargesForReservation(reservationId);
+        String userEmail = authentication.getName();
+        Optional<User> userOpt = userRepository.findByEmail(userEmail);
+        if (!userOpt.isPresent()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        // Get hotel ID directly from user's hotel relationship
+        Long hotelId = userOpt.get().getHotel() != null ? userOpt.get().getHotel().getId() : null;
+        if (hotelId == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        List<RoomChargeResponse> roomCharges = roomChargeService.getRoomChargesForReservation(reservationId, hotelId);
         return ResponseEntity.ok(roomCharges);
     }
 
@@ -85,9 +119,23 @@ public class RoomChargeController {
     @GetMapping("/reservation/{reservationId}/unpaid")
     @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SYSTEM_ADMIN')")
     public ResponseEntity<List<RoomChargeResponse>> getUnpaidChargesForReservation(
-            @PathVariable Long reservationId) {
+            @PathVariable Long reservationId,
+            Authentication authentication) {
 
-        List<RoomChargeResponse> unpaidCharges = roomChargeService.getUnpaidChargesForReservation(reservationId);
+        String userEmail = authentication.getName();
+        Optional<User> userOpt = userRepository.findByEmail(userEmail);
+        if (!userOpt.isPresent()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        // Get hotel ID directly from user's hotel relationship
+        Long hotelId = userOpt.get().getHotel() != null ? userOpt.get().getHotel().getId() : null;
+        if (hotelId == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        List<RoomChargeResponse> unpaidCharges = roomChargeService.getUnpaidChargesForReservation(reservationId,
+                hotelId);
         return ResponseEntity.ok(unpaidCharges);
     }
 
@@ -96,8 +144,23 @@ public class RoomChargeController {
      */
     @GetMapping("/reservation/{reservationId}/unpaid-total")
     @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SYSTEM_ADMIN')")
-    public ResponseEntity<BigDecimal> getTotalUnpaidAmount(@PathVariable Long reservationId) {
-        BigDecimal totalUnpaid = roomChargeService.getTotalUnpaidAmount(reservationId);
+    public ResponseEntity<BigDecimal> getTotalUnpaidAmount(
+            @PathVariable Long reservationId,
+            Authentication authentication) {
+
+        String userEmail = authentication.getName();
+        Optional<User> userOpt = userRepository.findByEmail(userEmail);
+        if (!userOpt.isPresent()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        // Get hotel ID directly from user's hotel relationship
+        Long hotelId = userOpt.get().getHotel() != null ? userOpt.get().getHotel().getId() : null;
+        if (hotelId == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        BigDecimal totalUnpaid = roomChargeService.getTotalUnpaidAmount(reservationId, hotelId);
         return ResponseEntity.ok(totalUnpaid);
     }
 
@@ -108,9 +171,22 @@ public class RoomChargeController {
     @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SYSTEM_ADMIN')")
     public ResponseEntity<RoomChargeResponse> markChargeAsPaid(
             @PathVariable Long chargeId,
-            @RequestParam(required = false) String paymentReference) {
+            @RequestParam(required = false) String paymentReference,
+            Authentication authentication) {
 
-        RoomChargeResponse response = roomChargeService.markChargeAsPaid(chargeId, paymentReference);
+        String userEmail = authentication.getName();
+        Optional<User> userOpt = userRepository.findByEmail(userEmail);
+        if (!userOpt.isPresent()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        // Get hotel ID directly from user's hotel relationship
+        Long hotelId = userOpt.get().getHotel() != null ? userOpt.get().getHotel().getId() : null;
+        if (hotelId == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        RoomChargeResponse response = roomChargeService.markChargeAsPaid(chargeId, hotelId, paymentReference);
         return ResponseEntity.ok(response);
     }
 
@@ -119,8 +195,23 @@ public class RoomChargeController {
      */
     @PutMapping("/{chargeId}/mark-unpaid")
     @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SYSTEM_ADMIN')")
-    public ResponseEntity<RoomChargeResponse> markChargeAsUnpaid(@PathVariable Long chargeId) {
-        RoomChargeResponse response = roomChargeService.markChargeAsUnpaid(chargeId);
+    public ResponseEntity<RoomChargeResponse> markChargeAsUnpaid(
+            @PathVariable Long chargeId,
+            Authentication authentication) {
+
+        String userEmail = authentication.getName();
+        Optional<User> userOpt = userRepository.findByEmail(userEmail);
+        if (!userOpt.isPresent()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        // Get hotel ID directly from user's hotel relationship
+        Long hotelId = userOpt.get().getHotel() != null ? userOpt.get().getHotel().getId() : null;
+        if (hotelId == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        RoomChargeResponse response = roomChargeService.markChargeAsUnpaid(chargeId, hotelId);
         return ResponseEntity.ok(response);
     }
 
@@ -129,8 +220,23 @@ public class RoomChargeController {
      */
     @DeleteMapping("/{chargeId}")
     @PreAuthorize("hasRole('HOTEL_ADMIN')")
-    public ResponseEntity<Void> deleteRoomCharge(@PathVariable Long chargeId) {
-        roomChargeService.deleteRoomCharge(chargeId);
+    public ResponseEntity<Void> deleteRoomCharge(
+            @PathVariable Long chargeId,
+            Authentication authentication) {
+
+        String userEmail = authentication.getName();
+        Optional<User> userOpt = userRepository.findByEmail(userEmail);
+        if (!userOpt.isPresent()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        // Get hotel ID directly from user's hotel relationship
+        Long hotelId = userOpt.get().getHotel() != null ? userOpt.get().getHotel().getId() : null;
+        if (hotelId == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        roomChargeService.deleteRoomCharge(chargeId, hotelId);
         return ResponseEntity.noContent().build();
     }
 

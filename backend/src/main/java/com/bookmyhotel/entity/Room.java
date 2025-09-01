@@ -30,11 +30,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  */
 @Entity
 @Table(name = "rooms", indexes = {
-        @Index(name = "idx_room_tenant", columnList = "tenant_id"),
         @Index(name = "idx_room_hotel", columnList = "hotel_id"),
         @Index(name = "idx_room_number", columnList = "room_number")
 })
-public class Room extends TenantEntity {
+public class Room extends HotelScopedEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -69,10 +68,6 @@ public class Room extends TenantEntity {
 
     @Column(name = "is_available", nullable = false)
     private Boolean isAvailable = true;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "hotel_id", nullable = false)
-    private Hotel hotel;
 
     @JsonIgnore
     @OneToMany(mappedBy = "assignedRoom", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -152,14 +147,6 @@ public class Room extends TenantEntity {
 
     public void setIsAvailable(Boolean isAvailable) {
         this.isAvailable = isAvailable;
-    }
-
-    public Hotel getHotel() {
-        return hotel;
-    }
-
-    public void setHotel(Hotel hotel) {
-        this.hotel = hotel;
     }
 
     public List<Reservation> getReservations() {

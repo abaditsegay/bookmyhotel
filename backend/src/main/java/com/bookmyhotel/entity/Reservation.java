@@ -26,7 +26,6 @@ import jakarta.validation.constraints.Positive;
  */
 @Entity
 @Table(name = "reservations", indexes = {
-        @Index(name = "idx_reservation_tenant", columnList = "tenant_id"),
         @Index(name = "idx_reservation_hotel", columnList = "hotel_id"),
         @Index(name = "idx_reservation_room_type", columnList = "room_type"),
         @Index(name = "idx_reservation_assigned_room", columnList = "assigned_room_id"),
@@ -34,7 +33,7 @@ import jakarta.validation.constraints.Positive;
         @Index(name = "idx_reservation_dates", columnList = "check_in_date, check_out_date"),
         @Index(name = "idx_reservation_status", columnList = "status")
 })
-public class Reservation extends TenantEntity {
+public class Reservation extends HotelScopedEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -64,7 +63,7 @@ public class Reservation extends TenantEntity {
     @Column(name = "payment_intent_id", length = 100)
     private String paymentIntentId;
 
-    @Column(name = "payment_method", length = 50)
+    @Column(name = "payment_method", length = 100)
     private String paymentMethod;
 
     @Column(name = "confirmation_number", length = 20, unique = true)
@@ -90,11 +89,6 @@ public class Reservation extends TenantEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "room_type", nullable = false, length = 20)
     private RoomType roomType;
-
-    @NotNull(message = "Hotel is required")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "hotel_id", nullable = false)
-    private Hotel hotel;
 
     @NotNull(message = "Price per night is required")
     @Positive(message = "Price per night must be positive")
@@ -142,7 +136,7 @@ public class Reservation extends TenantEntity {
         this.checkOutDate = checkOutDate;
         this.totalAmount = totalAmount;
         this.roomType = roomType;
-        this.hotel = hotel;
+        this.setHotel(hotel);
         this.pricePerNight = pricePerNight;
     }
 
@@ -217,14 +211,6 @@ public class Reservation extends TenantEntity {
 
     public void setRoomType(RoomType roomType) {
         this.roomType = roomType;
-    }
-
-    public Hotel getHotel() {
-        return hotel;
-    }
-
-    public void setHotel(Hotel hotel) {
-        this.hotel = hotel;
     }
 
     public BigDecimal getPricePerNight() {

@@ -49,9 +49,4 @@ public interface RoomTypePricingRepository extends JpaRepository<RoomTypePricing
      * Check if room type pricing exists for hotel and room type
      */
     boolean existsByHotelAndRoomType(Hotel hotel, RoomType roomType);
-
-    /**
-     * Find room type pricing by tenant ID
-     */
-    List<RoomTypePricing> findByTenantIdAndIsActiveTrue(String tenantId);
 }

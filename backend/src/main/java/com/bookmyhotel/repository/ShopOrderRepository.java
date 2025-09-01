@@ -25,42 +25,54 @@ public interface ShopOrderRepository extends JpaRepository<ShopOrder, Long> {
        /**
         * Find all orders by hotel ID
         */
-       List<ShopOrder> findByHotelId(Long hotelId);
+       @Query("SELECT o FROM ShopOrder o WHERE o.hotel.id = :hotelId")
+       List<ShopOrder> findByHotelId(@Param("hotelId") Long hotelId);
 
        /**
         * Find order by ID and hotel ID
         */
-       Optional<ShopOrder> findByIdAndHotelId(Long id, Long hotelId);
+       @Query("SELECT o FROM ShopOrder o WHERE o.id = :id AND o.hotel.id = :hotelId")
+       Optional<ShopOrder> findByIdAndHotelId(@Param("id") Long id, @Param("hotelId") Long hotelId);
 
        /**
         * Find all orders by hotel ID with pagination
         */
-       Page<ShopOrder> findByHotelId(Long hotelId, Pageable pageable);
+       @Query("SELECT o FROM ShopOrder o WHERE o.hotel.id = :hotelId")
+       Page<ShopOrder> findByHotelId(@Param("hotelId") Long hotelId, Pageable pageable);
 
        /**
         * Find orders by hotel ID and status
         */
-       List<ShopOrder> findByHotelIdAndStatus(Long hotelId, OrderStatus status);
+       @Query("SELECT o FROM ShopOrder o WHERE o.hotel.id = :hotelId AND o.status = :status")
+       List<ShopOrder> findByHotelIdAndStatus(@Param("hotelId") Long hotelId, @Param("status") OrderStatus status);
 
        /**
         * Find orders by hotel ID and status with pagination
         */
-       Page<ShopOrder> findByHotelIdAndStatus(Long hotelId, OrderStatus status, Pageable pageable);
+       @Query("SELECT o FROM ShopOrder o WHERE o.hotel.id = :hotelId AND o.status = :status")
+       Page<ShopOrder> findByHotelIdAndStatus(@Param("hotelId") Long hotelId, @Param("status") OrderStatus status,
+                     Pageable pageable);
 
        /**
         * Find orders by hotel ID and multiple statuses
         */
-       List<ShopOrder> findByHotelIdAndStatusIn(Long hotelId, List<OrderStatus> statuses);
+       @Query("SELECT o FROM ShopOrder o WHERE o.hotel.id = :hotelId AND o.status IN :statuses")
+       List<ShopOrder> findByHotelIdAndStatusIn(@Param("hotelId") Long hotelId,
+                     @Param("statuses") List<OrderStatus> statuses);
 
        /**
         * Find orders by hotel ID and multiple statuses with pagination
         */
-       Page<ShopOrder> findByHotelIdAndStatusIn(Long hotelId, List<OrderStatus> statuses, Pageable pageable);
+       @Query("SELECT o FROM ShopOrder o WHERE o.hotel.id = :hotelId AND o.status IN :statuses")
+       Page<ShopOrder> findByHotelIdAndStatusIn(@Param("hotelId") Long hotelId,
+                     @Param("statuses") List<OrderStatus> statuses, Pageable pageable);
 
        /**
         * Find order by hotel ID and order number
         */
-       Optional<ShopOrder> findByHotelIdAndOrderNumber(Long hotelId, String orderNumber);
+       @Query("SELECT o FROM ShopOrder o WHERE o.hotel.id = :hotelId AND o.orderNumber = :orderNumber")
+       Optional<ShopOrder> findByHotelIdAndOrderNumber(@Param("hotelId") Long hotelId,
+                     @Param("orderNumber") String orderNumber);
 
        /**
         * Find orders by hotel ID and customer name (case insensitive)
@@ -72,42 +84,55 @@ public interface ShopOrderRepository extends JpaRepository<ShopOrder, Long> {
        /**
         * Find orders by hotel ID and customer email
         */
-       List<ShopOrder> findByHotelIdAndCustomerEmail(Long hotelId, String customerEmail);
+       @Query("SELECT o FROM ShopOrder o WHERE o.hotel.id = :hotelId AND o.customerEmail = :customerEmail")
+       List<ShopOrder> findByHotelIdAndCustomerEmail(@Param("hotelId") Long hotelId,
+                     @Param("customerEmail") String customerEmail);
 
        /**
         * Find orders by hotel ID and room number
         */
-       List<ShopOrder> findByHotelIdAndRoomNumber(Long hotelId, String roomNumber);
+       @Query("SELECT o FROM ShopOrder o WHERE o.hotel.id = :hotelId AND o.roomNumber = :roomNumber")
+       List<ShopOrder> findByHotelIdAndRoomNumber(@Param("hotelId") Long hotelId,
+                     @Param("roomNumber") String roomNumber);
 
        /**
         * Find orders by hotel ID and reservation ID
         */
-       List<ShopOrder> findByHotelIdAndReservationId(Long hotelId, Long reservationId);
+       @Query("SELECT o FROM ShopOrder o WHERE o.hotel.id = :hotelId AND o.reservation.id = :reservationId")
+       List<ShopOrder> findByHotelIdAndReservationId(@Param("hotelId") Long hotelId,
+                     @Param("reservationId") Long reservationId);
 
        /**
         * Find orders by hotel ID and payment method
         */
-       List<ShopOrder> findByHotelIdAndPaymentMethod(Long hotelId, PaymentMethod paymentMethod);
+       @Query("SELECT o FROM ShopOrder o WHERE o.hotel.id = :hotelId AND o.paymentMethod = :paymentMethod")
+       List<ShopOrder> findByHotelIdAndPaymentMethod(@Param("hotelId") Long hotelId,
+                     @Param("paymentMethod") PaymentMethod paymentMethod);
 
        /**
         * Find orders by hotel ID and payment status
         */
-       List<ShopOrder> findByHotelIdAndIsPaid(Long hotelId, Boolean isPaid);
+       @Query("SELECT o FROM ShopOrder o WHERE o.hotel.id = :hotelId AND o.isPaid = :isPaid")
+       List<ShopOrder> findByHotelIdAndIsPaid(@Param("hotelId") Long hotelId, @Param("isPaid") Boolean isPaid);
 
        /**
         * Find unpaid orders by hotel ID
         */
-       List<ShopOrder> findByHotelIdAndIsPaidFalse(Long hotelId);
+       @Query("SELECT o FROM ShopOrder o WHERE o.hotel.id = :hotelId AND o.isPaid = false")
+       List<ShopOrder> findByHotelIdAndIsPaidFalse(@Param("hotelId") Long hotelId);
 
        /**
         * Find paid orders by hotel ID
         */
-       List<ShopOrder> findByHotelIdAndIsPaidTrue(Long hotelId);
+       @Query("SELECT o FROM ShopOrder o WHERE o.hotel.id = :hotelId AND o.isPaid = true")
+       List<ShopOrder> findByHotelIdAndIsPaidTrue(@Param("hotelId") Long hotelId);
 
        /**
         * Find orders by hotel ID and delivery type
         */
-       List<ShopOrder> findByHotelIdAndIsDelivery(Long hotelId, Boolean isDelivery);
+       @Query("SELECT o FROM ShopOrder o WHERE o.hotel.id = :hotelId AND o.isDelivery = :isDelivery")
+       List<ShopOrder> findByHotelIdAndIsDelivery(@Param("hotelId") Long hotelId,
+                     @Param("isDelivery") Boolean isDelivery);
 
        /**
         * Find orders by hotel ID created within date range
@@ -159,12 +184,14 @@ public interface ShopOrderRepository extends JpaRepository<ShopOrder, Long> {
        /**
         * Count orders by hotel ID
         */
-       long countByHotelId(Long hotelId);
+       @Query("SELECT COUNT(o) FROM ShopOrder o WHERE o.hotel.id = :hotelId")
+       long countByHotelId(@Param("hotelId") Long hotelId);
 
        /**
         * Count orders by hotel ID and status
         */
-       long countByHotelIdAndStatus(Long hotelId, OrderStatus status);
+       @Query("SELECT COUNT(o) FROM ShopOrder o WHERE o.hotel.id = :hotelId AND o.status = :status")
+       long countByHotelIdAndStatus(@Param("hotelId") Long hotelId, @Param("status") OrderStatus status);
 
        /**
         * Count today's orders by hotel ID
@@ -202,7 +229,9 @@ public interface ShopOrderRepository extends JpaRepository<ShopOrder, Long> {
        /**
         * Find orders ready for delivery by hotel ID
         */
-       List<ShopOrder> findByHotelIdAndStatusAndIsDeliveryTrue(Long hotelId, OrderStatus status);
+       @Query("SELECT o FROM ShopOrder o WHERE o.hotel.id = :hotelId AND o.status = :status AND o.isDelivery = true")
+       List<ShopOrder> findByHotelIdAndStatusAndIsDeliveryTrue(@Param("hotelId") Long hotelId,
+                     @Param("status") OrderStatus status);
 
        /**
         * Find orders scheduled for delivery within time range
@@ -215,5 +244,12 @@ public interface ShopOrderRepository extends JpaRepository<ShopOrder, Long> {
        /**
         * Check if order number exists for hotel
         */
-       boolean existsByHotelIdAndOrderNumber(Long hotelId, String orderNumber);
+       @Query("SELECT COUNT(o) > 0 FROM ShopOrder o WHERE o.hotel.id = :hotelId AND o.orderNumber = :orderNumber")
+       boolean existsByHotelIdAndOrderNumber(@Param("hotelId") Long hotelId, @Param("orderNumber") String orderNumber);
+
+       /**
+        * Find shop order by ID with order items eagerly loaded
+        */
+       @Query("SELECT o FROM ShopOrder o LEFT JOIN FETCH o.orderItems WHERE o.id = :id")
+       Optional<ShopOrder> findByIdWithOrderItems(@Param("id") Long id);
 }

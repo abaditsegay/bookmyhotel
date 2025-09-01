@@ -20,135 +20,159 @@ import java.util.Optional;
 @Repository
 public interface MaintenanceTaskRepository extends JpaRepository<MaintenanceTask, Long> {
 
-        // Find by tenant
-        List<MaintenanceTask> findByTenantIdOrderByCreatedAtDesc(String tenantId);
+        // Find by hotel
+        @Query("SELECT m FROM MaintenanceTask m WHERE m.hotel.id = :hotelId ORDER BY m.createdAt DESC")
+        List<MaintenanceTask> findByHotelIdOrderByCreatedAtDesc(@Param("hotelId") Long hotelId);
 
-        List<MaintenanceTask> findByTenantId(String tenantId);
+        @Query("SELECT m FROM MaintenanceTask m WHERE m.hotel.id = :hotelId")
+        List<MaintenanceTask> findByHotelId(@Param("hotelId") Long hotelId);
 
-        Page<MaintenanceTask> findByTenantId(String tenantId, Pageable pageable);
+        @Query("SELECT m FROM MaintenanceTask m WHERE m.hotel.id = :hotelId")
+        Page<MaintenanceTask> findByHotelId(@Param("hotelId") Long hotelId, Pageable pageable);
 
-        // Find by tenant and hotel
-        List<MaintenanceTask> findByTenantIdAndHotelIdOrderByCreatedAtDesc(String tenantId, Long hotelId);
+        // Find by hotel and status
+        @Query("SELECT m FROM MaintenanceTask m WHERE m.hotel.id = :hotelId AND m.status = :status")
+        List<MaintenanceTask> findByHotelIdAndStatus(@Param("hotelId") Long hotelId,
+                        @Param("status") TaskStatus status);
 
-        // Find by tenant and status
-        List<MaintenanceTask> findByTenantIdAndStatus(String tenantId, TaskStatus status);
-
-        List<MaintenanceTask> findByTenantIdAndStatusOrderByCreatedAtDesc(String tenantId, TaskStatus status);
-
-        // Find by tenant, hotel and status
-        List<MaintenanceTask> findByTenantIdAndHotelIdAndStatusOrderByCreatedAtDesc(
-                        String tenantId, Long hotelId, TaskStatus status);
+        @Query("SELECT m FROM MaintenanceTask m WHERE m.hotel.id = :hotelId AND m.status = :status ORDER BY m.createdAt DESC")
+        List<MaintenanceTask> findByHotelIdAndStatusOrderByCreatedAtDesc(@Param("hotelId") Long hotelId,
+                        @Param("status") TaskStatus status);
 
         // Find by assigned staff member
-        List<MaintenanceTask> findByTenantIdAndAssignedTo(String tenantId, HousekeepingStaff assignedTo);
+        @Query("SELECT m FROM MaintenanceTask m WHERE m.hotel.id = :hotelId AND m.assignedTo = :assignedTo")
+        List<MaintenanceTask> findByHotelIdAndAssignedTo(@Param("hotelId") Long hotelId,
+                        @Param("assignedTo") HousekeepingStaff assignedTo);
 
-        List<MaintenanceTask> findByTenantIdAndAssignedToOrderByScheduledStartTimeAsc(
-                        String tenantId, HousekeepingStaff assignedTo);
+        @Query("SELECT m FROM MaintenanceTask m WHERE m.hotel.id = :hotelId AND m.assignedTo = :assignedTo ORDER BY m.scheduledStartTime ASC")
+        List<MaintenanceTask> findByHotelIdAndAssignedToOrderByScheduledStartTimeAsc(
+                        @Param("hotelId") Long hotelId, @Param("assignedTo") HousekeepingStaff assignedTo);
 
         // Find by assigned staff member email
-        List<MaintenanceTask> findByTenantIdAndAssignedTo_EmailOrderByCreatedAtDesc(
-                        String tenantId, String assignedToEmail);
+        @Query("SELECT m FROM MaintenanceTask m WHERE m.hotel.id = :hotelId AND m.assignedTo.email = :assignedToEmail ORDER BY m.createdAt DESC")
+        List<MaintenanceTask> findByHotelIdAndAssignedTo_EmailOrderByCreatedAtDesc(
+                        @Param("hotelId") Long hotelId, @Param("assignedToEmail") String assignedToEmail);
 
         // Find by assigned staff member and status
-        List<MaintenanceTask> findByTenantIdAndAssignedToAndStatusOrderByScheduledStartTimeAsc(
-                        String tenantId, HousekeepingStaff assignedTo, TaskStatus status);
+        @Query("SELECT m FROM MaintenanceTask m WHERE m.hotel.id = :hotelId AND m.assignedTo = :assignedTo AND m.status = :status ORDER BY m.scheduledStartTime ASC")
+        List<MaintenanceTask> findByHotelIdAndAssignedToAndStatusOrderByScheduledStartTimeAsc(
+                        @Param("hotelId") Long hotelId, @Param("assignedTo") HousekeepingStaff assignedTo,
+                        @Param("status") TaskStatus status);
 
         // Find by priority
-        List<MaintenanceTask> findByTenantIdAndPriority(String tenantId, TaskPriority priority);
+        @Query("SELECT m FROM MaintenanceTask m WHERE m.hotel.id = :hotelId AND m.priority = :priority")
+        List<MaintenanceTask> findByHotelIdAndPriority(@Param("hotelId") Long hotelId,
+                        @Param("priority") TaskPriority priority);
 
-        List<MaintenanceTask> findByTenantIdAndPriorityOrderByCreatedAtDesc(
-                        String tenantId, TaskPriority priority);
+        @Query("SELECT m FROM MaintenanceTask m WHERE m.hotel.id = :hotelId AND m.priority = :priority ORDER BY m.createdAt DESC")
+        List<MaintenanceTask> findByHotelIdAndPriorityOrderByCreatedAtDesc(
+                        @Param("hotelId") Long hotelId, @Param("priority") TaskPriority priority);
 
-        List<MaintenanceTask> findByTenantIdAndPriorityOrderByCreatedAtAsc(
-                        String tenantId, TaskPriority priority);
+        @Query("SELECT m FROM MaintenanceTask m WHERE m.hotel.id = :hotelId AND m.priority = :priority ORDER BY m.createdAt ASC")
+        List<MaintenanceTask> findByHotelIdAndPriorityOrderByCreatedAtAsc(
+                        @Param("hotelId") Long hotelId, @Param("priority") TaskPriority priority);
 
         // Find by task type
-        List<MaintenanceTask> findByTenantIdAndTaskType(String tenantId, String taskType);
+        @Query("SELECT m FROM MaintenanceTask m WHERE m.hotel.id = :hotelId AND m.taskType = :taskType")
+        List<MaintenanceTask> findByHotelIdAndTaskType(@Param("hotelId") Long hotelId,
+                        @Param("taskType") String taskType);
 
-        List<MaintenanceTask> findByTenantIdAndTaskTypeOrderByCreatedAtDesc(
-                        String tenantId, String taskType);
+        @Query("SELECT m FROM MaintenanceTask m WHERE m.hotel.id = :hotelId AND m.taskType = :taskType ORDER BY m.createdAt DESC")
+        List<MaintenanceTask> findByHotelIdAndTaskTypeOrderByCreatedAtDesc(
+                        @Param("hotelId") Long hotelId, @Param("taskType") String taskType);
 
         // Find by equipment type
-        List<MaintenanceTask> findByTenantIdAndEquipmentType(String tenantId, String equipmentType);
+        @Query("SELECT m FROM MaintenanceTask m WHERE m.hotel.id = :hotelId AND m.equipmentType = :equipmentType")
+        List<MaintenanceTask> findByHotelIdAndEquipmentType(@Param("hotelId") Long hotelId,
+                        @Param("equipmentType") String equipmentType);
 
-        List<MaintenanceTask> findByTenantIdAndEquipmentTypeOrderByCreatedAtDesc(
-                        String tenantId, String equipmentType);
+        @Query("SELECT m FROM MaintenanceTask m WHERE m.hotel.id = :hotelId AND m.equipmentType = :equipmentType ORDER BY m.createdAt DESC")
+        List<MaintenanceTask> findByHotelIdAndEquipmentTypeOrderByCreatedAtDesc(
+                        @Param("hotelId") Long hotelId, @Param("equipmentType") String equipmentType);
 
         // Find by room
-        List<MaintenanceTask> findByTenantIdAndRoom(String tenantId, Room room);
+        @Query("SELECT m FROM MaintenanceTask m WHERE m.hotel.id = :hotelId AND m.room = :room")
+        List<MaintenanceTask> findByHotelIdAndRoom(@Param("hotelId") Long hotelId, @Param("room") Room room);
 
-        List<MaintenanceTask> findByTenantIdAndRoomIdOrderByCreatedAtDesc(
-                        String tenantId, Long roomId);
+        @Query("SELECT m FROM MaintenanceTask m WHERE m.hotel.id = :hotelId AND m.room.id = :roomId ORDER BY m.createdAt DESC")
+        List<MaintenanceTask> findByHotelIdAndRoomIdOrderByCreatedAtDesc(
+                        @Param("hotelId") Long hotelId, @Param("roomId") Long roomId);
 
         // Find unassigned tasks
-        List<MaintenanceTask> findByTenantIdAndAssignedToIsNull(String tenantId);
+        @Query("SELECT m FROM MaintenanceTask m WHERE m.hotel.id = :hotelId AND m.assignedTo IS NULL")
+        List<MaintenanceTask> findByHotelIdAndAssignedToIsNull(@Param("hotelId") Long hotelId);
 
         // Find by date range
-        List<MaintenanceTask> findByTenantIdAndCreatedAtBetween(String tenantId, LocalDateTime start,
-                        LocalDateTime end);
+        @Query("SELECT m FROM MaintenanceTask m WHERE m.hotel.id = :hotelId AND m.createdAt BETWEEN :start AND :end")
+        List<MaintenanceTask> findByHotelIdAndCreatedAtBetween(@Param("hotelId") Long hotelId,
+                        @Param("start") LocalDateTime start,
+                        @Param("end") LocalDateTime end);
 
         // Find emergency tasks (urgent/critical priority)
-        @Query("SELECT m FROM MaintenanceTask m WHERE m.tenantId = :tenantId " +
+        @Query("SELECT m FROM MaintenanceTask m WHERE m.hotel.id = :hotelId " +
                         "AND m.priority IN ('URGENT', 'CRITICAL') " +
                         "AND m.status NOT IN ('COMPLETED', 'VERIFIED', 'CANCELLED') " +
                         "ORDER BY m.priority DESC, m.createdAt ASC")
-        List<MaintenanceTask> findEmergencyTasks(@Param("tenantId") String tenantId);
+        List<MaintenanceTask> findEmergencyTasks(@Param("hotelId") Long hotelId);
 
         // Find overdue tasks
-        @Query("SELECT m FROM MaintenanceTask m WHERE m.tenantId = :tenantId " +
+        @Query("SELECT m FROM MaintenanceTask m WHERE m.hotel.id = :hotelId " +
                         "AND m.scheduledStartTime < :currentTime " +
                         "AND m.status NOT IN ('COMPLETED', 'VERIFIED', 'CANCELLED')")
-        List<MaintenanceTask> findOverdueTasks(@Param("tenantId") String tenantId,
+        List<MaintenanceTask> findOverdueTasks(@Param("hotelId") Long hotelId,
                         @Param("currentTime") LocalDateTime currentTime);
 
         // Find tasks scheduled for today
-        @Query("SELECT m FROM MaintenanceTask m WHERE m.tenantId = :tenantId " +
+        @Query("SELECT m FROM MaintenanceTask m WHERE m.hotel.id = :hotelId " +
                         "AND DATE(m.scheduledStartTime) = DATE(:date)")
-        List<MaintenanceTask> findTasksScheduledForDate(@Param("tenantId") String tenantId,
+        List<MaintenanceTask> findTasksScheduledForDate(@Param("hotelId") Long hotelId,
                         @Param("date") LocalDateTime date);
 
         // Find tasks requiring follow-up
-        @Query("SELECT m FROM MaintenanceTask m WHERE m.tenantId = :tenantId " +
+        @Query("SELECT m FROM MaintenanceTask m WHERE m.hotel.id = :hotelId " +
                         "AND m.followUpRequired = true " +
                         "AND m.followUpDate <= :currentTime " +
                         "ORDER BY m.followUpDate ASC")
-        List<MaintenanceTask> findTasksRequiringFollowUp(@Param("tenantId") String tenantId,
+        List<MaintenanceTask> findTasksRequiringFollowUp(@Param("hotelId") Long hotelId,
                         @Param("currentTime") LocalDateTime currentTime);
 
         // Count methods
-        Long countByTenantIdAndStatus(String tenantId, TaskStatus status);
+        @Query("SELECT COUNT(m) FROM MaintenanceTask m WHERE m.hotel.id = :hotelId AND m.status = :status")
+        Long countByHotelIdAndStatus(@Param("hotelId") Long hotelId, @Param("status") TaskStatus status);
 
-        Long countByTenantIdAndPriority(String tenantId, TaskPriority priority);
+        @Query("SELECT COUNT(m) FROM MaintenanceTask m WHERE m.hotel.id = :hotelId AND m.priority = :priority")
+        Long countByHotelIdAndPriority(@Param("hotelId") Long hotelId, @Param("priority") TaskPriority priority);
 
-        Long countByTenantIdAndCreatedAtBetween(String tenantId, LocalDateTime start, LocalDateTime end);
+        @Query("SELECT COUNT(m) FROM MaintenanceTask m WHERE m.hotel.id = :hotelId AND m.createdAt BETWEEN :start AND :end")
+        Long countByHotelIdAndCreatedAtBetween(@Param("hotelId") Long hotelId, @Param("start") LocalDateTime start,
+                        @Param("end") LocalDateTime end);
 
         // For completed tasks in date range - use actualEndTime instead of non-existent
         // completedAt
-        @Query("SELECT COUNT(m) FROM MaintenanceTask m WHERE m.tenantId = :tenantId " +
+        @Query("SELECT COUNT(m) FROM MaintenanceTask m WHERE m.hotel.id = :hotelId " +
                         "AND m.status = :status " +
                         "AND m.actualEndTime BETWEEN :start AND :end")
-        Long countByTenantIdAndStatusAndActualEndTimeBetween(@Param("tenantId") String tenantId,
+        Long countByHotelIdAndStatusAndActualEndTimeBetween(@Param("hotelId") Long hotelId,
                         @Param("status") TaskStatus status,
                         @Param("start") LocalDateTime start,
                         @Param("end") LocalDateTime end);
 
         // Statistics methods
-        @Query("SELECT AVG(m.actualDurationMinutes) FROM MaintenanceTask m WHERE m.tenantId = :tenantId AND m.taskType = :taskType AND m.actualDurationMinutes IS NOT NULL")
-        Double findAverageDurationByCategory(@Param("tenantId") String tenantId, @Param("taskType") String taskType);
+        @Query("SELECT AVG(m.actualDurationMinutes) FROM MaintenanceTask m WHERE m.hotel.id = :hotelId AND m.taskType = :taskType AND m.actualDurationMinutes IS NOT NULL")
+        Double findAverageDurationByCategory(@Param("hotelId") Long hotelId, @Param("taskType") String taskType);
 
-        @Query("SELECT m.taskType, COUNT(m) FROM MaintenanceTask m WHERE m.tenantId = :tenantId GROUP BY m.taskType ORDER BY COUNT(m) DESC")
-        List<Object[]> findMostCommonCategories(@Param("tenantId") String tenantId);
+        @Query("SELECT m.taskType, COUNT(m) FROM MaintenanceTask m WHERE m.hotel.id = :hotelId GROUP BY m.taskType ORDER BY COUNT(m) DESC")
+        List<Object[]> findMostCommonCategories(@Param("hotelId") Long hotelId);
 
-        @Query("SELECT m.assignedTo, COUNT(m), AVG(m.actualDurationMinutes) FROM MaintenanceTask m WHERE m.tenantId = :tenantId AND m.createdAt BETWEEN :start AND :end GROUP BY m.assignedTo")
-        List<Object[]> findStaffWorkloadStats(@Param("tenantId") String tenantId, @Param("start") LocalDateTime start,
+        @Query("SELECT m.assignedTo, COUNT(m), AVG(m.actualDurationMinutes) FROM MaintenanceTask m WHERE m.hotel.id = :hotelId AND m.createdAt BETWEEN :start AND :end GROUP BY m.assignedTo")
+        List<Object[]> findStaffWorkloadStats(@Param("hotelId") Long hotelId, @Param("start") LocalDateTime start,
                         @Param("end") LocalDateTime end);
 
         // Paginated queries
-        Page<MaintenanceTask> findByTenantIdOrderByCreatedAtDesc(String tenantId, Pageable pageable);
+        @Query("SELECT m FROM MaintenanceTask m WHERE m.hotel.id = :hotelId ORDER BY m.createdAt DESC")
+        Page<MaintenanceTask> findByHotelIdOrderByCreatedAtDesc(@Param("hotelId") Long hotelId, Pageable pageable);
 
-        Page<MaintenanceTask> findByTenantIdAndHotelIdOrderByCreatedAtDesc(
-                        String tenantId, Long hotelId, Pageable pageable);
-
-        Page<MaintenanceTask> findByTenantIdAndAssignedToOrderByScheduledStartTimeAsc(
-                        String tenantId, User assignedTo, Pageable pageable);
+        @Query("SELECT m FROM MaintenanceTask m WHERE m.hotel.id = :hotelId AND m.assignedTo = :assignedTo ORDER BY m.scheduledStartTime ASC")
+        Page<MaintenanceTask> findByHotelIdAndAssignedToOrderByScheduledStartTimeAsc(
+                        @Param("hotelId") Long hotelId, @Param("assignedTo") User assignedTo, Pageable pageable);
 }

@@ -22,7 +22,7 @@ import jakarta.persistence.Table;
  */
 @Entity
 @Table(name = "maintenance_requests")
-public class MaintenanceRequest {
+public class MaintenanceRequest extends HotelScopedEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -82,9 +82,6 @@ public class MaintenanceRequest {
     @Column(name = "completed_at")
     private LocalDateTime completedAt;
 
-    @Column(name = "tenant_id", nullable = false)
-    private String tenantId;
-
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
@@ -113,14 +110,29 @@ public class MaintenanceRequest {
     }
 
     public MaintenanceRequest(String title, String description, MaintenanceCategory category,
-            MaintenancePriority priority, User requestedBy, String tenantId) {
+            MaintenancePriority priority, User requestedBy, Hotel hotel) {
         this.title = title;
         this.description = description;
         this.category = category;
         this.priority = priority;
         this.status = MaintenanceStatus.PENDING;
         this.requestedBy = requestedBy;
-        this.tenantId = tenantId;
+        setHotel(hotel);
+        this.createdAt = LocalDateTime.now();
+    }
+
+    public MaintenanceRequest(String title, String description, MaintenanceCategory category,
+            MaintenancePriority priority, User requestedBy, Room room) {
+        this.title = title;
+        this.description = description;
+        this.category = category;
+        this.priority = priority;
+        this.status = MaintenanceStatus.PENDING;
+        this.requestedBy = requestedBy;
+        this.room = room;
+        if (room != null) {
+            setHotel(room.getHotel());
+        }
         this.createdAt = LocalDateTime.now();
     }
 
@@ -273,14 +285,6 @@ public class MaintenanceRequest {
 
     public void setCompletedAt(LocalDateTime completedAt) {
         this.completedAt = completedAt;
-    }
-
-    public String getTenantId() {
-        return tenantId;
-    }
-
-    public void setTenantId(String tenantId) {
-        this.tenantId = tenantId;
     }
 
     public LocalDateTime getCreatedAt() {

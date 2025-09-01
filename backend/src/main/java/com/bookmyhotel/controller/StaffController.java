@@ -17,6 +17,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,6 +39,7 @@ import com.bookmyhotel.repository.HousekeepingTaskRepository;
 import com.bookmyhotel.repository.MaintenanceTaskRepository;
 import com.bookmyhotel.repository.UserRepository;
 import com.bookmyhotel.service.HousekeepingService;
+import com.bookmyhotel.service.HotelService;
 import com.bookmyhotel.service.UserManagementService;
 
 @RestController
@@ -53,6 +55,9 @@ public class StaffController {
 
     @Autowired
     private HousekeepingService housekeepingService;
+
+    @Autowired
+    private HotelService hotelService;
 
     @Autowired
     private HousekeepingTaskRepository housekeepingTaskRepository;
@@ -124,7 +129,9 @@ public class StaffController {
             User user = userOpt.get();
 
             // Get housekeeping staff record
-            Optional<HousekeepingStaff> staffOpt = housekeepingService.findStaffByEmail(user.getEmail());
+            Long hotelId = hotelService.getHotelIdByTenantId(user.getTenantId());
+            Optional<HousekeepingStaff> staffOpt = housekeepingService.findStaffByEmailAndHotel(user.getEmail(),
+                    hotelId);
             if (!staffOpt.isPresent()) {
                 return ResponseEntity.badRequest().body("Housekeeping staff record not found");
             }
@@ -286,7 +293,9 @@ public class StaffController {
 
             // Find the corresponding HousekeepingStaff record by email for maintenance
             // tasks
-            Optional<HousekeepingStaff> staffOpt = housekeepingService.findStaffByEmail(user.getEmail());
+            Long hotelId = hotelService.getHotelIdByTenantId(user.getTenantId());
+            Optional<HousekeepingStaff> staffOpt = housekeepingService.findStaffByEmailAndHotel(user.getEmail(),
+                    hotelId);
             if (!staffOpt.isPresent()) {
                 return ResponseEntity.badRequest().body("Maintenance staff record not found");
             }
@@ -294,8 +303,8 @@ public class StaffController {
             // Get maintenance tasks (not maintenance requests) assigned to this staff
             // member
             List<MaintenanceTask> tasks = maintenanceTaskRepository
-                    .findByTenantIdAndAssignedToOrderByScheduledStartTimeAsc(
-                            user.getTenantId(), staffOpt.get());
+                    .findByHotelIdAndAssignedToOrderByScheduledStartTimeAsc(
+                            hotelId, staffOpt.get());
 
             // Convert to DTOs to avoid JSON serialization issues
             List<MaintenanceTaskDTO> taskDTOs = tasks.stream()
@@ -325,7 +334,7 @@ public class StaffController {
         }
     }
 
-    @PutMapping("/maintenance/tasks/{taskId}/start")
+    @PostMapping("/maintenance/tasks/{taskId}/start")
     @PreAuthorize("hasAnyRole('MAINTENANCE', 'STAFF')")
     public ResponseEntity<?> startMaintenanceTask(@PathVariable Long taskId, Authentication authentication) {
         try {
@@ -335,6 +344,7 @@ public class StaffController {
                 return ResponseEntity.badRequest().body("User not found");
             }
             User user = userOpt.get();
+            Long hotelId = hotelService.getHotelIdByTenantId(user.getTenantId());
 
             Optional<MaintenanceTask> taskOpt = maintenanceTaskRepository.findById(taskId);
             if (!taskOpt.isPresent()) {
@@ -344,7 +354,8 @@ public class StaffController {
             MaintenanceTask task = taskOpt.get();
 
             // Verify the task is assigned to this user by checking staff record
-            Optional<HousekeepingStaff> staffOpt = housekeepingService.findStaffByEmail(user.getEmail());
+            Optional<HousekeepingStaff> staffOpt = housekeepingService.findStaffByEmailAndHotel(user.getEmail(),
+                    hotelId);
             if (!staffOpt.isPresent()) {
                 return ResponseEntity.badRequest().body("Staff record not found");
             }
@@ -378,6 +389,7 @@ public class StaffController {
                 return ResponseEntity.badRequest().body("User not found");
             }
             User user = userOpt.get();
+            Long hotelId = hotelService.getHotelIdByTenantId(user.getTenantId());
 
             Optional<MaintenanceTask> taskOpt = maintenanceTaskRepository.findById(taskId);
             if (!taskOpt.isPresent()) {
@@ -387,7 +399,8 @@ public class StaffController {
             MaintenanceTask task = taskOpt.get();
 
             // Verify the task is assigned to this user by checking staff record
-            Optional<HousekeepingStaff> staffOpt = housekeepingService.findStaffByEmail(user.getEmail());
+            Optional<HousekeepingStaff> staffOpt = housekeepingService.findStaffByEmailAndHotel(user.getEmail(),
+                    hotelId);
             if (!staffOpt.isPresent()) {
                 return ResponseEntity.badRequest().body("Staff record not found");
             }
@@ -437,6 +450,7 @@ public class StaffController {
                 return ResponseEntity.badRequest().body("User not found");
             }
             User user = userOpt.get();
+            Long hotelId = hotelService.getHotelIdByTenantId(user.getTenantId());
 
             Optional<MaintenanceTask> taskOpt = maintenanceTaskRepository.findById(taskId);
             if (!taskOpt.isPresent()) {
@@ -446,7 +460,8 @@ public class StaffController {
             MaintenanceTask task = taskOpt.get();
 
             // Verify the task is assigned to this user by checking staff record
-            Optional<HousekeepingStaff> staffOpt = housekeepingService.findStaffByEmail(user.getEmail());
+            Optional<HousekeepingStaff> staffOpt = housekeepingService.findStaffByEmailAndHotel(user.getEmail(),
+                    hotelId);
             if (!staffOpt.isPresent()) {
                 return ResponseEntity.badRequest().body("Staff record not found");
             }
@@ -497,8 +512,10 @@ public class StaffController {
                 return ResponseEntity.badRequest().body("User not found");
             }
             User user = userOpt.get();
+            Long hotelId = hotelService.getHotelIdByTenantId(user.getTenantId());
 
-            Optional<HousekeepingStaff> staffOpt = housekeepingService.findStaffByEmail(user.getEmail());
+            Optional<HousekeepingStaff> staffOpt = housekeepingService.findStaffByEmailAndHotel(user.getEmail(),
+                    hotelId);
             if (!staffOpt.isPresent()) {
                 return ResponseEntity.badRequest().body("Housekeeping staff record not found");
             }
@@ -530,17 +547,20 @@ public class StaffController {
                 return ResponseEntity.badRequest().body("User not found");
             }
             User user = userOpt.get();
+            Long hotelId = hotelService.getHotelIdByTenantId(user.getTenantId());
 
             // Find the corresponding HousekeepingStaff record by email for maintenance
             // tasks
-            Optional<HousekeepingStaff> staffOpt = housekeepingService.findStaffByEmail(user.getEmail());
+            Optional<HousekeepingStaff> staffOpt = housekeepingService.findStaffByEmailAndHotel(user.getEmail(),
+                    hotelId);
             if (!staffOpt.isPresent()) {
                 return ResponseEntity.badRequest().body("Maintenance staff record not found");
             }
 
             // Get maintenance tasks assigned to this staff member and calculate stats
-            List<MaintenanceTask> allTasks = maintenanceTaskRepository.findByTenantIdAndAssignedTo(
-                    user.getTenantId(), staffOpt.get());
+            List<MaintenanceTask> allTasks = maintenanceTaskRepository
+                    .findByHotelIdAndAssignedToOrderByScheduledStartTimeAsc(
+                            hotelId, staffOpt.get());
 
             long totalTasks = allTasks.size();
             long pendingTasks = allTasks.stream().filter(t -> t.getStatus() == TaskStatus.OPEN).count();
