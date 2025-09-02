@@ -105,7 +105,7 @@ const HotelManagementAdmin: React.FC = () => {
 
   // Pagination state
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   // Dialog state
   const [selectedHotel, setSelectedHotel] = useState<Hotel | null>(null);

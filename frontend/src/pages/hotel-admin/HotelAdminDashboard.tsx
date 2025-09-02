@@ -9,7 +9,6 @@ import {
   Tabs,
   Tab,
   Chip,
-  Divider,
   CircularProgress,
   Alert,
 } from '@mui/material';
@@ -845,14 +844,6 @@ const HotelAdminDashboard: React.FC = () => {
           </Box>
         </TabPanel>
       </Card>
-
-      {/* Footer */}
-      <Box sx={{ mt: 4, textAlign: 'center', color: 'text.secondary' }}>
-        <Divider sx={{ mb: 2 }} />
-        <Typography variant="body2">
-          Hotel Administrator Panel • BookMyHotel System • {new Date().getFullYear()}
-        </Typography>
-      </Box>
 
       {/* Walk-in Booking Modal */}
       <WalkInBookingModal

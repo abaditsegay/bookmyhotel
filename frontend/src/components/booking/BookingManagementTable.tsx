@@ -85,7 +85,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
-  const [size, setSize] = useState(5);
+  const [size, setSize] = useState(10);
   const [totalElements, setTotalElements] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
@@ -730,7 +730,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
           
           {/* Table Pagination */}
           <TablePagination
-            rowsPerPageOptions={[5, 10, 25]}
+            rowsPerPageOptions={[10, 25, 50]}
             component="div"
             count={totalElements}
             rowsPerPage={size}
