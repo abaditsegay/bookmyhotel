@@ -289,12 +289,21 @@ class AdminApiService {
 // Type definitions for API responses
 export interface PagedResponse<T> {
   content: T[];
-  page: {
+  page?: {
     size: number;
     number: number;
     totalElements: number;
     totalPages: number;
   };
+  // Direct Spring Boot Page properties (fallback)
+  size?: number;
+  number?: number;
+  totalElements?: number;
+  totalPages?: number;
+  numberOfElements?: number;
+  first?: boolean;
+  last?: boolean;
+  empty?: boolean;
 }
 
 export interface UserManagementResponse {

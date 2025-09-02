@@ -113,14 +113,13 @@ const TenantManagementAdmin: React.FC = () => {
       console.log('Tenant API Response:', response);
       if (response.content) {
         setTenants(response.content);
-        // Check both possible response structures
-        const responseAny = response as any;
-        const totalCount = response.page?.totalElements || responseAny.totalElements || response.content.length || 0;
+        // Spring Boot Page object has totalElements directly on the response
+        const totalCount = response.totalElements || response.page?.totalElements || response.content.length || 0;
         setTotalElements(totalCount);
         console.log('Total Elements:', totalCount, 'Response structure:', { 
           hasPage: !!response.page, 
           pageTotalElements: response.page?.totalElements,
-          directTotalElements: responseAny.totalElements,
+          directTotalElements: response.totalElements,
           contentLength: response.content.length 
         });
       } else {
