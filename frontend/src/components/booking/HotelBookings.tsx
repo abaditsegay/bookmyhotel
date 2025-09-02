@@ -89,6 +89,20 @@ const HotelBookings: React.FC<HotelBookingsProps> = ({
     severity: 'success' as 'success' | 'error' 
   });
 
+  // Memoize search handler to prevent re-creation on every render
+  const handleSearchChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+  }, []);
+
+  // Memoize InputProps to prevent re-creation on every render
+  const searchInputProps = React.useMemo(() => ({
+    startAdornment: (
+      <InputAdornment position="start">
+        <SearchIcon />
+      </InputAdornment>
+    ),
+  }), []);
+
   // Load bookings based on mode
   const loadBookings = React.useCallback(async (customPage?: number, customSize?: number, customSearch?: string) => {
     if (!tenant || !token) return;
@@ -287,14 +301,8 @@ const HotelBookings: React.FC<HotelBookingsProps> = ({
           fullWidth
           placeholder="Search by guest name, confirmation number, or room..."
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon />
-              </InputAdornment>
-            ),
-          }}
+          onChange={handleSearchChange}
+          InputProps={searchInputProps}
           disabled={loading}
         />
       </Box>

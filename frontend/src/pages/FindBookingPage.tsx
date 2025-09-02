@@ -30,6 +30,15 @@ const FindBookingPage: React.FC = () => {
   const [error, setError] = useState('');
   const [booking, setBooking] = useState<BookingResponse | null>(null);
 
+  // Memoized change handlers to prevent input focus loss
+  const handleConfirmationNumberChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setConfirmationNumber(e.target.value);
+  }, []);
+
+  const handleEmailChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
+  }, []);
+
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -112,7 +121,7 @@ const FindBookingPage: React.FC = () => {
               fullWidth
               label="Reference Number"
               value={confirmationNumber}
-              onChange={(e) => setConfirmationNumber(e.target.value)}
+              onChange={handleConfirmationNumberChange}
               placeholder="Enter your booking reference number"
               required
             />
@@ -121,7 +130,7 @@ const FindBookingPage: React.FC = () => {
               label="Email Address"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={handleEmailChange}
               placeholder="Enter the email used for booking"
               required
             />

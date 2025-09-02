@@ -155,6 +155,15 @@ const UserManagementAdmin: React.FC = () => {
     }
   }, [token, page, rowsPerPage, filters]);
 
+  // Memoized filter change handlers to prevent input focus loss
+  const handleFilterChange = React.useCallback((filterName: keyof UserFilters, value: string) => {
+    setFilters(prev => ({
+      ...prev,
+      [filterName]: value
+    }));
+    setPage(0);
+  }, []);
+
   useEffect(() => {
     loadUsers();
   }, [loadUsers]);
@@ -207,14 +216,6 @@ const UserManagementAdmin: React.FC = () => {
 
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
     setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
-
-  const handleFilterChange = (filterName: keyof UserFilters, value: string) => {
-    setFilters(prev => ({
-      ...prev,
-      [filterName]: value
-    }));
     setPage(0);
   };
 

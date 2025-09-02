@@ -85,6 +85,47 @@ const BookingPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // Memoized change handlers to prevent input focus loss
+  const handleGuestNameChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setGuestName(e.target.value);
+  }, []);
+
+  const handleGuestEmailChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setGuestEmail(e.target.value);
+  }, []);
+
+  const handleGuestPhoneChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setGuestPhone(e.target.value);
+  }, []);
+
+  const handleSpecialRequestsChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSpecialRequests(e.target.value);
+  }, []);
+
+  const handleCardholderNameChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setCardholderName(e.target.value);
+  }, []);
+
+  const handleMobileNumberChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setMobileNumber(e.target.value);
+  }, []);
+
+  const handleTransferReceiptNumberChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setTransferReceiptNumber(e.target.value);
+  }, []);
+
+  const handleEthiopianPhoneNumberChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setEthiopianPhoneNumber(e.target.value);
+  }, []);
+
+  const handleGuestsChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setGuests(Math.max(1, parseInt(e.target.value) || 1));
+  }, []);
+
+  const handlePaymentMethodChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setPaymentMethod(e.target.value as 'credit_card' | 'mobile_money' | 'pay_at_frontdesk' | 'mbirr' | 'telebirr');
+  }, []);
+
   // Redirect if no booking data
   useEffect(() => {
     if (!bookingData?.room && !bookingData?.roomType) {
@@ -409,7 +450,7 @@ const BookingPage: React.FC = () => {
                   label="Number of Guests"
                   type="number"
                   value={guests}
-                  onChange={(e) => setGuests(Math.max(1, parseInt(e.target.value) || 1))}
+                  onChange={handleGuestsChange}
                   inputProps={{ min: 1, max: roomData.capacity }}
                   fullWidth
                   required
@@ -447,7 +488,7 @@ const BookingPage: React.FC = () => {
                     <TextField
                       label="Full Name"
                       value={guestName}
-                      onChange={(e) => setGuestName(e.target.value)}
+                      onChange={handleGuestNameChange}
                       fullWidth
                       required
                     />
@@ -458,7 +499,7 @@ const BookingPage: React.FC = () => {
                       label="Email Address"
                       type="email"
                       value={guestEmail}
-                      onChange={(e) => setGuestEmail(e.target.value)}
+                      onChange={handleGuestEmailChange}
                       fullWidth
                       required
                     />
@@ -468,7 +509,7 @@ const BookingPage: React.FC = () => {
                     <TextField
                       label="Phone Number"
                       value={guestPhone}
-                      onChange={(e) => setGuestPhone(e.target.value)}
+                      onChange={handleGuestPhoneChange}
                       fullWidth
                     />
                   </Grid>
@@ -479,7 +520,7 @@ const BookingPage: React.FC = () => {
                 <TextField
                   label="Special Requests"
                   value={specialRequests}
-                  onChange={(e) => setSpecialRequests(e.target.value)}
+                  onChange={handleSpecialRequestsChange}
                   multiline
                   rows={3}
                   fullWidth
@@ -507,7 +548,7 @@ const BookingPage: React.FC = () => {
                   <RadioGroup
                     row
                     value={paymentMethod}
-                    onChange={(e) => setPaymentMethod(e.target.value as 'credit_card' | 'mobile_money' | 'pay_at_frontdesk' | 'mbirr' | 'telebirr')}
+                    onChange={handlePaymentMethodChange}
                     sx={{ mt: 1 }}
                   >
                     <FormControlLabel
@@ -578,7 +619,7 @@ const BookingPage: React.FC = () => {
                           <TextField
                             label="Cardholder Name"
                             value={cardholderName}
-                            onChange={(e) => setCardholderName(e.target.value)}
+                            onChange={handleCardholderNameChange}
                             fullWidth
                             required
                             placeholder="John Doe"
@@ -667,7 +708,7 @@ const BookingPage: React.FC = () => {
                           <TextField
                             label="Mobile Number"
                             value={mobileNumber}
-                            onChange={(e) => setMobileNumber(e.target.value)}
+                            onChange={handleMobileNumberChange}
                             fullWidth
                             required
                             placeholder="+1234567890"
@@ -684,7 +725,7 @@ const BookingPage: React.FC = () => {
                           <TextField
                             label="Transfer Receipt Number"
                             value={transferReceiptNumber}
-                            onChange={(e) => setTransferReceiptNumber(e.target.value)}
+                            onChange={handleTransferReceiptNumberChange}
                             fullWidth
                             required
                             placeholder="Receipt/Transaction ID"

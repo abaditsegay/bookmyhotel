@@ -144,21 +144,23 @@ const TenantManagementAdmin: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadTenants, filters.search]);
 
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  // Memoized search handler to prevent input focus loss
+  const handleSearchChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     setFilters(prev => ({
       ...prev,
       search: event.target.value
     }));
     setPage(0);
-  };
+  }, []);
 
-  const handleFilterChange = (filterName: keyof TenantFilters, value: string) => {
+  // Memoized filter handler to prevent input focus loss
+  const handleFilterChange = React.useCallback((filterName: keyof TenantFilters, value: string) => {
     setFilters(prev => ({
       ...prev,
       [filterName]: value
     }));
     setPage(0);
-  };
+  }, []);
 
   const handlePageChange = (_: unknown, newPage: number) => {
     setPage(newPage);

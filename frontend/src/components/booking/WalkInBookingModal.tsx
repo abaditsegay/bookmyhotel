@@ -97,6 +97,19 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
   // Hotel information (we'll need to get this from the backend)
   const [hotelId, setHotelId] = useState<number | null>(null);
 
+  // Memoized change handlers to prevent input focus loss
+  const handleGuestInfoChange = React.useCallback((field: keyof WalkInGuestInfo) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    setGuestInfo(prev => ({ ...prev, [field]: e.target.value }));
+  }, []);
+
+  const handleGuestsChange = React.useCallback((e: any) => {
+    setGuests(Number(e.target.value));
+  }, []);
+
+  const handleSpecialRequestsChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSpecialRequests(e.target.value);
+  }, []);
+
   // Reset form when modal opens
   useEffect(() => {
     const loadHotelInfo = async () => {
@@ -407,7 +420,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                 fullWidth
                 label="First Name"
                 value={guestInfo.firstName}
-                onChange={(e) => setGuestInfo({ ...guestInfo, firstName: e.target.value })}
+                onChange={handleGuestInfoChange('firstName')}
                 required
               />
             </Grid>
@@ -416,7 +429,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                 fullWidth
                 label="Last Name"
                 value={guestInfo.lastName}
-                onChange={(e) => setGuestInfo({ ...guestInfo, lastName: e.target.value })}
+                onChange={handleGuestInfoChange('lastName')}
                 required
               />
             </Grid>
@@ -426,7 +439,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                 label="Email"
                 type="email"
                 value={guestInfo.email}
-                onChange={(e) => setGuestInfo({ ...guestInfo, email: e.target.value })}
+                onChange={handleGuestInfoChange('email')}
                 required
               />
             </Grid>
@@ -435,7 +448,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                 fullWidth
                 label="Phone"
                 value={guestInfo.phone}
-                onChange={(e) => setGuestInfo({ ...guestInfo, phone: e.target.value })}
+                onChange={handleGuestInfoChange('phone')}
                 required
               />
             </Grid>
@@ -473,7 +486,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                 <Select
                   value={guests}
                   label="Number of Guests"
-                  onChange={(e) => setGuests(Number(e.target.value))}
+                  onChange={handleGuestsChange}
                 >
                   {[1, 2, 3, 4, 5, 6].map((num) => (
                     <MenuItem key={num} value={num}>
@@ -547,7 +560,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                   multiline
                   rows={3}
                   value={specialRequests}
-                  onChange={(e) => setSpecialRequests(e.target.value)}
+                  onChange={handleSpecialRequestsChange}
                   placeholder="Any special requests or notes for the guest stay..."
                 />
               </Box>
