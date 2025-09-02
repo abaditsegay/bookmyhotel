@@ -44,10 +44,11 @@ import roomTypePricingService, {
 } from '../services/roomTypePricingApi';
 
 const ROOM_TYPES = [
-  { value: 'SINGLE', label: 'Single Room' },
-  { value: 'DOUBLE', label: 'Double Room' },
-  { value: 'SUITE', label: 'Suite' },
+  { value: 'STANDARD', label: 'Standard Room' },
   { value: 'DELUXE', label: 'Deluxe Room' },
+  { value: 'SUITE', label: 'Suite' },
+  { value: 'FAMILY', label: 'Family Room' },
+  { value: 'ACCESSIBLE', label: 'Accessible Room' },
   { value: 'PRESIDENTIAL', label: 'Presidential Suite' }
 ];
 
@@ -498,7 +499,7 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
                 value={formData.basePricePerNight}
                 onChange={(e) => setFormData({ 
                   ...formData, 
-                  basePricePerNight: parseFloat(e.target.value) 
+                  basePricePerNight: e.target.value === '' ? 0 : (parseFloat(e.target.value) || 0)
                 })}
                 required
                 inputProps={{ min: 0, step: 0.01 }}
@@ -513,7 +514,7 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
                 value={formData.weekendMultiplier}
                 onChange={(e) => setFormData({ 
                   ...formData, 
-                  weekendMultiplier: parseFloat(e.target.value) 
+                  weekendMultiplier: e.target.value === '' ? undefined : (parseFloat(e.target.value) || undefined)
                 })}
                 inputProps={{ min: 0.1, step: 0.1 }}
                 helperText="1.2 = 20% increase"
@@ -527,7 +528,7 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
                 value={formData.holidayMultiplier}
                 onChange={(e) => setFormData({ 
                   ...formData, 
-                  holidayMultiplier: parseFloat(e.target.value) 
+                  holidayMultiplier: e.target.value === '' ? undefined : (parseFloat(e.target.value) || undefined)
                 })}
                 inputProps={{ min: 0.1, step: 0.1 }}
                 helperText="1.5 = 50% increase"
@@ -541,7 +542,7 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
                 value={formData.peakSeasonMultiplier}
                 onChange={(e) => setFormData({ 
                   ...formData, 
-                  peakSeasonMultiplier: parseFloat(e.target.value) 
+                  peakSeasonMultiplier: e.target.value === '' ? undefined : (parseFloat(e.target.value) || undefined)
                 })}
                 inputProps={{ min: 0.1, step: 0.1 }}
                 helperText="1.3 = 30% increase"

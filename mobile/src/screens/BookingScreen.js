@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   View,
   Text,
@@ -44,6 +44,14 @@ const BookingScreen = ({ route, navigation }) => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  
+  // Use ref to track form state for navigation without causing re-renders
+  const guestFormRef = useRef(guestForm);
+  
+  // Keep ref in sync with state
+  useEffect(() => {
+    guestFormRef.current = guestForm;
+  }, [guestForm]);
 
   // Calculate booking details
   const nights = calculateNights(checkInDate, checkOutDate);
@@ -52,17 +60,19 @@ const BookingScreen = ({ route, navigation }) => {
   const totalAmount = room?.pricePerNight ? room.pricePerNight * nights : 0;
 
   // Create static icon components to prevent re-renders
-  const PersonIcon = <Ionicons name="person-outline" size={20} color={colors.textSecondary} />;
-  const MailIcon = <Ionicons name="mail-outline" size={20} color={colors.textSecondary} />;
-  const PhoneIcon = <Ionicons name="call-outline" size={20} color={colors.textSecondary} />;
-  const ChatIcon = <Ionicons name="chatbubble-outline" size={20} color={colors.textSecondary} />;
+  const PersonIcon = useMemo(() => <Ionicons name="person-outline" size={20} color={colors.textSecondary} />, []);
+  const MailIcon = useMemo(() => <Ionicons name="mail-outline" size={20} color={colors.textSecondary} />, []);
+  const PhoneIcon = useMemo(() => <Ionicons name="call-outline" size={20} color={colors.textSecondary} />, []);
+  const ChatIcon = useMemo(() => <Ionicons name="chatbubble-outline" size={20} color={colors.textSecondary} />, []);
 
   // Memoized form update functions to prevent re-renders
   const updateFirstName = useCallback((text) => {
-    setGuestForm(prev => ({
-      ...prev,
+    const newForm = {
+      ...guestFormRef.current,
       firstName: text,
-    }));
+    };
+    setGuestForm(newForm);
+    guestFormRef.current = newForm;
     
     // Clear error for this field
     setErrors(prev => ({
@@ -72,10 +82,12 @@ const BookingScreen = ({ route, navigation }) => {
   }, []);
 
   const updateLastName = useCallback((text) => {
-    setGuestForm(prev => ({
-      ...prev,
+    const newForm = {
+      ...guestFormRef.current,
       lastName: text,
-    }));
+    };
+    setGuestForm(newForm);
+    guestFormRef.current = newForm;
     
     // Clear error for this field
     setErrors(prev => ({
@@ -85,10 +97,12 @@ const BookingScreen = ({ route, navigation }) => {
   }, []);
 
   const updateEmail = useCallback((text) => {
-    setGuestForm(prev => ({
-      ...prev,
+    const newForm = {
+      ...guestFormRef.current,
       email: text,
-    }));
+    };
+    setGuestForm(newForm);
+    guestFormRef.current = newForm;
     
     // Clear error for this field
     setErrors(prev => ({
@@ -98,10 +112,12 @@ const BookingScreen = ({ route, navigation }) => {
   }, []);
 
   const updatePhone = useCallback((text) => {
-    setGuestForm(prev => ({
-      ...prev,
+    const newForm = {
+      ...guestFormRef.current,
       phone: text,
-    }));
+    };
+    setGuestForm(newForm);
+    guestFormRef.current = newForm;
     
     // Clear error for this field
     setErrors(prev => ({
@@ -111,10 +127,12 @@ const BookingScreen = ({ route, navigation }) => {
   }, []);
 
   const updateSpecialRequests = useCallback((text) => {
-    setGuestForm(prev => ({
-      ...prev,
+    const newForm = {
+      ...guestFormRef.current,
       specialRequests: text,
-    }));
+    };
+    setGuestForm(newForm);
+    guestFormRef.current = newForm;
     
     // Clear error for this field
     setErrors(prev => ({
@@ -208,8 +226,8 @@ const BookingScreen = ({ route, navigation }) => {
   };
 
   // Handle back navigation with confirmation
-  const handleBackPress = () => {
-    const hasFormData = Object.values(guestForm).some(value => value.trim() !== '');
+  const handleBackPress = useCallback(() => {
+    const hasFormData = Object.values(guestFormRef.current).some(value => value.trim() !== '');
     
     if (hasFormData) {
       Alert.alert(
@@ -223,7 +241,7 @@ const BookingScreen = ({ route, navigation }) => {
     } else {
       navigation.goBack();
     }
-  };
+  }, [navigation]);
 
   // Set up navigation header
   useEffect(() => {
@@ -237,7 +255,7 @@ const BookingScreen = ({ route, navigation }) => {
         </TouchableOpacity>
       ),
     });
-  }, [navigation, guestForm]);
+  }, [navigation, handleBackPress]);
 
   return (
     <KeyboardAvoidingView

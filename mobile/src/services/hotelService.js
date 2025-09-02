@@ -22,7 +22,7 @@ export const hotelService = {
       
       // Backend expects POST request with JSON body
       const requestBody = {
-        destination: destination, // Backend expects 'destination'
+        location: destination, // Backend expects 'location' not 'destination'
         checkInDate: checkInDate,
         checkOutDate: checkOutDate,
         guests: guests,
@@ -54,6 +54,26 @@ export const hotelService = {
       console.log('✅ API Response Status:', response.status);
       console.log('📥 Response data length:', response.data?.length || 0);
 
+      // If search returns empty results, try fallback to random hotels
+      if (response.data && response.data.length === 0) {
+        console.log('🔍 Search returned empty results, trying random hotels as fallback');
+        try {
+          const randomHotelsResponse = await api.get('/hotels/random');
+          console.log('🎲 Random hotels fallback response length:', randomHotelsResponse.data?.length || 0);
+          
+          if (randomHotelsResponse.data && randomHotelsResponse.data.length > 0) {
+            return {
+              success: true,
+              data: randomHotelsResponse.data,
+              fallback: true, // Indicate this is fallback data
+              message: `No hotels found for "${destination}". Showing available hotels.`
+            };
+          }
+        } catch (fallbackError) {
+          console.error('❌ Random hotels fallback failed:', fallbackError);
+        }
+      }
+
       return {
         success: true,
         data: response.data,
@@ -74,11 +94,21 @@ export const hotelService = {
   /**
    * Get hotel details by ID
    * @param {number} hotelId - Hotel ID
+   * @param {Object} params - Optional search parameters for room availability
    * @returns {Promise} API response with hotel details
    */
-  getHotelDetails: async (hotelId) => {
+  getHotelDetails: async (hotelId, params = {}) => {
     try {
-      const response = await api.get(`/hotels/${hotelId}`);
+      const { checkInDate, checkOutDate, guests = 2 } = params;
+      
+      const queryParams = {};
+      if (checkInDate) queryParams.checkInDate = checkInDate;
+      if (checkOutDate) queryParams.checkOutDate = checkOutDate;
+      if (guests) queryParams.guests = guests;
+      
+      const response = await api.get(`/hotels/${hotelId}`, {
+        params: queryParams
+      });
       
       return {
         success: true,
@@ -122,6 +152,27 @@ export const hotelService = {
       return {
         success: false,
         error: error.response?.data?.message || 'Failed to fetch hotel rooms',
+        statusCode: error.response?.status,
+      };
+    }
+  },
+
+  /**
+   * Get random hotels for advertisement display
+   * @returns {Promise} API response with hotel list
+   */
+  getRandomHotels: async () => {
+    try {
+      const response = await api.get('/hotels/random');
+      
+      return {
+        success: true,
+        data: response.data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Failed to fetch hotels',
         statusCode: error.response?.status,
       };
     }

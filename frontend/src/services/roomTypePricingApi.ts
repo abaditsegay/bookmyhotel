@@ -44,6 +44,31 @@ class RoomTypePricingService {
   private baseUrl = `${API_BASE_URL}/api/hotel-admin/room-type-pricing`;
 
   /**
+   * Transform backend response (actual prices) to frontend format (multipliers)
+   */
+  private transformResponse(backendData: any): RoomTypePricingResponse {
+    return {
+      id: backendData.id,
+      roomType: backendData.roomType,
+      basePricePerNight: backendData.basePricePerNight,
+      weekendMultiplier: backendData.weekendPrice && backendData.basePricePerNight > 0 
+        ? backendData.weekendPrice / backendData.basePricePerNight 
+        : 1.2,
+      holidayMultiplier: backendData.holidayPrice && backendData.basePricePerNight > 0
+        ? backendData.holidayPrice / backendData.basePricePerNight
+        : 1.5,
+      peakSeasonMultiplier: backendData.peakSeasonPrice && backendData.basePricePerNight > 0
+        ? backendData.peakSeasonPrice / backendData.basePricePerNight
+        : 1.3,
+      isActive: backendData.isActive,
+      currency: backendData.currency,
+      description: backendData.description,
+      createdAt: backendData.createdAt,
+      updatedAt: backendData.updatedAt
+    };
+  }
+
+  /**
    * Get all room type pricing for the authenticated hotel admin
    */
   async getRoomTypePricing(token: string): Promise<ApiResponse<RoomTypePricingResponse[]>> {
@@ -58,10 +83,12 @@ class RoomTypePricingService {
         throw new Error(errorData.message || 'Failed to fetch room type pricing');
       }
 
-      const data = await response.json();
+      const backendData = await response.json();
+      const transformedData = backendData.map((item: any) => this.transformResponse(item));
+      
       return {
         success: true,
-        data,
+        data: transformedData,
         message: 'Room type pricing fetched successfully'
       };
     } catch (error) {
@@ -78,10 +105,22 @@ class RoomTypePricingService {
    */
   async saveRoomTypePricing(token: string, pricing: RoomTypePricingRequest): Promise<ApiResponse<RoomTypePricingResponse>> {
     try {
+      // Transform multipliers to actual prices for backend
+      const transformedPricing = {
+        roomType: pricing.roomType,
+        basePricePerNight: pricing.basePricePerNight,
+        weekendPrice: pricing.weekendMultiplier ? pricing.basePricePerNight * pricing.weekendMultiplier : undefined,
+        holidayPrice: pricing.holidayMultiplier ? pricing.basePricePerNight * pricing.holidayMultiplier : undefined,
+        peakSeasonPrice: pricing.peakSeasonMultiplier ? pricing.basePricePerNight * pricing.peakSeasonMultiplier : undefined,
+        isActive: pricing.isActive,
+        currency: pricing.currency,
+        description: pricing.description
+      };
+
       const response = await fetch(this.baseUrl, {
         method: 'POST',
         headers: createAuthHeaders(token),
-        body: JSON.stringify(pricing)
+        body: JSON.stringify(transformedPricing)
       });
 
       if (!response.ok) {
@@ -89,10 +128,10 @@ class RoomTypePricingService {
         throw new Error(errorData.message || 'Failed to save room type pricing');
       }
 
-      const data = await response.json();
+      const backendData = await response.json();
       return {
         success: true,
-        data,
+        data: this.transformResponse(backendData),
         message: 'Room type pricing saved successfully'
       };
     } catch (error) {
@@ -109,10 +148,22 @@ class RoomTypePricingService {
    */
   async updateRoomTypePricing(token: string, id: number, pricing: RoomTypePricingRequest): Promise<ApiResponse<RoomTypePricingResponse>> {
     try {
+      // Transform multipliers to actual prices for backend
+      const transformedPricing = {
+        roomType: pricing.roomType,
+        basePricePerNight: pricing.basePricePerNight,
+        weekendPrice: pricing.weekendMultiplier ? pricing.basePricePerNight * pricing.weekendMultiplier : undefined,
+        holidayPrice: pricing.holidayMultiplier ? pricing.basePricePerNight * pricing.holidayMultiplier : undefined,
+        peakSeasonPrice: pricing.peakSeasonMultiplier ? pricing.basePricePerNight * pricing.peakSeasonMultiplier : undefined,
+        isActive: pricing.isActive,
+        currency: pricing.currency,
+        description: pricing.description
+      };
+
       const response = await fetch(`${this.baseUrl}/${id}`, {
         method: 'PUT',
         headers: createAuthHeaders(token),
-        body: JSON.stringify(pricing)
+        body: JSON.stringify(transformedPricing)
       });
 
       if (!response.ok) {
@@ -120,10 +171,10 @@ class RoomTypePricingService {
         throw new Error(errorData.message || 'Failed to update room type pricing');
       }
 
-      const data = await response.json();
+      const backendData = await response.json();
       return {
         success: true,
-        data,
+        data: this.transformResponse(backendData),
         message: 'Room type pricing updated successfully'
       };
     } catch (error) {

@@ -12,7 +12,7 @@ import {
   FlatList,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import DatePickerModal from '../components/DatePickerModal';
 import { hotelService } from '../services/hotelService';
 
 const SearchScreen = ({ navigation }) => {
@@ -35,23 +35,16 @@ const SearchScreen = ({ navigation }) => {
     return `${month} ${day}`;
   };
 
-  const handleDateChange = (event, selectedDate, type) => {
-    if (Platform.OS === 'android') {
-      setShowCheckInPicker(false);
-      setShowCheckOutPicker(false);
-    }
-    
+  const handleDateChange = (selectedDate, type) => {
     if (selectedDate) {
       if (type === 'checkIn') {
         setCheckInDate(selectedDate);
-        setShowCheckInPicker(false);
         // Ensure check-out is after check-in
         if (selectedDate >= checkOutDate) {
           setCheckOutDate(new Date(selectedDate.getTime() + 86400000));
         }
       } else {
         setCheckOutDate(selectedDate);
-        setShowCheckOutPicker(false);
       }
     }
   };
@@ -67,7 +60,7 @@ const SearchScreen = ({ navigation }) => {
 
     try {
       const searchParams = {
-        destination: destination.trim(),
+        location: destination.trim(), // Changed from 'destination' to 'location'
         checkInDate: checkInDate.toISOString().split('T')[0],
         checkOutDate: checkOutDate.toISOString().split('T')[0],
         guests: guests,
@@ -78,12 +71,16 @@ const SearchScreen = ({ navigation }) => {
 
       if (result.success && result.data) {
         setSearchResults(result.data);
-        if (result.data.length === 0) {
+        
+        // Handle fallback message
+        if (result.fallback && result.message) {
+          Alert.alert('Search Results', result.message);
+        } else if (result.data.length === 0) {
           Alert.alert('No Results', 'No hotels found for your search criteria. Please try different dates or location.');
         }
       } else {
         setSearchResults([]);
-        Alert.alert('No Results', 'No hotels found for your search criteria. Please try different dates or location.');
+        Alert.alert('Error', result.error || 'No hotels found for your search criteria. Please try different dates or location.');
       }
     } catch (error) {
       console.error('Search error:', error);
@@ -343,26 +340,24 @@ const SearchScreen = ({ navigation }) => {
         )}
       </ScrollView>
 
-      {/* Date Pickers */}
-      {showCheckInPicker && (
-        <DateTimePicker
-          value={checkInDate}
-          mode="date"
-          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-          minimumDate={new Date()}
-          onChange={(event, date) => handleDateChange(event, date, 'checkIn')}
-        />
-      )}
-
-      {showCheckOutPicker && (
-        <DateTimePicker
-          value={checkOutDate}
-          mode="date"
-          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-          minimumDate={new Date(checkInDate.getTime() + 86400000)}
-          onChange={(event, date) => handleDateChange(event, date, 'checkOut')}
-        />
-      )}
+      {/* Date Picker Modals */}
+      <DatePickerModal
+        visible={showCheckInPicker}
+        onClose={() => setShowCheckInPicker(false)}
+        onDateSelect={(date) => handleDateChange(date, 'checkIn')}
+        selectedDate={checkInDate}
+        minimumDate={new Date()}
+        title="Check-in Date"
+      />
+      
+      <DatePickerModal
+        visible={showCheckOutPicker}
+        onClose={() => setShowCheckOutPicker(false)}
+        onDateSelect={(date) => handleDateChange(date, 'checkOut')}
+        selectedDate={checkOutDate}
+        minimumDate={new Date(checkInDate.getTime() + 86400000)}
+        title="Check-out Date"
+      />
     </View>
   );
 };

@@ -27,20 +27,27 @@ const HomeScreen = ({ navigation }) => {
     try {
       setLoading(true);
       
-      // Load featured hotels (using search with default parameters)
-      const hotelsResponse = await hotelService.searchHotels({
-        destination: 'Addis Ababa', // Default destination
-        checkin: new Date().toISOString().split('T')[0], // Today
-        checkout: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0], // Tomorrow
-        guests: 2,
-      });
+      // Load featured hotels using random hotels endpoint (more reliable)
+      const hotelsResponse = await hotelService.getRandomHotels();
       
       if (hotelsResponse.success && hotelsResponse.data) {
-        // Handle both array and paginated response formats
-        const hotels = Array.isArray(hotelsResponse.data) 
-          ? hotelsResponse.data.slice(0, 3)
-          : hotelsResponse.data.content ? hotelsResponse.data.content.slice(0, 3) : [];
-        setFeaturedHotels(hotels);
+        setFeaturedHotels(hotelsResponse.data.slice(0, 3));
+      } else {
+        // Fallback to search if random hotels fails
+        const searchResponse = await hotelService.searchHotels({
+          destination: 'Addis Ababa', // Default destination
+          checkInDate: new Date().toISOString().split('T')[0], // Today
+          checkOutDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0], // Tomorrow
+          guests: 2,
+        });
+        
+        if (searchResponse.success && searchResponse.data) {
+          // Handle both array and paginated response formats
+          const hotels = Array.isArray(searchResponse.data) 
+            ? searchResponse.data.slice(0, 3)
+            : searchResponse.data.content ? searchResponse.data.content.slice(0, 3) : [];
+          setFeaturedHotels(hotels);
+        }
       }
 
       // Load destinations

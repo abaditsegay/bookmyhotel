@@ -6,10 +6,10 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
-  FlatList,
   RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Import services and components
 import { hotelService } from '../services/hotelService';
@@ -19,6 +19,7 @@ import { formatDateForDisplay, calculateNights } from '../utils/dateUtils';
 
 const HotelDetailsScreen = ({ navigation, route }) => {
   const { hotelId, hotelName, searchParams } = route.params;
+  const insets = useSafeAreaInsets();
   
   // State
   const [hotel, setHotel] = useState(null);
@@ -130,6 +131,7 @@ const HotelDetailsScreen = ({ navigation, route }) => {
     
     return (
       <Card
+        key={room.id.toString()}
         style={[
           styles.roomCard,
           isSelected && styles.roomCardSelected,
@@ -227,7 +229,9 @@ const HotelDetailsScreen = ({ navigation, route }) => {
 
   return (
     <View style={styles.container}>
-      <ScrollView
+      <ScrollView 
+        style={styles.scrollContainer}
+        showsVerticalScrollIndicator={true}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
@@ -333,13 +337,9 @@ const HotelDetailsScreen = ({ navigation, route }) => {
           </Text>
           
           {rooms.length > 0 ? (
-            <FlatList
-              data={rooms}
-              keyExtractor={(item) => item.id.toString()}
-              renderItem={renderRoomItem}
-              scrollEnabled={false}
-              contentContainerStyle={styles.roomsList}
-            />
+            <View style={styles.roomsList}>
+              {rooms.map((room) => renderRoomItem({ item: room }))}
+            </View>
           ) : (
             <Card style={styles.noRoomsCard}>
               <View style={styles.noRoomsContent}>
@@ -358,37 +358,37 @@ const HotelDetailsScreen = ({ navigation, route }) => {
             </Card>
           )}
         </View>
-      </ScrollView>
 
-      {/* Booking Button */}
-      {rooms.length > 0 && (
-        <View style={styles.bookingFooter}>
-          <View style={styles.bookingInfo}>
-            {selectedRoom ? (
-              <View>
-                <Text style={styles.selectedRoomText}>
-                  {selectedRoom.roomType} - Room {selectedRoom.roomNumber}
-                </Text>
-                <Text style={styles.selectedRoomPrice}>
-                  ETB {calculateTotalPrice(selectedRoom).toLocaleString()}
-                  {getNights() > 1 && (
-                    <Text style={styles.nightsText}> ({getNights()} nights)</Text>
-                  )}
-                </Text>
-              </View>
-            ) : (
-              <Text style={styles.selectRoomPrompt}>Select a room to book</Text>
-            )}
+        {/* Booking Button - moved inside ScrollView */}
+        {rooms.length > 0 && (
+          <View style={styles.bookingSection}>
+            <View style={styles.bookingInfo}>
+              {selectedRoom ? (
+                <View>
+                  <Text style={styles.selectedRoomText}>
+                    {selectedRoom.roomType} - Room {selectedRoom.roomNumber}
+                  </Text>
+                  <Text style={styles.selectedRoomPrice}>
+                    ETB {calculateTotalPrice(selectedRoom).toLocaleString()}
+                    {getNights() > 1 && (
+                      <Text style={styles.nightsText}> ({getNights()} nights)</Text>
+                    )}
+                  </Text>
+                </View>
+              ) : (
+                <Text style={styles.selectRoomPrompt}>Select a room to book</Text>
+              )}
+            </View>
+            
+            <Button
+              title="Book Now"
+              onPress={handleBookNow}
+              disabled={!selectedRoom}
+              style={styles.bookButton}
+            />
           </View>
-          
-          <Button
-            title="Book Now"
-            onPress={handleBookNow}
-            disabled={!selectedRoom}
-            style={styles.bookButton}
-          />
-        </View>
-      )}
+        )}
+      </ScrollView>
     </View>
   );
 };
@@ -397,6 +397,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  
+  scrollContainer: {
+    flex: 1,
+    paddingBottom: 120, // Space for the fixed footer
   },
   
   hotelSection: {
@@ -702,14 +707,25 @@ const styles = StyleSheet.create({
     minWidth: 150,
   },
   
-  bookingFooter: {
+  bookingSection: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.surface,
+    marginHorizontal: spacing.md,
+    marginVertical: spacing.lg,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
+    borderRadius: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4,
   },
   
   bookingInfo: {
