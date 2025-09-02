@@ -47,6 +47,11 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
   onCheckInSuccess,
 }) => {
   const { token } = useAuth();
+  
+  // Debug log
+  useEffect(() => {
+    console.log('CheckInDialog render state:', { open, booking: booking?.reservationId });
+  }, [open, booking]);
   const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
   const [selectedRoomType, setSelectedRoomType] = useState<string>('');
   const [availableRooms, setAvailableRooms] = useState<Room[]>([]);
@@ -290,7 +295,15 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
       maxWidth="md" 
       fullWidth
       PaperProps={{
-        sx: { borderRadius: 2 }
+        sx: { 
+          borderRadius: 2,
+          zIndex: 9999,
+          backgroundColor: 'white',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
+        }
+      }}
+      sx={{
+        zIndex: 9999
       }}
     >
       <DialogTitle sx={{ pb: 1 }}>

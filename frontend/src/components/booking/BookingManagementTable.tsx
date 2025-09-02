@@ -82,14 +82,6 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
     setSearchTerm(e.target.value);
   }, []);
   
-  // Debug logging for permissions
-  console.log('BookingManagementTable: Props received:', { 
-    mode, 
-    showActions, 
-    showCheckInOut,
-    title 
-  });
-  
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
@@ -121,6 +113,11 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
   const [checkoutReceipt, setCheckoutReceipt] = useState<CheckoutResponse | null>(null);
   const [checkInDialogOpen, setCheckInDialogOpen] = useState(false);
   const [bookingForCheckIn, setBookingForCheckIn] = useState<Booking | null>(null);
+
+  // Debug dialog state
+  useEffect(() => {
+    console.log('CheckInDialog state changed:', { checkInDialogOpen, bookingForCheckIn });
+  }, [checkInDialogOpen, bookingForCheckIn]);
 
   // Manual refresh function (used by refresh button)
   const loadBookings = React.useCallback(async () => {
@@ -296,6 +293,19 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
     loadData();
   }, [page, size, token, mode, searchTerm, tenant, tenantId]);
 
+  // Debug: Log bookings data when it changes
+  useEffect(() => {
+    if (bookings.length > 0) {
+      console.log('BookingManagementTable: Bookings data:', bookings.map(b => ({
+        id: b.reservationId,
+        status: b.status,
+        statusUpper: b.status.toUpperCase(),
+        guestName: b.guestName,
+        canCheckIn: (b.status.toUpperCase() === 'CONFIRMED' || b.status.toUpperCase() === 'ARRIVING')
+      })));
+    }
+  }, [bookings]);
+
   // Handle search with debounce - only reset page when search changes
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -373,6 +383,8 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
 
   // Handle check-in/out actions
   const handleBookingAction = async (booking: Booking, action: string) => {
+    console.log('handleBookingAction called with:', { booking, action });
+    
     if (onBookingAction) {
       onBookingAction(booking, action);
     }
@@ -381,9 +393,11 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
     if (mode === 'front-desk' && token) {
       try {
         if (action === 'check-in') {
+          console.log('Opening check-in dialog for booking:', booking);
           // Open check-in dialog for room assignment - don't update status yet
           setBookingForCheckIn(booking);
           setCheckInDialogOpen(true);
+          console.log('Check-in dialog state set to open');
           return; // Return early to prevent status update until dialog completes
         } else if (action === 'check-out') {
           // Use new checkout with receipt API
@@ -642,6 +656,14 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                         color={getStatusColor(booking.status)} 
                         size="small" 
                       />
+                      {/* Debug booking status */}
+                      {process.env.NODE_ENV === 'development' && (
+                        <div style={{ fontSize: '10px', color: 'gray', marginTop: '4px' }}>
+                          Status: {booking.status} | Upper: {booking.status.toUpperCase()}
+                          <br />
+                          Can Check-in: {(booking.status.toUpperCase() === 'CONFIRMED' || booking.status.toUpperCase() === 'ARRIVING') ? 'YES' : 'NO'}
+                        </div>
+                      )}
                     </TableCell>
                     {showActions && (
                       <TableCell>
@@ -663,6 +685,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                                     size="small" 
                                     color="success"
                                     onClick={() => {
+                                      console.log('Check-in icon clicked for booking:', booking);
                                       handleBookingAction(booking, 'check-in');
                                     }}
                                   >
@@ -778,12 +801,27 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
       <CheckInDialog
         open={checkInDialogOpen}
         onClose={() => {
+          console.log('CheckInDialog onClose called');
           setCheckInDialogOpen(false);
           setBookingForCheckIn(null);
         }}
         booking={bookingForCheckIn}
         onCheckInSuccess={handleCheckInSuccess}
       />
+
+      {/* Debug: Test button to force open dialog */}
+      {process.env.NODE_ENV === 'development' && (
+        <Button 
+          onClick={() => {
+            console.log('Debug: Force opening check-in dialog');
+            setCheckInDialogOpen(true);
+          }}
+          variant="outlined"
+          sx={{ position: 'fixed', top: 10, right: 10, zIndex: 9999 }}
+        >
+          Debug: Open Dialog
+        </Button>
+      )}
 
     </Box>
   );
