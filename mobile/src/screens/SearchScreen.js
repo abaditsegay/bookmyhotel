@@ -1,12 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   Alert,
-  ScrollView,
   Platform,
   StatusBar,
   FlatList,
@@ -14,6 +12,8 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import DatePickerModal from '../components/DatePickerModal';
 import { hotelService } from '../services/hotelService';
+import { ScreenContainer, Input } from '../components/common';
+import { colors, typography, spacing, globalStyles, borderRadius, shadows } from '../styles/globalStyles';
 
 const SearchScreen = ({ navigation }) => {
   const [destination, setDestination] = useState('');
@@ -27,6 +27,27 @@ const SearchScreen = ({ navigation }) => {
   const [searchResults, setSearchResults] = useState([]);
   const [hasSearched, setHasSearched] = useState(false);
 
+  // Memoized handlers to prevent re-renders
+  const handleDestinationChange = useCallback((text) => {
+    setDestination(text);
+  }, []);
+
+  const handleCheckInSelect = useCallback(() => {
+    setShowCheckInPicker(true);
+  }, []);
+
+  const handleCheckOutSelect = useCallback(() => {
+    setShowCheckOutPicker(true);
+  }, []);
+
+  const handleGuestSelect = useCallback(() => {
+    setShowGuestPicker(!showGuestPicker);
+  }, [showGuestPicker]);
+
+  // Memoized icon components
+  const LocationIcon = useMemo(() => <Ionicons name="location" size={20} color={colors.textSecondary} />, []);
+  const PeopleIcon = useMemo(() => <Ionicons name="people" size={20} color={colors.textSecondary} />, []);
+
   const formatDate = (date) => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
                    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -35,7 +56,7 @@ const SearchScreen = ({ navigation }) => {
     return `${month} ${day}`;
   };
 
-  const handleDateChange = (selectedDate, type) => {
+  const handleDateChange = useCallback((selectedDate, type) => {
     if (selectedDate) {
       if (type === 'checkIn') {
         setCheckInDate(selectedDate);
@@ -47,9 +68,9 @@ const SearchScreen = ({ navigation }) => {
         setCheckOutDate(selectedDate);
       }
     }
-  };
+  }, [checkOutDate]);
 
-  const handleSearch = async () => {
+  const handleSearch = useCallback(async () => {
     if (!destination.trim()) {
       Alert.alert('Required', 'Please enter a destination');
       return;
@@ -60,7 +81,7 @@ const SearchScreen = ({ navigation }) => {
 
     try {
       const searchParams = {
-        location: destination.trim(), // Changed from 'destination' to 'location'
+        location: destination.trim(),
         checkInDate: checkInDate.toISOString().split('T')[0],
         checkOutDate: checkOutDate.toISOString().split('T')[0],
         guests: guests,
@@ -72,7 +93,6 @@ const SearchScreen = ({ navigation }) => {
       if (result.success && result.data) {
         setSearchResults(result.data);
         
-        // Handle fallback message
         if (result.fallback && result.message) {
           Alert.alert('Search Results', result.message);
         } else if (result.data.length === 0) {
@@ -89,9 +109,9 @@ const SearchScreen = ({ navigation }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [destination, checkInDate, checkOutDate, guests]);
 
-  const handleHotelPress = (hotel) => {
+  const handleHotelPress = useCallback((hotel) => {
     navigation.navigate('HotelDetails', {
       hotelId: hotel.id,
       hotelName: hotel.name,
@@ -101,10 +121,14 @@ const SearchScreen = ({ navigation }) => {
         guests: guests,
       },
     });
-  };
+  }, [navigation, checkInDate, checkOutDate, guests]);
 
-  const renderHotelItem = ({ item: hotel }) => {
-    // Calculate total available rooms
+  const handleGuestOptionPress = useCallback((num) => {
+    setGuests(num);
+    setShowGuestPicker(false);
+  }, []);
+
+  const renderHotelItem = useCallback(({ item: hotel }) => {
     const totalAvailableRooms = hotel.roomTypeAvailability?.reduce((sum, room) => sum + room.availableCount, 0) || 0;
     const lowestPrice = hotel.minPrice;
     const hasRooms = totalAvailableRooms > 0;
@@ -113,12 +137,13 @@ const SearchScreen = ({ navigation }) => {
       <TouchableOpacity
         style={styles.hotelCard}
         onPress={() => handleHotelPress(hotel)}
+        activeOpacity={0.7}
       >
         <View style={styles.hotelHeader}>
           <View style={styles.hotelInfo}>
             <Text style={styles.hotelName}>{hotel.name}</Text>
-            <View style={styles.hotelLocation}>
-              <Ionicons name="location-outline" size={16} color="#666" />
+            <View style={globalStyles.row}>
+              <Ionicons name="location-outline" size={16} color={colors.textSecondary} />
               <Text style={styles.hotelLocationText}>
                 {hotel.address ? `${hotel.address}, ` : ''}{hotel.city || hotel.destination}
               </Text>
@@ -127,7 +152,7 @@ const SearchScreen = ({ navigation }) => {
           
           {hotel.rating && (
             <View style={styles.ratingContainer}>
-              <Ionicons name="star" size={16} color="#FFD700" />
+              <Ionicons name="star" size={16} color={colors.secondary} />
               <Text style={styles.ratingText}>{hotel.rating}</Text>
             </View>
           )}
@@ -139,30 +164,28 @@ const SearchScreen = ({ navigation }) => {
           </Text>
         )}
 
-        {/* Room Availability and Pricing */}
         <View style={styles.roomInfo}>
-          <View style={styles.availabilitySection}>
-            <View style={styles.roomCount}>
+          <View style={globalStyles.rowBetween}>
+            <View style={globalStyles.row}>
               <Ionicons 
                 name={hasRooms ? "checkmark-circle" : "close-circle"} 
                 size={16} 
-                color={hasRooms ? "#28a745" : "#dc3545"} 
+                color={hasRooms ? colors.success : colors.error} 
               />
-              <Text style={[styles.availabilityText, { color: hasRooms ? "#28a745" : "#dc3545" }]}>
+              <Text style={[styles.availabilityText, { color: hasRooms ? colors.success : colors.error }]}>
                 {hasRooms ? `${totalAvailableRooms} room${totalAvailableRooms !== 1 ? 's' : ''} available` : 'No rooms available'}
               </Text>
             </View>
             
             {hasRooms && lowestPrice && (
-              <View style={styles.priceSection}>
-                <Text style={styles.priceLabel}>From</Text>
-                <Text style={styles.priceAmount}>${lowestPrice}</Text>
+              <View style={globalStyles.row}>
+                <Text style={styles.priceLabel}>From </Text>
+                <Text style={styles.priceAmount}>ETB {lowestPrice}</Text>
                 <Text style={styles.priceUnit}>/night</Text>
               </View>
             )}
           </View>
 
-          {/* Room Types Preview */}
           {hasRooms && hotel.roomTypeAvailability && hotel.roomTypeAvailability.length > 0 && (
             <View style={styles.roomTypesPreview}>
               <Text style={styles.roomTypesLabel}>Available room types:</Text>
@@ -171,7 +194,7 @@ const SearchScreen = ({ navigation }) => {
                   room.availableCount > 0 && (
                     <View key={index} style={styles.roomTypeChip}>
                       <Text style={styles.roomTypeText}>
-                        {room.roomTypeName} (${room.pricePerNight}/night)
+                        {room.roomTypeName} (ETB {room.pricePerNight}/night)
                       </Text>
                     </View>
                   )
@@ -185,39 +208,42 @@ const SearchScreen = ({ navigation }) => {
         </View>
 
         <View style={styles.hotelFooter}>
-          <View style={styles.viewButton}>
+          <View style={globalStyles.row}>
             <Text style={styles.viewButtonText}>View Details & Book</Text>
-            <Ionicons name="arrow-forward" size={16} color="#2E7BE6" />
+            <Ionicons name="arrow-forward" size={16} color={colors.primary} />
           </View>
         </View>
       </TouchableOpacity>
     );
-  };
+  }, [handleHotelPress]);
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#2E7BE6" />
+    <ScreenContainer 
+      backgroundColor={colors.background}
+      safeArea={false}
+      scrollable={true}
+      keyboardAvoiding={false}
+      paddingHorizontal={false}
+    >
+      <StatusBar barStyle="light-content" backgroundColor={colors.primary} />
       
       {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Find Your Perfect Stay</Text>
-        <Text style={styles.headerSubtitle}>Search from thousands of hotels</Text>
+      <View style={globalStyles.header}>
+        <Text style={globalStyles.headerTitle}>Find Your Perfect Stay</Text>
+        <Text style={globalStyles.headerSubtitle}>Search from thousands of hotels</Text>
       </View>
 
       {/* Search Form & Results */}
-      <ScrollView style={styles.searchContainer} showsVerticalScrollIndicator={false}>
+      <View style={styles.searchContainer}>
         {/* Destination Input */}
         <View style={styles.inputSection}>
-          <View style={styles.inputContainer}>
-            <Ionicons name="location" size={20} color="#666" style={styles.inputIcon} />
-            <TextInput
-              style={styles.textInput}
-              placeholder="Where are you going?"
-              value={destination}
-              onChangeText={setDestination}
-              placeholderTextColor="#999"
-            />
-          </View>
+          <Input
+            placeholder="Where are you going?"
+            value={destination}
+            onChangeText={handleDestinationChange}
+            leftIcon={LocationIcon}
+            style={styles.destinationInput}
+          />
         </View>
 
         {/* Date Selection */}
@@ -225,16 +251,18 @@ const SearchScreen = ({ navigation }) => {
           <Text style={styles.sectionLabel}>When</Text>
           <View style={styles.dateRow}>
             <TouchableOpacity
-              style={[styles.dateButton, { marginRight: 8 }]}
-              onPress={() => setShowCheckInPicker(true)}
+              style={[styles.dateButton, styles.dateButtonLeft]}
+              onPress={handleCheckInSelect}
+              activeOpacity={0.7}
             >
               <Text style={styles.dateLabel}>Check-in</Text>
               <Text style={styles.dateValue}>{formatDate(checkInDate)}</Text>
             </TouchableOpacity>
             
             <TouchableOpacity
-              style={[styles.dateButton, { marginLeft: 8 }]}
-              onPress={() => setShowCheckOutPicker(true)}
+              style={[styles.dateButton, styles.dateButtonRight]}
+              onPress={handleCheckOutSelect}
+              activeOpacity={0.7}
             >
               <Text style={styles.dateLabel}>Check-out</Text>
               <Text style={styles.dateValue}>{formatDate(checkOutDate)}</Text>
@@ -247,16 +275,17 @@ const SearchScreen = ({ navigation }) => {
           <Text style={styles.sectionLabel}>Guests</Text>
           <TouchableOpacity
             style={styles.guestButton}
-            onPress={() => setShowGuestPicker(!showGuestPicker)}
+            onPress={handleGuestSelect}
+            activeOpacity={0.7}
           >
-            <Ionicons name="people" size={20} color="#666" />
+            <Ionicons name="people" size={20} color={colors.textSecondary} />
             <Text style={styles.guestText}>
               {guests} {guests === 1 ? 'Guest' : 'Guests'}
             </Text>
             <Ionicons 
               name={showGuestPicker ? "chevron-up" : "chevron-down"} 
               size={20} 
-              color="#666" 
+              color={colors.textSecondary} 
             />
           </TouchableOpacity>
           
@@ -269,10 +298,8 @@ const SearchScreen = ({ navigation }) => {
                     styles.guestOption,
                     guests === num && styles.guestOptionSelected,
                   ]}
-                  onPress={() => {
-                    setGuests(num);
-                    setShowGuestPicker(false);
-                  }}
+                  onPress={() => handleGuestOptionPress(num)}
+                  activeOpacity={0.7}
                 >
                   <Text
                     style={[
@@ -293,12 +320,13 @@ const SearchScreen = ({ navigation }) => {
           style={[styles.searchButton, loading && styles.searchButtonDisabled]}
           onPress={handleSearch}
           disabled={loading}
+          activeOpacity={0.7}
         >
           {loading ? (
             <Text style={styles.searchButtonText}>Searching...</Text>
           ) : (
             <>
-              <Ionicons name="search" size={20} color="#fff" style={styles.searchIcon} />
+              <Ionicons name="search" size={20} color={colors.textOnPrimary} style={styles.searchIcon} />
               <Text style={styles.searchButtonText}>Search Hotels</Text>
             </>
           )}
@@ -308,14 +336,14 @@ const SearchScreen = ({ navigation }) => {
         {hasSearched && (
           <View style={styles.resultsSection}>
             <View style={styles.resultsHeader}>
-              <Text style={styles.resultsTitle}>
+              <Text style={globalStyles.sectionTitle}>
                 {searchResults.length > 0 
                   ? `${searchResults.length} hotel${searchResults.length !== 1 ? 's' : ''} found`
                   : 'No hotels found'
                 }
               </Text>
               {searchResults.length > 0 && (
-                <Text style={styles.resultsSubtitle}>
+                <Text style={globalStyles.sectionSubtitle}>
                   in {destination} • {formatDate(checkInDate)} - {formatDate(checkOutDate)}
                 </Text>
               )}
@@ -331,14 +359,14 @@ const SearchScreen = ({ navigation }) => {
               />
             ) : hasSearched && !loading && (
               <View style={styles.noResultsContainer}>
-                <Ionicons name="search-outline" size={48} color="#999" />
+                <Ionicons name="search-outline" size={48} color={colors.textSecondary} />
                 <Text style={styles.noResultsText}>No hotels found</Text>
                 <Text style={styles.noResultsSubtext}>Try adjusting your search criteria</Text>
               </View>
             )}
           </View>
         )}
-      </ScrollView>
+      </View>
 
       {/* Date Picker Modals */}
       <DatePickerModal
@@ -358,345 +386,299 @@ const SearchScreen = ({ navigation }) => {
         minimumDate={new Date(checkInDate.getTime() + 86400000)}
         title="Check-out Date"
       />
-    </View>
+    </ScreenContainer>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8f9fa',
-  },
-  header: {
-    backgroundColor: '#2E7BE6',
-    paddingTop: Platform.OS === 'ios' ? 50 : 30,
-    paddingBottom: 30,
-    paddingHorizontal: 20,
-    alignItems: 'center',
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#fff',
-    marginBottom: 4,
-  },
-  headerSubtitle: {
-    fontSize: 16,
-    color: '#E8F2FF',
-  },
   searchContainer: {
     flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 20,
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.md,
   },
+  
   inputSection: {
-    marginBottom: 24,
+    marginBottom: spacing.lg,
   },
+  
+  destinationInput: {
+    marginVertical: 0,
+  },
+  
   sectionLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 12,
+    fontSize: typography.fontSize.md,
+    fontWeight: typography.fontWeight.semiBold,
+    color: colors.textPrimary,
+    marginBottom: spacing.sm,
   },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  inputIcon: {
-    marginRight: 12,
-  },
-  textInput: {
-    flex: 1,
-    fontSize: 16,
-    color: '#333',
-  },
+  
   dateRow: {
     flexDirection: 'row',
+    gap: spacing.sm,
   },
+  
   dateButton: {
     flex: 1,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.lg,
+    padding: spacing.md,
+    ...shadows.medium,
   },
+  
+  dateButtonLeft: {
+    marginRight: spacing.xs,
+  },
+  
+  dateButtonRight: {
+    marginLeft: spacing.xs,
+  },
+  
   dateLabel: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 4,
+    fontSize: typography.fontSize.sm,
+    color: colors.textSecondary,
+    marginBottom: spacing.xs,
   },
+  
   dateValue: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
+    fontSize: typography.fontSize.md,
+    fontWeight: typography.fontWeight.semiBold,
+    color: colors.textPrimary,
   },
+  
   guestButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.lg,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
+    ...shadows.medium,
   },
+  
   guestText: {
     flex: 1,
-    fontSize: 16,
-    color: '#333',
-    marginLeft: 12,
+    fontSize: typography.fontSize.md,
+    color: colors.textPrimary,
+    marginLeft: spacing.sm,
   },
+  
   guestPicker: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    marginTop: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.lg,
+    marginTop: spacing.sm,
+    ...shadows.medium,
   },
+  
   guestOption: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: colors.border,
   },
+  
   guestOptionSelected: {
-    backgroundColor: '#2E7BE6',
+    backgroundColor: colors.primary,
   },
+  
   guestOptionText: {
-    fontSize: 16,
-    color: '#333',
+    fontSize: typography.fontSize.md,
+    color: colors.textPrimary,
   },
+  
   guestOptionSelectedText: {
-    color: '#fff',
-    fontWeight: '600',
+    color: colors.textOnPrimary,
+    fontWeight: typography.fontWeight.semiBold,
   },
+  
   searchButton: {
-    backgroundColor: '#2E7BE6',
-    borderRadius: 12,
-    paddingVertical: 18,
+    backgroundColor: colors.primary,
+    borderRadius: borderRadius.lg,
+    paddingVertical: spacing.lg,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 8,
-    marginBottom: 24,
-    shadowColor: '#2E7BE6',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
+    marginTop: spacing.sm,
+    marginBottom: spacing.lg,
+    ...shadows.large,
   },
+  
   searchButtonDisabled: {
-    backgroundColor: '#ccc',
-    shadowOpacity: 0,
-    elevation: 0,
+    backgroundColor: colors.lightGray,
+    ...shadows.small,
   },
+  
   searchIcon: {
-    marginRight: 8,
+    marginRight: spacing.sm,
   },
+  
   searchButtonText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#fff',
+    fontSize: typography.fontSize.lg,
+    fontWeight: typography.fontWeight.semiBold,
+    color: colors.textOnPrimary,
   },
+  
   // Results section styles
   resultsSection: {
-    marginTop: 8,
-    marginBottom: 40,
+    marginTop: spacing.sm,
+    marginBottom: spacing.xl,
   },
+  
   resultsHeader: {
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
-  resultsTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#333',
-    marginBottom: 4,
-  },
-  resultsSubtitle: {
-    fontSize: 14,
-    color: '#666',
-  },
+  
   // Hotel card styles
   hotelCard: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 4,
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.xl,
+    padding: spacing.lg,
+    marginBottom: spacing.md,
+    ...shadows.large,
   },
+  
   hotelHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 12,
+    marginBottom: spacing.sm,
   },
+  
   hotelInfo: {
     flex: 1,
-    marginRight: 16,
+    marginRight: spacing.md,
   },
+  
   hotelName: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#333',
-    marginBottom: 6,
+    fontSize: typography.fontSize.lg,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.textPrimary,
+    marginBottom: spacing.xs,
   },
-  hotelLocation: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
+  
   hotelLocationText: {
-    fontSize: 14,
-    color: '#666',
-    marginLeft: 4,
+    fontSize: typography.fontSize.sm,
+    color: colors.textSecondary,
+    marginLeft: spacing.xs,
   },
+  
   ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f8f9fa',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
+    backgroundColor: colors.lightGray,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.sm,
   },
+  
   ratingText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#333',
-    marginLeft: 4,
+    fontSize: typography.fontSize.sm,
+    fontWeight: typography.fontWeight.semiBold,
+    color: colors.textPrimary,
+    marginLeft: spacing.xs,
   },
+  
   hotelDescription: {
-    fontSize: 14,
-    color: '#666',
-    lineHeight: 20,
-    marginBottom: 16,
+    fontSize: typography.fontSize.sm,
+    color: colors.textSecondary,
+    lineHeight: typography.fontSize.sm * typography.lineHeight.relaxed,
+    marginBottom: spacing.md,
   },
+  
   hotelFooter: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: spacing.sm,
   },
+  
   // Room information styles
   roomInfo: {
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
-  availabilitySection: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  roomCount: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
+  
   availabilityText: {
-    fontSize: 14,
-    fontWeight: '500',
-    marginLeft: 6,
+    fontSize: typography.fontSize.sm,
+    fontWeight: typography.fontWeight.medium,
+    marginLeft: spacing.xs,
   },
-  priceSection: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-  },
+  
   priceLabel: {
-    fontSize: 12,
-    color: '#666',
-    marginRight: 4,
+    fontSize: typography.fontSize.sm,
+    color: colors.textSecondary,
   },
+  
   priceAmount: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#2E7BE6',
+    fontSize: typography.fontSize.lg,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.primary,
   },
+  
   priceUnit: {
-    fontSize: 12,
-    color: '#666',
-    marginLeft: 2,
+    fontSize: typography.fontSize.sm,
+    color: colors.textSecondary,
   },
+  
   roomTypesPreview: {
-    marginTop: 8,
+    marginTop: spacing.sm,
   },
+  
   roomTypesLabel: {
-    fontSize: 12,
-    color: '#666',
-    marginBottom: 6,
+    fontSize: typography.fontSize.xs,
+    color: colors.textSecondary,
+    marginBottom: spacing.xs,
   },
+  
   roomTypesList: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     alignItems: 'center',
   },
+  
   roomTypeChip: {
-    backgroundColor: '#f8f9fa',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginRight: 8,
-    marginBottom: 4,
+    backgroundColor: colors.lightGray,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.md,
+    marginRight: spacing.sm,
+    marginBottom: spacing.xs,
   },
+  
   roomTypeText: {
-    fontSize: 11,
-    color: '#333',
-    fontWeight: '500',
+    fontSize: typography.fontSize.xs,
+    color: colors.textPrimary,
+    fontWeight: typography.fontWeight.medium,
   },
+  
   moreRoomsText: {
-    fontSize: 11,
-    color: '#666',
+    fontSize: typography.fontSize.xs,
+    color: colors.textSecondary,
     fontStyle: 'italic',
   },
-  availableText: {
-    fontSize: 14,
-    color: '#28a745',
-    fontWeight: '500',
-  },
-  viewButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
+  
   viewButtonText: {
-    fontSize: 14,
-    color: '#2E7BE6',
-    fontWeight: '600',
-    marginRight: 4,
+    fontSize: typography.fontSize.sm,
+    color: colors.primary,
+    fontWeight: typography.fontWeight.semiBold,
+    marginRight: spacing.xs,
   },
+  
   // No results styles
   noResultsContainer: {
     alignItems: 'center',
-    paddingVertical: 40,
+    paddingVertical: spacing.xxl,
   },
+  
   noResultsText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-    marginTop: 16,
-    marginBottom: 8,
+    fontSize: typography.fontSize.lg,
+    fontWeight: typography.fontWeight.semiBold,
+    color: colors.textPrimary,
+    marginTop: spacing.md,
+    marginBottom: spacing.sm,
   },
+  
   noResultsSubtext: {
-    fontSize: 14,
-    color: '#666',
+    fontSize: typography.fontSize.sm,
+    color: colors.textSecondary,
     textAlign: 'center',
   },
 });

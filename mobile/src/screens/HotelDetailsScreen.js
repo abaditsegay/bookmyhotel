@@ -3,23 +3,19 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   TouchableOpacity,
   Alert,
-  RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Import services and components
 import { hotelService } from '../services/hotelService';
-import { Card, Button, LoadingSpinner } from '../components/common';
+import { Card, Button, LoadingSpinner, ScreenContainer } from '../components/common';
 import { colors, typography, spacing, globalStyles } from '../styles/globalStyles';
 import { formatDateForDisplay, calculateNights } from '../utils/dateUtils';
 
 const HotelDetailsScreen = ({ navigation, route }) => {
   const { hotelId, hotelName, searchParams } = route.params;
-  const insets = useSafeAreaInsets();
   
   // State
   const [hotel, setHotel] = useState(null);
@@ -228,14 +224,11 @@ const HotelDetailsScreen = ({ navigation, route }) => {
   }
 
   return (
-    <View style={styles.container}>
-      <ScrollView 
-        style={styles.scrollContainer}
-        showsVerticalScrollIndicator={true}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      >
+    <ScreenContainer 
+      scrollable={true}
+      refreshing={refreshing}
+      onRefresh={onRefresh}
+    >
         {/* Hotel Information */}
         <View style={styles.hotelSection}>
           <Card style={styles.hotelCard}>
@@ -388,28 +381,17 @@ const HotelDetailsScreen = ({ navigation, route }) => {
             />
           </View>
         )}
-      </ScrollView>
-    </View>
+    </ScreenContainer>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  
-  scrollContainer: {
-    flex: 1,
-    paddingBottom: 120, // Space for the fixed footer
-  },
-  
   hotelSection: {
     padding: spacing.md,
   },
   
   hotelCard: {
-    padding: spacing.lg,
+    ...globalStyles.cardLarge,
   },
   
   hotelName: {
@@ -420,8 +402,7 @@ const styles = StyleSheet.create({
   },
   
   hotelLocation: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    ...globalStyles.row,
     marginBottom: spacing.sm,
   },
   

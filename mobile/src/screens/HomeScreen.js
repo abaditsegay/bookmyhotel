@@ -13,7 +13,7 @@ import { useFocusEffect } from '@react-navigation/native';
 
 // Import services and components
 import { hotelService } from '../services/hotelService';
-import { Card, Button, LoadingSpinner } from '../components/common';
+import { Card, Button, LoadingSpinner, ScreenContainer } from '../components/common';
 import { colors, typography, spacing, globalStyles } from '../styles/globalStyles';
 
 const HomeScreen = ({ navigation }) => {
@@ -107,12 +107,10 @@ const HomeScreen = ({ navigation }) => {
   }
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.contentContainer}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
+    <ScreenContainer
+      refreshing={refreshing}
+      onRefresh={onRefresh}
+      paddingHorizontal={false}
     >
       {/* Welcome Section */}
       <View style={styles.welcomeSection}>
@@ -122,180 +120,169 @@ const HomeScreen = ({ navigation }) => {
         </Text>
       </View>
 
-      {/* Quick Search Button */}
-      <Card style={styles.searchCard}>
-        <TouchableOpacity
-          style={styles.searchButton}
-          onPress={handleSearchPress}
-          activeOpacity={0.7}
-        >
-          <Ionicons name="search" size={24} color={colors.primary} />
-          <Text style={styles.searchButtonText}>Search Hotels</Text>
-          <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
-        </TouchableOpacity>
-      </Card>
-
-      {/* Popular Destinations */}
-      {destinations.length > 0 && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Popular Destinations</Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.destinationsScroll}
+      <View style={styles.contentPadding}>
+        {/* Quick Search Button */}
+        <Card style={styles.searchCard}>
+          <TouchableOpacity
+            style={styles.searchButton}
+            onPress={handleSearchPress}
+            activeOpacity={0.7}
           >
-            {destinations.map((destination, index) => (
-              <TouchableOpacity
-                key={destination.id || index}
-                style={styles.destinationCard}
-                onPress={() => handleDestinationPress(destination.name)}
-                activeOpacity={0.8}
-              >
-                <Ionicons name="location" size={20} color={colors.primary} />
-                <Text style={styles.destinationText}>{destination.name}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-      )}
+            <Ionicons name="search" size={24} color={colors.primary} />
+            <Text style={styles.searchButtonText}>Search Hotels</Text>
+            <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+          </TouchableOpacity>
+        </Card>
 
-      {/* Featured Hotels */}
-      {featuredHotels.length > 0 && (
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Featured Hotels</Text>
-            <TouchableOpacity onPress={handleSearchPress}>
-              <Text style={styles.seeAllText}>See All</Text>
+        {/* Popular Destinations */}
+        {destinations.length > 0 && (
+          <View style={globalStyles.section}>
+            <Text style={globalStyles.sectionTitle}>Popular Destinations</Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.destinationsScroll}
+            >
+              {destinations.map((destination, index) => (
+                <TouchableOpacity
+                  key={destination.id || index}
+                  style={styles.destinationCard}
+                  onPress={() => handleDestinationPress(destination.name)}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="location" size={20} color={colors.primary} />
+                  <Text style={styles.destinationText}>{destination.name}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        )}
+
+        {/* Featured Hotels */}
+        {featuredHotels.length > 0 && (
+          <View style={globalStyles.section}>
+            <View style={globalStyles.sectionHeader}>
+              <Text style={globalStyles.sectionTitle}>Featured Hotels</Text>
+              <TouchableOpacity onPress={handleSearchPress}>
+                <Text style={styles.seeAllText}>See All</Text>
+              </TouchableOpacity>
+            </View>
+            
+            {featuredHotels.map((hotel) => (
+              <Card
+                key={hotel.id}
+                style={styles.hotelCard}
+                onPress={() => handleHotelPress(hotel)}
+              >
+                <View style={styles.hotelHeader}>
+                  <View style={styles.hotelInfo}>
+                    <Text style={styles.hotelName}>{hotel.name}</Text>
+                    <View style={styles.hotelLocation}>
+                      <Ionicons name="location-outline" size={16} color={colors.textSecondary} />
+                      <Text style={styles.hotelLocationText}>
+                        {hotel.address}, {hotel.city}
+                      </Text>
+                    </View>
+                  </View>
+                  
+                  {hotel.rating && (
+                    <View style={styles.ratingContainer}>
+                      <Ionicons name="star" size={16} color={colors.secondary} />
+                      <Text style={styles.ratingText}>{hotel.rating}</Text>
+                    </View>
+                  )}
+                </View>
+
+                {hotel.description && (
+                  <Text style={styles.hotelDescription} numberOfLines={2}>
+                    {hotel.description}
+                  </Text>
+                )}
+
+                <View style={styles.hotelFooter}>
+                  <View style={styles.amenitiesContainer}>
+                    {hotel.amenities && hotel.amenities.slice(0, 3).map((amenity, index) => (
+                      <View key={index} style={styles.amenityTag}>
+                        <Text style={styles.amenityText}>{amenity}</Text>
+                      </View>
+                    ))}
+                  </View>
+                  
+                  <TouchableOpacity
+                    style={styles.viewButton}
+                    onPress={() => handleHotelPress(hotel)}
+                  >
+                    <Text style={styles.viewButtonText}>View Details</Text>
+                    <Ionicons name="arrow-forward" size={16} color={colors.primary} />
+                  </TouchableOpacity>
+                </View>
+              </Card>
+            ))}
+          </View>
+        )}
+
+        {/* Quick Actions */}
+        <View style={globalStyles.section}>
+          <Text style={globalStyles.sectionTitle}>Quick Actions</Text>
+          <View style={styles.quickActions}>
+            <TouchableOpacity
+              style={styles.quickActionCard}
+              onPress={handleSearchPress}
+            >
+              <Ionicons name="search" size={32} color={colors.primary} />
+              <Text style={styles.quickActionText}>Search Hotels</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={styles.quickActionCard}
+              onPress={() => navigation.navigate('Bookings')}
+            >
+              <Ionicons name="calendar" size={32} color={colors.primary} />
+              <Text style={styles.quickActionText}>My Bookings</Text>
             </TouchableOpacity>
           </View>
-          
-          {featuredHotels.map((hotel) => (
-            <Card
-              key={hotel.id}
-              style={styles.hotelCard}
-              onPress={() => handleHotelPress(hotel)}
-            >
-              <View style={styles.hotelHeader}>
-                <View style={styles.hotelInfo}>
-                  <Text style={styles.hotelName}>{hotel.name}</Text>
-                  <View style={styles.hotelLocation}>
-                    <Ionicons name="location-outline" size={16} color={colors.textSecondary} />
-                    <Text style={styles.hotelLocationText}>
-                      {hotel.address}, {hotel.city}
-                    </Text>
-                  </View>
-                </View>
-                
-                {hotel.rating && (
-                  <View style={styles.ratingContainer}>
-                    <Ionicons name="star" size={16} color={colors.secondary} />
-                    <Text style={styles.ratingText}>{hotel.rating}</Text>
-                  </View>
-                )}
-              </View>
-
-              {hotel.description && (
-                <Text style={styles.hotelDescription} numberOfLines={2}>
-                  {hotel.description}
-                </Text>
-              )}
-
-              <View style={styles.hotelFooter}>
-                <View style={styles.amenitiesContainer}>
-                  {hotel.amenities && hotel.amenities.slice(0, 3).map((amenity, index) => (
-                    <View key={index} style={styles.amenityTag}>
-                      <Text style={styles.amenityText}>{amenity}</Text>
-                    </View>
-                  ))}
-                </View>
-                
-                <TouchableOpacity
-                  style={styles.viewButton}
-                  onPress={() => handleHotelPress(hotel)}
-                >
-                  <Text style={styles.viewButtonText}>View Details</Text>
-                  <Ionicons name="arrow-forward" size={16} color={colors.primary} />
-                </TouchableOpacity>
-              </View>
-            </Card>
-          ))}
         </View>
-      )}
 
-      {/* Quick Actions */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Quick Actions</Text>
-        <View style={styles.quickActions}>
-          <TouchableOpacity
-            style={styles.quickActionCard}
-            onPress={handleSearchPress}
-          >
-            <Ionicons name="search" size={32} color={colors.primary} />
-            <Text style={styles.quickActionText}>Search Hotels</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            style={styles.quickActionCard}
-            onPress={() => navigation.navigate('Bookings')}
-          >
-            <Ionicons name="calendar" size={32} color={colors.primary} />
-            <Text style={styles.quickActionText}>My Bookings</Text>
-          </TouchableOpacity>
-        </View>
+        {/* Empty State */}
+        {featuredHotels.length === 0 && destinations.length === 0 && (
+          <View style={styles.emptyState}>
+            <Ionicons name="home-outline" size={64} color={colors.textSecondary} />
+            <Text style={styles.emptyStateTitle}>Welcome to BookMyHotel</Text>
+            <Text style={styles.emptyStateText}>
+              Start by searching for hotels in your desired destination
+            </Text>
+            <Button
+              title="Search Hotels"
+              onPress={handleSearchPress}
+              style={styles.emptyStateButton}
+            />
+          </View>
+        )}
       </View>
-
-      {/* Empty State */}
-      {featuredHotels.length === 0 && destinations.length === 0 && (
-        <View style={styles.emptyState}>
-          <Ionicons name="home-outline" size={64} color={colors.textSecondary} />
-          <Text style={styles.emptyStateTitle}>Welcome to BookMyHotel</Text>
-          <Text style={styles.emptyStateText}>
-            Start by searching for hotels in your desired destination
-          </Text>
-          <Button
-            title="Search Hotels"
-            onPress={handleSearchPress}
-            style={styles.emptyStateButton}
-          />
-        </View>
-      )}
-    </ScrollView>
+    </ScreenContainer>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  
-  contentContainer: {
-    paddingBottom: spacing.xl,
-  },
-  
   welcomeSection: {
-    padding: spacing.lg,
-    alignItems: 'center',
-    backgroundColor: colors.primary,
+    ...globalStyles.header,
   },
   
   welcomeTitle: {
-    fontSize: typography.fontSize.xxl,
-    fontWeight: typography.fontWeight.bold,
-    color: colors.textOnPrimary,
-    textAlign: 'center',
-    marginBottom: spacing.xs,
+    ...globalStyles.headerTitle,
   },
   
   welcomeSubtitle: {
-    fontSize: typography.fontSize.md,
-    color: colors.textOnPrimary,
-    textAlign: 'center',
-    opacity: 0.9,
+    ...globalStyles.headerSubtitle,
+  },
+  
+  contentPadding: {
+    paddingHorizontal: spacing.md,
   },
   
   searchCard: {
-    margin: spacing.md,
+    marginTop: spacing.md,
+    marginBottom: spacing.sm,
     padding: 0,
   },
   
@@ -310,24 +297,6 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.lg,
     color: colors.textPrimary,
     marginLeft: spacing.md,
-  },
-  
-  section: {
-    marginTop: spacing.lg,
-    paddingHorizontal: spacing.md,
-  },
-  
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-  },
-  
-  sectionTitle: {
-    fontSize: typography.fontSize.xl,
-    fontWeight: typography.fontWeight.semiBold,
-    color: colors.textPrimary,
   },
   
   seeAllText: {

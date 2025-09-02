@@ -44,10 +44,20 @@ export const bookingService = {
       // Use the main booking endpoint
       const response = await api.post('/bookings', apiPayload);
       
+      // Validate that backend provided confirmation number
+      if (!response.data.confirmationNumber) {
+        console.error('Backend did not provide confirmation number in response:', response.data);
+        return {
+          success: false,
+          message: 'Booking created but confirmation number not generated. Please contact support.',
+          error: 'Missing confirmation number from backend',
+        };
+      }
+
       // Transform response to include mobile-friendly format
       const booking = {
         ...response.data,
-        bookingReference: response.data.bookingReference || response.data.id || `BK${Date.now()}`,
+        bookingReference: response.data.confirmationNumber, // Use backend-generated confirmation number
         guestFirstName: bookingData.guestFirstName,
         guestLastName: bookingData.guestLastName,
         guestEmail: bookingData.guestEmail,

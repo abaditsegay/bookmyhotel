@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   Share,
   Alert,
   Linking,
@@ -12,7 +11,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 
 // Import components
-import { Card, Button, LoadingSpinner } from '../components/common';
+import { Card, Button, LoadingSpinner, ScreenContainer } from '../components/common';
 import { colors, typography, spacing, globalStyles } from '../styles/globalStyles';
 import { formatDate, calculateNights } from '../utils/dateUtils';
 
@@ -123,7 +122,7 @@ const BookingConfirmationScreen = ({ route, navigation }) => {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <ScreenContainer scrollable={true}>
       {/* Success Header */}
       <View style={styles.successHeader}>
         <View style={styles.successIcon}>
@@ -381,21 +380,11 @@ const BookingConfirmationScreen = ({ route, navigation }) => {
           style={styles.actionButton}
         />
       </View>
-    </ScrollView>
+    </ScreenContainer>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  
-  contentContainer: {
-    padding: spacing.md,
-    paddingBottom: spacing.xl,
-  },
-  
   successHeader: {
     alignItems: 'center',
     marginBottom: spacing.lg,

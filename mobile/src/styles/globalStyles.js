@@ -141,7 +141,7 @@ export const globalStyles = StyleSheet.create({
   },
   
   contentContainer: {
-    flex: 1,
+    flexGrow: 1,
     padding: spacing.md,
   },
   
@@ -150,6 +150,50 @@ export const globalStyles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: spacing.md,
+  },
+  
+  // Scrollable containers
+  scrollContainer: {
+    flex: 1,
+  },
+  
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: spacing.xl,
+  },
+  
+  scrollContentWithPadding: {
+    flexGrow: 1,
+    padding: spacing.md,
+    paddingBottom: spacing.xl,
+  },
+  
+  // Keyboard avoiding container
+  keyboardContainer: {
+    flex: 1,
+  },
+  
+  // Header styles
+  header: {
+    backgroundColor: colors.primary,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.md,
+    alignItems: 'center',
+  },
+  
+  headerTitle: {
+    fontSize: typography.fontSize.xxl,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.textOnPrimary,
+    textAlign: 'center',
+  },
+  
+  headerSubtitle: {
+    fontSize: typography.fontSize.md,
+    color: colors.textOnPrimary,
+    textAlign: 'center',
+    opacity: 0.9,
+    marginTop: spacing.xs,
   },
   
   // Card styles
@@ -161,11 +205,43 @@ export const globalStyles = StyleSheet.create({
     ...shadows.medium,
   },
   
+  cardLarge: {
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.lg,
+    padding: spacing.lg,
+    marginVertical: spacing.sm,
+    ...shadows.medium,
+  },
+  
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: spacing.sm,
+  },
+  
+  // Section styles
+  section: {
+    marginVertical: spacing.md,
+  },
+  
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
+  
+  sectionTitle: {
+    fontSize: typography.fontSize.xl,
+    fontWeight: typography.fontWeight.semiBold,
+    color: colors.textPrimary,
+  },
+  
+  sectionSubtitle: {
+    fontSize: typography.fontSize.sm,
+    color: colors.textSecondary,
+    marginTop: spacing.xs,
   },
   
   // Text styles

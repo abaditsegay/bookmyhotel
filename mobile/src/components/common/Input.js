@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, memo } from 'react';
 import { View, TextInput, Text, StyleSheet } from 'react-native';
 import { colors, typography, spacing, borderRadius } from '../../styles/globalStyles';
 
-const Input = ({
+const Input = memo(({
   label,
   placeholder,
   value,
@@ -27,19 +27,25 @@ const Input = ({
 }) => {
   const [isFocused, setIsFocused] = useState(false);
 
-  const handleFocus = (e) => {
+  const handleFocus = useCallback((e) => {
     setIsFocused(true);
     if (onFocus) {
       onFocus(e);
     }
-  };
+  }, [onFocus]);
 
-  const handleBlur = (e) => {
+  const handleBlur = useCallback((e) => {
     setIsFocused(false);
     if (onBlur) {
       onBlur(e);
     }
-  };
+  }, [onBlur]);
+
+  const handleChangeText = useCallback((text) => {
+    if (onChangeText) {
+      onChangeText(text);
+    }
+  }, [onChangeText]);
 
   const getInputContainerStyle = () => {
     const baseStyle = [styles.inputContainer];
@@ -85,7 +91,7 @@ const Input = ({
           placeholder={placeholder}
           placeholderTextColor={colors.textDisabled}
           value={value}
-          onChangeText={onChangeText}
+          onChangeText={handleChangeText}
           multiline={multiline}
           numberOfLines={multiline ? numberOfLines : 1}
           keyboardType={keyboardType}
@@ -112,7 +118,7 @@ const Input = ({
       )}
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   container: {

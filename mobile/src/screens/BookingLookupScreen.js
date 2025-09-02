@@ -3,16 +3,13 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   Alert,
-  KeyboardAvoidingView,
-  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 // Import services and components
 import { bookingService } from '../services/bookingService';
-import { Card, Button, Input, LoadingSpinner } from '../components/common';
+import { Card, Button, Input, LoadingSpinner, ScreenContainer } from '../components/common';
 import { colors, typography, spacing, globalStyles } from '../styles/globalStyles';
 import { validateEmail } from '../utils/validation';
 
@@ -153,11 +150,10 @@ const BookingLookupScreen = ({ navigation }) => {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    <ScreenContainer 
+      scrollable={true} 
+      keyboardAvoiding={true}
     >
-      <ScrollView contentContainerStyle={styles.contentContainer}>
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerIcon}>
@@ -386,22 +382,11 @@ const BookingLookupScreen = ({ navigation }) => {
             <Text style={styles.helpItem}>• Spam/junk email folder</Text>
           </View>
         </Card>
-      </ScrollView>
-    </KeyboardAvoidingView>
+    </ScreenContainer>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  
-  contentContainer: {
-    padding: spacing.md,
-    paddingBottom: spacing.xl,
-  },
-  
   header: {
     alignItems: 'center',
     marginBottom: spacing.lg,
