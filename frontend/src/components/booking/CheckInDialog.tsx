@@ -48,10 +48,6 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
 }) => {
   const { token } = useAuth();
   
-  // Debug log
-  useEffect(() => {
-    console.log('CheckInDialog render state:', { open, booking: booking?.reservationId });
-  }, [open, booking]);
   const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
   const [selectedRoomType, setSelectedRoomType] = useState<string>('');
   const [availableRooms, setAvailableRooms] = useState<Room[]>([]);
@@ -69,11 +65,6 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
   // Room assignment dialog state
   const [roomDialogOpen, setRoomDialogOpen] = useState(false);
   const [newRoomAssignment, setNewRoomAssignment] = useState<number | null>(null);
-
-  // Debug: Log state changes
-  useEffect(() => {
-    console.log('Current room number state changed:', currentRoomNumber);
-  }, [currentRoomNumber]);
 
   // Calculate number of nights
   const calculateNights = (checkIn: string, checkOut: string) => {
@@ -168,16 +159,10 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
       );
 
       if (result.success && result.data) {
-        console.log('Room assignment result:', result.data); // Debug log
-        
         // Get the room number from the selected room (since we have the roomId)
         const assignedRoom = availableRooms.find(room => room.id === roomId);
         const newRoomNumber = assignedRoom?.roomNumber || null;
         const newRoomType = assignedRoom?.roomType || null;
-        
-        console.log('Assigned room found:', assignedRoom); // Debug log
-        console.log('Setting current room number to:', newRoomNumber); // Debug log
-        console.log('Setting current room type to:', newRoomType); // Debug log
         
         // Force state update
         setCurrentRoomNumber(newRoomNumber);
@@ -190,16 +175,11 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
         
         // Clear any previous errors
         setError(null);
-        
-        // Force a re-render by updating a timestamp or counter
-        console.log('Room assignment completed successfully');
       } else {
-        console.error('Room assignment failed:', result); // Debug log
         setError(result.message || 'Failed to assign room');
       }
     } catch (error) {
       setError('Failed to assign room');
-      console.error('Room assignment error:', error);
     }
   };
 
@@ -319,11 +299,6 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
             {error}
           </Alert>
         )}
-
-        {/* Debug Info */}
-        <Alert severity="info" sx={{ mb: 2 }}>
-          Debug: Current Room Number = "{currentRoomNumber}" | Current Room Type = "{currentRoomType}" | Booking Room = "{booking?.roomNumber}" | Booking Room Type = "{booking?.roomType}" | Selected Room ID = {selectedRoomId}
-        </Alert>
 
         {/* Guest Information */}
         <Paper elevation={1} sx={{ p: 2, mb: 2 }}>
@@ -450,17 +425,55 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                       value={selectedRoomType}
                       onChange={(e) => {
                         setSelectedRoomType(e.target.value);
+                        // Note: Don't update currentRoomType here - it should only change when a room is actually assigned
                         setSelectedRoomId(null); // Reset room selection when type changes
                       }}
                       label="Room Type"
+                      MenuProps={{
+                        PaperProps: {
+                          style: {
+                            maxHeight: 300,
+                            zIndex: 9999,
+                            backgroundColor: 'white',
+                            boxShadow: '0 4px 20px rgba(0,0,0,0.5)'
+                          },
+                        },
+                        MenuListProps: {
+                          style: {
+                            backgroundColor: 'white',
+                            zIndex: 9999
+                          }
+                        },
+                        anchorOrigin: {
+                          vertical: 'bottom',
+                          horizontal: 'left',
+                        },
+                        transformOrigin: {
+                          vertical: 'top',
+                          horizontal: 'left',
+                        },
+                        disablePortal: true,
+                        keepMounted: false
+                      }}
                     >
-                      <MenuItem value="">All Room Types</MenuItem>
-                      {roomTypeOptions.map((roomType) => (
-                    <MenuItem key={roomType} value={roomType}>
-                      {roomType}
-                    </MenuItem>
-                  ))}
+                      <MenuItem value="">
+                        All Room Types
+                      </MenuItem>
+                      {roomTypeOptions.map((roomType, index) => {
+                        return (
+                          <MenuItem 
+                            key={roomType} 
+                            value={roomType}
+                            style={{ backgroundColor: index % 2 === 0 ? '#f5f5f5' : '#white' }}
+                          >
+                            {roomType} ({index + 1}/{roomTypeOptions.length})
+                          </MenuItem>
+                        );
+                      })}
                 </Select>
+                <Typography variant="caption" color="text.secondary">
+                  Available: {roomTypeOptions.length} room types
+                </Typography>
               </FormControl>
 
               {/* Available Rooms */}

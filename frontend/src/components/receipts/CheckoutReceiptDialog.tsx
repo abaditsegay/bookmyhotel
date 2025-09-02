@@ -89,7 +89,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                 <tr>
                   <th>Description</th>
                   <th>Quantity</th>
-                  <th>Amount</th>
+                  <th>Unit Price</th>
                   <th>Total</th>
                 </tr>
               </thead>
@@ -100,22 +100,38 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                   <td>$${(receipt.roomChargePerNight || 0).toFixed(2)}</td>
                   <td>$${(receipt.totalRoomCharges || 0).toFixed(2)}</td>
                 </tr>
-                ${receipt.additionalCharges?.map(charge => `
-                  <tr>
-                    <td>${charge.description || 'N/A'}</td>
-                    <td>1</td>
-                    <td>$${(charge.amount || 0).toFixed(2)}</td>
-                    <td>$${(charge.amount || 0).toFixed(2)}</td>
-                  </tr>
-                `).join('') || ''}
-                ${receipt.taxesAndFees?.map(tax => `
-                  <tr>
-                    <td>${tax.description || 'N/A'}</td>
-                    <td>1</td>
-                    <td>$${(tax.amount || 0).toFixed(2)}</td>
-                    <td>$${(tax.amount || 0).toFixed(2)}</td>
-                  </tr>
-                `).join('') || ''}
+                ${receipt.additionalCharges?.map(charge => {
+                  const quantity = charge.quantity || 1;
+                  // If unitPrice is provided and not zero, use it; otherwise fall back to amount/quantity
+                  const unitPrice = (charge.unitPrice && charge.unitPrice > 0) 
+                    ? charge.unitPrice 
+                    : (charge.amount || 0) / quantity;
+                  const total = unitPrice * quantity;
+                  return `
+                    <tr>
+                      <td>${charge.description || 'N/A'}</td>
+                      <td>${quantity}</td>
+                      <td>$${unitPrice.toFixed(2)}</td>
+                      <td>$${total.toFixed(2)}</td>
+                    </tr>
+                  `;
+                }).join('') || ''}
+                ${receipt.taxesAndFees?.map(tax => {
+                  const quantity = tax.quantity || 1;
+                  // If unitPrice is provided and not zero, use it; otherwise fall back to amount/quantity
+                  const unitPrice = (tax.unitPrice && tax.unitPrice > 0) 
+                    ? tax.unitPrice 
+                    : (tax.amount || 0) / quantity;
+                  const total = unitPrice * quantity;
+                  return `
+                    <tr>
+                      <td>${tax.description || 'N/A'}</td>
+                      <td>${quantity}</td>
+                      <td>$${unitPrice.toFixed(2)}</td>
+                      <td>$${total.toFixed(2)}</td>
+                    </tr>
+                  `;
+                }).join('') || ''}
                 <tr class="total-row">
                   <td colspan="3"><strong>Grand Total</strong></td>
                   <td><strong>$${(receipt.grandTotal || 0).toFixed(2)}</strong></td>
@@ -228,7 +244,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                 <TableRow>
                   <TableCell><strong>Description</strong></TableCell>
                   <TableCell align="center"><strong>Quantity</strong></TableCell>
-                  <TableCell align="right"><strong>Amount</strong></TableCell>
+                  <TableCell align="right"><strong>Unit Price</strong></TableCell>
                   <TableCell align="right"><strong>Total</strong></TableCell>
                 </TableRow>
               </TableHead>
@@ -242,24 +258,40 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                 </TableRow>
 
                 {/* Additional Charges (Shop Orders, etc.) */}
-                {receipt.additionalCharges?.map((charge, index) => (
-                  <TableRow key={`additional-${index}`}>
-                    <TableCell>{charge.description || 'N/A'}</TableCell>
-                    <TableCell align="center">{charge.quantity || 1}</TableCell>
-                    <TableCell align="right">${(charge.amount || 0).toFixed(2)}</TableCell>
-                    <TableCell align="right">${(charge.amount || 0).toFixed(2)}</TableCell>
-                  </TableRow>
-                )) || []}
+                {receipt.additionalCharges?.map((charge, index) => {
+                  const quantity = charge.quantity || 1;
+                  // If unitPrice is provided and not zero, use it; otherwise fall back to amount/quantity
+                  const unitPrice = (charge.unitPrice && charge.unitPrice > 0) 
+                    ? charge.unitPrice 
+                    : (charge.amount || 0) / quantity;
+                  const total = unitPrice * quantity;
+                  return (
+                    <TableRow key={`additional-${index}`}>
+                      <TableCell>{charge.description || 'N/A'}</TableCell>
+                      <TableCell align="center">{quantity}</TableCell>
+                      <TableCell align="right">${unitPrice.toFixed(2)}</TableCell>
+                      <TableCell align="right">${total.toFixed(2)}</TableCell>
+                    </TableRow>
+                  );
+                }) || []}
 
                 {/* Taxes and Fees */}
-                {receipt.taxesAndFees?.map((tax, index) => (
-                  <TableRow key={`tax-${index}`}>
-                    <TableCell>{tax.description || 'N/A'}</TableCell>
-                    <TableCell align="center">{tax.quantity || 1}</TableCell>
-                    <TableCell align="right">${(tax.amount || 0).toFixed(2)}</TableCell>
-                    <TableCell align="right">${(tax.amount || 0).toFixed(2)}</TableCell>
-                  </TableRow>
-                )) || []}
+                {receipt.taxesAndFees?.map((tax, index) => {
+                  const quantity = tax.quantity || 1;
+                  // If unitPrice is provided and not zero, use it; otherwise fall back to amount/quantity
+                  const unitPrice = (tax.unitPrice && tax.unitPrice > 0) 
+                    ? tax.unitPrice 
+                    : (tax.amount || 0) / quantity;
+                  const total = unitPrice * quantity;
+                  return (
+                    <TableRow key={`tax-${index}`}>
+                      <TableCell>{tax.description || 'N/A'}</TableCell>
+                      <TableCell align="center">{quantity}</TableCell>
+                      <TableCell align="right">${unitPrice.toFixed(2)}</TableCell>
+                      <TableCell align="right">${total.toFixed(2)}</TableCell>
+                    </TableRow>
+                  );
+                }) || []}
 
                 {/* Subtotals */}
                 <TableRow sx={{ backgroundColor: 'grey.50' }}>

@@ -656,14 +656,6 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                         color={getStatusColor(booking.status)} 
                         size="small" 
                       />
-                      {/* Debug booking status */}
-                      {process.env.NODE_ENV === 'development' && (
-                        <div style={{ fontSize: '10px', color: 'gray', marginTop: '4px' }}>
-                          Status: {booking.status} | Upper: {booking.status.toUpperCase()}
-                          <br />
-                          Can Check-in: {(booking.status.toUpperCase() === 'CONFIRMED' || booking.status.toUpperCase() === 'ARRIVING') ? 'YES' : 'NO'}
-                        </div>
-                      )}
                     </TableCell>
                     {showActions && (
                       <TableCell>

@@ -47,8 +47,9 @@ export interface ConsolidatedReceipt {
   additionalCharges: Array<{
     chargeId?: number;
     description: string;
-    amount: number;
+    unitPrice?: number;
     quantity?: number;
+    amount: number;
     chargeType?: string;
     chargeDate?: string;
     notes?: string;
@@ -57,8 +58,9 @@ export interface ConsolidatedReceipt {
   taxesAndFees: Array<{
     chargeId?: number;
     description: string;
-    amount: number;
+    unitPrice?: number;
     quantity?: number;
+    amount: number;
     chargeType?: string;
     chargeDate?: string;
     notes?: string;
