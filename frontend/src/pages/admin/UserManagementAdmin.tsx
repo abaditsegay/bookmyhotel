@@ -130,9 +130,19 @@ const UserManagementAdmin: React.FC = () => {
         response = await adminApiService.getUsers(page, rowsPerPage);
       }
       
+      console.log('User API Response:', response);
       if (response.content) {
         setUsers(response.content);
-        setTotalElements(response.page?.totalElements || 0);
+        // Check both possible response structures
+        const responseAny = response as any;
+        const totalCount = response.page?.totalElements || responseAny.totalElements || response.content.length || 0;
+        setTotalElements(totalCount);
+        console.log('Total Elements:', totalCount, 'Response structure:', { 
+          hasPage: !!response.page, 
+          pageTotalElements: response.page?.totalElements,
+          directTotalElements: responseAny.totalElements,
+          contentLength: response.content.length 
+        });
       } else {
         setError('Failed to load users');
         setTotalElements(0);
@@ -523,7 +533,7 @@ const UserManagementAdmin: React.FC = () => {
           </Table>
         </TableContainer>
         <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
+          rowsPerPageOptions={[10, 25, 50]}
           component="div"
           count={totalElements}
           rowsPerPage={rowsPerPage}
