@@ -173,8 +173,8 @@ const HotelDetailsScreen = ({ navigation, route }) => {
       >
         <View style={styles.roomHeader}>
           <View style={styles.roomInfo}>
-            <Text style={styles.roomType}>{room.roomType}</Text>
-            <Text style={styles.roomNumber}>Room {room.roomNumber}</Text>
+            <Text style={styles.roomType}>{roomType.roomTypeName || roomType.roomType}</Text>
+            <Text style={styles.roomNumber}>{roomType.availableCount} available</Text>
           </View>
           
           <View style={styles.roomSelection}>
@@ -275,7 +275,7 @@ const HotelDetailsScreen = ({ navigation, route }) => {
     );
   }
 
-  console.log('✅ About to render hotel details. Hotel:', hotel?.name, 'Rooms:', rooms?.length);
+  console.log('✅ About to render hotel details. Hotel:', hotel?.name, 'Room Types:', roomTypes?.length);
   
   return (
     <ScreenContainer 
