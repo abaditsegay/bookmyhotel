@@ -24,10 +24,8 @@ import { BookingResponse } from '../types/hotel';
 
 const FindBookingPage: React.FC = () => {
   const navigate = useNavigate();
-  const [searchMethod, setSearchMethod] = useState<'confirmation' | 'details'>('confirmation');
   const [confirmationNumber, setConfirmationNumber] = useState('');
   const [email, setEmail] = useState('');
-  const [lastName, setLastName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [booking, setBooking] = useState<BookingResponse | null>(null);
@@ -39,24 +37,22 @@ const FindBookingPage: React.FC = () => {
     setLoading(true);
 
     try {
-      let result: BookingResponse;
-      if (searchMethod === 'confirmation') {
-        if (!confirmationNumber.trim()) {
-          setError('Please enter a confirmation number');
-          return;
-        }
-        result = await hotelApiService.searchBooking(confirmationNumber.trim());
-      } else {
-        if (!email.trim() || !lastName.trim()) {
-          setError('Please enter both email and last name');
-          return;
-        }
-        result = await hotelApiService.searchBooking(undefined, email.trim(), lastName.trim());
+      // Both reference number and email are required
+      if (!confirmationNumber.trim() || !email.trim()) {
+        setError('Please enter both reference number and email address');
+        setLoading(false);
+        return;
       }
+      
+      // Search using both confirmation number and email
+      const result = await hotelApiService.searchBookingByReferenceAndEmail(
+        confirmationNumber.trim(), 
+        email.trim()
+      );
       
       setBooking(result);
     } catch (err) {
-      setError('Booking not found. Please check your information and try again.');
+      setError('Booking not found. Please check your reference number and email address and try again.');
     } finally {
       setLoading(false);
     }
@@ -95,7 +91,7 @@ const FindBookingPage: React.FC = () => {
             Find Your Booking
           </Typography>
           <Typography variant="h6" color="text.secondary">
-            Look up your reservation using your confirmation number or booking details
+            Enter your reference number and email address to find your booking
           </Typography>
         </Box>
         <SearchIcon sx={{ fontSize: 40, color: 'primary.main' }} />
@@ -103,56 +99,33 @@ const FindBookingPage: React.FC = () => {
 
       {/* Search Form */}
       <Paper elevation={2} sx={{ p: 4, mb: 3 }}>
-        {/* Search Method Toggle */}
-        <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-          <Button
-            variant={searchMethod === 'confirmation' ? 'contained' : 'outlined'}
-            onClick={() => setSearchMethod('confirmation')}
-            sx={{ flex: 1 }}
-          >
-            Search by Confirmation Number
-          </Button>
-          <Button
-            variant={searchMethod === 'details' ? 'contained' : 'outlined'}
-            onClick={() => setSearchMethod('details')}
-            sx={{ flex: 1 }}
-          >
-            Search by Email & Name
-          </Button>
-        </Box>
+        <Typography variant="h6" gutterBottom>
+          Enter Your Booking Details
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+          Both fields are required to find your booking
+        </Typography>
 
         <form onSubmit={handleSearch}>
-          {searchMethod === 'confirmation' ? (
+          <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
             <TextField
               fullWidth
-              label="Confirmation Number"
+              label="Reference Number"
               value={confirmationNumber}
               onChange={(e) => setConfirmationNumber(e.target.value)}
-              placeholder="Enter your booking confirmation number"
+              placeholder="Enter your booking reference number"
               required
-              sx={{ mb: 3 }}
             />
-          ) : (
-            <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-              <TextField
-                fullWidth
-                label="Email Address"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter the email used for booking"
-                required
-              />
-              <TextField
-                fullWidth
-                label="Last Name"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                placeholder="Enter guest's last name"
-                required
-              />
-            </Box>
-          )}
+            <TextField
+              fullWidth
+              label="Email Address"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter the email used for booking"
+              required
+            />
+          </Box>
 
           {error && (
             <Alert severity="error" sx={{ mb: 3 }}>
@@ -273,8 +246,9 @@ const FindBookingPage: React.FC = () => {
           Need Help?
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          If you can't find your booking, please contact the hotel directly or check your email for the confirmation details.
-          Make sure to use the same email address and name that were used when making the booking.
+          To find your booking, you'll need both your reference number and the email address used when making the booking.
+          The reference number can be found in your booking confirmation email.
+          If you can't find your booking, please contact the hotel directly.
         </Typography>
       </Paper>
     </Container>

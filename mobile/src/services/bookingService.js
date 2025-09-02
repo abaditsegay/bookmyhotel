@@ -96,20 +96,37 @@ export const bookingService = {
    */
   lookupBooking: async (lookupData) => {
     try {
-      // Try the guest lookup endpoint first
-      const response = await api.get('/bookings/guest', {
+      console.log('🔍 Mobile booking lookup request:', {
+        endpoint: '/bookings/search',
         params: { 
-          email: lookupData.email, 
-          reference: lookupData.bookingReference 
+          confirmationNumber: lookupData.bookingReference,
+          email: lookupData.email
+        }
+      });
+
+      // Use the correct booking search endpoint that matches the web app
+      const response = await api.get('/bookings/search', {
+        params: { 
+          confirmationNumber: lookupData.bookingReference,
+          email: lookupData.email
         },
       });
+      
+      console.log('✅ Mobile booking lookup success:', response.data);
       
       return {
         success: true,
         data: response.data,
       };
     } catch (error) {
-      console.error('Booking lookup error:', error);
+      console.error('❌ Mobile booking lookup error:', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        message: error.message,
+        url: error.config?.url,
+        params: error.config?.params
+      });
       
       // If not found or error, try alternative approach
       if (error.response?.status === 404) {
@@ -191,9 +208,9 @@ export const bookingService = {
    */
   lookupGuestBooking: async (email, reference) => {
     try {
-      // Note: This endpoint might need to be created in backend if not exists
-      const response = await api.get('/bookings/guest', {
-        params: { email, reference },
+      // Use the same endpoint as the main lookup method
+      const response = await api.get('/bookings/search', {
+        params: { confirmationNumber: reference, email },
       });
       
       return {

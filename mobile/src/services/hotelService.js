@@ -124,7 +124,7 @@ export const hotelService = {
   },
 
   /**
-   * Get available rooms for a hotel
+   * Get available rooms for a hotel (individual rooms)
    * @param {Object} params - Search parameters including hotel ID
    * @param {number} params.hotelId - Hotel ID
    * @param {string} params.checkInDate - Check-in date
@@ -152,6 +152,42 @@ export const hotelService = {
       return {
         success: false,
         error: error.response?.data?.message || 'Failed to fetch hotel rooms',
+        statusCode: error.response?.status,
+      };
+    }
+  },
+
+  /**
+   * Get hotel details with room type availability (new approach for room type booking)
+   * @param {Object} params - Parameters for hotel search
+   * @param {number} params.hotelId - Hotel ID
+   * @param {string} params.checkInDate - Check-in date (YYYY-MM-DD) 
+   * @param {string} params.checkOutDate - Check-out date (YYYY-MM-DD)
+   * @param {number} params.guests - Number of guests
+   * @param {string} params.location - Location (optional)
+   * @returns {Promise} API response with hotel details and room type availability
+   */
+  getHotelDetailsWithRoomTypes: async (params) => {
+    try {
+      const { hotelId, checkInDate, checkOutDate, guests, location } = params;
+      
+      const response = await api.get(`/hotels/${hotelId}`, {
+        params: {
+          checkInDate: checkInDate,
+          checkOutDate: checkOutDate,
+          guests: guests || 1,
+          location: location,
+        },
+      });
+
+      return {
+        success: true,
+        data: response.data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Failed to fetch hotel details with room types',
         statusCode: error.response?.status,
       };
     }

@@ -11,6 +11,7 @@ import HotelDetailsScreen from '../screens/HotelDetailsScreen';
 import BookingScreen from '../screens/BookingScreen';
 import BookingConfirmationScreen from '../screens/BookingConfirmationScreen';
 import BookingLookupScreen from '../screens/BookingLookupScreen';
+import BookingDetailsScreen from '../screens/BookingDetailsScreen';
 
 // Temporary placeholder screens for remaining screens
 import { View, Text, StyleSheet } from 'react-native';
@@ -145,6 +146,15 @@ const AppNavigator = () => {
             presentation: 'card',
             headerLeft: () => null, // Prevent going back
             gestureEnabled: false, // Disable swipe to go back
+          }}
+        />
+        
+        <Stack.Screen 
+          name="BookingDetails" 
+          component={BookingDetailsScreen}
+          options={{
+            title: 'Booking Details',
+            presentation: 'card',
           }}
         />
       </Stack.Navigator>

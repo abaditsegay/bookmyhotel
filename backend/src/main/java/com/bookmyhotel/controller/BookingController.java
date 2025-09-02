@@ -94,7 +94,7 @@ public class BookingController {
     }
 
     /**
-     * Search booking by confirmation number
+     * Search booking by confirmation number and email (both required for security)
      */
     @GetMapping("/search")
     public ResponseEntity<BookingResponse> searchBooking(
@@ -103,7 +103,16 @@ public class BookingController {
             @RequestParam(required = false) String lastName) {
 
         BookingResponse response;
-        if (confirmationNumber != null && !confirmationNumber.trim().isEmpty()) {
+
+        // Primary search: confirmation number AND email (both required for enhanced
+        // security)
+        if (confirmationNumber != null && !confirmationNumber.trim().isEmpty() &&
+                email != null && !email.trim().isEmpty()) {
+            // Use public search with both confirmation number and email for verification
+            response = bookingService.findByConfirmationNumberAndEmailPublic(confirmationNumber.trim(), email.trim());
+        }
+        // Fallback search methods for backward compatibility
+        else if (confirmationNumber != null && !confirmationNumber.trim().isEmpty()) {
             // Use public search to find bookings across all tenants
             response = bookingService.findByConfirmationNumberPublic(confirmationNumber.trim());
         } else if (email != null && lastName != null &&

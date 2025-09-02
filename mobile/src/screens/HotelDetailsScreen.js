@@ -5,6 +5,9 @@ import {
   StyleSheet,
   TouchableOpacity,
   Alert,
+  ScrollView,
+  RefreshControl,
+  FlatList,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -15,45 +18,71 @@ import { colors, typography, spacing, globalStyles } from '../styles/globalStyle
 import { formatDateForDisplay, calculateNights } from '../utils/dateUtils';
 
 const HotelDetailsScreen = ({ navigation, route }) => {
+  console.log('🚀 === HotelDetailsScreen RENDER START ===');
+  console.log('📍 Route params:', route?.params);
+  
   const { hotelId, hotelName, searchParams } = route.params;
   
-  // State
+  console.log('📍 Hotel ID:', hotelId);
+  console.log('📍 Hotel Name:', hotelName);
+  console.log('📍 Search Params:', searchParams);
+  
+  // State for hotel, room types, and UI  
   const [hotel, setHotel] = useState(null);
-  const [rooms, setRooms] = useState([]);
+  const [roomTypes, setRoomTypes] = useState([]); // Room types instead of individual rooms
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [selectedRoom, setSelectedRoom] = useState(null);
+  const [selectedRoomType, setSelectedRoomType] = useState(null); // Selected room type instead of room
 
-  // Load hotel details and rooms
+  // Load hotel details and room types
   const loadHotelData = async () => {
     try {
+      console.log('🔄 loadHotelData started');
       setLoading(true);
       
-      // Load hotel details
-      const hotelResponse = await hotelService.getHotelDetails(hotelId);
-      if (hotelResponse.success) {
-        setHotel(hotelResponse.data);
-      }
-
-      // Load available rooms
-      const roomsParams = {
+      // Load hotel details with room type availability (desktop frontend approach)
+      const hotelParams = {
         hotelId,
         checkInDate: searchParams?.checkInDate,
         checkOutDate: searchParams?.checkOutDate,
         guests: searchParams?.guests || 1,
-        roomType: searchParams?.roomType,
+        location: searchParams?.location,
       };
       
-      const roomsResponse = await hotelService.getHotelRooms(roomsParams);
-      if (roomsResponse.success) {
-        setRooms(roomsResponse.data || []);
+      console.log('🏨 Loading hotel details with room types for ID:', hotelId, 'params:', hotelParams);
+      const hotelResponse = await hotelService.getHotelDetailsWithRoomTypes(hotelParams);
+      console.log('🏨 Hotel response:', hotelResponse);
+      
+      if (hotelResponse.success) {
+        setHotel(hotelResponse.data);
+        console.log('✅ Hotel data set:', hotelResponse.data);
+        
+        // Extract room type availability from hotel response
+        const roomTypeAvailability = hotelResponse.data?.roomTypeAvailability || [];
+        console.log('🏠 Room types available:', roomTypeAvailability.length, 'types');
+        console.log('🏠 Room types data:', roomTypeAvailability);
+        setRoomTypes(roomTypeAvailability);
+        
+        // Auto-select first available room type if none selected
+        if (roomTypeAvailability.length > 0 && !selectedRoomType) {
+          const firstAvailable = roomTypeAvailability.find(rt => rt.availableCount > 0);
+          if (firstAvailable) {
+            setSelectedRoomType(firstAvailable);
+            console.log('🎯 Auto-selected room type:', firstAvailable.roomType);
+          }
+        }
+      } else {
+        console.error('❌ Hotel request failed:', hotelResponse.error);
+        Alert.alert('Error', hotelResponse.error || 'Failed to load hotel details');
       }
       
     } catch (error) {
-      console.error('Error loading hotel data:', error);
+      console.error('💥 Error loading hotel data:', error);
       Alert.alert('Error', 'Failed to load hotel details. Please try again.');
     } finally {
+      console.log('🏁 Setting loading to false');
       setLoading(false);
+      console.log('🏁 loadHotelData completed');
     }
   };
 
@@ -69,34 +98,40 @@ const HotelDetailsScreen = ({ navigation, route }) => {
     loadHotelData();
   }, [hotelId]);
 
-  // Handle room selection
-  const handleRoomSelect = (room) => {
-    setSelectedRoom(room);
+  // Handle room type selection (following desktop frontend pattern)
+  const handleRoomTypeSelect = (roomType) => {
+    setSelectedRoomType(roomType);
+    console.log('🎯 Selected room type:', roomType.roomType, 'Available:', roomType.availableCount);
   };
 
-  // Handle booking
+  // Handle booking (room type booking instead of specific room)
   const handleBookNow = () => {
-    if (!selectedRoom) {
-      Alert.alert('Select a Room', 'Please select a room to continue with booking.');
+    if (!selectedRoomType) {
+      Alert.alert('Select a Room Type', 'Please select a room type to continue with booking.');
       return;
     }
 
+    if (selectedRoomType.availableCount <= 0) {
+      Alert.alert('Not Available', 'This room type is not available for the selected dates.');
+      return;
+    }
     if (!searchParams?.checkInDate || !searchParams?.checkOutDate) {
-      Alert.alert('Missing Dates', 'Please search with specific dates to book a room.');
+      Alert.alert('Missing Dates', 'Please search with specific dates to book a room type.');
       return;
     }
 
+    // Navigate to booking with room type data (desktop frontend pattern)
     navigation.navigate('Booking', {
       hotel,
-      room: selectedRoom,
+      roomType: selectedRoomType, // Pass room type instead of specific room
       searchParams,
     });
   };
 
-  // Calculate total price
-  const calculateTotalPrice = (room) => {
+  // Calculate total price for room type
+  const calculateTotalPriceForRoomType = (roomType) => {
     if (!searchParams?.checkInDate || !searchParams?.checkOutDate) {
-      return room.pricePerNight;
+      return roomType.pricePerNight;
     }
     
     const nights = calculateNights(
@@ -104,7 +139,7 @@ const HotelDetailsScreen = ({ navigation, route }) => {
       new Date(searchParams.checkOutDate)
     );
     
-    return room.pricePerNight * nights;
+    return roomType.pricePerNight * nights;
   };
 
   // Calculate nights
@@ -119,20 +154,22 @@ const HotelDetailsScreen = ({ navigation, route }) => {
     );
   };
 
-  // Render room item
-  const renderRoomItem = ({ item: room }) => {
-    const isSelected = selectedRoom?.id === room.id;
-    const totalPrice = calculateTotalPrice(room);
+  // Render room type item (following desktop frontend pattern)
+  const renderRoomTypeItem = ({ item: roomType }) => {
+    const isSelected = selectedRoomType?.roomType === roomType.roomType;
+    const totalPrice = calculateTotalPriceForRoomType(roomType);
     const nights = getNights();
+    const isAvailable = roomType.availableCount > 0;
     
     return (
       <Card
-        key={room.id.toString()}
+        key={roomType.roomType}
         style={[
           styles.roomCard,
           isSelected && styles.roomCardSelected,
+          !isAvailable && styles.roomCardDisabled,
         ]}
-        onPress={() => handleRoomSelect(room)}
+        onPress={() => isAvailable && handleRoomTypeSelect(roomType)}
       >
         <View style={styles.roomHeader}>
           <View style={styles.roomInfo}>
@@ -145,37 +182,47 @@ const HotelDetailsScreen = ({ navigation, route }) => {
               styles.selectionIndicator,
               isSelected && styles.selectionIndicatorSelected,
             ]}>
-              {isSelected && (
+                            {isSelected && (
                 <Ionicons name="checkmark" size={16} color={colors.textOnPrimary} />
               )}
             </View>
           </View>
         </View>
 
-        {room.description && (
-          <Text style={styles.roomDescription}>{room.description}</Text>
+        {/* Room Type Description */}
+        {roomType.description && (
+          <Text style={styles.roomDescription}>{roomType.description}</Text>
         )}
 
+        {/* Room Type Details */}
         <View style={styles.roomDetails}>
           <View style={styles.roomMeta}>
             <View style={styles.roomMetaItem}>
               <Ionicons name="people-outline" size={16} color={colors.textSecondary} />
               <Text style={styles.roomMetaText}>
-                Up to {room.capacity} guests
+                Up to {roomType.capacity} guests
               </Text>
             </View>
             
             <View style={styles.roomMetaItem}>
               <Ionicons name="bed-outline" size={16} color={colors.textSecondary} />
-              <Text style={styles.roomMetaText}>{room.roomType}</Text>
+              <Text style={styles.roomMetaText}>{roomType.roomTypeName || roomType.roomType}</Text>
+            </View>
+
+            <View style={styles.roomMetaItem}>
+              <Ionicons name="home-outline" size={16} color={colors.textSecondary} />
+              <Text style={styles.roomMetaText}>
+                {roomType.availableCount} available
+              </Text>
             </View>
           </View>
         </View>
 
+        {/* Room Type Pricing */}
         <View style={styles.roomPricing}>
           <View style={styles.priceInfo}>
             <Text style={styles.pricePerNight}>
-              ETB {room.pricePerNight.toLocaleString()}/night
+              ETB {roomType.pricePerNight?.toLocaleString()}/night
             </Text>
             {nights > 1 && (
               <Text style={styles.totalPrice}>
@@ -188,14 +235,17 @@ const HotelDetailsScreen = ({ navigation, route }) => {
             style={[
               styles.selectButton,
               isSelected && styles.selectButtonSelected,
+              !isAvailable && styles.selectButtonDisabled,
             ]}
-            onPress={() => handleRoomSelect(room)}
+            onPress={() => isAvailable && handleRoomTypeSelect(roomType)}
+            disabled={!isAvailable}
           >
             <Text style={[
               styles.selectButtonText,
               isSelected && styles.selectButtonTextSelected,
+              !isAvailable && styles.selectButtonTextDisabled,
             ]}>
-              {isSelected ? 'Selected' : 'Select'}
+              {!isAvailable ? 'Unavailable' : isSelected ? 'Selected' : 'Select'}
             </Text>
           </TouchableOpacity>
         </View>
@@ -204,6 +254,7 @@ const HotelDetailsScreen = ({ navigation, route }) => {
   };
 
   if (loading) {
+    console.log('⏳ Showing loading screen');
     return (
       <View style={globalStyles.loadingContainer}>
         <LoadingSpinner text="Loading hotel details..." />
@@ -212,6 +263,7 @@ const HotelDetailsScreen = ({ navigation, route }) => {
   }
 
   if (!hotel) {
+    console.log('❌ Showing error screen - no hotel data');
     return (
       <View style={globalStyles.errorContainer}>
         <Ionicons name="alert-circle-outline" size={64} color={colors.error} />
@@ -223,11 +275,15 @@ const HotelDetailsScreen = ({ navigation, route }) => {
     );
   }
 
+  console.log('✅ About to render hotel details. Hotel:', hotel?.name, 'Rooms:', rooms?.length);
+  
   return (
     <ScreenContainer 
       scrollable={true}
       refreshing={refreshing}
       onRefresh={onRefresh}
+      showsVerticalScrollIndicator={true}
+      contentContainerStyle={styles.contentContainer}
     >
         {/* Hotel Information */}
         <View style={styles.hotelSection}>
@@ -323,15 +379,15 @@ const HotelDetailsScreen = ({ navigation, route }) => {
           </View>
         )}
 
-        {/* Available Rooms */}
+        {/* Available Room Types */}
         <View style={styles.roomsSection}>
           <Text style={styles.roomsSectionTitle}>
-            Available Rooms ({rooms.length})
+            Available Room Types ({roomTypes.length})
           </Text>
           
-          {rooms.length > 0 ? (
+          {roomTypes.length > 0 ? (
             <View style={styles.roomsList}>
-              {rooms.map((room) => renderRoomItem({ item: room }))}
+              {roomTypes.map((roomType) => renderRoomTypeItem({ item: roomType }))}
             </View>
           ) : (
             <Card style={styles.noRoomsCard}>
@@ -353,30 +409,30 @@ const HotelDetailsScreen = ({ navigation, route }) => {
         </View>
 
         {/* Booking Button - moved inside ScrollView */}
-        {rooms.length > 0 && (
+        {roomTypes.length > 0 && (
           <View style={styles.bookingSection}>
             <View style={styles.bookingInfo}>
-              {selectedRoom ? (
+              {selectedRoomType ? (
                 <View>
                   <Text style={styles.selectedRoomText}>
-                    {selectedRoom.roomType} - Room {selectedRoom.roomNumber}
+                    {selectedRoomType.roomTypeName || selectedRoomType.roomType} ({selectedRoomType.availableCount} available)
                   </Text>
                   <Text style={styles.selectedRoomPrice}>
-                    ETB {calculateTotalPrice(selectedRoom).toLocaleString()}
+                    ETB {calculateTotalPriceForRoomType(selectedRoomType).toLocaleString()}
                     {getNights() > 1 && (
                       <Text style={styles.nightsText}> ({getNights()} nights)</Text>
                     )}
                   </Text>
                 </View>
               ) : (
-                <Text style={styles.selectRoomPrompt}>Select a room to book</Text>
+                <Text style={styles.selectRoomPrompt}>Select a room type to book</Text>
               )}
             </View>
             
             <Button
               title="Book Now"
               onPress={handleBookNow}
-              disabled={!selectedRoom}
+              disabled={!selectedRoomType || selectedRoomType.availableCount <= 0}
               style={styles.bookButton}
             />
           </View>
@@ -386,6 +442,18 @@ const HotelDetailsScreen = ({ navigation, route }) => {
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
+    height: '100%', // Ensure full height for web
+  },
+  
+  contentContainer: {
+    paddingBottom: spacing.xl,
+    minHeight: '100%', // Ensure content can exceed viewport
+    flexGrow: 1, // Allow content to expand
+  },
+  
   hotelSection: {
     padding: spacing.md,
   },
@@ -741,6 +809,20 @@ const styles = StyleSheet.create({
   
   bookButton: {
     minWidth: 120,
+  },
+
+  // Room type disabled states
+  roomCardDisabled: {
+    opacity: 0.6,
+  },
+
+  selectButtonDisabled: {
+    backgroundColor: colors.border,
+    opacity: 0.5,
+  },
+
+  selectButtonTextDisabled: {
+    color: colors.textSecondary,
   },
 });
 

@@ -1053,6 +1053,32 @@ public class BookingService {
     }
 
     /**
+     * Find booking by confirmation number AND email (enhanced security - both
+     * required)
+     */
+    public BookingResponse findByConfirmationNumberAndEmailPublic(String confirmationNumber, String email) {
+        // First find by confirmation number
+        Reservation reservation = reservationRepository.findByConfirmationNumberPublic(confirmationNumber)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Booking not found with confirmation number: " + confirmationNumber));
+
+        // Then verify the email matches the guest email
+        String reservationEmail = null;
+        if (reservation.getGuestInfo() != null && reservation.getGuestInfo().getEmail() != null) {
+            reservationEmail = reservation.getGuestInfo().getEmail();
+        } else if (reservation.getGuest() != null && reservation.getGuest().getEmail() != null) {
+            reservationEmail = reservation.getGuest().getEmail();
+        }
+
+        if (reservationEmail == null || !reservationEmail.equalsIgnoreCase(email)) {
+            throw new ResourceNotFoundException(
+                    "The email address does not match the booking with confirmation number: " + confirmationNumber);
+        }
+
+        return convertToBookingResponse(reservation);
+    }
+
+    /**
      * Find booking by email and last name
      */
     public BookingResponse findByEmailAndLastName(String email, String lastName) {

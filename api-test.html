@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test</title>
+</head>
+<body>
+    <h1>Hotel Admin API Test</h1>
+    <div id="results"></div>
+    
+    <script>
+        async function testAPI() {
+            const results = document.getElementById('results');
+            
+            try {
+                // Get fresh token
+                console.log('Getting fresh token...');
+                const loginResponse = await fetch('http://localhost:8080/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@addissunshine.com',
+                        password: 'admin123'
+                    })
+                });
+                
+                if (!loginResponse.ok) {
+                    throw new Error('Login failed');
+                }
+                
+                const loginData = await loginResponse.json();
+                const token = loginData.token;
+                
+                results.innerHTML += `<p><strong>✅ Login successful</strong></p>`;
+                console.log('Token received:', token ? token.substring(0, 50) + '...' : 'No token');
+                
+                // Test booking API
+                console.log('Testing booking API...');
+                const bookingsResponse = await fetch('http://localhost:8080/api/hotel-admin/bookings?page=0&size=10', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                if (!bookingsResponse.ok) {
+                    const errorData = await bookingsResponse.json();
+                    throw new Error(`Bookings API failed: ${errorData.message || bookingsResponse.statusText}`);
+                }
+                
+                const bookingsData = await bookingsResponse.json();
+                results.innerHTML += `<p><strong>✅ Bookings API successful</strong> - Found ${bookingsData.content ? bookingsData.content.length : 0} bookings</p>`;
+                results.innerHTML += `<pre>${JSON.stringify(bookingsData, null, 2)}</pre>`;
+                console.log('Bookings data:', bookingsData);
+                
+            } catch (error) {
+                console.error('API test failed:', error);
+                results.innerHTML += `<p><strong>❌ API test failed:</strong> ${error.message}</p>`;
+            }
+        }
+        
+        // Run test on page load
+        window.onload = testAPI;
+    </script>
+</body>
+</html>

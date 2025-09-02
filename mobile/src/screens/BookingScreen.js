@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -19,10 +19,10 @@ import { validateEmail, validatePhone } from '../utils/validation';
 import { formatDate, calculateNights } from '../utils/dateUtils';
 
 const BookingScreen = ({ route, navigation }) => {
-  // Get booking parameters from navigation
+  // Get booking parameters from navigation (updated for room type booking)
   const { 
     hotel, 
-    room, 
+    roomType, // Changed from 'room' to 'roomType'
     searchParams
   } = route.params;
 
@@ -31,33 +31,23 @@ const BookingScreen = ({ route, navigation }) => {
   const checkOutDate = new Date(searchParams.checkOutDate);
   const numberOfGuests = searchParams.guests || 1;
 
-  // Guest information form state
-  const [guestForm, setGuestForm] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    specialRequests: '',
-  });
+  // Guest information form state (following SearchScreen pattern)
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [specialRequests, setSpecialRequests] = useState('');
 
   // UI state
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [agreedToTerms, setAgreedToTerms] = useState(false);
-  
-  // Use ref to track form state for navigation without causing re-renders
-  const guestFormRef = useRef(guestForm);
-  
-  // Keep ref in sync with state
-  useEffect(() => {
-    guestFormRef.current = guestForm;
-  }, [guestForm]);
 
-  // Calculate booking details
+  // Calculate booking details (updated for room type)
   const nights = calculateNights(checkInDate, checkOutDate);
   const formattedCheckIn = formatDate(checkInDate);
   const formattedCheckOut = formatDate(checkOutDate);
-  const totalAmount = room?.pricePerNight ? room.pricePerNight * nights : 0;
+  const totalAmount = roomType?.pricePerNight ? roomType.pricePerNight * nights : 0;
 
   // Create static icon components to prevent re-renders
   const PersonIcon = useMemo(() => <Ionicons name="person-outline" size={20} color={colors.textSecondary} />, []);
@@ -65,107 +55,77 @@ const BookingScreen = ({ route, navigation }) => {
   const PhoneIcon = useMemo(() => <Ionicons name="call-outline" size={20} color={colors.textSecondary} />, []);
   const ChatIcon = useMemo(() => <Ionicons name="chatbubble-outline" size={20} color={colors.textSecondary} />, []);
 
-  // Memoized form update functions to prevent re-renders
-  const updateFirstName = useCallback((text) => {
-    const newForm = {
-      ...guestFormRef.current,
-      firstName: text,
-    };
-    setGuestForm(newForm);
-    guestFormRef.current = newForm;
-    
+  // Simple form update handlers (following SearchScreen pattern)
+  const handleFirstNameChange = useCallback((text) => {
+    setFirstName(text);
     // Clear error for this field
     setErrors(prev => ({
       ...prev,
-      firstName: null,
+      firstName: null
     }));
   }, []);
 
-  const updateLastName = useCallback((text) => {
-    const newForm = {
-      ...guestFormRef.current,
-      lastName: text,
-    };
-    setGuestForm(newForm);
-    guestFormRef.current = newForm;
-    
+  const handleLastNameChange = useCallback((text) => {
+    setLastName(text);
     // Clear error for this field
     setErrors(prev => ({
       ...prev,
-      lastName: null,
+      lastName: null
     }));
   }, []);
 
-  const updateEmail = useCallback((text) => {
-    const newForm = {
-      ...guestFormRef.current,
-      email: text,
-    };
-    setGuestForm(newForm);
-    guestFormRef.current = newForm;
-    
+  const handleEmailChange = useCallback((text) => {
+    setEmail(text);
     // Clear error for this field
     setErrors(prev => ({
       ...prev,
-      email: null,
+      email: null
     }));
   }, []);
 
-  const updatePhone = useCallback((text) => {
-    const newForm = {
-      ...guestFormRef.current,
-      phone: text,
-    };
-    setGuestForm(newForm);
-    guestFormRef.current = newForm;
-    
+  const handlePhoneChange = useCallback((text) => {
+    setPhone(text);
     // Clear error for this field
     setErrors(prev => ({
       ...prev,
-      phone: null,
+      phone: null
     }));
   }, []);
 
-  const updateSpecialRequests = useCallback((text) => {
-    const newForm = {
-      ...guestFormRef.current,
-      specialRequests: text,
-    };
-    setGuestForm(newForm);
-    guestFormRef.current = newForm;
-    
+  const handleSpecialRequestsChange = useCallback((text) => {
+    setSpecialRequests(text);
     // Clear error for this field
     setErrors(prev => ({
       ...prev,
-      specialRequests: null,
+      specialRequests: null
     }));
   }, []);
 
   // Validate guest form
-  const validateGuestForm = () => {
+  const validateGuestForm = useCallback(() => {
     const newErrors = {};
 
-    if (!guestForm.firstName.trim()) {
+    if (!firstName.trim()) {
       newErrors.firstName = 'First name is required';
-    } else if (guestForm.firstName.trim().length < 2) {
+    } else if (firstName.trim().length < 2) {
       newErrors.firstName = 'First name must be at least 2 characters';
     }
 
-    if (!guestForm.lastName.trim()) {
+    if (!lastName.trim()) {
       newErrors.lastName = 'Last name is required';
-    } else if (guestForm.lastName.trim().length < 2) {
+    } else if (lastName.trim().length < 2) {
       newErrors.lastName = 'Last name must be at least 2 characters';
     }
 
-    if (!guestForm.email.trim()) {
+    if (!email.trim()) {
       newErrors.email = 'Email address is required';
-    } else if (!validateEmail(guestForm.email)) {
+    } else if (!validateEmail(email)) {
       newErrors.email = 'Please enter a valid email address';
     }
 
-    if (!guestForm.phone.trim()) {
+    if (!phone.trim()) {
       newErrors.phone = 'Phone number is required';
-    } else if (!validatePhone(guestForm.phone)) {
+    } else if (!validatePhone(phone)) {
       newErrors.phone = 'Please enter a valid phone number';
     }
 
@@ -175,10 +135,10 @@ const BookingScreen = ({ route, navigation }) => {
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
+  }, [firstName, lastName, email, phone, agreedToTerms]);
 
   // Handle booking submission
-  const handleBooking = async () => {
+  const handleBooking = useCallback(async () => {
     if (!validateGuestForm()) {
       return;
     }
@@ -188,15 +148,15 @@ const BookingScreen = ({ route, navigation }) => {
     try {
       const bookingData = {
         hotelId: hotel.id,
-        roomType: room?.roomType || 'Standard Room',
+        roomType: roomType?.roomType || roomType?.roomTypeName || 'Standard Room', // Use roomType data
         checkInDate: checkInDate,
         checkOutDate: checkOutDate,
         numberOfGuests: numberOfGuests,
-        guestFirstName: guestForm.firstName.trim(),
-        guestLastName: guestForm.lastName.trim(),
-        guestEmail: guestForm.email.trim(),
-        guestPhone: guestForm.phone.trim(),
-        specialRequests: guestForm.specialRequests.trim(),
+        guestFirstName: firstName.trim(),
+        guestLastName: lastName.trim(),
+        guestEmail: email.trim(),
+        guestPhone: phone.trim(),
+        specialRequests: specialRequests.trim(),
         totalAmount: totalAmount,
       };
 
@@ -223,7 +183,7 @@ const BookingScreen = ({ route, navigation }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [validateGuestForm, hotel, roomType, checkInDate, checkOutDate, numberOfGuests, firstName, lastName, email, phone, specialRequests, totalAmount, navigation]);
 
   // Handle back navigation with confirmation
   const handleBackPress = useCallback(() => {
@@ -296,8 +256,8 @@ const BookingScreen = ({ route, navigation }) => {
             <View style={styles.detailItem}>
               <Ionicons name="bed-outline" size={16} color={colors.textSecondary} />
               <View style={styles.detailText}>
-                <Text style={styles.detailLabel}>Room</Text>
-                <Text style={styles.detailValue}>{room?.roomType || 'Standard Room'}</Text>
+                <Text style={styles.detailLabel}>Room Type</Text>
+                <Text style={styles.detailValue}>{roomType?.roomTypeName || roomType?.roomType || 'Standard Room'}</Text>
               </View>
             </View>
             
@@ -340,10 +300,11 @@ const BookingScreen = ({ route, navigation }) => {
         <View style={styles.nameRow}>
           <View style={styles.nameField}>
             <Input
+              key="firstName"
               label="First Name"
               placeholder="Enter your first name"
-              value={guestForm.firstName}
-              onChangeText={updateFirstName}
+              value={firstName}
+              onChangeText={handleFirstNameChange}
               error={errors.firstName}
               autoCapitalize="words"
               leftIcon={PersonIcon}
@@ -352,10 +313,11 @@ const BookingScreen = ({ route, navigation }) => {
           
           <View style={styles.nameField}>
             <Input
+              key="lastName"
               label="Last Name"
               placeholder="Enter your last name"
-              value={guestForm.lastName}
-              onChangeText={updateLastName}
+              value={lastName}
+              onChangeText={handleLastNameChange}
               error={errors.lastName}
               autoCapitalize="words"
               leftIcon={PersonIcon}
@@ -364,10 +326,11 @@ const BookingScreen = ({ route, navigation }) => {
         </View>
 
         <Input
+          key="email"
           label="Email Address"
           placeholder="Enter your email address"
-          value={guestForm.email}
-          onChangeText={updateEmail}
+          value={email}
+          onChangeText={handleEmailChange}
           error={errors.email}
           keyboardType="email-address"
           autoCapitalize="none"
@@ -375,20 +338,22 @@ const BookingScreen = ({ route, navigation }) => {
         />
 
         <Input
+          key="phone"
           label="Phone Number"
           placeholder="Enter your phone number"
-          value={guestForm.phone}
-          onChangeText={updatePhone}
+          value={phone}
+          onChangeText={handlePhoneChange}
           error={errors.phone}
           keyboardType="phone-pad"
           leftIcon={PhoneIcon}
         />
 
         <Input
+          key="specialRequests"
           label="Special Requests (Optional)"
           placeholder="Any special requests or requirements..."
-          value={guestForm.specialRequests}
-          onChangeText={updateSpecialRequests}
+          value={specialRequests}
+          onChangeText={handleSpecialRequestsChange}
           multiline={true}
           numberOfLines={3}
           leftIcon={ChatIcon}

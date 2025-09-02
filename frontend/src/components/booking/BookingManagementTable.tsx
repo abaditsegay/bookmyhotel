@@ -383,24 +383,20 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
 
   // Handle check-in/out actions
   const handleBookingAction = async (booking: Booking, action: string) => {
-    console.log('handleBookingAction called with:', { booking, action });
-    
     if (onBookingAction) {
       onBookingAction(booking, action);
     }
     
-    // For front-desk mode, also make API calls to update status
-    if (mode === 'front-desk' && token) {
+    // Both front-desk and hotel-admin modes use the same check-in/check-out logic
+    if ((mode === 'front-desk' || mode === 'hotel-admin') && token) {
       try {
         if (action === 'check-in') {
-          console.log('Opening check-in dialog for booking:', booking);
-          // Open check-in dialog for room assignment - don't update status yet
+          // Open check-in dialog for room assignment - identical for both modes
           setBookingForCheckIn(booking);
           setCheckInDialogOpen(true);
-          console.log('Check-in dialog state set to open');
           return; // Return early to prevent status update until dialog completes
         } else if (action === 'check-out') {
-          // Use new checkout with receipt API
+          // Use unified front-desk API for check-out operations (same for both modes)
           const result = await frontDeskApiService.checkOutGuestWithReceipt(token, booking.reservationId, tenant?.id || 'default');
           
           if (result.success && result.data) {
@@ -445,6 +441,8 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
 
   // Handle successful check-in
   const handleCheckInSuccess = (updatedBooking: Booking) => {
+    console.log('🔥 handleCheckInSuccess called with:', updatedBooking);
+    
     // Update the booking in the local state
     setBookings(prev => prev.map(b => 
       b.reservationId === updatedBooking.reservationId 
@@ -466,12 +464,12 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
     loadBookings();
   };
 
-  // Handle print receipt for any booking
+  // Handle print receipt for any booking (unified for both modes)
   const handlePrintReceipt = async (booking: Booking) => {
     if (!token) return;
 
     try {
-      // Use the receipt preview API that doesn't change booking status
+      // Use the unified receipt preview API for both hotel-admin and front-desk modes
       const result = await frontDeskApiService.generateReceiptPreview(token, booking.reservationId, tenant?.id || 'default');
       
       if (result.success && result.data) {
@@ -676,10 +674,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                                   <IconButton 
                                     size="small" 
                                     color="success"
-                                    onClick={() => {
-                                      console.log('Check-in icon clicked for booking:', booking);
-                                      handleBookingAction(booking, 'check-in');
-                                    }}
+                                    onClick={() => handleBookingAction(booking, 'check-in')}
                                   >
                                     <CheckInIcon />
                                   </IconButton>
@@ -799,21 +794,10 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
         }}
         booking={bookingForCheckIn}
         onCheckInSuccess={handleCheckInSuccess}
+        mode={mode} // Pass the current mode to CheckInDialog
       />
 
-      {/* Debug: Test button to force open dialog */}
-      {process.env.NODE_ENV === 'development' && (
-        <Button 
-          onClick={() => {
-            console.log('Debug: Force opening check-in dialog');
-            setCheckInDialogOpen(true);
-          }}
-          variant="outlined"
-          sx={{ position: 'fixed', top: 10, right: 10, zIndex: 9999 }}
-        >
-          Debug: Open Dialog
-        </Button>
-      )}
+      {/* Debug button removed - was causing overlay issue in navbar */}
 
     </Box>
   );

@@ -182,7 +182,7 @@ const Navbar: React.FC = () => {
 
   // Desktop Navigation
   const DesktopNavigation = () => (
-    <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1 }}>
+    <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 2 }}>
       {navigationItems.map((item, index) => (
         <Button
           key={item.path || index}
@@ -203,6 +203,10 @@ const Navbar: React.FC = () => {
                 ? '#cc0000' 
                 : 'rgba(255, 255, 255, 0.1)',
             },
+            // Ensure proper stacking and boundaries
+            position: 'relative',
+            zIndex: 1,
+            overflow: 'hidden',
           }}
         >
           {item.label}
@@ -433,7 +437,7 @@ const Navbar: React.FC = () => {
           )}
 
           {/* Right Section: User Actions */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1, justifyContent: 'flex-end' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1, justifyContent: 'flex-end' }}>
             {/* Show navigation on right for users with hotel name displayed */}
             {user && user.hotelName && shouldShowHotelName() && !isMobile && (
               <DesktopNavigation />
@@ -454,11 +458,13 @@ const Navbar: React.FC = () => {
                     fontSize: '0.75rem',
                     fontWeight: 500,
                     display: { xs: 'none', sm: 'flex' }, // Hide on mobile to save space
+                    position: 'relative',
+                    zIndex: 10, // Ensure it stays above other elements
                   }}
                 />
                 
                 {/* User Icon & Menu */}
-                <IconButton onClick={handleMenuOpen} sx={{ p: 0.5, color: 'white' }}>
+                <IconButton onClick={handleMenuOpen} sx={{ p: 0.5, color: 'white', position: 'relative', zIndex: 10 }}>
                   <PersonIcon sx={{ fontSize: 28 }} />
                 </IconButton>
                 <UserMenu />

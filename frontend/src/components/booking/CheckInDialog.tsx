@@ -30,7 +30,9 @@ import {
   CalendarToday as CalendarIcon,
 } from '@mui/icons-material';
 import { frontDeskApiService } from '../../services/frontDeskApi';
+import { hotelAdminApi } from '../../services/hotelAdminApi';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTenant } from '../../contexts/TenantContext';
 import { Booking, Room } from '../../types/booking-shared';
 
 interface CheckInDialogProps {
@@ -38,6 +40,7 @@ interface CheckInDialogProps {
   onClose: () => void;
   booking: Booking | null;
   onCheckInSuccess: (updatedBooking: Booking) => void;
+  mode?: 'front-desk' | 'hotel-admin'; // Add mode prop to determine which API to use
 }
 
 const CheckInDialog: React.FC<CheckInDialogProps> = ({
@@ -45,8 +48,10 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
   onClose,
   booking,
   onCheckInSuccess,
+  mode = 'front-desk', // Default to front-desk mode for backward compatibility
 }) => {
   const { token } = useAuth();
+  const { tenant } = useTenant();
   
   const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
   const [selectedRoomType, setSelectedRoomType] = useState<string>('');
@@ -77,41 +82,108 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
   const nights = booking ? calculateNights(booking.checkInDate, booking.checkOutDate) : 0;
 
   const loadAvailableRooms = useCallback(async () => {
-    if (!booking || !token || !booking.hotelId) return;
+    console.log('🏨 CheckInDialog: loadAvailableRooms called with:', {
+      booking: !!booking,
+      bookingId: booking?.reservationId,
+      hotelId: booking?.hotelId,
+      token: !!token,
+      tenantId: tenant?.id,
+      mode: mode
+    });
+    
+    if (!booking || !token) {
+      console.log('🏨 CheckInDialog: Early return - missing booking or token');
+      return;
+    }
 
+    console.log('🏨 CheckInDialog: Loading rooms for mode:', mode);
     setLoadingRooms(true);
     setError(null);
 
     try {
-      const result = await frontDeskApiService.getAvailableRoomsForCheckin(
-        token, 
-        booking.hotelId, 
-        'default'
-      );
+      let result: any;
+      
+      if (mode === 'hotel-admin') {
+        // For hotel-admin mode, use the hotel admin API to get available rooms
+        console.log('🏨 CheckInDialog: Using hotel-admin API to get rooms');
+        result = await hotelAdminApi.getHotelRooms(
+          token,
+          0, // page
+          1000, // size - get all rooms
+          undefined, // search
+          undefined, // room number
+          undefined, // room type
+          'AVAILABLE' // only available rooms
+        );
+        
+        // Transform hotel admin API response to match expected Room interface
+        if (result.success && result.data?.content) {
+          const rooms = result.data.content.map((room: any) => ({
+            id: room.id,
+            roomNumber: room.roomNumber,
+            roomType: room.roomType,
+            pricePerNight: room.pricePerNight || 0,
+            isAvailable: room.isAvailable,
+            hotelId: room.hotelId,
+            capacity: room.capacity,
+            description: room.description
+          }));
+          result.data = rooms;
+        }
+      } else {
+        // For front-desk mode, use the front-desk API (requires hotelId)
+        let hotelId = booking.hotelId;
+        if (!hotelId && tenant?.id) {
+          console.log('🏨 CheckInDialog: No hotelId in booking, using fallback for front-desk mode');
+          hotelId = 1; // Temporary fallback
+        }
+
+        if (!hotelId) {
+          console.log('🏨 CheckInDialog: Early return - no hotelId available for front-desk mode');
+          setError('Hotel information not available for this booking');
+          return;
+        }
+
+        console.log('🏨 CheckInDialog: Using front-desk API for hotel', hotelId);
+        result = await frontDeskApiService.getAvailableRoomsForCheckin(
+          token, 
+          hotelId, 
+          tenant?.id || 'default'
+        );
+      }
+
+      console.log('🏨 CheckInDialog: Rooms API result:', result);
 
       if (result.success && result.data) {
+        console.log('🏨 CheckInDialog: Available rooms:', result.data);
         setAvailableRooms(result.data);
         
         // Extract unique room types for the dropdown
-        const uniqueRoomTypes = Array.from(new Set(result.data.map((room: Room) => room.roomType)));
+        const uniqueRoomTypes = Array.from(new Set(result.data.map((room: Room) => room.roomType))) as string[];
+        console.log('🏨 CheckInDialog: Room types found:', uniqueRoomTypes);
         setRoomTypeOptions(uniqueRoomTypes);
         
-        // Pre-select the original room type if available
-        setSelectedRoomType(booking.roomType);
+        // Only pre-select the original room type if it's available in the loaded options
+        const validRoomType = uniqueRoomTypes.includes(booking.roomType) ? booking.roomType : '';
+        console.log('🏨 CheckInDialog: Setting selected room type to:', validRoomType);
+        setSelectedRoomType(validRoomType);
       } else {
+        console.error('🏨 CheckInDialog: Failed to load rooms:', result.message);
         setError(result.message || 'Failed to load available rooms');
       }
     } catch (error) {
+      console.error('🏨 CheckInDialog: Error loading rooms:', error);
       setError('Failed to load available rooms');
-      console.error('Error loading rooms:', error);
     } finally {
       setLoadingRooms(false);
     }
-  }, [booking, token]);
+  }, [booking, token, tenant?.id, mode]);
 
   // Load available rooms when dialog opens
   useEffect(() => {
+    console.log('🏨 CheckInDialog: useEffect triggered - open:', open, 'booking:', !!booking, 'token:', !!token);
     if (open && booking && token) {
+      console.log('🏨 CheckInDialog: Calling loadAvailableRooms for booking:', booking.reservationId);
       loadAvailableRooms();
     }
   }, [open, booking, token, loadAvailableRooms]);
@@ -128,7 +200,9 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
         }
       } else {
         setSelectedRoomId(null);
-        setSelectedRoomType(booking.roomType); // Pre-select the original room type
+        // Only set the room type if it exists in the available options
+        const validRoomType = roomTypeOptions.includes(booking.roomType) ? booking.roomType : '';
+        setSelectedRoomType(validRoomType);
       }
       
       // Initialize current room number state
@@ -139,7 +213,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
       setCalculatedTotal(0);
       setCalculatedPricePerNight(0);
     }
-  }, [open, booking, availableRooms]);
+  }, [open, booking, availableRooms, roomTypeOptions]);
 
   const handleRoomAssignment = async (roomId: number) => {
     if (!booking || !token) return;
@@ -155,7 +229,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
         booking.reservationId,
         roomId,
         assignedRoom?.roomType || booking.roomType, // Use the selected room's type
-        'default'
+        tenant?.id || 'default'
       );
 
       if (result.success && result.data) {
@@ -217,7 +291,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
         booking.reservationId,
         roomId,
         currentRoomType || booking.roomType, // Use current room type if available
-        'default'
+        tenant?.id || 'default'
       );
 
       if (result.success && result.data) {
@@ -422,7 +496,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                   <FormControl fullWidth margin="normal">
                     <InputLabel>Room Type</InputLabel>
                     <Select
-                      value={selectedRoomType}
+                      value={roomTypeOptions.includes(selectedRoomType) ? selectedRoomType : ''}
                       onChange={(e) => {
                         setSelectedRoomType(e.target.value);
                         // Note: Don't update currentRoomType here - it should only change when a room is actually assigned

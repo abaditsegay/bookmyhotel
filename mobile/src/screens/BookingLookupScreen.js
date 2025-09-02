@@ -23,7 +23,6 @@ const BookingLookupScreen = ({ navigation }) => {
   // UI state
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
-  const [booking, setBooking] = useState(null);
 
   // Create static icon components to prevent re-renders
   const ReceiptIcon = <Ionicons name="receipt-outline" size={20} color={colors.textSecondary} />;
@@ -83,7 +82,6 @@ const BookingLookupScreen = ({ navigation }) => {
     }
 
     setLoading(true);
-    setBooking(null);
 
     try {
       const response = await bookingService.lookupBooking({
@@ -92,7 +90,10 @@ const BookingLookupScreen = ({ navigation }) => {
       });
 
       if (response.success) {
-        setBooking(response.data);
+        // Navigate to dedicated booking details screen
+        navigation.navigate('BookingDetails', {
+          booking: response.data
+        });
       } else {
         Alert.alert(
           'Booking Not Found',
@@ -110,16 +111,6 @@ const BookingLookupScreen = ({ navigation }) => {
     }
   };
 
-  // Clear results
-  const handleClearResults = () => {
-    setBooking(null);
-    setLookupForm({
-      bookingReference: '',
-      email: '',
-    });
-    setErrors({});
-  };
-
   // Format date for display
   const formatDate = (dateString) => {
     try {
@@ -132,20 +123,6 @@ const BookingLookupScreen = ({ navigation }) => {
       });
     } catch (error) {
       return dateString;
-    }
-  };
-
-  // Get status color
-  const getStatusColor = (status) => {
-    switch (status?.toLowerCase()) {
-      case 'confirmed':
-        return colors.success;
-      case 'pending':
-        return colors.warning;
-      case 'cancelled':
-        return colors.error;
-      default:
-        return colors.textSecondary;
     }
   };
 
@@ -166,8 +143,7 @@ const BookingLookupScreen = ({ navigation }) => {
         </View>
 
         {/* Lookup Form */}
-        {!booking && (
-          <Card style={styles.formCard}>
+        <Card style={styles.formCard}>
             <Text style={styles.formTitle}>Booking Lookup</Text>
             
             <Input
@@ -198,175 +174,11 @@ const BookingLookupScreen = ({ navigation }) => {
               style={styles.lookupButton}
             />
           </Card>
-        )}
 
         {/* Loading State */}
         {loading && (
           <View style={styles.loadingContainer}>
             <LoadingSpinner text="Looking up your booking..." />
-          </View>
-        )}
-
-        {/* Booking Details */}
-        {booking && (
-          <View style={styles.bookingContainer}>
-            <Card style={styles.bookingCard}>
-              <View style={styles.bookingHeader}>
-                <View style={styles.bookingHeaderLeft}>
-                  <Text style={styles.bookingReference}>
-                    #{booking.bookingReference}
-                  </Text>
-                  <View style={styles.bookingStatus}>
-                    <View style={[
-                      styles.statusIndicator,
-                      { backgroundColor: getStatusColor(booking.status) }
-                    ]} />
-                    <Text style={[
-                      styles.statusText,
-                      { color: getStatusColor(booking.status) }
-                    ]}>
-                      {booking.status || 'Unknown'}
-                    </Text>
-                  </View>
-                </View>
-                
-                <Button
-                  title="New Search"
-                  variant="outline"
-                  size="small"
-                  onPress={handleClearResults}
-                />
-              </View>
-
-              {/* Hotel Information */}
-              <View style={styles.hotelSection}>
-                <Text style={styles.sectionTitle}>Hotel Details</Text>
-                <Text style={styles.hotelName}>{booking.hotelName}</Text>
-                {booking.hotelAddress && (
-                  <View style={styles.hotelAddress}>
-                    <Ionicons name="location-outline" size={16} color={colors.textSecondary} />
-                    <Text style={styles.hotelAddressText}>{booking.hotelAddress}</Text>
-                  </View>
-                )}
-              </View>
-
-              {/* Booking Information */}
-              <View style={styles.bookingSection}>
-                <Text style={styles.sectionTitle}>Booking Details</Text>
-                
-                <View style={styles.detailRow}>
-                  <View style={styles.detailItem}>
-                    <Ionicons name="calendar-outline" size={16} color={colors.textSecondary} />
-                    <View style={styles.detailText}>
-                      <Text style={styles.detailLabel}>Check-in</Text>
-                      <Text style={styles.detailValue}>
-                        {formatDate(booking.checkInDate)}
-                      </Text>
-                    </View>
-                  </View>
-                  
-                  <View style={styles.detailItem}>
-                    <Ionicons name="calendar-outline" size={16} color={colors.textSecondary} />
-                    <View style={styles.detailText}>
-                      <Text style={styles.detailLabel}>Check-out</Text>
-                      <Text style={styles.detailValue}>
-                        {formatDate(booking.checkOutDate)}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-
-                <View style={styles.detailRow}>
-                  <View style={styles.detailItem}>
-                    <Ionicons name="people-outline" size={16} color={colors.textSecondary} />
-                    <View style={styles.detailText}>
-                      <Text style={styles.detailLabel}>Guests</Text>
-                      <Text style={styles.detailValue}>
-                        {booking.numberOfGuests} {booking.numberOfGuests === 1 ? 'guest' : 'guests'}
-                      </Text>
-                    </View>
-                  </View>
-                  
-                  <View style={styles.detailItem}>
-                    <Ionicons name="bed-outline" size={16} color={colors.textSecondary} />
-                    <View style={styles.detailText}>
-                      <Text style={styles.detailLabel}>Room</Text>
-                      <Text style={styles.detailValue}>
-                        {booking.roomType || 'Standard Room'}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-              </View>
-
-              {/* Guest Information */}
-              <View style={styles.guestSection}>
-                <Text style={styles.sectionTitle}>Guest Information</Text>
-                <View style={styles.guestInfo}>
-                  <View style={styles.guestDetail}>
-                    <Ionicons name="person-outline" size={16} color={colors.textSecondary} />
-                    <Text style={styles.guestText}>
-                      {booking.guestFirstName} {booking.guestLastName}
-                    </Text>
-                  </View>
-                  
-                  <View style={styles.guestDetail}>
-                    <Ionicons name="mail-outline" size={16} color={colors.textSecondary} />
-                    <Text style={styles.guestText}>{booking.guestEmail}</Text>
-                  </View>
-                  
-                  {booking.guestPhone && (
-                    <View style={styles.guestDetail}>
-                      <Ionicons name="call-outline" size={16} color={colors.textSecondary} />
-                      <Text style={styles.guestText}>{booking.guestPhone}</Text>
-                    </View>
-                  )}
-                </View>
-              </View>
-
-              {/* Pricing Information */}
-              {booking.totalAmount && (
-                <View style={styles.pricingSection}>
-                  <Text style={styles.sectionTitle}>Pricing</Text>
-                  <View style={styles.pricingDetail}>
-                    <Text style={styles.pricingLabel}>Total Amount</Text>
-                    <Text style={styles.pricingValue}>
-                      ETB {booking.totalAmount.toLocaleString()}
-                    </Text>
-                  </View>
-                  
-                  {booking.paymentStatus && (
-                    <View style={styles.pricingDetail}>
-                      <Text style={styles.pricingLabel}>Payment Status</Text>
-                      <Text style={[
-                        styles.pricingValue,
-                        { color: getStatusColor(booking.paymentStatus) }
-                      ]}>
-                        {booking.paymentStatus}
-                      </Text>
-                    </View>
-                  )}
-                </View>
-              )}
-
-              {/* Special Requests */}
-              {booking.specialRequests && (
-                <View style={styles.requestsSection}>
-                  <Text style={styles.sectionTitle}>Special Requests</Text>
-                  <Text style={styles.requestsText}>{booking.specialRequests}</Text>
-                </View>
-              )}
-            </Card>
-
-            {/* Actions */}
-            <View style={styles.actionsSection}>
-              <Button
-                title="Book Another Hotel"
-                variant="outline"
-                onPress={() => navigation.navigate('Search')}
-                style={styles.actionButton}
-              />
-            </View>
           </View>
         )}
 
@@ -434,176 +246,6 @@ const styles = StyleSheet.create({
   
   loadingContainer: {
     padding: spacing.xl,
-  },
-  
-  bookingContainer: {
-    marginBottom: spacing.lg,
-  },
-  
-  bookingCard: {
-    padding: spacing.lg,
-    marginBottom: spacing.md,
-  },
-  
-  bookingHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: spacing.lg,
-    paddingBottom: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  
-  bookingHeaderLeft: {
-    flex: 1,
-  },
-  
-  bookingReference: {
-    fontSize: typography.fontSize.xl,
-    fontWeight: typography.fontWeight.bold,
-    color: colors.textPrimary,
-    marginBottom: spacing.sm,
-  },
-  
-  bookingStatus: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  
-  statusIndicator: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: spacing.xs,
-  },
-  
-  statusText: {
-    fontSize: typography.fontSize.sm,
-    fontWeight: typography.fontWeight.medium,
-    textTransform: 'capitalize',
-  },
-  
-  hotelSection: {
-    marginBottom: spacing.lg,
-  },
-  
-  sectionTitle: {
-    fontSize: typography.fontSize.lg,
-    fontWeight: typography.fontWeight.semiBold,
-    color: colors.textPrimary,
-    marginBottom: spacing.sm,
-  },
-  
-  hotelName: {
-    fontSize: typography.fontSize.md,
-    fontWeight: typography.fontWeight.medium,
-    color: colors.textPrimary,
-    marginBottom: spacing.xs,
-  },
-  
-  hotelAddress: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  
-  hotelAddressText: {
-    fontSize: typography.fontSize.sm,
-    color: colors.textSecondary,
-    marginLeft: spacing.xs,
-  },
-  
-  bookingSection: {
-    marginBottom: spacing.lg,
-  },
-  
-  detailRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: spacing.md,
-  },
-  
-  detailItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  
-  detailText: {
-    marginLeft: spacing.sm,
-  },
-  
-  detailLabel: {
-    fontSize: typography.fontSize.xs,
-    color: colors.textSecondary,
-    marginBottom: spacing.xs,
-  },
-  
-  detailValue: {
-    fontSize: typography.fontSize.sm,
-    color: colors.textPrimary,
-    fontWeight: typography.fontWeight.medium,
-  },
-  
-  guestSection: {
-    marginBottom: spacing.lg,
-  },
-  
-  guestInfo: {
-    // No additional styles
-  },
-  
-  guestDetail: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.sm,
-  },
-  
-  guestText: {
-    fontSize: typography.fontSize.sm,
-    color: colors.textPrimary,
-    marginLeft: spacing.sm,
-  },
-  
-  pricingSection: {
-    marginBottom: spacing.lg,
-  },
-  
-  pricingDetail: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.sm,
-  },
-  
-  pricingLabel: {
-    fontSize: typography.fontSize.sm,
-    color: colors.textSecondary,
-  },
-  
-  pricingValue: {
-    fontSize: typography.fontSize.md,
-    fontWeight: typography.fontWeight.semiBold,
-    color: colors.textPrimary,
-  },
-  
-  requestsSection: {
-    marginBottom: spacing.md,
-  },
-  
-  requestsText: {
-    fontSize: typography.fontSize.sm,
-    color: colors.textPrimary,
-    lineHeight: typography.fontSize.sm * typography.lineHeight.relaxed,
-    fontStyle: 'italic',
-  },
-  
-  actionsSection: {
-    // No additional styles
-  },
-  
-  actionButton: {
-    marginBottom: spacing.sm,
   },
   
   helpCard: {

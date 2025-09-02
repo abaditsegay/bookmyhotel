@@ -329,6 +329,16 @@ class HotelApiService {
     return this.fetchApi<BookingResponse>(`/bookings/search${query}`);
   }
 
+  // Search booking by reference number AND email (both required)
+  async searchBookingByReferenceAndEmail(confirmationNumber: string, email: string): Promise<BookingResponse> {
+    const params = new URLSearchParams();
+    params.append('confirmationNumber', confirmationNumber);
+    params.append('email', email);
+
+    const query = `?${params.toString()}`;
+    return this.fetchApi<BookingResponse>(`/bookings/search${query}`);
+  }
+
   // Booking modification
   async modifyBooking(modificationRequest: BookingModificationRequest): Promise<BookingModificationResponse> {
     return this.fetchApi<BookingModificationResponse>('/bookings/modify', {

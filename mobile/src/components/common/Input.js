@@ -1,8 +1,8 @@
-import React, { useState, useCallback, memo } from 'react';
+import React, { useState, useRef } from 'react';
 import { View, TextInput, Text, StyleSheet } from 'react-native';
 import { colors, typography, spacing, borderRadius } from '../../styles/globalStyles';
 
-const Input = memo(({
+const Input = ({
   label,
   placeholder,
   value,
@@ -26,26 +26,27 @@ const Input = memo(({
   ...props
 }) => {
   const [isFocused, setIsFocused] = useState(false);
+  const textInputRef = useRef(null);
 
-  const handleFocus = useCallback((e) => {
+  const handleFocus = (e) => {
     setIsFocused(true);
     if (onFocus) {
       onFocus(e);
     }
-  }, [onFocus]);
+  };
 
-  const handleBlur = useCallback((e) => {
+  const handleBlur = (e) => {
     setIsFocused(false);
     if (onBlur) {
       onBlur(e);
     }
-  }, [onBlur]);
+  };
 
-  const handleChangeText = useCallback((text) => {
+  const handleChangeText = (text) => {
     if (onChangeText) {
       onChangeText(text);
     }
-  }, [onChangeText]);
+  };
 
   const getInputContainerStyle = () => {
     const baseStyle = [styles.inputContainer];
@@ -81,6 +82,7 @@ const Input = memo(({
         )}
         
         <TextInput
+          ref={textInputRef}
           style={[
             styles.input,
             multiline && styles.inputMultiline,
@@ -101,6 +103,7 @@ const Input = memo(({
           editable={editable}
           onFocus={handleFocus}
           onBlur={handleBlur}
+          blurOnSubmit={false}
           {...props}
         />
         
@@ -118,7 +121,7 @@ const Input = memo(({
       )}
     </View>
   );
-});
+};
 
 const styles = StyleSheet.create({
   container: {

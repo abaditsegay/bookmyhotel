@@ -50,6 +50,8 @@ const ScreenContainer = ({
         contentContainerStyle={contentStyle}
         showsVerticalScrollIndicator={showsVerticalScrollIndicator}
         keyboardShouldPersistTaps="handled"
+        scrollEnabled={true}
+        nestedScrollEnabled={true}
         refreshControl={
           onRefresh ? (
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -106,6 +108,10 @@ const styles = StyleSheet.create({
   
   scrollView: {
     flex: 1,
+    ...(Platform.OS === 'web' && {
+      overflow: 'auto', // Enable web scrolling
+      height: '100vh', // Full viewport height on web
+    }),
   },
   
   keyboardContainer: {

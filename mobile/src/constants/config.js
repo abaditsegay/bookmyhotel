@@ -1,10 +1,10 @@
 import Constants from 'expo-constants';
 
 // API Configuration
+export const API_BASE_URL = 'http://192.168.1.230:8080/api';
+
 export const API_CONFIG = {
-  BASE_URL: __DEV__ 
-    ? 'http://192.168.1.230:8080/api' 
-    : 'https://your-production-api.com/api',
+  BASE_URL: API_BASE_URL,
   TIMEOUT: 10000,
   HEADERS: {
     'Content-Type': 'application/json',

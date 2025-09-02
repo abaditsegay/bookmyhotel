@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fix Product Toggle Auth Error</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background: #d4edda; border-color: #c3e6cb; }
+        .error { background: #f8d7da; border-color: #f5c6cb; }
+        .warning { background: #fff3cd; border-color: #ffeaa7; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+        .step { margin: 10px 0; padding: 10px; background: #e9ecef; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Fix Product Toggle Authentication Error</h1>
+    
+    <div class="section warning">
+        <h3>Current Issue:</h3>
+        <p><strong>Error:</strong> <code>API Error: 400 - {"error":"Access Denied"}</code></p>
+        <p><strong>Endpoint:</strong> <code>PATCH /api/hotels/1/shop/products/14/toggle-active</code></p>
+    </div>
+
+    <div class="section">
+        <h3>Step 1: Check Current Token</h3>
+        <button onclick="checkToken()">Check Token Status</button>
+        <div id="tokenStatus"></div>
+    </div>
+
+    <div class="section">
+        <h3>Step 2: Get Fresh Token</h3>
+        <button onclick="loginAndGetToken()">Login & Get Fresh Token</button>
+        <div id="loginStatus"></div>
+    </div>
+
+    <div class="section">
+        <h3>Step 3: Test API Call</h3>
+        <button onclick="testToggleAPI()">Test Product Toggle</button>
+        <div id="apiTestResult"></div>
+    </div>
+
+    <div class="section">
+        <h3>Step 4: Fix Frontend</h3>
+        <div class="step">
+            <strong>Option 1:</strong> <button onclick="clearAndRefresh()">Clear Storage & Refresh</button>
+            <p>This will clear all localStorage and reload the page so you can login fresh.</p>
+        </div>
+        <div class="step">
+            <strong>Option 2:</strong> <button onclick="setFreshToken()">Use Fresh Token</button>
+            <p>This will set the working token in localStorage.</p>
+        </div>
+    </div>
+
+    <script>
+        let freshToken = null;
+
+        function checkToken() {
+            const statusDiv = document.getElementById('tokenStatus');
+            const token = localStorage.getItem('auth_token');
+            
+            if (!token) {
+                statusDiv.innerHTML = '<div class="error">❌ No auth_token found in localStorage</div>';
+                return;
+            }
+            
+            try {
+                const parts = token.split('.');
+                if (parts.length !== 3) {
+                    statusDiv.innerHTML = '<div class="error">❌ Invalid JWT format</div>';
+                    return;
+                }
+                
+                const payload = JSON.parse(atob(parts[1]));
+                const now = Math.floor(Date.now() / 1000);
+                const isExpired = payload.exp < now;
+                
+                const status = isExpired ? 'error' : 'success';
+                const icon = isExpired ? '❌' : '✅';
+                
+                statusDiv.innerHTML = `
+                    <div class="${status}">
+                        ${icon} Token ${isExpired ? 'EXPIRED' : 'valid'}
+                        <pre>User: ${payload.email || 'Unknown'}
+Roles: ${JSON.stringify(payload.roles || [])}
+Expires: ${new Date(payload.exp * 1000)}
+Current: ${new Date()}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="error">❌ Error decoding token: ${error.message}</div>`;
+            }
+        }
+
+        async function loginAndGetToken() {
+            const statusDiv = document.getElementById('loginStatus');
+            statusDiv.innerHTML = '<div>🔄 Logging in...</div>';
+            
+            try {
+                const response = await fetch('http://localhost:8080/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'bookmyhotel2025+newhotel001@gmail.com',
+                        password: 'password'
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Login failed: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                freshToken = data.token;
+                
+                statusDiv.innerHTML = `
+                    <div class="success">
+                        ✅ Login successful!
+                        <pre>User: ${data.email}
+Name: ${data.firstName} ${data.lastName}
+Hotel: ${data.hotelId}
+Roles: ${JSON.stringify(data.roles)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="error">❌ Login failed: ${error.message}</div>`;
+            }
+        }
+
+        async function testToggleAPI() {
+            const resultDiv = document.getElementById('apiTestResult');
+            
+            if (!freshToken) {
+                resultDiv.innerHTML = '<div class="warning">⚠️ Please get fresh token first</div>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<div>🔄 Testing API...</div>';
+            
+            try {
+                const response = await fetch('http://localhost:8080/api/hotels/1/shop/products/14/toggle-active', {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${freshToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            ✅ API call successful!
+                            <pre>${JSON.stringify(result, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    const errorText = await response.text();
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            ❌ API call failed: ${response.status}
+                            <pre>${errorText}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        function clearAndRefresh() {
+            if (confirm('This will clear all localStorage and refresh the page. Continue?')) {
+                localStorage.clear();
+                window.location.reload();
+            }
+        }
+
+        function setFreshToken() {
+            if (!freshToken) {
+                alert('Please get fresh token first');
+                return;
+            }
+            
+            localStorage.setItem('auth_token', freshToken);
+            alert('✅ Fresh token set in localStorage! Try your frontend action again.');
+        }
+
+        // Auto-check token on load
+        window.onload = checkToken;
+    </script>
+</body>
+</html>

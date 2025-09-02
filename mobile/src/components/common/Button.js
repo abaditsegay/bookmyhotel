@@ -1,5 +1,5 @@
 import React from 'react';
-import { TouchableOpacity, Text, ActivityIndicator, StyleSheet } from 'react-native';
+import { TouchableOpacity, Text, ActivityIndicator, StyleSheet, View } from 'react-native';
 import { colors, typography, spacing, borderRadius } from '../../styles/globalStyles';
 
 const Button = ({
@@ -92,10 +92,14 @@ const Button = ({
           color={variant === 'primary' || variant === 'secondary' ? colors.textOnPrimary : colors.primary} 
         />
       ) : (
-        <>
-          {icon && icon}
+        <View style={styles.buttonContent}>
+          {icon && (
+            <View style={styles.iconContainer}>
+              {icon}
+            </View>
+          )}
           <Text style={getTextStyle()}>{title}</Text>
-        </>
+        </View>
       )}
     </TouchableOpacity>
   );
@@ -180,6 +184,18 @@ const styles = StyleSheet.create({
   // Text state variants
   buttonTextDisabled: {
     color: colors.textDisabled,
+  },
+  
+  // Button content container
+  buttonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  
+  // Icon container with spacing
+  iconContainer: {
+    marginRight: spacing.sm,
   },
 });
 
