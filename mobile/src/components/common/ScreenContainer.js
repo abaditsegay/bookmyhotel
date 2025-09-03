@@ -52,6 +52,17 @@ const ScreenContainer = ({
         keyboardShouldPersistTaps="handled"
         scrollEnabled={true}
         nestedScrollEnabled={true}
+        // Android-specific props for better scrolling
+        overScrollMode="always"
+        scrollEventThrottle={16}
+        removeClippedSubviews={Platform.OS === 'android'}
+        // Enable momentum scrolling for better UX
+        decelerationRate="normal"
+        // Android-specific touch handling fix
+        {...(Platform.OS === 'android' && {
+          alwaysBounceVertical: false,
+          bounces: false,
+        })}
         refreshControl={
           onRefresh ? (
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -69,11 +80,16 @@ const ScreenContainer = ({
       return content;
     }
 
+    // Android-specific keyboard handling optimizations
+    const androidBehavior = Platform.OS === 'android' ? 'height' : 'padding';
+    const keyboardVerticalOffset = Platform.OS === 'ios' ? 0 : Platform.OS === 'android' ? -200 : 20;
+
     return (
       <KeyboardAvoidingView
         style={styles.keyboardContainer}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+        behavior={androidBehavior}
+        keyboardVerticalOffset={keyboardVerticalOffset}
+        enabled={Platform.OS !== 'android'} // Disable on Android since we use pan mode
       >
         {content}
       </KeyboardAvoidingView>
@@ -108,6 +124,11 @@ const styles = StyleSheet.create({
   
   scrollView: {
     flex: 1,
+    ...(Platform.OS === 'android' && {
+      // Android-specific optimizations
+      overflowX: 'hidden',
+      overflowY: 'auto',
+    }),
     ...(Platform.OS === 'web' && {
       overflow: 'auto', // Enable web scrolling
       height: '100vh', // Full viewport height on web

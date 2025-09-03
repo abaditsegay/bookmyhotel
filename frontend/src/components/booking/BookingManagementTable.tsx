@@ -88,6 +88,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
   const [size, setSize] = useState(10);
   const [totalElements, setTotalElements] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [snackbar, setSnackbar] = useState({ 
@@ -224,7 +225,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
         mode, 
         page,
         size,
-        searchTerm,
+        searchTerm: debouncedSearchTerm,
         tenant: tenant?.id
       });
       
@@ -237,7 +238,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
             token,
             page,
             size,
-            searchTerm,
+            debouncedSearchTerm,
             tenant?.id || 'default'
           );
         } else {
@@ -246,7 +247,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
             token,
             page,
             size,
-            searchTerm
+            debouncedSearchTerm
           );
         }
 
@@ -291,7 +292,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
 
     console.log('BookingManagementTable: useEffect triggered - loading bookings');
     loadData();
-  }, [page, size, token, mode, searchTerm, tenant, tenantId]);
+  }, [page, size, token, mode, debouncedSearchTerm, tenant, tenantId]);
 
   // Debug: Log bookings data when it changes
   useEffect(() => {
@@ -309,14 +310,9 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
   // Handle search with debounce - only reset page when search changes
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      console.log('BookingManagementTable: Search term changed, resetting page to 0 if needed');
-      setPage(prevPage => {
-        if (prevPage !== 0) {
-          console.log('BookingManagementTable: Resetting page from', prevPage, 'to 0');
-          return 0;
-        }
-        return prevPage;
-      });
+      console.log('BookingManagementTable: Search term changed, updating debounced search and resetting page');
+      setDebouncedSearchTerm(searchTerm);
+      setPage(0);
     }, 500);
 
     return () => clearTimeout(timeoutId);
@@ -555,11 +551,30 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
 
   return (
     <Box>
-      {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-          {title}
-        </Typography>
+      {/* Header with Search and Action Buttons */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, gap: 2 }}>
+        {title && (
+          <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+            {title}
+          </Typography>
+        )}
+        
+        {/* Search Input */}
+        <TextField
+          placeholder="Search by guest name, confirmation number, or room..."
+          value={searchTerm}
+          onChange={handleSearchChange}
+          InputProps={searchInputProps}
+          disabled={loading}
+          sx={{ 
+            flexGrow: 1,
+            maxWidth: 400,
+            ml: title ? 2 : 0
+          }}
+          size="small"
+        />
+        
+        {/* Action Buttons */}
         <Box sx={{ display: 'flex', gap: 2 }}>
           <Button 
             variant="outlined" 
@@ -583,18 +598,6 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
             </Button>
           )}
         </Box>
-      </Box>
-
-      {/* Search */}
-      <Box sx={{ mb: 3 }}>
-        <TextField
-          fullWidth
-          placeholder="Search by guest name, confirmation number, or room..."
-          value={searchTerm}
-          onChange={handleSearchChange}
-          InputProps={searchInputProps}
-          disabled={loading}
-        />
       </Box>
 
       {/* Bookings Table */}

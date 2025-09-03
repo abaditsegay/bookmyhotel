@@ -8,6 +8,7 @@ import {
   ScrollView,
   RefreshControl,
   FlatList,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -170,6 +171,11 @@ const HotelDetailsScreen = ({ navigation, route }) => {
           !isAvailable && styles.roomCardDisabled,
         ]}
         onPress={() => isAvailable && handleRoomTypeSelect(roomType)}
+        // Android-specific touch optimizations
+        {...(Platform.OS === 'android' && {
+          activeOpacity: 0.7,
+          delayPressIn: 0,
+        })}
       >
         <View style={styles.roomHeader}>
           <View style={styles.roomInfo}>
@@ -239,6 +245,11 @@ const HotelDetailsScreen = ({ navigation, route }) => {
             ]}
             onPress={() => isAvailable && handleRoomTypeSelect(roomType)}
             disabled={!isAvailable}
+            // Android-specific touch optimizations
+            {...(Platform.OS === 'android' && {
+              activeOpacity: 0.8,
+              delayPressIn: 0,
+            })}
           >
             <Text style={[
               styles.selectButtonText,
@@ -277,13 +288,202 @@ const HotelDetailsScreen = ({ navigation, route }) => {
 
   console.log('✅ About to render hotel details. Hotel:', hotel?.name, 'Room Types:', roomTypes?.length);
   
+  // Android-specific rendering with simplified scroll structure
+  if (Platform.OS === 'android') {
+    return (
+      <View style={styles.container}>
+        <ScrollView
+          style={styles.androidScrollView}
+          contentContainerStyle={styles.androidContentContainer}
+          showsVerticalScrollIndicator={true}
+          keyboardShouldPersistTaps="handled"
+          nestedScrollEnabled={false}
+          overScrollMode="auto"
+          scrollEventThrottle={1}
+          bounces={false}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        >
+          {/* Hotel Information */}
+          <View style={styles.hotelSection}>
+            <Card style={styles.hotelCard}>
+              <Text style={styles.hotelName}>{hotel.name}</Text>
+              
+              <View style={styles.hotelLocation}>
+                <Ionicons name="location-outline" size={16} color={colors.textSecondary} />
+                <Text style={styles.hotelLocationText}>
+                  {hotel.address}, {hotel.city}
+                </Text>
+              </View>
+
+              {hotel.rating && (
+                <View style={styles.hotelRating}>
+                  <Ionicons name="star" size={16} color={colors.secondary} />
+                  <Text style={styles.hotelRatingText}>
+                    {hotel.rating} out of 5
+                  </Text>
+                </View>
+              )}
+
+              {hotel.description && (
+                <Text style={styles.hotelDescription}>{hotel.description}</Text>
+              )}
+
+              {/* Contact Information */}
+              {(hotel.phone || hotel.email) && (
+                <View style={styles.contactSection}>
+                  <Text style={styles.contactTitle}>Contact Information</Text>
+                  
+                  {hotel.phone && (
+                    <View style={styles.contactItem}>
+                      <Ionicons name="call-outline" size={16} color={colors.textSecondary} />
+                      <Text style={styles.contactText}>{hotel.phone}</Text>
+                    </View>
+                  )}
+                  
+                  {hotel.email && (
+                    <View style={styles.contactItem}>
+                      <Ionicons name="mail-outline" size={16} color={colors.textSecondary} />
+                      <Text style={styles.contactText}>{hotel.email}</Text>
+                    </View>
+                  )}
+                </View>
+              )}
+
+              {/* Amenities */}
+              {hotel.amenities && hotel.amenities.length > 0 && (
+                <View style={styles.amenitiesSection}>
+                  <Text style={styles.amenitiesTitle}>Hotel Amenities</Text>
+                  <View style={styles.amenitiesList}>
+                    {hotel.amenities.map((amenity, index) => (
+                      <View key={index} style={styles.amenityItem}>
+                        <Ionicons name="checkmark-circle" size={16} color={colors.success} />
+                        <Text style={styles.amenityText}>{amenity}</Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              )}
+            </Card>
+          </View>
+
+          {/* Search Summary */}
+          {searchParams && (
+            <View style={styles.searchSummarySection}>
+              <Card style={styles.searchSummaryCard}>
+                <Text style={styles.searchSummaryTitle}>Your Search</Text>
+                <View style={styles.searchSummaryDetails}>
+                  <View style={styles.searchSummaryItem}>
+                    <Ionicons name="calendar-outline" size={16} color={colors.primary} />
+                    <Text style={styles.searchSummaryText}>
+                      {formatDateForDisplay(new Date(searchParams.checkInDate))} - {formatDateForDisplay(new Date(searchParams.checkOutDate))}
+                    </Text>
+                  </View>
+                  
+                  <View style={styles.searchSummaryItem}>
+                    <Ionicons name="people-outline" size={16} color={colors.primary} />
+                    <Text style={styles.searchSummaryText}>
+                      {searchParams.guests} {searchParams.guests === 1 ? 'guest' : 'guests'}
+                    </Text>
+                  </View>
+                  
+                  <View style={styles.searchSummaryItem}>
+                    <Ionicons name="time-outline" size={16} color={colors.primary} />
+                    <Text style={styles.searchSummaryText}>
+                      {getNights()} {getNights() === 1 ? 'night' : 'nights'}
+                    </Text>
+                  </View>
+                </View>
+              </Card>
+            </View>
+          )}
+
+          {/* Available Room Types - Android optimized */}
+          <View style={styles.roomsSection}>
+            <Text style={styles.roomsSectionTitle}>
+              Available Room Types ({roomTypes.length})
+            </Text>
+            
+            {roomTypes.length > 0 ? (
+              <View style={styles.roomsListContainer}>
+                {roomTypes.map((roomType, index) => (
+                  <View key={roomType.roomType || roomType.id || index}>
+                    {renderRoomTypeItem({ item: roomType })}
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <Card style={styles.noRoomsCard}>
+                <View style={styles.noRoomsContent}>
+                  <Ionicons name="bed-outline" size={48} color={colors.textSecondary} />
+                  <Text style={styles.noRoomsTitle}>No rooms available</Text>
+                  <Text style={styles.noRoomsText}>
+                    No rooms match your search criteria. Try adjusting your dates or guest count.
+                  </Text>
+                  <Button
+                    title="Modify Search"
+                    variant="outline"
+                    onPress={() => navigation.goBack()}
+                    style={styles.modifySearchButton}
+                  />
+                </View>
+              </Card>
+            )}
+          </View>
+
+          {/* Booking Button */}
+          {roomTypes.length > 0 && (
+            <View style={styles.bookingSection}>
+              <View style={styles.bookingInfo}>
+                {selectedRoomType ? (
+                  <View>
+                    <Text style={styles.selectedRoomText}>
+                      {selectedRoomType.roomTypeName || selectedRoomType.roomType} ({selectedRoomType.availableCount} available)
+                    </Text>
+                    <Text style={styles.selectedRoomPrice}>
+                      ETB {calculateTotalPriceForRoomType(selectedRoomType).toLocaleString()}
+                      {getNights() > 1 && (
+                        <Text style={styles.nightsText}> ({getNights()} nights)</Text>
+                      )}
+                    </Text>
+                  </View>
+                ) : (
+                  <Text style={styles.selectRoomPrompt}>Select a room type to book</Text>
+                )}
+              </View>
+              
+              <Button
+                title="Book Now"
+                onPress={handleBookNow}
+                disabled={!selectedRoomType || selectedRoomType.availableCount <= 0}
+                style={styles.bookButton}
+              />
+            </View>
+          )}
+        </ScrollView>
+      </View>
+    );
+  }
+  
+  // iOS rendering with ScreenContainer
   return (
     <ScreenContainer 
       scrollable={true}
       refreshing={refreshing}
       onRefresh={onRefresh}
-      showsVerticalScrollIndicator={true}
+      showsVerticalScrollIndicator={Platform.OS !== 'android'} // Hide on Android to prevent conflicts
       contentContainerStyle={styles.contentContainer}
+      keyboardShouldPersistTaps="handled"
+      // Android-specific overrides to fix scrolling issues
+      {...(Platform.OS === 'android' && {
+        nestedScrollEnabled: true,
+        overScrollMode: 'auto',
+        scrollEventThrottle: 1, // More responsive on Android
+        removeClippedSubviews: false,
+        disableScrollViewPanResponder: false, // Re-enable pan responder
+        bounces: false, // Disable iOS-style bouncing on Android
+      })}
     >
         {/* Hotel Information */}
         <View style={styles.hotelSection}>
@@ -386,9 +586,28 @@ const HotelDetailsScreen = ({ navigation, route }) => {
           </Text>
           
           {roomTypes.length > 0 ? (
-            <View style={styles.roomsList}>
-              {roomTypes.map((roomType) => renderRoomTypeItem({ item: roomType }))}
-            </View>
+            Platform.OS === 'android' ? (
+              // This code path won't be reached since Android has separate rendering above
+              <View style={styles.roomsListContainer}>
+                {roomTypes.map((roomType, index) => (
+                  <View key={roomType.roomType || roomType.id || index}>
+                    {renderRoomTypeItem({ item: roomType })}
+                  </View>
+                ))}
+              </View>
+            ) : (
+              // iOS: Keep FlatList for better performance
+              <FlatList
+                data={roomTypes}
+                renderItem={renderRoomTypeItem}
+                keyExtractor={(item) => item.roomType || item.id}
+                scrollEnabled={false}
+                nestedScrollEnabled={true}
+                showsVerticalScrollIndicator={false}
+                removeClippedSubviews={false}
+                contentContainerStyle={styles.roomsListContainer}
+              />
+            )
           ) : (
             <Card style={styles.noRoomsCard}>
               <View style={styles.noRoomsContent}>
@@ -448,9 +667,20 @@ const styles = StyleSheet.create({
     height: '100%', // Ensure full height for web
   },
   
+  // Android-specific styles
+  androidScrollView: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  
+  androidContentContainer: {
+    paddingBottom: spacing.xl,
+    flexGrow: 1,
+  },
+  
   contentContainer: {
     paddingBottom: spacing.xl,
-    minHeight: '100%', // Ensure content can exceed viewport
+    minHeight: Platform.OS === 'android' ? 'auto' : '100%', // Android-specific height handling
     flexGrow: 1, // Allow content to expand
   },
   
@@ -600,6 +830,10 @@ const styles = StyleSheet.create({
   
   roomsList: {
     // No additional styles needed
+  },
+  
+  roomsListContainer: {
+    paddingBottom: spacing.md,
   },
   
   roomCard: {

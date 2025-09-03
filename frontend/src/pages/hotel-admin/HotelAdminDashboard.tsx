@@ -390,13 +390,11 @@ const HotelAdminDashboard: React.FC = () => {
           {/* Hotel Details Tab */}
           <Box>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-                Hotel Information
-              </Typography>
               <Button
                 variant="contained"
                 onClick={handleEditHotel}
                 disabled={hotelLoading}
+                sx={{ ml: 'auto' }}
               >
                 Edit Hotel Details
               </Button>
@@ -487,7 +485,7 @@ const HotelAdminDashboard: React.FC = () => {
           {renderBackToReportsButton()}
           <BookingManagementTable
             mode="hotel-admin"
-            title="Booking Management"
+            title=""
             showActions={true}
             showCheckInOut={true}
             currentTab={activeTab}
@@ -512,14 +510,12 @@ const HotelAdminDashboard: React.FC = () => {
           {/* Reports Tab */}
           <Box>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-                Reports & Analytics
-              </Typography>
               <Button
                 variant="outlined"
                 startIcon={<Refresh />}
                 onClick={loadReportsData}
                 disabled={reportsData.loading}
+                sx={{ ml: 'auto' }}
               >
                 Refresh Data
               </Button>

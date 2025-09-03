@@ -21,7 +21,10 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.anonymous.mobile"
+      "package": "com.anonymous.mobile",
+      "softwareKeyboardLayoutMode": "pan",
+      "navigationBarStyle": "light-content",
+      "statusBarStyle": "light-content"
     },
     "web": {
       "favicon": "./assets/favicon.png"

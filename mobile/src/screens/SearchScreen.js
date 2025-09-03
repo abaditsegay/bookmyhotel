@@ -355,7 +355,18 @@ const SearchScreen = ({ navigation }) => {
                 renderItem={renderHotelItem}
                 keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
                 scrollEnabled={false}
+                nestedScrollEnabled={true}
                 showsVerticalScrollIndicator={false}
+                removeClippedSubviews={Platform.OS === 'android'}
+                getItemLayout={(data, index) => ({
+                  length: 300, // Approximate hotel card height
+                  offset: 300 * index,
+                  index,
+                })}
+                initialNumToRender={5}
+                maxToRenderPerBatch={5}
+                windowSize={10}
+                contentContainerStyle={styles.resultsListContainer}
               />
             ) : hasSearched && !loading && (
               <View style={styles.noResultsContainer}>
@@ -525,6 +536,10 @@ const styles = StyleSheet.create({
   
   resultsHeader: {
     marginBottom: spacing.md,
+  },
+  
+  resultsListContainer: {
+    paddingBottom: spacing.md,
   },
   
   // Hotel card styles

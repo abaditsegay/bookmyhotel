@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Alert,
   RefreshControl,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
@@ -111,6 +112,9 @@ const HomeScreen = ({ navigation }) => {
       refreshing={refreshing}
       onRefresh={onRefresh}
       paddingHorizontal={false}
+      // Android-specific scroll optimizations
+      scrollEventThrottle={Platform.OS === 'android' ? 16 : undefined}
+      removeClippedSubviews={Platform.OS === 'android'}
     >
       {/* Welcome Section */}
       <View style={styles.welcomeSection}>
@@ -142,6 +146,9 @@ const HomeScreen = ({ navigation }) => {
               horizontal
               showsHorizontalScrollIndicator={false}
               style={styles.destinationsScroll}
+              nestedScrollEnabled={true}
+              decelerationRate={Platform.OS === 'android' ? 'fast' : 'normal'}
+              scrollEventThrottle={Platform.OS === 'android' ? 16 : undefined}
             >
               {destinations.map((destination, index) => (
                 <TouchableOpacity

@@ -220,6 +220,8 @@ const BookingScreen = ({ route, navigation }) => {
   return (
     <ScreenContainer
       keyboardAvoiding={true}
+      scrollEventThrottle={Platform.OS === 'android' ? 16 : undefined}
+      removeClippedSubviews={Platform.OS === 'android'}
     >
       {/* Booking Summary */}
       <Card style={styles.summaryCard}>

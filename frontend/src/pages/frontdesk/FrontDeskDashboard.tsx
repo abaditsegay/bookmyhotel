@@ -215,7 +215,7 @@ const FrontDeskDashboard: React.FC = () => {
       <TabPanel value={activeTab} index={0}>
         <BookingManagementTable
           mode="front-desk"
-          title="Booking Management"
+          title=""
           showActions={true}
           showCheckInOut={true}
           currentTab={activeTab}

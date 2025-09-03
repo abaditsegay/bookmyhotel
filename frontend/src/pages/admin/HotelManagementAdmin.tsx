@@ -314,6 +314,32 @@ const HotelManagementAdmin: React.FC = () => {
 
   const handleRegistrationSubmit = async () => {
     try {
+      // Basic validation
+      if (!registrationForm.hotelName.trim()) {
+        setError('Hotel name is required');
+        return;
+      }
+      if (!registrationForm.address.trim()) {
+        setError('Address is required');
+        return;
+      }
+      if (!registrationForm.city.trim()) {
+        setError('City is required');
+        return;
+      }
+      if (!registrationForm.country.trim()) {
+        setError('Country is required');
+        return;
+      }
+      if (!registrationForm.contactEmail.trim()) {
+        setError('Contact email is required');
+        return;
+      }
+      if (!registrationForm.contactPerson.trim()) {
+        setError('Contact person is required');
+        return;
+      }
+
       const response = await fetch('/api/admin/hotel-registrations', {
         method: 'POST',
         headers: {
@@ -325,19 +351,12 @@ const HotelManagementAdmin: React.FC = () => {
           description: registrationForm.description,
           address: registrationForm.address,
           city: registrationForm.city,
-          state: registrationForm.state,
           country: registrationForm.country,
-          zipCode: registrationForm.zipCode,
           phone: registrationForm.phone,
           contactEmail: registrationForm.contactEmail,
           contactPerson: registrationForm.contactPerson,
           licenseNumber: registrationForm.licenseNumber,
-          taxId: registrationForm.taxId,
-          websiteUrl: registrationForm.websiteUrl,
-          facilityAmenities: registrationForm.facilityAmenities,
-          numberOfRooms: registrationForm.numberOfRooms ? parseInt(registrationForm.numberOfRooms) : null,
-          checkInTime: registrationForm.checkInTime,
-          checkOutTime: registrationForm.checkOutTime
+          taxId: registrationForm.taxId
         })
       });
 
@@ -369,7 +388,9 @@ const HotelManagementAdmin: React.FC = () => {
           loadRegistrationStatistics();
         }
       } else {
-        throw new Error('Failed to submit registration');
+        const errorData = await response.text();
+        console.error('Registration failed:', response.status, errorData);
+        throw new Error(`Failed to submit registration: ${response.status} ${errorData}`);
       }
     } catch (err) {
       console.error('Error submitting registration:', err);

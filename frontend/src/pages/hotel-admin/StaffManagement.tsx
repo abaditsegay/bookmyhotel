@@ -288,13 +288,11 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
   return (
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-          Staff Management
-        </Typography>
           <Button
             variant="contained"
             startIcon={<PersonAddIcon />}
             onClick={() => setCreateDialogOpen(true)}
+            sx={{ ml: 'auto' }}
           >
             Add New Staff
           </Button>

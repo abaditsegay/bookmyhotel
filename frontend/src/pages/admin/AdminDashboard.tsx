@@ -246,16 +246,11 @@ const AdminDashboard: React.FC = () => {
           <Box sx={{ p: 3 }}>
             {/* Header with Register Hotel Button */}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Box>
-                <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
-                  Hotel Management
-                </Typography>
-              </Box>
               <Button
                 variant="contained"
                 startIcon={<AddIcon />}
                 onClick={() => navigate(`/admin/register-hotel?returnTab=${currentTab}`)}
-                sx={{ height: 'fit-content' }}
+                sx={{ height: 'fit-content', ml: 'auto' }}
               >
                 Register Hotel
               </Button>
@@ -407,16 +402,11 @@ const AdminDashboard: React.FC = () => {
           <Box sx={{ p: 3 }}>
             {/* Header with Add User Button */}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Box>
-                <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
-                  User Management
-                </Typography>
-              </Box>
               <Button
                 variant="contained"
                 startIcon={<PersonAddIcon />}
                 onClick={() => navigate(`/admin/add-user?returnTab=${currentTab}`)}
-                sx={{ height: 'fit-content' }}
+                sx={{ height: 'fit-content', ml: 'auto' }}
               >
                 Add User
               </Button>

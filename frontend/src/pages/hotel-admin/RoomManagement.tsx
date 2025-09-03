@@ -25,6 +25,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  SelectChangeEvent,
   Grid,
   Card,
   CardContent,
@@ -161,18 +162,38 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
     loadRooms();
   }, [loadRooms]);
 
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  // Memoized search handler to prevent input focus loss
+  const handleSearchChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
     setPage(0);
-  };
+  }, []);
 
-  const handleFilterChange = (filterName: keyof RoomFilters, value: string) => {
+  // Memoized filter handler to prevent input focus loss
+  const handleFilterChange = React.useCallback((filterName: keyof RoomFilters, value: string) => {
     setFilters(prev => ({
       ...prev,
       [filterName]: value
     }));
     setPage(0);
-  };
+  }, []);
+
+  // Memoized handlers for specific filter changes
+  const handleStatusFilterChange = React.useCallback((e: SelectChangeEvent) => {
+    handleFilterChange('status', e.target.value);
+  }, [handleFilterChange]);
+
+  const handleRoomTypeFilterChange = React.useCallback((e: SelectChangeEvent) => {
+    handleFilterChange('roomType', e.target.value);
+  }, [handleFilterChange]);
+
+  // Memoized InputProps to prevent re-creation on every render
+  const searchInputProps = React.useMemo(() => ({
+    startAdornment: (
+      <InputAdornment position="start">
+        <SearchIcon />
+      </InputAdornment>
+    ),
+  }), []);
 
   const handlePageChange = (_: unknown, newPage: number) => {
     setPage(newPage);
@@ -406,13 +427,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
             onChange={handleSearchChange}
             size="small"
             sx={{ minWidth: 200 }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              ),
-            }}
+            InputProps={searchInputProps}
           />
           
           <FormControl size="small" sx={{ minWidth: 150 }}>
@@ -420,7 +435,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
             <Select
               value={filters.status}
               label="Status Filter"
-              onChange={(e) => handleFilterChange('status', e.target.value)}
+              onChange={handleStatusFilterChange}
             >
               <MenuItem value="">All Statuses</MenuItem>
               {ROOM_STATUS_OPTIONS.map((status) => (
@@ -436,7 +451,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
             <Select
               value={filters.roomType}
               label="Room Type"
-              onChange={(e) => handleFilterChange('roomType', e.target.value)}
+              onChange={handleRoomTypeFilterChange}
             >
               <MenuItem value="">All Types</MenuItem>
               {roomTypes.map(type => (

@@ -30,7 +30,16 @@ class AdminApiService {
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
+      let errorText = '';
+      try {
+        // Try to get error as JSON first
+        const errorJson = await response.json();
+        errorText = errorJson.message || errorJson.error || JSON.stringify(errorJson);
+      } catch {
+        // Fallback to text if JSON parsing fails
+        errorText = await response.text();
+      }
+      console.error(`API Error Details: ${response.status} ${response.statusText}`, errorText);
       throw new Error(`API Error: ${response.status} ${response.statusText} - ${errorText}`);
     }
 
