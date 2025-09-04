@@ -20,6 +20,11 @@ public class HotelRegistrationResponse {
     private String contactPerson;
     private String licenseNumber;
     private String taxId;
+    private String websiteUrl;
+    private String facilityAmenities;
+    private Integer numberOfRooms;
+    private String checkInTime;
+    private String checkOutTime;
     private RegistrationStatus status;
     private LocalDateTime submittedAt;
     private LocalDateTime reviewedAt;
@@ -118,6 +123,46 @@ public class HotelRegistrationResponse {
     
     public void setTaxId(String taxId) {
         this.taxId = taxId;
+    }
+    
+    public String getWebsiteUrl() {
+        return websiteUrl;
+    }
+    
+    public void setWebsiteUrl(String websiteUrl) {
+        this.websiteUrl = websiteUrl;
+    }
+    
+    public String getFacilityAmenities() {
+        return facilityAmenities;
+    }
+    
+    public void setFacilityAmenities(String facilityAmenities) {
+        this.facilityAmenities = facilityAmenities;
+    }
+    
+    public Integer getNumberOfRooms() {
+        return numberOfRooms;
+    }
+    
+    public void setNumberOfRooms(Integer numberOfRooms) {
+        this.numberOfRooms = numberOfRooms;
+    }
+    
+    public String getCheckInTime() {
+        return checkInTime;
+    }
+    
+    public void setCheckInTime(String checkInTime) {
+        this.checkInTime = checkInTime;
+    }
+    
+    public String getCheckOutTime() {
+        return checkOutTime;
+    }
+    
+    public void setCheckOutTime(String checkOutTime) {
+        this.checkOutTime = checkOutTime;
     }
     
     public RegistrationStatus getStatus() {

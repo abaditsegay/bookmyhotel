@@ -82,6 +82,13 @@ public class HotelRegistrationService {
         registration.setContactPerson(request.getContactPerson());
         registration.setLicenseNumber(request.getLicenseNumber());
         registration.setTaxId(request.getTaxId());
+        
+        // Map the new fields
+        registration.setWebsiteUrl(request.getWebsiteUrl());
+        registration.setFacilityAmenities(request.getFacilityAmenities());
+        registration.setNumberOfRooms(request.getNumberOfRooms());
+        registration.setCheckInTime(request.getCheckInTime());
+        registration.setCheckOutTime(request.getCheckOutTime());
 
         registration = registrationRepository.save(registration);
 
@@ -372,6 +379,11 @@ public class HotelRegistrationService {
         response.setContactPerson(registration.getContactPerson());
         response.setLicenseNumber(registration.getLicenseNumber());
         response.setTaxId(registration.getTaxId());
+        response.setWebsiteUrl(registration.getWebsiteUrl());
+        response.setFacilityAmenities(registration.getFacilityAmenities());
+        response.setNumberOfRooms(registration.getNumberOfRooms());
+        response.setCheckInTime(registration.getCheckInTime());
+        response.setCheckOutTime(registration.getCheckOutTime());
         response.setStatus(registration.getStatus());
         response.setSubmittedAt(registration.getSubmittedAt());
         response.setReviewedAt(registration.getReviewedAt());

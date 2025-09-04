@@ -294,7 +294,7 @@ const Navbar: React.FC = () => {
               </ListItemIcon>
               <ListItemText primary="Find Booking" />
             </ListItem>
-            <ListItem onClick={() => handleNavigation('/register-hotel-admin')} sx={{ cursor: 'pointer' }}>
+            <ListItem onClick={() => handleNavigation('/register-hotel')} sx={{ cursor: 'pointer' }}>
               <ListItemIcon>
                 <RegisterIcon />
               </ListItemIcon>
@@ -487,7 +487,7 @@ const Navbar: React.FC = () => {
                     </Button>
                     <Button
                       color="inherit"
-                      onClick={() => handleNavigation('/register-hotel-admin')}
+                      onClick={() => handleNavigation('/register-hotel')}
                       sx={{
                         borderRadius: 2,
                         fontSize: '0.8rem', // Smaller font size

@@ -1,59 +1,29 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Container,
   Typography,
-  Paper,
   Box,
-  TextField,
   Button,
-  Grid,
+  Paper,
   Alert,
-  Stepper,
-  Step,
-  StepLabel,
-  IconButton,
-  Card,
-  CardContent,
+  TextField,
+  Grid
 } from '@mui/material';
-import {
-  ArrowBack,
-  Send,
-  Hotel,
-  CheckCircle,
-} from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
-
-interface HotelRegistrationData {
-  hotelName: string;
-  description: string;
-  address: string;
-  city: string;
-  state: string;
-  country: string;
-  zipCode: string;
-  phone: string;
-  contactEmail: string;
-  contactPerson: string;
-  licenseNumber: string;
-  taxId: string;
-  websiteUrl: string;
-  facilityAmenities: string;
-  numberOfRooms: string;
-  checkInTime: string;
-  checkOutTime: string;
-}
 
 const PublicHotelRegistration: React.FC = () => {
   const navigate = useNavigate();
-  const [activeStep, setActiveStep] = useState(0);
-  const [formData, setFormData] = useState<HotelRegistrationData>({
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  // Registration form state - same as admin
+  const [registrationForm, setRegistrationForm] = useState({
     hotelName: '',
     description: '',
     address: '',
     city: '',
-    state: '',
     country: '',
-    zipCode: '',
     phone: '',
     contactEmail: '',
     contactPerson: '',
@@ -65,495 +35,305 @@ const PublicHotelRegistration: React.FC = () => {
     checkInTime: '15:00',
     checkOutTime: '11:00'
   });
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState('');
-  const [registrationId, setRegistrationId] = useState<number | null>(null);
 
-  const steps = [
-    'Hotel Information',
-    'Location Details', 
-    'Contact Information',
-    'Business Details',
-    'Additional Information'
-  ];
-
-  const handleInputChange = (field: keyof HotelRegistrationData) => (event: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
+  const handleRegistrationFormChange = (field: string, value: string) => {
+    setRegistrationForm(prev => ({
       ...prev,
-      [field]: event.target.value
+      [field]: value
     }));
   };
 
-  const handleNext = () => {
-    setActiveStep(prev => prev + 1);
-  };
-
-  const handleBack = () => {
-    setActiveStep(prev => prev - 1);
-  };
-
-  const handleSubmit = async () => {
-    setLoading(true);
-    setError('');
-    
+  const handleRegistrationSubmit = async () => {
     try {
-      // Submit registration to public API endpoint with all fields
-      const submissionData = {
-        hotelName: formData.hotelName,
-        description: formData.description,
-        address: formData.address,
-        city: formData.city,
-        state: formData.state,
-        country: formData.country,
-        zipCode: formData.zipCode,
-        phone: formData.phone,
-        contactEmail: formData.contactEmail,
-        contactPerson: formData.contactPerson,
-        licenseNumber: formData.licenseNumber,
-        taxId: formData.taxId,
-        websiteUrl: formData.websiteUrl,
-        facilityAmenities: formData.facilityAmenities,
-        numberOfRooms: formData.numberOfRooms ? parseInt(formData.numberOfRooms) : null,
-        checkInTime: formData.checkInTime,
-        checkOutTime: formData.checkOutTime
-      };
+      setLoading(true);
+      setError(null);
 
       const response = await fetch('/api/public/hotel-registration/submit', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify(submissionData),
+        body: JSON.stringify({
+          hotelName: registrationForm.hotelName,
+          description: registrationForm.description,
+          address: registrationForm.address,
+          city: registrationForm.city,
+          country: registrationForm.country,
+          phone: registrationForm.phone,
+          contactEmail: registrationForm.contactEmail,
+          contactPerson: registrationForm.contactPerson,
+          licenseNumber: registrationForm.licenseNumber,
+          taxId: registrationForm.taxId,
+          websiteUrl: registrationForm.websiteUrl,
+          facilityAmenities: registrationForm.facilityAmenities,
+          numberOfRooms: registrationForm.numberOfRooms ? parseInt(registrationForm.numberOfRooms) : null,
+          checkInTime: registrationForm.checkInTime,
+          checkOutTime: registrationForm.checkOutTime
+        })
       });
 
-      if (!response.ok) {
-        const errorMessage = response.headers.get('Error-Message') || 'Failed to register hotel';
-        throw new Error(errorMessage);
+      if (response.ok) {
+        setRegistrationForm({
+          hotelName: '',
+          description: '',
+          address: '',
+          city: '',
+          country: '',
+          phone: '',
+          contactEmail: '',
+          contactPerson: '',
+          licenseNumber: '',
+          taxId: '',
+          websiteUrl: '',
+          facilityAmenities: '',
+          numberOfRooms: '',
+          checkInTime: '15:00',
+          checkOutTime: '11:00'
+        });
+        setSuccess('Hotel registration submitted successfully! We will review your application and contact you soon.');
+        setTimeout(() => {
+          navigate('/');
+        }, 3000);
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to submit registration');
       }
-
-      const result = await response.json();
-      setRegistrationId(result.id);
-      setSuccess(true);
-      
-    } catch (err: any) {
-      console.error('Error registering hotel:', err);
-      setError(err.message || 'Failed to register hotel. Please try again.');
+    } catch (err) {
+      console.error('Error submitting registration:', err);
+      setError(err instanceof Error ? err.message : 'Failed to submit hotel registration. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const renderStepContent = (step: number) => {
-    switch (step) {
-      case 0:
-        return (
-          <Grid container spacing={3}>
+  return (
+    <Container maxWidth="md">
+      <Box sx={{ py: 4 }}>
+        <Typography variant="h4" component="h1" gutterBottom>
+          Register Your Hotel
+        </Typography>
+
+        {error && (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {error}
+          </Alert>
+        )}
+
+        {success && (
+          <Alert severity="success" sx={{ mb: 3 }}>
+            {success}
+          </Alert>
+        )}
+
+        {/* Registration Form */}
+        <Paper sx={{ p: 4 }}>
+          <Typography variant="h6" gutterBottom>
+            Hotel Information
+          </Typography>
+          <Typography variant="body2" color="text.secondary" paragraph>
+            Fill out the form below to register your hotel with our platform.
+          </Typography>
+
+          <Grid container spacing={2} sx={{ mt: 1 }}>
             <Grid item xs={12} sm={6}>
               <TextField
-                fullWidth
                 label="Hotel Name"
-                value={formData.hotelName}
-                onChange={handleInputChange('hotelName')}
+                fullWidth
                 required
+                value={registrationForm.hotelName}
+                onChange={(e) => handleRegistrationFormChange('hotelName', e.target.value)}
                 placeholder="Enter your hotel name"
               />
             </Grid>
+            
             <Grid item xs={12} sm={6}>
               <TextField
-                fullWidth
                 label="Contact Person"
-                value={formData.contactPerson}
-                onChange={handleInputChange('contactPerson')}
+                fullWidth
                 required
-                placeholder="Name of the primary contact person"
+                value={registrationForm.contactPerson}
+                onChange={(e) => handleRegistrationFormChange('contactPerson', e.target.value)}
+                placeholder="Enter contact person name"
               />
             </Grid>
+            
             <Grid item xs={12}>
               <TextField
-                fullWidth
                 label="Description"
-                value={formData.description}
-                onChange={handleInputChange('description')}
                 multiline
-                rows={4}
-                placeholder="Describe your hotel and its amenities"
+                rows={3}
+                fullWidth
+                value={registrationForm.description}
+                onChange={(e) => handleRegistrationFormChange('description', e.target.value)}
+                placeholder="Describe your hotel"
               />
             </Grid>
-          </Grid>
-        );
-      
-      case 1:
-        return (
-          <Grid container spacing={3}>
+            
             <Grid item xs={12}>
               <TextField
-                fullWidth
                 label="Address"
-                value={formData.address}
-                onChange={handleInputChange('address')}
+                fullWidth
                 required
-                placeholder="Enter your hotel's full address"
+                value={registrationForm.address}
+                onChange={(e) => handleRegistrationFormChange('address', e.target.value)}
+                placeholder="Enter your hotel address"
               />
             </Grid>
-            <Grid item xs={12} md={6}>
+            
+            <Grid item xs={12} sm={6}>
               <TextField
-                fullWidth
                 label="City"
-                value={formData.city}
-                onChange={handleInputChange('city')}
+                fullWidth
                 required
+                value={registrationForm.city}
+                onChange={(e) => handleRegistrationFormChange('city', e.target.value)}
                 placeholder="Enter city"
               />
             </Grid>
-            <Grid item xs={12} md={6}>
+
+            <Grid item xs={12} sm={6}>
               <TextField
-                fullWidth
-                label="State/Province"
-                value={formData.state}
-                onChange={handleInputChange('state')}
-                placeholder="Enter state or province"
-              />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
                 label="Country"
-                value={formData.country}
-                onChange={handleInputChange('country')}
+                fullWidth
                 required
+                value={registrationForm.country}
+                onChange={(e) => handleRegistrationFormChange('country', e.target.value)}
                 placeholder="Enter country"
               />
             </Grid>
-            <Grid item xs={12} md={6}>
+            
+            <Grid item xs={12} sm={6}>
               <TextField
+                label="Phone"
                 fullWidth
-                label="ZIP/Postal Code"
-                value={formData.zipCode}
-                onChange={handleInputChange('zipCode')}
-                placeholder="Enter ZIP/postal code"
-              />
-            </Grid>
-          </Grid>
-        );
-      
-      case 2:
-        return (
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                label="Phone Number"
-                value={formData.phone}
-                onChange={handleInputChange('phone')}
                 required
-                placeholder="Enter contact phone number"
+                value={registrationForm.phone}
+                onChange={(e) => handleRegistrationFormChange('phone', e.target.value)}
+                placeholder="Enter phone number"
               />
             </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                label="Email Address"
-                type="email"
-                value={formData.contactEmail}
-                onChange={handleInputChange('contactEmail')}
-                required
-                placeholder="Enter contact email"
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Website URL"
-                value={formData.websiteUrl}
-                onChange={handleInputChange('websiteUrl')}
-                placeholder="Enter your hotel's website (optional)"
-              />
-            </Grid>
-          </Grid>
-        );
-      
-      case 3:
-        return (
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                label="Business License Number"
-                value={formData.licenseNumber}
-                onChange={handleInputChange('licenseNumber')}
-                placeholder="Enter business license number"
-              />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                label="Tax ID"
-                value={formData.taxId}
-                onChange={handleInputChange('taxId')}
-                placeholder="Enter tax identification number"
-              />
-            </Grid>
-          </Grid>
-        );
 
-      case 4:
-        return (
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
+            <Grid item xs={12} sm={6}>
               <TextField
+                label="Contact Email"
+                type="email"
                 fullWidth
-                label="Facility Amenities"
-                value={formData.facilityAmenities}
-                onChange={handleInputChange('facilityAmenities')}
-                multiline
-                rows={3}
-                placeholder="Describe your amenities (WiFi, Pool, Spa, Restaurant, etc.)"
+                required
+                value={registrationForm.contactEmail}
+                onChange={(e) => handleRegistrationFormChange('contactEmail', e.target.value)}
+                placeholder="Please fill out this field"
               />
             </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="License Number"
+                fullWidth
+                value={registrationForm.licenseNumber}
+                onChange={(e) => handleRegistrationFormChange('licenseNumber', e.target.value)}
+                placeholder="Enter license number"
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Tax ID"
+                fullWidth
+                value={registrationForm.taxId}
+                onChange={(e) => handleRegistrationFormChange('taxId', e.target.value)}
+                placeholder="Enter tax ID"
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <TextField
+                label="Website URL"
+                fullWidth
+                value={registrationForm.websiteUrl}
+                onChange={(e) => handleRegistrationFormChange('websiteUrl', e.target.value)}
+                placeholder="Enter website URL"
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <TextField
+                label="Facility Amenities"
+                multiline
+                rows={2}
+                fullWidth
+                value={registrationForm.facilityAmenities}
+                onChange={(e) => handleRegistrationFormChange('facilityAmenities', e.target.value)}
+                placeholder="WiFi, Pool, Spa, Restaurant, etc."
+              />
+            </Grid>
+
             <Grid item xs={12} sm={4}>
               <TextField
-                fullWidth
                 label="Number of Rooms"
                 type="number"
-                value={formData.numberOfRooms}
-                onChange={handleInputChange('numberOfRooms')}
-                placeholder="Total number of rooms"
+                fullWidth
+                value={registrationForm.numberOfRooms}
+                onChange={(e) => handleRegistrationFormChange('numberOfRooms', e.target.value)}
+                placeholder="Enter number"
               />
             </Grid>
+
             <Grid item xs={12} sm={4}>
               <TextField
-                fullWidth
                 label="Check-in Time"
                 type="time"
-                value={formData.checkInTime}
-                onChange={handleInputChange('checkInTime')}
-                InputLabelProps={{ shrink: true }}
+                fullWidth
+                value={registrationForm.checkInTime}
+                onChange={(e) => handleRegistrationFormChange('checkInTime', e.target.value)}
               />
             </Grid>
+
             <Grid item xs={12} sm={4}>
               <TextField
-                fullWidth
                 label="Check-out Time"
                 type="time"
-                value={formData.checkOutTime}
-                onChange={handleInputChange('checkOutTime')}
-                InputLabelProps={{ shrink: true }}
+                fullWidth
+                value={registrationForm.checkOutTime}
+                onChange={(e) => handleRegistrationFormChange('checkOutTime', e.target.value)}
               />
             </Grid>
           </Grid>
-        );
-      
-      default:
-        return 'Unknown step';
-    }
-  };
 
-  if (success) {
-    return (
-      <Container maxWidth="md" sx={{ py: 4 }}>
-        <Paper sx={{ p: 4, textAlign: 'center' }}>
-          <CheckCircle sx={{ fontSize: 80, color: 'success.main', mb: 2 }} />
-          <Typography variant="h4" gutterBottom color="success.main">
-            Registration Submitted Successfully!
-          </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-            Thank you for registering "{formData.hotelName}" with BookMyHotel. 
-            Your registration (ID: {registrationId}) is now pending review by our team.
-          </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-            We will contact you at {formData.contactEmail} with updates on your registration status.
-          </Typography>
-          
-          <Card sx={{ mt: 3, bgcolor: 'info.light' }}>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                What's Next?
-              </Typography>
-              <Typography variant="body2" sx={{ mb: 2 }}>
-                • Our team will review your application within 2-3 business days
-              </Typography>
-              <Typography variant="body2" sx={{ mb: 2 }}>
-                • You'll receive an email notification about the status
-              </Typography>
-              <Typography variant="body2">
-                • Once approved, you'll receive login credentials to manage your hotel
-              </Typography>
-            </CardContent>
-          </Card>
-
-          <Box sx={{ mt: 4 }}>
-            <Button 
-              variant="contained" 
-              onClick={() => navigate('/')}
-              sx={{ mr: 2 }}
-            >
-              Return to Home
-            </Button>
+          {/* Action Buttons */}
+          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 4 }}>
             <Button 
               variant="outlined" 
-              href={`mailto:${formData.contactEmail}?subject=Hotel Registration - ${formData.hotelName}&body=Your registration ID is: ${registrationId}`}
-            >
-              Save Registration Details
-            </Button>
-          </Box>
-        </Paper>
-      </Container>
-    );
-  }
-
-  return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      {/* Header */}
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
-        <IconButton onClick={() => navigate('/')} sx={{ mr: 1 }}>
-          <ArrowBack />
-        </IconButton>
-        <Box>
-          <Typography variant="h4" component="h1" gutterBottom>
-            Register Your Hotel
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Join the BookMyHotel platform and start accepting bookings today
-          </Typography>
-        </Box>
-      </Box>
-
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {error}
-        </Alert>
-      )}
-
-      {/* Main Registration Form */}
-      <Paper sx={{ p: 4 }}>
-        {/* Progress Stepper */}
-        <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
-          {steps.map((label) => (
-            <Step key={label}>
-              <StepLabel>{label}</StepLabel>
-            </Step>
-          ))}
-        </Stepper>
-
-        {/* Form Content */}
-        <Box sx={{ mb: 4 }}>
-          {renderStepContent(activeStep)}
-        </Box>
-
-        {/* Navigation Buttons */}
-        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-          <Button
-            disabled={activeStep === 0}
-            onClick={handleBack}
-            variant="outlined"
-          >
-            Back
-          </Button>
-          
-          {activeStep < steps.length - 1 ? (
-            <Button
-              onClick={handleNext}
-              variant="contained"
-            >
-              Next
-            </Button>
-          ) : (
-            <Button
-              onClick={handleSubmit}
-              variant="contained"
-              startIcon={<Send />}
+              onClick={() => navigate('/')}
               disabled={loading}
+            >
+              Cancel
+            </Button>
+            <Button 
+              variant="contained" 
+              onClick={handleRegistrationSubmit}
+              disabled={!registrationForm.hotelName || !registrationForm.contactPerson || !registrationForm.contactEmail || loading}
+              size="large"
             >
               {loading ? 'Submitting...' : 'Submit Registration'}
             </Button>
-          )}
-        </Box>
-      </Paper>
+          </Box>
 
-      {/* Registration Summary for Final Step */}
-      {activeStep === steps.length - 1 && (
-        <Card sx={{ mt: 3 }}>
-          <CardContent>
+          {/* Benefits Section */}
+          <Box sx={{ mt: 4, p: 3, bgcolor: 'grey.50', borderRadius: 2 }}>
             <Typography variant="h6" gutterBottom>
-              Registration Summary
+              What you'll get:
             </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              Please review your information before submitting:
-            </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="body2" color="text.secondary">Hotel Name:</Typography>
-                <Typography variant="body1">{formData.hotelName || 'Not specified'}</Typography>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="body2" color="text.secondary">Contact Person:</Typography>
-                <Typography variant="body1">{formData.contactPerson || 'Not specified'}</Typography>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="body2" color="text.secondary">Location:</Typography>
-                <Typography variant="body1">
-                  {formData.city ? `${formData.city}, ${formData.country}` : 'Not specified'}
-                </Typography>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="body2" color="text.secondary">Contact Email:</Typography>
-                <Typography variant="body1">{formData.contactEmail || 'Not specified'}</Typography>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="body2" color="text.secondary">Phone:</Typography>
-                <Typography variant="body1">{formData.phone || 'Not specified'}</Typography>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="body2" color="text.secondary">Number of Rooms:</Typography>
-                <Typography variant="body1">{formData.numberOfRooms || 'Not specified'}</Typography>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="body2" color="text.secondary">Check-in Time:</Typography>
-                <Typography variant="body1">{formData.checkInTime || 'Not specified'}</Typography>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="body2" color="text.secondary">Check-out Time:</Typography>
-                <Typography variant="body1">{formData.checkOutTime || 'Not specified'}</Typography>
-              </Grid>
-              {formData.facilityAmenities && (
-                <Grid item xs={12}>
-                  <Typography variant="body2" color="text.secondary">Amenities:</Typography>
-                  <Typography variant="body1">{formData.facilityAmenities}</Typography>
-                </Grid>
-              )}
-            </Grid>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Information Card */}
-      <Card sx={{ mt: 3 }}>
-        <CardContent>
-          <Typography variant="h6" gutterBottom>
-            <Hotel sx={{ mr: 1, verticalAlign: 'middle' }} />
-            Why Join BookMyHotel?
-          </Typography>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
-              <Typography variant="body2" sx={{ mb: 1 }}>
-                ✓ Access to millions of travelers worldwide
-              </Typography>
-              <Typography variant="body2" sx={{ mb: 1 }}>
-                ✓ Professional booking management system
-              </Typography>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <Typography variant="body2" sx={{ mb: 1 }}>
-                ✓ Real-time inventory and pricing controls
-              </Typography>
-              <Typography variant="body2" sx={{ mb: 1 }}>
-                ✓ 24/7 customer support for you and your guests
-              </Typography>
-            </Grid>
-          </Grid>
-        </CardContent>
-      </Card>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+              <Typography variant="body2">• Access to our booking platform</Typography>
+              <Typography variant="body2">• Real-time reservation management</Typography>
+              <Typography variant="body2">• Professional hotel profile</Typography>
+              <Typography variant="body2">• 24/7 customer support</Typography>
+              <Typography variant="body2">• Marketing and promotional tools</Typography>
+              <Typography variant="body2">• Detailed analytics and reporting</Typography>
+            </Box>
+          </Box>
+        </Paper>
+      </Box>
     </Container>
   );
 };

@@ -77,6 +77,25 @@ public class HotelRegistration {
     @Column(name = "tax_id", length = 20)
     private String taxId;
     
+    @Size(max = 200, message = "Website URL must not exceed 200 characters")
+    @Column(name = "website_url", length = 200)
+    private String websiteUrl;
+    
+    @Size(max = 500, message = "Facility amenities must not exceed 500 characters")
+    @Column(name = "facility_amenities", length = 500)
+    private String facilityAmenities;
+    
+    @Column(name = "number_of_rooms")
+    private Integer numberOfRooms;
+    
+    @Size(max = 10, message = "Check-in time must not exceed 10 characters")
+    @Column(name = "check_in_time", length = 10)
+    private String checkInTime;
+    
+    @Size(max = 10, message = "Check-out time must not exceed 10 characters")
+    @Column(name = "check_out_time", length = 10)
+    private String checkOutTime;
+    
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private RegistrationStatus status = RegistrationStatus.PENDING;
@@ -192,6 +211,46 @@ public class HotelRegistration {
     
     public void setTaxId(String taxId) {
         this.taxId = taxId;
+    }
+    
+    public String getWebsiteUrl() {
+        return websiteUrl;
+    }
+    
+    public void setWebsiteUrl(String websiteUrl) {
+        this.websiteUrl = websiteUrl;
+    }
+    
+    public String getFacilityAmenities() {
+        return facilityAmenities;
+    }
+    
+    public void setFacilityAmenities(String facilityAmenities) {
+        this.facilityAmenities = facilityAmenities;
+    }
+    
+    public Integer getNumberOfRooms() {
+        return numberOfRooms;
+    }
+    
+    public void setNumberOfRooms(Integer numberOfRooms) {
+        this.numberOfRooms = numberOfRooms;
+    }
+    
+    public String getCheckInTime() {
+        return checkInTime;
+    }
+    
+    public void setCheckInTime(String checkInTime) {
+        this.checkInTime = checkInTime;
+    }
+    
+    public String getCheckOutTime() {
+        return checkOutTime;
+    }
+    
+    public void setCheckOutTime(String checkOutTime) {
+        this.checkOutTime = checkOutTime;
     }
     
     public RegistrationStatus getStatus() {

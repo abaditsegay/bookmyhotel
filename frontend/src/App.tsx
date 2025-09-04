@@ -16,8 +16,6 @@ import BookingSearchPage from './pages/BookingSearchPage';
 import LoginPage from './pages/LoginPage';
 import GuestAuthPage from './pages/GuestAuthPage';
 import ProfilePage from './pages/ProfilePage';
-import PublicHotelRegistration from './pages/PublicHotelRegistration';
-import PublicAdminHotelRegistration from './pages/PublicAdminHotelRegistration';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import HotelRegistrationAdmin from './pages/admin/HotelRegistrationAdmin';
 import HotelRegistrationForm from './pages/admin/HotelRegistrationForm';
@@ -44,6 +42,7 @@ import MyBookings from './components/MyBookings';
 import OperationsPage from './pages/operations/OperationsPage';
 import StaffDashboardPage from './pages/StaffDashboardPage';
 import ShopRoutes from './pages/shop/ShopRoutes';
+import PublicHotelRegistration from './pages/PublicHotelRegistration';
 
 // Role-based Router Component - redirects based on user role
 const RoleBasedRouter: React.FC = () => {
@@ -186,7 +185,12 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/guest-auth" element={<GuestAuthPage />} />
         <Route path="/register-hotel" element={<PublicHotelRegistration />} />
-        <Route path="/register-hotel-admin" element={<PublicAdminHotelRegistration />} />
+        <Route path="/register-hotel-admin" element={
+          <PlaceholderPage 
+            title="Admin Hotel Registration" 
+            message="Admin hotel registration coming soon!" 
+          />
+        } />
         <Route path="/register" element={
           <PlaceholderPage 
             title="Register" 

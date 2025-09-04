@@ -356,7 +356,12 @@ const HotelManagementAdmin: React.FC = () => {
           contactEmail: registrationForm.contactEmail,
           contactPerson: registrationForm.contactPerson,
           licenseNumber: registrationForm.licenseNumber,
-          taxId: registrationForm.taxId
+          taxId: registrationForm.taxId,
+          websiteUrl: registrationForm.websiteUrl,
+          facilityAmenities: registrationForm.facilityAmenities,
+          numberOfRooms: registrationForm.numberOfRooms ? parseInt(registrationForm.numberOfRooms) : null,
+          checkInTime: registrationForm.checkInTime,
+          checkOutTime: registrationForm.checkOutTime
         })
       });
 
@@ -1174,10 +1179,10 @@ const HotelManagementAdmin: React.FC = () => {
               <Grid item xs={12} sm={4}>
                 <TextField
                   label="Number of Rooms"
-                  type="number"
                   fullWidth
                   value={registrationForm.numberOfRooms}
                   onChange={(e) => handleRegistrationFormChange('numberOfRooms', e.target.value)}
+                  placeholder="Enter number of rooms"
                 />
               </Grid>
 
@@ -1442,7 +1447,7 @@ const HotelManagementAdmin: React.FC = () => {
                       disabled={!registrationEditMode}
                       variant={registrationEditMode ? "outlined" : "filled"}
                       onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('numberOfRooms', e.target.value) : undefined}
-                      type="number"
+                      placeholder={registrationEditMode ? "Enter number of rooms" : undefined}
                     />
                   </Grid>
                 )}

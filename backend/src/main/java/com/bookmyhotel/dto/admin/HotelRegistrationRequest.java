@@ -46,6 +46,20 @@ public class HotelRegistrationRequest {
     @Size(max = 20, message = "Tax ID must not exceed 20 characters")
     private String taxId;
     
+    @Size(max = 200, message = "Website URL must not exceed 200 characters")
+    private String websiteUrl;
+    
+    @Size(max = 500, message = "Facility amenities must not exceed 500 characters")
+    private String facilityAmenities;
+    
+    private Integer numberOfRooms;
+    
+    @Size(max = 10, message = "Check-in time must not exceed 10 characters")
+    private String checkInTime;
+    
+    @Size(max = 10, message = "Check-out time must not exceed 10 characters")
+    private String checkOutTime;
+    
     // Constructors
     public HotelRegistrationRequest() {}
     
@@ -128,5 +142,45 @@ public class HotelRegistrationRequest {
     
     public void setTaxId(String taxId) {
         this.taxId = taxId;
+    }
+    
+    public String getWebsiteUrl() {
+        return websiteUrl;
+    }
+    
+    public void setWebsiteUrl(String websiteUrl) {
+        this.websiteUrl = websiteUrl;
+    }
+    
+    public String getFacilityAmenities() {
+        return facilityAmenities;
+    }
+    
+    public void setFacilityAmenities(String facilityAmenities) {
+        this.facilityAmenities = facilityAmenities;
+    }
+    
+    public Integer getNumberOfRooms() {
+        return numberOfRooms;
+    }
+    
+    public void setNumberOfRooms(Integer numberOfRooms) {
+        this.numberOfRooms = numberOfRooms;
+    }
+    
+    public String getCheckInTime() {
+        return checkInTime;
+    }
+    
+    public void setCheckInTime(String checkInTime) {
+        this.checkInTime = checkInTime;
+    }
+    
+    public String getCheckOutTime() {
+        return checkOutTime;
+    }
+    
+    public void setCheckOutTime(String checkOutTime) {
+        this.checkOutTime = checkOutTime;
     }
 }
