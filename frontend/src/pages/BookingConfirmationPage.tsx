@@ -109,6 +109,15 @@ const BookingConfirmationPage: React.FC = () => {
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
+      weekday: 'short',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  const formatDateLong = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
@@ -181,32 +190,50 @@ const BookingConfirmationPage: React.FC = () => {
 
   if (loading) {
     return (
-      <Container maxWidth="md" sx={{ py: 4 }}>
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-          <CircularProgress size={60} />
-          <Typography variant="h6" sx={{ ml: 2 }}>
-            Loading booking confirmation...
-          </Typography>
-        </Box>
+      <Container maxWidth="md" sx={{ py: 8 }}>
+        <Paper elevation={2} sx={{ p: 6, borderRadius: 3 }}>
+          <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" minHeight="400px">
+            <CircularProgress size={80} thickness={4} sx={{ color: '#1976d2', mb: 4 }} />
+            <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 2 }}>
+              Loading booking confirmation...
+            </Typography>
+            <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'center' }}>
+              Please wait while we retrieve your booking details
+            </Typography>
+          </Box>
+        </Paper>
       </Container>
     );
   }
 
   if (error || !booking) {
     return (
-      <Container maxWidth="md" sx={{ py: 4 }}>
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {error || 'Booking not found'}
-        </Alert>
-        <Box sx={{ textAlign: 'center' }}>
-          <Button
-            variant="contained"
-            onClick={() => navigate('/')}
-            startIcon={<HomeIcon />}
-          >
-            Return Home
-          </Button>
-        </Box>
+      <Container maxWidth="md" sx={{ py: 8 }}>
+        <Paper elevation={2} sx={{ p: 6, borderRadius: 3 }}>
+          <Alert severity="error" sx={{ mb: 4, borderRadius: 2 }}>
+            <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
+              {error || 'Booking not found'}
+            </Typography>
+            <Typography variant="body2">
+              We couldn't find your booking information. Please check your confirmation number or try again.
+            </Typography>
+          </Alert>
+          <Box sx={{ textAlign: 'center' }}>
+            <Button
+              variant="contained"
+              onClick={() => navigate('/')}
+              startIcon={<HomeIcon />}
+              size="large"
+              sx={{ 
+                px: 4, 
+                py: 1.5,
+                background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
+              }}
+            >
+              Return Home
+            </Button>
+          </Box>
+        </Paper>
       </Container>
     );
   }
@@ -214,120 +241,216 @@ const BookingConfirmationPage: React.FC = () => {
   const nights = calculateNights(booking.checkInDate, booking.checkOutDate);
 
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: 6 }}>
       {/* Success Header */}
-      <Paper sx={{ p: 4, mb: 3, textAlign: 'center', bgcolor: 'success.light', color: 'success.contrastText' }}>
-        <CheckCircleIcon sx={{ fontSize: 64, mb: 2 }} />
-        <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold' }}>
+      <Paper 
+        elevation={0}
+        sx={{ 
+          p: 6, 
+          mb: 4, 
+          textAlign: 'center', 
+          background: 'linear-gradient(135deg, #4caf50 0%, #2e7d32 100%)',
+          color: 'white',
+          borderRadius: 3
+        }}
+      >
+        <CheckCircleIcon sx={{ fontSize: 80, mb: 3, filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))' }} />
+        <Typography variant="h3" gutterBottom sx={{ fontWeight: 'bold', mb: 2 }}>
           Booking Confirmed!
         </Typography>
-        <Typography variant="h6" sx={{ mb: 2 }}>
+        <Typography variant="h6" sx={{ mb: 4, opacity: 0.9 }}>
           Your reservation has been successfully created
         </Typography>
         <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap' }}>
           <Chip
             label={`Confirmation: ${booking.confirmationNumber}`}
             variant="filled"
-            sx={{ bgcolor: 'success.dark', color: 'white', fontWeight: 'bold', fontSize: '1rem' }}
+            sx={{ 
+              bgcolor: 'rgba(255,255,255,0.2)', 
+              color: 'white', 
+              fontWeight: 'bold', 
+              fontSize: '1.1rem',
+              px: 2,
+              py: 1,
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255,255,255,0.3)'
+            }}
           />
         </Box>
       </Paper>
 
       {/* Action Buttons */}
-      <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mb: 3, flexWrap: 'wrap' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mb: 4, flexWrap: 'wrap' }}>
         <Button
           variant="contained"
           startIcon={<EmailIcon />}
           onClick={() => setEmailDialogOpen(true)}
+          sx={{ 
+            px: 3, 
+            py: 1.5,
+            background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
+            '&:hover': {
+              background: 'linear-gradient(135deg, #1565c0 0%, #0d47a1 100%)',
+            }
+          }}
         >
-          Email Confirmation
+          EMAIL CONFIRMATION
         </Button>
         <Button
           variant="outlined"
           startIcon={<PrintIcon />}
           onClick={handlePrint}
+          sx={{ 
+            px: 3, 
+            py: 1.5,
+            borderColor: '#1976d2',
+            color: '#1976d2',
+            '&:hover': {
+              borderColor: '#1565c0',
+              backgroundColor: 'rgba(25, 118, 210, 0.04)',
+            }
+          }}
         >
-          Print
+          PRINT
         </Button>
         <Button
           variant="outlined"
           startIcon={<DownloadIcon />}
           onClick={handleDownloadPDF}
+          sx={{ 
+            px: 3, 
+            py: 1.5,
+            borderColor: '#1976d2',
+            color: '#1976d2',
+            '&:hover': {
+              borderColor: '#1565c0',
+              backgroundColor: 'rgba(25, 118, 210, 0.04)',
+            }
+          }}
         >
-          Download PDF
+          DOWNLOAD PDF
         </Button>
       </Box>
 
       {/* Booking Details */}
-      <Paper sx={{ p: 3, mb: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
+      <Paper elevation={2} sx={{ p: 4, mb: 4, borderRadius: 3 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 4 }}>
           <Box>
-            <Typography variant="h5" gutterBottom>
+            <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold', color: '#1976d2' }}>
               Booking Details
             </Typography>
           </Box>
-          <Box sx={{ display: 'flex', gap: 1, flexDirection: 'column', alignItems: 'flex-end' }}>
+          <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column', alignItems: 'flex-end' }}>
             <Chip
-              label={booking.status}
+              label={booking.status.toUpperCase()}
               color={getStatusColor(booking.status) as any}
               variant="filled"
+              sx={{ fontWeight: 'bold', fontSize: '0.9rem' }}
             />
             <Chip
               label={formatPaymentStatus(booking.paymentStatus)}
               color={getPaymentStatusColor(booking.paymentStatus) as any}
               variant="outlined"
-              size="small"
+              sx={{ fontWeight: '500' }}
             />
           </Box>
         </Box>
 
-        <Divider sx={{ my: 2 }} />
+        <Divider sx={{ my: 3 }} />
 
         {/* Quick Info Grid */}
-        <Grid container spacing={3} sx={{ mb: 3 }}>
+        <Grid container spacing={3} sx={{ mb: 4 }}>
           <Grid item xs={12} sm={6} md={3}>
-            <Card variant="outlined">
-              <CardContent sx={{ textAlign: 'center' }}>
-                <Typography variant="subtitle2" color="text.secondary">
+            <Card 
+              elevation={0}
+              sx={{ 
+                border: '2px solid #e3f2fd',
+                borderRadius: 2,
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  borderColor: '#1976d2',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 8px 16px rgba(25, 118, 210, 0.1)'
+                }
+              }}
+            >
+              <CardContent sx={{ textAlign: 'center', py: 3 }}>
+                <Typography variant="subtitle2" color="text.secondary" sx={{ fontSize: '0.9rem', fontWeight: '600', mb: 1 }}>
                   Check-in
                 </Typography>
-                <Typography variant="h6">
+                <Typography variant="h6" sx={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
                   {formatDate(booking.checkInDate)}
                 </Typography>
               </CardContent>
             </Card>
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
-            <Card variant="outlined">
-              <CardContent sx={{ textAlign: 'center' }}>
-                <Typography variant="subtitle2" color="text.secondary">
+            <Card 
+              elevation={0}
+              sx={{ 
+                border: '2px solid #e3f2fd',
+                borderRadius: 2,
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  borderColor: '#1976d2',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 8px 16px rgba(25, 118, 210, 0.1)'
+                }
+              }}
+            >
+              <CardContent sx={{ textAlign: 'center', py: 3 }}>
+                <Typography variant="subtitle2" color="text.secondary" sx={{ fontSize: '0.9rem', fontWeight: '600', mb: 1 }}>
                   Check-out
                 </Typography>
-                <Typography variant="h6">
+                <Typography variant="h6" sx={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
                   {formatDate(booking.checkOutDate)}
                 </Typography>
               </CardContent>
             </Card>
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
-            <Card variant="outlined">
-              <CardContent sx={{ textAlign: 'center' }}>
-                <Typography variant="subtitle2" color="text.secondary">
+            <Card 
+              elevation={0}
+              sx={{ 
+                border: '2px solid #e3f2fd',
+                borderRadius: 2,
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  borderColor: '#1976d2',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 8px 16px rgba(25, 118, 210, 0.1)'
+                }
+              }}
+            >
+              <CardContent sx={{ textAlign: 'center', py: 3 }}>
+                <Typography variant="subtitle2" color="text.secondary" sx={{ fontSize: '0.9rem', fontWeight: '600', mb: 1 }}>
                   Nights
                 </Typography>
-                <Typography variant="h6">
+                <Typography variant="h6" sx={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
                   {nights}
                 </Typography>
               </CardContent>
             </Card>
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
-            <Card variant="outlined">
-              <CardContent sx={{ textAlign: 'center' }}>
-                <Typography variant="subtitle2" color="text.secondary">
+            <Card 
+              elevation={0}
+              sx={{ 
+                border: '2px solid #4caf50',
+                borderRadius: 2,
+                transition: 'all 0.3s ease',
+                background: 'linear-gradient(135deg, #f1f8e9 0%, #e8f5e8 100%)',
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 8px 16px rgba(76, 175, 80, 0.2)'
+                }
+              }}
+            >
+              <CardContent sx={{ textAlign: 'center', py: 3 }}>
+                <Typography variant="subtitle2" color="text.secondary" sx={{ fontSize: '0.9rem', fontWeight: '600', mb: 1 }}>
                   Total Amount
                 </Typography>
-                <Typography variant="h6" color="primary">
+                <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#2e7d32' }}>
                   ${booking.totalAmount}
                 </Typography>
               </CardContent>
@@ -336,98 +459,140 @@ const BookingConfirmationPage: React.FC = () => {
         </Grid>
 
         {/* Detailed Information */}
-        <Grid container spacing={3}>
+        <Grid container spacing={4}>
           {/* Hotel Information */}
           <Grid item xs={12} md={6}>
-            <Typography variant="h6" gutterBottom>
-              Hotel Information
-            </Typography>
-            <Box sx={{ mb: 2 }}>
-              <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
-                {booking.hotelName}
+            <Box sx={{ p: 3, border: '1px solid #e0e0e0', borderRadius: 2, height: '100%' }}>
+              <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', color: '#1976d2', mb: 2 }}>
+                Hotel Information
               </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {booking.hotelAddress}
-              </Typography>
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
+                  {booking.hotelName}
+                </Typography>
+                <Typography variant="body1" color="text.secondary" sx={{ lineHeight: 1.6 }}>
+                  {booking.hotelAddress}
+                </Typography>
+              </Box>
             </Box>
           </Grid>
 
           {/* Room Information */}
           <Grid item xs={12} md={6}>
-            <Typography variant="h6" gutterBottom>
-              Room Information
-            </Typography>
-            <Box sx={{ mb: 2 }}>
-              <Typography variant="body1">
-                <strong>Room Type:</strong> {booking.roomType}
+            <Box sx={{ p: 3, border: '1px solid #e0e0e0', borderRadius: 2, height: '100%' }}>
+              <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', color: '#1976d2', mb: 2 }}>
+                Room Information
               </Typography>
-              <Typography variant="body1">
-                <strong>Rate:</strong> ${booking.pricePerNight}/night
-              </Typography>
-              <Typography variant="body1" sx={{ color: 'success.main', fontWeight: 'bold' }}>
-                <strong>Room Assignment:</strong> Room will be assigned at check-in
-              </Typography>
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="body1" sx={{ mb: 1 }}>
+                  <strong>Room Type:</strong> {booking.roomType}
+                </Typography>
+                <Typography variant="body1" sx={{ mb: 1 }}>
+                  <strong>Rate:</strong> ${booking.pricePerNight}/night
+                </Typography>
+                <Typography variant="body1" sx={{ color: '#2e7d32', fontWeight: 'bold' }}>
+                  <strong>Room Assignment:</strong> Room will be assigned at check-in
+                </Typography>
+              </Box>
             </Box>
           </Grid>
 
           {/* Guest Information */}
           <Grid item xs={12} md={6}>
-            <Typography variant="h6" gutterBottom>
-              Guest Information
-            </Typography>
-            <Box sx={{ mb: 2 }}>
-              <Typography variant="body1">
-                <strong>Name:</strong> {booking.guestName}
+            <Box sx={{ p: 3, border: '1px solid #e0e0e0', borderRadius: 2, height: '100%' }}>
+              <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', color: '#1976d2', mb: 2 }}>
+                Guest Information
               </Typography>
-              <Typography variant="body1">
-                <strong>Email:</strong> {booking.guestEmail}
-              </Typography>
-              <Typography variant="body1">
-                <strong>Number of Guests:</strong> {booking.numberOfGuests || 1}
-              </Typography>
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="body1" sx={{ mb: 1 }}>
+                  <strong>Name:</strong> {booking.guestName}
+                </Typography>
+                <Typography variant="body1" sx={{ mb: 1 }}>
+                  <strong>Email:</strong> {booking.guestEmail}
+                </Typography>
+                <Typography variant="body1">
+                  <strong>Number of Guests:</strong> {booking.numberOfGuests || 1}
+                </Typography>
+              </Box>
             </Box>
           </Grid>
 
           {/* Booking Summary */}
           <Grid item xs={12} md={6}>
-            <Typography variant="h6" gutterBottom>
-              Booking Summary
-            </Typography>
-            <Box sx={{ mb: 2 }}>
-              <Typography variant="body1">
-                <strong>Booked on:</strong> {formatDate(booking.createdAt)}
+            <Box sx={{ p: 3, border: '1px solid #e0e0e0', borderRadius: 2, height: '100%' }}>
+              <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', color: '#1976d2', mb: 2 }}>
+                Booking Summary
               </Typography>
-              <Typography variant="body1">
-                <strong>Duration:</strong> {nights} night{nights !== 1 ? 's' : ''}
-              </Typography>
-              <Typography variant="body1">
-                <strong>Payment:</strong> {formatPaymentStatus(booking.paymentStatus)}
-              </Typography>
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="body1" sx={{ mb: 1 }}>
+                  <strong>Booked on:</strong> {formatDateLong(booking.createdAt)}
+                </Typography>
+                <Typography variant="body1" sx={{ mb: 1 }}>
+                  <strong>Duration:</strong> {nights} night{nights !== 1 ? 's' : ''}
+                </Typography>
+                <Typography variant="body1">
+                  <strong>Payment:</strong> {formatPaymentStatus(booking.paymentStatus)}
+                </Typography>
+              </Box>
             </Box>
           </Grid>
         </Grid>
       </Paper>
 
       {/* Important Information */}
-      <Alert severity="info" sx={{ mb: 3 }}>
-        <Typography variant="body2" sx={{ mb: 1 }}>
-          <strong>Important Information:</strong>
+      <Alert 
+        severity="info" 
+        sx={{ 
+          mb: 4, 
+          p: 3,
+          borderRadius: 2,
+          '& .MuiAlert-message': {
+            width: '100%'
+          }
+        }}
+      >
+        <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
+          Important Information
         </Typography>
-        <Typography variant="body2">
-          • <strong>Your specific room number will be assigned at check-in</strong><br/>
-          • Please bring a valid ID for check-in<br/>
-          • Check-in time: 3:00 PM | Check-out time: 11:00 AM<br/>
-          • For any changes or cancellations, please contact the hotel directly<br/>
-          • Keep your confirmation number for reference
-        </Typography>
+        <Box sx={{ '& > div': { mb: 1 } }}>
+          <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+            <Box component="span" sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#1976d2', mr: 2, flexShrink: 0 }} />
+            <strong>Your specific room number will be assigned at check-in</strong>
+          </Typography>
+          <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+            <Box component="span" sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#1976d2', mr: 2, flexShrink: 0 }} />
+            Please bring a valid ID for check-in
+          </Typography>
+          <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+            <Box component="span" sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#1976d2', mr: 2, flexShrink: 0 }} />
+            Check-in time: 3:00 PM | Check-out time: 11:00 AM
+          </Typography>
+          <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+            <Box component="span" sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#1976d2', mr: 2, flexShrink: 0 }} />
+            For any changes or cancellations, please contact the hotel directly
+          </Typography>
+          <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center' }}>
+            <Box component="span" sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#1976d2', mr: 2, flexShrink: 0 }} />
+            Keep your confirmation number for reference
+          </Typography>
+        </Box>
       </Alert>
 
       {/* Navigation Buttons */}
-      <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', gap: 3, flexWrap: 'wrap' }}>
         <Button
           variant="contained"
           onClick={() => navigate('/')}
           startIcon={<HomeIcon />}
+          size="large"
+          sx={{ 
+            px: 4, 
+            py: 1.5,
+            background: 'linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)',
+            '&:hover': {
+              background: 'linear-gradient(135deg, #1b5e20 0%, #0d4f14 100%)',
+            }
+          }}
         >
           Return Home
         </Button>
@@ -435,15 +600,41 @@ const BookingConfirmationPage: React.FC = () => {
           variant="outlined"
           onClick={() => navigate('/hotels/search')}
           startIcon={<SearchIcon />}
+          size="large"
+          sx={{ 
+            px: 4, 
+            py: 1.5,
+            borderColor: '#1976d2',
+            color: '#1976d2',
+            '&:hover': {
+              borderColor: '#1565c0',
+              backgroundColor: 'rgba(25, 118, 210, 0.04)',
+            }
+          }}
         >
           Search More Hotels
         </Button>
       </Box>
 
       {/* Email Dialog */}
-      <Dialog open={emailDialogOpen} onClose={() => setEmailDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Email Booking Confirmation</DialogTitle>
-        <DialogContent>
+      <Dialog 
+        open={emailDialogOpen} 
+        onClose={() => setEmailDialogOpen(false)} 
+        maxWidth="sm" 
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            p: 2
+          }
+        }}
+      >
+        <DialogTitle sx={{ pb: 2 }}>
+          <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#1976d2' }}>
+            Email Booking Confirmation
+          </Typography>
+        </DialogTitle>
+        <DialogContent sx={{ pb: 2 }}>
           <TextField
             autoFocus
             margin="dense"
@@ -453,20 +644,30 @@ const BookingConfirmationPage: React.FC = () => {
             variant="outlined"
             value={emailAddress}
             onChange={(e) => setEmailAddress(e.target.value)}
-            sx={{ mb: 2 }}
+            sx={{ 
+              mb: 3,
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 2
+              }
+            }}
           />
           <FormControlLabel
             control={
               <Checkbox
                 checked={includeItinerary}
                 onChange={(e) => setIncludeItinerary(e.target.checked)}
+                sx={{ color: '#1976d2' }}
               />
             }
             label="Include detailed itinerary"
+            sx={{ mb: 1 }}
           />
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setEmailDialogOpen(false)}>
+        <DialogActions sx={{ p: 3, pt: 1 }}>
+          <Button 
+            onClick={() => setEmailDialogOpen(false)}
+            sx={{ px: 3 }}
+          >
             Cancel
           </Button>
           <Button
@@ -474,6 +675,13 @@ const BookingConfirmationPage: React.FC = () => {
             variant="contained"
             disabled={!emailAddress.trim() || sendingEmail}
             startIcon={sendingEmail ? <CircularProgress size={20} /> : <EmailIcon />}
+            sx={{ 
+              px: 4,
+              background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #1565c0 0%, #0d47a1 100%)',
+              }
+            }}
           >
             {sendingEmail ? 'Sending...' : 'Send Email'}
           </Button>
