@@ -51,11 +51,34 @@ class ShopApiService {
   }
 
   // Product Management - hotel-scoped endpoints
-  async getProducts(hotelId: number, page = 0, size = 20): Promise<{ content: Product[], totalElements: number }> {
-    const response = await fetch(`${API_BASE_URL}/hotels/${hotelId}/shop/products?page=${page}&size=${size}`, {
+  async getProducts(
+    hotelId: number, 
+    options?: {
+      page?: number;
+      size?: number;
+      sortBy?: string;
+      sortDir?: 'asc' | 'desc';
+      search?: string;
+      category?: string;
+      activeOnly?: boolean;
+      availableOnly?: boolean;
+    }
+  ): Promise<{ content: Product[], totalElements: number, totalPages: number, number: number, size: number }> {
+    const params = new URLSearchParams();
+    
+    if (options?.page !== undefined) params.append('page', options.page.toString());
+    if (options?.size !== undefined) params.append('size', options.size.toString());
+    if (options?.sortBy) params.append('sortBy', options.sortBy);
+    if (options?.sortDir) params.append('sortDir', options.sortDir);
+    if (options?.search) params.append('search', options.search);
+    if (options?.category) params.append('category', options.category);
+    if (options?.activeOnly !== undefined) params.append('activeOnly', options.activeOnly.toString());
+    if (options?.availableOnly !== undefined) params.append('availableOnly', options.availableOnly.toString());
+
+    const response = await fetch(`${API_BASE_URL}/hotels/${hotelId}/shop/products?${params.toString()}`, {
       headers: this.getAuthHeaders(),
     });
-    return this.handleResponse<{ content: Product[], totalElements: number }>(response);
+    return this.handleResponse<{ content: Product[], totalElements: number, totalPages: number, number: number, size: number }>(response);
   }
 
   async getProduct(hotelId: number, productId: number): Promise<Product> {

@@ -115,7 +115,7 @@ export const SystemDashboardPage: React.FC = () => {
     return null;
   }
 
-  const isSystemAdmin = user.roles.includes('ADMIN');
+  const isSystemAdmin = user.roles.includes('ADMIN') || user.roles.includes('SYSTEM_ADMIN') || user.role === 'ADMIN' || user.role === 'SYSTEM_ADMIN';
   const isSystemCustomer = user.roles.includes('CUSTOMER');
 
   const adminQuickActions = [

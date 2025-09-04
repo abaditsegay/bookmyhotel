@@ -186,14 +186,10 @@ const OrderManagement: React.FC = () => {
                 </TableCell>
                 <TableCell>
                   <Box>
-                    <TableCell>
-                  <Box>
                     <Typography variant="subtitle2">{ShopOrderUtils.getDisplayCustomerName(order)}</Typography>
                     <Typography variant="body2" color="text.secondary">
                       {ShopOrderUtils.getOrderTypeDescription(order)}
                     </Typography>
-                  </Box>
-                </TableCell>
                     {order.customerEmail && (
                       <Typography variant="caption" color="text.secondary">
                         {order.customerEmail}
@@ -269,17 +265,19 @@ const OrderManagement: React.FC = () => {
                 <Card>
                   <CardContent>
                     <Typography variant="h6" gutterBottom>Customer Information</Typography>
-                    <Typography component="div"><strong>Name:</strong> {ShopOrderUtils.getDisplayCustomerName(selectedOrder)}</Typography>
-                    <Typography component="div"><strong>Order Type:</strong> {ShopOrderUtils.getOrderTypeDescription(selectedOrder)}</Typography>
-                    {selectedOrder.customerEmail && (
-                      <Typography component="div"><strong>Email:</strong> {selectedOrder.customerEmail}</Typography>
-                    )}
-                    {selectedOrder.customerPhone && (
-                      <Typography component="div"><strong>Phone:</strong> {selectedOrder.customerPhone}</Typography>
-                    )}
-                    {selectedOrder.roomNumber && (
-                      <Typography component="div"><strong>Room:</strong> {selectedOrder.roomNumber}</Typography>
-                    )}
+                    <Box sx={{ '& > *': { mb: 0.5 } }}>
+                      <Typography><strong>Name:</strong> {ShopOrderUtils.getDisplayCustomerName(selectedOrder)}</Typography>
+                      <Typography><strong>Order Type:</strong> {ShopOrderUtils.getOrderTypeDescription(selectedOrder)}</Typography>
+                      {selectedOrder.customerEmail && (
+                        <Typography><strong>Email:</strong> {selectedOrder.customerEmail}</Typography>
+                      )}
+                      {selectedOrder.customerPhone && (
+                        <Typography><strong>Phone:</strong> {selectedOrder.customerPhone}</Typography>
+                      )}
+                      {selectedOrder.roomNumber && (
+                        <Typography><strong>Room:</strong> {selectedOrder.roomNumber}</Typography>
+                      )}
+                    </Box>
                   </CardContent>
                 </Card>
               </Grid>
@@ -295,12 +293,14 @@ const OrderManagement: React.FC = () => {
                         color={getStatusColor(selectedOrder.status)}
                       />
                     </Box>
-                    <Typography component="div"><strong>Order Date:</strong> {selectedOrder.orderDate ? format(new Date(selectedOrder.orderDate), 'MMM dd, yyyy HH:mm') : 'N/A'}</Typography>
-                    <Typography component="div"><strong>Payment Method:</strong> {ShopOrderUtils.formatPaymentMethod(selectedOrder.paymentMethod)}</Typography>
-                    <Typography component="div"><strong>Payment Status:</strong> {isOrderPaid(selectedOrder.status) ? 'Paid' : 'Unpaid'}</Typography>
-                    {selectedOrder.deliveryType && (
-                      <Typography component="div"><strong>Delivery:</strong> {selectedOrder.deliveryType.replace('_', ' ')}</Typography>
-                    )}
+                    <Box sx={{ '& > *': { mb: 0.5 } }}>
+                      <Typography><strong>Order Date:</strong> {selectedOrder.orderDate ? format(new Date(selectedOrder.orderDate), 'MMM dd, yyyy HH:mm') : 'N/A'}</Typography>
+                      <Typography><strong>Payment Method:</strong> {ShopOrderUtils.formatPaymentMethod(selectedOrder.paymentMethod)}</Typography>
+                      <Typography><strong>Payment Status:</strong> {isOrderPaid(selectedOrder.status) ? 'Paid' : 'Unpaid'}</Typography>
+                      {selectedOrder.deliveryType && (
+                        <Typography><strong>Delivery:</strong> {selectedOrder.deliveryType.replace('_', ' ')}</Typography>
+                      )}
+                    </Box>
                   </CardContent>
                 </Card>
               </Grid>
@@ -323,14 +323,16 @@ const OrderManagement: React.FC = () => {
                               }
                               secondary={
                                 <Box>
-                                  <Typography variant="body2" sx={{ lineHeight: 1.43 }}>
+                                  <Box component="span" sx={{ display: 'block', lineHeight: 1.43 }}>
                                     Quantity: {item.quantity} × ETB {(item.unitPrice * 55).toFixed(0)}
-                                  </Typography>
-                                  <Typography variant="caption" sx={{ lineHeight: 1.66 }}>SKU: {item.productSku}</Typography>
+                                  </Box>
+                                  <Box component="span" sx={{ display: 'block', fontSize: '0.75rem', lineHeight: 1.66 }}>
+                                    SKU: {item.productSku}
+                                  </Box>
                                   {item.notes && (
-                                    <Typography variant="caption" sx={{ lineHeight: 1.66, display: 'block' }}>
+                                    <Box component="span" sx={{ display: 'block', fontSize: '0.75rem', lineHeight: 1.66 }}>
                                       Note: {item.notes}
-                                    </Typography>
+                                    </Box>
                                   )}
                                 </Box>
                               }

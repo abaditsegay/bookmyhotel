@@ -1906,7 +1906,8 @@ public class BookingService {
             return pdfService.generateBookingConfirmationPdf(booking);
         } catch (Exception e) {
             logger.error("Error generating PDF for reservation {}: {}", reservationId, e.getMessage(), e);
-            throw new RuntimeException("Failed to generate booking confirmation PDF for reservation " + reservationId, e);
+            throw new RuntimeException("Failed to generate booking confirmation PDF for reservation " + reservationId,
+                    e);
         }
     }
 

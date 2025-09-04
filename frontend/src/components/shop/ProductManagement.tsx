@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   Box,
   Button,
-  Card,
-  CardContent,
   Typography,
   TextField,
   Grid,
@@ -28,7 +26,8 @@ import {
   InputAdornment,
   Tooltip,
   Switch,
-  FormControlLabel
+  FormControlLabel,
+  TablePagination
 } from '@mui/material';
 import {
   Edit as EditIcon,
@@ -54,6 +53,15 @@ const ProductManagement: React.FC = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+  
+  // Pagination state - matching FrontDesk Rooms tab style
+  const [page, setPage] = useState(0); // 0-indexed for TablePagination
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [totalElements, setTotalElements] = useState(0);
+  
+  // Refresh trigger
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
   const [formData, setFormData] = useState<ProductCreateRequest>({
     name: '',
     description: '',
@@ -73,28 +81,39 @@ const ProductManagement: React.FC = () => {
   const hotelId = 1;
 
   useEffect(() => {
-    loadProducts();
-  }, [hotelId]);
+    const loadProductsDebounced = async () => {
+      try {
+        setLoading(true);
+        const data = await shopApiService.getProducts(hotelId, {
+          page: page, // Already 0-indexed for API
+          size: rowsPerPage,
+          search: searchTerm.trim() || undefined,
+          category: categoryFilter !== 'ALL' ? categoryFilter : undefined
+        });
+        
+        setProducts(data.content);
+        setTotalElements(data.totalElements);
+        setError(null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load products');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const loadProducts = async () => {
-    try {
-      setLoading(true);
-      const data = await shopApiService.getProducts(hotelId);
-      setProducts(data.content);
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load products');
-    } finally {
-      setLoading(false);
-    }
-  };
+    // Debounce search term changes
+    const debounceTimer = setTimeout(loadProductsDebounced, searchTerm ? 300 : 0);
+    return () => clearTimeout(debounceTimer);
+  }, [hotelId, page, rowsPerPage, searchTerm, categoryFilter, refreshTrigger]);
+
+  const triggerRefresh = () => setRefreshTrigger(prev => prev + 1);
 
   const handleCreateProduct = async () => {
     try {
       await shopApiService.createProduct(hotelId, formData);
       setOpenDialog(false);
       resetForm();
-      loadProducts();
+      triggerRefresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create product');
     }
@@ -108,7 +127,7 @@ const ProductManagement: React.FC = () => {
       setOpenDialog(false);
       setEditingProduct(null);
       resetForm();
-      loadProducts();
+      triggerRefresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update product');
     }
@@ -126,7 +145,7 @@ const ProductManagement: React.FC = () => {
       await shopApiService.deleteProduct(hotelId, productToDelete.id);
       setDeleteDialogOpen(false);
       setProductToDelete(null);
-      loadProducts();
+      triggerRefresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete product');
     }
@@ -139,10 +158,29 @@ const ProductManagement: React.FC = () => {
       } else if (field === 'isAvailable') {
         await shopApiService.toggleProductAvailable(hotelId, product.id);
       }
-      loadProducts();
+      triggerRefresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : `Failed to update product ${field}`);
     }
+  };
+
+  const handlePageChange = (event: unknown, newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleRowsPerPageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0); // Reset to first page when changing page size
+  };
+
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
+    setPage(0); // Reset to first page when searching
+  };
+
+  const handleCategoryChange = (event: any) => {
+    setCategoryFilter(event.target.value as string);
+    setPage(0); // Reset to first page when changing category
   };
 
   const openCreateDialog = () => {
@@ -190,13 +228,6 @@ const ProductManagement: React.FC = () => {
   // Translate products for display
   const translatedProducts = translateProducts(products, t);
 
-  const filteredProducts = translatedProducts.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         product.sku.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = categoryFilter === 'ALL' || product.category === categoryFilter;
-    return matchesSearch && matchesCategory;
-  });
-
   const getCategoryColor = (category: ProductCategory) => {
     switch (category) {
       case ProductCategory.BEVERAGES: return 'primary';
@@ -227,51 +258,39 @@ const ProductManagement: React.FC = () => {
         </Button>
       </Box>
 
-      {/* Filters */}
-      <Card sx={{ mb: 3 }}>
-        <CardContent>
-          <Grid container spacing={2} alignItems="center">
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                label={t('shop.products.searchPlaceholder')}
-                variant="outlined"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} md={3}>
-              <FormControl fullWidth>
-                <InputLabel>{t('shop.products.form.category')}</InputLabel>
-                <Select
-                  value={categoryFilter}
-                  label={t('shop.products.form.category')}
-                  onChange={(e) => setCategoryFilter(e.target.value)}
-                >
-                  <MenuItem value="ALL">{t('shop.products.categories.all')}</MenuItem>
-                  {Object.values(ProductCategory).map((category) => (
-                    <MenuItem key={category} value={category}>
-                      {t(`categoryNames.${category}`)}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} md={3}>
-              <Typography variant="body2" color="text.secondary">
-                {filteredProducts.length} of {translatedProducts.length} {t('shop.dashboard.tabs.products').toLowerCase()}
-              </Typography>
-            </Grid>
-          </Grid>
-        </CardContent>
-      </Card>
+      {/* Filters - matching FrontDesk style */}
+      <Box sx={{ mb: 3, display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
+        <TextField
+          label={t('shop.products.searchPlaceholder')}
+          value={searchTerm}
+          onChange={handleSearchChange}
+          size="small"
+          sx={{ minWidth: 200 }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            ),
+          }}
+        />
+        
+        <FormControl size="small" sx={{ minWidth: 150 }}>
+          <InputLabel>{t('shop.products.form.category')}</InputLabel>
+          <Select
+            value={categoryFilter}
+            label={t('shop.products.form.category')}
+            onChange={handleCategoryChange}
+          >
+            <MenuItem value="ALL">{t('shop.products.categories.all')}</MenuItem>
+            {Object.values(ProductCategory).map((category) => (
+              <MenuItem key={category} value={category}>
+                {t(`categoryNames.${category}`)}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Box>
 
       {/* Error Alert */}
       {error && (
@@ -294,7 +313,7 @@ const ProductManagement: React.FC = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredProducts.map((product) => (
+            {translatedProducts.map((product) => (
               <TableRow key={product.id}>
                 <TableCell>
                   <Box>
@@ -389,6 +408,16 @@ const ProductManagement: React.FC = () => {
           </TableBody>
         </Table>
       </TableContainer>
+
+      <TablePagination
+        rowsPerPageOptions={[5, 10, 25]}
+        component="div"
+        count={totalElements}
+        rowsPerPage={rowsPerPage}
+        page={page}
+        onPageChange={handlePageChange}
+        onRowsPerPageChange={handleRowsPerPageChange}
+      />
 
       {/* Create/Edit Dialog */}
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="md" fullWidth>

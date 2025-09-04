@@ -68,8 +68,8 @@ const RoleBasedRouter: React.FC = () => {
   
   // If user is authenticated, check their roles and redirect to appropriate dashboard
   if (isAuthenticated && user?.roles) {
-    // System-wide users (no tenant binding) - SYSTEM_ADMIN only
-    if (user.roles.includes('SYSTEM_ADMIN')) {
+    // System-wide users (no tenant binding) - SYSTEM_ADMIN or ADMIN without tenantId
+    if (user.roles.includes('SYSTEM_ADMIN') || (user.roles.includes('ADMIN') && !user.tenantId)) {
       return <Navigate to="/system-dashboard" replace />;
     }
     

@@ -17,39 +17,74 @@ import java.util.Optional;
 @Repository
 public interface TodoRepository extends JpaRepository<Todo, Long> {
 
-    List<Todo> findByUserAndTenantOrderByCreatedAtDesc(User user, Tenant tenant);
+        // Methods for tenant-bound users
+        List<Todo> findByUserAndTenantOrderByCreatedAtDesc(User user, Tenant tenant);
 
-    List<Todo> findByUserAndTenantAndCompletedOrderByCreatedAtDesc(User user, Tenant tenant, Boolean completed);
+        List<Todo> findByUserAndTenantAndCompletedOrderByCreatedAtDesc(User user, Tenant tenant, Boolean completed);
 
-    Page<Todo> findByUserAndTenant(User user, Tenant tenant, Pageable pageable);
+        Page<Todo> findByUserAndTenant(User user, Tenant tenant, Pageable pageable);
 
-    @Query("SELECT t FROM Todo t WHERE t.user = :user AND t.tenant = :tenant AND " +
-            "(:completed IS NULL OR t.completed = :completed) " +
-            "ORDER BY " +
-            "CASE WHEN :sortBy = 'priority' THEN " +
-            "  CASE t.priority " +
-            "    WHEN 'HIGH' THEN 1 " +
-            "    WHEN 'MEDIUM' THEN 2 " +
-            "    WHEN 'LOW' THEN 3 " +
-            "  END " +
-            "END, " +
-            "CASE WHEN :sortBy = 'dueDate' THEN t.dueDate END, " +
-            "CASE WHEN :sortBy = 'created' THEN t.createdAt END DESC, " +
-            "CASE WHEN :sortBy = 'alphabetical' THEN t.title END")
-    List<Todo> findUserTodosWithFiltersAndSorting(
-            @Param("user") User user,
-            @Param("tenant") Tenant tenant,
-            @Param("completed") Boolean completed,
-            @Param("sortBy") String sortBy);
+        // Methods for system-wide users (no tenant)
+        List<Todo> findByUserAndTenantIsNullOrderByCreatedAtDesc(User user);
 
-    @Query("SELECT COUNT(t) FROM Todo t WHERE t.user = :user AND t.tenant = :tenant AND t.completed = false")
-    long countPendingTodos(@Param("user") User user, @Param("tenant") Tenant tenant);
+        Page<Todo> findByUserAndTenantIsNull(User user, Pageable pageable);
 
-    @Query("SELECT t FROM Todo t WHERE t.user = :user AND t.tenant = :tenant AND t.dueDate <= :dueDate AND t.completed = false")
-    List<Todo> findOverdueTodos(@Param("user") User user, @Param("tenant") Tenant tenant,
-            @Param("dueDate") LocalDateTime dueDate);
+        @Query("SELECT t FROM Todo t WHERE t.user = :user AND t.tenant = :tenant AND " +
+                        "(:completed IS NULL OR t.completed = :completed) " +
+                        "ORDER BY " +
+                        "CASE WHEN :sortBy = 'priority' THEN " +
+                        "  CASE t.priority " +
+                        "    WHEN 'HIGH' THEN 1 " +
+                        "    WHEN 'MEDIUM' THEN 2 " +
+                        "    WHEN 'LOW' THEN 3 " +
+                        "  END " +
+                        "END, " +
+                        "CASE WHEN :sortBy = 'dueDate' THEN t.dueDate END, " +
+                        "CASE WHEN :sortBy = 'created' THEN t.createdAt END DESC, " +
+                        "CASE WHEN :sortBy = 'alphabetical' THEN t.title END")
+        List<Todo> findUserTodosWithFiltersAndSorting(
+                        @Param("user") User user,
+                        @Param("tenant") Tenant tenant,
+                        @Param("completed") Boolean completed,
+                        @Param("sortBy") String sortBy);
 
-    Optional<Todo> findByIdAndUserAndTenant(Long id, User user, Tenant tenant);
+        // System-wide filtering query
+        @Query("SELECT t FROM Todo t WHERE t.user = :user AND t.tenant IS NULL AND " +
+                        "(:completed IS NULL OR t.completed = :completed) " +
+                        "ORDER BY " +
+                        "CASE WHEN :sortBy = 'priority' THEN " +
+                        "  CASE t.priority " +
+                        "    WHEN 'HIGH' THEN 1 " +
+                        "    WHEN 'MEDIUM' THEN 2 " +
+                        "    WHEN 'LOW' THEN 3 " +
+                        "  END " +
+                        "END, " +
+                        "CASE WHEN :sortBy = 'dueDate' THEN t.dueDate END, " +
+                        "CASE WHEN :sortBy = 'created' THEN t.createdAt END DESC, " +
+                        "CASE WHEN :sortBy = 'alphabetical' THEN t.title END")
+        List<Todo> findSystemWideUserTodosWithFiltersAndSorting(
+                        @Param("user") User user,
+                        @Param("completed") Boolean completed,
+                        @Param("sortBy") String sortBy);
 
-    void deleteByIdAndUserAndTenant(Long id, User user, Tenant tenant);
+        @Query("SELECT COUNT(t) FROM Todo t WHERE t.user = :user AND t.tenant = :tenant AND t.completed = false")
+        long countPendingTodos(@Param("user") User user, @Param("tenant") Tenant tenant);
+
+        @Query("SELECT COUNT(t) FROM Todo t WHERE t.user = :user AND t.tenant IS NULL AND t.completed = false")
+        long countSystemWidePendingTodos(@Param("user") User user);
+
+        @Query("SELECT t FROM Todo t WHERE t.user = :user AND t.tenant = :tenant AND t.dueDate <= :dueDate AND t.completed = false")
+        List<Todo> findOverdueTodos(@Param("user") User user, @Param("tenant") Tenant tenant,
+                        @Param("dueDate") LocalDateTime dueDate);
+
+        @Query("SELECT t FROM Todo t WHERE t.user = :user AND t.tenant IS NULL AND t.dueDate <= :dueDate AND t.completed = false")
+        List<Todo> findSystemWideOverdueTodos(@Param("user") User user, @Param("dueDate") LocalDateTime dueDate);
+
+        Optional<Todo> findByIdAndUserAndTenant(Long id, User user, Tenant tenant);
+
+        Optional<Todo> findByIdAndUserAndTenantIsNull(Long id, User user);
+
+        void deleteByIdAndUserAndTenant(Long id, User user, Tenant tenant);
+
+        void deleteByIdAndUserAndTenantIsNull(Long id, User user);
 }

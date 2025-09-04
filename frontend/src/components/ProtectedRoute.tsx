@@ -51,7 +51,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole,
     'OPERATIONS_SUPERVISOR': 3,
     'HOTEL_MANAGER': 3,
     'HOTEL_ADMIN': 4,
-    'ADMIN': 5 // System admin role
+    'ADMIN': 5, // System admin role
+    'SYSTEM_ADMIN': 6 // Highest level system admin role
   };
 
   // Check if user has the required role or a higher role
@@ -70,6 +71,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole,
     
     // If requiredRole is provided, check hierarchy
     if (requiredRole) {
+      // Special case: SYSTEM_ADMIN can access everything
+      if (userRoles.includes('SYSTEM_ADMIN')) {
+        return true;
+      }
+      
       const requiredRoleLevel = roleHierarchy[requiredRole] || 0;
       return userRoles.some(role => {
         const userRoleLevel = roleHierarchy[role] || 0;

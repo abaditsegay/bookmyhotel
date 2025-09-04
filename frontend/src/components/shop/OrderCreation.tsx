@@ -43,7 +43,6 @@ import PaymentDialog from './PaymentDialog';
 interface OrderItem {
   product: Product;
   quantity: number;
-  notes?: string;
 }
 
 const OrderCreation: React.FC = () => {
@@ -63,7 +62,6 @@ const OrderCreation: React.FC = () => {
   const [isDelivery, setIsDelivery] = useState(false);
   const [deliveryType, setDeliveryType] = useState<DeliveryType>(DeliveryType.PICKUP);
   const [deliveryAddress, setDeliveryAddress] = useState('');
-  const [notes, setNotes] = useState('');
 
   // Receipt dialog state
   const [receiptDialogOpen, setReceiptDialogOpen] = useState(false);
@@ -116,16 +114,6 @@ const OrderCreation: React.FC = () => {
     );
   };
 
-  const updateItemNotes = (productId: number, newNotes: string) => {
-    setOrderItems(prev => 
-      prev.map(item => 
-        item.product.id === productId 
-          ? { ...item, notes: newNotes }
-          : item
-      )
-    );
-  };
-
   const removeItem = (productId: number) => {
     setOrderItems(prev => prev.filter(item => item.product.id !== productId));
   };
@@ -149,15 +137,13 @@ const OrderCreation: React.FC = () => {
         roomNumber: roomNumber.trim() || undefined,
         reservationId: undefined, // TODO: Add reservation lookup by room number if needed
         paymentMethod,
-        notes: notes.trim() || undefined,
         isDelivery: deliveryType === DeliveryType.ROOM_DELIVERY,
         deliveryAddress: deliveryType === DeliveryType.ROOM_DELIVERY ? deliveryAddress.trim() || undefined : undefined,
         deliveryTime: undefined, // No delivery time selection in current UI
         deliveryType,
         items: orderItems.map(item => ({
           productId: item.product.id,
-          quantity: item.quantity,
-          notes: item.notes || undefined
+          quantity: item.quantity
         }))
       };
 
@@ -176,7 +162,6 @@ const OrderCreation: React.FC = () => {
         setCreatedOrder(null);
         setOrderItems([]);
         setRoomNumber('');
-        setNotes('');
         setPaymentCompleted(false);
         setCompletedPaymentMethod(null);
         setPaymentReference(null);
@@ -197,7 +182,6 @@ const OrderCreation: React.FC = () => {
         setCreatedOrder(null);
         setOrderItems([]);
         setRoomNumber('');
-        setNotes('');
         
         // Show success message
         navigate('/shop?tab=orders', { 
@@ -521,14 +505,6 @@ const OrderCreation: React.FC = () => {
                               <Typography variant="body2" noWrap>
                                 {item.product.name}
                               </Typography>
-                              <TextField
-                                fullWidth
-                                placeholder="Notes..."
-                                value={item.notes || ''}
-                                onChange={(e) => updateItemNotes(item.product.id, e.target.value)}
-                                size="small"
-                                sx={{ mt: 1 }}
-                              />
                             </TableCell>
                             <TableCell align="center">
                               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -569,17 +545,6 @@ const OrderCreation: React.FC = () => {
                   </TableContainer>
                 )}
               </Box>
-
-              {/* Notes */}
-              <TextField
-                fullWidth
-                label="Order Notes (Optional)"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                multiline
-                rows={2}
-                sx={{ mb: 3 }}
-              />
 
               {/* Payment Status Indicator for Anonymous Sales */}
               {purchaseType === 'ANONYMOUS' && paymentCompleted && completedPaymentMethod && (
