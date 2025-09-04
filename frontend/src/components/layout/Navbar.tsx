@@ -369,9 +369,19 @@ const Navbar: React.FC = () => {
         sx={{
           backgroundColor: theme.palette.primary.main,
           backgroundImage: (theme) => theme.custom.constants.gradients.primaryButton,
+          height: 'auto', // Allow AppBar to grow with content
         }}
       >
-        <Toolbar sx={{ justifyContent: 'space-between' }}>
+        <Toolbar 
+          sx={{ 
+            justifyContent: 'space-between',
+            minHeight: 56, // Compact navbar height
+            height: 'auto', // Allow toolbar to grow
+            alignItems: 'center', // Center items vertically
+            py: 1 // Reduced padding for compact look
+          }}
+          disableGutters={false}
+        >
           {/* Left Section: Logo + Mobile Menu */}
           <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
             {isMobile && (
@@ -392,7 +402,8 @@ const Navbar: React.FC = () => {
                 display: 'flex', 
                 alignItems: 'center', 
                 cursor: 'pointer',
-                '&:hover': { opacity: 0.9 }
+                '&:hover': { opacity: 0.9 },
+                height: 'auto', // Let container size naturally
               }}
               onClick={() => handleNavigation('/')}
             >
@@ -401,7 +412,11 @@ const Navbar: React.FC = () => {
                 src="/logo.svg" 
                 alt="BookMyHotel" 
                 sx={{ 
-                  height: 5 // Using theme spacing unit instead of '40px'
+                  height: 32, // Compact logo for compact navbar
+                  width: 'auto', // Maintain aspect ratio
+                  maxHeight: 32, // Prevent shrinking
+                  minHeight: 32, // Prevent shrinking
+                  objectFit: 'contain', // Ensure proper scaling
                 }}
               />
             </Box>

@@ -15,11 +15,13 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import VerticalHotelAdvertisementBanner from '../components/VerticalHotelAdvertisementBanner';
+import performanceUtils from '../utils/performanceUtils';
 
 const HomePage = () => {
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const enableAnimations = !performanceUtils.isSlowConnection();
 
   return (
     <Container maxWidth="xl" sx={{ py: 3 }}>
@@ -46,13 +48,10 @@ const HomePage = () => {
                     sx={{ 
                       textAlign: 'center', 
                       cursor: 'pointer',
-                      transition: 'all 0.3s ease',
+                      ...performanceUtils.getAnimationStyles(enableAnimations),
                       background: (theme) => theme.custom.constants.gradients.primaryButton,
                       color: 'white',
-                      '&:hover': {
-                        transform: 'translateY(-2px)',
-                        boxShadow: 6,
-                      }
+                      ...performanceUtils.getHoverStyles(enableAnimations),
                     }}
                     onClick={() => navigate('/hotels/search')}
                   >
@@ -73,13 +72,10 @@ const HomePage = () => {
                     sx={{ 
                       textAlign: 'center', 
                       cursor: 'pointer',
-                      transition: 'all 0.3s ease',
+                      ...performanceUtils.getAnimationStyles(enableAnimations),
                       background: (theme) => theme.custom.constants.gradients.successButton,
                       color: 'white',
-                      '&:hover': {
-                        transform: 'translateY(-2px)',
-                        boxShadow: 6,
-                      }
+                      ...performanceUtils.getHoverStyles(enableAnimations),
                     }}
                     onClick={() => navigate('/find-booking')}
                   >
@@ -191,7 +187,6 @@ const HomePage = () => {
                       textAlign: 'center'
                     }}
                   >
-                    <SearchIcon sx={{ fontSize: 60, mb: 2 }} />
                     <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
                       Search Hotels
                     </Typography>
@@ -208,10 +203,12 @@ const HomePage = () => {
                             p: 2,
                             border: (theme) => `1px solid rgba(255, 255, 255, ${theme.custom.constants.alpha.high})`,
                             cursor: 'pointer',
-                            transition: 'all 0.2s ease',
-                            '&:hover': {
-                              backgroundColor: (theme) => `rgba(255, 255, 255, ${theme.custom.constants.alpha.medium})`,
-                            }
+                            ...performanceUtils.getAnimationStyles(enableAnimations),
+                            ...(enableAnimations && !performanceUtils.isSlowConnection() ? {
+                              '&:hover': {
+                                backgroundColor: (theme) => `rgba(255, 255, 255, ${theme.custom.constants.alpha.medium})`,
+                              }
+                            } : {})
                           }}
                           onClick={() => navigate('/hotels/search')}
                         >
@@ -231,10 +228,12 @@ const HomePage = () => {
                             p: 2,
                             border: '1px solid rgba(255, 255, 255, 0.3)',
                             cursor: 'pointer',
-                            transition: 'all 0.2s ease',
-                            '&:hover': {
-                              backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                            }
+                            ...performanceUtils.getAnimationStyles(enableAnimations),
+                            ...(enableAnimations && !performanceUtils.isSlowConnection() ? {
+                              '&:hover': {
+                                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                              }
+                            } : {})
                           }}
                           onClick={() => navigate('/hotels/search')}
                         >
@@ -254,10 +253,12 @@ const HomePage = () => {
                             p: 2,
                             border: '1px solid rgba(255, 255, 255, 0.3)',
                             cursor: 'pointer',
-                            transition: 'all 0.2s ease',
-                            '&:hover': {
-                              backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                            }
+                            ...performanceUtils.getAnimationStyles(enableAnimations),
+                            ...(enableAnimations && !performanceUtils.isSlowConnection() ? {
+                              '&:hover': {
+                                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                              }
+                            } : {})
                           }}
                           onClick={() => navigate('/hotels/search')}
                         >
@@ -279,15 +280,16 @@ const HomePage = () => {
                         p: 2,
                         cursor: 'pointer',
                         fontWeight: 'bold',
-                        transition: 'all 0.2s ease',
-                        '&:hover': {
-                          backgroundColor: 'white',
-                          transform: 'translateY(-1px)',
-                        }
+                        ...performanceUtils.getAnimationStyles(enableAnimations),
+                        ...(enableAnimations && !performanceUtils.isSlowConnection() ? {
+                          '&:hover': {
+                            backgroundColor: 'white',
+                            transform: 'translateY(-1px)',
+                          }
+                        } : {})
                       }}
                       onClick={() => navigate('/hotels/search')}
                     >
-                      <SearchIcon sx={{ mr: 1, fontSize: 20 }} />
                       Search Hotels
                     </Box>
                   </Card>
@@ -300,11 +302,8 @@ const HomePage = () => {
                       color: 'white',
                       textAlign: 'center',
                       cursor: 'pointer',
-                      transition: 'all 0.3s ease',
-                      '&:hover': {
-                        transform: 'translateY(-2px)',
-                        boxShadow: 6,
-                      }
+                      ...performanceUtils.getAnimationStyles(enableAnimations),
+                      ...performanceUtils.getHoverStyles(enableAnimations),
                     }}
                     onClick={() => navigate('/find-booking')}
                   >

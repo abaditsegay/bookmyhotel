@@ -182,7 +182,7 @@ const HotelSearchPage: React.FC = () => {
               textAlign: 'center' 
             }}>
               <Typography variant="h4" component="h2" gutterBottom sx={{ fontWeight: 'bold' }}>
-                🏨 {t('hotelSearch.title')}
+                {t('hotelSearch.title')}
               </Typography>
               <Typography variant="subtitle1" sx={{ opacity: 0.9 }}>
                 {t('hotelSearch.subtitle')}

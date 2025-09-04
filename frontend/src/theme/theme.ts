@@ -11,7 +11,7 @@ export const themeConstants = {
   telebirrGreen: '#00A651',
   
   // Layout constants
-  logoHeight: 5, // 40px in theme units (8px * 5)
+  logoHeight: 32, // 32px - compact navbar logo
   headerMaxWidths: {
     xs: '280px',
     sm: '400px', 
@@ -59,6 +59,21 @@ export const themeConstants = {
   gradients: {
     primaryButton: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
     successButton: 'linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)',
+  },
+  
+  // Performance-optimized animation styles
+  animations: {
+    fast: 'all 0.15s ease',
+    normal: 'all 0.2s ease', 
+    slow: 'all 0.3s ease',
+    none: 'none',
+  },
+  
+  // Lightweight shadow alternatives
+  lightShadows: {
+    minimal: '0 1px 3px rgba(0,0,0,0.1)',
+    light: '0 2px 4px rgba(0,0,0,0.1)', 
+    medium: '0 4px 8px rgba(0,0,0,0.1)',
   },
 };
 
