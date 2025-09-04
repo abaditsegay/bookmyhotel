@@ -82,7 +82,7 @@ public class HotelRegistrationService {
         registration.setContactPerson(request.getContactPerson());
         registration.setLicenseNumber(request.getLicenseNumber());
         registration.setTaxId(request.getTaxId());
-        
+
         // Map the new fields
         registration.setWebsiteUrl(request.getWebsiteUrl());
         registration.setFacilityAmenities(request.getFacilityAmenities());
