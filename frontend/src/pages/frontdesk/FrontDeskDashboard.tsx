@@ -205,8 +205,8 @@ const FrontDeskDashboard: React.FC = () => {
       </Grid>      {/* Tabs */}
       <Paper sx={{ mb: 3 }}>
         <Tabs value={activeTab} onChange={handleTabChange} aria-label="front desk tabs">
-          <Tab label="Booking Management" />
-          <Tab label="Room Management" />
+          <Tab label="Bookings" />
+          <Tab label="Rooms" />
           <Tab label="Housekeeping" />
         </Tabs>
       </Paper>

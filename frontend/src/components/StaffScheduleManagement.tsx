@@ -26,7 +26,6 @@ import {
   Alert,
   CircularProgress,
   TablePagination,
-  Fab,
   Stack,
 } from '@mui/material';
 import {
@@ -530,48 +529,28 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
   return (
     <Box sx={{ mt: 4, mb: 4 }}>
       {/* Header Section */}
-      <Paper elevation={0} sx={{ p: 3, mb: 3, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white' }}>
-        <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Box display="flex" alignItems="center">
-            <ScheduleIcon sx={{ mr: 2, fontSize: 32 }} />
-            <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-              Staff Schedule Management
-            </Typography>
-          </Box>
-          <Box display="flex" alignItems="center" gap={2}>
-            <Fab
-              color="secondary"
-              variant="extended"
-              onClick={() => {
-                setEditingSchedule(null);
-                resetForm();
-                setShowModal(true);
-              }}
-              sx={{ 
-                backgroundColor: 'rgba(255,255,255,0.2)', 
-                color: 'white',
-                '&:hover': { backgroundColor: 'rgba(255,255,255,0.3)' }
-              }}
-            >
-              <AddIcon sx={{ mr: 1 }} />
-              Add Schedule
-            </Fab>
-            <Fab
-              color="primary"
-              variant="extended"
-              onClick={() => setShowUploadModal(true)}
-              sx={{ 
-                backgroundColor: 'rgba(255,255,255,0.15)', 
-                color: 'white',
-                '&:hover': { backgroundColor: 'rgba(255,255,255,0.25)' }
-              }}
-            >
-              <CloudUploadIcon sx={{ mr: 1 }} />
-              Upload Schedule
-            </Fab>
-          </Box>
+      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => {
+              setEditingSchedule(null);
+              resetForm();
+              setShowModal(true);
+            }}
+          >
+            Add Schedule
+          </Button>
+          <Button
+            variant="outlined"
+            startIcon={<UploadIcon />}
+            onClick={() => setShowUploadModal(true)}
+          >
+            Upload Schedule
+          </Button>
         </Box>
-      </Paper>
+      </Box>
 
       {/* Alerts */}
       {error && (
@@ -1071,7 +1050,9 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
             
             <Box 
               sx={{ 
-                border: '2px dashed #ccc', 
+                border: 2, 
+                borderStyle: 'dashed',
+                borderColor: 'divider', 
                 borderRadius: 2, 
                 p: 3, 
                 mb: 3,

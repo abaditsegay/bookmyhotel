@@ -7,6 +7,7 @@ import {
   TextField,
   Button,
   Grid,
+  Box,
   Alert,
   CircularProgress,
 } from '@mui/material';
@@ -123,9 +124,9 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
       <DialogTitle>Edit Hotel Details</DialogTitle>
       <DialogContent>
         {loading ? (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: '20px' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'center', p: 2.5 }}>
             <CircularProgress />
-          </div>
+          </Box>
         ) : (
           <Grid container spacing={2} sx={{ mt: 1 }}>
             {displayError && (

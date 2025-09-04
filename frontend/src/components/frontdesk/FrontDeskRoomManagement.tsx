@@ -30,7 +30,6 @@ import {
   TextField
 } from '@mui/material';
 import {
-  Refresh as RefreshIcon,
   Edit as EditIcon
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
@@ -377,18 +376,7 @@ const FrontDeskRoomManagement: React.FC<FrontDeskRoomManagementProps> = ({ onRoo
   return (
     <Box>
       <Toolbar sx={{ pl: { sm: 2 }, pr: { xs: 1, sm: 1 } }}>
-        <Typography
-          sx={{ flex: '1 1 100%' }}
-          variant="h6"
-          component="div"
-        >
-          Room Management
-        </Typography>
-        <Tooltip title="Refresh">
-          <IconButton onClick={loadRooms} disabled={loading}>
-            <RefreshIcon />
-          </IconButton>
-        </Tooltip>
+        <Box sx={{ flex: '1 1 100%' }} />
       </Toolbar>
 
       {error && (

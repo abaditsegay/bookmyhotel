@@ -323,14 +323,14 @@ const OrderManagement: React.FC = () => {
                               }
                               secondary={
                                 <Box>
-                                  <div style={{ fontSize: '0.875rem', lineHeight: 1.43 }}>
+                                  <Typography variant="body2" sx={{ lineHeight: 1.43 }}>
                                     Quantity: {item.quantity} × ETB {(item.unitPrice * 55).toFixed(0)}
-                                  </div>
-                                  <div style={{ fontSize: '0.75rem', lineHeight: 1.66 }}>SKU: {item.productSku}</div>
+                                  </Typography>
+                                  <Typography variant="caption" sx={{ lineHeight: 1.66 }}>SKU: {item.productSku}</Typography>
                                   {item.notes && (
-                                    <div style={{ fontSize: '0.75rem', lineHeight: 1.66, display: 'block' }}>
+                                    <Typography variant="caption" sx={{ lineHeight: 1.66, display: 'block' }}>
                                       Note: {item.notes}
-                                    </div>
+                                    </Typography>
                                   )}
                                 </Box>
                               }

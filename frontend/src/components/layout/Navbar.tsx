@@ -29,6 +29,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { themeConstants } from '../../theme/theme';
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
@@ -200,7 +201,7 @@ const Navbar: React.FC = () => {
                 : 'transparent',
             '&:hover': {
               backgroundColor: item.label === 'Shop' 
-                ? '#cc0000' 
+                ? 'error.dark' 
                 : 'rgba(255, 255, 255, 0.1)',
             },
             // Ensure proper stacking and boundaries
@@ -259,13 +260,13 @@ const Navbar: React.FC = () => {
             sx={{
               cursor: 'pointer',
               backgroundColor: item.label === 'Hotel Shop' 
-                ? 'red' 
+                ? theme.palette.error.main
                 : item.path && isActivePath(item.path) 
                   ? theme.palette.action.selected 
                   : 'transparent',
               '&:hover': {
                 backgroundColor: item.label === 'Hotel Shop' 
-                  ? '#cc0000' 
+                  ? theme.palette.error.dark
                   : theme.palette.action.hover,
               },
             }}
@@ -367,7 +368,7 @@ const Navbar: React.FC = () => {
         elevation={2}
         sx={{
           backgroundColor: theme.palette.primary.main,
-          backgroundImage: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
+          backgroundImage: (theme) => theme.custom.constants.gradients.primaryButton,
         }}
       >
         <Toolbar sx={{ justifyContent: 'space-between' }}>
@@ -395,11 +396,12 @@ const Navbar: React.FC = () => {
               }}
               onClick={() => handleNavigation('/')}
             >
-              <img 
+              <Box
+                component="img"
                 src="/logo.svg" 
                 alt="BookMyHotel" 
-                style={{ 
-                  height: '40px'
+                sx={{ 
+                  height: 5 // Using theme spacing unit instead of '40px'
                 }}
               />
             </Box>
@@ -413,14 +415,14 @@ const Navbar: React.FC = () => {
                 component="div" 
                 sx={{ 
                   fontWeight: 'bold',
-                  color: '#FFD700', // Bright gold color
+                  color: themeConstants.brandGold,
                   textAlign: 'center',
                   fontSize: { xs: '1.2rem', sm: '1.8rem', md: '2rem' },
-                  textShadow: '2px 2px 4px rgba(0,0,0,0.7)', // Stronger shadow for better contrast
+                  textShadow: themeConstants.shadows.textShadow,
                   // Allow text to wrap and display fully
                   whiteSpace: 'normal',
                   wordBreak: 'break-word',
-                  maxWidth: { xs: '280px', sm: '400px', md: '600px' },
+                  maxWidth: themeConstants.headerMaxWidths,
                   lineHeight: 1.2,
                 }}
               >
@@ -480,7 +482,7 @@ const Navbar: React.FC = () => {
                       sx={{
                         borderRadius: 2,
                         fontSize: '0.8rem', // Smaller font size
-                        '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
+                        '&:hover': { backgroundColor: 'action.hover' },
                       }}
                     >
                       Find Booking

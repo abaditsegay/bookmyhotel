@@ -467,7 +467,7 @@ const BookingPage: React.FC = () => {
               {isAuthenticated && !isGuestBookingFlow ? (
                 // Display authenticated user information (only if not doing guest booking)
                 <Grid item xs={12}>
-                  <Card variant="outlined" sx={{ p: 2, backgroundColor: '#f5f5f5' }}>
+                  <Card variant="outlined" sx={{ p: 2, backgroundColor: 'grey.50' }}>
                     <Typography variant="body1" gutterBottom>
                       <strong>Name:</strong> {user?.firstName} {user?.lastName}
                     </Typography>
@@ -586,7 +586,7 @@ const BookingPage: React.FC = () => {
                       control={<Radio />}
                       label={
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          <PhoneIcon sx={{ mr: 1, color: '#FF6B35' }} />
+                          <PhoneIcon sx={{ mr: 1, color: 'warning.main' }} />
                           🇪🇹 M-birr
                         </Box>
                       }
@@ -596,7 +596,7 @@ const BookingPage: React.FC = () => {
                       control={<Radio />}
                       label={
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          <PhoneIcon sx={{ mr: 1, color: '#00A651' }} />
+                          <PhoneIcon sx={{ mr: 1, color: 'success.main' }} />
                           🇪🇹 Telebirr
                         </Box>
                       }
@@ -774,8 +774,8 @@ const BookingPage: React.FC = () => {
               {paymentMethod === 'mbirr' && (
                 <>
                   <Grid item xs={12}>
-                    <Paper sx={{ p: 2, bgcolor: '#FFF5F0', border: '2px solid #FF6B35' }}>
-                      <Typography variant="subtitle2" gutterBottom sx={{ display: 'flex', alignItems: 'center', fontWeight: 'bold', color: '#FF6B35' }}>
+                    <Paper sx={{ p: 2, bgcolor: 'warning.light', border: '2px solid', borderColor: 'warning.main' }}>
+                      <Typography variant="subtitle2" gutterBottom sx={{ display: 'flex', alignItems: 'center', fontWeight: 'bold', color: 'warning.main' }}>
                         <PhoneIcon sx={{ mr: 1 }} />
                         🇪🇹 M-birr Mobile Payment
                       </Typography>
@@ -806,14 +806,14 @@ const BookingPage: React.FC = () => {
                             InputProps={{
                               startAdornment: (
                                 <InputAdornment position="start">
-                                  <PhoneIcon sx={{ color: '#FF6B35' }} />
+                                  <PhoneIcon sx={{ color: (theme) => theme.custom.constants.mbirrOrange }} />
                                 </InputAdornment>
                               ),
                             }}
                           />
                         </Grid>
                         <Grid item xs={12} sm={6}>
-                          <Box sx={{ p: 2, bgcolor: '#FF6B35', color: 'white', borderRadius: 1 }}>
+                          <Box sx={{ p: 2, bgcolor: (theme) => theme.custom.constants.mbirrOrange, color: 'white', borderRadius: 1 }}>
                             <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>
                               M-birr Information
                             </Typography>
@@ -849,8 +849,8 @@ const BookingPage: React.FC = () => {
               {paymentMethod === 'telebirr' && (
                 <>
                   <Grid item xs={12}>
-                    <Paper sx={{ p: 2, bgcolor: '#F0FFF4', border: '2px solid #00A651' }}>
-                      <Typography variant="subtitle2" gutterBottom sx={{ display: 'flex', alignItems: 'center', fontWeight: 'bold', color: '#00A651' }}>
+                    <Paper sx={{ p: 2, bgcolor: (theme) => theme.custom.constants.telebirrGreen + '20', border: 2, borderColor: (theme) => theme.custom.constants.telebirrGreen }}>
+                      <Typography variant="subtitle2" gutterBottom sx={{ display: 'flex', alignItems: 'center', fontWeight: 'bold', color: (theme) => theme.custom.constants.telebirrGreen }}>
                         <PhoneIcon sx={{ mr: 1 }} />
                         🇪🇹 Telebirr Mobile Payment
                       </Typography>
@@ -881,14 +881,14 @@ const BookingPage: React.FC = () => {
                             InputProps={{
                               startAdornment: (
                                 <InputAdornment position="start">
-                                  <PhoneIcon sx={{ color: '#00A651' }} />
+                                  <PhoneIcon sx={{ color: (theme) => theme.custom.constants.telebirrGreen }} />
                                 </InputAdornment>
                               ),
                             }}
                           />
                         </Grid>
                         <Grid item xs={12} sm={6}>
-                          <Box sx={{ p: 2, bgcolor: '#00A651', color: 'white', borderRadius: 1 }}>
+                          <Box sx={{ p: 2, bgcolor: (theme) => theme.custom.constants.telebirrGreen, color: 'white', borderRadius: 1 }}>
                             <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>
                               Telebirr Information
                             </Typography>

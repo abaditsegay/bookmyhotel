@@ -34,7 +34,6 @@ import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  MonetizationOn as PriceIcon,
   Info as InfoIcon
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
@@ -250,13 +249,7 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
   return (
     <Box>
       {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <PriceIcon color="primary" />
-          <Typography variant="h5" fontWeight="bold">
-            Room Type Pricing
-          </Typography>
-        </Box>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mb: 3 }}>
         <Box sx={{ display: 'flex', gap: 1 }}>
           {pricingList.length === 0 && (
             <Button
@@ -293,40 +286,23 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
           <Typography variant="h6" gutterBottom>
             Pricing Information
           </Typography>
-          <Typography variant="body2" color="text.secondary" paragraph>
-            Set base prices for each room type. New rooms will automatically inherit these prices, 
-            but individual room prices can still be customized. Multipliers apply automatically 
-            based on booking dates.
-          </Typography>
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6} md={3}>
-              <Typography variant="caption" display="block" color="text.secondary">
-                Weekend Multiplier
-              </Typography>
               <Typography variant="body2">
                 Applied on Fridays & Saturdays
               </Typography>
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
-              <Typography variant="caption" display="block" color="text.secondary">
-                Holiday Multiplier
-              </Typography>
               <Typography variant="body2">
                 Applied on recognized holidays
               </Typography>
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
-              <Typography variant="caption" display="block" color="text.secondary">
-                Peak Season Multiplier
-              </Typography>
               <Typography variant="body2">
                 Applied during high-demand periods
               </Typography>
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
-              <Typography variant="caption" display="block" color="text.secondary">
-                Active Status
-              </Typography>
               <Typography variant="body2">
                 Only active pricing rules apply
               </Typography>

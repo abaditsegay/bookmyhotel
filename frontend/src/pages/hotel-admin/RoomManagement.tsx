@@ -386,10 +386,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-          Room Management
-        </Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mb: 3 }}>
           {tabValue === 0 && (
             <Button
               variant="contained"
@@ -411,7 +408,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
         <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
           <Tabs value={tabValue} onChange={(e, newValue) => setTabValue(newValue)}>
             <Tab label="Rooms" />
-            <Tab label="Room Type Pricing" />
+            <Tab label="Pricing" />
           </Tabs>
         </Box>
 
@@ -599,7 +596,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
           </Box>
         )}
 
-        {/* Tab Panel 1 - Room Type Pricing */}
+        {/* Tab Panel 1 - Pricing */}
         {tabValue === 1 && (
           <Box>
             <RoomTypePricing onPricingUpdate={loadRooms} />

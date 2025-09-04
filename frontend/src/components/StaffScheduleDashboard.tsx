@@ -1,16 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Container, 
-  Row, 
-  Col, 
-  Card, 
-  Badge, 
+import {
+  Container,
+  Grid,
+  Paper,
+  Typography,
+  Box,
+  Chip,
   Alert,
   Button,
   ButtonGroup,
-  Spinner
-} from 'react-bootstrap';
-import { Calendar, ChevronLeft, ChevronRight, Clock, Users } from 'lucide-react';
+  CircularProgress,
+  CardContent,
+  CardHeader,
+  IconButton
+} from '@mui/material';
+import {
+  CalendarToday as CalendarIcon,
+  ChevronLeft,
+  ChevronRight,
+  AccessTime as ClockIcon,
+  People as UsersIcon
+} from '@mui/icons-material';
 import axiosInstance from '../utils/axiosConfig';
 
 interface StaffSchedule {
@@ -129,25 +139,25 @@ const StaffScheduleDashboard: React.FC = () => {
     return schedules.filter(schedule => schedule.scheduleDate === dateStr);
   };
 
-  const getStatusBadgeVariant = (status: string) => {
+  const getStatusChipColor = (status: string) => {
     switch (status) {
-      case 'SCHEDULED': return 'secondary';
+      case 'SCHEDULED': return 'default';
       case 'CONFIRMED': return 'primary';
       case 'COMPLETED': return 'success';
-      case 'CANCELLED': return 'danger';
+      case 'CANCELLED': return 'error';
       case 'NO_SHOW': return 'warning';
-      default: return 'secondary';
+      default: return 'default';
     }
   };
 
-  const getDepartmentColor = (department: string) => {
-    const colors: Record<string, string> = {
+  const getDepartmentChipColor = (department: string) => {
+    const colors: Record<string, 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning'> = {
       'FRONTDESK': 'primary',
       'HOUSEKEEPING': 'success',
       'MAINTENANCE': 'warning',
-      'SECURITY': 'danger',
+      'SECURITY': 'error',
       'RESTAURANT': 'info',
-      'CONCIERGE': 'dark',
+      'CONCIERGE': 'secondary',
       'MANAGEMENT': 'secondary'
     };
     return colors[department] || 'secondary';
@@ -162,215 +172,260 @@ const StaffScheduleDashboard: React.FC = () => {
 
   if (loading) {
     return (
-      <Container className="mt-4 text-center">
-        <Spinner animation="border" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </Spinner>
-        <p className="mt-2">Loading schedule dashboard...</p>
+      <Container maxWidth="lg" sx={{ mt: 4, textAlign: 'center' }}>
+        <CircularProgress />
+        <Typography variant="body1" sx={{ mt: 2 }}>
+          Loading schedule dashboard...
+        </Typography>
       </Container>
     );
   }
 
   return (
-    <Container fluid className="mt-4">
-      {error && <Alert variant="danger" dismissible onClose={() => setError(null)}>{error}</Alert>}
+    <Container maxWidth="xl" sx={{ mt: 4 }}>
+      {error && (
+        <Alert 
+          severity="error" 
+          onClose={() => setError(null)}
+          sx={{ mb: 2 }}
+        >
+          {error}
+        </Alert>
+      )}
       
       {/* Header */}
-      <Row className="mb-4">
-        <Col>
-          <Card>
-            <Card.Header className="d-flex justify-content-between align-items-center">
-              <div className="d-flex align-items-center">
-                <Calendar className="me-2" size={24} />
-                <h5 className="mb-0">Staff Schedule Dashboard</h5>
-              </div>
-              <div className="d-flex align-items-center gap-3">
-                <ButtonGroup>
-                  <Button 
-                    variant={viewMode === 'week' ? 'primary' : 'outline-primary'}
-                    onClick={() => setViewMode('week')}
-                  >
-                    Week
-                  </Button>
-                  <Button 
-                    variant={viewMode === 'month' ? 'primary' : 'outline-primary'}
-                    onClick={() => setViewMode('month')}
-                  >
-                    Month
-                  </Button>
-                </ButtonGroup>
-                <ButtonGroup>
-                  <Button variant="outline-secondary" onClick={() => navigateDate('prev')}>
-                    <ChevronLeft size={16} />
-                  </Button>
-                  <Button variant="outline-secondary" onClick={() => navigateDate('next')}>
-                    <ChevronRight size={16} />
-                  </Button>
-                </ButtonGroup>
-              </div>
-            </Card.Header>
-            <Card.Body>
-              <h6 className="text-center">{getDateRange()}</h6>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
+      <Paper sx={{ mb: 4 }}>
+        <CardHeader
+          avatar={<CalendarIcon />}
+          title="Staff Schedule Dashboard"
+          action={
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <ButtonGroup variant="outlined">
+                <Button 
+                  variant={viewMode === 'week' ? 'contained' : 'outlined'}
+                  onClick={() => setViewMode('week')}
+                >
+                  Week
+                </Button>
+                <Button 
+                  variant={viewMode === 'month' ? 'contained' : 'outlined'}
+                  onClick={() => setViewMode('month')}
+                >
+                  Month
+                </Button>
+              </ButtonGroup>
+              <ButtonGroup variant="outlined">
+                <IconButton onClick={() => navigateDate('prev')}>
+                  <ChevronLeft />
+                </IconButton>
+                <IconButton onClick={() => navigateDate('next')}>
+                  <ChevronRight />
+                </IconButton>
+              </ButtonGroup>
+            </Box>
+          }
+        />
+        <CardContent>
+          <Typography variant="h6" textAlign="center">
+            {getDateRange()}
+          </Typography>
+        </CardContent>
+      </Paper>
 
       {/* Stats Cards */}
       {stats && (
-        <Row className="mb-3">
-          <Col md={2}>
-            <Card className="text-center">
-              <Card.Body className="py-2 px-2">
-                <h6 className="text-primary mb-1">{stats.totalSchedules}</h6>
-                <small className="text-muted" style={{ fontSize: '0.7rem' }}>Total Schedules</small>
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col md={2}>
-            <Card className="text-center">
-              <Card.Body className="py-2 px-2">
-                <h6 className="text-secondary mb-1">{stats.scheduledCount}</h6>
-                <small className="text-muted" style={{ fontSize: '0.7rem' }}>Scheduled</small>
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col md={2}>
-            <Card className="text-center">
-              <Card.Body className="py-2 px-2">
-                <h6 className="text-primary mb-1">{stats.confirmedCount}</h6>
-                <small className="text-muted" style={{ fontSize: '0.7rem' }}>Confirmed</small>
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col md={2}>
-            <Card className="text-center">
-              <Card.Body className="py-2 px-2">
-                <h6 className="text-success mb-1">{stats.completedCount}</h6>
-                <small className="text-muted" style={{ fontSize: '0.7rem' }}>Completed</small>
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col md={2}>
-            <Card className="text-center">
-              <Card.Body className="py-2 px-2">
-                <h6 className="text-danger mb-1">{stats.cancelledCount}</h6>
-                <small className="text-muted" style={{ fontSize: '0.7rem' }}>Cancelled</small>
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col md={2}>
-            <Card className="text-center">
-              <Card.Body className="py-2 px-2">
-                <h6 className="text-warning mb-1">{stats.noShowCount}</h6>
-                <small className="text-muted" style={{ fontSize: '0.7rem' }}>No Show</small>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
+        <Grid container spacing={2} sx={{ mb: 3 }}>
+          <Grid item xs={12} sm={6} md={2}>
+            <Paper sx={{ p: 2, textAlign: 'center' }}>
+              <Typography variant="h6" color="primary">
+                {stats.totalSchedules}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                Total Schedules
+              </Typography>
+            </Paper>
+          </Grid>
+          <Grid item xs={12} sm={6} md={2}>
+            <Paper sx={{ p: 2, textAlign: 'center' }}>
+              <Typography variant="h6" color="text.secondary">
+                {stats.scheduledCount}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                Scheduled
+              </Typography>
+            </Paper>
+          </Grid>
+          <Grid item xs={12} sm={6} md={2}>
+            <Paper sx={{ p: 2, textAlign: 'center' }}>
+              <Typography variant="h6" color="primary">
+                {stats.confirmedCount}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                Confirmed
+              </Typography>
+            </Paper>
+          </Grid>
+          <Grid item xs={12} sm={6} md={2}>
+            <Paper sx={{ p: 2, textAlign: 'center' }}>
+              <Typography variant="h6" color="success.main">
+                {stats.completedCount}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                Completed
+              </Typography>
+            </Paper>
+          </Grid>
+          <Grid item xs={12} sm={6} md={2}>
+            <Paper sx={{ p: 2, textAlign: 'center' }}>
+              <Typography variant="h6" color="error.main">
+                {stats.cancelledCount}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                Cancelled
+              </Typography>
+            </Paper>
+          </Grid>
+          <Grid item xs={12} sm={6} md={2}>
+            <Paper sx={{ p: 2, textAlign: 'center' }}>
+              <Typography variant="h6" color="warning.main">
+                {stats.noShowCount}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                No Show
+              </Typography>
+            </Paper>
+          </Grid>
+        </Grid>
       )}
 
       {/* Calendar Grid */}
-      <Row>
-        <Col>
-          <Card>
-            <Card.Body>
-              <Row>
-                {getDaysInRange().map((date, index) => {
-                  const daySchedules = getSchedulesForDate(date);
-                  const isToday = date.toDateString() === new Date().toDateString();
-                  
-                  return (
-                    <Col 
-                      key={index} 
-                      className={viewMode === 'week' ? '' : 'mb-3'}
-                      md={viewMode === 'week' ? true : 3}
-                    >
-                      <Card className={`h-100 ${isToday ? 'border-primary' : ''}`}>
-                        <Card.Header className={`text-center ${isToday ? 'bg-primary text-white' : 'bg-light'}`}>
-                          <strong>{date.toLocaleDateString('en-US', { weekday: 'short' })}</strong>
-                          <br />
-                          <span>{date.getDate()}</span>
-                        </Card.Header>
-                        <Card.Body className="p-2" style={{ minHeight: '200px' }}>
-                          {daySchedules.length === 0 ? (
-                            <div className="text-center text-muted mt-3">
-                              <Users size={24} className="mb-2" />
-                              <br />
-                              <small>No schedules</small>
-                            </div>
-                          ) : (
-                            <div className="schedule-list">
-                              {daySchedules.map(schedule => (
-                                <Card key={schedule.id} className="mb-2 border-0 bg-light">
-                                  <Card.Body className="p-2">
-                                    <div className="d-flex justify-content-between align-items-start mb-1">
-                                      <Badge bg={getDepartmentColor(schedule.department)} className="mb-1">
-                                        {schedule.department.replace('_', ' ')}
-                                      </Badge>
-                                      <Badge bg={getStatusBadgeVariant(schedule.status)}>
-                                        {schedule.status}
-                                      </Badge>
-                                    </div>
-                                    <div className="mb-1">
-                                      <strong className="small">{schedule.staffName}</strong>
-                                    </div>
-                                    <div className="d-flex align-items-center text-muted small">
-                                      <Clock size={12} className="me-1" />
-                                      {formatTime(schedule.startTime)} - {formatTime(schedule.endTime)}
-                                    </div>
-                                    <div className="small text-muted">
-                                      {schedule.shiftType.replace('_', ' ')}
-                                    </div>
-                                    {schedule.notes && (
-                                      <div className="small text-muted mt-1" style={{ fontSize: '0.75rem' }}>
-                                        {schedule.notes.length > 30 
-                                          ? `${schedule.notes.substring(0, 30)}...` 
-                                          : schedule.notes
-                                        }
-                                      </div>
-                                    )}
-                                  </Card.Body>
-                                </Card>
-                              ))}
-                            </div>
-                          )}
-                        </Card.Body>
-                      </Card>
-                    </Col>
-                  );
-                })}
-              </Row>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
+      <Paper>
+        <CardContent>
+          <Grid container spacing={2}>
+            {getDaysInRange().map((date, index) => {
+              const daySchedules = getSchedulesForDate(date);
+              const isToday = date.toDateString() === new Date().toDateString();
+              
+              return (
+                <Grid 
+                  item 
+                  key={index} 
+                  xs={12}
+                  md={viewMode === 'week' ? 12/7 : 3}
+                >
+                  <Paper 
+                    elevation={isToday ? 4 : 1}
+                    sx={{ 
+                      height: '100%',
+                      border: isToday ? 2 : 0,
+                      borderColor: 'primary.main'
+                    }}
+                  >
+                    <CardHeader
+                      title={
+                        <Box textAlign="center">
+                          <Typography variant="body2" fontWeight="bold">
+                            {date.toLocaleDateString('en-US', { weekday: 'short' })}
+                          </Typography>
+                          <Typography variant="h6">
+                            {date.getDate()}
+                          </Typography>
+                        </Box>
+                      }
+                      sx={{ 
+                        bgcolor: isToday ? 'primary.main' : 'grey.50',
+                        color: isToday ? 'primary.contrastText' : 'text.primary'
+                      }}
+                    />
+                    <CardContent sx={{ p: 2, minHeight: 200 }}>
+                      {daySchedules.length === 0 ? (
+                        <Box textAlign="center" sx={{ mt: 3 }}>
+                          <UsersIcon sx={{ fontSize: 24, mb: 1, color: 'text.disabled' }} />
+                          <Typography variant="caption" color="text.secondary">
+                            No schedules
+                          </Typography>
+                        </Box>
+                      ) : (
+                        <Box>
+                          {daySchedules.map(schedule => (
+                            <Paper 
+                              key={schedule.id} 
+                              elevation={0}
+                              sx={{ mb: 2, p: 2, bgcolor: 'grey.50' }}
+                            >
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                                <Chip 
+                                  label={schedule.department.replace('_', ' ')}
+                                  color={getDepartmentChipColor(schedule.department)}
+                                  size="small"
+                                />
+                                <Chip 
+                                  label={schedule.status}
+                                  color={getStatusChipColor(schedule.status)}
+                                  size="small"
+                                  variant="outlined"
+                                />
+                              </Box>
+                              <Typography variant="body2" fontWeight="bold" sx={{ mb: 1 }}>
+                                {schedule.staffName}
+                              </Typography>
+                              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                                <ClockIcon sx={{ fontSize: 12, mr: 0.5, color: 'text.secondary' }} />
+                                <Typography variant="caption" color="text.secondary">
+                                  {formatTime(schedule.startTime)} - {formatTime(schedule.endTime)}
+                                </Typography>
+                              </Box>
+                              <Typography variant="caption" color="text.secondary">
+                                {schedule.shiftType.replace('_', ' ')}
+                              </Typography>
+                              {schedule.notes && (
+                                <Typography 
+                                  variant="caption" 
+                                  color="text.secondary" 
+                                  sx={{ mt: 1, display: 'block' }}
+                                >
+                                  {schedule.notes.length > 30 
+                                    ? `${schedule.notes.substring(0, 30)}...` 
+                                    : schedule.notes
+                                  }
+                                </Typography>
+                              )}
+                            </Paper>
+                          ))}
+                        </Box>
+                      )}
+                    </CardContent>
+                  </Paper>
+                </Grid>
+              );
+            })}
+          </Grid>
+        </CardContent>
+      </Paper>
 
       {/* Department Summary */}
       {stats && Object.keys(stats.departmentCounts).length > 0 && (
-        <Row className="mt-4">
-          <Col>
-            <Card>
-              <Card.Header>
-                <h6 className="mb-0">Department Distribution</h6>
-              </Card.Header>
-              <Card.Body>
-                <Row>
-                  {Object.entries(stats.departmentCounts).map(([department, count]) => (
-                    <Col md={3} key={department} className="mb-2">
-                      <div className="d-flex justify-content-between align-items-center">
-                        <Badge bg={getDepartmentColor(department)} className="me-2">
-                          {department.replace('_', ' ')}
-                        </Badge>
-                        <strong>{count}</strong>
-                      </div>
-                    </Col>
-                  ))}
-                </Row>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
+        <Paper sx={{ mt: 4 }}>
+          <CardHeader title="Department Distribution" />
+          <CardContent>
+            <Grid container spacing={2}>
+              {Object.entries(stats.departmentCounts).map(([department, count]) => (
+                <Grid item xs={12} sm={6} md={3} key={department}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Chip 
+                      label={department.replace('_', ' ')}
+                      color={getDepartmentChipColor(department)}
+                      size="small"
+                    />
+                    <Typography variant="h6" fontWeight="bold">
+                      {count}
+                    </Typography>
+                  </Box>
+                </Grid>
+              ))}
+            </Grid>
+          </CardContent>
+        </Paper>
       )}
     </Container>
   );

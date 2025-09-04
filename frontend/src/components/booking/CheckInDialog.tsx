@@ -538,7 +538,9 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                           <MenuItem 
                             key={roomType} 
                             value={roomType}
-                            style={{ backgroundColor: index % 2 === 0 ? '#f5f5f5' : '#white' }}
+                            sx={{ 
+                              backgroundColor: index % 2 === 0 ? 'grey.50' : 'background.paper' 
+                            }}
                           >
                             {roomType} ({index + 1}/{roomTypeOptions.length})
                           </MenuItem>

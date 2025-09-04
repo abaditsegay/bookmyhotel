@@ -96,9 +96,18 @@ const BookingAPITest: React.FC = () => {
           <Typography variant="subtitle1" gutterBottom>
             Success! Found {data.content ? data.content.length : 0} bookings
           </Typography>
-          <pre style={{ background: '#f5f5f5', padding: '10px', fontSize: '12px', overflow: 'auto' }}>
+          <Box
+            component="pre"
+            sx={{ 
+              backgroundColor: 'grey.100', 
+              p: 1.25, 
+              fontSize: '12px', 
+              overflow: 'auto',
+              fontFamily: 'monospace'
+            }}
+          >
             {JSON.stringify(data, null, 2)}
-          </pre>
+          </Box>
         </Box>
       )}
     </Box>

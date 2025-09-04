@@ -482,7 +482,6 @@ const HotelAdminDashboard: React.FC = () => {
 
         <TabPanel value={activeTab} index={3}>
           {/* Bookings Tab */}
-          {renderBackToReportsButton()}
           <BookingManagementTable
             mode="hotel-admin"
             title=""

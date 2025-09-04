@@ -27,7 +27,7 @@ const HomePage = () => {
         // Mobile Layout: Stack vertically
         <Box>
           {/* Main Content */}
-          <Card sx={{ mb: 3, border: '1px solid #e0e0e0' }}>
+          <Card sx={{ mb: 3, border: 1, borderColor: 'divider' }}>
             <CardContent sx={{ p: 3 }}>
               {/* Mobile Header */}
               <Box sx={{ textAlign: 'center', mb: 4 }}>
@@ -47,7 +47,7 @@ const HomePage = () => {
                       textAlign: 'center', 
                       cursor: 'pointer',
                       transition: 'all 0.3s ease',
-                      background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
+                      background: (theme) => theme.custom.constants.gradients.primaryButton,
                       color: 'white',
                       '&:hover': {
                         transform: 'translateY(-2px)',
@@ -74,7 +74,7 @@ const HomePage = () => {
                       textAlign: 'center', 
                       cursor: 'pointer',
                       transition: 'all 0.3s ease',
-                      background: 'linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)',
+                      background: (theme) => theme.custom.constants.gradients.successButton,
                       color: 'white',
                       '&:hover': {
                         transform: 'translateY(-2px)',
@@ -98,7 +98,7 @@ const HomePage = () => {
             </CardContent>
           </Card>
           {/* Advertisement */}
-          <Card sx={{ mb: 3, border: '1px solid #e0e0e0' }}>
+          <Card sx={{ mb: 3, border: 1, borderColor: 'divider' }}>
             <VerticalHotelAdvertisementBanner maxHotels={3} />
           </Card>
         </Box>
@@ -122,13 +122,14 @@ const HomePage = () => {
             <Card 
               sx={{ 
                 height: '100%',
-                border: '1px solid #e0e0e0',
+                border: 1,
+                borderColor: 'divider',
                 display: 'flex',
                 flexDirection: 'column',
                 overflow: 'hidden'
               }}
             >
-              <CardContent sx={{ p: 2, backgroundColor: '#f5f5f5', borderBottom: '1px solid #e0e0e0' }}>
+              <CardContent sx={{ p: 2, backgroundColor: 'grey.50', borderBottom: 1, borderColor: 'divider' }}>
                 <Typography variant="h6" gutterBottom color="primary" sx={{ textAlign: 'center', mb: 0, fontWeight: 'bold' }}>
                   Special Deals
                 </Typography>
@@ -138,17 +139,17 @@ const HomePage = () => {
                 overflowY: 'auto',
                 overflowX: 'hidden',
                 '&::-webkit-scrollbar': {
-                  width: '6px',
+                  width: (theme) => theme.custom.constants.scrollbar.width,
                 },
                 '&::-webkit-scrollbar-track': {
-                  background: '#f1f1f1',
+                  background: (theme) => theme.custom.constants.scrollbar.track,
                 },
                 '&::-webkit-scrollbar-thumb': {
-                  background: '#c1c1c1',
-                  borderRadius: '3px',
+                  background: (theme) => theme.custom.constants.scrollbar.thumb,
+                  borderRadius: (theme) => theme.custom.constants.scrollbar.thumbRadius,
                 },
                 '&::-webkit-scrollbar-thumb:hover': {
-                  background: '#a8a8a8',
+                  background: (theme) => theme.custom.constants.scrollbar.thumbHover,
                 }
               }}>
                 <VerticalHotelAdvertisementBanner maxHotels={8} />
@@ -161,13 +162,14 @@ const HomePage = () => {
             <Card 
               sx={{ 
                 height: '100%', 
-                border: '1px solid #e0e0e0',
+                border: 1,
+                borderColor: 'divider',
                 display: 'flex',
                 flexDirection: 'column'
               }}
             >
               {/* Header Section */}
-              <CardContent sx={{ p: 3, backgroundColor: '#f8f9fa', borderBottom: '1px solid #e0e0e0', textAlign: 'center' }}>
+              <CardContent sx={{ p: 3, backgroundColor: 'grey.50', borderBottom: 1, borderColor: 'divider', textAlign: 'center' }}>
                 <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
                   BookMyHotel
                 </Typography>
@@ -184,7 +186,7 @@ const HomePage = () => {
                     sx={{ 
                       p: 4, 
                       mb: 4,
-                      background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
+                      background: (theme) => theme.custom.constants.gradients.primaryButton,
                       color: 'white',
                       textAlign: 'center'
                     }}
@@ -201,14 +203,14 @@ const HomePage = () => {
                       <Grid item xs={12}>
                         <Box
                           sx={{
-                            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                            backgroundColor: (theme) => `rgba(255, 255, 255, ${theme.custom.constants.alpha.low})`,
                             borderRadius: 1,
                             p: 2,
-                            border: '1px solid rgba(255, 255, 255, 0.3)',
+                            border: (theme) => `1px solid rgba(255, 255, 255, ${theme.custom.constants.alpha.high})`,
                             cursor: 'pointer',
                             transition: 'all 0.2s ease',
                             '&:hover': {
-                              backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                              backgroundColor: (theme) => `rgba(255, 255, 255, ${theme.custom.constants.alpha.medium})`,
                             }
                           }}
                           onClick={() => navigate('/hotels/search')}
@@ -272,7 +274,7 @@ const HomePage = () => {
                     <Box
                       sx={{
                         backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                        color: '#1976d2',
+                        color: 'primary.main',
                         borderRadius: 2,
                         p: 2,
                         cursor: 'pointer',
@@ -294,7 +296,7 @@ const HomePage = () => {
                   <Card 
                     sx={{ 
                       p: 3,
-                      background: 'linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)',
+                      background: (theme) => theme.custom.constants.gradients.successButton,
                       color: 'white',
                       textAlign: 'center',
                       cursor: 'pointer',
@@ -324,13 +326,14 @@ const HomePage = () => {
             <Card 
               sx={{ 
                 height: '100%',
-                border: '1px solid #e0e0e0',
+                border: 1,
+                borderColor: 'divider',
                 display: 'flex',
                 flexDirection: 'column',
                 overflow: 'hidden'
               }}
             >
-              <CardContent sx={{ p: 2, backgroundColor: '#f5f5f5', borderBottom: '1px solid #e0e0e0' }}>
+              <CardContent sx={{ p: 2, backgroundColor: 'grey.50', borderBottom: 1, borderColor: 'divider' }}>
                 <Typography variant="h6" gutterBottom color="primary" sx={{ textAlign: 'center', mb: 0, fontWeight: 'bold' }}>
                   Featured Hotels
                 </Typography>
@@ -340,17 +343,17 @@ const HomePage = () => {
                 overflowY: 'auto',
                 overflowX: 'hidden',
                 '&::-webkit-scrollbar': {
-                  width: '6px',
+                  width: (theme) => theme.custom.constants.scrollbar.width,
                 },
                 '&::-webkit-scrollbar-track': {
-                  background: '#f1f1f1',
+                  background: (theme) => theme.custom.constants.scrollbar.track,
                 },
                 '&::-webkit-scrollbar-thumb': {
-                  background: '#c1c1c1',
-                  borderRadius: '3px',
+                  background: (theme) => theme.custom.constants.scrollbar.thumb,
+                  borderRadius: (theme) => theme.custom.constants.scrollbar.thumbRadius,
                 },
                 '&::-webkit-scrollbar-thumb:hover': {
-                  background: '#a8a8a8',
+                  background: (theme) => theme.custom.constants.scrollbar.thumbHover,
                 }
               }}>
                 <VerticalHotelAdvertisementBanner maxHotels={8} />
