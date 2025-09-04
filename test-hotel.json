@@ -1,0 +1,17 @@
+{
+  "hotelName": "Test Hotel API",
+  "description": "A test hotel for API validation",
+  "address": "123 Test Street",
+  "city": "Test City", 
+  "country": "Test Country",
+  "phone": "+1-555-0199",
+  "contactEmail": "test1725417123@testhotel.com",
+  "contactPerson": "John Test Manager",
+  "licenseNumber": "LIC1725417123", 
+  "taxId": "TAX1725417123",
+  "websiteUrl": "https://www.testhotel.com",
+  "facilityAmenities": "Free WiFi, Parking, Restaurant, Gym",
+  "numberOfRooms": 150,
+  "checkInTime": "15:00",
+  "checkOutTime": "11:00"
+}
