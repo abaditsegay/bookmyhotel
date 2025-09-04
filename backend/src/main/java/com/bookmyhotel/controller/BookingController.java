@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -26,6 +28,7 @@ import com.bookmyhotel.dto.BookingModificationRequest;
 import com.bookmyhotel.dto.BookingModificationResponse;
 import com.bookmyhotel.dto.BookingRequest;
 import com.bookmyhotel.dto.BookingResponse;
+import com.bookmyhotel.exception.ResourceNotFoundException;
 import com.bookmyhotel.service.BookingService;
 
 import jakarta.validation.Valid;
@@ -37,6 +40,8 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/bookings")
 @CrossOrigin(origins = "*")
 public class BookingController {
+
+    private static final Logger logger = LoggerFactory.getLogger(BookingController.class);
 
     @Autowired
     private BookingService bookingService;
@@ -162,7 +167,7 @@ public class BookingController {
      * Download booking confirmation PDF
      */
     @GetMapping("/{reservationId}/pdf")
-    public ResponseEntity<byte[]> downloadBookingPdf(@PathVariable Long reservationId) {
+    public ResponseEntity<?> downloadBookingPdf(@PathVariable Long reservationId) {
         try {
             byte[] pdfContent = bookingService.generateBookingConfirmationPdf(reservationId);
 
@@ -176,8 +181,15 @@ public class BookingController {
                     .headers(headers)
                     .body(pdfContent);
 
+        } catch (ResourceNotFoundException e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Booking not found: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            logger.error("Error generating PDF for reservation {}: {}", reservationId, e.getMessage(), e);
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Failed to generate PDF: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
 

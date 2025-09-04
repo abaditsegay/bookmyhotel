@@ -4,6 +4,8 @@ import java.io.ByteArrayOutputStream;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +27,8 @@ import com.itextpdf.layout.properties.UnitValue;
 @Transactional
 public class PdfService {
 
+    private static final Logger logger = LoggerFactory.getLogger(PdfService.class);
+
     @Value("${app.name:BookMyHotel}")
     private String appName;
 
@@ -36,10 +40,26 @@ public class PdfService {
      */
     public byte[] generateBookingConfirmationPdf(BookingResponse booking) {
         try {
+            logger.info("Generating PDF for booking: {}", booking.getConfirmationNumber());
+            
+            // Validate booking data
+            if (booking == null) {
+                throw new IllegalArgumentException("Booking data cannot be null");
+            }
+            if (booking.getConfirmationNumber() == null || booking.getConfirmationNumber().trim().isEmpty()) {
+                throw new IllegalArgumentException("Booking confirmation number is required");
+            }
+            
             // Create PDF document
-            return createBookingPdf(booking);
+            byte[] pdfContent = createBookingPdf(booking);
+            logger.info("Successfully generated PDF for booking: {}, size: {} bytes", 
+                       booking.getConfirmationNumber(), pdfContent.length);
+            
+            return pdfContent;
             
         } catch (Exception e) {
+            logger.error("Failed to generate booking confirmation PDF for booking {}: {}", 
+                        booking != null ? booking.getConfirmationNumber() : "null", e.getMessage(), e);
             throw new RuntimeException("Failed to generate booking confirmation PDF", e);
         }
     }
@@ -48,6 +68,8 @@ public class PdfService {
      * Create booking PDF document
      */
     private byte[] createBookingPdf(BookingResponse booking) {
+        logger.debug("Creating PDF document for booking: {}", booking.getConfirmationNumber());
+        
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             PdfWriter writer = new PdfWriter(outputStream);
             PdfDocument pdfDocument = new PdfDocument(writer);
@@ -125,9 +147,16 @@ public class PdfService {
                 .setFontSize(12));
 
             document.close();
-            return outputStream.toByteArray();
+            byte[] result = outputStream.toByteArray();
+            
+            logger.debug("Successfully created PDF document for booking: {}, size: {} bytes", 
+                        booking.getConfirmationNumber(), result.length);
+            
+            return result;
 
         } catch (Exception e) {
+            logger.error("Failed to create PDF document for booking {}: {}", 
+                        booking.getConfirmationNumber(), e.getMessage(), e);
             throw new RuntimeException("Failed to create PDF document", e);
         }
     }

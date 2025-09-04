@@ -303,6 +303,16 @@ class HotelApiService {
     });
 
     if (!response.ok) {
+      // Try to get error message from JSON response
+      try {
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || `PDF Download Error: ${response.status} ${response.statusText}`);
+        }
+      } catch (jsonError) {
+        // If JSON parsing fails, use the original error
+      }
       throw new Error(`PDF Download Error: ${response.status} ${response.statusText}`);
     }
 

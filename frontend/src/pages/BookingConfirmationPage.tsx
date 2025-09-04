@@ -19,7 +19,8 @@ import {
   DialogActions,
   TextField,
   FormControlLabel,
-  Checkbox
+  Checkbox,
+  Snackbar
 } from '@mui/material';
 import {
   CheckCircle as CheckCircleIcon,
@@ -64,6 +65,10 @@ const BookingConfirmationPage: React.FC = () => {
   const [emailAddress, setEmailAddress] = useState('');
   const [includeItinerary, setIncludeItinerary] = useState(true);
   const [sendingEmail, setSendingEmail] = useState(false);
+  const [downloadingPDF, setDownloadingPDF] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
   
   // Get booking data from location state if available (from successful booking)
   const locationBooking = location.state?.booking;
@@ -163,28 +168,69 @@ const BookingConfirmationPage: React.FC = () => {
   };
 
   const handleEmailBooking = async () => {
-    if (!emailAddress.trim()) {
+    if (!emailAddress.trim() || !booking) {
       return;
     }
 
     try {
       setSendingEmail(true);
-      await hotelApiService.sendBookingEmail(booking!.reservationId, emailAddress, includeItinerary);
+      await hotelApiService.sendBookingEmail(booking.reservationId, emailAddress, includeItinerary);
       setEmailDialogOpen(false);
-      // Show success message
+      setSnackbarMessage('Email sent successfully!');
+      setSnackbarSeverity('success');
+      setSnackbarOpen(true);
     } catch (err) {
       console.error('Error sending email:', err);
-      // Show error message
+      let errorMessage = 'Failed to send email. ';
+      
+      if (err instanceof Error) {
+        if (err.message.includes('500')) {
+          errorMessage += 'The server encountered an internal error. Please try again later.';
+        } else if (err.message.includes('400')) {
+          errorMessage += 'Invalid email address.';
+        } else {
+          errorMessage += 'Please try again later.';
+        }
+      }
+      
+      setSnackbarMessage(errorMessage);
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
     } finally {
       setSendingEmail(false);
     }
   };
 
   const handleDownloadPDF = async () => {
+    if (!booking) return;
+    
     try {
-      await hotelApiService.downloadBookingPDF(booking!.reservationId);
+      setDownloadingPDF(true);
+      await hotelApiService.downloadBookingPDF(booking.reservationId);
+      setSnackbarMessage('PDF downloaded successfully!');
+      setSnackbarSeverity('success');
+      setSnackbarOpen(true);
     } catch (err) {
       console.error('Error downloading PDF:', err);
+      let errorMessage = 'Failed to download PDF. ';
+      
+      if (err instanceof Error) {
+        if (err.message.includes('500')) {
+          errorMessage += 'The server encountered an internal error. Please try again later or contact support.';
+        } else if (err.message.includes('404')) {
+          errorMessage += 'PDF not found for this booking.';
+        } else if (err.message.includes('401') || err.message.includes('403')) {
+          errorMessage += 'You are not authorized to download this PDF.';
+        } else {
+          errorMessage += 'Please try again later.';
+        }
+      }
+      
+      setSnackbarMessage(errorMessage);
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    } finally {
+      setDownloadingPDF(false);
     }
   };
 
@@ -246,7 +292,7 @@ const BookingConfirmationPage: React.FC = () => {
       <Paper 
         elevation={0}
         sx={{ 
-          p: 6, 
+          p: 4, 
           mb: 4, 
           textAlign: 'center', 
           background: 'linear-gradient(135deg, #4caf50 0%, #2e7d32 100%)',
@@ -254,11 +300,11 @@ const BookingConfirmationPage: React.FC = () => {
           borderRadius: 3
         }}
       >
-        <CheckCircleIcon sx={{ fontSize: 80, mb: 3, filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))' }} />
-        <Typography variant="h3" gutterBottom sx={{ fontWeight: 'bold', mb: 2 }}>
+        <CheckCircleIcon sx={{ fontSize: 60, mb: 2, filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))' }} />
+        <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold', mb: 1.5 }}>
           Booking Confirmed!
         </Typography>
-        <Typography variant="h6" sx={{ mb: 4, opacity: 0.9 }}>
+        <Typography variant="body1" sx={{ mb: 3, opacity: 0.9 }}>
           Your reservation has been successfully created
         </Typography>
         <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap' }}>
@@ -269,11 +315,17 @@ const BookingConfirmationPage: React.FC = () => {
               bgcolor: 'rgba(255,255,255,0.2)', 
               color: 'white', 
               fontWeight: 'bold', 
-              fontSize: '1.1rem',
-              px: 2,
-              py: 1,
+              fontSize: '1.3rem',
+              px: 3,
+              py: 2,
+              height: 'auto',
               backdropFilter: 'blur(10px)',
-              border: '1px solid rgba(255,255,255,0.3)'
+              border: '1px solid rgba(255,255,255,0.3)',
+              '& .MuiChip-label': {
+                fontSize: '1.3rem',
+                fontWeight: 'bold',
+                padding: '8px 12px'
+              }
             }}
           />
         </Box>
@@ -315,8 +367,9 @@ const BookingConfirmationPage: React.FC = () => {
         </Button>
         <Button
           variant="outlined"
-          startIcon={<DownloadIcon />}
+          startIcon={downloadingPDF ? <CircularProgress size={20} /> : <DownloadIcon />}
           onClick={handleDownloadPDF}
+          disabled={downloadingPDF}
           sx={{ 
             px: 3, 
             py: 1.5,
@@ -325,10 +378,14 @@ const BookingConfirmationPage: React.FC = () => {
             '&:hover': {
               borderColor: '#1565c0',
               backgroundColor: 'rgba(25, 118, 210, 0.04)',
+            },
+            '&:disabled': {
+              borderColor: '#ccc',
+              color: '#ccc',
             }
           }}
         >
-          DOWNLOAD PDF
+          {downloadingPDF ? 'DOWNLOADING...' : 'DOWNLOAD PDF'}
         </Button>
       </Box>
 
@@ -687,6 +744,22 @@ const BookingConfirmationPage: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Success/Error Snackbar */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={() => setSnackbarOpen(false)} 
+          severity={snackbarSeverity}
+          sx={{ width: '100%', borderRadius: 2 }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };

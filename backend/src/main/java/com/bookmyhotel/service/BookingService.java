@@ -1901,8 +1901,13 @@ public class BookingService {
      * Generate booking confirmation PDF
      */
     public byte[] generateBookingConfirmationPdf(Long reservationId) {
-        BookingResponse booking = getBooking(reservationId);
-        return pdfService.generateBookingConfirmationPdf(booking);
+        try {
+            BookingResponse booking = getBooking(reservationId);
+            return pdfService.generateBookingConfirmationPdf(booking);
+        } catch (Exception e) {
+            logger.error("Error generating PDF for reservation {}: {}", reservationId, e.getMessage(), e);
+            throw new RuntimeException("Failed to generate booking confirmation PDF for reservation " + reservationId, e);
+        }
     }
 
     /**
