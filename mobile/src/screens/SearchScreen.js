@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import DatePickerModal from '../components/DatePickerModal';
+import { HotelFilters } from '../components/hotel';
 import { hotelService } from '../services/hotelService';
 import { ScreenContainer, Input } from '../components/common';
 import { colors, typography, spacing, globalStyles, borderRadius, shadows } from '../styles/globalStyles';
@@ -26,6 +27,8 @@ const SearchScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const [hasSearched, setHasSearched] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({});
 
   // Memoized handlers to prevent re-renders
   const handleDestinationChange = useCallback((text) => {
@@ -128,6 +131,21 @@ const SearchScreen = ({ navigation }) => {
     setShowGuestPicker(false);
   }, []);
 
+  const handleShowFilters = useCallback(() => {
+    setShowFilters(true);
+  }, []);
+
+  const handleApplyFilters = useCallback((newFilters) => {
+    setFilters(newFilters);
+    // Apply filters to existing search results
+    // In a real app, you might want to re-search with filters
+    console.log('Applying filters:', newFilters);
+  }, []);
+
+  const handleCloseFilters = useCallback(() => {
+    setShowFilters(false);
+  }, []);
+
   const renderHotelItem = useCallback(({ item: hotel }) => {
     const totalAvailableRooms = hotel.roomTypeAvailability?.reduce((sum, room) => sum + room.availableCount, 0) || 0;
     const lowestPrice = hotel.minPrice;
@@ -222,8 +240,11 @@ const SearchScreen = ({ navigation }) => {
       backgroundColor={colors.background}
       safeArea={false}
       scrollable={true}
-      keyboardAvoiding={false}
+      keyboardAvoiding={Platform.OS === 'android'} // Enable keyboard avoiding on Android
       paddingHorizontal={false}
+      // Android-specific scroll optimizations
+      scrollEventThrottle={Platform.OS === 'android' ? 1 : 16}
+      keyboardDismissMode={Platform.OS === 'android' ? 'interactive' : 'none'}
     >
       <StatusBar barStyle="light-content" backgroundColor={colors.primary} />
       
@@ -343,31 +364,31 @@ const SearchScreen = ({ navigation }) => {
                 }
               </Text>
               {searchResults.length > 0 && (
-                <Text style={globalStyles.sectionSubtitle}>
-                  in {destination} • {formatDate(checkInDate)} - {formatDate(checkOutDate)}
-                </Text>
+                <TouchableOpacity 
+                  style={styles.filterButton}
+                  onPress={handleShowFilters}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="filter" size={18} color={colors.primary} />
+                  <Text style={styles.filterButtonText}>Filters</Text>
+                </TouchableOpacity>
               )}
             </View>
+            {searchResults.length > 0 && (
+              <Text style={globalStyles.sectionSubtitle}>
+                in {destination} • {formatDate(checkInDate)} - {formatDate(checkOutDate)}
+              </Text>
+            )}
 
             {searchResults.length > 0 ? (
-              <FlatList
-                data={searchResults}
-                renderItem={renderHotelItem}
-                keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
-                scrollEnabled={false}
-                nestedScrollEnabled={true}
-                showsVerticalScrollIndicator={false}
-                removeClippedSubviews={Platform.OS === 'android'}
-                getItemLayout={(data, index) => ({
-                  length: 300, // Approximate hotel card height
-                  offset: 300 * index,
-                  index,
-                })}
-                initialNumToRender={5}
-                maxToRenderPerBatch={5}
-                windowSize={10}
-                contentContainerStyle={styles.resultsListContainer}
-              />
+              // Replace FlatList with mapped TouchableOpacity for better Android scrolling
+              <View style={styles.resultsListContainer}>
+                {searchResults.map((hotel, index) => (
+                  <View key={hotel.id?.toString() || index}>
+                    {renderHotelItem({ item: hotel })}
+                  </View>
+                ))}
+              </View>
             ) : hasSearched && !loading && (
               <View style={styles.noResultsContainer}>
                 <Ionicons name="search-outline" size={48} color={colors.textSecondary} />
@@ -396,6 +417,14 @@ const SearchScreen = ({ navigation }) => {
         selectedDate={checkOutDate}
         minimumDate={new Date(checkInDate.getTime() + 86400000)}
         title="Check-out Date"
+      />
+
+      {/* Hotel Filters Modal */}
+      <HotelFilters
+        visible={showFilters}
+        onClose={handleCloseFilters}
+        onApply={handleApplyFilters}
+        initialFilters={filters}
       />
     </ScreenContainer>
   );
@@ -535,7 +564,28 @@ const styles = StyleSheet.create({
   },
   
   resultsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: spacing.md,
+  },
+
+  filterButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    backgroundColor: colors.primaryLight,
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
+    borderColor: colors.primary,
+  },
+
+  filterButtonText: {
+    fontSize: typography.fontSize.sm,
+    color: colors.primary,
+    fontWeight: typography.fontWeight.semiBold,
+    marginLeft: spacing.xs,
   },
   
   resultsListContainer: {

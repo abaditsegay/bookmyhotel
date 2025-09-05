@@ -335,7 +335,7 @@ const LoginPage: React.FC = () => {
                   <Button
                     variant="outlined"
                     fullWidth
-                    onClick={() => fillSampleUser('admin@bookmyhotel.com', 'password123')}
+                    onClick={() => fillSampleUser('admin@bookmyhotel.com', 'admin123')}
                     sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
                   >
                     <Typography variant="body2" fontWeight="bold">🔧 System Admin</Typography>
@@ -343,7 +343,7 @@ const LoginPage: React.FC = () => {
                       admin@bookmyhotel.com
                     </Typography>
                     <Typography variant="caption" color="textSecondary">
-                      Password: password123
+                      Password: admin123
                     </Typography>
                     <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
                       ✅ Full System Access

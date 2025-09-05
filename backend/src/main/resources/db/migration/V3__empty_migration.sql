@@ -1,2 +1,0 @@
--- Empty migration to fix migration sequence
--- V2 has already run, this ensures proper migration continuity

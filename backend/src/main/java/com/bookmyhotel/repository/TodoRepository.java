@@ -2,7 +2,7 @@ package com.bookmyhotel.repository;
 
 import com.bookmyhotel.entity.Todo;
 import com.bookmyhotel.entity.User;
-import com.bookmyhotel.entity.Tenant;
+import com.bookmyhotel.entity.Hotel;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,74 +17,25 @@ import java.util.Optional;
 @Repository
 public interface TodoRepository extends JpaRepository<Todo, Long> {
 
-        // Methods for tenant-bound users
-        List<Todo> findByUserAndTenantOrderByCreatedAtDesc(User user, Tenant tenant);
-
-        List<Todo> findByUserAndTenantAndCompletedOrderByCreatedAtDesc(User user, Tenant tenant, Boolean completed);
-
-        Page<Todo> findByUserAndTenant(User user, Tenant tenant, Pageable pageable);
-
-        // Methods for system-wide users (no tenant)
-        List<Todo> findByUserAndTenantIsNullOrderByCreatedAtDesc(User user);
-
-        Page<Todo> findByUserAndTenantIsNull(User user, Pageable pageable);
-
-        @Query("SELECT t FROM Todo t WHERE t.user = :user AND t.tenant = :tenant AND " +
-                        "(:completed IS NULL OR t.completed = :completed) " +
-                        "ORDER BY " +
-                        "CASE WHEN :sortBy = 'priority' THEN " +
-                        "  CASE t.priority " +
-                        "    WHEN 'HIGH' THEN 1 " +
-                        "    WHEN 'MEDIUM' THEN 2 " +
-                        "    WHEN 'LOW' THEN 3 " +
-                        "  END " +
-                        "END, " +
-                        "CASE WHEN :sortBy = 'dueDate' THEN t.dueDate END, " +
-                        "CASE WHEN :sortBy = 'created' THEN t.createdAt END DESC, " +
-                        "CASE WHEN :sortBy = 'alphabetical' THEN t.title END")
-        List<Todo> findUserTodosWithFiltersAndSorting(
-                        @Param("user") User user,
-                        @Param("tenant") Tenant tenant,
-                        @Param("completed") Boolean completed,
-                        @Param("sortBy") String sortBy);
-
-        // System-wide filtering query
-        @Query("SELECT t FROM Todo t WHERE t.user = :user AND t.tenant IS NULL AND " +
-                        "(:completed IS NULL OR t.completed = :completed) " +
-                        "ORDER BY " +
-                        "CASE WHEN :sortBy = 'priority' THEN " +
-                        "  CASE t.priority " +
-                        "    WHEN 'HIGH' THEN 1 " +
-                        "    WHEN 'MEDIUM' THEN 2 " +
-                        "    WHEN 'LOW' THEN 3 " +
-                        "  END " +
-                        "END, " +
-                        "CASE WHEN :sortBy = 'dueDate' THEN t.dueDate END, " +
-                        "CASE WHEN :sortBy = 'created' THEN t.createdAt END DESC, " +
-                        "CASE WHEN :sortBy = 'alphabetical' THEN t.title END")
-        List<Todo> findSystemWideUserTodosWithFiltersAndSorting(
-                        @Param("user") User user,
-                        @Param("completed") Boolean completed,
-                        @Param("sortBy") String sortBy);
-
-        @Query("SELECT COUNT(t) FROM Todo t WHERE t.user = :user AND t.tenant = :tenant AND t.completed = false")
-        long countPendingTodos(@Param("user") User user, @Param("tenant") Tenant tenant);
-
-        @Query("SELECT COUNT(t) FROM Todo t WHERE t.user = :user AND t.tenant IS NULL AND t.completed = false")
-        long countSystemWidePendingTodos(@Param("user") User user);
-
-        @Query("SELECT t FROM Todo t WHERE t.user = :user AND t.tenant = :tenant AND t.dueDate <= :dueDate AND t.completed = false")
-        List<Todo> findOverdueTodos(@Param("user") User user, @Param("tenant") Tenant tenant,
-                        @Param("dueDate") LocalDateTime dueDate);
-
-        @Query("SELECT t FROM Todo t WHERE t.user = :user AND t.tenant IS NULL AND t.dueDate <= :dueDate AND t.completed = false")
-        List<Todo> findSystemWideOverdueTodos(@Param("user") User user, @Param("dueDate") LocalDateTime dueDate);
-
-        Optional<Todo> findByIdAndUserAndTenant(Long id, User user, Tenant tenant);
-
-        Optional<Todo> findByIdAndUserAndTenantIsNull(Long id, User user);
-
-        void deleteByIdAndUserAndTenant(Long id, User user, Tenant tenant);
-
-        void deleteByIdAndUserAndTenantIsNull(Long id, User user);
+    // Find todos by creator and hotel
+    List<Todo> findByCreatedByAndHotelOrderByCreatedAtDesc(User createdBy, Hotel hotel);
+    
+    Page<Todo> findByCreatedByAndHotel(User createdBy, Hotel hotel, Pageable pageable);
+    
+    // Find todos by severity
+    List<Todo> findByCreatedByAndHotelAndSeverityOrderByCreatedAtDesc(User createdBy, Hotel hotel, Todo.Severity severity);
+    
+    // Find overdue todos
+    @Query("SELECT t FROM Todo t WHERE t.createdBy = :user AND t.hotel = :hotel AND t.dueDate <= :dueDate")
+    List<Todo> findOverdueTodos(@Param("user") User user, @Param("hotel") Hotel hotel, @Param("dueDate") LocalDateTime dueDate);
+    
+    // Find by ID and creator/hotel for security
+    Optional<Todo> findByIdAndCreatedByAndHotel(Long id, User createdBy, Hotel hotel);
+    
+    // Delete by ID and creator/hotel for security
+    void deleteByIdAndCreatedByAndHotel(Long id, User createdBy, Hotel hotel);
+    
+    // Count todos by severity
+    @Query("SELECT COUNT(t) FROM Todo t WHERE t.createdBy = :user AND t.hotel = :hotel AND t.severity = :severity")
+    long countBySeverity(@Param("user") User user, @Param("hotel") Hotel hotel, @Param("severity") Todo.Severity severity);
 }

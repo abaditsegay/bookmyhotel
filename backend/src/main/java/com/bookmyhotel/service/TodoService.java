@@ -1,8 +1,10 @@
 package com.bookmyhotel.service;
 
 import com.bookmyhotel.entity.Todo;
+import com.bookmyhotel.entity.Todo.Severity;
 import com.bookmyhotel.entity.User;
 import com.bookmyhotel.entity.Tenant;
+import com.bookmyhotel.entity.Hotel;
 import com.bookmyhotel.repository.TodoRepository;
 import com.bookmyhotel.repository.UserRepository;
 import com.bookmyhotel.repository.TenantRepository;
@@ -35,35 +37,19 @@ public class TodoService {
      */
     public List<Todo> getUserTodos(String userEmail) {
         User user = getCurrentUser(userEmail);
-        Tenant tenant = getCurrentTenant();
-
-        if (tenant == null) {
-            // System-wide user (SYSTEM_ADMIN)
-            return todoRepository.findByUserAndTenantIsNullOrderByCreatedAtDesc(user);
-        } else {
-            // Tenant-bound user
-            return todoRepository.findByUserAndTenantOrderByCreatedAtDesc(user, tenant);
-        }
+        Hotel hotel = getCurrentHotel(user);
+        
+        return todoRepository.findByCreatedByAndHotelOrderByCreatedAtDesc(user, hotel);
     }
 
     /**
-     * Get todos with filters and sorting
+     * Get todos by severity
      */
-    public List<Todo> getUserTodosWithFilters(String userEmail, Boolean completed, String sortBy) {
+    public List<Todo> getUserTodosBySeverity(String userEmail, Todo.Severity severity) {
         User user = getCurrentUser(userEmail);
-        Tenant tenant = getCurrentTenant();
-
-        if (sortBy == null) {
-            sortBy = "created";
-        }
-
-        if (tenant == null) {
-            // System-wide user (SYSTEM_ADMIN)
-            return todoRepository.findSystemWideUserTodosWithFiltersAndSorting(user, completed, sortBy);
-        } else {
-            // Tenant-bound user
-            return todoRepository.findUserTodosWithFiltersAndSorting(user, tenant, completed, sortBy);
-        }
+        Hotel hotel = getCurrentHotel(user);
+        
+        return todoRepository.findByCreatedByAndHotelAndSeverityOrderByCreatedAtDesc(user, hotel, severity);
     }
 
     /**
@@ -71,15 +57,9 @@ public class TodoService {
      */
     public Page<Todo> getUserTodosPaginated(String userEmail, Pageable pageable) {
         User user = getCurrentUser(userEmail);
-        Tenant tenant = getCurrentTenant();
-
-        if (tenant == null) {
-            // System-wide user (SYSTEM_ADMIN)
-            return todoRepository.findByUserAndTenantIsNull(user, pageable);
-        } else {
-            // Tenant-bound user
-            return todoRepository.findByUserAndTenant(user, tenant, pageable);
-        }
+        Hotel hotel = getCurrentHotel(user);
+        
+        return todoRepository.findByCreatedByAndHotel(user, hotel, pageable);
     }
 
     /**
@@ -87,19 +67,16 @@ public class TodoService {
      */
     public Todo createTodo(String userEmail, Todo todoRequest) {
         User user = getCurrentUser(userEmail);
-        Tenant tenant = getCurrentTenant(); // Can be null for system-wide users
+        Hotel hotel = getCurrentHotel(user); // Get hotel from user context
 
         Todo todo = new Todo();
         todo.setTitle(todoRequest.getTitle());
         todo.setDescription(todoRequest.getDescription());
-        todo.setPriority(todoRequest.getPriority());
+        todo.setSeverity(todoRequest.getSeverity() != null ? todoRequest.getSeverity() : Severity.MEDIUM);
         todo.setDueDate(todoRequest.getDueDate());
         todo.setCategory(todoRequest.getCategory());
-        todo.setCompleted(false);
-        todo.setUser(user);
-        todo.setTenant(tenant); // Can be null for system admins
-        todo.setCreatedAt(LocalDateTime.now());
-        todo.setUpdatedAt(LocalDateTime.now());
+        todo.setHotel(hotel);
+        todo.setCreatedBy(user);
 
         return todoRepository.save(todo);
     }
@@ -109,16 +86,9 @@ public class TodoService {
      */
     public Todo updateTodo(String userEmail, Long todoId, Todo todoRequest) {
         User user = getCurrentUser(userEmail);
-        Tenant tenant = getCurrentTenant();
+        Hotel hotel = getCurrentHotel(user);
 
-        Optional<Todo> existingTodo;
-        if (tenant == null) {
-            // System-wide user
-            existingTodo = todoRepository.findByIdAndUserAndTenantIsNull(todoId, user);
-        } else {
-            // Tenant-bound user
-            existingTodo = todoRepository.findByIdAndUserAndTenant(todoId, user, tenant);
-        }
+        Optional<Todo> existingTodo = todoRepository.findByIdAndCreatedByAndHotel(todoId, user, hotel);
 
         if (existingTodo.isEmpty()) {
             throw new RuntimeException("Todo not found or you don't have permission to update it");
@@ -127,37 +97,9 @@ public class TodoService {
         Todo todo = existingTodo.get();
         todo.setTitle(todoRequest.getTitle());
         todo.setDescription(todoRequest.getDescription());
-        todo.setPriority(todoRequest.getPriority());
+        todo.setSeverity(todoRequest.getSeverity());
         todo.setDueDate(todoRequest.getDueDate());
         todo.setCategory(todoRequest.getCategory());
-        todo.setCompleted(todoRequest.getCompleted());
-        todo.setUpdatedAt(LocalDateTime.now());
-
-        return todoRepository.save(todo);
-    }
-
-    /**
-     * Toggle todo completion status
-     */
-    public Todo toggleTodoCompletion(String userEmail, Long todoId) {
-        User user = getCurrentUser(userEmail);
-        Tenant tenant = getCurrentTenant();
-
-        Optional<Todo> existingTodo;
-        if (tenant == null) {
-            // System-wide user
-            existingTodo = todoRepository.findByIdAndUserAndTenantIsNull(todoId, user);
-        } else {
-            // Tenant-bound user
-            existingTodo = todoRepository.findByIdAndUserAndTenant(todoId, user, tenant);
-        }
-
-        if (existingTodo.isEmpty()) {
-            throw new RuntimeException("Todo not found or you don't have permission to update it");
-        }
-
-        Todo todo = existingTodo.get();
-        todo.setCompleted(!todo.getCompleted());
         todo.setUpdatedAt(LocalDateTime.now());
 
         return todoRepository.save(todo);
@@ -168,26 +110,15 @@ public class TodoService {
      */
     public void deleteTodo(String userEmail, Long todoId) {
         User user = getCurrentUser(userEmail);
-        Tenant tenant = getCurrentTenant();
+        Hotel hotel = getCurrentHotel(user);
 
-        Optional<Todo> existingTodo;
-        if (tenant == null) {
-            // System-wide user
-            existingTodo = todoRepository.findByIdAndUserAndTenantIsNull(todoId, user);
-        } else {
-            // Tenant-bound user
-            existingTodo = todoRepository.findByIdAndUserAndTenant(todoId, user, tenant);
-        }
+        Optional<Todo> existingTodo = todoRepository.findByIdAndCreatedByAndHotel(todoId, user, hotel);
 
         if (existingTodo.isEmpty()) {
             throw new RuntimeException("Todo not found or you don't have permission to delete it");
         }
 
-        if (tenant == null) {
-            todoRepository.deleteByIdAndUserAndTenantIsNull(todoId, user);
-        } else {
-            todoRepository.deleteByIdAndUserAndTenant(todoId, user, tenant);
-        }
+        todoRepository.deleteByIdAndCreatedByAndHotel(todoId, user, hotel);
     }
 
     /**
@@ -195,31 +126,19 @@ public class TodoService {
      */
     public Optional<Todo> getTodoById(String userEmail, Long todoId) {
         User user = getCurrentUser(userEmail);
-        Tenant tenant = getCurrentTenant();
-
-        if (tenant == null) {
-            // System-wide user
-            return todoRepository.findByIdAndUserAndTenantIsNull(todoId, user);
-        } else {
-            // Tenant-bound user
-            return todoRepository.findByIdAndUserAndTenant(todoId, user, tenant);
-        }
+        Hotel hotel = getCurrentHotel(user);
+        
+        return todoRepository.findByIdAndCreatedByAndHotel(todoId, user, hotel);
     }
 
     /**
-     * Get count of pending todos
+     * Get count of todos by severity
      */
-    public long getPendingTodosCount(String userEmail) {
+    public long getTodoCountBySeverity(String userEmail, Todo.Severity severity) {
         User user = getCurrentUser(userEmail);
-        Tenant tenant = getCurrentTenant();
-
-        if (tenant == null) {
-            // System-wide user
-            return todoRepository.countSystemWidePendingTodos(user);
-        } else {
-            // Tenant-bound user
-            return todoRepository.countPendingTodos(user, tenant);
-        }
+        Hotel hotel = getCurrentHotel(user);
+        
+        return todoRepository.countBySeverity(user, hotel, severity);
     }
 
     /**
@@ -227,15 +146,9 @@ public class TodoService {
      */
     public List<Todo> getOverdueTodos(String userEmail) {
         User user = getCurrentUser(userEmail);
-        Tenant tenant = getCurrentTenant();
-
-        if (tenant == null) {
-            // System-wide user
-            return todoRepository.findSystemWideOverdueTodos(user, LocalDateTime.now());
-        } else {
-            // Tenant-bound user
-            return todoRepository.findOverdueTodos(user, tenant, LocalDateTime.now());
-        }
+        Hotel hotel = getCurrentHotel(user);
+        
+        return todoRepository.findOverdueTodos(user, hotel, LocalDateTime.now());
     }
 
     /**
@@ -246,7 +159,7 @@ public class TodoService {
                 .orElseThrow(() -> new RuntimeException("User not found: " + email));
     }
 
-    /**
+        /**
      * Get current tenant from context
      * For system-wide users, returns null (they don't operate within a tenant
      * context)
@@ -260,5 +173,15 @@ public class TodoService {
         }
         return tenantRepository.findById(tenantId)
                 .orElseThrow(() -> new RuntimeException("Tenant not found: " + tenantId));
+    }
+
+    /**
+     * Get current hotel from user context
+     */
+    private Hotel getCurrentHotel(User user) {
+        if (user.getHotel() == null) {
+            throw new RuntimeException("User must be associated with a hotel to manage todos");
+        }
+        return user.getHotel();
     }
 }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useCallback } from 'react';
 import {
   View,
   ScrollView,
@@ -7,8 +7,11 @@ import {
   StyleSheet,
   RefreshControl,
   SafeAreaView,
+  Dimensions,
 } from 'react-native';
 import { colors, globalStyles } from '../../styles/globalStyles';
+
+const { height: screenHeight } = Dimensions.get('window');
 
 const ScreenContainer = ({
   children,
@@ -24,6 +27,8 @@ const ScreenContainer = ({
   safeArea = true,
   ...props
 }) => {
+  const scrollViewRef = useRef(null);
+
   const containerStyle = [
     styles.container,
     { backgroundColor },
@@ -33,7 +38,17 @@ const ScreenContainer = ({
   const contentStyle = [
     paddingHorizontal && styles.contentPadding,
     contentContainerStyle,
+    // Ensure content has minimum height for proper scrolling
+    { minHeight: screenHeight },
   ];
+
+  // Optimize scroll handling for Android
+  const handleScrollBeginDrag = useCallback(() => {
+    if (Platform.OS === 'android' && scrollViewRef.current) {
+      // Force focus clear on scroll start for Android
+      scrollViewRef.current.setNativeProps({ scrollEnabled: true });
+    }
+  }, []);
 
   const renderContent = () => {
     if (!scrollable) {
@@ -44,30 +59,64 @@ const ScreenContainer = ({
       );
     }
 
+    // Enhanced Android scrolling configuration
+    const androidScrollProps = Platform.OS === 'android' ? {
+      // Core Android optimizations
+      overScrollMode: 'never',
+      scrollEventThrottle: 1, // Lower value for more responsive scrolling
+      removeClippedSubviews: false, // Disable to prevent rendering issues
+      decelerationRate: 0.85, // Optimized deceleration for Android
+      keyboardDismissMode: 'interactive',
+      keyboardShouldPersistTaps: 'handled',
+      
+      // Enhanced touch handling
+      disableScrollViewPanResponder: false,
+      scrollsToTop: false,
+      maintainVisibleContentPosition: null,
+      
+      // Performance optimizations
+      persistentScrollbar: false,
+      fadingEdgeLength: 0,
+      
+      // Touch optimization
+      nestedScrollEnabled: true,
+      scrollEnabled: true,
+      
+      // Gesture handling
+      onScrollBeginDrag: handleScrollBeginDrag,
+      
+      // Content sizing
+      contentInsetAdjustmentBehavior: 'automatic',
+    } : {
+      // iOS optimizations
+      alwaysBounceVertical: true,
+      bounces: true,
+      bouncesZoom: false,
+      scrollsToTop: true,
+      showsVerticalScrollIndicator: showsVerticalScrollIndicator,
+      decelerationRate: 'normal',
+    };
+
     return (
       <ScrollView
+        ref={scrollViewRef}
         style={styles.scrollView}
         contentContainerStyle={contentStyle}
-        showsVerticalScrollIndicator={showsVerticalScrollIndicator}
+        showsVerticalScrollIndicator={Platform.OS === 'ios' ? showsVerticalScrollIndicator : false}
         keyboardShouldPersistTaps="handled"
         scrollEnabled={true}
         nestedScrollEnabled={true}
-        // Android-specific props for better scrolling
-        overScrollMode="always"
-        scrollEventThrottle={16}
-        removeClippedSubviews={Platform.OS === 'android'}
-        // Enable momentum scrolling for better UX
-        decelerationRate="normal"
-        // Android-specific touch handling fix
-        {...(Platform.OS === 'android' && {
-          alwaysBounceVertical: false,
-          bounces: false,
-        })}
         refreshControl={
           onRefresh ? (
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            <RefreshControl 
+              refreshing={refreshing} 
+              onRefresh={onRefresh}
+              colors={Platform.OS === 'android' ? [colors.primary] : undefined}
+              tintColor={Platform.OS === 'ios' ? colors.primary : undefined}
+            />
           ) : undefined
         }
+        {...androidScrollProps}
         {...props}
       >
         {children}
@@ -80,16 +129,27 @@ const ScreenContainer = ({
       return content;
     }
 
-    // Android-specific keyboard handling optimizations
-    const androidBehavior = Platform.OS === 'android' ? 'height' : 'padding';
-    const keyboardVerticalOffset = Platform.OS === 'ios' ? 0 : Platform.OS === 'android' ? -200 : 20;
+    // Enhanced keyboard handling for Android
+    const keyboardProps = Platform.select({
+      ios: {
+        behavior: 'padding',
+        keyboardVerticalOffset: 0,
+      },
+      android: {
+        behavior: 'height',
+        keyboardVerticalOffset: -50, // Better offset for Android
+        enabled: true,
+      },
+      default: {
+        behavior: 'height',
+        keyboardVerticalOffset: 20,
+      }
+    });
 
     return (
       <KeyboardAvoidingView
         style={styles.keyboardContainer}
-        behavior={androidBehavior}
-        keyboardVerticalOffset={keyboardVerticalOffset}
-        enabled={Platform.OS !== 'android'} // Disable on Android since we use pan mode
+        {...keyboardProps}
       >
         {content}
       </KeyboardAvoidingView>
@@ -101,8 +161,15 @@ const ScreenContainer = ({
       return content;
     }
 
+    // Platform-specific safe area handling
+    const safeAreaStyle = Platform.select({
+      ios: containerStyle,
+      android: [containerStyle, { paddingTop: 0 }], // Android handles status bar differently
+      default: containerStyle,
+    });
+
     return (
-      <SafeAreaView style={containerStyle}>
+      <SafeAreaView style={safeAreaStyle}>
         {content}
       </SafeAreaView>
     );
@@ -124,19 +191,27 @@ const styles = StyleSheet.create({
   
   scrollView: {
     flex: 1,
+    // Platform-specific scroll view optimizations
     ...(Platform.OS === 'android' && {
-      // Android-specific optimizations
-      overflowX: 'hidden',
-      overflowY: 'auto',
+      // Android-specific optimizations for better scrolling
+      overflow: 'visible', // Changed from 'hidden' to prevent clipping
+      flexGrow: 1,
+    }),
+    ...(Platform.OS === 'ios' && {
+      overflow: 'visible',
     }),
     ...(Platform.OS === 'web' && {
-      overflow: 'auto', // Enable web scrolling
-      height: '100vh', // Full viewport height on web
+      overflow: 'auto',
+      height: '100vh',
     }),
   },
   
   keyboardContainer: {
     flex: 1,
+    // Ensure keyboard container doesn't interfere with scrolling
+    ...(Platform.OS === 'android' && {
+      backgroundColor: 'transparent',
+    }),
   },
   
   contentPadding: {

@@ -1,5 +1,6 @@
 package com.bookmyhotel.entity;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import org.hibernate.annotations.CreationTimestamp;
@@ -27,34 +28,30 @@ public class Todo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "hotel_id", nullable = false)
+    @JsonIgnore
+    private Hotel hotel;
+
     @Column(nullable = false)
     private String title;
 
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(nullable = false)
-    private Boolean completed = false;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Priority priority = Priority.MEDIUM;
+    private Severity severity = Severity.MEDIUM;
 
     @Column(name = "due_date")
-    private LocalDateTime dueDate;
+    private LocalDate dueDate;
 
     @Column(nullable = false)
     private String category = "General";
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    @JsonIgnore
-    private User user;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "tenant_id", nullable = true) // Allow null for system-wide users
-    @JsonIgnore
-    private Tenant tenant;
+    @JoinColumn(name = "created_by")
+    private User createdBy;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -64,21 +61,20 @@ public class Todo {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    public enum Priority {
-        HIGH, MEDIUM, LOW
+    public enum Severity {
+        LOW, MEDIUM, HIGH
     }
 
     // Constructors
     public Todo() {
     }
 
-    public Todo(String title, String description, User user, Tenant tenant) {
+    public Todo(String title, String description, Hotel hotel, User createdBy) {
         this.title = title;
         this.description = description;
-        this.user = user;
-        this.tenant = tenant;
-        this.completed = false;
-        this.priority = Priority.MEDIUM;
+        this.hotel = hotel;
+        this.createdBy = createdBy;
+        this.severity = Severity.MEDIUM;
         this.category = "General";
     }
 
@@ -89,6 +85,14 @@ public class Todo {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Hotel getHotel() {
+        return hotel;
+    }
+
+    public void setHotel(Hotel hotel) {
+        this.hotel = hotel;
     }
 
     public String getTitle() {
@@ -107,27 +111,19 @@ public class Todo {
         this.description = description;
     }
 
-    public Boolean getCompleted() {
-        return completed;
+    public Severity getSeverity() {
+        return severity;
     }
 
-    public void setCompleted(Boolean completed) {
-        this.completed = completed;
+    public void setSeverity(Severity severity) {
+        this.severity = severity;
     }
 
-    public Priority getPriority() {
-        return priority;
-    }
-
-    public void setPriority(Priority priority) {
-        this.priority = priority;
-    }
-
-    public LocalDateTime getDueDate() {
+    public LocalDate getDueDate() {
         return dueDate;
     }
 
-    public void setDueDate(LocalDateTime dueDate) {
+    public void setDueDate(LocalDate dueDate) {
         this.dueDate = dueDate;
     }
 
@@ -139,20 +135,12 @@ public class Todo {
         this.category = category;
     }
 
-    public User getUser() {
-        return user;
+    public User getCreatedBy() {
+        return createdBy;
     }
 
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public Tenant getTenant() {
-        return tenant;
-    }
-
-    public void setTenant(Tenant tenant) {
-        this.tenant = tenant;
+    public void setCreatedBy(User createdBy) {
+        this.createdBy = createdBy;
     }
 
     public LocalDateTime getCreatedAt() {

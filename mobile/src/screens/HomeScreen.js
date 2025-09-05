@@ -28,38 +28,30 @@ const HomeScreen = ({ navigation }) => {
     try {
       setLoading(true);
       
-      // Load featured hotels using random hotels endpoint (more reliable)
-      const hotelsResponse = await hotelService.getRandomHotels();
+      // Load featured hotels from API
+      const hotelsResponse = await hotelService.searchHotels({
+        limit: 3 // Get top 3 featured hotels
+      });
       
       if (hotelsResponse.success && hotelsResponse.data) {
-        setFeaturedHotels(hotelsResponse.data.slice(0, 3));
-      } else {
-        // Fallback to search if random hotels fails
-        const searchResponse = await hotelService.searchHotels({
-          destination: 'Addis Ababa', // Default destination
-          checkInDate: new Date().toISOString().split('T')[0], // Today
-          checkOutDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0], // Tomorrow
-          guests: 2,
-        });
-        
-        if (searchResponse.success && searchResponse.data) {
-          // Handle both array and paginated response formats
-          const hotels = Array.isArray(searchResponse.data) 
-            ? searchResponse.data.slice(0, 3)
-            : searchResponse.data.content ? searchResponse.data.content.slice(0, 3) : [];
-          setFeaturedHotels(hotels);
-        }
+        setFeaturedHotels(hotelsResponse.data.hotels || hotelsResponse.data);
       }
-
-      // Load destinations
+      
+      // Load destinations from API
       const destinationsResponse = await hotelService.getDestinations();
       if (destinationsResponse.success) {
-        setDestinations(destinationsResponse.data.slice(0, 6)); // Show first 6 destinations
+        setDestinations(destinationsResponse.data.slice(0, 6));
       }
       
     } catch (error) {
       console.error('Error loading home data:', error);
-      Alert.alert('Error', 'Failed to load home screen data. Please try again.');
+      Alert.alert(
+        'Connection Error',
+        'Unable to load hotels. Please check your internet connection and try again.',
+        [{ text: 'OK' }]
+      );
+      setFeaturedHotels([]);
+      setDestinations([]);
     } finally {
       setLoading(false);
     }
@@ -81,9 +73,19 @@ const HomeScreen = ({ navigation }) => {
 
   // Navigate to hotel details
   const handleHotelPress = (hotel) => {
+    // Create default search parameters for booking functionality
+    const defaultSearchParams = {
+      destination: hotel.city || 'Addis Ababa',
+      checkInDate: new Date().toISOString().split('T')[0], // Today
+      checkOutDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0], // Tomorrow
+      guests: 2,
+      rooms: 1,
+    };
+
     navigation.navigate('HotelDetails', {
       hotelId: hotel.id,
       hotelName: hotel.name,
+      searchParams: defaultSearchParams,
     });
   };
 
@@ -112,9 +114,11 @@ const HomeScreen = ({ navigation }) => {
       refreshing={refreshing}
       onRefresh={onRefresh}
       paddingHorizontal={false}
-      // Android-specific scroll optimizations
-      scrollEventThrottle={Platform.OS === 'android' ? 16 : undefined}
-      removeClippedSubviews={Platform.OS === 'android'}
+      // Enhanced Android-specific scroll optimizations
+      keyboardAvoiding={Platform.OS === 'android'}
+      scrollEventThrottle={Platform.OS === 'android' ? 1 : 16}
+      keyboardDismissMode={Platform.OS === 'android' ? 'interactive' : 'none'}
+      showsVerticalScrollIndicator={Platform.OS === 'ios'}
     >
       {/* Welcome Section */}
       <View style={styles.welcomeSection}>
@@ -147,8 +151,11 @@ const HomeScreen = ({ navigation }) => {
               showsHorizontalScrollIndicator={false}
               style={styles.destinationsScroll}
               nestedScrollEnabled={true}
+              // Enhanced Android horizontal scroll optimization
               decelerationRate={Platform.OS === 'android' ? 'fast' : 'normal'}
-              scrollEventThrottle={Platform.OS === 'android' ? 16 : undefined}
+              scrollEventThrottle={Platform.OS === 'android' ? 1 : 16}
+              overScrollMode={Platform.OS === 'android' ? 'never' : 'always'}
+              keyboardShouldPersistTaps="handled"
             >
               {destinations.map((destination, index) => (
                 <TouchableOpacity

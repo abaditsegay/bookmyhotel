@@ -14,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 // Import services and components
 import { bookingService } from '../services/bookingService';
 import { Card, Button, Input, LoadingSpinner, ScreenContainer } from '../components/common';
+import { BookingForm, BookingSummary, BookingProgress } from '../components/booking';
 import { colors, typography, spacing, globalStyles } from '../styles/globalStyles';
 import { validateEmail, validatePhone } from '../utils/validation';
 import { formatDate, calculateNights } from '../utils/dateUtils';
@@ -42,6 +43,8 @@ const BookingScreen = ({ route, navigation }) => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1);
+  const [showSummary, setShowSummary] = useState(false);
 
   // Calculate booking details (updated for room type)
   const nights = calculateNights(checkInDate, checkOutDate);
@@ -217,208 +220,133 @@ const BookingScreen = ({ route, navigation }) => {
     });
   }, [navigation, handleBackPress]);
 
+  // Handle form submission from BookingForm
+  const handleFormSubmit = useCallback((formData) => {
+    setFirstName(formData.firstName);
+    setLastName(formData.lastName);
+    setEmail(formData.email);
+    setPhone(formData.phone);
+    setSpecialRequests(formData.specialRequests);
+    
+    // Move to confirmation step
+    setCurrentStep(3);
+    setShowSummary(true);
+  }, []);
+
+  // Handle booking summary edit
+  const handleEditSummary = useCallback((section) => {
+    switch (section) {
+      case 'guest':
+        setCurrentStep(2);
+        setShowSummary(false);
+        break;
+      case 'dates':
+      case 'room':
+      case 'hotel':
+        // Navigate back to previous screens
+        navigation.goBack();
+        break;
+      default:
+        break;
+    }
+  }, [navigation]);
+
+  // Get current guest info for summary
+  const getCurrentGuestInfo = useCallback(() => ({
+    firstName,
+    lastName,
+    email,
+    phone,
+    specialRequests
+  }), [firstName, lastName, email, phone, specialRequests]);
+
   return (
     <ScreenContainer
       keyboardAvoiding={true}
       scrollEventThrottle={Platform.OS === 'android' ? 16 : undefined}
       removeClippedSubviews={Platform.OS === 'android'}
     >
-      {/* Booking Summary */}
-      <Card style={styles.summaryCard}>
-        <Text style={styles.summaryTitle}>Booking Summary</Text>
-        
-        <View style={styles.hotelInfo}>
-          <Text style={styles.hotelName}>{hotel.name}</Text>
-          <View style={styles.hotelLocation}>
-            <Ionicons name="location-outline" size={16} color={colors.textSecondary} />
-            <Text style={styles.hotelLocationText}>{hotel.address}</Text>
-          </View>
-        </View>
+      {/* Booking Progress */}
+      <BookingProgress 
+        currentStep={currentStep}
+        totalSteps={3}
+        steps={[
+          { id: 1, title: 'Room Selected', icon: 'checkmark-circle' },
+          { id: 2, title: 'Guest Details', icon: 'person-outline' },
+          { id: 3, title: 'Confirmation', icon: 'checkmark-circle-outline' },
+        ]}
+      />
 
-        <View style={styles.bookingDetails}>
-          <View style={styles.detailRow}>
-            <View style={styles.detailItem}>
-              <Ionicons name="calendar-outline" size={16} color={colors.textSecondary} />
-              <View style={styles.detailText}>
-                <Text style={styles.detailLabel}>Check-in</Text>
-                <Text style={styles.detailValue}>{formattedCheckIn}</Text>
-              </View>
-            </View>
-            
-            <View style={styles.detailItem}>
-              <Ionicons name="calendar-outline" size={16} color={colors.textSecondary} />
-              <View style={styles.detailText}>
-                <Text style={styles.detailLabel}>Check-out</Text>
-                <Text style={styles.detailValue}>{formattedCheckOut}</Text>
-              </View>
-            </View>
-          </View>
-
-          <View style={styles.detailRow}>
-            <View style={styles.detailItem}>
-              <Ionicons name="bed-outline" size={16} color={colors.textSecondary} />
-              <View style={styles.detailText}>
-                <Text style={styles.detailLabel}>Room Type</Text>
-                <Text style={styles.detailValue}>{roomType?.roomTypeName || roomType?.roomType || 'Standard Room'}</Text>
-              </View>
-            </View>
-            
-            <View style={styles.detailItem}>
-              <Ionicons name="people-outline" size={16} color={colors.textSecondary} />
-              <View style={styles.detailText}>
-                <Text style={styles.detailLabel}>Guests</Text>
-                <Text style={styles.detailValue}>{numberOfGuests} {numberOfGuests === 1 ? 'guest' : 'guests'}</Text>
-              </View>
-            </View>
-          </View>
-
-          <View style={styles.detailRow}>
-            <View style={styles.detailItem}>
-              <Ionicons name="moon-outline" size={16} color={colors.textSecondary} />
-              <View style={styles.detailText}>
-                <Text style={styles.detailLabel}>Duration</Text>
-                <Text style={styles.detailValue}>{nights} {nights === 1 ? 'night' : 'nights'}</Text>
-              </View>
-            </View>
-            
-            <View style={styles.detailItem}>
-              <Ionicons name="card-outline" size={16} color={colors.textSecondary} />
-              <View style={styles.detailText}>
-                <Text style={styles.detailLabel}>Total</Text>
-                <Text style={styles.totalAmount}>ETB {totalAmount.toLocaleString()}</Text>
-              </View>
-            </View>
-          </View>
-        </View>
-      </Card>
-
-      {/* Guest Information Form */}
-      <Card style={styles.formCard}>
-        <Text style={styles.formTitle}>Guest Information</Text>
-        <Text style={styles.formSubtitle}>
-          Please provide your details for the booking
-        </Text>
-
-        <View style={styles.nameRow}>
-          <View style={styles.nameField}>
-            <Input
-              key="firstName"
-              label="First Name"
-              placeholder="Enter your first name"
-              value={firstName}
-              onChangeText={handleFirstNameChange}
-              error={errors.firstName}
-              autoCapitalize="words"
-              leftIcon={PersonIcon}
-            />
-          </View>
-          
-          <View style={styles.nameField}>
-            <Input
-              key="lastName"
-              label="Last Name"
-              placeholder="Enter your last name"
-              value={lastName}
-              onChangeText={handleLastNameChange}
-              error={errors.lastName}
-              autoCapitalize="words"
-              leftIcon={PersonIcon}
-            />
-          </View>
-        </View>
-
-        <Input
-          key="email"
-          label="Email Address"
-          placeholder="Enter your email address"
-          value={email}
-          onChangeText={handleEmailChange}
-          error={errors.email}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          leftIcon={MailIcon}
-        />
-
-        <Input
-          key="phone"
-          label="Phone Number"
-          placeholder="Enter your phone number"
-          value={phone}
-          onChangeText={handlePhoneChange}
-          error={errors.phone}
-          keyboardType="phone-pad"
-          leftIcon={PhoneIcon}
-        />
-
-        <Input
-          key="specialRequests"
-          label="Special Requests (Optional)"
-          placeholder="Any special requests or requirements..."
-          value={specialRequests}
-          onChangeText={handleSpecialRequestsChange}
-          multiline={true}
-          numberOfLines={3}
-          leftIcon={ChatIcon}
-        />
-      </Card>
-
-      {/* Terms and Conditions */}
-      <Card style={styles.termsCard}>
-        <TouchableOpacity
-          style={styles.termsRow}
-          onPress={() => setAgreedToTerms(!agreedToTerms)}
-        >
-          <View style={[
-            styles.checkbox,
-            agreedToTerms && styles.checkboxChecked
-          ]}>
-            {agreedToTerms && (
-              <Ionicons name="checkmark" size={16} color={colors.textOnPrimary} />
-            )}
-          </View>
-          <View style={styles.termsText}>
-            <Text style={styles.termsLabel}>
-              I agree to the{' '}
-              <Text style={styles.termsLink}>Terms and Conditions</Text>
-              {' '}and{' '}
-              <Text style={styles.termsLink}>Privacy Policy</Text>
+      {/* Step Content */}
+      {currentStep === 1 && (
+        // This step is automatically completed since user came from room selection
+        <View style={styles.stepCompleted}>
+          <Card style={styles.completedCard}>
+            <Ionicons name="checkmark-circle" size={48} color={colors.success} />
+            <Text style={styles.completedTitle}>Room Selected</Text>
+            <Text style={styles.completedText}>
+              {roomType?.roomType} at {hotel.name}
             </Text>
-          </View>
-        </TouchableOpacity>
-        
-        {errors.terms && (
-          <Text style={styles.termsError}>{errors.terms}</Text>
-        )}
-      </Card>
-
-      {/* Action Buttons */}
-      <View style={styles.actionSection}>
-        <Button
-          title="Complete Booking"
-          onPress={handleBooking}
-          loading={loading}
-          disabled={loading}
-          style={styles.bookingButton}
-        />
-        
-        <Button
-          title="Review Details"
-          variant="outline"
-          onPress={() => navigation.goBack()}
-          disabled={loading}
-          style={styles.reviewButton}
-        />
-      </View>
-
-      {/* Security Notice */}
-      <View style={styles.securityNotice}>
-        <View style={styles.securityIcon}>
-          <Ionicons name="shield-checkmark-outline" size={20} color={colors.success} />
+          </Card>
+          <Button
+            title="Continue to Guest Details"
+            onPress={() => setCurrentStep(2)}
+            style={styles.continueButton}
+          />
         </View>
-        <Text style={styles.securityText}>
-          Your information is secure and encrypted
-        </Text>
-      </View>
+      )}
+
+      {currentStep === 2 && !showSummary && (
+        <BookingForm
+          onSubmit={handleFormSubmit}
+          loading={loading}
+          initialData={getCurrentGuestInfo()}
+          style={styles.bookingForm}
+        />
+      )}
+
+      {(currentStep === 3 || showSummary) && (
+        <View style={styles.summaryStep}>
+          <BookingSummary
+            hotel={hotel}
+            roomType={roomType}
+            searchParams={searchParams}
+            guestInfo={getCurrentGuestInfo()}
+            onEdit={handleEditSummary}
+            showEditButtons={true}
+            style={styles.bookingSummary}
+          />
+          
+          <View style={styles.finalBookingSection}>
+            <Card style={styles.termsCard}>
+              <View style={styles.termsContainer}>
+                <TouchableOpacity
+                  style={styles.checkboxContainer}
+                  onPress={() => setAgreedToTerms(!agreedToTerms)}
+                  activeOpacity={0.7}
+                >
+                  <View style={[styles.checkbox, agreedToTerms && styles.checkboxChecked]}>
+                    {agreedToTerms && (
+                      <Ionicons name="checkmark" size={16} color={colors.white} />
+                    )}
+                  </View>
+                  <Text style={styles.termsText}>
+                    I agree to the Terms and Conditions and Privacy Policy
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </Card>
+
+            <Button
+              title="Complete Booking"
+              onPress={handleBooking}
+              loading={loading}
+              disabled={loading || !agreedToTerms}
+              style={styles.finalBookButton}
+            />
+          </View>
+        </View>
+      )}
     </ScreenContainer>
   );
 };
@@ -602,11 +530,65 @@ const styles = StyleSheet.create({
     marginRight: spacing.sm,
   },
   
-  securityText: {
-    fontSize: typography.fontSize.sm,
-    color: colors.textSecondary,
-    fontWeight: typography.fontWeight.medium,
+  // Step completed styles
+  stepCompleted: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: spacing.lg,
   },
+  
+  completedCard: {
+    ...globalStyles.cardLarge,
+    alignItems: 'center',
+    paddingVertical: spacing.xl,
+    marginBottom: spacing.lg,
+    backgroundColor: colors.successLight || '#e8f5e8',
+    borderColor: colors.success,
+    borderWidth: 1,
+  },
+  
+  completedTitle: {
+    fontSize: typography.fontSize.xl,
+    fontWeight: typography.fontWeight.semiBold,
+    color: colors.success,
+    marginTop: spacing.md,
+    marginBottom: spacing.sm,
+  },
+  
+  completedText: {
+    fontSize: typography.fontSize.md,
+    color: colors.textSecondary,
+    textAlign: 'center',
+  },
+  
+  continueButton: {
+    marginTop: spacing.lg,
+    paddingHorizontal: spacing.xl,
+  },
+  
+  // Booking form styles
+  bookingForm: {
+    flex: 1,
+  },
+  
+  // Summary step styles
+  summaryStep: {
+    flex: 1,
+  },
+  
+  bookingSummary: {
+    marginBottom: spacing.lg,
+  },
+  
+  finalBookingSection: {
+    gap: spacing.md,
+  },
+  
+  finalBookButton: {
+    marginTop: spacing.sm,
+  },
+  
 });
 
 export default BookingScreen;

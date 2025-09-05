@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback, useMemo } from 'react';
 import { View, TextInput, Text, StyleSheet } from 'react-native';
 import { colors, typography, spacing, borderRadius } from '../../styles/globalStyles';
 
@@ -28,27 +28,27 @@ const Input = ({
   const [isFocused, setIsFocused] = useState(false);
   const textInputRef = useRef(null);
 
-  const handleFocus = (e) => {
+  const handleFocus = useCallback((e) => {
     setIsFocused(true);
     if (onFocus) {
       onFocus(e);
     }
-  };
+  }, [onFocus]);
 
-  const handleBlur = (e) => {
+  const handleBlur = useCallback((e) => {
     setIsFocused(false);
     if (onBlur) {
       onBlur(e);
     }
-  };
+  }, [onBlur]);
 
-  const handleChangeText = (text) => {
+  const handleChangeText = useCallback((text) => {
     if (onChangeText) {
       onChangeText(text);
     }
-  };
+  }, [onChangeText]);
 
-  const getInputContainerStyle = () => {
+  const inputContainerStyle = useMemo(() => {
     const baseStyle = [styles.inputContainer];
     
     if (isFocused) {
@@ -64,7 +64,7 @@ const Input = ({
     }
     
     return baseStyle;
-  };
+  }, [isFocused, error, editable]);
 
   return (
     <View style={[styles.container, style]}>
@@ -74,7 +74,7 @@ const Input = ({
         </Text>
       )}
       
-      <View style={getInputContainerStyle()}>
+      <View style={inputContainerStyle}>
         {leftIcon && (
           <View style={styles.iconContainer}>
             {leftIcon}

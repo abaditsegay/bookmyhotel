@@ -15,7 +15,8 @@ import { Ionicons } from '@expo/vector-icons';
 // Import services and components
 import { hotelService } from '../services/hotelService';
 import { Card, Button, LoadingSpinner, ScreenContainer } from '../components/common';
-import { colors, typography, spacing, globalStyles } from '../styles/globalStyles';
+import { HotelImageGallery, HotelAmenities, RoomComparison } from '../components/hotel';
+import { colors, typography, spacing, borderRadius, globalStyles } from '../styles/globalStyles';
 import { formatDateForDisplay, calculateNights } from '../utils/dateUtils';
 
 const HotelDetailsScreen = ({ navigation, route }) => {
@@ -34,6 +35,9 @@ const HotelDetailsScreen = ({ navigation, route }) => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedRoomType, setSelectedRoomType] = useState(null); // Selected room type instead of room
+  const [showImageGallery, setShowImageGallery] = useState(false);
+  const [galleryInitialIndex, setGalleryInitialIndex] = useState(0);
+  const [showRoomComparison, setShowRoomComparison] = useState(false);
 
   // Load hotel details and room types
   const loadHotelData = async () => {
@@ -127,6 +131,23 @@ const HotelDetailsScreen = ({ navigation, route }) => {
       roomType: selectedRoomType, // Pass room type instead of specific room
       searchParams,
     });
+  };
+
+  // Handle image gallery
+  const handleImagePress = (index = 0) => {
+    setGalleryInitialIndex(index);
+    setShowImageGallery(true);
+  };
+
+  // Handle room comparison
+  const handleCompareRooms = () => {
+    setShowRoomComparison(true);
+  };
+
+  // Handle room selection from comparison
+  const handleSelectRoomFromComparison = (roomType) => {
+    setSelectedRoomType(roomType);
+    setShowRoomComparison(false);
   };
 
   // Calculate total price for room type
@@ -510,6 +531,17 @@ const HotelDetailsScreen = ({ navigation, route }) => {
               <Text style={styles.hotelDescription}>{hotel.description}</Text>
             )}
 
+            {/* Hotel Images Gallery */}
+            <TouchableOpacity 
+              style={styles.imageGalleryButton}
+              onPress={() => handleImagePress()}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="images-outline" size={20} color={colors.primary} />
+              <Text style={styles.imageGalleryButtonText}>View Hotel Images</Text>
+              <Ionicons name="chevron-forward" size={16} color={colors.primary} />
+            </TouchableOpacity>
+
             {/* Contact Information */}
             {(hotel.phone || hotel.email) && (
               <View style={styles.contactSection}>
@@ -531,21 +563,16 @@ const HotelDetailsScreen = ({ navigation, route }) => {
               </View>
             )}
 
-            {/* Amenities */}
-            {hotel.amenities && hotel.amenities.length > 0 && (
-              <View style={styles.amenitiesSection}>
-                <Text style={styles.amenitiesTitle}>Hotel Amenities</Text>
-                <View style={styles.amenitiesList}>
-                  {hotel.amenities.map((amenity, index) => (
-                    <View key={index} style={styles.amenityItem}>
-                      <Ionicons name="checkmark-circle" size={16} color={colors.success} />
-                      <Text style={styles.amenityText}>{amenity}</Text>
-                    </View>
-                  ))}
-                </View>
-              </View>
-            )}
           </Card>
+
+          {/* Hotel Amenities */}
+          {hotel.amenities && hotel.amenities.length > 0 && (
+            <HotelAmenities 
+              amenities={hotel.amenities}
+              showAll={false}
+              maxVisible={8}
+            />
+          )}
         </View>
 
         {/* Search Summary */}
@@ -581,9 +608,21 @@ const HotelDetailsScreen = ({ navigation, route }) => {
 
         {/* Available Room Types */}
         <View style={styles.roomsSection}>
-          <Text style={styles.roomsSectionTitle}>
-            Available Room Types ({roomTypes.length})
-          </Text>
+          <View style={styles.roomsSectionHeader}>
+            <Text style={styles.roomsSectionTitle}>
+              Available Room Types ({roomTypes.length})
+            </Text>
+            {roomTypes.length > 1 && (
+              <TouchableOpacity 
+                style={styles.compareRoomsButton}
+                onPress={handleCompareRooms}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="swap-horizontal" size={16} color={colors.primary} />
+                <Text style={styles.compareRoomsButtonText}>Compare</Text>
+              </TouchableOpacity>
+            )}
+          </View>
           
           {roomTypes.length > 0 ? (
             Platform.OS === 'android' ? (
@@ -656,6 +695,25 @@ const HotelDetailsScreen = ({ navigation, route }) => {
             />
           </View>
         )}
+
+        {/* Image Gallery Modal */}
+        <HotelImageGallery
+          visible={showImageGallery}
+          images={hotel?.images || []}
+          hotelName={hotel?.name}
+          initialIndex={galleryInitialIndex}
+          onClose={() => setShowImageGallery(false)}
+        />
+
+        {/* Room Comparison Modal */}
+        <RoomComparison
+          visible={showRoomComparison}
+          roomTypes={roomTypes}
+          onClose={() => setShowRoomComparison(false)}
+          onSelectRoom={handleSelectRoomFromComparison}
+          selectedRoomType={selectedRoomType}
+          searchParams={searchParams}
+        />
     </ScreenContainer>
   );
 };
@@ -727,6 +785,27 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     lineHeight: typography.fontSize.md * typography.lineHeight.relaxed,
     marginBottom: spacing.lg,
+  },
+
+  imageGalleryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    backgroundColor: colors.primaryLight,
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    marginBottom: spacing.lg,
+  },
+
+  imageGalleryButtonText: {
+    fontSize: typography.fontSize.md,
+    color: colors.primary,
+    fontWeight: typography.fontWeight.semiBold,
+    marginLeft: spacing.sm,
+    marginRight: spacing.sm,
   },
   
   contactSection: {
@@ -820,12 +899,36 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     marginBottom: spacing.xl,
   },
+
+  roomsSectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: spacing.md,
+  },
   
   roomsSectionTitle: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.semiBold,
     color: colors.textPrimary,
-    marginBottom: spacing.md,
+  },
+
+  compareRoomsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    backgroundColor: colors.primaryLight,
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
+    borderColor: colors.primary,
+  },
+
+  compareRoomsButtonText: {
+    fontSize: typography.fontSize.sm,
+    color: colors.primary,
+    fontWeight: typography.fontWeight.semiBold,
+    marginLeft: spacing.xs,
   },
   
   roomsList: {
