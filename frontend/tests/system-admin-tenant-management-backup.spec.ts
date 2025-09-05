@@ -278,6 +278,17 @@ test.describe('System Admin - Tenant Management', () => {
     await page.waitForLoadState('networkidle');
   });
 
+  test('should navigate to tenant management page', async ({ page }) => {
+    // Navigation is already handled in beforeEach, just verify we're on the correct page
+    
+    // Verify we're on the tenant management page
+    await expect(page).toHaveURL(/.*\/system\/tenants/);
+    await expect(page.locator('h1, h2, h3, h4, h5')).toContainText('Tenant Management');
+    
+    // Highlight the page title
+    await tenantPage.highlightElement('h1, h2, h3, h4, h5', '#0066ff', 2000);
+  });
+
   test('should add a new tenant successfully', async ({ page }) => {
     const tenantName = `Test Hotel ${Date.now()}`;
     const description = 'A test hotel for automated testing purposes';
@@ -293,5 +304,103 @@ test.describe('System Admin - Tenant Management', () => {
     
     // Take a screenshot for manual verification
     await page.screenshot({ path: 'tenant-creation-result.png' });
+  });
+
+  test('should validate required fields when adding tenant', async ({ page }) => {
+    // Navigation is already handled in beforeEach
+    
+    // Click Add New Tenant button
+    const addButton = 'button:has-text("Add New Tenant")';
+    await tenantPage.highlightElement('button[type="button"]', '#00ff00');
+    await page.click(addButton);
+    await page.waitForTimeout(1000);
+    
+    await page.waitForSelector('div[role="dialog"]', { state: 'visible' });
+    
+    // Highlight the dialog
+    await tenantPage.highlightElement('div[role="dialog"]', '#0066ff');
+    
+    // Check if Create Tenant button is disabled due to empty required fields
+    const createButton = 'button:has-text("Create Tenant")';
+    await tenantPage.highlightElement('div[role="dialog"] button[type="button"]', '#ff0000');
+    
+    // The button should be disabled when required fields are empty
+    const isDisabled = await page.locator(createButton).isDisabled();
+    expect(isDisabled).toBe(true); // Button should be disabled when fields are empty
+    
+    await page.waitForTimeout(1000);
+  });
+
+  test('should cancel tenant creation', async ({ page }) => {
+    // Open the add tenant dialog
+    const addButton = 'button:has-text("Add New Tenant")';
+    await tenantPage.highlightElement('button[type="button"]', '#00ff00');
+    await page.click(addButton);
+    await page.waitForTimeout(1000);
+    
+    await page.waitForSelector('div[role="dialog"]', { state: 'visible' });
+    
+    // Fill some data
+    const nameInput = 'div[role="dialog"] input[type="text"]:first-of-type';
+    await tenantPage.highlightElement(nameInput, '#00ff00');
+    await page.fill(nameInput, 'Test Hotel');
+    
+    // Highlight and click cancel
+    const cancelButton = 'button:has-text("Cancel")';
+    await tenantPage.highlightElement('div[role="dialog"] button[type="button"]', '#ff0000');
+    await page.click(cancelButton);
+    await page.waitForTimeout(1000);
+    
+    // Verify dialog is closed
+    await expect(page.locator('div[role="dialog"]')).not.toBeVisible();
+    
+    // Verify no new tenant was added by checking the table doesn't contain "Test Hotel"
+    await expect(page.locator('td:has-text("Test Hotel")')).not.toBeVisible();
+  });
+
+  test('should display tenant list with proper information', async ({ page }) => {
+    // Highlight the tenant list container
+    await tenantPage.highlightElement('[data-testid="tenant-list"]', '#0066ff', 2000);
+    
+    // Verify table headers
+    const headers = ['Tenant Name', 'Description', 'Created Date', 'Status', 'Actions'];
+    
+    for (const header of headers) {
+      const headerElement = page.locator(`[data-testid="header-${header.toLowerCase().replace(' ', '-')}"]`);
+      await expect(headerElement).toBeVisible();
+      await tenantPage.highlightElement(`[data-testid="header-${header.toLowerCase().replace(' ', '-')}"]`, '#0066ff', 500);
+    }
+  });
+
+  test('should handle duplicate tenant names', async ({ page }) => {
+    const duplicateName = 'Duplicate Hotel Test';
+    
+    // Add first tenant
+    await tenantPage.addNewTenant(duplicateName, 'First description');
+    
+    // Try to add second tenant with same name
+    const addButton = 'button:has-text("Add New Tenant")';
+    await tenantPage.highlightElement(addButton, '#00ff00');
+    await page.click(addButton);
+    
+    await page.waitForSelector('div[role="dialog"]', { state: 'visible' });
+    
+    const nameInput = 'div[role="dialog"] input[type="text"]:first-of-type';
+    const descriptionInput = 'div[role="dialog"] textarea';
+    
+    await tenantPage.highlightElement(nameInput, '#ff0000');
+    await page.fill(nameInput, duplicateName);
+    
+    await tenantPage.highlightElement(descriptionInput, '#00ff00');
+    await page.fill(descriptionInput, 'Second description');
+    
+    // Try to click create button - should show error for duplicate name
+    const createButton = 'button:has-text("Create Tenant")';
+    await tenantPage.highlightElement(createButton, '#ff0000');
+    await page.click(createButton);
+    
+    // Verify error message for duplicate name (may need to adjust selector based on actual UI)
+    await expect(page.locator('.error-message, [role="alert"], .MuiAlert-root')).toBeVisible();
+    await tenantPage.highlightElement('.error-message, [role="alert"], .MuiAlert-root', '#ff0000', 2000);
   });
 });

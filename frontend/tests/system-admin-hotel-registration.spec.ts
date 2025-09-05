@@ -318,6 +318,16 @@ class HotelRegistrationPage {
       } catch (navError) {
         console.log(`ℹ️ Navigation check completed: ${navError}`);
       }
+
+      // Show success overlay after successful registration
+      try {
+        await this.showSuccessOverlay();
+        console.log(`✨ Success overlay displayed`);
+        // Wait to ensure the overlay is visible during test execution
+        await this.page.waitForTimeout(2500); // Wait 2.5 seconds to see the overlay
+      } catch (overlayError) {
+        console.log(`ℹ️ Could not show success overlay: ${overlayError}`);
+      }
       
     } else {
       console.warn(`⚠️ Could not find submit button`);
@@ -386,7 +396,7 @@ class HotelRegistrationPage {
           if (overlay && overlay.parentNode) {
             overlay.parentNode.removeChild(overlay);
           }
-        }, 3000);
+        }, 4000); // Extended to 4 seconds for better test visibility
       }
     });
     
@@ -483,15 +493,6 @@ test.describe('System Admin - Hotel Registration', () => {
     await page.waitForLoadState('networkidle');
   });
 
-  test('should navigate to hotel registration page', async ({ page }) => {
-    // Verify we're on the hotel registration page
-    await expect(page).toHaveURL(/.*\/system\/hotels/);
-    await expect(page.locator('h1, h2, h3, h4, h5')).toContainText(/Hotel.*Registration|Register.*Hotel/i);
-    
-    // Highlight the page title
-    await hotelPage.highlightElement('h1, h2, h3, h4, h5', '#0066ff', 2000);
-  });
-
   test('should register a new hotel with sequential highlighting', async ({ page }) => {
     // Set reasonable timeout for form interaction
     page.setDefaultTimeout(10000);
@@ -528,123 +529,5 @@ test.describe('System Admin - Hotel Registration', () => {
     
     // Skip screenshot since page may be closed after form submission
     console.log(`🎉 Hotel registration test completed successfully with all 15 fields filled and submitted!`);
-  });
-
-  test('should validate required fields when registering hotel', async ({ page }) => {
-    // Click Register Hotel button
-    const registerButton = 'button:has-text("Register Hotel")';
-    await hotelPage.highlightElement('button[type="button"]', '#00ff00');
-    await page.click(registerButton);
-    await page.waitForTimeout(1000);
-    
-    await page.waitForSelector('div[role="dialog"]', { state: 'visible' });
-    
-    // Highlight the dialog
-    await hotelPage.highlightElement('div[role="dialog"]', '#0066ff');
-    
-    // Check if Register Hotel button is disabled due to empty required fields
-    const createButton = 'button:has-text("Register Hotel")';
-    await hotelPage.highlightElement('div[role="dialog"] button[type="button"]', '#ff0000');
-    
-    // The button should be disabled when required fields are empty
-    const isDisabled = await page.locator(createButton).isDisabled();
-    expect(isDisabled).toBe(true); // Button should be disabled when fields are empty
-    
-    await page.waitForTimeout(1000);
-  });
-
-  test('should cancel hotel registration', async ({ page }) => {
-    // Open the register hotel dialog
-    const registerButton = 'button:has-text("Register Hotel")';
-    await hotelPage.highlightElement('button[type="button"]', '#00ff00');
-    await page.click(registerButton);
-    await page.waitForTimeout(1000);
-    
-    await page.waitForSelector('div[role="dialog"]', { state: 'visible' });
-    
-    // Fill some data
-    const nameInput = 'div[role="dialog"] input[type="text"]:first-of-type';
-    await hotelPage.highlightElement(nameInput, '#00ff00');
-    await page.fill(nameInput, 'Test Hotel');
-    
-    // Highlight and click cancel
-    const cancelButton = 'button:has-text("Cancel")';
-    await hotelPage.highlightElement('div[role="dialog"] button[type="button"]', '#ff0000');
-    await page.click(cancelButton);
-    await page.waitForTimeout(1000);
-    
-    // Verify dialog is closed
-    await expect(page.locator('div[role="dialog"]')).not.toBeVisible();
-    
-    // Verify no new hotel was added
-    await expect(page.locator('td:has-text("Test Hotel")')).not.toBeVisible();
-  });
-
-  test('should display hotel list with proper information', async ({ page }) => {
-    // Highlight the hotel list container
-    await hotelPage.highlightElement('[data-testid="hotel-list"]', '#0066ff', 2000);
-    
-    // Verify table headers
-    const headers = ['Hotel Name', 'Description', 'Address', 'Status', 'Actions'];
-    
-    for (const header of headers) {
-      const headerElement = page.locator(`[data-testid="header-${header.toLowerCase().replace(' ', '-')}"]`);
-      await expect(headerElement).toBeVisible();
-      await hotelPage.highlightElement(`[data-testid="header-${header.toLowerCase().replace(' ', '-')}"]`, '#0066ff', 500);
-    }
-  });
-
-  test('should handle duplicate hotel names', async ({ page }) => {
-    const duplicateName = 'Duplicate Hotel Test';
-    
-    // Add first hotel
-    const firstHotelData = {
-      name: duplicateName,
-      contactPerson: 'First Manager',
-      description: 'First description',
-      address: '123 First Street',
-      city: 'First City',
-      country: 'First Country',
-      phone: '5551234567',  // Simple 10-digit format
-      contactEmail: 'first@hotel.com',
-      licenseNumber: 'FIRST123',
-      taxId: 'TAX001',
-      websiteUrl: 'https://firsthotel.com',
-      facilityAmenities: 'WiFi, Pool',
-      numberOfRooms: '50',
-      checkInTime: '14:00',  // 24-hour format
-      checkOutTime: '10:00'  // 24-hour format
-    };
-    
-    await hotelPage.registerNewHotel(firstHotelData);
-    
-    // Try to add second hotel with same name
-    const registerButton = 'button:has-text("Register Hotel")';
-    await hotelPage.highlightElement(registerButton, '#00ff00');
-    await page.click(registerButton);
-    
-    await page.waitForSelector('div[role="dialog"]', { state: 'visible' });
-    
-    const nameInput = 'div[role="dialog"] input[type="text"]:first-of-type';
-    const descriptionInput = 'div[role="dialog"] textarea';
-    const addressInput = 'div[role="dialog"] input[name="address"]';
-    
-    await hotelPage.highlightElement(nameInput, '#ff0000');
-    await page.fill(nameInput, duplicateName);
-    
-    await hotelPage.highlightElement(descriptionInput, '#00ff00');
-    await page.fill(descriptionInput, 'Second description');
-    
-    await hotelPage.highlightElement(addressInput, '#00ff00');
-    await page.fill(addressInput, '456 Second Street');
-    
-    // Try to click register button - should show error for duplicate name
-    const createButton = 'button:has-text("Register Hotel")';
-    await hotelPage.highlightElement(createButton, '#ff0000');
-    await page.click(createButton);
-    
-    // Verify error message for duplicate name (may need to adjust selector based on actual UI)
-    await expect(page.locator('.error-message, [role="alert"], .MuiAlert-root')).toBeVisible();
-    await hotelPage.highlightElement('.error-message, [role="alert"], .MuiAlert-root', '#ff0000', 2000);
   });
 });

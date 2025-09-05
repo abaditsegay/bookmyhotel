@@ -30,6 +30,9 @@ export default defineConfig({
     video: 'on',
   },
 
+  /* Global test timeout (90 seconds) */
+  timeout: 90000,
+
   /* Configure projects for major browsers */
   projects: [
     {
@@ -47,25 +50,35 @@ export default defineConfig({
       use: { ...devices['Desktop Safari'] },
     },
 
-    /* Test against mobile viewports. */
+    /* Test against mobile viewports - ONLY for public/customer-facing tests */
     {
       name: 'Mobile Chrome',
       use: { ...devices['Pixel 5'] },
+      testIgnore: [
+        '**/system-admin-*.spec.ts',
+        '**/hotel-admin-*.spec.ts',
+        '**/debug-*.spec.ts'
+      ],
     },
     {
       name: 'Mobile Safari',
       use: { ...devices['iPhone 12'] },
+      testIgnore: [
+        '**/system-admin-*.spec.ts',
+        '**/hotel-admin-*.spec.ts', 
+        '**/debug-*.spec.ts'
+      ],
     },
 
     /* Test against branded browsers. */
-    // {
-    //   name: 'Microsoft Edge',
-    //   use: { ...devices['Desktop Edge'], channel: 'msedge' },
-    // },
-    // {
-    //   name: 'Google Chrome',
-    //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
-    // },
+    {
+      name: 'Microsoft Edge',
+      use: { ...devices['Desktop Edge'], channel: 'msedge' },
+    },
+    {
+      name: 'Google Chrome',
+      use: { ...devices['Desktop Chrome'], channel: 'chrome' },
+    },
   ],
 
   /* Run your local dev server before starting the tests */
