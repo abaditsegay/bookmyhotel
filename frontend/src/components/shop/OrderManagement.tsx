@@ -36,10 +36,12 @@ import {
   Payment as PaymentIcon
 } from '@mui/icons-material';
 import { format } from 'date-fns';
+import { useAuth } from '../../contexts/AuthContext';
 import { shopApiService } from '../../services/shopApi';
 import { ShopOrder, ShopOrderStatus, DeliveryType, ShopOrderUtils } from '../../types/shop';
 
 const OrderManagement: React.FC = () => {
+  const { user } = useAuth();
   const [orders, setOrders] = useState<ShopOrder[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loading, setLoading] = useState(true);
@@ -49,14 +51,35 @@ const OrderManagement: React.FC = () => {
   const [viewOrderDialog, setViewOrderDialog] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<ShopOrder | null>(null);
 
-  // Get hotel ID from context (adjust based on your auth context)
-  const hotelId = 1;
+  // Get hotel ID from authenticated user
+  const hotelId = user?.hotelId ? parseInt(user.hotelId) : null;
 
   useEffect(() => {
-    loadOrders();
+    if (hotelId) {
+      loadOrders();
+    }
   }, [hotelId]);
 
+  // Early return if no hotel ID is available (after all hooks)
+  if (!hotelId) {
+    return (
+      <Box p={2}>
+        <Alert severity="error" sx={{ mb: 2 }}>
+          Unable to determine hotel ID for the current user. Please ensure you are logged in as a hotel staff member.
+        </Alert>
+        <Alert severity="info" sx={{ mb: 2 }}>
+          Current user: {user?.email} | Hotel ID: {user?.hotelId || 'Not assigned'}
+        </Alert>
+      </Box>
+    );
+  }
+
   const loadOrders = async () => {
+    if (!hotelId) {
+      console.error('Cannot load orders: No hotel ID available');
+      return;
+    }
+
     try {
       setLoading(true);
       const data = await shopApiService.getOrders(hotelId);
@@ -70,6 +93,11 @@ const OrderManagement: React.FC = () => {
   };
 
   const handleToggleOrderStatus = async (orderId: number) => {
+    if (!hotelId) {
+      console.error('Cannot toggle order status: No hotel ID available');
+      return;
+    }
+
     try {
       await shopApiService.toggleOrderStatus(hotelId, orderId);
       loadOrders();

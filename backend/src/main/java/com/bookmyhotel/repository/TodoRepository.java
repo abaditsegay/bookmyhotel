@@ -19,23 +19,35 @@ public interface TodoRepository extends JpaRepository<Todo, Long> {
 
     // Find todos by creator and hotel
     List<Todo> findByCreatedByAndHotelOrderByCreatedAtDesc(User createdBy, Hotel hotel);
-    
+
+    // Find todos by creator only (for system admin personal todos)
+    List<Todo> findByCreatedByOrderByCreatedAtDesc(User createdBy);
+
     Page<Todo> findByCreatedByAndHotel(User createdBy, Hotel hotel, Pageable pageable);
-    
+
     // Find todos by severity
-    List<Todo> findByCreatedByAndHotelAndSeverityOrderByCreatedAtDesc(User createdBy, Hotel hotel, Todo.Severity severity);
-    
+    List<Todo> findByCreatedByAndHotelAndSeverityOrderByCreatedAtDesc(User createdBy, Hotel hotel,
+            Todo.Severity severity);
+
     // Find overdue todos
     @Query("SELECT t FROM Todo t WHERE t.createdBy = :user AND t.hotel = :hotel AND t.dueDate <= :dueDate")
-    List<Todo> findOverdueTodos(@Param("user") User user, @Param("hotel") Hotel hotel, @Param("dueDate") LocalDateTime dueDate);
-    
+    List<Todo> findOverdueTodos(@Param("user") User user, @Param("hotel") Hotel hotel,
+            @Param("dueDate") LocalDateTime dueDate);
+
     // Find by ID and creator/hotel for security
     Optional<Todo> findByIdAndCreatedByAndHotel(Long id, User createdBy, Hotel hotel);
-    
+
+    // Find by ID and creator only (for system admin personal todos)
+    Optional<Todo> findByIdAndCreatedBy(Long id, User createdBy);
+
     // Delete by ID and creator/hotel for security
     void deleteByIdAndCreatedByAndHotel(Long id, User createdBy, Hotel hotel);
-    
+
+    // Delete by ID and creator only (for system admin personal todos)
+    void deleteByIdAndCreatedBy(Long id, User createdBy);
+
     // Count todos by severity
     @Query("SELECT COUNT(t) FROM Todo t WHERE t.createdBy = :user AND t.hotel = :hotel AND t.severity = :severity")
-    long countBySeverity(@Param("user") User user, @Param("hotel") Hotel hotel, @Param("severity") Todo.Severity severity);
+    long countBySeverity(@Param("user") User user, @Param("hotel") Hotel hotel,
+            @Param("severity") Todo.Severity severity);
 }

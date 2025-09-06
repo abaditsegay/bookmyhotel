@@ -37,12 +37,14 @@ import {
   CheckCircle as CheckCircleIcon
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../../contexts/AuthContext';
 import { shopApiService } from '../../services/shopApi';
 import { Product, ProductCreateRequest, ProductCategory } from '../../types/shop';
 import { translateProducts } from '../../utils/productTranslation';
 
 const ProductManagement: React.FC = () => {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loading, setLoading] = useState(true);
@@ -77,10 +79,16 @@ const ProductManagement: React.FC = () => {
     notes: ''
   });
 
-  // Get hotel ID from context (adjust based on your auth context)
-  const hotelId = 1;
+  // Get hotel ID from the authenticated user
+  const hotelId = user?.hotelId ? parseInt(user.hotelId) : null;
 
   useEffect(() => {
+    // Skip loading if no hotel ID
+    if (!hotelId) {
+      setLoading(false);
+      return;
+    }
+    
     const loadProductsDebounced = async () => {
       try {
         setLoading(true);
@@ -108,7 +116,26 @@ const ProductManagement: React.FC = () => {
 
   const triggerRefresh = () => setRefreshTrigger(prev => prev + 1);
 
+  // Early return if no hotel ID is available (after all hooks)
+  if (!hotelId) {
+    return (
+      <Box p={2}>
+        <Alert severity="error" sx={{ mb: 2 }}>
+          Unable to determine hotel ID for the current user. Please ensure you are logged in as a hotel staff member.
+        </Alert>
+        <Alert severity="info" sx={{ mb: 2 }}>
+          Current user: {user?.email} | Hotel ID: {user?.hotelId || 'Not assigned'}
+        </Alert>
+      </Box>
+    );
+  }
+
   const handleCreateProduct = async () => {
+    if (!hotelId) {
+      console.error('Cannot create product: No hotel ID available');
+      return;
+    }
+
     try {
       await shopApiService.createProduct(hotelId, formData);
       setOpenDialog(false);
@@ -120,7 +147,10 @@ const ProductManagement: React.FC = () => {
   };
 
   const handleUpdateProduct = async () => {
-    if (!editingProduct) return;
+    if (!editingProduct || !hotelId) {
+      console.error('Cannot update product: Missing product or hotel ID');
+      return;
+    }
     
     try {
       await shopApiService.updateProduct(hotelId, editingProduct.id, formData);
@@ -139,7 +169,10 @@ const ProductManagement: React.FC = () => {
   };
 
   const confirmDeleteProduct = async () => {
-    if (!productToDelete) return;
+    if (!productToDelete || !hotelId) {
+      console.error('Cannot delete product: Missing product or hotel ID');
+      return;
+    }
     
     try {
       await shopApiService.deleteProduct(hotelId, productToDelete.id);
@@ -152,6 +185,11 @@ const ProductManagement: React.FC = () => {
   };
 
   const handleToggleStatus = async (product: Product, field: 'isActive' | 'isAvailable') => {
+    if (!hotelId) {
+      console.error('Cannot toggle status: No hotel ID available');
+      return;
+    }
+
     try {
       if (field === 'isActive') {
         await shopApiService.toggleProductActive(hotelId, product.id);

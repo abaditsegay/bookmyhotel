@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Grid,
   Card,
@@ -14,6 +14,7 @@ import {
 } from '@mui/material';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../../contexts/AuthContext';
 import { shopApiService } from '../../services/shopApi';
 import { ShopDashboardStats } from '../../types/shop';
 import ProductManagement from './ProductManagement';
@@ -42,6 +43,7 @@ function TabPanel({ children, value, index, ...other }: TabPanelProps) {
 
 const ShopDashboard: React.FC = () => {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const [currentTab, setCurrentTab] = useState(() => {
     const tabParam = searchParams.get('tab');
@@ -55,14 +57,15 @@ const ShopDashboard: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [dashboardStats, setDashboardStats] = useState<ShopDashboardStats | null>(null);
 
-  // Get hotel ID from context or props (you might need to adjust this based on your auth context)
-  const hotelId = 1; // This should come from your auth context
+  // Get hotel ID from authenticated user
+  const hotelId = user?.hotelId ? parseInt(user.hotelId) : null;
 
-  useEffect(() => {
-    loadDashboardData();
-  }, [hotelId]);
+  const loadDashboardData = useCallback(async () => {
+    if (!hotelId) {
+      console.error('Cannot load dashboard data: No hotel ID available');
+      return;
+    }
 
-  const loadDashboardData = async () => {
     try {
       setLoading(true);
       const stats = await shopApiService.getDashboardStats(hotelId);
@@ -74,7 +77,29 @@ const ShopDashboard: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [hotelId]);
+
+  useEffect(() => {
+    if (hotelId) {
+      loadDashboardData();
+    } else {
+      setLoading(false);
+    }
+  }, [hotelId, loadDashboardData]);
+
+  // Early return if no hotel ID is available (after all hooks)
+  if (!hotelId) {
+    return (
+      <Box p={2}>
+        <Alert severity="error" sx={{ mb: 2 }}>
+          Unable to determine hotel ID for the current user. Please ensure you are logged in as a hotel staff member.
+        </Alert>
+        <Alert severity="info" sx={{ mb: 2 }}>
+          Current user: {user?.email} | Hotel ID: {user?.hotelId || 'Not assigned'}
+        </Alert>
+      </Box>
+    );
+  }
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setCurrentTab(newValue);

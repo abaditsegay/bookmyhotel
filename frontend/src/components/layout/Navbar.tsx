@@ -79,6 +79,7 @@ const Navbar: React.FC = () => {
   // Helper function to get user role display name
   const getRoleDisplayName = (role: string) => {
     const roleMap: { [key: string]: string } = {
+      'SYSTEM_ADMIN': 'System Admin',
       'ADMIN': 'System Administrator',
       'HOTEL_ADMIN': 'Hotel Administrator',
       'FRONTDESK': 'Front Desk Staff',
@@ -95,6 +96,7 @@ const Navbar: React.FC = () => {
   // Helper function to get role color
   const getRoleColor = (role: string) => {
     const colorMap: { [key: string]: 'primary' | 'secondary' | 'success' | 'warning' | 'info' | 'error' } = {
+      'SYSTEM_ADMIN': 'error',
       'ADMIN': 'error',
       'HOTEL_ADMIN': 'primary',
       'FRONTDESK': 'info',
@@ -112,7 +114,7 @@ const Navbar: React.FC = () => {
   const shouldShowHotelName = () => {
     // Hide hotel name for system admin and customer users
     if (!user) return true; // Show for anonymous users
-    return user.role !== 'ADMIN' && user.role !== 'CUSTOMER';
+    return user.role !== 'SYSTEM_ADMIN' && user.role !== 'ADMIN' && user.role !== 'CUSTOMER';
   };
 
   // Navigation items based on user role
@@ -122,8 +124,8 @@ const Navbar: React.FC = () => {
     // Base items are now empty for non-authenticated users since we're moving them to the right side
 
     if (user) {
-      // For admin, show minimal navigation without dashboard or profile
-      if (user.role === 'ADMIN') {
+      // For system admin and admin, show minimal navigation without dashboard or profile
+      if (user.role === 'SYSTEM_ADMIN' || user.role === 'ADMIN') {
         return [...baseItems];
       }
 

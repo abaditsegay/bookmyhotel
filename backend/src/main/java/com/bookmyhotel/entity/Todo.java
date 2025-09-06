@@ -29,7 +29,7 @@ public class Todo {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "hotel_id", nullable = false)
+    @JoinColumn(name = "hotel_id", nullable = true)
     @JsonIgnore
     private Hotel hotel;
 
@@ -48,6 +48,9 @@ public class Todo {
 
     @Column(nullable = false)
     private String category = "General";
+
+    // Temporarily removed completed field - will add back after database schema is
+    // synchronized
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")
@@ -134,6 +137,9 @@ public class Todo {
     public void setCategory(String category) {
         this.category = category;
     }
+
+    // Temporarily removed completed getter/setter - will add back after database
+    // schema is synchronized
 
     public User getCreatedBy() {
         return createdBy;

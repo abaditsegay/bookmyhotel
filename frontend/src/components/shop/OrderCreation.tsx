@@ -74,7 +74,7 @@ const OrderCreation: React.FC = () => {
   const [paymentReference, setPaymentReference] = useState<string | null>(null);
 
   // Get hotel ID from context (adjust based on your auth context)
-  const hotelId = 1;
+  const hotelId = user?.hotelId ? parseInt(user.hotelId) : 1; // Fallback to hotel 1
 
   useEffect(() => {
     loadProducts();

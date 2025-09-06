@@ -39,8 +39,8 @@ const LoginPage: React.FC = () => {
         if (redirectTo && bookingData) {
           navigate(redirectTo, { state: bookingData });
         } else {
-          // Navigate to home page, which will redirect based on user role
-          navigate('/');
+          // Navigate to dashboard, which will redirect based on user role
+          navigate('/dashboard');
         }
       }
       // Note: If login fails, the error will be set in authError by AuthContext
@@ -151,18 +151,18 @@ const LoginPage: React.FC = () => {
         sx={{
           minHeight: '100vh',
           display: 'flex',
-          flexDirection: 'column',
+          flexDirection: { xs: 'column', md: 'row' },
           alignItems: 'center',
           justifyContent: 'center',
           py: 4,
-          gap: 3,
+          gap: 4,
         }}
       >
-        {/* Clean Login Form - System Admin Only */}
-        <Card sx={{ maxWidth: 500, width: '100%' }}>
+        {/* Main Login Form */}
+        <Card sx={{ maxWidth: 500, width: '100%', height: 'fit-content' }}>
           <CardContent sx={{ p: 4 }}>
             <Typography variant="h4" component="h1" gutterBottom align="center">
-              BookMyHotel
+              Manage My Hotel
             </Typography>
             
             {bookingData && (
@@ -320,76 +320,120 @@ const LoginPage: React.FC = () => {
               )}
             </Typography>
 
-            {/* Test Credentials - Only show on Sign In */}
+            {/* Test Credentials Hint - Only show on Sign In */}
             {!showSignUp && (
-              <>
-                <Divider sx={{ my: 3 }}>
-                  <Chip label="Quick Login - Test Credentials" size="small" color="primary" />
-                </Divider>
-                
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  <Typography variant="body2" color="textSecondary" align="center" sx={{ mb: 1 }}>
-                    Click any button below to auto-fill credentials for testing:
-                  </Typography>
-                  
-                  <Button
-                    variant="outlined"
-                    fullWidth
-                    onClick={() => fillSampleUser('admin@bookmyhotel.com', 'admin123')}
-                    sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
-                  >
-                    <Typography variant="body2" fontWeight="bold">🔧 System Admin</Typography>
-                    <Typography variant="caption" color="textSecondary" sx={{ mt: 0.5 }}>
-                      admin@bookmyhotel.com
-                    </Typography>
-                    <Typography variant="caption" color="textSecondary">
-                      Password: admin123
-                    </Typography>
-                    <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
-                      ✅ Full System Access
-                    </Typography>
-                  </Button>
-
-                  <Button
-                    variant="outlined"
-                    fullWidth
-                    onClick={() => fillSampleUser('admin@addissunshine.com', 'password123')}
-                    sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
-                  >
-                    <Typography variant="body2" fontWeight="bold">🏨 Hotel Admin</Typography>
-                    <Typography variant="caption" color="textSecondary" sx={{ mt: 0.5 }}>
-                      admin@addissunshine.com
-                    </Typography>
-                    <Typography variant="caption" color="textSecondary">
-                      Password: password123
-                    </Typography>
-                    <Typography variant="caption" color="info.main" sx={{ mt: 0.5 }}>
-                      🏨 Addis Sunshine Grand Hotel (50 rooms)
-                    </Typography>
-                  </Button>
-
-                  <Button
-                    variant="outlined"
-                    fullWidth
-                    onClick={() => fillSampleUser('frontdesk@addissunshine.com', 'password123')}
-                    sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
-                  >
-                    <Typography variant="body2" fontWeight="bold">🎯 Front Desk</Typography>
-                    <Typography variant="caption" color="textSecondary" sx={{ mt: 0.5 }}>
-                      frontdesk@addissunshine.com
-                    </Typography>
-                    <Typography variant="caption" color="textSecondary">
-                      Password: password123
-                    </Typography>
-                    <Typography variant="caption" color="warning.main" sx={{ mt: 0.5 }}>
-                      🎯 Addis Sunshine Grand Hotel Front Desk
-                    </Typography>
-                  </Button>
-                </Box>
-              </>
+              <Divider sx={{ my: 3 }}>
+                <Chip label="Test Credentials Available on the Right →" size="small" color="primary" />
+              </Divider>
             )}
           </CardContent>
         </Card>
+
+        {/* Test Credentials Panel - Only show on Sign In */}
+        {!showSignUp && (
+          <Card sx={{ maxWidth: 400, width: '100%', height: 'fit-content' }}>
+            <CardContent sx={{ p: 3 }}>
+              <Typography variant="h6" gutterBottom align="center" color="primary">
+                Quick Login - Test Credentials
+              </Typography>
+              <Typography variant="body2" color="textSecondary" align="center" sx={{ mb: 2 }}>
+                Click any button below to auto-fill credentials for testing:
+              </Typography>
+              
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  onClick={() => fillSampleUser('admin@bookmyhotel.com', 'admin123')}
+                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
+                >
+                  <Typography variant="body2" fontWeight="bold">🔧 System Admin</Typography>
+                  <Typography variant="caption" color="textSecondary" sx={{ mt: 0.5 }}>
+                    admin@bookmyhotel.com
+                  </Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    Password: admin123
+                  </Typography>
+                  <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
+                    ✅ Full System Access
+                  </Typography>
+                </Button>
+
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  onClick={() => fillSampleUser('admin.grandplaza@bookmyhotel.com', 'admin123')}
+                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
+                >
+                  <Typography variant="body2" fontWeight="bold">🏨 Hotel Admin - Grand Plaza</Typography>
+                  <Typography variant="caption" color="textSecondary" sx={{ mt: 0.5 }}>
+                    admin.grandplaza@bookmyhotel.com
+                  </Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    Password: admin123
+                  </Typography>
+                  <Typography variant="caption" color="info.main" sx={{ mt: 0.5 }}>
+                    🏨 Grand Plaza Hotel (100 rooms)
+                  </Typography>
+                </Button>
+
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  onClick={() => fillSampleUser('frontdesk.grandplaza@bookmyhotel.com', 'front123')}
+                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
+                >
+                  <Typography variant="body2" fontWeight="bold">🎯 Front Desk - Grand Plaza</Typography>
+                  <Typography variant="caption" color="textSecondary" sx={{ mt: 0.5 }}>
+                    frontdesk.grandplaza@bookmyhotel.com
+                  </Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    Password: front123
+                  </Typography>
+                  <Typography variant="caption" color="warning.main" sx={{ mt: 0.5 }}>
+                    🎯 Grand Plaza Hotel Front Desk
+                  </Typography>
+                </Button>
+
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  onClick={() => fillSampleUser('admin.samhotel@bookmyhotel.com', 'admin123')}
+                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
+                >
+                  <Typography variant="body2" fontWeight="bold">🏨 Hotel Admin - Sam Hotel</Typography>
+                  <Typography variant="caption" color="textSecondary" sx={{ mt: 0.5 }}>
+                    admin.samhotel@bookmyhotel.com
+                  </Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    Password: admin123
+                  </Typography>
+                  <Typography variant="caption" color="info.main" sx={{ mt: 0.5 }}>
+                    🏨 Sam Hotel ! (0 rooms)
+                  </Typography>
+                </Button>
+
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  onClick={() => fillSampleUser('frontdesk.samhotel@bookmyhotel.com', 'front123')}
+                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
+                >
+                  <Typography variant="body2" fontWeight="bold">🎯 Front Desk - Sam Hotel</Typography>
+                  <Typography variant="caption" color="textSecondary" sx={{ mt: 0.5 }}>
+                    frontdesk.samhotel@bookmyhotel.com
+                  </Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    Password: front123
+                  </Typography>
+                  <Typography variant="caption" color="warning.main" sx={{ mt: 0.5 }}>
+                    🎯 Sam Hotel ! Front Desk
+                  </Typography>
+                </Button>
+              </Box>
+            </CardContent>
+          </Card>
+        )}
       </Box>
     </Container>
   );

@@ -283,6 +283,10 @@ public class HotelManagementService {
         long roomCount = roomRepository.countByHotel(hotel);
         dto.setRoomCount((int) roomCount);
 
+        // Set room statistics for admin hotel list display
+        dto.setTotalRooms((int) roomCount);
+        dto.setAvailableRooms(roomRepository.findByHotelIdAndIsAvailableTrue(hotel.getId()).size());
+
         return dto;
     }
 

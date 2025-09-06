@@ -106,7 +106,7 @@ const UserManagementAdmin: React.FC = () => {
   const [loadingTenants, setLoadingTenants] = useState(false);
   const [loadingHotels, setLoadingHotels] = useState(false);
 
-  const roleOptions = ['ADMIN', 'HOTEL_MANAGER', 'HOTEL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'CUSTOMER', 'GUEST'];
+  const roleOptions = ['SYSTEM_ADMIN', 'ADMIN', 'HOTEL_MANAGER', 'HOTEL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'CUSTOMER', 'GUEST'];
   const statusOptions = ['ALL', 'ACTIVE', 'INACTIVE'];
 
   // Set token in API service when component mounts
@@ -342,6 +342,7 @@ const UserManagementAdmin: React.FC = () => {
 
   const getRoleColor = (role: string) => {
     switch (role) {
+      case 'SYSTEM_ADMIN': return 'error';
       case 'ADMIN': return 'error';
       case 'HOTEL_MANAGER': return 'warning';
       case 'HOTEL_ADMIN': return 'info';

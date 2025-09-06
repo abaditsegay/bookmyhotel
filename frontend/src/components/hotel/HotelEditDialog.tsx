@@ -38,6 +38,7 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
     country: '',
     phone: '',
     email: '',
+    totalRooms: 0,
   });
 
   const [localError, setLocalError] = useState<string>('');
@@ -54,6 +55,7 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
         country: hotel.country || '',
         phone: hotel.phone || '',
         email: hotel.email || '',
+        totalRooms: hotel.totalRooms || hotel.roomCount || 0,
       });
     }
   }, [hotel]);
@@ -68,9 +70,10 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
   const handleInputChange = (field: keyof Hotel) => (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
+    const value = field === 'totalRooms' ? parseInt(event.target.value) || 0 : event.target.value;
     setFormData((prev) => ({
       ...prev,
-      [field]: event.target.value,
+      [field]: value,
     }));
     if (localError) setLocalError('');
   };
@@ -86,6 +89,14 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
     }
     if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       setLocalError('Please enter a valid email address');
+      return false;
+    }
+    if (formData.totalRooms !== undefined && formData.totalRooms < 0) {
+      setLocalError('Number of rooms cannot be negative');
+      return false;
+    }
+    if (formData.totalRooms !== undefined && formData.totalRooms > 9999) {
+      setLocalError('Number of rooms cannot exceed 9999');
       return false;
     }
     return true;
@@ -214,6 +225,22 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
                 onChange={handleInputChange('phone')}
                 disabled={saving}
                 inputProps={{ maxLength: 20 }}
+              />
+            </Grid>
+            
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Number of Rooms"
+                type="number"
+                fullWidth
+                value={formData.totalRooms || ''}
+                onChange={handleInputChange('totalRooms')}
+                disabled={saving}
+                inputProps={{ 
+                  min: 0,
+                  max: 9999
+                }}
+                helperText="Total number of rooms in the hotel"
               />
             </Grid>
           </Grid>

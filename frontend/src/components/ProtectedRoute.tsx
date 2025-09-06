@@ -87,7 +87,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole,
   };
 
   if ((requiredRole || requiredRoles) && !hasRequiredRole()) {
-    return <Navigate to="/login" replace />;
+    // Instead of redirecting to login, redirect to appropriate dashboard
+    return <Navigate to="/dashboard" replace />;
   }
 
   return <>{children}</>;

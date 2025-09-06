@@ -158,7 +158,8 @@ function App() {
   return (
     <EnhancedLayout hideSidebar={!isAuthenticated} maxWidth={isFullWidthRoute ? false : 'xl'}>
       <Routes>
-        <Route path="/" element={<RoleBasedRouter />} />
+        <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />} />
+        <Route path="/dashboard" element={<RoleBasedRouter />} />
         <Route path="/home" element={<HotelSearchPage />} />
         <Route path="/hotels" element={
           <PlaceholderPage 
