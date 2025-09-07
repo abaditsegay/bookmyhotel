@@ -1,7 +1,6 @@
 package com.bookmyhotel.entity;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 import org.hibernate.annotations.Filter;
@@ -16,8 +15,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 
@@ -98,21 +95,6 @@ public class StaffSchedule extends HotelScopedEntity {
         this.department = department;
         this.createdBy = createdBy;
         this.status = ScheduleStatus.SCHEDULED;
-    }
-
-    @PrePersist
-    public void prePersist() {
-        super.prePersist(); // Call BaseEntity's prePersist to set timestamps
-        if (this.getCreatedAt() == null) {
-            this.setCreatedAt(LocalDateTime.now());
-        }
-        this.setUpdatedAt(LocalDateTime.now());
-    }
-
-    @PreUpdate
-    public void preUpdate() {
-        super.preUpdate(); // Call BaseEntity's preUpdate
-        this.setUpdatedAt(LocalDateTime.now());
     }
 
     // Getters and Setters

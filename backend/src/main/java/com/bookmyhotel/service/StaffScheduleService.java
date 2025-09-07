@@ -94,6 +94,13 @@ public class StaffScheduleService {
         );
         schedule.setNotes(request.getNotes());
 
+        // Explicitly set timestamps since @PrePersist is not working reliably
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        schedule.setCreatedAt(now);
+        schedule.setUpdatedAt(now);
+        logger.info("🔍 Manually set timestamps - createdAt: {}, updatedAt: {}", 
+                   schedule.getCreatedAt(), schedule.getUpdatedAt());
+
         schedule = staffScheduleRepository.save(schedule);
         logger.info("Schedule created with ID: {}", schedule.getId());
 
