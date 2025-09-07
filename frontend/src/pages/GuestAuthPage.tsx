@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -43,7 +43,7 @@ const GuestAuthPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const { login, error: authError, clearError } = useAuth();
+  const { login, error: authError, clearError, isAuthenticated, user, isInitializing } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -63,6 +63,20 @@ const GuestAuthPage: React.FC = () => {
   const intendedDestination = location.state?.from || '/';
   const bookingData = location.state?.bookingData;
 
+  // Redirect already authenticated users to their intended destination
+  useEffect(() => {
+    if (!isInitializing && isAuthenticated && user) {
+      // If there's booking data, redirect to booking page
+      if (bookingData) {
+        navigate('/booking', { state: bookingData, replace: true });
+        return;
+      }
+      
+      // Otherwise, redirect to intended destination or dashboard
+      navigate(intendedDestination === '/' ? '/dashboard' : intendedDestination, { replace: true });
+    }
+  }, [isAuthenticated, user, isInitializing, bookingData, intendedDestination, navigate]);
+
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
     setError('');
@@ -72,6 +86,7 @@ const GuestAuthPage: React.FC = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    clearError(); // Clear previous auth errors
     setLoading(true);
 
     try {
@@ -83,10 +98,10 @@ const GuestAuthPage: React.FC = () => {
         } else {
           navigate(intendedDestination);
         }
-      } else {
-        setError('Invalid email or password');
       }
+      // Note: If login fails, the error will be set in authError by AuthContext
     } catch (err) {
+      console.error('Login error:', err);
       setError('Login failed. Please try again.');
     } finally {
       setLoading(false);
@@ -175,6 +190,26 @@ const GuestAuthPage: React.FC = () => {
     }
   };
 
+  // Show loading state while checking authentication from localStorage
+  if (isInitializing) {
+    return (
+      <Container maxWidth="sm">
+        <Box
+          sx={{
+            minHeight: '100vh',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 2,
+          }}
+        >
+          <Typography variant="h6">Loading...</Typography>
+        </Box>
+      </Container>
+    );
+  }
+
   return (
     <Container maxWidth="sm">
       <Box
@@ -202,9 +237,9 @@ const GuestAuthPage: React.FC = () => {
               </Tabs>
             </Box>
 
-            {error && (
+            {(authError || error) && (
               <Alert severity="error" sx={{ mt: 2 }}>
-                {error}
+                {authError || error}
               </Alert>
             )}
 

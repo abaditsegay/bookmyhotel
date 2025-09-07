@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Button, Card, CardContent, Container, TextField, Typography, Alert, Divider, Chip } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -20,13 +20,27 @@ const LoginPage: React.FC = () => {
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
   
-  const { login, error: authError, clearError } = useAuth();
+  const { login, error: authError, clearError, isAuthenticated, user, isInitializing } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   
   // Get redirect info from location state
   const redirectTo = location.state?.redirectTo;
   const bookingData = location.state?.bookingData;
+
+  // Redirect already authenticated users to their appropriate dashboard
+  useEffect(() => {
+    if (!isInitializing && isAuthenticated && user) {
+      // If there's a specific redirect with booking data, use that
+      if (redirectTo && bookingData) {
+        navigate(redirectTo, { state: bookingData, replace: true });
+        return;
+      }
+      
+      // Otherwise, redirect based on user role to their dashboard
+      navigate('/dashboard', { replace: true });
+    }
+  }, [isAuthenticated, user, isInitializing, redirectTo, bookingData, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -145,6 +159,26 @@ const LoginPage: React.FC = () => {
 
   // Get the error to display (prefer auth context error, then local error)
   const displayError = authError || error;
+
+  // Show loading state while checking authentication from localStorage
+  if (isInitializing) {
+    return (
+      <Container maxWidth="lg">
+        <Box
+          sx={{
+            minHeight: '100vh',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 2,
+          }}
+        >
+          <Typography variant="h6">Loading...</Typography>
+        </Box>
+      </Container>
+    );
+  }
 
   return (
     <Container maxWidth="lg">
