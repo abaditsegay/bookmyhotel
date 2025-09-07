@@ -23,6 +23,7 @@ import com.bookmyhotel.dto.BookingModificationResponse;
 import com.bookmyhotel.dto.BookingRequest;
 import com.bookmyhotel.dto.BookingResponse;
 import com.bookmyhotel.dto.RoomTypeBookingRequest;
+import com.bookmyhotel.dto.payment.PaymentInitiationRequest;
 import com.bookmyhotel.entity.GuestInfo;
 import com.bookmyhotel.entity.Hotel;
 import com.bookmyhotel.entity.Reservation;
@@ -32,14 +33,11 @@ import com.bookmyhotel.entity.RoomType;
 import com.bookmyhotel.entity.User;
 import com.bookmyhotel.exception.BookingException;
 import com.bookmyhotel.exception.ResourceNotFoundException;
+import com.bookmyhotel.repository.HotelRepository;
 import com.bookmyhotel.repository.ReservationRepository;
 import com.bookmyhotel.repository.RoomRepository;
 import com.bookmyhotel.repository.UserRepository;
-import com.bookmyhotel.repository.HotelRepository;
 import com.bookmyhotel.service.payment.EthiopianMobilePaymentService;
-import com.bookmyhotel.dto.payment.PaymentInitiationResponse;
-import com.bookmyhotel.dto.payment.PaymentInitiationRequest;
-import com.bookmyhotel.exception.PaymentException;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
 import com.stripe.model.PaymentIntent;
@@ -468,13 +466,13 @@ public class BookingService {
             if (request.getGuestEmail() == null || request.getGuestEmail().trim().isEmpty()) {
                 throw new BookingException("Guest email is required for anonymous bookings");
             }
-            
+
             // Check for email uniqueness - prevent multiple active bookings with same email
             List<Reservation> activeReservations = reservationRepository.findActiveReservationsByGuestEmail(
-                request.getGuestEmail());
+                    request.getGuestEmail());
             if (!activeReservations.isEmpty()) {
                 throw new BookingException("An active reservation already exists for this email address. " +
-                    "Please use a different email or contact the hotel to modify your existing booking.");
+                        "Please use a different email or contact the hotel to modify your existing booking.");
             }
         }
     }
@@ -564,13 +562,13 @@ public class BookingService {
             if (request.getGuestEmail() == null || request.getGuestEmail().trim().isEmpty()) {
                 throw new BookingException("Guest email is required for anonymous bookings");
             }
-            
+
             // Check for email uniqueness - prevent multiple active bookings with same email
             List<Reservation> activeReservations = reservationRepository.findActiveReservationsByGuestEmail(
-                request.getGuestEmail());
+                    request.getGuestEmail());
             if (!activeReservations.isEmpty()) {
                 throw new BookingException("An active reservation already exists for this email address. " +
-                    "Please use a different email or contact the hotel to modify your existing booking.");
+                        "Please use a different email or contact the hotel to modify your existing booking.");
             }
         }
     }
@@ -609,7 +607,8 @@ public class BookingService {
         reservation.setGuest(user);
 
         // Validate and set guest information
-        GuestInfo guestInfo = validateAndPrepareGuestInfo(request.getGuestName(), request.getGuestEmail(), request.getGuestPhone(), user);
+        GuestInfo guestInfo = validateAndPrepareGuestInfo(request.getGuestName(), request.getGuestEmail(),
+                request.getGuestPhone(), user);
         reservation.setGuestInfo(guestInfo);
 
         reservation.setCheckInDate(request.getCheckInDate());
@@ -655,7 +654,8 @@ public class BookingService {
         reservation.setGuest(user);
 
         // Validate and set guest information
-        GuestInfo guestInfo = validateAndPrepareGuestInfo(request.getGuestName(), request.getGuestEmail(), request.getGuestPhone(), user);
+        GuestInfo guestInfo = validateAndPrepareGuestInfo(request.getGuestName(), request.getGuestEmail(),
+                request.getGuestPhone(), user);
         reservation.setGuestInfo(guestInfo);
         reservation.setGuestInfo(guestInfo);
 
@@ -727,7 +727,8 @@ public class BookingService {
         reservation.setGuest(user);
 
         // Validate and set guest information
-        GuestInfo guestInfo = validateAndPrepareGuestInfo(request.getGuestName(), request.getGuestEmail(), request.getGuestPhone(), user);
+        GuestInfo guestInfo = validateAndPrepareGuestInfo(request.getGuestName(), request.getGuestEmail(),
+                request.getGuestPhone(), user);
         reservation.setGuestInfo(guestInfo);
 
         reservation.setCheckInDate(request.getCheckInDate());
@@ -775,7 +776,8 @@ public class BookingService {
         reservation.setGuest(user);
 
         // Validate and set guest information
-        GuestInfo guestInfo = validateAndPrepareGuestInfoFromRoomType(request.getGuestName(), request.getGuestEmail(), request.getGuestPhone(), user);
+        GuestInfo guestInfo = validateAndPrepareGuestInfoFromRoomType(request.getGuestName(), request.getGuestEmail(),
+                request.getGuestPhone(), user);
         reservation.setGuestInfo(guestInfo);
         reservation.setGuestInfo(guestInfo);
 
@@ -815,7 +817,8 @@ public class BookingService {
         reservation.setGuest(user);
 
         // Validate and set guest information
-        GuestInfo guestInfo = validateAndPrepareGuestInfoFromRoomType(request.getGuestName(), request.getGuestEmail(), request.getGuestPhone(), user);
+        GuestInfo guestInfo = validateAndPrepareGuestInfoFromRoomType(request.getGuestName(), request.getGuestEmail(),
+                request.getGuestPhone(), user);
         reservation.setGuestInfo(guestInfo);
 
         reservation.setCheckInDate(request.getCheckInDate());
@@ -904,10 +907,29 @@ public class BookingService {
             }
         }
 
-        // Guest details - use guest info which works for both registered and anonymous
-        // guests
-        response.setGuestName(reservation.getGuestInfo().getName());
-        response.setGuestEmail(reservation.getGuestInfo().getEmail());
+        // Guest details - handle both registered users and anonymous guests with proper null checking
+        if (reservation.getGuestInfo() != null) {
+            // Get guest name with fallback logic
+            String guestName = reservation.getGuestInfo().getName();
+            if (guestName == null || guestName.trim().isEmpty()) {
+                // Fallback: try to get name from registered user
+                if (reservation.getGuest() != null && reservation.getGuest().getFirstName() != null && reservation.getGuest().getLastName() != null) {
+                    guestName = reservation.getGuest().getFirstName() + " " + reservation.getGuest().getLastName();
+                } else {
+                    guestName = "Guest"; // Final fallback
+                }
+            }
+            response.setGuestName(guestName);
+            response.setGuestEmail(reservation.getGuestInfo().getEmail());
+        } else if (reservation.getGuest() != null) {
+            // Fallback to registered user data if guestInfo is null
+            response.setGuestName(reservation.getGuest().getFirstName() + " " + reservation.getGuest().getLastName());
+            response.setGuestEmail(reservation.getGuest().getEmail());
+        } else {
+            // Final fallback if both are null
+            response.setGuestName("Guest");
+            response.setGuestEmail("N/A");
+        }
         response.setNumberOfGuests(reservation.getNumberOfGuests());
 
         // Special requests
@@ -933,9 +955,11 @@ public class BookingService {
     }
 
     /**
-     * Validate and prepare guest information - ensures all required fields are present
+     * Validate and prepare guest information - ensures all required fields are
+     * present
      */
-    private GuestInfo validateAndPrepareGuestInfo(String requestGuestName, String requestGuestEmail, String requestGuestPhone, User user) {
+    private GuestInfo validateAndPrepareGuestInfo(String requestGuestName, String requestGuestEmail,
+            String requestGuestPhone, User user) {
         String guestName = requestGuestName;
         String guestEmail = requestGuestEmail;
         String guestPhone = requestGuestPhone;
@@ -968,9 +992,11 @@ public class BookingService {
     }
 
     /**
-     * Validate and prepare guest information for RoomTypeBookingRequest - ensures all required fields are present
+     * Validate and prepare guest information for RoomTypeBookingRequest - ensures
+     * all required fields are present
      */
-    private GuestInfo validateAndPrepareGuestInfoFromRoomType(String requestGuestName, String requestGuestEmail, String requestGuestPhone, User user) {
+    private GuestInfo validateAndPrepareGuestInfoFromRoomType(String requestGuestName, String requestGuestEmail,
+            String requestGuestPhone, User user) {
         String guestName = requestGuestName;
         String guestEmail = requestGuestEmail;
         String guestPhone = requestGuestPhone;
