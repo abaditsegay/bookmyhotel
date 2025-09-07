@@ -475,7 +475,18 @@ const HotelManagementAdmin: React.FC = () => {
 
         {/* Tabs */}
         <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-          <Tabs value={activeTab} onChange={handleTabChange}>
+          <Tabs 
+            value={activeTab} 
+            onChange={handleTabChange}
+            variant="scrollable"
+            scrollButtons="auto"
+            allowScrollButtonsMobile
+            sx={{
+              '& .MuiTabs-scrollButtons': {
+                '&.Mui-disabled': { opacity: 0.3 },
+              },
+            }}
+          >
             <Tab label="Existing Hotels" />
             <Tab label="Hotel Registrations" />
           </Tabs>

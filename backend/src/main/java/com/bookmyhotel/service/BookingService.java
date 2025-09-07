@@ -468,6 +468,14 @@ public class BookingService {
             if (request.getGuestEmail() == null || request.getGuestEmail().trim().isEmpty()) {
                 throw new BookingException("Guest email is required for anonymous bookings");
             }
+            
+            // Check for email uniqueness - prevent multiple active bookings with same email
+            List<Reservation> activeReservations = reservationRepository.findActiveReservationsByGuestEmail(
+                request.getGuestEmail());
+            if (!activeReservations.isEmpty()) {
+                throw new BookingException("An active reservation already exists for this email address. " +
+                    "Please use a different email or contact the hotel to modify your existing booking.");
+            }
         }
     }
 
@@ -556,6 +564,14 @@ public class BookingService {
             if (request.getGuestEmail() == null || request.getGuestEmail().trim().isEmpty()) {
                 throw new BookingException("Guest email is required for anonymous bookings");
             }
+            
+            // Check for email uniqueness - prevent multiple active bookings with same email
+            List<Reservation> activeReservations = reservationRepository.findActiveReservationsByGuestEmail(
+                request.getGuestEmail());
+            if (!activeReservations.isEmpty()) {
+                throw new BookingException("An active reservation already exists for this email address. " +
+                    "Please use a different email or contact the hotel to modify your existing booking.");
+            }
         }
     }
 
@@ -592,26 +608,8 @@ public class BookingService {
         // Set user only for authenticated users (will be null for anonymous guests)
         reservation.setGuest(user);
 
-        // Set guest information - use authenticated user's info if guest info is not
-        // provided
-        String guestName = request.getGuestName();
-        String guestEmail = request.getGuestEmail();
-        String guestPhone = request.getGuestPhone();
-
-        // If guest info is not provided but user is authenticated, use user's info
-        if (user != null) {
-            if (guestName == null || guestName.trim().isEmpty()) {
-                guestName = user.getFirstName() + " " + user.getLastName();
-            }
-            if (guestEmail == null || guestEmail.trim().isEmpty()) {
-                guestEmail = user.getEmail();
-            }
-            if (guestPhone == null || guestPhone.trim().isEmpty()) {
-                guestPhone = user.getPhone();
-            }
-        }
-
-        GuestInfo guestInfo = new GuestInfo(guestName, guestEmail, guestPhone);
+        // Validate and set guest information
+        GuestInfo guestInfo = validateAndPrepareGuestInfo(request.getGuestName(), request.getGuestEmail(), request.getGuestPhone(), user);
         reservation.setGuestInfo(guestInfo);
 
         reservation.setCheckInDate(request.getCheckInDate());
@@ -656,26 +654,9 @@ public class BookingService {
         // Set user only for authenticated users (will be null for anonymous guests)
         reservation.setGuest(user);
 
-        // Set guest information - use authenticated user's info if guest info is not
-        // provided
-        String guestName = request.getGuestName();
-        String guestEmail = request.getGuestEmail();
-        String guestPhone = request.getGuestPhone();
-
-        // If guest info is not provided but user is authenticated, use user's info
-        if (user != null) {
-            if (guestName == null || guestName.trim().isEmpty()) {
-                guestName = user.getFirstName() + " " + user.getLastName();
-            }
-            if (guestEmail == null || guestEmail.trim().isEmpty()) {
-                guestEmail = user.getEmail();
-            }
-            if (guestPhone == null || guestPhone.trim().isEmpty()) {
-                guestPhone = user.getPhone();
-            }
-        }
-
-        GuestInfo guestInfo = new GuestInfo(guestName, guestEmail, guestPhone);
+        // Validate and set guest information
+        GuestInfo guestInfo = validateAndPrepareGuestInfo(request.getGuestName(), request.getGuestEmail(), request.getGuestPhone(), user);
+        reservation.setGuestInfo(guestInfo);
         reservation.setGuestInfo(guestInfo);
 
         reservation.setCheckInDate(request.getCheckInDate());
@@ -745,25 +726,8 @@ public class BookingService {
         // Set user only for authenticated users
         reservation.setGuest(user);
 
-        // Set guest information
-        String guestName = request.getGuestName();
-        String guestEmail = request.getGuestEmail();
-        String guestPhone = request.getGuestPhone();
-
-        // If guest info is not provided but user is authenticated, use user's info
-        if (user != null) {
-            if (guestName == null || guestName.trim().isEmpty()) {
-                guestName = user.getFirstName() + " " + user.getLastName();
-            }
-            if (guestEmail == null || guestEmail.trim().isEmpty()) {
-                guestEmail = user.getEmail();
-            }
-            if (guestPhone == null || guestPhone.trim().isEmpty()) {
-                guestPhone = user.getPhone();
-            }
-        }
-
-        GuestInfo guestInfo = new GuestInfo(guestName, guestEmail, guestPhone);
+        // Validate and set guest information
+        GuestInfo guestInfo = validateAndPrepareGuestInfo(request.getGuestName(), request.getGuestEmail(), request.getGuestPhone(), user);
         reservation.setGuestInfo(guestInfo);
 
         reservation.setCheckInDate(request.getCheckInDate());
@@ -810,26 +774,9 @@ public class BookingService {
         // Set user only for authenticated users (will be null for anonymous guests)
         reservation.setGuest(user);
 
-        // Set guest information - use authenticated user's info if guest info is not
-        // provided
-        String guestName = request.getGuestName();
-        String guestEmail = request.getGuestEmail();
-        String guestPhone = request.getGuestPhone();
-
-        // If guest info is not provided but user is authenticated, use user's info
-        if (user != null) {
-            if (guestName == null || guestName.trim().isEmpty()) {
-                guestName = user.getFirstName() + " " + user.getLastName();
-            }
-            if (guestEmail == null || guestEmail.trim().isEmpty()) {
-                guestEmail = user.getEmail();
-            }
-            if (guestPhone == null || guestPhone.trim().isEmpty()) {
-                guestPhone = user.getPhone();
-            }
-        }
-
-        GuestInfo guestInfo = new GuestInfo(guestName, guestEmail, guestPhone);
+        // Validate and set guest information
+        GuestInfo guestInfo = validateAndPrepareGuestInfoFromRoomType(request.getGuestName(), request.getGuestEmail(), request.getGuestPhone(), user);
+        reservation.setGuestInfo(guestInfo);
         reservation.setGuestInfo(guestInfo);
 
         reservation.setCheckInDate(request.getCheckInDate());
@@ -867,26 +814,8 @@ public class BookingService {
         // Set user only for authenticated users (will be null for anonymous guests)
         reservation.setGuest(user);
 
-        // Set guest information - use authenticated user's info if guest info is not
-        // provided
-        String guestName = request.getGuestName();
-        String guestEmail = request.getGuestEmail();
-        String guestPhone = request.getGuestPhone();
-
-        // If guest info is not provided but user is authenticated, use user's info
-        if (user != null) {
-            if (guestName == null || guestName.trim().isEmpty()) {
-                guestName = user.getFirstName() + " " + user.getLastName();
-            }
-            if (guestEmail == null || guestEmail.trim().isEmpty()) {
-                guestEmail = user.getEmail();
-            }
-            if (guestPhone == null || guestPhone.trim().isEmpty()) {
-                guestPhone = user.getPhone();
-            }
-        }
-
-        GuestInfo guestInfo = new GuestInfo(guestName, guestEmail, guestPhone);
+        // Validate and set guest information
+        GuestInfo guestInfo = validateAndPrepareGuestInfoFromRoomType(request.getGuestName(), request.getGuestEmail(), request.getGuestPhone(), user);
         reservation.setGuestInfo(guestInfo);
 
         reservation.setCheckInDate(request.getCheckInDate());
@@ -1001,6 +930,76 @@ public class BookingService {
      */
     private String generateConfirmationNumber(Long reservationId) {
         return "BK" + String.format("%08d", reservationId);
+    }
+
+    /**
+     * Validate and prepare guest information - ensures all required fields are present
+     */
+    private GuestInfo validateAndPrepareGuestInfo(String requestGuestName, String requestGuestEmail, String requestGuestPhone, User user) {
+        String guestName = requestGuestName;
+        String guestEmail = requestGuestEmail;
+        String guestPhone = requestGuestPhone;
+
+        // If guest info is not provided but user is authenticated, use user's info
+        if (user != null) {
+            if (guestName == null || guestName.trim().isEmpty()) {
+                guestName = user.getFirstName() + " " + user.getLastName();
+            }
+            if (guestEmail == null || guestEmail.trim().isEmpty()) {
+                guestEmail = user.getEmail();
+            }
+            if (guestPhone == null || guestPhone.trim().isEmpty()) {
+                guestPhone = user.getPhone();
+            }
+        }
+
+        // Validate required guest information
+        if (guestName == null || guestName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Guest name is required");
+        }
+        if (guestEmail == null || guestEmail.trim().isEmpty()) {
+            throw new IllegalArgumentException("Guest email is required");
+        }
+        if (guestPhone == null || guestPhone.trim().isEmpty()) {
+            throw new IllegalArgumentException("Guest phone number is required");
+        }
+
+        return new GuestInfo(guestName.trim(), guestEmail.trim(), guestPhone.trim());
+    }
+
+    /**
+     * Validate and prepare guest information for RoomTypeBookingRequest - ensures all required fields are present
+     */
+    private GuestInfo validateAndPrepareGuestInfoFromRoomType(String requestGuestName, String requestGuestEmail, String requestGuestPhone, User user) {
+        String guestName = requestGuestName;
+        String guestEmail = requestGuestEmail;
+        String guestPhone = requestGuestPhone;
+
+        // If guest info is not provided but user is authenticated, use user's info
+        if (user != null) {
+            if (guestName == null || guestName.trim().isEmpty()) {
+                guestName = user.getFirstName() + " " + user.getLastName();
+            }
+            if (guestEmail == null || guestEmail.trim().isEmpty()) {
+                guestEmail = user.getEmail();
+            }
+            if (guestPhone == null || guestPhone.trim().isEmpty()) {
+                guestPhone = user.getPhone();
+            }
+        }
+
+        // Validate required guest information
+        if (guestName == null || guestName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Guest name is required");
+        }
+        if (guestEmail == null || guestEmail.trim().isEmpty()) {
+            throw new IllegalArgumentException("Guest email is required");
+        }
+        if (guestPhone == null || guestPhone.trim().isEmpty()) {
+            throw new IllegalArgumentException("Guest phone number is required");
+        }
+
+        return new GuestInfo(guestName.trim(), guestEmail.trim(), guestPhone.trim());
     }
 
     /**

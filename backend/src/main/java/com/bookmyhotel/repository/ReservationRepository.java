@@ -183,4 +183,12 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
        long countActiveReservationsInDateRange(@Param("hotelId") Long hotelId,
                      @Param("startDate") LocalDate startDate,
                      @Param("endDate") LocalDate endDate);
+
+       /**
+        * Find active reservations by guest email (for uniqueness validation)
+        */
+       @Query("SELECT r FROM Reservation r " +
+                     "WHERE r.guestInfo.email = :email " +
+                     "AND r.status NOT IN ('CANCELLED', 'NO_SHOW', 'CHECKED_OUT')")
+       List<Reservation> findActiveReservationsByGuestEmail(@Param("email") String email);
 }

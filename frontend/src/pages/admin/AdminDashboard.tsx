@@ -225,7 +225,16 @@ const AdminDashboard: React.FC = () => {
           value={currentTab}
           onChange={handleTabChange}
           aria-label="admin management tabs"
-          sx={{ borderBottom: 1, borderColor: 'divider' }}
+          variant="scrollable"
+          scrollButtons="auto"
+          allowScrollButtonsMobile
+          sx={{ 
+            borderBottom: 1, 
+            borderColor: 'divider',
+            '& .MuiTabs-scrollButtons': {
+              '&.Mui-disabled': { opacity: 0.3 },
+            },
+          }}
         >
           <Tab
             icon={<Hotel />}

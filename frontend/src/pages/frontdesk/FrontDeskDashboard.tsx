@@ -204,7 +204,19 @@ const FrontDeskDashboard: React.FC = () => {
         </Grid>
       </Grid>      {/* Tabs */}
       <Paper sx={{ mb: 3 }}>
-        <Tabs value={activeTab} onChange={handleTabChange} aria-label="front desk tabs">
+        <Tabs 
+          value={activeTab} 
+          onChange={handleTabChange} 
+          aria-label="front desk tabs"
+          variant="scrollable"
+          scrollButtons="auto"
+          allowScrollButtonsMobile
+          sx={{
+            '& .MuiTabs-scrollButtons': {
+              '&.Mui-disabled': { opacity: 0.3 },
+            },
+          }}
+        >
           <Tab label="Bookings" />
           <Tab label="Rooms" />
           <Tab label="Housekeeping" />

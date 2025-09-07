@@ -156,17 +156,18 @@ public class CheckoutReceiptService {
     }
 
     private void setGuestInformation(ConsolidatedReceiptResponse receipt, Reservation reservation) {
-        if (reservation.getGuest() != null) {
-            // Registered user
+        // Always prioritize the embedded guest info as it contains the actual guest information for this reservation
+        if (reservation.getGuestInfo() != null) {
+            // Use embedded guest info (both for registered and anonymous guests)
+            receipt.setGuestName(reservation.getGuestInfo().getName());
+            receipt.setGuestEmail(reservation.getGuestInfo().getEmail());
+            receipt.setGuestPhone(reservation.getGuestInfo().getPhone());
+        } else if (reservation.getGuest() != null) {
+            // Fallback to registered user (for older reservations without embedded guest info)
             User guest = reservation.getGuest();
             receipt.setGuestName(guest.getFirstName() + " " + guest.getLastName());
             receipt.setGuestEmail(guest.getEmail());
             receipt.setGuestPhone(guest.getPhone());
-        } else if (reservation.getGuestInfo() != null) {
-            // Anonymous guest
-            receipt.setGuestName(reservation.getGuestInfo().getName());
-            receipt.setGuestEmail(reservation.getGuestInfo().getEmail());
-            receipt.setGuestPhone(reservation.getGuestInfo().getPhone());
         }
     }
 
