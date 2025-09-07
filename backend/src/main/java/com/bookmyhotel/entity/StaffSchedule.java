@@ -4,9 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
-import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Filter;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -18,6 +16,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 
@@ -68,14 +68,6 @@ public class StaffSchedule extends HotelScopedEntity {
     @JoinColumn(name = "created_by")
     private User createdBy;
 
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
     // Enums
     public enum ShiftType {
         MORNING, AFTERNOON, EVENING, NIGHT, FULL_DAY, SPLIT_SHIFT
@@ -106,6 +98,21 @@ public class StaffSchedule extends HotelScopedEntity {
         this.department = department;
         this.createdBy = createdBy;
         this.status = ScheduleStatus.SCHEDULED;
+    }
+
+    @PrePersist
+    public void prePersist() {
+        super.prePersist(); // Call BaseEntity's prePersist to set timestamps
+        if (this.getCreatedAt() == null) {
+            this.setCreatedAt(LocalDateTime.now());
+        }
+        this.setUpdatedAt(LocalDateTime.now());
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        super.preUpdate(); // Call BaseEntity's preUpdate
+        this.setUpdatedAt(LocalDateTime.now());
     }
 
     // Getters and Setters
@@ -195,21 +202,5 @@ public class StaffSchedule extends HotelScopedEntity {
 
     public void setCreatedBy(User createdBy) {
         this.createdBy = createdBy;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
     }
 }

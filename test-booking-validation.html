@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Validation Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ccc; }
+        .result { padding: 10px; margin: 10px 0; }
+        .error { background-color: #ffebee; border-left: 4px solid #f44336; }
+        .success { background-color: #e8f5e8; border-left: 4px solid #4caf50; }
+        button { padding: 10px 20px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>Booking Validation Test</h1>
+    <p>This page tests if our booking validation is working properly.</p>
+
+    <div class="test-section">
+        <h2>Test 1: Booking with Missing Guest Name</h2>
+        <button onclick="testMissingName()">Test Missing Name</button>
+        <div id="result1" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 2: Booking with Missing Email</h2>
+        <button onclick="testMissingEmail()">Test Missing Email</button>
+        <div id="result2" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 3: Booking with Missing Phone</h2>
+        <button onclick="testMissingPhone()">Test Missing Phone</button>
+        <div id="result3" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 4: Complete Booking (Should Work)</h2>
+        <button onclick="testCompleteBooking()">Test Complete Booking</button>
+        <div id="result4" class="result"></div>
+    </div>
+
+    <script>
+        const BASE_URL = 'http://localhost:8080/managemyhotel/api';
+
+        async function makeBookingRequest(bookingData) {
+            try {
+                const response = await fetch(`${BASE_URL}/bookings`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(bookingData)
+                });
+
+                const data = await response.text();
+                return { success: response.ok, status: response.status, data };
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+
+        async function testMissingName() {
+            const bookingData = {
+                hotelId: 1,
+                roomType: "STANDARD",
+                checkInDate: "2025-12-15",
+                checkOutDate: "2025-12-16",
+                guests: 2,
+                // guestName: "", // Missing name
+                guestEmail: "test@example.com",
+                guestPhone: "1234567890"
+            };
+
+            const result = await makeBookingRequest(bookingData);
+            const resultDiv = document.getElementById('result1');
+            
+            if (!result.success && result.data.includes('Guest name is required')) {
+                resultDiv.innerHTML = '<span class="success">✅ PASS: Correctly rejected missing guest name</span>';
+                resultDiv.className = 'result success';
+            } else {
+                resultDiv.innerHTML = `<span class="error">❌ FAIL: Should have rejected missing name. Got: ${result.data}</span>`;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        async function testMissingEmail() {
+            const bookingData = {
+                hotelId: 1,
+                roomType: "STANDARD",
+                checkInDate: "2025-12-15",
+                checkOutDate: "2025-12-16",
+                guests: 2,
+                guestName: "John Doe",
+                // guestEmail: "", // Missing email
+                guestPhone: "1234567890"
+            };
+
+            const result = await makeBookingRequest(bookingData);
+            const resultDiv = document.getElementById('result2');
+            
+            if (!result.success && result.data.includes('Guest email is required')) {
+                resultDiv.innerHTML = '<span class="success">✅ PASS: Correctly rejected missing guest email</span>';
+                resultDiv.className = 'result success';
+            } else {
+                resultDiv.innerHTML = `<span class="error">❌ FAIL: Should have rejected missing email. Got: ${result.data}</span>`;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        async function testMissingPhone() {
+            const bookingData = {
+                hotelId: 1,
+                roomType: "STANDARD",
+                checkInDate: "2025-12-15",
+                checkOutDate: "2025-12-16",
+                guests: 2,
+                guestName: "John Doe",
+                guestEmail: "test@example.com"
+                // guestPhone: "" // Missing phone
+            };
+
+            const result = await makeBookingRequest(bookingData);
+            const resultDiv = document.getElementById('result3');
+            
+            if (!result.success && result.data.includes('Guest phone number is required')) {
+                resultDiv.innerHTML = '<span class="success">✅ PASS: Correctly rejected missing guest phone</span>';
+                resultDiv.className = 'result success';
+            } else {
+                resultDiv.innerHTML = `<span class="error">❌ FAIL: Should have rejected missing phone. Got: ${result.data}</span>`;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        async function testCompleteBooking() {
+            const bookingData = {
+                hotelId: 1,
+                roomType: "STANDARD",
+                checkInDate: "2025-12-15",
+                checkOutDate: "2025-12-16",
+                guests: 2,
+                guestName: "John Doe",
+                guestEmail: "test@example.com",
+                guestPhone: "1234567890"
+            };
+
+            const result = await makeBookingRequest(bookingData);
+            const resultDiv = document.getElementById('result4');
+            
+            if (result.success) {
+                resultDiv.innerHTML = '<span class="success">✅ PASS: Complete booking created successfully</span>';
+                resultDiv.className = 'result success';
+            } else {
+                resultDiv.innerHTML = `<span class="error">❌ FAIL: Complete booking should work. Got: ${result.data}</span>`;
+                resultDiv.className = 'result error';
+            }
+        }
+    </script>
+</body>
+</html>

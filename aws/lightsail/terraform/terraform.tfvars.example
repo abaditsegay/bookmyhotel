@@ -1,0 +1,16 @@
+# Example configuration for production deployment
+# Copy this file to terraform.tfvars and update with your actual values
+
+# AWS Configuration
+aws_region = "us-east-1"
+environment = "prod"
+project_name = "bookmyhotel"
+owner_email = "your-email@example.com"
+
+# Custom domain (optional)
+# domain_name = "app.yourdomain.com"
+# certificate_arn = "arn:aws:acm:us-east-1:123456789012:certificate/12345678-1234-1234-1234-123456789012"
+
+# Lightsail Configuration (for reference)
+# lightsail_backend_ip = "18.232.145.123"
+# lightsail_db_endpoint = "ls-1a2b3c4d5e6f7g8h.czowadgeezqi.us-east-1.rds.amazonaws.com"
