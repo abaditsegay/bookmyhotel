@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -156,14 +155,16 @@ public class CheckoutReceiptService {
     }
 
     private void setGuestInformation(ConsolidatedReceiptResponse receipt, Reservation reservation) {
-        // Always prioritize the embedded guest info as it contains the actual guest information for this reservation
+        // Always prioritize the embedded guest info as it contains the actual guest
+        // information for this reservation
         if (reservation.getGuestInfo() != null) {
             // Use embedded guest info (both for registered and anonymous guests)
             receipt.setGuestName(reservation.getGuestInfo().getName());
             receipt.setGuestEmail(reservation.getGuestInfo().getEmail());
             receipt.setGuestPhone(reservation.getGuestInfo().getPhone());
         } else if (reservation.getGuest() != null) {
-            // Fallback to registered user (for older reservations without embedded guest info)
+            // Fallback to registered user (for older reservations without embedded guest
+            // info)
             User guest = reservation.getGuest();
             receipt.setGuestName(guest.getFirstName() + " " + guest.getLastName());
             receipt.setGuestEmail(guest.getEmail());

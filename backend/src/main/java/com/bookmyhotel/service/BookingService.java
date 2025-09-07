@@ -907,13 +907,15 @@ public class BookingService {
             }
         }
 
-        // Guest details - handle both registered users and anonymous guests with proper null checking
+        // Guest details - handle both registered users and anonymous guests with proper
+        // null checking
         if (reservation.getGuestInfo() != null) {
             // Get guest name with fallback logic
             String guestName = reservation.getGuestInfo().getName();
             if (guestName == null || guestName.trim().isEmpty()) {
                 // Fallback: try to get name from registered user
-                if (reservation.getGuest() != null && reservation.getGuest().getFirstName() != null && reservation.getGuest().getLastName() != null) {
+                if (reservation.getGuest() != null && reservation.getGuest().getFirstName() != null
+                        && reservation.getGuest().getLastName() != null) {
                     guestName = reservation.getGuest().getFirstName() + " " + reservation.getGuest().getLastName();
                 } else {
                     guestName = "Guest"; // Final fallback

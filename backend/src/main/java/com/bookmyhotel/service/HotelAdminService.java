@@ -1102,18 +1102,28 @@ public class HotelAdminService {
                 response.setGuestName(guest.getFirstName() + " " + guest.getLastName());
                 response.setGuestEmail(guest.getEmail());
             } else {
-                response.setGuestName("Guest User");
-                response.setGuestEmail("N/A");
+                // If guest user is not found, use guestInfo from reservation
+                if (reservation.getGuestInfo() != null) {
+                    response.setGuestName(
+                            reservation.getGuestInfo().getName() != null ? reservation.getGuestInfo().getName()
+                                    : "Name Not Available");
+                    response.setGuestEmail(
+                            reservation.getGuestInfo().getEmail() != null ? reservation.getGuestInfo().getEmail()
+                                    : "N/A");
+                } else {
+                    response.setGuestName("Name Not Available");
+                    response.setGuestEmail("N/A");
+                }
             }
         } else if (reservation.getGuestInfo() != null) {
             // Anonymous guest booking (no User record)
             response.setGuestName(reservation.getGuestInfo().getName() != null ? reservation.getGuestInfo().getName()
-                    : "Unknown Guest");
+                    : "Name Not Available");
             response.setGuestEmail(
                     reservation.getGuestInfo().getEmail() != null ? reservation.getGuestInfo().getEmail() : "N/A");
         } else {
             // Fallback for incomplete data
-            response.setGuestName("Unknown Guest");
+            response.setGuestName("Name Not Available");
             response.setGuestEmail("N/A");
         }
 
