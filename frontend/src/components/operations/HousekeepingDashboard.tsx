@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import TokenManager from '../../utils/tokenManager';
+import { API_CONFIG } from '../../config/apiConfig';
 import {
   Box,
   Button,
@@ -41,7 +42,7 @@ import {
 } from '@mui/icons-material';
 
 
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = API_CONFIG.BASE_URL;
 
 interface HousekeepingTask {
   id: number;

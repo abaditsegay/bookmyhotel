@@ -119,6 +119,15 @@ public class HotelSearchController {
     }
 
     /**
+     * Get all hotels - PUBLIC ENDPOINT
+     */
+    @GetMapping
+    public ResponseEntity<List<HotelSearchResult>> getAllHotels() {
+        List<HotelSearchResult> hotels = hotelSearchService.getRandomHotels(); // Reuse random hotels for now
+        return ResponseEntity.ok(hotels);
+    }
+
+    /**
      * Get random hotels for advertisement display - PUBLIC ENDPOINT
      */
     @GetMapping("/random")

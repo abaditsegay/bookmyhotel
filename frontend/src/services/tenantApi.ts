@@ -1,4 +1,6 @@
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+import { API_CONFIG } from '../config/apiConfig';
+
+const API_BASE_URL = API_CONFIG.BASE_URL;
 
 export interface TenantInfo {
   id: string;
@@ -15,7 +17,7 @@ class TenantApiService {
    */
   async getCurrentTenant(token: string): Promise<{ success: boolean; data?: TenantInfo; message?: string }> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/tenant/current`, {
+      const response = await fetch(`${API_BASE_URL}/tenant/current`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -48,7 +50,7 @@ class TenantApiService {
    */
   async getTenantById(tenantId: string, token: string): Promise<{ success: boolean; data?: TenantInfo; message?: string }> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/system/tenants/${tenantId}`, {
+      const response = await fetch(`${API_BASE_URL}/system/tenants/${tenantId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

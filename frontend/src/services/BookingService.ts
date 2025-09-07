@@ -1,12 +1,13 @@
 import { BookingResponse } from '../types/booking';
+import { API_CONFIG } from '../config/apiConfig';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+const API_BASE_URL = API_CONFIG.BASE_URL;
 
 export class BookingService {
   
   static async getUserBookings(userId: number, token: string): Promise<BookingResponse[]> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/bookings/user/${userId}`, {
+      const response = await fetch(`${API_BASE_URL}/bookings/user/${userId}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -27,7 +28,7 @@ export class BookingService {
 
   static async cancelBooking(reservationId: number, token: string): Promise<any> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/bookings/${reservationId}/cancel`, {
+      const response = await fetch(`${API_BASE_URL}/bookings/${reservationId}/cancel`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -55,7 +56,7 @@ export class BookingService {
     newSpecialRequests?: string;
   }, token: string): Promise<any> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/bookings/${reservationId}/modify`, {
+      const response = await fetch(`${API_BASE_URL}/bookings/${reservationId}/modify`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,

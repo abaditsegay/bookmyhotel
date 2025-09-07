@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import TokenManager from '../../utils/tokenManager';
+import { API_CONFIG } from '../../config/apiConfig';
 import {
   Box,
   Typography,
@@ -42,7 +43,7 @@ import {
 } from '@mui/icons-material';
 
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+const API_BASE_URL = API_CONFIG.SERVER_URL;
 
 interface MaintenanceTask {
   id: number;

@@ -30,9 +30,10 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useTenant } from '../../contexts/TenantContext';
 import { hotelApiService } from '../../services/hotelApi';
 import { hotelAdminApi } from '../../services/hotelAdminApi';
+import { API_CONFIG } from '../../config/apiConfig';
 
 // API base URL for backend calls
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = API_CONFIG.SERVER_URL;
 
 // Define interfaces for walk-in booking
 interface WalkInGuestInfo {

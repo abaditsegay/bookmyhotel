@@ -45,38 +45,10 @@ import {
   Refresh as RefreshIcon
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
-import { adminApiService, HotelDTO, UpdateHotelRequest, TenantDTO, ApproveRegistrationRequest } from '../../services/adminApi';
+import { adminApiService, HotelDTO, UpdateHotelRequest, TenantDTO, ApproveRegistrationRequest, HotelRegistrationResponse } from '../../services/adminApi';
 import HotelEditDialog from '../../components/hotel/HotelEditDialog';
 
 interface Hotel extends HotelDTO {}
-
-interface HotelRegistration {
-  id: number;
-  hotelName: string;
-  description: string;
-  address: string;
-  city: string;
-  state?: string;
-  country: string;
-  zipCode?: string;
-  phone: string;
-  contactEmail: string;
-  contactPerson: string;
-  licenseNumber?: string;
-  taxId?: string;
-  websiteUrl?: string;
-  facilityAmenities?: string;
-  numberOfRooms?: number;
-  checkInTime?: string;
-  checkOutTime?: string;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
-  submittedAt: string;
-  reviewedAt?: string;
-  reviewedBy?: number;
-  reviewComments?: string;
-  approvedHotelId?: number;
-  tenantId?: string;
-}
 
 interface RegistrationStatistics {
   pending: number;
@@ -95,7 +67,7 @@ const HotelManagementAdmin: React.FC = () => {
 
   // State management
   const [hotels, setHotels] = useState<Hotel[]>([]);
-  const [registrations, setRegistrations] = useState<HotelRegistration[]>([]);
+  const [registrations, setRegistrations] = useState<HotelRegistrationResponse[]>([]);
   const [registrationStats, setRegistrationStats] = useState<RegistrationStatistics | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -111,7 +83,7 @@ const HotelManagementAdmin: React.FC = () => {
 
   // Dialog state
   const [selectedHotel, setSelectedHotel] = useState<Hotel | null>(null);
-  const [selectedRegistration, setSelectedRegistration] = useState<HotelRegistration | null>(null);
+  const [selectedRegistration, setSelectedRegistration] = useState<HotelRegistrationResponse | null>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -212,20 +184,13 @@ const HotelManagementAdmin: React.FC = () => {
   // Load hotel registrations
   const loadRegistrations = useCallback(async () => {
     try {
-      const response = await fetch('/api/admin/hotel-registrations', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setRegistrations(data.content || data);
-      }
+      adminApiService.setToken(token);
+      const response = await adminApiService.getHotelRegistrations(page, rowsPerPage);
+      setRegistrations(response.content || response);
     } catch (err) {
       console.error('Error loading registrations:', err);
     }
-  }, [token]);
+  }, [token, page, rowsPerPage]);
 
   // Load active tenants for dropdown
   const loadTenants = useCallback(async () => {
@@ -242,16 +207,15 @@ const HotelManagementAdmin: React.FC = () => {
 
   const loadRegistrationStatistics = useCallback(async () => {
     try {
-      const response = await fetch('/api/admin/hotel-registrations/statistics', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+      adminApiService.setToken(token);
+      const data = await adminApiService.getHotelRegistrationStatistics();
+      setRegistrationStats({
+        pending: data.pendingRegistrations,
+        underReview: data.underReviewRegistrations,
+        approved: data.approvedRegistrations,
+        rejected: data.rejectedRegistrations,
+        total: data.totalRegistrations
       });
-      if (response.ok) {
-        const data = await response.json();
-        setRegistrationStats(data);
-      }
     } catch (err) {
       console.error('Error loading registration statistics:', err);
     }
@@ -259,7 +223,9 @@ const HotelManagementAdmin: React.FC = () => {
 
   // Load registrations when tab changes
   useEffect(() => {
-    if (activeTab === 1) {
+    if (activeTab === 0) {
+      loadTenants(); // Load tenants when hotels tab is accessed to show tenant names
+    } else if (activeTab === 1) {
       loadRegistrations();
       loadRegistrationStatistics();
       loadTenants(); // Load tenants when registration tab is accessed
@@ -410,7 +376,7 @@ const HotelManagementAdmin: React.FC = () => {
     }));
   };
 
-  const viewRegistration = (registration: HotelRegistration) => {
+  const viewRegistration = (registration: HotelRegistrationResponse) => {
     setSelectedRegistration(registration);
     setRegistrationEditMode(false);
     // Initialize edit form with registration data
@@ -519,14 +485,14 @@ const HotelManagementAdmin: React.FC = () => {
     }
   };
 
-  const openApprovalDialog = (registration: HotelRegistration) => {
+  const openApprovalDialog = (registration: HotelRegistrationResponse) => {
     setSelectedRegistration(registration);
     setApprovalComments('');
     setTenantId('');
     setApproveDialogOpen(true);
   };
 
-  const openRejectionDialog = (registration: HotelRegistration) => {
+  const openRejectionDialog = (registration: HotelRegistrationResponse) => {
     setSelectedRegistration(registration);
     setRejectionReason('');
     setRejectDialogOpen(true);
@@ -618,6 +584,13 @@ const HotelManagementAdmin: React.FC = () => {
     REJECTED: 'error',
     CANCELLED: 'default',
   } as const;
+
+  // Helper function to get tenant name by tenant ID
+  const getTenantName = (tenantId: string | undefined): string => {
+    if (!tenantId) return 'No Tenant';
+    const tenant = tenants.find(t => t.tenantId === tenantId);
+    return tenant ? tenant.name : tenantId;
+  };
 
   // View hotel details
   const handleViewHotel = (hotel: Hotel) => {
@@ -807,6 +780,7 @@ const HotelManagementAdmin: React.FC = () => {
                   <TableRow>
                     <TableCell>Hotel Name</TableCell>
                     <TableCell>Location</TableCell>
+                    <TableCell>Tenant</TableCell>
                     <TableCell>Contact</TableCell>
                     <TableCell>Rooms</TableCell>
                     <TableCell>Rating</TableCell>
@@ -817,13 +791,13 @@ const HotelManagementAdmin: React.FC = () => {
                 <TableBody>
                   {loading ? (
                     <TableRow>
-                      <TableCell colSpan={7} align="center">
+                      <TableCell colSpan={8} align="center">
                         <CircularProgress />
                       </TableCell>
                     </TableRow>
                   ) : filteredHotels.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7} align="center">
+                      <TableCell colSpan={8} align="center">
                         <Typography variant="body2" color="text.secondary">
                           No hotels found
                         </Typography>
@@ -846,6 +820,11 @@ const HotelManagementAdmin: React.FC = () => {
                             </Typography>
                           </TableCell>
                           <TableCell>
+                            <Typography variant="body2">
+                              {getTenantName(hotel.tenantId)}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
                             <Typography variant="body2">{hotel.email}</Typography>
                             <Typography variant="caption" color="text.secondary">
                               {hotel.phone}
@@ -853,7 +832,7 @@ const HotelManagementAdmin: React.FC = () => {
                           </TableCell>
                           <TableCell>
                             <Typography variant="body2">
-                              {hotel.availableRooms || 0} / {hotel.totalRooms || 0}
+                              {hotel.totalRooms || 0}
                             </Typography>
                           </TableCell>
                           <TableCell>
@@ -1001,7 +980,7 @@ const HotelManagementAdmin: React.FC = () => {
                       <TableCell>
                         <Chip 
                           label={registration.status} 
-                          color={statusColors[registration.status]}
+                          color={statusColors[registration.status as keyof typeof statusColors]}
                           size="small"
                         />
                       </TableCell>
@@ -1506,12 +1485,13 @@ const HotelManagementAdmin: React.FC = () => {
                   </Grid>
                 )}
 
-                {!registrationEditMode && selectedRegistration.approvedHotelId && (
+                {/* Approved hotel ID field removed - not part of API response */}
+                {false && selectedRegistration && (
                   <Grid item xs={12} sm={6}>
                     <TextField
                       label="Created Hotel ID"
                       fullWidth
-                      value={selectedRegistration.approvedHotelId}
+                      value=""
                       disabled
                       variant="filled"
                     />

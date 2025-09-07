@@ -1,6 +1,5 @@
 package com.bookmyhotel.service;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -16,8 +15,8 @@ import com.bookmyhotel.dto.ProductResponse;
 import com.bookmyhotel.entity.Hotel;
 import com.bookmyhotel.entity.Product;
 import com.bookmyhotel.entity.ProductCategory;
-import com.bookmyhotel.exception.ResourceNotFoundException;
 import com.bookmyhotel.exception.BadRequestException;
+import com.bookmyhotel.exception.ResourceNotFoundException;
 import com.bookmyhotel.repository.HotelRepository;
 import com.bookmyhotel.repository.ProductRepository;
 
@@ -338,15 +337,69 @@ public class ProductService {
     }
 
     /**
-     * Generate SKU for product
+     * Generate SKU for product using tenant + hotel prefix format
+     * Format: First letter of tenant + first letters of each word in hotel name +
+     * category + timestamp
+     * Example: "Development" tenant + "Grand Plaza Hotel" + "BEVERAGES" =
+     * "DGPH-BEV-1234"
      */
     private String generateSku(Hotel hotel, Product product) {
-        String prefix = hotel.getName().replaceAll("[^A-Za-z]", "").toUpperCase().substring(0,
-                Math.min(3, hotel.getName().length()));
-        String categoryPrefix = product.getCategory().name().substring(0,
-                Math.min(3, product.getCategory().name().length()));
-        long timestamp = System.currentTimeMillis() % 10000; // Last 4 digits
-        return prefix + "-" + categoryPrefix + "-" + timestamp;
+        try {
+            // Generate tenant + hotel prefix
+            String tenantHotelPrefix = generateSkuPrefix(hotel);
+
+            // Generate category prefix (first 3 letters)
+            String categoryPrefix = product.getCategory().name().substring(0,
+                    Math.min(3, product.getCategory().name().length()));
+
+            // Generate timestamp suffix
+            long timestamp = System.currentTimeMillis() % 10000; // Last 4 digits
+
+            return tenantHotelPrefix + "-" + categoryPrefix + "-" + timestamp;
+        } catch (Exception e) {
+            // Fallback to simple format if something goes wrong
+            String prefix = hotel.getName().replaceAll("[^A-Za-z]", "").toUpperCase().substring(0,
+                    Math.min(3, hotel.getName().length()));
+            String categoryPrefix = product.getCategory().name().substring(0,
+                    Math.min(3, product.getCategory().name().length()));
+            long timestamp = System.currentTimeMillis() % 10000;
+            return prefix + "-" + categoryPrefix + "-" + timestamp;
+        }
+    }
+
+    /**
+     * Generate unique SKU prefix based on tenant and hotel name
+     * Format: First letter of tenant + first letters of each word in hotel name
+     * Example: "Development" tenant + "Grand Plaza Hotel" = "DGPH"
+     */
+    private String generateSkuPrefix(Hotel hotel) {
+        try {
+            // Get tenant name
+            String tenantName = hotel.getTenant().getName();
+
+            // First letter of tenant name (uppercase)
+            String tenantPrefix = tenantName.substring(0, 1).toUpperCase();
+
+            // First letters of each word in hotel name (uppercase)
+            String[] hotelWords = hotel.getName().split("\\s+");
+            StringBuilder hotelPrefix = new StringBuilder();
+
+            for (String word : hotelWords) {
+                if (!word.trim().isEmpty()) {
+                    // Remove special characters and get first letter
+                    String cleanWord = word.replaceAll("[^A-Za-z]", "");
+                    if (!cleanWord.isEmpty()) {
+                        hotelPrefix.append(cleanWord.substring(0, 1).toUpperCase());
+                    }
+                }
+            }
+
+            return tenantPrefix + hotelPrefix.toString();
+        } catch (Exception e) {
+            // Fallback to simple hotel name prefix
+            return hotel.getName().replaceAll("[^A-Za-z]", "").toUpperCase().substring(0,
+                    Math.min(4, hotel.getName().replaceAll("[^A-Za-z]", "").length()));
+        }
     }
 
     /**

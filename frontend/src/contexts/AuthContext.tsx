@@ -1,4 +1,6 @@
-import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { jwtDecode } from 'jwt-decode';
+import { API_CONFIG } from '../config/apiConfig';
 import { updateUserProfile, changeUserPassword } from '../services/userApi';
 import TokenManager, { type AuthUser } from '../utils/tokenManager';
 
@@ -92,7 +94,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
     try {
       console.log('Attempting login with:', email, password);
       
-      const response = await fetch('http://localhost:8080/api/auth/login', {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

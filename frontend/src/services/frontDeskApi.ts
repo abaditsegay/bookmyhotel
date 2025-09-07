@@ -1,5 +1,7 @@
 // Front Desk API service functions
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
+import { API_CONFIG } from '../config/apiConfig';
+
+const API_BASE_URL = API_CONFIG.BASE_URL;
 
 // Make this file a module
 export {};
@@ -308,7 +310,7 @@ export const frontDeskApiService = {
     tenantId: string | null = 'default'
   ): Promise<{ success: boolean; message?: string }> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/front-desk/bookings/${reservationId}`, {
+      const response = await fetch(`${API_BASE_URL}/bookings/${reservationId}`, {
         method: 'DELETE',
         headers: getAuthHeaders(token, tenantId),
       });

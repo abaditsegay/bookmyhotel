@@ -29,9 +29,10 @@ import HousekeepingDashboard from '../operations/HousekeepingDashboard';
 import MaintenanceDashboard from '../operations/MaintenanceDashboard';
 import StaffDashboard from '../operations/StaffDashboard';
 import TokenManager from '../../utils/tokenManager';
+import { API_CONFIG } from '../../config/apiConfig';
 import { useTenant } from '../../contexts/TenantContext';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+const API_BASE_URL = API_CONFIG.SERVER_URL;
 
 interface OperationsStats {
   housekeeping: {

@@ -10,7 +10,10 @@ import {
   ProductStock
 } from '../types/shop';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
+import TokenManager from '../utils/tokenManager';
+import { API_CONFIG } from '../config/apiConfig';
+
+const API_BASE_URL = API_CONFIG.BASE_URL;
 
 class ShopApiService {
   private token: string | null = null;

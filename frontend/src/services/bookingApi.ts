@@ -1,5 +1,5 @@
 // Booking API service functions
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
+import { API_BASE_URL, API_ENDPOINTS } from '../config/apiConfig';
 
 export interface BookingSearchResponse {
   reservationId: number;
@@ -31,7 +31,7 @@ export const bookingApiService = {
   searchByConfirmationNumber: async (confirmationNumber: string): Promise<{ success: boolean; data?: BookingSearchResponse; message?: string }> => {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/bookings/search?confirmationNumber=${encodeURIComponent(confirmationNumber.trim())}`,
+        `${API_BASE_URL}${API_ENDPOINTS.BOOKINGS.SEARCH}?confirmationNumber=${encodeURIComponent(confirmationNumber.trim())}`,
         {
           method: 'GET',
           headers: getHeaders(),
@@ -65,7 +65,7 @@ export const bookingApiService = {
   searchByEmailAndName: async (email: string, lastName: string): Promise<{ success: boolean; data?: BookingSearchResponse; message?: string }> => {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/bookings/search?email=${encodeURIComponent(email.trim())}&lastName=${encodeURIComponent(lastName.trim())}`,
+        `${API_BASE_URL}${API_ENDPOINTS.BOOKINGS.SEARCH}?email=${encodeURIComponent(email.trim())}&lastName=${encodeURIComponent(lastName.trim())}`,
         {
           method: 'GET',
           headers: getHeaders(),
@@ -99,7 +99,7 @@ export const bookingApiService = {
   cancelBooking: async (confirmationNumber: string, guestEmail: string, cancellationReason?: string): Promise<{ success: boolean; data?: any; message?: string }> => {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/bookings/cancel`,
+        `${API_BASE_URL}${API_ENDPOINTS.BOOKINGS.CANCEL}`,
         {
           method: 'POST',
           headers: getHeaders(),

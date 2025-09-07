@@ -3,7 +3,9 @@
  * Handles system admin and global guest user management
  */
 
-const API_BASE_URL = 'http://localhost:8080/api';
+import { API_CONFIG } from '../config/apiConfig';
+
+const API_BASE_URL = API_CONFIG.BASE_URL;
 
 export interface SystemUser {
   id: string;

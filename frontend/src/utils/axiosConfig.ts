@@ -1,8 +1,9 @@
 import axios, { InternalAxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
+import { API_CONFIG } from '../config/apiConfig';
 
 // Create axios instance with base configuration
 const axiosInstance = axios.create({
-  baseURL: process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080',
+  baseURL: API_CONFIG.SERVER_URL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',

@@ -1,7 +1,9 @@
 import { Hotel } from '../types/hotel';
 import TokenManager from '../utils/tokenManager';
+import { API_CONFIG } from '../config/apiConfig';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+// Use centralized API configuration
+const API_BASE_URL = API_CONFIG.BASE_URL;
 
 export interface BookingResponse {
   reservationId: number;
@@ -167,9 +169,17 @@ export const hotelAdminApi = {
         params.append('search', search.trim());
       }
 
-      const response = await fetch(`${API_BASE_URL}/api/hotel-admin/bookings?${params.toString()}`, {
+      // Get tenant ID from token/user
+      const user = TokenManager.getUser();
+      const tenantId = user?.tenantId || '';
+
+      const response = await fetch(`${API_BASE_URL}/hotel-admin/bookings?${params.toString()}`, {
         method: 'GET',
-        headers: getAuthHeaders(token),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'X-Tenant-ID': tenantId
+        }
       });
 
       if (!response.ok) {
@@ -191,7 +201,7 @@ export const hotelAdminApi = {
   // Get booking statistics
   getBookingStats: async (token: string): Promise<{ success: boolean; data?: BookingStats; message?: string }> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/hotel-admin/bookings/statistics`, {
+      const response = await fetch(`${API_BASE_URL}/hotel-admin/bookings/statistics`, {
         method: 'GET',
         headers: getAuthHeaders(token),
       });
@@ -215,7 +225,7 @@ export const hotelAdminApi = {
   // Get hotel statistics
   getHotelStatistics: async (token: string): Promise<{ success: boolean; data?: HotelStatistics; message?: string }> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/hotel-admin/statistics`, {
+      const response = await fetch(`${API_BASE_URL}/hotel-admin/statistics`, {
         method: 'GET',
         headers: getAuthHeaders(token),
       });
@@ -244,7 +254,7 @@ export const hotelAdminApi = {
   ): Promise<{ success: boolean; data?: BookingResponse; message?: string }> => {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/hotel-admin/bookings/${reservationId}/status?status=${status}`,
+        `${API_BASE_URL}/hotel-admin/bookings/${reservationId}/status?status=${status}`,
         {
           method: 'PUT',
           headers: getAuthHeaders(),
@@ -286,7 +296,7 @@ export const hotelAdminApi = {
   ): Promise<{ success: boolean; data?: any; message?: string }> => {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/hotel-admin/bookings/${reservationId}`,
+        `${API_BASE_URL}/hotel-admin/bookings/${reservationId}`,
         {
           method: 'PUT',
           headers: getAuthHeaders(),
@@ -316,9 +326,17 @@ export const hotelAdminApi = {
     reservationId: number
   ): Promise<{ success: boolean; message?: string }> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/hotel-admin/bookings/${reservationId}`, {
+      // Get tenant ID from token/user
+      const user = TokenManager.getUser();
+      const tenantId = user?.tenantId || '';
+
+      const response = await fetch(`${API_BASE_URL}/hotel-admin/bookings/${reservationId}`, {
         method: 'DELETE',
-        headers: getAuthHeaders(),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'X-Tenant-ID': tenantId
+        },
       });
 
       if (!response.ok) {
@@ -342,7 +360,7 @@ export const hotelAdminApi = {
     reservationId: number
   ): Promise<{ success: boolean; data?: BookingResponse; message?: string }> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/hotel-admin/bookings/${reservationId}`, {
+      const response = await fetch(`${API_BASE_URL}/hotel-admin/bookings/${reservationId}`, {
         method: 'GET',
         headers: getAuthHeaders(),
       });
@@ -399,7 +417,7 @@ export const hotelAdminApi = {
         params.append('available', status === 'AVAILABLE' ? 'true' : 'false');
       }
 
-      const response = await fetch(`${API_BASE_URL}/api/hotel-admin/rooms?${params.toString()}`, {
+      const response = await fetch(`${API_BASE_URL}/hotel-admin/rooms?${params.toString()}`, {
         method: 'GET',
         headers: getAuthHeaders(),
       });
@@ -436,7 +454,7 @@ export const hotelAdminApi = {
     roomId: number
   ): Promise<{ success: boolean; data?: RoomResponse; message?: string }> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/hotel-admin/rooms/${roomId}`, {
+      const response = await fetch(`${API_BASE_URL}/hotel-admin/rooms/${roomId}`, {
         method: 'GET',
         headers: getAuthHeaders(),
       });
@@ -463,7 +481,7 @@ export const hotelAdminApi = {
     roomData: RoomCreateRequest
   ): Promise<{ success: boolean; data?: RoomResponse; message?: string }> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/hotel-admin/rooms`, {
+      const response = await fetch(`${API_BASE_URL}/hotel-admin/rooms`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify(roomData),
@@ -492,7 +510,7 @@ export const hotelAdminApi = {
     roomData: RoomUpdateRequest
   ): Promise<{ success: boolean; data?: RoomResponse; message?: string }> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/hotel-admin/rooms/${roomId}`, {
+      const response = await fetch(`${API_BASE_URL}/hotel-admin/rooms/${roomId}`, {
         method: 'PUT',
         headers: getAuthHeaders(),
         body: JSON.stringify(roomData),
@@ -520,7 +538,7 @@ export const hotelAdminApi = {
     roomId: number
   ): Promise<{ success: boolean; message?: string }> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/hotel-admin/rooms/${roomId}`, {
+      const response = await fetch(`${API_BASE_URL}/hotel-admin/rooms/${roomId}`, {
         method: 'DELETE',
         headers: getAuthHeaders(),
       });
@@ -548,7 +566,7 @@ export const hotelAdminApi = {
   ): Promise<{ success: boolean; data?: RoomResponse; message?: string }> => {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/hotel-admin/rooms/${roomId}/availability?available=${available}`,
+        `${API_BASE_URL}/hotel-admin/rooms/${roomId}/availability?available=${available}`,
         {
           method: 'PUT',
           headers: getAuthHeaders(),
@@ -585,7 +603,7 @@ export const hotelAdminApi = {
       }
 
       const response = await fetch(
-        `${API_BASE_URL}/api/hotel-admin/rooms/${roomId}/status?${params.toString()}`,
+        `${API_BASE_URL}/hotel-admin/rooms/${roomId}/status?${params.toString()}`,
         {
           method: 'PUT',
           headers: getAuthHeaders(),
@@ -632,7 +650,7 @@ export const hotelAdminApi = {
       if (status) params.append('status', status);
 
       const response = await fetch(
-        `${API_BASE_URL}/api/hotel-admin/staff?${params.toString()}`,
+        `${API_BASE_URL}/hotel-admin/staff?${params.toString()}`,
         {
           method: 'GET',
           headers: getAuthHeaders(),
@@ -687,7 +705,7 @@ export const hotelAdminApi = {
   ): Promise<{ success: boolean; data?: StaffResponse; message?: string }> => {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/hotel-admin/staff/${staffId}`,
+        `${API_BASE_URL}/hotel-admin/staff/${staffId}`,
         {
           method: 'GET',
           headers: getAuthHeaders(),
@@ -744,7 +762,7 @@ export const hotelAdminApi = {
         roles: staffData.roles // Backend will handle string to enum conversion
       };
 
-      const response = await fetch(`${API_BASE_URL}/api/hotel-admin/staff`, {
+      const response = await fetch(`${API_BASE_URL}/hotel-admin/staff`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify(userDTO),
@@ -821,7 +839,7 @@ export const hotelAdminApi = {
     staffData: StaffUpdateRequest
   ): Promise<{ success: boolean; data?: StaffResponse; message?: string }> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/hotel-admin/staff/${staffId}`, {
+      const response = await fetch(`${API_BASE_URL}/hotel-admin/staff/${staffId}`, {
         method: 'PUT',
         headers: getAuthHeaders(),
         body: JSON.stringify(staffData),
@@ -866,7 +884,7 @@ export const hotelAdminApi = {
     staffId: number
   ): Promise<{ success: boolean; message?: string }> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/hotel-admin/staff/${staffId}`, {
+      const response = await fetch(`${API_BASE_URL}/hotel-admin/staff/${staffId}`, {
         method: 'DELETE',
         headers: getAuthHeaders(),
       });
@@ -893,7 +911,7 @@ export const hotelAdminApi = {
   ): Promise<{ success: boolean; data?: StaffResponse; message?: string }> => {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/hotel-admin/staff/${staffId}/activate`,
+        `${API_BASE_URL}/hotel-admin/staff/${staffId}/activate`,
         {
           method: 'PUT',
           headers: getAuthHeaders(),
@@ -923,7 +941,7 @@ export const hotelAdminApi = {
   ): Promise<{ success: boolean; data?: StaffResponse; message?: string }> => {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/hotel-admin/staff/${staffId}/deactivate`,
+        `${API_BASE_URL}/hotel-admin/staff/${staffId}/deactivate`,
         {
           method: 'PUT',
           headers: getAuthHeaders(),
@@ -953,7 +971,7 @@ export const hotelAdminApi = {
   // Get my hotel details
   getMyHotel: async (token: string): Promise<{ success: boolean; data?: Hotel; message?: string }> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/hotel-admin/hotel`, {
+      const response = await fetch(`${API_BASE_URL}/hotel-admin/hotel`, {
         method: 'GET',
         headers: getAuthHeaders(),
       });
@@ -980,7 +998,7 @@ export const hotelAdminApi = {
     hotelData: Partial<Hotel>
   ): Promise<{ success: boolean; data?: Hotel; message?: string }> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/hotel-admin/hotel`, {
+      const response = await fetch(`${API_BASE_URL}/hotel-admin/hotel`, {
         method: 'PUT',
         headers: getAuthHeaders(),
         body: JSON.stringify(hotelData),
@@ -1011,7 +1029,7 @@ export const hotelAdminApi = {
     roomType: string
   ): Promise<{ success: boolean; data?: any; message?: string }> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/hotel-admin/room-type-pricing/${roomType}`, {
+      const response = await fetch(`${API_BASE_URL}/hotel-admin/room-type-pricing/${roomType}`, {
         method: 'GET',
         headers: getAuthHeaders(),
       });
@@ -1056,7 +1074,7 @@ export const hotelAdminApi = {
     bookingRequest: any
   ): Promise<{ success: boolean; data?: any; message?: string }> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/hotel-admin/walk-in-booking`, {
+      const response = await fetch(`${API_BASE_URL}/hotel-admin/walk-in-booking`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify(bookingRequest),

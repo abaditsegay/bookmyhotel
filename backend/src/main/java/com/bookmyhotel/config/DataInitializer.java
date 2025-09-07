@@ -484,16 +484,57 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     /**
+     * Generate unique SKU prefix based on tenant and hotel name
+     * Format: First letter of tenant + first letters of each word in hotel name
+     * Example: "Development" tenant + "Grand Plaza Hotel" = "DGPH"
+     */
+    private String generateSkuPrefix(Hotel hotel) {
+        try {
+            // Get tenant name
+            Tenant tenant = hotel.getTenant();
+            String tenantName = tenant.getName();
+
+            // First letter of tenant name (uppercase)
+            String tenantPrefix = tenantName.substring(0, 1).toUpperCase();
+
+            // First letters of each word in hotel name (uppercase)
+            String[] hotelWords = hotel.getName().split("\\s+");
+            StringBuilder hotelPrefix = new StringBuilder();
+
+            for (String word : hotelWords) {
+                if (!word.trim().isEmpty()) {
+                    // Remove special characters and get first letter
+                    String cleanWord = word.replaceAll("[^A-Za-z]", "");
+                    if (!cleanWord.isEmpty()) {
+                        hotelPrefix.append(cleanWord.substring(0, 1).toUpperCase());
+                    }
+                }
+            }
+
+            return tenantPrefix + hotelPrefix.toString();
+        } catch (Exception e) {
+            logger.warn("Failed to generate SKU prefix for hotel: {}, using fallback", hotel.getName());
+            // Fallback to simple hotel name prefix if something goes wrong
+            return hotel.getName().replaceAll("[^A-Za-z]", "").toUpperCase().substring(0,
+                    Math.min(4, hotel.getName().replaceAll("[^A-Za-z]", "").length()));
+        }
+    }
+
+    /**
      * Create a product if it doesn't already exist
      */
     private void createProductIfNotExists(Hotel hotel, String name, String description,
-            ProductCategory category, BigDecimal price, int stockQuantity, String sku) {
+            ProductCategory category, BigDecimal price, int stockQuantity, String baseSku) {
+
+        // Generate unique SKU with hotel/tenant prefix
+        String skuPrefix = generateSkuPrefix(hotel);
+        String uniqueSku = skuPrefix + "-" + baseSku;
 
         // Check if product with this SKU already exists for this hotel
-        Optional<Product> existingProduct = productRepository.findByHotelIdAndSku(hotel.getId(), sku);
+        Optional<Product> existingProduct = productRepository.findByHotelIdAndSku(hotel.getId(), uniqueSku);
 
         if (existingProduct.isPresent()) {
-            logger.debug("Product {} already exists for hotel {}", sku, hotel.getName());
+            logger.debug("Product {} already exists for hotel {}", uniqueSku, hotel.getName());
             return;
         }
 
@@ -503,12 +544,12 @@ public class DataInitializer implements CommandLineRunner {
         product.setCategory(category);
         product.setPrice(price);
         product.setStockQuantity(stockQuantity);
-        product.setSku(sku);
+        product.setSku(uniqueSku);
         product.setIsActive(true);
         product.setIsAvailable(true);
         product.setHotel(hotel);
 
         productRepository.save(product);
-        logger.info("Created Ethiopian product: {} for hotel: {}", name, hotel.getName());
+        logger.info("Created Ethiopian product: {} with SKU: {} for hotel: {}", name, uniqueSku, hotel.getName());
     }
 }

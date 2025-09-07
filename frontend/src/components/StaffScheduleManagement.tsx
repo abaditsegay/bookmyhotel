@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_CONFIG } from '../config/apiConfig';
 import {
   Paper,
   Typography,
@@ -46,7 +47,7 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+const API_BASE_URL = API_CONFIG.SERVER_URL;
 
 /**
  * Create authenticated fetch request headers

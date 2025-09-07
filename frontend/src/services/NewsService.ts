@@ -1,5 +1,6 @@
 // News Service for hotel news and announcements
 import TokenManager from '../utils/tokenManager';
+import { API_CONFIG } from '../config/apiConfig';
 
 export interface NewsItem {
   id: number;
@@ -22,7 +23,7 @@ export interface CreateNewsRequest {
   priority: 'low' | 'medium' | 'high' | 'urgent';
 }
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
+const API_BASE_URL = API_CONFIG.BASE_URL;
 
 class NewsService {
   private async fetchApi<T>(

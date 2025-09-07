@@ -1,6 +1,9 @@
 import { RoomCharge, RoomChargeCreateRequest } from '../types/shop';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+import TokenManager from '../utils/tokenManager';
+import { API_CONFIG } from '../config/apiConfig';
+
+const API_BASE_URL = API_CONFIG.BASE_URL;
 
 class RoomChargeApiService {
   private getAuthHeaders() {

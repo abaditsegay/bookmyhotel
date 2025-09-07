@@ -27,6 +27,8 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import TokenManager from '../utils/tokenManager';
+import { apiClient } from '../utils/apiClient';
+import { API_ENDPOINTS } from '../config/apiConfig';
 
 /**
  * Dashboard page for system-wide users (ADMIN and CUSTOMER roles)
@@ -50,43 +52,37 @@ export const SystemDashboardPage: React.FC = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
+        // Set the token for API client
+        const token = TokenManager.getToken();
+        if (token) {
+          apiClient.setToken(token);
+        }
+
         // Fetch hotels count
-        const hotelsResponse = await fetch('http://localhost:8080/api/system/hotels', {
-          headers: {
-            ...TokenManager.getAuthHeaders()
-          }
-        });
+        const hotelsResponse = await apiClient.get(API_ENDPOINTS.SYSTEM.HOTELS);
         
         // Fetch users count  
-        const usersResponse = await fetch('http://localhost:8080/api/system/users', {
-          headers: {
-            ...TokenManager.getAuthHeaders()
-          }
-        });
+        const usersResponse = await apiClient.get(API_ENDPOINTS.SYSTEM.USERS);
 
         // Fetch tenants count
-        const tenantsResponse = await fetch('http://localhost:8080/api/system/tenants', {
-          headers: {
-            ...TokenManager.getAuthHeaders()
-          }
-        });
+        const tenantsResponse = await apiClient.get(API_ENDPOINTS.SYSTEM.TENANTS);
 
         let hotelsCount = 0;
         let usersCount = 0;
         let tenantsCount = 0;
 
-        if (hotelsResponse.ok) {
-          const hotelsData = await hotelsResponse.json();
+        if (hotelsResponse.success && hotelsResponse.data) {
+          const hotelsData = hotelsResponse.data;
           hotelsCount = Array.isArray(hotelsData) ? hotelsData.length : (hotelsData.totalElements || hotelsData.content?.length || 0);
         }
 
-        if (usersResponse.ok) {
-          const usersData = await usersResponse.json();
+        if (usersResponse.success && usersResponse.data) {
+          const usersData = usersResponse.data;
           usersCount = Array.isArray(usersData) ? usersData.length : (usersData.totalElements || usersData.content?.length || 0);
         }
 
-        if (tenantsResponse.ok) {
-          const tenantsData = await tenantsResponse.json();
+        if (tenantsResponse.success && tenantsResponse.data) {
+          const tenantsData = tenantsResponse.data;
           tenantsCount = Array.isArray(tenantsData) ? tenantsData.length : (tenantsData.totalElements || tenantsData.content?.length || 0);
         }
 
@@ -148,16 +144,6 @@ export const SystemDashboardPage: React.FC = () => {
       buttonText: 'View Users',
       stat: stats.totalUsers,
       statLabel: 'Total Users'
-    },
-    {
-      title: 'System Settings',
-      description: 'Configure global system settings',
-      icon: <Settings />,
-      action: () => navigate('/system/settings'),
-      color: 'warning' as const,
-      buttonText: 'Open Settings',
-      stat: null,
-      statLabel: null
     },
   ];
 

@@ -1,5 +1,7 @@
 // Room Type Pricing API Service
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+import { API_CONFIG } from '../config/apiConfig';
+
+const API_BASE_URL = API_CONFIG.BASE_URL;
 
 export interface RoomTypePricingRequest {
   roomType: string;
@@ -41,7 +43,7 @@ const createAuthHeaders = (token: string): HeadersInit => ({
 });
 
 class RoomTypePricingService {
-  private baseUrl = `${API_BASE_URL}/api/hotel-admin/room-type-pricing`;
+  private baseUrl = `${API_BASE_URL}/hotel-admin/room-type-pricing`;
 
   /**
    * Transform backend response (actual prices) to frontend format (multipliers)

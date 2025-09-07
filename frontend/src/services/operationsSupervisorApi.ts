@@ -11,7 +11,9 @@ import {
 } from '../types/operations';
 import TokenManager from '../utils/tokenManager';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
+import { API_CONFIG } from '../config/apiConfig';
+
+const API_BASE_URL = API_CONFIG.BASE_URL;
 
 class OperationsSupervisorApiService {
   private async fetchApi<T>(

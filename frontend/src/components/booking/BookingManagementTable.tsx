@@ -355,18 +355,28 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
     if (!selectedBooking || !token) return;
 
     try {
+      let result;
       if (mode === 'front-desk') {
-        await frontDeskApiService.deleteBooking(token, selectedBooking.reservationId);
+        result = await frontDeskApiService.deleteBooking(token, selectedBooking.reservationId);
       } else {
-        await hotelAdminApi.deleteBooking(token, selectedBooking.reservationId);
+        result = await hotelAdminApi.deleteBooking(token, selectedBooking.reservationId);
       }
-      setSnackbar({
-        open: true,
-        message: 'Booking deleted successfully',
-        severity: 'success'
-      });
-      setDeleteDialogOpen(false);
-      await loadBookings();
+
+      if (result.success) {
+        setSnackbar({
+          open: true,
+          message: 'Booking deleted successfully',
+          severity: 'success'
+        });
+        setDeleteDialogOpen(false);
+        await loadBookings();
+      } else {
+        setSnackbar({
+          open: true,
+          message: result.message || 'Failed to delete booking',
+          severity: 'error'
+        });
+      }
     } catch (error) {
       console.error('Error deleting booking:', error);
       setSnackbar({

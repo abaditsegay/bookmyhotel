@@ -33,9 +33,10 @@ import {
   Edit as EditIcon
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
+import { API_CONFIG } from '../../config/apiConfig';
 
 // Front desk specific API service
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+const API_BASE_URL = API_CONFIG.SERVER_URL;
 
 interface RoomResponse {
   id: number;

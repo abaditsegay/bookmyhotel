@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Button, CircularProgress, Typography, Alert } from '@mui/material';
+import { API_CONFIG } from '../../config/apiConfig';
 
 // Simple test component to debug booking API
 const BookingAPITest: React.FC = () => {
@@ -15,7 +16,7 @@ const BookingAPITest: React.FC = () => {
       console.log('Testing booking API...');
       
       // Get fresh token
-      const loginResponse = await fetch('http://localhost:8080/api/auth/login', {
+      const loginResponse = await fetch(`${API_CONFIG.BASE_URL}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -36,7 +37,7 @@ const BookingAPITest: React.FC = () => {
       console.log('Token received:', token ? 'Yes' : 'No');
       
       // Test booking API
-      const bookingsResponse = await fetch('http://localhost:8080/api/hotel-admin/bookings?page=0&size=10', {
+      const bookingsResponse = await fetch(`${API_CONFIG.BASE_URL}/hotel-admin/bookings?page=0&size=10`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,

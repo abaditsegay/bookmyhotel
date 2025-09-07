@@ -1,4 +1,6 @@
 import { useAuthenticatedApi } from '../hooks/useAuthenticatedApi';
+import { apiClient } from '../utils/apiClient';
+import { API_ENDPOINTS } from '../config/apiConfig';
 
 export interface Todo {
   id?: number;
@@ -17,8 +19,6 @@ export interface TodoFilters {
   sortBy?: 'priority' | 'dueDate' | 'created' | 'alphabetical';
 }
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
-
 class TodoApiService {
   private token: string | null = null;
   private tenantId: string | null = null;
@@ -32,44 +32,22 @@ class TodoApiService {
   }
 
   private async fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> {
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
+    // Set token and tenant ID in the API client
+    apiClient.setToken(this.token);
+    apiClient.setTenantId(this.tenantId);
 
-    // Add any additional headers from options
-    if (options?.headers) {
-      Object.assign(headers, options.headers);
+    // Use the centralized API client
+    const response = await apiClient.request<T>(endpoint, options);
+    
+    if (!response.success) {
+      throw new Error(response.error || 'API call failed');
     }
 
-    // Add Authorization header if token is available
-    if (this.token) {
-      headers['Authorization'] = `Bearer ${this.token}`;
-    }
-
-    // Add tenant ID header if available
-    if (this.tenantId) {
-      headers['X-Tenant-ID'] = this.tenantId;
-    }
-
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      ...options,
-      headers,
-    });
-
-    if (!response.ok) {
-      throw new Error(`API call failed: ${response.status} ${response.statusText}`);
-    }
-
-    const contentType = response.headers.get('content-type');
-    if (contentType && contentType.includes('application/json')) {
-      return response.json();
-    } else {
-      return response.text() as unknown as T;
-    }
+    return response.data as T;
   }
 
   async getTodos(): Promise<Todo[]> {
-    return this.fetchApi<Todo[]>('/todos');
+    return this.fetchApi<Todo[]>(API_ENDPOINTS.TODOS.LIST);
   }
 
   async getFilteredTodos(filters: TodoFilters): Promise<Todo[]> {
@@ -82,41 +60,41 @@ class TodoApiService {
     }
     
     const query = params.toString();
-    return this.fetchApi<Todo[]>(`/todos/filtered${query ? `?${query}` : ''}`);
+    return this.fetchApi<Todo[]>(`${API_ENDPOINTS.TODOS.FILTERED}${query ? `?${query}` : ''}`);
   }
 
   async createTodo(todo: Omit<Todo, 'id' | 'createdAt' | 'updatedAt'>): Promise<Todo> {
-    return this.fetchApi<Todo>('/todos', {
+    return this.fetchApi<Todo>(API_ENDPOINTS.TODOS.LIST, {
       method: 'POST',
       body: JSON.stringify(todo),
     });
   }
 
   async updateTodo(id: number, todo: Partial<Todo>): Promise<Todo> {
-    return this.fetchApi<Todo>(`/todos/${id}`, {
+    return this.fetchApi<Todo>(API_ENDPOINTS.TODOS.BY_ID(id), {
       method: 'PUT',
       body: JSON.stringify(todo),
     });
   }
 
   async toggleTodoCompletion(id: number): Promise<Todo> {
-    return this.fetchApi<Todo>(`/todos/${id}/toggle`, {
+    return this.fetchApi<Todo>(API_ENDPOINTS.TODOS.TOGGLE(id), {
       method: 'PATCH',
     });
   }
 
   async deleteTodo(id: number): Promise<void> {
-    return this.fetchApi<void>(`/todos/${id}`, {
+    return this.fetchApi<void>(API_ENDPOINTS.TODOS.BY_ID(id), {
       method: 'DELETE',
     });
   }
 
   async getPendingTodosCount(): Promise<number> {
-    return this.fetchApi<number>('/todos/pending/count');
+    return this.fetchApi<number>(API_ENDPOINTS.TODOS.PENDING_COUNT);
   }
 
   async getOverdueTodos(): Promise<Todo[]> {
-    return this.fetchApi<Todo[]>('/todos/overdue');
+    return this.fetchApi<Todo[]>(API_ENDPOINTS.TODOS.OVERDUE);
   }
 }
 
