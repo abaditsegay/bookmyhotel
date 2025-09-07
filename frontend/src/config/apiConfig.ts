@@ -3,14 +3,13 @@
  * This file contains all API-related configuration for the frontend application.
  */
 
-// Environment variables with fallback to relative paths for nginx proxy
+// Environment variables with fallback to production server for AWS deployment
 export const API_CONFIG = {
   // Main API base URL - used for all backend API calls
-  // Including the Spring Boot context path /managemyhotel
-  BASE_URL: process.env.REACT_APP_API_URL || '/managemyhotel/api',
+  BASE_URL: process.env.REACT_APP_API_URL || 'http://54.235.230.218:8080/managemyhotel/api',
   
   // Backend server URL (without /api suffix) - for direct server calls if needed
-  SERVER_URL: process.env.REACT_APP_SERVER_URL || '',
+  SERVER_URL: process.env.REACT_APP_SERVER_URL || 'http://54.235.230.218:8080/managemyhotel',
   
   // Timeout for API calls (in milliseconds)
   REQUEST_TIMEOUT: 30000,

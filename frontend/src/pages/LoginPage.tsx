@@ -395,42 +395,6 @@ const LoginPage: React.FC = () => {
                     🎯 Grand Plaza Hotel Front Desk
                   </Typography>
                 </Button>
-
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  onClick={() => fillSampleUser('admin.samhotel@bookmyhotel.com', 'admin123')}
-                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
-                >
-                  <Typography variant="body2" fontWeight="bold">🏨 Hotel Admin - Sam Hotel</Typography>
-                  <Typography variant="caption" color="textSecondary" sx={{ mt: 0.5 }}>
-                    admin.samhotel@bookmyhotel.com
-                  </Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    Password: admin123
-                  </Typography>
-                  <Typography variant="caption" color="info.main" sx={{ mt: 0.5 }}>
-                    🏨 Sam Hotel ! (0 rooms)
-                  </Typography>
-                </Button>
-
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  onClick={() => fillSampleUser('frontdesk.samhotel@bookmyhotel.com', 'front123')}
-                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
-                >
-                  <Typography variant="body2" fontWeight="bold">🎯 Front Desk - Sam Hotel</Typography>
-                  <Typography variant="caption" color="textSecondary" sx={{ mt: 0.5 }}>
-                    frontdesk.samhotel@bookmyhotel.com
-                  </Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    Password: front123
-                  </Typography>
-                  <Typography variant="caption" color="warning.main" sx={{ mt: 0.5 }}>
-                    🎯 Sam Hotel ! Front Desk
-                  </Typography>
-                </Button>
               </Box>
             </CardContent>
           </Card>

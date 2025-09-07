@@ -256,10 +256,10 @@ const BookingPage: React.FC = () => {
                         paymentMethod === 'pay_at_frontdesk' ? 'pay_at_frontdesk' :
                         paymentMethod === 'mbirr' ? 'mbirr' :
                         paymentMethod === 'telebirr' ? 'telebirr' : undefined,
-        // Include guest information for guest booking flow
-        guestName: isGuestBookingFlow ? guestName.trim() : undefined,
-        guestEmail: isGuestBookingFlow ? guestEmail.trim() : undefined,
-        guestPhone: isGuestBookingFlow ? (guestPhone.trim() || undefined) : undefined,
+        // Include guest information - always send if provided, regardless of auth status
+        guestName: guestName.trim() || undefined,
+        guestEmail: guestEmail.trim() || undefined,
+        guestPhone: guestPhone.trim() || undefined,
         // Include Ethiopian phone number for Ethiopian payment methods
         mobileNumber: (paymentMethod === 'mbirr' || paymentMethod === 'telebirr') ? 
                      ethiopianPhoneNumber.replace(/\s/g, '') : 
