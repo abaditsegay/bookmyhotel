@@ -126,6 +126,14 @@ const BookingPage: React.FC = () => {
     setPaymentMethod(e.target.value as 'credit_card' | 'mobile_money' | 'pay_at_frontdesk' | 'mbirr' | 'telebirr');
   }, []);
 
+  // Update guest information when user data loads
+  useEffect(() => {
+    if (user && user.firstName && user.lastName) {
+      setGuestName(`${user.firstName} ${user.lastName}`);
+      setGuestEmail(user.email || '');
+    }
+  }, [user]);
+
   // Redirect if no booking data
   useEffect(() => {
     if (!bookingData?.room && !bookingData?.roomType) {
@@ -469,7 +477,7 @@ const BookingPage: React.FC = () => {
                 <Grid item xs={12}>
                   <Card variant="outlined" sx={{ p: 2, backgroundColor: 'grey.50' }}>
                     <Typography variant="body1" gutterBottom>
-                      <strong>Name:</strong> {user?.firstName} {user?.lastName}
+                      <strong>Name:</strong> {user?.firstName || 'N/A'} {user?.lastName || 'N/A'}
                     </Typography>
                     <Typography variant="body1" gutterBottom>
                       <strong>Email:</strong> {user?.email}
