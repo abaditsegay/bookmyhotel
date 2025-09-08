@@ -30,7 +30,6 @@ import com.bookmyhotel.entity.Hotel;
 import com.bookmyhotel.entity.StaffSchedule;
 import com.bookmyhotel.entity.StaffSchedule.Department;
 import com.bookmyhotel.entity.User;
-import com.bookmyhotel.entity.UserRole;
 import com.bookmyhotel.exception.ResourceNotFoundException;
 import com.bookmyhotel.repository.HotelRepository;
 import com.bookmyhotel.repository.StaffScheduleRepository;
@@ -77,8 +76,8 @@ public class StaffScheduleService {
                 .orElseThrow(() -> new ResourceNotFoundException("Hotel not found"));
 
         // Check for schedule conflicts
-        checkScheduleConflicts(request.getStaffId(), request.getScheduleDate(), 
-                             request.getStartTime(), request.getEndTime(), null);
+        checkScheduleConflicts(request.getStaffId(), request.getScheduleDate(),
+                request.getStartTime(), request.getEndTime(), null);
 
         // Create schedule
         StaffSchedule schedule = new StaffSchedule(
@@ -90,16 +89,15 @@ public class StaffScheduleService {
                 request.getEndTime(),
                 request.getShiftType(),
                 request.getDepartment(),
-                admin
-        );
+                admin);
         schedule.setNotes(request.getNotes());
 
         // Explicitly set timestamps since @PrePersist is not working reliably
         java.time.LocalDateTime now = java.time.LocalDateTime.now();
         schedule.setCreatedAt(now);
         schedule.setUpdatedAt(now);
-        logger.info("🔍 Manually set timestamps - createdAt: {}, updatedAt: {}", 
-                   schedule.getCreatedAt(), schedule.getUpdatedAt());
+        logger.info("🔍 Manually set timestamps - createdAt: {}, updatedAt: {}",
+                schedule.getCreatedAt(), schedule.getUpdatedAt());
 
         schedule = staffScheduleRepository.save(schedule);
         logger.info("Schedule created with ID: {}", schedule.getId());
@@ -129,8 +127,8 @@ public class StaffScheduleService {
                 .orElseThrow(() -> new ResourceNotFoundException("Hotel not found"));
 
         // Check for schedule conflicts (excluding current schedule)
-        checkScheduleConflicts(request.getStaffId(), request.getScheduleDate(), 
-                             request.getStartTime(), request.getEndTime(), scheduleId);
+        checkScheduleConflicts(request.getStaffId(), request.getScheduleDate(),
+                request.getStartTime(), request.getEndTime(), scheduleId);
 
         // Update schedule
         schedule.setStaff(staff);
@@ -194,7 +192,8 @@ public class StaffScheduleService {
      * Get schedules by hotel and date range
      */
     @Transactional(readOnly = true)
-    public List<StaffScheduleResponse> getSchedulesByHotelAndDateRange(Long hotelId, LocalDate startDate, LocalDate endDate) {
+    public List<StaffScheduleResponse> getSchedulesByHotelAndDateRange(Long hotelId, LocalDate startDate,
+            LocalDate endDate) {
         List<StaffSchedule> schedules = staffScheduleRepository.findByHotelAndDateRange(hotelId, startDate, endDate);
         return schedules.stream()
                 .map(this::convertToResponse)
@@ -205,7 +204,8 @@ public class StaffScheduleService {
      * Get schedules by staff member and date range
      */
     @Transactional(readOnly = true)
-    public List<StaffScheduleResponse> getSchedulesByStaffAndDateRange(Long staffId, LocalDate startDate, LocalDate endDate) {
+    public List<StaffScheduleResponse> getSchedulesByStaffAndDateRange(Long staffId, LocalDate startDate,
+            LocalDate endDate) {
         List<StaffSchedule> schedules = staffScheduleRepository.findByStaffAndDateRange(staffId, startDate, endDate);
         return schedules.stream()
                 .map(this::convertToResponse)
@@ -216,8 +216,8 @@ public class StaffScheduleService {
      * Get schedules by department and date range
      */
     @Transactional(readOnly = true)
-    public List<StaffScheduleResponse> getSchedulesByDepartmentAndDateRange(Long hotelId, Department department, 
-                                                                           LocalDate startDate, LocalDate endDate) {
+    public List<StaffScheduleResponse> getSchedulesByDepartmentAndDateRange(Long hotelId, Department department,
+            LocalDate startDate, LocalDate endDate) {
         List<StaffSchedule> schedules = staffScheduleRepository.findByHotelAndDepartmentAndDateRange(
                 hotelId, department, startDate, endDate);
         return schedules.stream()
@@ -272,7 +272,7 @@ public class StaffScheduleService {
     public Page<StaffScheduleResponse> getSchedulesWithPagination(Long hotelId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<StaffSchedule> schedulePage = staffScheduleRepository.findByHotelWithPagination(hotelId, pageable);
-        
+
         return schedulePage.map(this::convertToResponse);
     }
 
@@ -282,19 +282,18 @@ public class StaffScheduleService {
     @Transactional(readOnly = true)
     public Map<Department, Long> getScheduleStatsByDepartment(Long hotelId, LocalDate startDate, LocalDate endDate) {
         List<Object[]> results = staffScheduleRepository.countSchedulesByDepartment(hotelId, startDate, endDate);
-        
+
         return results.stream()
                 .collect(Collectors.toMap(
                         result -> (Department) result[0],
-                        result -> (Long) result[1]
-                ));
+                        result -> (Long) result[1]));
     }
 
     // Private helper methods
 
     private void validateScheduleRequest(StaffScheduleRequest request) {
-        if (request.getEndTime().isBefore(request.getStartTime()) || 
-            request.getEndTime().equals(request.getStartTime())) {
+        if (request.getEndTime().isBefore(request.getStartTime()) ||
+                request.getEndTime().equals(request.getStartTime())) {
             throw new IllegalArgumentException("End time must be after start time");
         }
 
@@ -309,8 +308,8 @@ public class StaffScheduleService {
         }
     }
 
-    private void checkScheduleConflicts(Long staffId, LocalDate date, LocalTime startTime, 
-                                       LocalTime endTime, Long excludeId) {
+    private void checkScheduleConflicts(Long staffId, LocalDate date, LocalTime startTime,
+            LocalTime endTime, Long excludeId) {
         Long excludeScheduleId = excludeId != null ? excludeId : -1L;
         List<StaffSchedule> conflicts = staffScheduleRepository.findConflictingSchedules(
                 staffId, date, startTime, endTime, excludeScheduleId);
@@ -322,9 +321,9 @@ public class StaffScheduleService {
 
     private StaffScheduleResponse convertToResponse(StaffSchedule schedule) {
         String staffName = schedule.getStaff().getFirstName() + " " + schedule.getStaff().getLastName();
-        String createdByName = schedule.getCreatedBy() != null ? 
-                schedule.getCreatedBy().getFirstName() + " " + schedule.getCreatedBy().getLastName() : 
-                "System";
+        String createdByName = schedule.getCreatedBy() != null
+                ? schedule.getCreatedBy().getFirstName() + " " + schedule.getCreatedBy().getLastName()
+                : "System";
 
         return new StaffScheduleResponse(
                 schedule.getId(),
@@ -342,12 +341,11 @@ public class StaffScheduleService {
                 schedule.getStatus(),
                 createdByName,
                 schedule.getCreatedAt(),
-                schedule.getUpdatedAt()
-        );
+                schedule.getUpdatedAt());
     }
 
-    public List<StaffScheduleResponse> getSchedulesWithFilters(Long hotelId, Department department, 
-                                                              LocalDate date, String status, String adminEmail) {
+    public List<StaffScheduleResponse> getSchedulesWithFilters(Long hotelId, Department department,
+            LocalDate date, String status, String adminEmail) {
         User admin = userRepository.findByEmail(adminEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("Admin not found"));
 
@@ -375,31 +373,33 @@ public class StaffScheduleService {
 
     public List<StaffMemberResponse> getAllStaffMembers(String adminEmail) {
         logger.info("🔍 getAllStaffMembers called for adminEmail: {}", adminEmail);
-        
+
         User admin = userRepository.findByEmail(adminEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("Admin not found"));
-        
-        logger.info("✅ Admin found: id={}, email={}, hotel={}", 
-                   admin.getId(), admin.getEmail(), 
-                   admin.getHotel() != null ? admin.getHotel().getId() : "null");
+
+        logger.info("✅ Admin found: id={}, email={}, hotel={}",
+                admin.getId(), admin.getEmail(),
+                admin.getHotel() != null ? admin.getHotel().getId() : "null");
 
         List<User> staffMembers;
         if (admin.getHotel() != null) {
             // Hotel admin or operations supervisor - get staff from their hotel
             // Using optimized native query for better performance
-            List<String> staffRoleNames = Arrays.asList("FRONTDESK", "HOUSEKEEPING", "HOTEL_ADMIN", "OPERATIONS_SUPERVISOR");
+            List<String> staffRoleNames = Arrays.asList("FRONTDESK", "HOUSEKEEPING", "HOTEL_ADMIN",
+                    "OPERATIONS_SUPERVISOR");
             logger.info("🏨 Searching for staff in hotel {} with roles: {}", admin.getHotel().getId(), staffRoleNames);
-            
+
             staffMembers = userRepository.findStaffByHotelIdNative(admin.getHotel().getId(), staffRoleNames);
             logger.info("📋 Found {} staff members using optimized query", staffMembers.size());
-            
+
             for (User staff : staffMembers) {
-                logger.info("👤 Staff: id={}, email={}, hotel={}", 
-                           staff.getId(), staff.getEmail(), 
-                           staff.getHotel() != null ? staff.getHotel().getId() : "null");
+                logger.info("👤 Staff: id={}, email={}, hotel={}",
+                        staff.getId(), staff.getEmail(),
+                        staff.getHotel() != null ? staff.getHotel().getId() : "null");
             }
         } else {
-            // System admin - get all staff members (this might need refinement based on requirements)
+            // System admin - get all staff members (this might need refinement based on
+            // requirements)
             logger.info("🌐 System admin - getting all staff members");
             staffMembers = userRepository.findAll().stream()
                     .filter(user -> user.getHotel() != null)
@@ -410,7 +410,7 @@ public class StaffScheduleService {
         List<StaffMemberResponse> responses = staffMembers.stream()
                 .map(this::convertToStaffMemberResponse)
                 .collect(Collectors.toList());
-        
+
         logger.info("🔄 Returning {} staff member responses", responses.size());
         return responses;
     }
@@ -418,7 +418,7 @@ public class StaffScheduleService {
     private StaffMemberResponse convertToStaffMemberResponse(User user) {
         String hotelName = user.getHotel() != null ? user.getHotel().getName() : "No Hotel";
         Long hotelId = user.getHotel() != null ? user.getHotel().getId() : null;
-        
+
         return new StaffMemberResponse(
                 user.getId(),
                 user.getFirstName(),
@@ -427,8 +427,7 @@ public class StaffScheduleService {
                 user.getPhone(),
                 hotelId,
                 hotelName,
-                user.getRoles()
-        );
+                user.getRoles());
     }
 
     /**
@@ -436,27 +435,27 @@ public class StaffScheduleService {
      */
     public Map<String, Object> uploadScheduleFile(MultipartFile file, String adminEmail) {
         logger.info("Processing schedule upload file: {}", file.getOriginalFilename());
-        
+
         User admin = userRepository.findByEmail(adminEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("Admin not found"));
-        
+
         int totalSchedules = 0;
         int successCount = 0;
         int failureCount = 0;
         List<String> errors = new ArrayList<>();
-        
+
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
             String line;
             boolean isFirstLine = true;
-            
+
             while ((line = reader.readLine()) != null) {
                 if (isFirstLine) {
                     isFirstLine = false;
                     continue; // Skip header row
                 }
-                
+
                 totalSchedules++;
-                
+
                 try {
                     String[] columns = line.split(",");
                     if (columns.length < 7) {
@@ -464,7 +463,7 @@ public class StaffScheduleService {
                         failureCount++;
                         continue;
                     }
-                    
+
                     String staffEmail = columns[0].trim();
                     String hotelName = columns[1].trim();
                     String scheduleDate = columns[2].trim();
@@ -473,7 +472,7 @@ public class StaffScheduleService {
                     String shiftType = columns[5].trim();
                     String department = columns[6].trim();
                     String notes = columns.length > 7 ? columns[7].trim() : "";
-                    
+
                     // Find staff member
                     User staff = userRepository.findByEmail(staffEmail)
                             .orElse(null);
@@ -482,7 +481,7 @@ public class StaffScheduleService {
                         failureCount++;
                         continue;
                     }
-                    
+
                     // Find hotel
                     Hotel hotel = hotelRepository.findByNameContainingIgnoreCase(hotelName).stream()
                             .findFirst()
@@ -492,12 +491,12 @@ public class StaffScheduleService {
                         failureCount++;
                         continue;
                     }
-                    
+
                     // Parse date and times
                     LocalDate date;
                     LocalTime start;
                     LocalTime end;
-                    
+
                     try {
                         date = LocalDate.parse(scheduleDate);
                         start = LocalTime.parse(startTime);
@@ -507,11 +506,11 @@ public class StaffScheduleService {
                         failureCount++;
                         continue;
                     }
-                    
+
                     // Validate shift type and department
                     StaffSchedule.ShiftType shiftTypeEnum;
                     Department departmentEnum;
-                    
+
                     try {
                         shiftTypeEnum = StaffSchedule.ShiftType.valueOf(shiftType.toUpperCase());
                         departmentEnum = Department.valueOf(department.toUpperCase());
@@ -520,7 +519,7 @@ public class StaffScheduleService {
                         failureCount++;
                         continue;
                     }
-                    
+
                     // Create schedule request
                     StaffScheduleRequest request = new StaffScheduleRequest();
                     request.setStaffId(staff.getId());
@@ -531,32 +530,32 @@ public class StaffScheduleService {
                     request.setShiftType(shiftTypeEnum);
                     request.setDepartment(departmentEnum);
                     request.setNotes(notes);
-                    
+
                     // Create the schedule
                     createSchedule(request, adminEmail);
                     successCount++;
-                    
+
                 } catch (Exception e) {
                     logger.error("Error processing row {}: {}", totalSchedules, e.getMessage());
                     errors.add("Row " + totalSchedules + ": " + e.getMessage());
                     failureCount++;
                 }
             }
-            
+
         } catch (Exception e) {
             logger.error("Error reading file: {}", e.getMessage());
             throw new RuntimeException("Failed to process upload file: " + e.getMessage());
         }
-        
+
         Map<String, Object> result = new HashMap<>();
         result.put("totalSchedules", totalSchedules);
         result.put("successCount", successCount);
         result.put("failureCount", failureCount);
         result.put("errors", errors);
-        
-        logger.info("Schedule upload completed: {} total, {} success, {} failures", 
-                   totalSchedules, successCount, failureCount);
-        
+
+        logger.info("Schedule upload completed: {} total, {} success, {} failures",
+                totalSchedules, successCount, failureCount);
+
         return result;
     }
 }

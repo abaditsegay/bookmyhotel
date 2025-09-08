@@ -12,13 +12,13 @@ import jakarta.persistence.PreUpdate;
  */
 @MappedSuperclass
 public abstract class BaseEntity {
-    
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
-    
+
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-    
+
     @PrePersist
     public void prePersist() {
         if (this.createdAt == null) {
@@ -26,25 +26,25 @@ public abstract class BaseEntity {
         }
         this.updatedAt = LocalDateTime.now();
     }
-    
+
     @PreUpdate
     public void preUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
-    
+
     // Getters and Setters
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
-    
+
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
-    
+
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
-    
+
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
