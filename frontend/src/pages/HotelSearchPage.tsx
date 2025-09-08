@@ -14,7 +14,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import VerticalHotelAdvertisementBanner from '../components/VerticalHotelAdvertisementBanner';
+// import VerticalHotelAdvertisementBanner from '../components/VerticalHotelAdvertisementBanner';
 import HotelSearchForm from '../components/hotel/HotelSearchForm';
 import { hotelApiService } from '../services/hotelApi';
 import { useAuth } from '../contexts/AuthContext';
@@ -97,6 +97,7 @@ const HotelSearchPage: React.FC = () => {
         }}
       >
         {/* Left Advertisement Pane - Responsive: side pane on desktop, bottom section on mobile */}
+        {/* 
         {!isOperationsUser && (
           <Box sx={{ gridArea: 'leftAd' }}>
             <Card 
@@ -156,6 +157,7 @@ const HotelSearchPage: React.FC = () => {
             </Card>
           </Box>
         )}
+        */}
 
         {/* Center Search Form - Responsive: main content area */}
         <Box sx={{ gridArea: 'main' }}>
@@ -264,6 +266,7 @@ const HotelSearchPage: React.FC = () => {
               </Paper>
 
               {/* Why Choose Us Section */}
+              {/* 
               <Divider sx={{ my: 4 }} />
               
               <Paper 
@@ -369,11 +372,13 @@ const HotelSearchPage: React.FC = () => {
                   </Typography>
                 </Box>
               </Paper>
+              */}
             </Box>
           </Card>
         </Box>
 
         {/* Right Advertisement Pane - Responsive: side pane on desktop, bottom section on mobile */}
+        {/* 
         {!isOperationsUser && (
           <Box sx={{ gridArea: 'rightAd' }}>
             <Card 
@@ -433,6 +438,7 @@ const HotelSearchPage: React.FC = () => {
             </Card>
           </Box>
         )}
+        */}
       </Box>
     </Box>
   );

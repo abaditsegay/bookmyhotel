@@ -191,4 +191,12 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
                      "WHERE r.guestInfo.email = :email " +
                      "AND r.status NOT IN ('CANCELLED', 'NO_SHOW', 'CHECKED_OUT')")
        List<Reservation> findActiveReservationsByGuestEmail(@Param("email") String email);
+
+       /**
+        * Find expired checked-in reservations (for auto-checkout)
+        */
+       @Query("SELECT r FROM Reservation r " +
+                     "WHERE r.status = com.bookmyhotel.entity.ReservationStatus.CHECKED_IN " +
+                     "AND r.checkOutDate < :currentDate")
+       List<Reservation> findExpiredCheckedInReservations(@Param("currentDate") LocalDate currentDate);
 }

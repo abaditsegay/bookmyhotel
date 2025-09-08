@@ -119,12 +119,18 @@ const Navbar: React.FC = () => {
 
   // Navigation items based on user role
   const getNavigationItems = () => {
+    // Book MyStay should only be visible to CUSTOMER, GUEST roles, and non-authenticated users
+    const shouldShowBookMyStay = !user || user.role === 'CUSTOMER' || user.role === 'GUEST';
+    
     const baseItems: { label: string; path?: string; icon: React.ReactNode; action?: () => void }[] = [];
-
-    // Base items are now empty for non-authenticated users since we're moving them to the right side
+    
+    // Add Book MyStay only for appropriate users
+    if (shouldShowBookMyStay) {
+      baseItems.push({ label: 'Book MyStay', path: '/hotels/search', icon: <SearchIcon /> });
+    }
 
     if (user) {
-      // For system admin and admin, show minimal navigation without dashboard or profile
+      // For system admin and admin, show minimal navigation without Book MyStay
       if (user.role === 'SYSTEM_ADMIN' || user.role === 'ADMIN') {
         return [...baseItems];
       }
@@ -169,10 +175,11 @@ const Navbar: React.FC = () => {
         return [...baseItems, ...customerItems];
       }
 
-      // For other roles (like HOUSEKEEPING, HOTEL_MANAGER), show only base items
+      // For other roles (like HOUSEKEEPING, HOTEL_MANAGER), show only base items (which won't include Book MyStay)
       return [...baseItems];
     }
 
+    // For non-authenticated users, show Book MyStay
     return baseItems;
   };
 
