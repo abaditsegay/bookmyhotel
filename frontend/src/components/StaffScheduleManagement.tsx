@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { API_CONFIG } from '../config/apiConfig';
+import { buildApiUrl } from '../config/apiConfig';
 import {
   Paper,
   Typography,
@@ -46,8 +46,6 @@ import {
   GetApp as DownloadIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
-
-const API_BASE_URL = API_CONFIG.SERVER_URL;
 
 /**
  * Create authenticated fetch request headers
@@ -170,21 +168,21 @@ const StaffScheduleManagement: React.FC = () => {
         }
         
         const [schedulesResponse, hotelsResponse, staffResponse] = await Promise.all([
-          fetch(`${API_BASE_URL}/api/staff-schedules`, {
+          fetch(buildApiUrl('/staff-schedules'), {
             method: 'GET',
             headers: getAuthHeaders(token),
           }).then(res => res.ok ? res.json() : []).catch(err => {
             console.warn('Failed to fetch schedules:', err);
             return [];
           }),
-          fetch(`${API_BASE_URL}/api/hotels-mgmt/list`, {
+          fetch(buildApiUrl('/hotels-mgmt/list'), {
             method: 'GET',
             headers: getAuthHeaders(token),
           }).then(res => res.ok ? res.json() : []).catch(err => {
             console.warn('Failed to fetch hotels:', err);
             return [];
           }),
-          fetch(`${API_BASE_URL}/api/staff-schedules/staff`, {
+          fetch(buildApiUrl('/staff-schedules/staff'), {
             method: 'GET',
             headers: getAuthHeaders(token),
           }).then(res => res.ok ? res.json() : []).catch(err => {
@@ -257,7 +255,7 @@ const StaffScheduleManagement: React.FC = () => {
       if (selectedDate) params.append('date', selectedDate);
       if (selectedStatus) params.append('status', selectedStatus);
       
-      const response = await fetch(`${API_BASE_URL}/api/staff-schedules?${params.toString()}`, {
+      const response = await fetch(buildApiUrl(`/staff-schedules?${params.toString()}`), {
         method: 'GET',
         headers: getAuthHeaders(token),
       });
@@ -285,7 +283,7 @@ const StaffScheduleManagement: React.FC = () => {
       }
       
       if (editingSchedule) {
-        const response = await fetch(`${API_BASE_URL}/api/staff-schedules/${editingSchedule.id}`, {
+        const response = await fetch(buildApiUrl(`/staff-schedules/${editingSchedule.id}`), {
           method: 'PUT',
           headers: getAuthHeaders(token),
           body: JSON.stringify(formData),
@@ -297,7 +295,7 @@ const StaffScheduleManagement: React.FC = () => {
 
         setSuccess('Schedule updated successfully');
       } else {
-        const response = await fetch(`${API_BASE_URL}/api/staff-schedules`, {
+        const response = await fetch(buildApiUrl('/staff-schedules'), {
           method: 'POST',
           headers: getAuthHeaders(token),
           body: JSON.stringify(formData),
@@ -350,7 +348,7 @@ const StaffScheduleManagement: React.FC = () => {
           return;
         }
         
-        const response = await fetch(`${API_BASE_URL}/api/staff-schedules/${scheduleToDelete}`, {
+        const response = await fetch(buildApiUrl(`/staff-schedules/${scheduleToDelete}`), {
           method: 'DELETE',
           headers: getAuthHeaders(token),
         });
@@ -383,7 +381,7 @@ const StaffScheduleManagement: React.FC = () => {
         return;
       }
       
-      const response = await fetch(`${API_BASE_URL}/api/staff-schedules/${id}/status`, {
+      const response = await fetch(buildApiUrl(`/staff-schedules/${id}/status`), {
         method: 'PATCH',
         headers: getAuthHeaders(token),
         body: JSON.stringify({ status }),
@@ -460,7 +458,7 @@ const StaffScheduleManagement: React.FC = () => {
 
     try {
       setError(null);
-      const response = await fetch(`${API_BASE_URL}/api/staff-schedules/upload`, {
+      const response = await fetch(buildApiUrl('/staff-schedules/upload'), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
