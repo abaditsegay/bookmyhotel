@@ -479,7 +479,7 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
                 })}
                 required
                 inputProps={{ min: 0, step: 0.01 }}
-                InputProps={{ startAdornment: '$' }}
+                InputProps={{ startAdornment: 'ETB ' }}
               />
             </Grid>
             <Grid item xs={12} md={4}>

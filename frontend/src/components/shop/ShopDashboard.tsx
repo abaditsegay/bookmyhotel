@@ -179,7 +179,7 @@ const ShopDashboard: React.FC = () => {
                     ${dashboardStats.todayRevenue.toFixed(2)}
                   </Typography>
                   <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                    ETB {(dashboardStats.todayRevenue * 55).toFixed(0)}
+                    ETB {dashboardStats.todayRevenue?.toFixed(0)}
                   </Typography>
                 </Box>
               </CardContent>

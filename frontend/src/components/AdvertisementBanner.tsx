@@ -248,11 +248,11 @@ export default function AdvertisementBanner({ maxAds = 5 }: AdvertisementBannerP
                 {/* Price Section */}
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                   <Typography variant="h6" color="primary" sx={{ fontWeight: 'bold' }}>
-                    ${hotel.minPrice}
+                    ETB {hotel.minPrice?.toFixed(0)}
                   </Typography>
                   {hotel.maxPrice > hotel.minPrice && (
                     <Typography variant="body2" color="text.secondary">
-                      - ${hotel.maxPrice}
+                      - ETB {hotel.maxPrice?.toFixed(0)}
                     </Typography>
                   )}
                   <Typography variant="caption" color="success.main" sx={{ fontWeight: 'bold' }}>

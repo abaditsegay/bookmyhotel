@@ -103,7 +103,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
   ];
 
   const formatCurrency = (amount: number) => {
-    return `ETB ${(amount * 55).toFixed(0)} ($${amount.toFixed(2)})`;
+    return `ETB ${amount?.toFixed(0)}`;
   };
 
   const handlePaymentMethodSelect = (method: PaymentMethod) => {

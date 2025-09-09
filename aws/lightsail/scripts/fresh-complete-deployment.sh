@@ -9,11 +9,11 @@ set -e
 # Configuration
 SERVER_IP="${1}"
 SSH_KEY="${2}"
-DOMAIN="${3:-bookmyhotel.251solutions.com}"
+DOMAIN="${3:-bookmystay.251solutions.com}"
 
 if [ -z "$SERVER_IP" ] || [ -z "$SSH_KEY" ]; then
     echo "Usage: $0 <server_ip> <ssh_key> [domain]"
-    echo "Example: $0 44.204.49.94 ~/.ssh/bookmyhotel-aws bookmyhotel.251solutions.com"
+    echo "Example: $0 44.204.49.94 ~/.ssh/bookmyhotel-aws bookmystay.251solutions.com"
     exit 1
 fi
 

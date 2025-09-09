@@ -331,13 +331,13 @@ const HotelDetailPage: React.FC = () => {
           {searchRequest && (
             <Box sx={{ textAlign: 'right', ml: 3 }}>
               <Typography variant="h5" color="success.main" sx={{ fontWeight: 'bold' }}>
-                From ETB {(hotel.minPrice * 55).toFixed(0)}
+                From ETB {hotel.minPrice?.toFixed(0)}
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 per night
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                Up to ETB {(hotel.maxPrice * 55).toFixed(0)}
+                Up to ETB {hotel.maxPrice?.toFixed(0)}
               </Typography>
             </Box>
           )}

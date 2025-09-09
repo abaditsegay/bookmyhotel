@@ -100,7 +100,7 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
             </Typography>
             <Box sx={{ textAlign: 'right' }}>
               <Typography variant="h6" color="success.main" sx={{ fontWeight: 'bold' }}>
-                From ${hotel.minPrice}
+                From ETB {hotel.minPrice?.toFixed(0)}
               </Typography>
               <Typography variant="caption" color="text.secondary">
                 per night
@@ -157,7 +157,7 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
             <strong>Available:</strong> {getPopularRoomTypes()}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            <strong>Price range:</strong> ${hotel.minPrice} - ${hotel.maxPrice} per night
+            <strong>Price range:</strong> ETB {hotel.minPrice?.toFixed(0)} - ETB {hotel.maxPrice?.toFixed(0)} per night
           </Typography>
         </Box>
 

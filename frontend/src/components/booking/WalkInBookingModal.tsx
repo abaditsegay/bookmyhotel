@@ -544,7 +544,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                           </Typography>
                         )}
                         <Typography variant="h6" color="primary.main">
-                          ${room.pricePerNight}/night
+                          ETB {room.pricePerNight?.toFixed(0)}/night
                         </Typography>
                       </CardContent>
                     </Card>
@@ -631,10 +631,10 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                     </Typography>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                       <Typography variant="body2">
-                        ${selectedRoom?.pricePerNight}/night × {Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24))} night{Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)) !== 1 ? 's' : ''}
+                        ETB {(selectedRoom?.pricePerNight || 0)?.toFixed(0)}/night × {Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24))} night{Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)) !== 1 ? 's' : ''}
                       </Typography>
                       <Typography variant="body2">
-                        ${calculateTotalAmount()}
+                        ETB {calculateTotalAmount()?.toFixed(0)}
                       </Typography>
                     </Box>
                     <Divider />

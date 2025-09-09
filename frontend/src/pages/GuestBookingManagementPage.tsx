@@ -455,7 +455,7 @@ const GuestBookingManagementPage: React.FC = () => {
                     <strong>Duration:</strong> {nights} night{nights !== 1 ? 's' : ''}
                   </Typography>
                   <Typography variant="body1" color="primary">
-                    <strong>Total Amount:</strong> ETB {(booking.totalAmount * 55).toFixed(0)}
+                    <strong>Total Amount:</strong> ETB {booking.totalAmount?.toFixed(0)}
                   </Typography>
                 </CardContent>
               </Card>
@@ -482,7 +482,7 @@ const GuestBookingManagementPage: React.FC = () => {
                     <strong>Room Assignment:</strong> Room will be assigned at check-in
                   </Typography>
                   <Typography variant="body1">
-                    <strong>Rate:</strong> ETB {(booking.pricePerNight * 55).toFixed(0)}/night
+                    <strong>Rate:</strong> ETB {booking.pricePerNight?.toFixed(0)}/night
                   </Typography>
                 </CardContent>
               </Card>

@@ -216,19 +216,19 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                     </td>
                     <td>${item.productSku}</td>
                     <td>${item.quantity}</td>
-                    <td>ETB ${(item.unitPrice * 55).toFixed(0)} ($${item.unitPrice.toFixed(2)})</td>
-                    <td>ETB ${(item.unitPrice * item.quantity * 55).toFixed(0)} ($${(item.unitPrice * item.quantity).toFixed(2)})</td>
+                    <td>ETB ${item.unitPrice?.toFixed(0)}</td>
+                    <td>ETB ${(item.unitPrice * item.quantity)?.toFixed(0)}</td>
                   </tr>
                 `).join('')}
                 ${order.taxAmount > 0 ? `
                   <tr>
                     <td colspan="4"><strong>Tax</strong></td>
-                    <td><strong>ETB ${(order.taxAmount * 55).toFixed(0)} ($${order.taxAmount.toFixed(2)})</strong></td>
+                    <td><strong>ETB ${order.taxAmount?.toFixed(0)}</strong></td>
                   </tr>
                 ` : ''}
                 <tr class="total-row">
                   <td colspan="4"><strong>TOTAL</strong></td>
-                  <td><strong>ETB ${(order.totalAmount * 55).toFixed(0)} ($${order.totalAmount.toFixed(2)})</strong></td>
+                  <td><strong>ETB ${order.totalAmount?.toFixed(0)}</strong></td>
                 </tr>
               </tbody>
             </table>
@@ -435,7 +435,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                     <TableCell align="center">{item.quantity}</TableCell>
                     <TableCell align="right">
                       <Typography variant="body2">
-                        ETB {(item.unitPrice * 55).toFixed(0)}
+                        ETB {item.unitPrice?.toFixed(0)}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
                         (${item.unitPrice.toFixed(2)})
@@ -443,10 +443,10 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                     </TableCell>
                     <TableCell align="right">
                       <Typography variant="body2">
-                        ETB {(item.unitPrice * item.quantity * 55).toFixed(0)}
+                        ETB {(item.unitPrice * item.quantity)?.toFixed(0)}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
-                        (${(item.unitPrice * item.quantity).toFixed(2)})
+                        (ETB {(item.unitPrice * item.quantity)?.toFixed(2)})
                       </Typography>
                     </TableCell>
                   </TableRow>
@@ -458,7 +458,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                     <TableCell colSpan={4}><strong>Tax</strong></TableCell>
                     <TableCell align="right">
                       <Typography variant="body2">
-                        <strong>ETB {(order.taxAmount * 55).toFixed(0)}</strong>
+                        <strong>ETB {order.taxAmount?.toFixed(0)}</strong>
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
                         (${order.taxAmount.toFixed(2)})
@@ -476,7 +476,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                   </TableCell>
                   <TableCell align="right">
                     <Typography variant="h6" sx={{ color: 'primary.contrastText' }}>
-                      <strong>ETB {(order.totalAmount * 55).toFixed(0)}</strong>
+                      <strong>ETB {order.totalAmount?.toFixed(0)}</strong>
                     </Typography>
                     <Typography variant="caption" sx={{ color: 'primary.contrastText', opacity: 0.8 }}>
                       (${order.totalAmount.toFixed(2)})

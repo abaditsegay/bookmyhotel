@@ -97,8 +97,8 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                 <tr>
                   <td>Room Charges (${receipt.numberOfNights} nights)</td>
                   <td>${receipt.numberOfNights}</td>
-                  <td>$${(receipt.roomChargePerNight || 0).toFixed(2)}</td>
-                  <td>$${(receipt.totalRoomCharges || 0).toFixed(2)}</td>
+                  <td>ETB ${(receipt.roomChargePerNight || 0)?.toFixed(0)}</td>
+                  <td>ETB ${(receipt.totalRoomCharges || 0)?.toFixed(0)}</td>
                 </tr>
                 ${receipt.additionalCharges?.map(charge => {
                   const quantity = charge.quantity || 1;
@@ -111,8 +111,8 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                     <tr>
                       <td>${charge.description || 'N/A'}</td>
                       <td>${quantity}</td>
-                      <td>$${unitPrice.toFixed(2)}</td>
-                      <td>$${total.toFixed(2)}</td>
+                      <td>ETB ${unitPrice?.toFixed(0)}</td>
+                      <td>ETB ${total?.toFixed(0)}</td>
                     </tr>
                   `;
                 }).join('') || ''}
@@ -127,14 +127,14 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                     <tr>
                       <td>${tax.description || 'N/A'}</td>
                       <td>${quantity}</td>
-                      <td>$${unitPrice.toFixed(2)}</td>
-                      <td>$${total.toFixed(2)}</td>
+                      <td>ETB ${unitPrice?.toFixed(0)}</td>
+                      <td>ETB ${total?.toFixed(0)}</td>
                     </tr>
                   `;
                 }).join('') || ''}
                 <tr class="total-row">
                   <td colspan="3"><strong>Grand Total</strong></td>
-                  <td><strong>$${(receipt.grandTotal || 0).toFixed(2)}</strong></td>
+                  <td><strong>ETB ${(receipt.grandTotal || 0)?.toFixed(0)}</strong></td>
                 </tr>
               </tbody>
             </table>

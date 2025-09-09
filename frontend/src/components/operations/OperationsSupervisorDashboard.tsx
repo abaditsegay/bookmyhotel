@@ -409,7 +409,7 @@ const OperationsSupervisorDashboard: React.FC = () => {
                         Total Cost
                       </Typography>
                       <Typography variant="h6">
-                        ${stats.maintenance.totalCost.toFixed(2)}
+                        ETB {stats.maintenance.totalCost?.toFixed(0)}
                       </Typography>
                     </Grid>
                   </Grid>

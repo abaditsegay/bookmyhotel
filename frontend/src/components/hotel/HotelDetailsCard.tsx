@@ -131,7 +131,7 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
             
             <Box sx={{ textAlign: 'right', ml: 2 }}>
               <Typography variant="h5" color="success.main" sx={{ fontWeight: 'bold' }}>
-                From ${hotel.minPrice}
+                From ETB {hotel.minPrice?.toFixed(0)}
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 per night

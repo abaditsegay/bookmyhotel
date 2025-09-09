@@ -324,7 +324,7 @@ const RoomManagementTable: React.FC<RoomManagementTableProps> = ({ onRoomUpdate 
                     )}
                   </TableCell>
                   <TableCell>{room.capacity} guests</TableCell>
-                  <TableCell>${room.pricePerNight}</TableCell>
+                  <TableCell>ETB {room.pricePerNight?.toFixed(0)}</TableCell>
                   <TableCell>
                     <FormControlLabel
                       control={

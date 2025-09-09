@@ -33,10 +33,7 @@ import {
   Edit as EditIcon
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
-import { API_CONFIG } from '../../config/apiConfig';
-
-// Front desk specific API service
-const API_BASE_URL = API_CONFIG.SERVER_URL;
+import { buildApiUrl } from '../../config/apiConfig';
 
 interface RoomResponse {
   id: number;
@@ -94,7 +91,7 @@ const frontDeskRoomApi = {
         params.append('status', status);
       }
 
-      const response = await fetch(`${API_BASE_URL}/api/front-desk/rooms?${params.toString()}`, {
+      const response = await fetch(buildApiUrl(`/front-desk/rooms?${params.toString()}`), {
         method: 'GET',
         headers: getAuthHeaders(token),
       });
@@ -138,7 +135,7 @@ const frontDeskRoomApi = {
       }
 
       const response = await fetch(
-        `${API_BASE_URL}/api/front-desk/rooms/${roomId}/status?${params.toString()}`,
+        buildApiUrl(`/front-desk/rooms/${roomId}/status?${params.toString()}`),
         {
           method: 'PUT',
           headers: getAuthHeaders(token),
@@ -174,7 +171,7 @@ const frontDeskRoomApi = {
       }
 
       const response = await fetch(
-        `${API_BASE_URL}/api/front-desk/rooms/${roomId}/availability?${params.toString()}`,
+        buildApiUrl(`/front-desk/rooms/${roomId}/availability?${params.toString()}`),
         {
           method: 'PUT',
           headers: getAuthHeaders(token),
@@ -457,7 +454,7 @@ const FrontDeskRoomManagement: React.FC<FrontDeskRoomManagementProps> = ({ onRoo
                     )}
                   </TableCell>
                   <TableCell>{room.capacity} guests</TableCell>
-                  <TableCell>${room.pricePerNight}</TableCell>
+                  <TableCell>ETB {room.pricePerNight?.toFixed(0)}</TableCell>
                   <TableCell>
                     <FormControlLabel
                       control={

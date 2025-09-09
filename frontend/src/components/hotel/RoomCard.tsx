@@ -86,7 +86,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
           </Box>
           <Box sx={{ textAlign: 'right' }}>
             <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold' }}>
-              ${room.pricePerNight}
+              ETB {room.pricePerNight?.toFixed(0)}
             </Typography>
             <Typography variant="caption" color="text.secondary">
               per night

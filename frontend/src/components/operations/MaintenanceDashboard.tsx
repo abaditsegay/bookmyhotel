@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import TokenManager from '../../utils/tokenManager';
-import { API_CONFIG } from '../../config/apiConfig';
+import { buildApiUrl } from '../../config/apiConfig';
 import {
   Box,
   Typography,
@@ -41,9 +41,6 @@ import {
   PlayArrow as StartIcon,
   CheckCircle as CompleteIcon
 } from '@mui/icons-material';
-
-
-const API_BASE_URL = API_CONFIG.SERVER_URL;
 
 interface MaintenanceTask {
   id: number;
@@ -169,10 +166,10 @@ const MaintenanceDashboard: React.FC = () => {
       const hotelId = parseInt(currentUser.hotelId);
       
       // Choose endpoint based on user role
-      let endpoint = `${API_BASE_URL}/api/maintenance/tasks`;
+      let endpoint = buildApiUrl('/maintenance/tasks');
       if (isMaintenanceWorker) {
         // Maintenance workers only see their assigned tasks
-        endpoint = `${API_BASE_URL}/api/maintenance/my-tasks`;
+        endpoint = buildApiUrl('/maintenance/my-tasks');
       }
       
       // Load maintenance tasks from API
@@ -243,7 +240,7 @@ const MaintenanceDashboard: React.FC = () => {
       const hotelId = parseInt(currentUser.hotelId);
       
       // Load housekeeping staff that can do maintenance work
-      const response = await fetch(`${API_BASE_URL}/api/housekeeping/staff/hotel/${hotelId}`, {
+      const response = await fetch(buildApiUrl(`/housekeeping/staff/hotel/${hotelId}`), {
         headers: {
           'Content-Type': 'application/json',
           ...TokenManager.getAuthHeaders(),
@@ -319,7 +316,7 @@ const MaintenanceDashboard: React.FC = () => {
       
       console.log('Request body:', requestBody);
       
-      const response = await fetch(`${API_BASE_URL}/api/maintenance/tasks`, {
+      const response = await fetch(buildApiUrl('/maintenance/tasks'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -363,7 +360,7 @@ const MaintenanceDashboard: React.FC = () => {
     if (!selectedTaskId || !selectedStaffId) return;
     
     try {
-      const response = await fetch(`${API_BASE_URL}/api/maintenance/tasks/${selectedTaskId}/assign/${selectedStaffId}`, {
+      const response = await fetch(buildApiUrl(`/maintenance/tasks/${selectedTaskId}/assign/${selectedStaffId}`), {
         method: 'PUT',
         headers: TokenManager.getAuthHeaders()
       });
@@ -870,7 +867,7 @@ const MaintenanceDashboard: React.FC = () => {
               fullWidth
             />
             <TextField
-              label="Estimated Cost ($)"
+              label="Estimated Cost (ETB)"
               type="number"
               value={createTaskForm.estimatedCost}
               onChange={(e) => setCreateTaskForm({ ...createTaskForm, estimatedCost: e.target.value })}
@@ -939,7 +936,7 @@ const MaintenanceDashboard: React.FC = () => {
               fullWidth
             />
             <TextField
-              label="Actual Cost ($)"
+              label="Actual Cost (ETB)"
               type="number"
               value={actualCost}
               onChange={(e) => setActualCost(e.target.value)}

@@ -326,7 +326,7 @@ const BookingSearchPage: React.FC = () => {
                         Room {booking.roomNumber} - {booking.roomType}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        ${booking.pricePerNight} per night
+                        ETB {booking.pricePerNight?.toFixed(0)} per night
                       </Typography>
                     </Grid>
 

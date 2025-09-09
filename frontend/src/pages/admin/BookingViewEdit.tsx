@@ -276,9 +276,9 @@ const BookingViewEdit: React.FC = () => {
           
           let message = 'Booking updated successfully';
           if (result.data.additionalCharges && result.data.additionalCharges > 0) {
-            message += ` (Additional charges: $${result.data.additionalCharges})`;
+            message += ` (Additional charges: ETB ${result.data.additionalCharges?.toFixed(0)})`;
           } else if (result.data.refundAmount && result.data.refundAmount > 0) {
-            message += ` (Refund amount: ETB ${(result.data.refundAmount * 55).toFixed(0)})`;
+            message += ` (Refund amount: ETB ${result.data.refundAmount?.toFixed(0)})`;
           }
           setSuccess(message);
         } else {
@@ -929,7 +929,7 @@ const BookingViewEdit: React.FC = () => {
                         secondary={
                           <span>
                             <Typography component="span" variant="body2" color="text.primary">
-                              ETB {(room.pricePerNight * 55).toFixed(0)}/night
+                              ETB {room.pricePerNight?.toFixed(0)}/night
                             </Typography>
                             {room.description && (
                               <Typography component="span" variant="body2" sx={{ ml: 1 }}>

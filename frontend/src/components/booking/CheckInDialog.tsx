@@ -595,7 +595,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                                   Room {room.roomNumber} - {room.roomType}
                                 </Typography>
                                 <Chip 
-                                  label={`$${room.pricePerNight}/night`} 
+                                  label={`ETB ${room.pricePerNight?.toFixed(0)}/night`} 
                                   size="small" 
                                   color={selectedRoomId === room.id ? 'primary' : 'default'}
                                 />

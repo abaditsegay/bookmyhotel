@@ -169,7 +169,7 @@ const BookingManagementPage: React.FC = () => {
                   <strong>Check-out:</strong> {new Date(booking.checkOutDate).toLocaleDateString()}
                 </Typography>
                 <Typography variant="body1" sx={{ mb: 1 }}>
-                  <strong>Total Amount:</strong> ${booking.totalAmount?.toFixed(2)}
+                  <strong>Total Amount:</strong> ETB {booking.totalAmount?.toFixed(0)}
                 </Typography>
               </CardContent>
             </Card>

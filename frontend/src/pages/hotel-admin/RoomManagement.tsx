@@ -532,7 +532,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
                         </Typography>
                       </TableCell>
                       <TableCell>{room.capacity} guests</TableCell>
-                      <TableCell>${room.pricePerNight}</TableCell>
+                      <TableCell>ETB {room.pricePerNight?.toFixed(0)}</TableCell>
                       <TableCell>
                         <FormControlLabel
                           control={
@@ -662,7 +662,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
                         Type: {selectedRoom.roomType}
                       </Typography>
                       <Typography variant="body2" color="text.secondary" gutterBottom>
-                        Price per Night: ${selectedRoom.pricePerNight}
+                        Price per Night: ETB {selectedRoom.pricePerNight?.toFixed(0)}
                       </Typography>
                       <Typography variant="body2" color="text.secondary" gutterBottom>
                         Capacity: {selectedRoom.capacity} guests

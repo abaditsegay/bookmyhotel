@@ -245,12 +245,12 @@ const MaintenanceTaskCard: React.FC<MaintenanceTaskCardProps> = ({
             </Box>
             {task.estimatedCost && (
               <Typography variant="body2">
-                Estimated: ${task.estimatedCost.toFixed(2)}
+                Estimated: ETB {task.estimatedCost?.toFixed(0)}
               </Typography>
             )}
             {task.actualCost && (
               <Typography variant="body2">
-                Actual: ${task.actualCost.toFixed(2)}
+                Actual: ETB {task.actualCost?.toFixed(0)}
               </Typography>
             )}
           </Box>

@@ -227,10 +227,7 @@ const OrderManagement: React.FC = () => {
                 </TableCell>
                 <TableCell>
                   <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>
-                    ETB {(order.totalAmount * 55).toFixed(0)}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    ${order.totalAmount.toFixed(2)}
+                    ETB {order.totalAmount?.toFixed(0)}
                   </Typography>
                 </TableCell>
                 <TableCell>
@@ -346,13 +343,13 @@ const OrderManagement: React.FC = () => {
                               primary={
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                                   <span>{item.productName}</span>
-                                  <span>ETB {(item.unitPrice * item.quantity * 55).toFixed(0)}</span>
+                                  <span>ETB {(item.unitPrice * item.quantity)?.toFixed(0)}</span>
                                 </Box>
                               }
                               secondary={
                                 <Box>
                                   <Box component="span" sx={{ display: 'block', lineHeight: 1.43 }}>
-                                    Quantity: {item.quantity} × ETB {(item.unitPrice * 55).toFixed(0)}
+                                    Quantity: {item.quantity} × ETB {item.unitPrice?.toFixed(0)}
                                   </Box>
                                   <Box component="span" sx={{ display: 'block', fontSize: '0.75rem', lineHeight: 1.66 }}>
                                     SKU: {item.productSku}
@@ -374,7 +371,7 @@ const OrderManagement: React.FC = () => {
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <Typography variant="h6">Total:</Typography>
                       <Typography variant="h6" color="primary">
-                        ETB {(selectedOrder.totalAmount * 55).toFixed(0)} (${selectedOrder.totalAmount.toFixed(2)})
+                        ETB {selectedOrder.totalAmount?.toFixed(0)}
                       </Typography>
                     </Box>
                   </CardContent>

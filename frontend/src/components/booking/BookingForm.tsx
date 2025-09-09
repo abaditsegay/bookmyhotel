@@ -283,7 +283,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
             disabled={loading}
             sx={{ ml: 1 }}
           >
-            {loading ? 'Processing...' : `Book Now - $${totalAmount}`}
+            {loading ? 'Processing...' : `Book Now - ETB ${totalAmount?.toFixed(0)}`}
           </Button>
         </DialogActions>
       </Dialog>

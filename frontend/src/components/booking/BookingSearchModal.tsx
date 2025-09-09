@@ -328,7 +328,7 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
                     <Typography variant="body2" color="text.secondary">Total</Typography>
                   </Box>
                   <Typography variant="h6" color="primary.main" fontWeight="bold">
-                    ${booking.totalAmount}
+                    ETB {booking.totalAmount?.toFixed(0)}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
                     {calculateNights(booking.checkInDate, booking.checkOutDate)} nights

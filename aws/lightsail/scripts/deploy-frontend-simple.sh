@@ -62,10 +62,10 @@ server {
 
 server {
     listen 443 ssl;
-    server_name bookmyhotel.251solutions.com;
+    server_name bookmystay.251solutions.com;
 
-    ssl_certificate /etc/letsencrypt/live/bookmyhotel.251solutions.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/bookmyhotel.251solutions.com/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/bookmystay.251solutions.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/bookmystay.251solutions.com/privkey.pem;
 
     # Frontend React SPA
     location / {
@@ -94,7 +94,7 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
         
         # CORS headers
-        add_header Access-Control-Allow-Origin "https://bookmyhotel.251solutions.com" always;
+        add_header Access-Control-Allow-Origin "https://bookmystay.251solutions.com" always;
         add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS" always;
         add_header Access-Control-Allow-Headers "Origin, X-Requested-With, Content-Type, Accept, Authorization" always;
         add_header Access-Control-Allow-Credentials "true" always;
@@ -113,7 +113,7 @@ sudo nginx -t && sudo systemctl reload nginx
 rm -f /tmp/frontend-build.tar.gz
 
 echo "✅ Frontend deployment completed successfully!"
-echo "🌐 Access your application at: https://bookmyhotel.251solutions.com"
+echo "🌐 Access your application at: https://bookmystay.251solutions.com"
 EOF
 
 # Step 5: Clean up local build artifacts
@@ -122,7 +122,7 @@ rm -f build/frontend-build.tar.gz
 
 echo ""
 echo "🎉 Deployment completed successfully!"
-echo "🌐 Your application is available at: https://bookmyhotel.251solutions.com"
+echo "🌐 Your application is available at: https://bookmystay.251solutions.com"
 echo "📝 Login credentials:"
 echo "   - Admin: admin@bookmyhotel.com / Admin@123"
 echo "   - Manager: manager@hotel1.com / Manager@123"

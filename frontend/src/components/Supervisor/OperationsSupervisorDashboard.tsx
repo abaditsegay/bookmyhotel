@@ -29,10 +29,8 @@ import HousekeepingDashboard from '../operations/HousekeepingDashboard';
 import MaintenanceDashboard from '../operations/MaintenanceDashboard';
 import StaffDashboard from '../operations/StaffDashboard';
 import TokenManager from '../../utils/tokenManager';
-import { API_CONFIG } from '../../config/apiConfig';
 import { useTenant } from '../../contexts/TenantContext';
-
-const API_BASE_URL = API_CONFIG.SERVER_URL;
+import { buildApiUrl } from '../../config/apiConfig';
 
 interface OperationsStats {
   housekeeping: {
@@ -83,7 +81,7 @@ const OperationsSupervisorDashboard: React.FC = () => {
   const loadOperationsStats = useCallback(async () => {
     try {
       // Load housekeeping tasks
-      const housekeepingResponse = await fetch(`${API_BASE_URL}/api/housekeeping/tasks`, {
+      const housekeepingResponse = await fetch(buildApiUrl('/housekeeping/tasks'), {
         headers: {
           ...TokenManager.getAuthHeaders(),
           'X-Tenant-ID': tenant?.id || ''
@@ -91,7 +89,7 @@ const OperationsSupervisorDashboard: React.FC = () => {
       });
       
       // Load maintenance tasks  
-      const maintenanceResponse = await fetch(`${API_BASE_URL}/api/maintenance/tasks`, {
+      const maintenanceResponse = await fetch(buildApiUrl('/maintenance/tasks'), {
         headers: {
           ...TokenManager.getAuthHeaders(),
           'X-Tenant-ID': tenant?.id || ''
@@ -153,7 +151,7 @@ const OperationsSupervisorDashboard: React.FC = () => {
 
   const loadStaffPerformance = useCallback(async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/housekeeping/staff`, {
+      const response = await fetch(buildApiUrl('/housekeeping/staff'), {
         headers: {
           ...TokenManager.getAuthHeaders(),
           'X-Tenant-ID': tenant?.id || ''
@@ -182,13 +180,13 @@ const OperationsSupervisorDashboard: React.FC = () => {
     try {
       // Get recent tasks from both housekeeping and maintenance
       const [housekeepingResponse, maintenanceResponse] = await Promise.all([
-        fetch(`${API_BASE_URL}/api/housekeeping/tasks`, {
+        fetch(buildApiUrl('/housekeeping/tasks'), {
           headers: {
             ...TokenManager.getAuthHeaders(),
             'X-Tenant-ID': tenant?.id || ''
           }
         }),
-        fetch(`${API_BASE_URL}/api/maintenance/tasks`, {
+        fetch(buildApiUrl('/maintenance/tasks'), {
           headers: {
             ...TokenManager.getAuthHeaders(),
             'X-Tenant-ID': tenant?.id || ''
@@ -449,7 +447,7 @@ const OperationsSupervisorDashboard: React.FC = () => {
                         Total Cost
                       </Typography>
                       <Typography variant="body1" sx={{ fontWeight: 'bold', lineHeight: 1.2 }}>
-                        ${stats.maintenance.totalCost.toFixed(2)}
+                        ETB {stats.maintenance.totalCost?.toFixed(0)}
                       </Typography>
                     </Grid>
                   </Grid>

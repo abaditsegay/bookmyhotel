@@ -377,10 +377,10 @@ const ProductManagement: React.FC = () => {
                 </TableCell>
                 <TableCell>
                   <Typography variant="subtitle2">
-                    ETB {(product.price * 55).toFixed(0)}
+                    ETB {product.price?.toFixed(0)}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    ETB {(product.price * 55).toFixed(0)}
+                    ETB {product.price?.toFixed(0)}
                   </Typography>
                 </TableCell>
                 <TableCell>
@@ -620,7 +620,7 @@ const ProductManagement: React.FC = () => {
                 <strong>Category:</strong> {productToDelete.category.replace('_', ' ')}
               </Typography>
               <Typography variant="body2" color="text.secondary" gutterBottom>
-                <strong>Price:</strong> ETB {(productToDelete.price * 55).toFixed(0)}
+                <strong>Price:</strong> ETB {productToDelete.price?.toFixed(0)}
               </Typography>
               <Typography variant="body2" color="text.secondary" gutterBottom>
                 <strong>Stock:</strong> {productToDelete.stockQuantity} units

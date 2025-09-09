@@ -397,7 +397,7 @@ const BookingPage: React.FC = () => {
             </Grid>
             <Grid item xs={12} sm={6}>
               <Typography variant="body2">
-                <strong>Price per night:</strong> ETB {(roomData.pricePerNight * 55).toFixed(0)}
+                <strong>Price per night:</strong> ETB {roomData.pricePerNight?.toFixed(0)}
               </Typography>
               {nights > 0 && (
                 <>
@@ -405,7 +405,7 @@ const BookingPage: React.FC = () => {
                     <strong>Nights:</strong> {nights}
                   </Typography>
                   <Typography variant="h6" component="div" color="primary.main">
-                    <strong>Total: ETB {(totalAmount * 55).toFixed(0)}</strong>
+                    <strong>Total: ETB {totalAmount?.toFixed(0)}</strong>
                   </Typography>
                 </>
               )}
@@ -741,7 +741,7 @@ const BookingPage: React.FC = () => {
                         </Grid>
                         <Grid item xs={12}>
                           <Typography variant="body2" color="text.secondary">
-                            <strong>Amount to Transfer:</strong> ETB {(totalAmount * 55).toFixed(0)}
+                            <strong>Amount to Transfer:</strong> ETB {totalAmount?.toFixed(0)}
                           </Typography>
                         </Grid>
                       </Grid>
@@ -770,7 +770,7 @@ const BookingPage: React.FC = () => {
                           <li>Payment is due upon check-in at the front desk</li>
                           <li>Accepted payment methods: Cash, Credit Card, Debit Card</li>
                           <li>Please bring a valid ID for check-in</li>
-                          <li>Total amount due: <strong>ETB {(totalAmount * 55).toFixed(0)}</strong></li>
+                          <li>Total amount due: <strong>ETB {totalAmount?.toFixed(0)}</strong></li>
                         </Typography>
                       </Box>
                     </Paper>
@@ -832,7 +832,7 @@ const BookingPage: React.FC = () => {
                               • Limits: 10 - 100,000 ETB
                             </Typography>
                             <Typography variant="caption" display="block">
-                              • Amount: ETB {(totalAmount * 55).toFixed(0)}
+                              • Amount: ETB {totalAmount?.toFixed(0)}
                             </Typography>
                           </Box>
                         </Grid>
@@ -907,7 +907,7 @@ const BookingPage: React.FC = () => {
                               • Limits: 5 - 50,000 ETB
                             </Typography>
                             <Typography variant="caption" display="block">
-                              • Amount: ETB {(totalAmount * 55).toFixed(0)}
+                              • Amount: ETB {totalAmount?.toFixed(0)}
                             </Typography>
                           </Box>
                         </Grid>
@@ -939,7 +939,7 @@ const BookingPage: React.FC = () => {
               size="large"
               sx={{ minWidth: 150 }}
             >
-              {loading ? 'Booking...' : `Book Now - ETB ${(totalAmount * 55).toFixed(0)}`}
+              {loading ? 'Booking...' : `Book Now - ETB ${totalAmount?.toFixed(0)}`}
             </Button>
           </Box>
         </form>

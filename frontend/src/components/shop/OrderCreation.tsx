@@ -373,7 +373,7 @@ const OrderCreation: React.FC = () => {
                             size="small"
                           />
                           <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                            ETB {(product.price * 55).toFixed(0)}
+                            ETB {product.price?.toFixed(0)}
                           </Typography>
                         </Box>
                         <Typography variant="caption" color="text.secondary">
@@ -526,7 +526,7 @@ const OrderCreation: React.FC = () => {
                             </TableCell>
                             <TableCell align="right">
                               <Typography variant="body2">
-                                ETB {(item.product.price * item.quantity * 55).toFixed(0)}
+                                ETB {(item.product.price * item.quantity)?.toFixed(0)}
                               </Typography>
                             </TableCell>
                             <TableCell align="center">
@@ -566,7 +566,7 @@ const OrderCreation: React.FC = () => {
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                 <Typography variant="h6">Total:</Typography>
                 <Typography variant="h6" color="primary">
-                  ETB {(calculateTotal() * 55).toFixed(0)}
+                  ETB {calculateTotal()?.toFixed(0)}
                 </Typography>
               </Box>
               <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center', display: 'block', mb: 2 }}>
