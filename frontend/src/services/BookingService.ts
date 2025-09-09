@@ -78,9 +78,9 @@ export class BookingService {
   }
 
   static formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-ET', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'ETB',
     }).format(amount);
   }
 

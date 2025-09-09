@@ -294,7 +294,7 @@ export const formatDuration = (minutes: number): string => {
 export const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: 'USD',
+    currency: 'ETB',
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(amount);

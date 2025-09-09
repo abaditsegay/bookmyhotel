@@ -223,7 +223,7 @@ const FindBookingPage: React.FC = () => {
                     Total Amount
                   </Typography>
                   <Typography variant="body1" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
-                    ${booking.totalAmount}
+                    ETB {(booking.totalAmount * 55).toFixed(0)}
                   </Typography>
                 </Box>
                 

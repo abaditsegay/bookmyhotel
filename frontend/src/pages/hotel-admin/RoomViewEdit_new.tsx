@@ -150,7 +150,7 @@ const RoomViewEdit: React.FC = () => {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD'
+      currency: 'ETB'
     }).format(amount);
   };
 
@@ -341,7 +341,7 @@ const RoomViewEdit: React.FC = () => {
                       disabled={!isEditing}
                       variant={isEditing ? 'outlined' : 'filled'}
                       InputProps={{
-                        startAdornment: '$',
+                        startAdornment: 'ETB ',
                       }}
                     />
                   </Grid>

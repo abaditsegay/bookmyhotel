@@ -852,7 +852,7 @@ public class BookingService {
 
         PaymentIntentCreateParams params = PaymentIntentCreateParams.builder()
                 .setAmount(amount.multiply(BigDecimal.valueOf(100)).longValue()) // Convert to cents
-                .setCurrency("usd")
+                .setCurrency("etb")
                 .setPaymentMethod(paymentMethodId)
                 .setConfirm(true)
                 .setReturnUrl("https://your-website.com/return")
@@ -1387,10 +1387,10 @@ public class BookingService {
             if (additionalCharges.compareTo(BigDecimal.ZERO) > 0) {
                 // For now, we'll mark as pending payment - in a real system you'd process
                 // payment here
-                response.setMessage("Booking modified. Additional payment of $" + additionalCharges + " is required.");
+                response.setMessage("Booking modified. Additional payment of ETB " + additionalCharges + " is required.");
             } else if (refundAmount.compareTo(BigDecimal.ZERO) > 0) {
                 // Process refund - in a real system you'd process the refund here
-                response.setMessage("Booking modified. Refund of $" + refundAmount + " will be processed.");
+                response.setMessage("Booking modified. Refund of ETB " + refundAmount + " will be processed.");
             }
 
             return response;
@@ -1678,9 +1678,9 @@ public class BookingService {
 
             // Handle payment processing if there are additional charges
             if (additionalCharges.compareTo(BigDecimal.ZERO) > 0) {
-                response.setMessage("Booking modified. Additional payment of $" + additionalCharges + " is required.");
+                response.setMessage("Booking modified. Additional payment of ETB " + additionalCharges + " is required.");
             } else if (refundAmount.compareTo(BigDecimal.ZERO) > 0) {
-                response.setMessage("Booking modified. Refund of $" + refundAmount + " will be processed.");
+                response.setMessage("Booking modified. Refund of ETB " + refundAmount + " will be processed.");
             }
 
             return response;

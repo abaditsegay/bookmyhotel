@@ -278,7 +278,7 @@ const BookingViewEdit: React.FC = () => {
           if (result.data.additionalCharges && result.data.additionalCharges > 0) {
             message += ` (Additional charges: $${result.data.additionalCharges})`;
           } else if (result.data.refundAmount && result.data.refundAmount > 0) {
-            message += ` (Refund amount: $${result.data.refundAmount})`;
+            message += ` (Refund amount: ETB ${(result.data.refundAmount * 55).toFixed(0)})`;
           }
           setSuccess(message);
         } else {
@@ -471,7 +471,7 @@ const BookingViewEdit: React.FC = () => {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD'
+      currency: 'ETB'
     }).format(amount);
   };
 
@@ -929,7 +929,7 @@ const BookingViewEdit: React.FC = () => {
                         secondary={
                           <span>
                             <Typography component="span" variant="body2" color="text.primary">
-                              ${room.pricePerNight}/night
+                              ETB {(room.pricePerNight * 55).toFixed(0)}/night
                             </Typography>
                             {room.description && (
                               <Typography component="span" variant="body2" sx={{ ml: 1 }}>

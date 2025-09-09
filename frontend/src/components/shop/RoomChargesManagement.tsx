@@ -165,9 +165,9 @@ const RoomChargesManagement: React.FC<RoomChargesProps> = ({ hotelId }) => {
   };
 
   const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-ET', {
       style: 'currency',
-      currency: 'USD'
+      currency: 'ETB'
     }).format(amount);
   };
 
@@ -468,7 +468,7 @@ const RoomChargesManagement: React.FC<RoomChargesProps> = ({ hotelId }) => {
                 min: 0
               }}
               InputProps={{
-                startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                startAdornment: <InputAdornment position="start">ETB</InputAdornment>,
               }}
             />
             <FormControl fullWidth required>

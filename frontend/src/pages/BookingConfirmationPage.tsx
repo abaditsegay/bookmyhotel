@@ -508,7 +508,7 @@ const BookingConfirmationPage: React.FC = () => {
                   Total Amount
                 </Typography>
                 <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#2e7d32' }}>
-                  ${booking.totalAmount}
+                  ETB {(booking.totalAmount * 55).toFixed(0)}
                 </Typography>
               </CardContent>
             </Card>
@@ -545,7 +545,7 @@ const BookingConfirmationPage: React.FC = () => {
                   <strong>Room Type:</strong> {booking.roomType}
                 </Typography>
                 <Typography variant="body1" sx={{ mb: 1 }}>
-                  <strong>Rate:</strong> ${booking.pricePerNight}/night
+                  <strong>Rate:</strong> ETB {(booking.pricePerNight * 55).toFixed(0)}/night
                 </Typography>
                 <Typography variant="body1" sx={{ color: '#2e7d32', fontWeight: 'bold' }}>
                   <strong>Room Assignment:</strong> Room will be assigned at check-in

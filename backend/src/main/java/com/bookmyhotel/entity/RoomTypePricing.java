@@ -46,7 +46,7 @@ public class RoomTypePricing extends HotelScopedEntity {
     private Boolean isActive = true;
 
     @Column(name = "currency", length = 3)
-    private String currency = "USD";
+    private String currency = "ETB";
 
     @Column(name = "effective_from")
     private java.time.LocalDate effectiveFrom;

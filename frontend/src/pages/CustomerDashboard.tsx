@@ -43,7 +43,7 @@ export const CustomerDashboard: React.FC = () => {
       description: 'The city that never sleeps',
       hotels: '1,200+ hotels',
       rating: 4.5,
-      startingPrice: '$149'
+      startingPrice: 'ETB 8,195'
     },
     {
       id: 2,
@@ -52,7 +52,7 @@ export const CustomerDashboard: React.FC = () => {
       description: 'City of lights and romance',
       hotels: '800+ hotels',
       rating: 4.7,
-      startingPrice: '$89'
+      startingPrice: 'ETB 4,895'
     },
     {
       id: 3,
@@ -61,7 +61,7 @@ export const CustomerDashboard: React.FC = () => {
       description: 'Modern culture meets tradition',
       hotels: '600+ hotels',
       rating: 4.6,
-      startingPrice: '$112'
+      startingPrice: 'ETB 6,160'
     },
     {
       id: 4,
@@ -70,7 +70,7 @@ export const CustomerDashboard: React.FC = () => {
       description: 'Rich history and royal heritage',
       hotels: '900+ hotels',
       rating: 4.4,
-      startingPrice: '$95'
+      startingPrice: 'ETB 5,225'
     }
   ];
 

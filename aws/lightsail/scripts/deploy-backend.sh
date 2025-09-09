@@ -125,7 +125,7 @@ StandardError=journal
 SyslogIdentifier=bookmyhotel-backend
 
 # Environment variables
-Environment=JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+Environment=JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
 Environment=SPRING_PROFILES_ACTIVE=prod
 
 [Install]

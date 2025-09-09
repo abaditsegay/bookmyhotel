@@ -380,7 +380,7 @@ const ProductManagement: React.FC = () => {
                     ETB {(product.price * 55).toFixed(0)}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    ${product.price.toFixed(2)}
+                    ETB {(product.price * 55).toFixed(0)}
                   </Typography>
                 </TableCell>
                 <TableCell>
@@ -517,19 +517,19 @@ const ProductManagement: React.FC = () => {
                 onChange={(e) => setFormData(prev => ({ ...prev, price: parseFloat(e.target.value) || 0 }))}
                 required
                 InputProps={{
-                  startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                  startAdornment: <InputAdornment position="start">ETB</InputAdornment>,
                 }}
               />
             </Grid>
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
-                label="Cost Price (USD)"
+                label="Cost Price (ETB)"
                 type="number"
                 value={formData.costPrice}
                 onChange={(e) => setFormData(prev => ({ ...prev, costPrice: parseFloat(e.target.value) || 0 }))}
                 InputProps={{
-                  startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                  startAdornment: <InputAdornment position="start">ETB</InputAdornment>,
                 }}
               />
             </Grid>
@@ -620,7 +620,7 @@ const ProductManagement: React.FC = () => {
                 <strong>Category:</strong> {productToDelete.category.replace('_', ' ')}
               </Typography>
               <Typography variant="body2" color="text.secondary" gutterBottom>
-                <strong>Price:</strong> ETB {(productToDelete.price * 55).toFixed(0)} (${productToDelete.price.toFixed(2)})
+                <strong>Price:</strong> ETB {(productToDelete.price * 55).toFixed(0)}
               </Typography>
               <Typography variant="body2" color="text.secondary" gutterBottom>
                 <strong>Stock:</strong> {productToDelete.stockQuantity} units

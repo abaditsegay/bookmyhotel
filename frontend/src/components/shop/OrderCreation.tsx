@@ -570,7 +570,7 @@ const OrderCreation: React.FC = () => {
                 </Typography>
               </Box>
               <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center', display: 'block', mb: 2 }}>
-                (${calculateTotal().toFixed(2)} USD)
+                (ETB {calculateTotal().toFixed(2)})
               </Typography>
 
               {/* Create Order Button */}

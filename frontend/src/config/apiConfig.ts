@@ -6,10 +6,10 @@
 // Environment variables with fallback to production server for AWS deployment
 export const API_CONFIG = {
   // Main API base URL - used for all backend API calls
-  BASE_URL: 'https://bookmystay.251solutions.com/managemyhotel/api',
+  BASE_URL: process.env.REACT_APP_API_URL || 'https://bookmyhotel.251solutions.com/managemyhotel/api',
   
   // Backend server URL (without /api suffix) - for direct server calls if needed
-  SERVER_URL: 'https://bookmystay.251solutions.com/managemyhotel',
+  SERVER_URL: process.env.REACT_APP_SERVER_URL || 'https://bookmyhotel.251solutions.com/managemyhotel',
   
   // Timeout for API calls (in milliseconds)
   REQUEST_TIMEOUT: 30000,

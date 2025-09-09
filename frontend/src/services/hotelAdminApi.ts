@@ -1046,7 +1046,7 @@ export const hotelAdminApi = {
               holidayMultiplier: 1.5,
               peakSeasonMultiplier: 1.3,
               isActive: true,
-              currency: 'USD'
+              currency: 'ETB'
             } 
           };
         }

@@ -427,7 +427,7 @@ public class EnhancedCostCalculationService {
      * Format currency for display
      */
     private String formatCurrency(BigDecimal amount) {
-        return String.format("$%.2f", amount);
+        return String.format("ETB %.2f", amount);
     }
     
     /**

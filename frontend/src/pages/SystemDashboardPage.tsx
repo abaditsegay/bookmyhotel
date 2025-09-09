@@ -44,7 +44,7 @@ export const SystemDashboardPage: React.FC = () => {
     totalUsers: 0,
     totalTenants: 0,
     totalBookings: 0,
-    revenue: '$0',
+    revenue: 'ETB 0',
     loading: true
   });
 
@@ -91,7 +91,7 @@ export const SystemDashboardPage: React.FC = () => {
           totalUsers: usersCount,
           totalTenants: tenantsCount,
           totalBookings: 0, // This would need a separate endpoint
-          revenue: '$0', // This would need a separate endpoint
+          revenue: 'ETB 0', // This would need a separate endpoint
           loading: false
         });
       } catch (error) {
