@@ -2,8 +2,9 @@ package com.bookmyhotel.dto;
 
 import java.time.LocalDate;
 
+import com.bookmyhotel.entity.RoomType;
+
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 
 /**
  * Walk-in booking request DTO - Supports specific room assignment with
@@ -23,7 +24,7 @@ public class WalkInBookingRequest extends BookingRequest {
     }
 
     // Constructor for walk-in booking with specific room
-    public WalkInBookingRequest(Long hotelId, Long roomId, String roomType, LocalDate checkInDate,
+    public WalkInBookingRequest(Long hotelId, Long roomId, RoomType roomType, LocalDate checkInDate,
             LocalDate checkOutDate, Integer guests) {
         super(hotelId, roomType, checkInDate, checkOutDate, guests);
         this.roomId = roomId;

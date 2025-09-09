@@ -69,8 +69,25 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <Paper elevation={3} sx={{ p: 3, mb: 3 }}>
-        <Typography variant="h5" gutterBottom sx={{ mb: 3, fontWeight: 'bold' }}>
+      <Paper 
+        elevation={3} 
+        sx={{ 
+          p: { xs: 2, sm: 3 }, // Responsive padding
+          mb: 3,
+          width: '100%',
+          boxSizing: 'border-box', // Ensure padding doesn't cause overflow
+        }}
+      >
+        <Typography 
+          variant="h5" 
+          gutterBottom 
+          sx={{ 
+            mb: 3, 
+            fontWeight: 'bold',
+            fontSize: { xs: '1.25rem', sm: '1.5rem' }, // Responsive font size
+            textAlign: { xs: 'center', sm: 'left' } // Center on mobile
+          }}
+        >
           Find Your Perfect Stay
         </Typography>
         
@@ -147,7 +164,7 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
               />
             </Grid>
 
-            {/* Search Button */}
+            {/* Search Button - Mobile optimized */}
             <Grid item xs={12}>
               <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
                 <Button
@@ -157,12 +174,14 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
                   disabled={loading}
                   startIcon={<SearchIcon />}
                   sx={{
-                    px: 4,
+                    px: { xs: 3, sm: 4 }, // Responsive padding
                     py: 1.5,
                     borderRadius: 3,
-                    fontSize: '1.1rem',
+                    fontSize: { xs: '1rem', sm: '1.1rem' }, // Responsive font size
                     fontWeight: 'bold',
                     textTransform: 'none',
+                    width: { xs: '100%', sm: 'auto' }, // Full width on mobile
+                    maxWidth: { xs: '300px', sm: 'none' }, // Limit max width on mobile
                     background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
                     '&:hover': {
                       background: 'linear-gradient(45deg, #1976D2 30%, #1BA3D3 90%)',

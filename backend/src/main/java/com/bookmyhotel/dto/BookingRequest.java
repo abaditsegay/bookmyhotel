@@ -2,6 +2,8 @@ package com.bookmyhotel.dto;
 
 import java.time.LocalDate;
 
+import com.bookmyhotel.entity.RoomType;
+
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
@@ -15,7 +17,7 @@ public class BookingRequest {
     private Long hotelId;
 
     @NotNull(message = "Room type is required")
-    private String roomType;
+    private RoomType roomType;
 
     // Optional specific room ID for walk-in bookings with immediate assignment
     private Long roomId;
@@ -47,7 +49,7 @@ public class BookingRequest {
     }
 
     // Constructor for room type booking
-    public BookingRequest(Long hotelId, String roomType, LocalDate checkInDate, LocalDate checkOutDate,
+    public BookingRequest(Long hotelId, RoomType roomType, LocalDate checkInDate, LocalDate checkOutDate,
             Integer guests) {
         this.hotelId = hotelId;
         this.roomType = roomType;
@@ -65,11 +67,11 @@ public class BookingRequest {
         this.hotelId = hotelId;
     }
 
-    public String getRoomType() {
+    public RoomType getRoomType() {
         return roomType;
     }
 
-    public void setRoomType(String roomType) {
+    public void setRoomType(RoomType roomType) {
         this.roomType = roomType;
     }
 

@@ -31,6 +31,7 @@ import {
   Person as PersonIcon
 } from '@mui/icons-material';
 import { bookingApiService } from '../services/bookingApi';
+import { buildApiUrl } from '../config/apiConfig';
 
 interface BookingData {
   reservationId: number;
@@ -88,7 +89,7 @@ const GuestBookingManagementPage: React.FC = () => {
       setLoading(true);
       setErrorMessage('');
       
-      const response = await fetch(`/api/booking-management?token=${token}`);
+      const response = await fetch(buildApiUrl(`/booking-management?token=${token}`));
       
       if (!response.ok) {
         const errorText = await response.text();
