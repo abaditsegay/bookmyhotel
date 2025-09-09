@@ -28,6 +28,7 @@ import {
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { frontDeskApiService } from '../../services/frontDeskApi';
+import { ROOM_TYPES } from '../../constants/roomTypes';
 
 // Map BookingResponse from API to display format
 interface BookingData {
@@ -513,11 +514,11 @@ const FrontDeskBookingDetails: React.FC = () => {
                           onChange={(e) => handleFieldChange('roomType', e.target.value)}
                           label="Room Type"
                         >
-                          <MenuItem value="SINGLE">Single</MenuItem>
-                          <MenuItem value="DOUBLE">Double</MenuItem>
-                          <MenuItem value="SUITE">Suite</MenuItem>
-                          <MenuItem value="DELUXE">Deluxe</MenuItem>
-                          <MenuItem value="PRESIDENTIAL">Presidential</MenuItem>
+                          {ROOM_TYPES.map((roomType) => (
+                            <MenuItem key={roomType.value} value={roomType.value}>
+                              {roomType.value}
+                            </MenuItem>
+                          ))}
                         </Select>
                       </FormControl>
                     ) : (

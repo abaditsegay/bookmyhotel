@@ -39,6 +39,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useTenant } from '../../contexts/TenantContext';
 import { hotelAdminApi, RoomResponse } from '../../services/hotelAdminApi';
 import { frontDeskApiService } from '../../services/frontDeskApi';
+import { ROOM_TYPE_VALUES } from '../../constants/roomTypes';
 
 // Unified BookingData interface
 export interface BookingData {
@@ -88,7 +89,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
 
   // Room selection state
   const [availableRooms, setAvailableRooms] = useState<RoomResponse[]>([]);
-  const availableRoomTypes = ['SINGLE', 'DOUBLE', 'SUITE', 'DELUXE', 'PRESIDENTIAL'];
+  const availableRoomTypes = ROOM_TYPE_VALUES;
   const [roomDialogOpen, setRoomDialogOpen] = useState(false);
   const [loadingRooms, setLoadingRooms] = useState(false);
   const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
@@ -566,9 +567,9 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-ET', {
       style: 'currency',
-      currency: 'USD'
+      currency: 'ETB'
     }).format(amount);
   };
 

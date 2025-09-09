@@ -32,6 +32,7 @@ import {
 } from '@mui/icons-material';
 import { bookingApiService } from '../services/bookingApi';
 import { buildApiUrl } from '../config/apiConfig';
+import { ROOM_TYPES } from '../constants/roomTypes';
 
 interface BookingData {
   reservationId: number;
@@ -578,11 +579,11 @@ const GuestBookingManagementPage: React.FC = () => {
                 onChange={(e) => setModificationData({ ...modificationData, newRoomType: e.target.value })}
               >
                 <MenuItem value="">Select Room Type</MenuItem>
-                <MenuItem value="SINGLE">Single</MenuItem>
-                <MenuItem value="DOUBLE">Double</MenuItem>
-                <MenuItem value="DELUXE">Deluxe</MenuItem>
-                <MenuItem value="SUITE">Suite</MenuItem>
-                <MenuItem value="PRESIDENTIAL">Presidential</MenuItem>
+                {ROOM_TYPES.map((roomType) => (
+                  <MenuItem key={roomType.value} value={roomType.value}>
+                    {roomType.value}
+                  </MenuItem>
+                ))}
               </TextField>
             </Grid>
             <Grid item xs={12}>

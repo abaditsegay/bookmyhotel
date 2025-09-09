@@ -30,6 +30,7 @@ import {
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { hotelAdminApi, RoomResponse } from '../../services/hotelAdminApi';
+import { ROOM_TYPES } from '../../constants/roomTypes';
 
 const RoomViewEdit: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -279,11 +280,11 @@ const RoomViewEdit: React.FC = () => {
                           value={currentRoom?.roomType || ''}
                           onChange={(e) => handleFieldChange('roomType', e.target.value)}
                         >
-                          <MenuItem value="SINGLE">Single</MenuItem>
-                          <MenuItem value="DOUBLE">Double</MenuItem>
-                          <MenuItem value="SUITE">Suite</MenuItem>
-                          <MenuItem value="DELUXE">Deluxe</MenuItem>
-                          <MenuItem value="FAMILY">Family</MenuItem>
+                          {ROOM_TYPES.map((roomType) => (
+                            <MenuItem key={roomType.value} value={roomType.value}>
+                              {roomType.value}
+                            </MenuItem>
+                          ))}
                         </Select>
                       </FormControl>
                     ) : (

@@ -1387,7 +1387,8 @@ public class BookingService {
             if (additionalCharges.compareTo(BigDecimal.ZERO) > 0) {
                 // For now, we'll mark as pending payment - in a real system you'd process
                 // payment here
-                response.setMessage("Booking modified. Additional payment of ETB " + additionalCharges + " is required.");
+                response.setMessage(
+                        "Booking modified. Additional payment of ETB " + additionalCharges + " is required.");
             } else if (refundAmount.compareTo(BigDecimal.ZERO) > 0) {
                 // Process refund - in a real system you'd process the refund here
                 response.setMessage("Booking modified. Refund of ETB " + refundAmount + " will be processed.");
@@ -1678,7 +1679,8 @@ public class BookingService {
 
             // Handle payment processing if there are additional charges
             if (additionalCharges.compareTo(BigDecimal.ZERO) > 0) {
-                response.setMessage("Booking modified. Additional payment of ETB " + additionalCharges + " is required.");
+                response.setMessage(
+                        "Booking modified. Additional payment of ETB " + additionalCharges + " is required.");
             } else if (refundAmount.compareTo(BigDecimal.ZERO) > 0) {
                 response.setMessage("Booking modified. Refund of ETB " + refundAmount + " will be processed.");
             }

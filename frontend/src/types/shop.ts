@@ -272,8 +272,8 @@ export const ShopOrderUtils = {
   /**
    * Formats order amount with currency
    */
-  formatOrderAmount: (amount: number, currency: string = 'USD'): string => {
-    return new Intl.NumberFormat('en-US', {
+  formatOrderAmount: (amount: number, currency: string = 'ETB'): string => {
+    return new Intl.NumberFormat('en-ET', {
       style: 'currency',
       currency: currency
     }).format(amount);

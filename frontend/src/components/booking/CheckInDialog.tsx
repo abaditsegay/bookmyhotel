@@ -542,7 +542,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                               backgroundColor: index % 2 === 0 ? 'grey.50' : 'background.paper' 
                             }}
                           >
-                            {roomType} ({index + 1}/{roomTypeOptions.length})
+                            {roomType}
                           </MenuItem>
                         );
                       })}

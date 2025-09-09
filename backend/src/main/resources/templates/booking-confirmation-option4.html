@@ -479,11 +479,11 @@
                 <div class="total-section">
                     <div class="total-row">
                         <span class="total-label">Room Rate (per night)</span>
-                        <span class="total-value" th:text="'$' + ${booking.pricePerNight}"></span>
+                        <span class="total-value" th:text="'ETB ' + ${booking.pricePerNight}"></span>
                     </div>
                     <div class="total-row">
                         <span class="total-label">Total for <span th:text="${nights}"></span> nights</span>
-                        <span class="total-value" th:text="'$' + ${booking.totalAmount}"></span>
+                        <span class="total-value" th:text="'ETB ' + ${booking.totalAmount}"></span>
                     </div>
                 </div>
             </div>

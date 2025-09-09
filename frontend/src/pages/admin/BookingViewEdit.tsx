@@ -37,6 +37,7 @@ import {
 import { useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { hotelAdminApi, RoomResponse } from '../../services/hotelAdminApi';
+import { ROOM_TYPE_VALUES } from '../../constants/roomTypes';
 
 // Map BookingResponse from API to display format
 interface BookingData {
@@ -74,7 +75,7 @@ const BookingViewEdit: React.FC = () => {
 
   // Room selection state
   const [availableRooms, setAvailableRooms] = useState<RoomResponse[]>([]);
-  const availableRoomTypes = ['SINGLE', 'DOUBLE', 'SUITE', 'DELUXE', 'PRESIDENTIAL'];
+  const availableRoomTypes = ROOM_TYPE_VALUES;
   const [roomDialogOpen, setRoomDialogOpen] = useState(false);
   const [loadingRooms, setLoadingRooms] = useState(false);
   const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);

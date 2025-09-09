@@ -74,7 +74,7 @@ public class RoomTypePricingService {
         pricing.setHolidayPrice(dto.getHolidayPrice());
         pricing.setPeakSeasonPrice(dto.getPeakSeasonPrice());
         pricing.setIsActive(dto.getIsActive() != null ? dto.getIsActive() : true);
-        pricing.setCurrency(dto.getCurrency() != null ? dto.getCurrency() : "USD");
+        pricing.setCurrency(dto.getCurrency() != null ? dto.getCurrency() : "ETB");
         pricing.setDescription(dto.getDescription());
 
         if (pricing.getId() == null) {

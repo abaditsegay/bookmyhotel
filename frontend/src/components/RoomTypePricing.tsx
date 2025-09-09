@@ -41,15 +41,7 @@ import roomTypePricingService, {
   RoomTypePricingRequest, 
   RoomTypePricingResponse 
 } from '../services/roomTypePricingApi';
-
-const ROOM_TYPES = [
-  { value: 'STANDARD', label: 'Standard Room' },
-  { value: 'DELUXE', label: 'Deluxe Room' },
-  { value: 'SUITE', label: 'Suite' },
-  { value: 'FAMILY', label: 'Family Room' },
-  { value: 'ACCESSIBLE', label: 'Accessible Room' },
-  { value: 'PRESIDENTIAL', label: 'Presidential Suite' }
-];
+import { ROOM_TYPES } from '../constants/roomTypes';
 
 interface RoomTypePricingProps {
   onPricingUpdate?: () => void;
@@ -72,7 +64,7 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
     holidayMultiplier: 1.5,
     peakSeasonMultiplier: 1.3,
     isActive: true,
-    currency: 'USD',
+    currency: 'ETB',
     description: ''
   });
 
@@ -126,7 +118,7 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
         holidayMultiplier: 1.5,
         peakSeasonMultiplier: 1.3,
         isActive: true,
-        currency: 'USD',
+        currency: 'ETB',
         description: ''
       });
     }
@@ -224,9 +216,9 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-ET', {
       style: 'currency',
-      currency: 'USD'
+      currency: 'ETB'
     }).format(amount);
   };
 
@@ -530,7 +522,7 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
                 label="Currency"
                 value={formData.currency}
                 onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
-                placeholder="USD"
+                placeholder="ETB"
               />
             </Grid>
             <Grid item xs={12} md={6}>

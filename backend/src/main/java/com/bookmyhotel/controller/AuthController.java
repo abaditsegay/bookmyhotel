@@ -24,10 +24,10 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
-    
+
     @Autowired
     private AuthService authService;
-    
+
     /**
      * User registration endpoint for guest users
      */
@@ -44,7 +44,7 @@ public class AuthController {
                     .body("Registration failed: " + e.getMessage());
         }
     }
-    
+
     /**
      * User login endpoint
      */

@@ -209,9 +209,9 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-ET', {
       style: 'currency',
-      currency: 'USD'
+      currency: 'ETB'
     }).format(amount);
   };
 

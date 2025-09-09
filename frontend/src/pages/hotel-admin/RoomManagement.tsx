@@ -47,6 +47,7 @@ import { useNavigate } from 'react-router-dom';
 import { hotelAdminApi, RoomResponse, RoomCreateRequest, RoomUpdateRequest } from '../../services/hotelAdminApi';
 import { useAuth } from '../../contexts/AuthContext';
 import RoomTypePricing from '../../components/RoomTypePricing';
+import { ROOM_TYPE_VALUES } from '../../constants/roomTypes';
 
 interface RoomFilters {
   roomNumber: string;
@@ -105,7 +106,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
     description: '',
   });
 
-  const roomTypes = ['STANDARD', 'DELUXE', 'SUITE', 'EXECUTIVE', 'PRESIDENTIAL'];
+  const roomTypes = ROOM_TYPE_VALUES;
 
   // Room status options with colors (matching front desk)
   const ROOM_STATUS_OPTIONS = [
