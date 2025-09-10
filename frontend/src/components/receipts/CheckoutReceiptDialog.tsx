@@ -253,8 +253,8 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                 <TableRow>
                   <TableCell>Room Charges ({receipt.numberOfNights} nights)</TableCell>
                   <TableCell align="center">{receipt.numberOfNights}</TableCell>
-                  <TableCell align="right">${(receipt.roomChargePerNight || 0).toFixed(2)}</TableCell>
-                  <TableCell align="right">${(receipt.totalRoomCharges || 0).toFixed(2)}</TableCell>
+                  <TableCell align="right">ETB {(receipt.roomChargePerNight || 0).toFixed(0)}</TableCell>
+                  <TableCell align="right">ETB {(receipt.totalRoomCharges || 0).toFixed(0)}</TableCell>
                 </TableRow>
 
                 {/* Additional Charges (Shop Orders, etc.) */}
@@ -269,8 +269,8 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                     <TableRow key={`additional-${index}`}>
                       <TableCell>{charge.description || 'N/A'}</TableCell>
                       <TableCell align="center">{quantity}</TableCell>
-                      <TableCell align="right">${unitPrice.toFixed(2)}</TableCell>
-                      <TableCell align="right">${total.toFixed(2)}</TableCell>
+                      <TableCell align="right">ETB {unitPrice.toFixed(0)}</TableCell>
+                      <TableCell align="right">ETB {total.toFixed(0)}</TableCell>
                     </TableRow>
                   );
                 }) || []}
@@ -287,8 +287,8 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                     <TableRow key={`tax-${index}`}>
                       <TableCell>{tax.description || 'N/A'}</TableCell>
                       <TableCell align="center">{quantity}</TableCell>
-                      <TableCell align="right">${unitPrice.toFixed(2)}</TableCell>
-                      <TableCell align="right">${total.toFixed(2)}</TableCell>
+                      <TableCell align="right">ETB {unitPrice.toFixed(0)}</TableCell>
+                      <TableCell align="right">ETB {total.toFixed(0)}</TableCell>
                     </TableRow>
                   );
                 }) || []}
@@ -298,14 +298,14 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                   <TableCell><strong>Room Subtotal</strong></TableCell>
                   <TableCell align="center">-</TableCell>
                   <TableCell align="center">-</TableCell>
-                  <TableCell align="right"><strong>${(receipt.totalRoomCharges || 0).toFixed(2)}</strong></TableCell>
+                  <TableCell align="right"><strong>ETB {(receipt.totalRoomCharges || 0).toFixed(0)}</strong></TableCell>
                 </TableRow>
                 {(receipt.totalAdditionalCharges || 0) > 0 && (
                   <TableRow sx={{ backgroundColor: 'grey.50' }}>
                     <TableCell><strong>Additional Charges Subtotal</strong></TableCell>
                     <TableCell align="center">-</TableCell>
                     <TableCell align="center">-</TableCell>
-                    <TableCell align="right"><strong>${(receipt.totalAdditionalCharges || 0).toFixed(2)}</strong></TableCell>
+                    <TableCell align="right"><strong>ETB {(receipt.totalAdditionalCharges || 0).toFixed(0)}</strong></TableCell>
                   </TableRow>
                 )}
                 {(receipt.totalTaxesAndFees || 0) > 0 && (
@@ -313,7 +313,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                     <TableCell><strong>Taxes & Fees Subtotal</strong></TableCell>
                     <TableCell align="center">-</TableCell>
                     <TableCell align="center">-</TableCell>
-                    <TableCell align="right"><strong>${(receipt.totalTaxesAndFees || 0).toFixed(2)}</strong></TableCell>
+                    <TableCell align="right"><strong>ETB {(receipt.totalTaxesAndFees || 0).toFixed(0)}</strong></TableCell>
                   </TableRow>
                 )}
 
@@ -322,7 +322,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                   <TableCell><strong>GRAND TOTAL</strong></TableCell>
                   <TableCell align="center">-</TableCell>
                   <TableCell align="center">-</TableCell>
-                  <TableCell align="right"><strong>${(receipt.grandTotal || 0).toFixed(2)}</strong></TableCell>
+                  <TableCell align="right"><strong>ETB {(receipt.grandTotal || 0).toFixed(0)}</strong></TableCell>
                 </TableRow>
               </TableBody>
             </Table>

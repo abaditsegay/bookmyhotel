@@ -318,7 +318,6 @@ const HotelBookings: React.FC<HotelBookingsProps> = ({
                 <TableCell><strong>Room</strong></TableCell>
                 <TableCell><strong>Check-in</strong></TableCell>
                 <TableCell><strong>Check-out</strong></TableCell>
-                <TableCell><strong>Amount</strong></TableCell>
                 <TableCell><strong>Status</strong></TableCell>
                 {showActions && <TableCell><strong>Actions</strong></TableCell>}
               </TableRow>
@@ -326,13 +325,13 @@ const HotelBookings: React.FC<HotelBookingsProps> = ({
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={showActions ? 8 : 7} align="center" sx={{ py: 4 }}>
+                  <TableCell colSpan={showActions ? 7 : 6} align="center" sx={{ py: 4 }}>
                     <CircularProgress />
                   </TableCell>
                 </TableRow>
               ) : bookings.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={showActions ? 8 : 7} align="center" sx={{ py: 4 }}>
+                  <TableCell colSpan={showActions ? 7 : 6} align="center" sx={{ py: 4 }}>
                     <Typography color="text.secondary">
                       No bookings found
                     </Typography>
@@ -357,7 +356,6 @@ const HotelBookings: React.FC<HotelBookingsProps> = ({
                     </TableCell>
                     <TableCell>{formatDate(booking.checkInDate)}</TableCell>
                     <TableCell>{formatDate(booking.checkOutDate)}</TableCell>
-                    <TableCell>{formatCurrency(booking.totalAmount)}</TableCell>
                     <TableCell>
                       <Chip 
                         label={booking.status.replace('_', ' ')} 

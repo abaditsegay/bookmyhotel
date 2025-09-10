@@ -1,5 +1,14 @@
 package com.bookmyhotel.service;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.bookmyhotel.dto.RoomTypePricingDTO;
 import com.bookmyhotel.entity.Hotel;
 import com.bookmyhotel.entity.RoomType;
@@ -8,14 +17,6 @@ import com.bookmyhotel.entity.User;
 import com.bookmyhotel.repository.HotelRepository;
 import com.bookmyhotel.repository.RoomTypePricingRepository;
 import com.bookmyhotel.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Service for managing room type pricing

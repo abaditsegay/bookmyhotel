@@ -276,7 +276,6 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
                   <TableCell>Room</TableCell>
                   <TableCell>Check-in</TableCell>
                   <TableCell>Check-out</TableCell>
-                  <TableCell>Amount</TableCell>
                   <TableCell>Status</TableCell>
                   <TableCell>Actions</TableCell>
                 </TableRow>
@@ -284,7 +283,7 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
               <TableBody>
                 {bookings.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} align="center">
+                    <TableCell colSpan={7} align="center">
                       <Typography variant="body2" color="text.secondary" sx={{ py: 4 }}>
                         {search ? 'No bookings found matching your search.' : 'No bookings found.'}
                       </Typography>
@@ -309,7 +308,6 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
                       </TableCell>
                       <TableCell>{formatDate(booking.checkInDate)}</TableCell>
                       <TableCell>{formatDate(booking.checkOutDate)}</TableCell>
-                      <TableCell>{formatCurrency(booking.totalAmount)}</TableCell>
                       <TableCell>
                         <Chip 
                           label={booking.status.replace('_', ' ')} 
