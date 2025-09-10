@@ -10,6 +10,9 @@ import {
   Grid,
   Divider,
   Collapse,
+  useMediaQuery,
+  useTheme,
+  Stack,
 } from '@mui/material';
 import {
   LocationOn as LocationIcon,
@@ -54,6 +57,9 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
   defaultExpanded = false 
 }) => {
   const [expanded, setExpanded] = React.useState(defaultExpanded);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
   
   // Determine if we should use room types or individual rooms
   const useRoomTypes = hotel.roomTypeAvailability && hotel.roomTypeAvailability.length > 0;
@@ -70,91 +76,189 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
 
   return (
     <Card 
-      elevation={3} 
+      elevation={isMobile ? 1 : 3} 
       sx={{ 
-        mb: 3,
-        borderRadius: 2,
+        mb: isMobile ? 2 : 3,
+        borderRadius: isMobile ? 1 : 2,
         overflow: 'hidden',
       }}
     >
       {/* Hotel Header with Image */}
       <CardMedia
         component="img"
-        height="300"
+        height={isMobile ? "200" : "300"}
         image={getHotelImage(hotel.name, hotel.city)}
         alt={hotel.name}
         sx={{ objectFit: 'cover' }}
       />
       
-      <CardContent sx={{ p: 3 }}>
+      <CardContent sx={{ p: isMobile ? 2 : 3 }}>
         {/* Hotel Info Header */}
-        <Box sx={{ mb: 3 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-            <Box sx={{ flexGrow: 1 }}>
-              <Typography variant="h4" component="h2" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
-                {hotel.name}
-              </Typography>
-              
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
-                  {[...Array(5)].map((_, i) => (
-                    <StarIcon 
-                      key={i} 
-                      sx={{ 
-                        fontSize: 18,
-                        color: i < Math.floor(hotelRating) ? 'warning.main' : 'grey.300' 
-                      }} 
-                    />
-                  ))}
-                  <Typography variant="body2" sx={{ ml: 1, fontWeight: 'medium' }}>
-                    {hotelRating.toFixed(1)}
+        <Box sx={{ mb: isMobile ? 2 : 3 }}>
+          {/* Mobile Layout - Stacked */}
+          {isMobile ? (
+            <Stack spacing={2}>
+              <Box>
+                <Typography 
+                  variant={isSmallMobile ? "h5" : "h4"} 
+                  component="h2" 
+                  gutterBottom 
+                  sx={{ 
+                    fontWeight: 'bold', 
+                    color: 'primary.main',
+                    lineHeight: 1.2,
+                  }}
+                >
+                  {hotel.name}
+                </Typography>
+                
+                <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.5, flexWrap: 'wrap' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    {[...Array(5)].map((_, i) => (
+                      <StarIcon 
+                        key={i} 
+                        sx={{ 
+                          fontSize: 16,
+                          color: i < Math.floor(hotelRating) ? 'warning.main' : 'grey.300' 
+                        }} 
+                      />
+                    ))}
+                    <Typography variant="body2" sx={{ ml: 0.5, fontWeight: 'medium' }}>
+                      {hotelRating.toFixed(1)}
+                    </Typography>
+                  </Box>
+                  <Chip 
+                    label={useRoomTypes ? 
+                      `${totalAvailableCount} available` : 
+                      `${hotel.availableRooms?.length || 0} available`
+                    } 
+                    color="success" 
+                    variant="outlined"
+                    size="small"
+                    sx={{ fontSize: '0.75rem' }}
+                  />
+                </Stack>
+                
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 1.5 }}>
+                  <LocationIcon sx={{ fontSize: 18, mr: 1, color: 'text.secondary', mt: 0.25 }} />
+                  <Typography 
+                    variant="body2" 
+                    color="text.secondary"
+                    sx={{ 
+                      lineHeight: 1.3,
+                      fontSize: '0.85rem',
+                    }}
+                  >
+                    {hotel.address}, {hotel.city}, {hotel.country}
                   </Typography>
                 </Box>
-                <Chip 
-                  label={useRoomTypes ? 
-                    `${totalAvailableCount} rooms available` : 
-                    `${hotel.availableRooms?.length || 0} rooms available`
-                  } 
-                  color="success" 
-                  variant="outlined"
-                  size="small"
-                />
               </Box>
               
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <LocationIcon sx={{ fontSize: 20, mr: 1, color: 'text.secondary' }} />
-                <Typography variant="body1" color="text.secondary">
-                  {hotel.address}, {hotel.city}, {hotel.country}
+              {/* Price Section - Mobile */}
+              <Box 
+                sx={{ 
+                  textAlign: 'center',
+                  p: 2,
+                  backgroundColor: 'success.light',
+                  borderRadius: 1,
+                }}
+              >
+                <Typography variant="h5" color="success.main" sx={{ fontWeight: 'bold' }}>
+                  From ETB {hotel.minPrice?.toFixed(0)}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  per night
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Up to ETB {hotel.maxPrice?.toFixed(0)}
+                </Typography>
+              </Box>
+            </Stack>
+          ) : (
+            /* Desktop Layout - Side by Side */
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+              <Box sx={{ flexGrow: 1 }}>
+                <Typography variant="h4" component="h2" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+                  {hotel.name}
+                </Typography>
+                
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
+                    {[...Array(5)].map((_, i) => (
+                      <StarIcon 
+                        key={i} 
+                        sx={{ 
+                          fontSize: 18,
+                          color: i < Math.floor(hotelRating) ? 'warning.main' : 'grey.300' 
+                        }} 
+                      />
+                    ))}
+                    <Typography variant="body2" sx={{ ml: 1, fontWeight: 'medium' }}>
+                      {hotelRating.toFixed(1)}
+                    </Typography>
+                  </Box>
+                  <Chip 
+                    label={useRoomTypes ? 
+                      `${totalAvailableCount} rooms available` : 
+                      `${hotel.availableRooms?.length || 0} rooms available`
+                    } 
+                    color="success" 
+                    variant="outlined"
+                    size="small"
+                  />
+                </Box>
+                
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                  <LocationIcon sx={{ fontSize: 20, mr: 1, color: 'text.secondary' }} />
+                  <Typography variant="body1" color="text.secondary">
+                    {hotel.address}, {hotel.city}, {hotel.country}
+                  </Typography>
+                </Box>
+              </Box>
+              
+              <Box sx={{ textAlign: 'right', ml: 2 }}>
+                <Typography variant="h5" color="success.main" sx={{ fontWeight: 'bold' }}>
+                  From ETB {hotel.minPrice?.toFixed(0)}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  per night
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Up to ETB {hotel.maxPrice?.toFixed(0)}
                 </Typography>
               </Box>
             </Box>
-            
-            <Box sx={{ textAlign: 'right', ml: 2 }}>
-              <Typography variant="h5" color="success.main" sx={{ fontWeight: 'bold' }}>
-                From ETB {hotel.minPrice?.toFixed(0)}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                per night
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                Up to ${hotel.maxPrice}
-              </Typography>
-            </Box>
-          </Box>
+          )}
 
           {/* Hotel Description */}
           {hotel.description && (
-            <Typography variant="body1" color="text.secondary" paragraph>
+            <Typography 
+              variant={isMobile ? "body2" : "body1"} 
+              color="text.secondary" 
+              paragraph
+              sx={{
+                fontSize: isMobile ? '0.85rem' : undefined,
+                lineHeight: isMobile ? 1.4 : undefined,
+              }}
+            >
               {hotel.description}
             </Typography>
           )}
 
-          {/* Contact Info */}
-          <Box sx={{ display: 'flex', gap: 3, mb: 2 }}>
+          {/* Contact Info - Mobile Responsive */}
+          <Stack 
+            direction={isMobile ? "column" : "row"} 
+            spacing={isMobile ? 1 : 3} 
+            sx={{ mb: 2 }}
+          >
             {hotel.phone && (
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <PhoneIcon sx={{ fontSize: 16, mr: 0.5, color: 'text.secondary' }} />
-                <Typography variant="body2" color="text.secondary">
+                <Typography 
+                  variant="body2" 
+                  color="text.secondary"
+                  sx={{ fontSize: isMobile ? '0.8rem' : undefined }}
+                >
                   {hotel.phone}
                 </Typography>
               </Box>
@@ -162,29 +266,48 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
             {hotel.email && (
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <EmailIcon sx={{ fontSize: 16, mr: 0.5, color: 'text.secondary' }} />
-                <Typography variant="body2" color="text.secondary">
+                <Typography 
+                  variant="body2" 
+                  color="text.secondary"
+                  sx={{ fontSize: isMobile ? '0.8rem' : undefined }}
+                >
                   {hotel.email}
                 </Typography>
               </Box>
             )}
-          </Box>
+          </Stack>
         </Box>
 
         <Divider sx={{ my: 2 }} />
 
-        {/* Rooms Section Header */}
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+        {/* Rooms Section Header - Mobile Responsive */}
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: isMobile ? 'flex-start' : 'center', 
+          mb: 2,
+          flexDirection: isMobile ? 'column' : 'row',
+          gap: isMobile ? 1 : 0,
+        }}>
+          <Typography 
+            variant={isMobile ? "h6" : "h5"} 
+            sx={{ 
+              fontWeight: 'bold',
+              fontSize: isMobile ? '1.1rem' : undefined,
+            }}
+          >
             {useRoomTypes ? 
-              `Available Room Types (${hotel.roomTypeAvailability?.length || 0})` :
-              `Available Rooms (${hotel.availableRooms?.length || 0})`
+              `Room Types (${hotel.roomTypeAvailability?.length || 0})` :
+              `Rooms (${hotel.availableRooms?.length || 0})`
             }
           </Typography>
           <Button
             onClick={() => setExpanded(!expanded)}
             endIcon={expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
             variant="outlined"
-            size="small"
+            size={isMobile ? "medium" : "small"}
+            fullWidth={isMobile}
+            sx={{ minWidth: isMobile ? '100%' : 'auto' }}
           >
             {expanded ? 'Hide Rooms' : 'Show All Rooms'}
           </Button>
@@ -193,11 +316,16 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
         {/* Quick Room Preview (always visible) */}
         {hasAvailableRooms && !expanded && (
           <Box sx={{ mb: 2 }}>
-            <Grid container spacing={2}>
+            <Grid container spacing={isMobile ? 1 : 2}>
               {useRoomTypes ? (
                 // Display room types
-                hotel.roomTypeAvailability?.slice(0, 2).map((roomType) => (
-                  <Grid item xs={12} sm={6} key={roomType.roomType}>
+                hotel.roomTypeAvailability?.slice(0, isMobile ? 1 : 2).map((roomType) => (
+                  <Grid 
+                    item 
+                    xs={12} 
+                    sm={isMobile ? 12 : 6} 
+                    key={roomType.roomType}
+                  >
                     <RoomTypeCard
                       roomType={roomType}
                       hotelId={hotel.id}
@@ -207,8 +335,13 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
                 ))
               ) : (
                 // Display individual rooms (backward compatibility)
-                hotel.availableRooms?.slice(0, 2).map((room) => (
-                  <Grid item xs={12} sm={6} key={room.id}>
+                hotel.availableRooms?.slice(0, isMobile ? 1 : 2).map((room) => (
+                  <Grid 
+                    item 
+                    xs={12} 
+                    sm={isMobile ? 12 : 6} 
+                    key={room.id}
+                  >
                     <RoomCard
                       room={room}
                       hotelId={hotel.id}
@@ -218,17 +351,19 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
                 ))
               )}
             </Grid>
-            {((useRoomTypes && hotel.roomTypeAvailability && hotel.roomTypeAvailability.length > 2) ||
-              (!useRoomTypes && hotel.availableRooms && hotel.availableRooms.length > 2)) && (
+            {((useRoomTypes && hotel.roomTypeAvailability && hotel.roomTypeAvailability.length > (isMobile ? 1 : 2)) ||
+              (!useRoomTypes && hotel.availableRooms && hotel.availableRooms.length > (isMobile ? 1 : 2))) && (
               <Box sx={{ textAlign: 'center', mt: 2 }}>
                 <Button
                   variant="text"
                   onClick={() => setExpanded(true)}
                   color="primary"
+                  fullWidth={isMobile}
+                  sx={{ py: isMobile ? 1.5 : undefined }}
                 >
                   View {useRoomTypes ? 
-                    (hotel.roomTypeAvailability!.length - 2) : 
-                    (hotel.availableRooms!.length - 2)
+                    (hotel.roomTypeAvailability!.length - (isMobile ? 1 : 2)) : 
+                    (hotel.availableRooms!.length - (isMobile ? 1 : 2))
                   } more {useRoomTypes ? 'room types' : 'rooms'}
                 </Button>
               </Box>
@@ -239,11 +374,17 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
         {/* Expandable Room Details */}
         <Collapse in={expanded} timeout="auto" unmountOnExit>
           <Box sx={{ mt: 2 }}>
-            <Grid container spacing={2}>
+            <Grid container spacing={isMobile ? 1 : 2}>
               {useRoomTypes ? (
                 // Display room types
                 hotel.roomTypeAvailability?.map((roomType) => (
-                  <Grid item xs={12} sm={6} md={4} key={roomType.roomType}>
+                  <Grid 
+                    item 
+                    xs={12} 
+                    sm={isMobile ? 12 : 6} 
+                    md={isMobile ? 12 : 4} 
+                    key={roomType.roomType}
+                  >
                     <RoomTypeCard
                       roomType={roomType}
                       hotelId={hotel.id}
@@ -254,7 +395,13 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
               ) : (
                 // Display individual rooms (backward compatibility)
                 hotel.availableRooms?.map((room) => (
-                  <Grid item xs={12} sm={6} md={4} key={room.id}>
+                  <Grid 
+                    item 
+                    xs={12} 
+                    sm={isMobile ? 12 : 6} 
+                    md={isMobile ? 12 : 4} 
+                    key={room.id}
+                  >
                     <RoomCard
                       room={room}
                       hotelId={hotel.id}

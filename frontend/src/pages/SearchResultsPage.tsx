@@ -11,6 +11,10 @@ import {
   Link,
   Fab,
   IconButton,
+  useMediaQuery,
+  useTheme,
+  Stack,
+  Button,
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -30,6 +34,9 @@ const SearchResultsPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated } = useAuth();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
   
   // State from search parameters
   const [searchRequest, setSearchRequest] = useState<HotelSearchRequest | null>(null);
@@ -217,66 +224,130 @@ const SearchResultsPage: React.FC = () => {
   }
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
+    <Container 
+      maxWidth={isMobile ? "lg" : "xl"} 
+      sx={{ 
+        py: isMobile ? 2 : 4,
+        px: isMobile ? 1 : 3,
+      }}
+    >
       {/* Header Section */}
-      <Box sx={{ mb: 4 }}>
-        {/* Back Navigation */}
+      <Box sx={{ mb: isMobile ? 2 : 4 }}>
+        {/* Back Navigation - Mobile Optimized */}
         <Box sx={{ mb: 2 }}>
           <IconButton 
             onClick={handleBackToSearch}
-            sx={{ mr: 1 }}
+            sx={{ 
+              mr: 1,
+              p: isMobile ? 1.5 : 1,
+            }}
             aria-label="back to search"
           >
             <ArrowBackIcon />
           </IconButton>
-          <Breadcrumbs aria-label="breadcrumb">
-            <Link 
-              component="button" 
-              variant="body2" 
-              onClick={handleBackToSearch}
-              sx={{ textDecoration: 'none' }}
-            >
-              Hotel Search
-            </Link>
-            <Typography variant="body2" color="text.primary">
-              Search Results
-            </Typography>
-          </Breadcrumbs>
+          {!isSmallMobile && (
+            <Breadcrumbs aria-label="breadcrumb">
+              <Link 
+                component="button" 
+                variant="body2" 
+                onClick={handleBackToSearch}
+                sx={{ textDecoration: 'none' }}
+              >
+                Hotel Search
+              </Link>
+              <Typography variant="body2" color="text.primary">
+                Search Results
+              </Typography>
+            </Breadcrumbs>
+          )}
         </Box>
 
-        {/* Search Summary */}
-        <Paper elevation={1} sx={{ p: 3, mb: 3, backgroundColor: 'primary.50' }}>
-          <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
+        {/* Search Summary - Mobile Responsive */}
+        <Paper 
+          elevation={1} 
+          sx={{ 
+            p: isMobile ? 2 : 3, 
+            mb: isMobile ? 2 : 3, 
+            backgroundColor: 'primary.50' 
+          }}
+        >
+          <Typography 
+            variant={isMobile ? "h5" : "h4"} 
+            component="h1" 
+            gutterBottom 
+            sx={{ fontWeight: 'bold' }}
+          >
             Search Results
           </Typography>
-          <Typography variant="h6" color="text.secondary" gutterBottom>
+          <Typography 
+            variant={isMobile ? "body1" : "h6"} 
+            color="text.secondary" 
+            gutterBottom
+            sx={{ 
+              fontSize: isMobile ? '0.9rem' : undefined,
+              lineHeight: isMobile ? 1.4 : undefined,
+            }}
+          >
             Hotels {formatSearchSummary()}
           </Typography>
-          <Typography variant="body1" color="success.main" sx={{ fontWeight: 'medium' }}>
+          <Typography 
+            variant="body1" 
+            color="success.main" 
+            sx={{ fontWeight: 'medium' }}
+          >
             {hotels.length} hotel{hotels.length === 1 ? '' : 's'} found
           </Typography>
         </Paper>
 
-        {/* Action Buttons */}
-        <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-          <Fab 
-            variant="extended" 
-            size="medium" 
-            color="primary"
-            onClick={() => console.log('Open filters')}
-          >
-            <FilterIcon sx={{ mr: 1 }} />
-            Filter Results
-          </Fab>
-          <Fab 
-            variant="extended" 
-            size="medium" 
-            onClick={() => console.log('Open sort options')}
-          >
-            <SortIcon sx={{ mr: 1 }} />
-            Sort By Price
-          </Fab>
-        </Box>
+        {/* Action Buttons - Mobile Responsive */}
+        <Stack 
+          direction={isMobile ? "column" : "row"} 
+          spacing={isMobile ? 1 : 2} 
+          sx={{ mb: isMobile ? 2 : 3 }}
+        >
+          {isMobile ? (
+            <>
+              <Button 
+                variant="outlined" 
+                startIcon={<FilterIcon />}
+                onClick={() => console.log('Open filters')}
+                fullWidth
+                sx={{ py: 1.5 }}
+              >
+                Filter Results
+              </Button>
+              <Button 
+                variant="outlined"
+                startIcon={<SortIcon />}
+                onClick={() => console.log('Open sort options')}
+                fullWidth
+                sx={{ py: 1.5 }}
+              >
+                Sort By Price
+              </Button>
+            </>
+          ) : (
+            <>
+              <Fab 
+                variant="extended" 
+                size="medium" 
+                color="primary"
+                onClick={() => console.log('Open filters')}
+              >
+                <FilterIcon sx={{ mr: 1 }} />
+                Filter Results
+              </Fab>
+              <Fab 
+                variant="extended" 
+                size="medium" 
+                onClick={() => console.log('Open sort options')}
+              >
+                <SortIcon sx={{ mr: 1 }} />
+                Sort By Price
+              </Fab>
+            </>
+          )}
+        </Stack>
       </Box>
 
       {/* Error State */}

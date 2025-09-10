@@ -8,6 +8,8 @@ import {
   Chip,
   Box,
   Badge,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import {
   People as PeopleIcon,
@@ -57,6 +59,8 @@ const formatRoomTypeName = (roomType: string): string => {
 const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRoomType }) => {
   const amenities = getRoomAmenities(roomType.roomType);
   const { isAuthenticated } = useAuth();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isAvailable = roomType.availableCount > 0;
 
   return (
@@ -75,7 +79,7 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
       <Box sx={{ position: 'relative' }}>
         <CardMedia
           component="img"
-          height="160"
+          height={isMobile ? "140" : "160"}
           image={getRoomImage(roomType.roomType)}
           alt={`${roomType.roomType} room`}
           sx={{ objectFit: 'cover' }}
@@ -83,9 +87,22 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
         {isAvailable && (
           <Badge
             badgeContent={
-              <Box sx={{ display: 'flex', alignItems: 'center', px: 1 }}>
-                <CheckCircleIcon sx={{ fontSize: 16, mr: 0.5 }} />
-                <Typography variant="caption" sx={{ fontWeight: 'bold' }}>
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                px: isMobile ? 0.5 : 1,
+              }}>
+                <CheckCircleIcon sx={{ 
+                  fontSize: isMobile ? 12 : 16, 
+                  mr: isMobile ? 0.3 : 0.5,
+                }} />
+                <Typography 
+                  variant="caption" 
+                  sx={{ 
+                    fontWeight: 'bold',
+                    fontSize: isMobile ? '0.6rem' : '0.75rem',
+                  }}
+                >
                   {roomType.availableCount} Available
                 </Typography>
               </Box>
@@ -93,14 +110,14 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
             color="success"
             sx={{
               position: 'absolute',
-              top: 12,
-              right: 12,
+              top: isMobile ? 8 : 12,
+              right: isMobile ? 8 : 12,
               '& .MuiBadge-badge': {
                 backgroundColor: 'success.main',
                 color: 'white',
                 borderRadius: 1,
                 height: 'auto',
-                padding: '4px 8px',
+                padding: isMobile ? '2px 4px' : '4px 8px',
               }
             }}
           />
