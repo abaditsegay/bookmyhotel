@@ -367,6 +367,7 @@ const SearchResultsPage: React.FC = () => {
               onBookRoom={handleBookRoom}
               onBookRoomType={handleBookRoomType}
               defaultExpanded={index === 0} // Expand first hotel by default
+              horizontalLayout={true}
             />
           ))}
         </Box>

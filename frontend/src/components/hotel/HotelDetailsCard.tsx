@@ -31,6 +31,7 @@ interface HotelDetailsCardProps {
   onBookRoom?: (hotelId: number, roomId: number, asGuest?: boolean) => void;
   onBookRoomType?: (hotelId: number, roomType: string, asGuest?: boolean) => void;
   defaultExpanded?: boolean;
+  horizontalLayout?: boolean; // New prop for horizontal layout in search results
 }
 
 // Professional hotel images based on hotel name/location
@@ -54,12 +55,14 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
   hotel, 
   onBookRoom, 
   onBookRoomType,
-  defaultExpanded = false 
+  defaultExpanded = false,
+  horizontalLayout = false 
 }) => {
   const [expanded, setExpanded] = React.useState(defaultExpanded);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg')); // 1200px+
   
   // Determine if we should use room types or individual rooms
   const useRoomTypes = hotel.roomTypeAvailability && hotel.roomTypeAvailability.length > 0;
@@ -81,18 +84,32 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
         mb: isMobile ? 2 : 3,
         borderRadius: isMobile ? 1 : 2,
         overflow: 'hidden',
+        display: horizontalLayout && isLargeScreen ? 'flex' : 'block',
+        flexDirection: horizontalLayout && isLargeScreen ? 'row' : 'column',
       }}
     >
       {/* Hotel Header with Image */}
       <CardMedia
         component="img"
-        height={isMobile ? "200" : "300"}
+        height={isMobile ? "200" : horizontalLayout && isLargeScreen ? "250" : "300"}
         image={getHotelImage(hotel.name, hotel.city)}
         alt={hotel.name}
-        sx={{ objectFit: 'cover' }}
+        sx={{ 
+          objectFit: 'cover',
+          width: horizontalLayout && isLargeScreen ? '400px' : '100%',
+          flexShrink: 0,
+        }}
       />
       
-      <CardContent sx={{ p: isMobile ? 2 : 3 }}>
+      {/* Content Container */}
+      <Box sx={{ 
+        flex: horizontalLayout && !isMobile ? 1 : 'none',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        minHeight: horizontalLayout && !isMobile ? '250px' : 'auto',
+      }}>
+        <CardContent sx={{ p: isMobile ? 2 : 3, flex: 1 }}>
         {/* Hotel Info Header */}
         <Box sx={{ mb: isMobile ? 2 : 3 }}>
           {/* Mobile Layout - Stacked */}
@@ -426,6 +443,7 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
           </Box>
         )}
       </CardContent>
+      </Box>
     </Card>
   );
 };

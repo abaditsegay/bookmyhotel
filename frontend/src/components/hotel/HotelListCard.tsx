@@ -8,6 +8,8 @@ import {
   Chip,
   Box,
   Rating,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import {
   LocationOn as LocationIcon,
@@ -40,6 +42,11 @@ const getHotelImage = (hotelName: string, city: string): string => {
 };
 
 const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => {
+  // Responsive breakpoints
+  const theme = useTheme();
+  const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg')); // 1200px+
+  const isMobile = useMediaQuery(theme.breakpoints.down('md')); // Below 960px
+
   // Determine if we should use room types or individual rooms
   const useRoomTypes = hotel.roomTypeAvailability && hotel.roomTypeAvailability.length > 0;
   
@@ -71,7 +78,8 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
       elevation={2} 
       sx={{ 
         display: 'flex',
-        height: '280px',
+        flexDirection: isLargeScreen ? 'row' : 'column',
+        height: isLargeScreen ? '280px' : 'auto',
         mb: 2,
         transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
         '&:hover': {
@@ -85,7 +93,12 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
       {/* Hotel Image */}
       <CardMedia
         component="img"
-        sx={{ width: 300, height: '100%', objectFit: 'cover' }}
+        sx={{ 
+          width: isLargeScreen ? 300 : '100%', 
+          height: isLargeScreen ? '100%' : isMobile ? 200 : 250, 
+          objectFit: 'cover',
+          flexShrink: 0,
+        }}
         image={getHotelImage(hotel.name, hotel.city)}
         alt={hotel.name}
       />
@@ -141,8 +154,8 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
             sx={{ 
               mb: 2,
               display: '-webkit-box',
-              '-webkit-line-clamp': 2,
-              '-webkit-box-orient': 'vertical',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
             }}
