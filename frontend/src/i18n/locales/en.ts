@@ -15,7 +15,7 @@ export const enTranslations = {
       searching: "Searching..."
     },
     alreadyHaveBooking: {
-      title: "📋 Already Have a Booking?",
+      title: "Already Have a Booking?",
       subtitle: "Manage your existing reservation or view booking details",
       button: "Find My Booking"
     },

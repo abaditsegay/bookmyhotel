@@ -12,6 +12,7 @@ import {
 import {
   Search as SearchIcon,
 } from '@mui/icons-material';
+
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 // import VerticalHotelAdvertisementBanner from '../components/VerticalHotelAdvertisementBanner';
@@ -147,35 +148,6 @@ const HotelSearchPage: React.FC = () => {
               overflow: 'hidden', // Prevent content overflow
             }}
           >
-            {/* Header Section - Mobile optimized */}
-            <Box sx={{ 
-              p: { xs: 3, sm: 4, md: 4 }, // Responsive padding
-              background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
-              color: 'white',
-              textAlign: 'center' 
-            }}>
-              <Typography 
-                variant="h4" 
-                component="h2" 
-                gutterBottom 
-                sx={{ 
-                  fontWeight: 'bold',
-                  fontSize: { xs: '1.75rem', sm: '2rem', md: '2.125rem' } // Responsive font size
-                }}
-              >
-                {t('hotelSearch.title')}
-              </Typography>
-              <Typography 
-                variant="subtitle1" 
-                sx={{ 
-                  opacity: 0.9,
-                  fontSize: { xs: '0.9rem', sm: '1rem' } // Responsive subtitle
-                }}
-              >
-                {t('hotelSearch.subtitle')}
-              </Typography>
-            </Box>
-
             {/* Search Form Section - Mobile optimized */}
             <Box sx={{ 
               p: { xs: 2, sm: 3, md: 4 }, // Progressive padding for better mobile experience
@@ -202,19 +174,21 @@ const HotelSearchPage: React.FC = () => {
               <Divider sx={{ my: { xs: 3, md: 4 } }} />
               
               <Paper 
-                elevation={2} 
+                elevation={1} 
                 sx={{ 
                   p: { xs: 3, sm: 4 }, // Responsive padding
                   textAlign: 'center',
-                  background: 'linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)',
-                  color: 'white',
+                  backgroundColor: '#e3f2fd',
+                  border: '1px solid #bbdefb',
+                  color: 'text.primary',
                   borderRadius: 3,
                   transition: 'all 0.3s ease',
                   width: '100%',
                   boxSizing: 'border-box',
                   '&:hover': {
                     transform: { xs: 'none', md: 'translateY(-2px)' }, // Disable transform on mobile
-                    boxShadow: 6,
+                    boxShadow: 2,
+                    backgroundColor: '#d1ecf1',
                   }
                 }}
               >
@@ -233,7 +207,7 @@ const HotelSearchPage: React.FC = () => {
                   variant="body1" 
                   sx={{ 
                     mb: 3, 
-                    opacity: 0.9, 
+                    color: 'text.secondary',
                     fontSize: { xs: '0.95rem', sm: '1rem', md: '1.1rem' }, // Responsive text
                     px: { xs: 1, sm: 2 } // Add padding on mobile for better readability
                   }}
@@ -241,7 +215,7 @@ const HotelSearchPage: React.FC = () => {
                   {t('hotelSearch.alreadyHaveBooking.subtitle')}
                 </Typography>
                 <Button
-                  variant="outlined"
+                  variant="contained"
                   size="large"
                   startIcon={<SearchIcon />}
                   onClick={() => navigate('/find-booking')}
@@ -252,13 +226,12 @@ const HotelSearchPage: React.FC = () => {
                     px: { xs: 3, sm: 4 }, // Responsive button padding
                     py: 1.5,
                     fontSize: { xs: '1rem', sm: '1.1rem' }, // Responsive font size
-                    borderColor: 'rgba(255, 255, 255, 0.7)',
+                    backgroundColor: '#4caf50',
                     color: 'white',
                     width: { xs: '100%', sm: 'auto' }, // Full width on mobile
                     maxWidth: { xs: '280px', sm: 'none' }, // Limit max width on mobile
-                    '&:hover': { 
-                      borderColor: 'white', 
-                      backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                    '&:hover': {
+                      backgroundColor: '#45a049',
                       transform: { xs: 'none', md: 'scale(1.05)' }, // Disable scale on mobile
                     }
                   }}
