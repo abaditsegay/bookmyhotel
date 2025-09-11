@@ -144,7 +144,13 @@ const PlaceholderPage: React.FC<{ title: string; message: string }> = ({ title, 
 function App() {
   const { isAuthenticated } = useAuth();
   const location = useLocation();
-  const { showIOSPrompt, dismissIOSPrompt } = usePWAInstall();
+  const { 
+    showIOSPrompt, 
+    showAndroidPrompt, 
+    dismissIOSPrompt, 
+    dismissAndroidPrompt, 
+    installApp 
+  } = usePWAInstall();
   
   // Check if we're on a route that should use full width layout
   const isFullWidthRoute = location.pathname.startsWith('/frontdesk') || 
@@ -453,7 +459,16 @@ function App() {
       {/* PWA Install Prompt for iOS */}
       <PWAInstallPrompt 
         open={showIOSPrompt} 
-        onClose={dismissIOSPrompt} 
+        onClose={dismissIOSPrompt}
+        deviceType="ios"
+      />
+      
+      {/* PWA Install Prompt for Android */}
+      <PWAInstallPrompt 
+        open={showAndroidPrompt} 
+        onClose={dismissAndroidPrompt}
+        deviceType="android"
+        onInstall={installApp}
       />
     </EnhancedLayout>
   );

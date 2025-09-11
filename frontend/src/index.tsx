@@ -72,10 +72,38 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
       .then((registration) => {
-        console.log('SW registered: ', registration);
+        console.log('SW registered successfully: ', registration);
+        
+        // Listen for updates
+        registration.addEventListener('updatefound', () => {
+          console.log('New service worker is being installed...');
+        });
+        
+        // Force refresh if there's a waiting service worker
+        if (registration.waiting) {
+          registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+        }
+        
+        // Check for updates every 60 seconds
+        setInterval(() => {
+          registration.update();
+        }, 60000);
       })
       .catch((registrationError) => {
-        console.log('SW registration failed: ', registrationError);
+        console.error('SW registration failed: ', registrationError);
       });
+      
+    // Listen for service worker messages
+    navigator.serviceWorker.addEventListener('message', (event) => {
+      console.log('Message from service worker:', event.data);
+    });
+    
+    // Listen for controller changes (new SW activated)
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      console.log('Service worker controller changed, reloading...');
+      window.location.reload();
+    });
   });
+} else {
+  console.log('Service workers are not supported in this browser');
 }

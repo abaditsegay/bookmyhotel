@@ -45,14 +45,31 @@
       "type": "image/png"
     }
   ],
-  "start_url": "/",
+  "start_url": "/?utm_source=pwa",
   "display": "standalone",
-  "orientation": "portrait-primary",
+  "orientation": "portrait-primary", 
   "theme_color": "#1976d2",
   "background_color": "#ffffff",
   "scope": "/",
   "lang": "en",
   "categories": ["business", "travel", "productivity"],
   "description": "BookMyHotel - Multi-tenant hotel booking platform",
-  "prefer_related_applications": false
+  "prefer_related_applications": false,
+  "display_override": ["window-controls-overlay", "standalone"],
+  "shortcuts": [
+    {
+      "name": "Search Hotels",
+      "short_name": "Search",
+      "description": "Search for available hotels",
+      "url": "/home",
+      "icons": [{"src": "/logo192.png", "sizes": "192x192"}]
+    },
+    {
+      "name": "My Bookings", 
+      "short_name": "Bookings",
+      "description": "View my bookings",
+      "url": "/booking-management",
+      "icons": [{"src": "/logo192.png", "sizes": "192x192"}]
+    }
+  ]
 }
