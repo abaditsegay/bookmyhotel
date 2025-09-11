@@ -91,31 +91,40 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
   const login = async (email: string, password: string): Promise<boolean> => {
     setLoading(true);
     setError(null);
+    
     try {
-      console.log('Attempting login with:', email, password);
+      console.log('Mobile AuthContext: Starting login process');
+      console.log('Mobile AuthContext: API URL:', API_CONFIG.BASE_URL);
+      console.log('Mobile AuthContext: User Agent:', navigator.userAgent);
+      
+      const requestBody = { email, password };
+      console.log('Mobile AuthContext: Request body prepared');
       
       const response = await fetch(`${API_CONFIG.BASE_URL}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
+        body: JSON.stringify(requestBody),
       });
+
+      console.log('Mobile AuthContext: Response received:', response.status, response.statusText);
+      console.log('Mobile AuthContext: Response headers:', Object.fromEntries(response.headers));
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Login failed:', errorText);
-        setError(errorText);
+        console.error('Mobile AuthContext: Login failed with error:', errorText);
+        setError(errorText || 'Login failed');
         return false;
       }
 
       const loginData = await response.json();
-      console.log('Login successful:', loginData);
+      console.log('Mobile AuthContext: Login successful, parsing data...');
+      console.log('Mobile AuthContext: Login data keys:', Object.keys(loginData));
 
       // Map backend response to frontend User interface
+      console.log('Mobile AuthContext: Mapping user data...');
       const user: User = {
         id: loginData.id.toString(),
         email: loginData.email,
@@ -137,18 +146,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
         isTenantBound: (loginData.tenantId !== null && loginData.tenantId !== undefined), // true if user has a tenant assignment
       };
 
+      console.log('Mobile AuthContext: Setting user state...');
       setUser(user);
       setToken(loginData.token);
       
       // Persist to localStorage using TokenManager
-      TokenManager.setAuth(loginData.token, user as AuthUser);
+      console.log('Mobile AuthContext: Persisting to localStorage...');
+      try {
+        TokenManager.setAuth(loginData.token, user as AuthUser);
+        console.log('Mobile AuthContext: localStorage save successful');
+      } catch (storageError) {
+        console.error('Mobile AuthContext: localStorage save failed:', storageError);
+      }
       
       // Notify parent component of token change
+      console.log('Mobile AuthContext: Notifying token change...');
       onTokenChange?.(loginData.token);
       
+      console.log('Mobile AuthContext: Login process completed successfully');
       return true;
     } catch (error) {
-      console.error('Login failed:', error);
+      console.error('Mobile AuthContext: Login failed with error:', error);
+      console.error('Mobile AuthContext: Error stack:', (error as Error).stack);
+      setError((error as Error).message || 'Login failed');
       return false;
     } finally {
       setLoading(false);

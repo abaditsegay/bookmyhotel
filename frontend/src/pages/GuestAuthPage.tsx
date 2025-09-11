@@ -83,15 +83,32 @@ const GuestAuthPage: React.FC = () => {
     setSuccess('');
   };
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleLogin = async (e?: React.FormEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
+    // Prevent double submission
+    if (loading) return;
+    
     setError('');
     clearError(); // Clear previous auth errors
     setLoading(true);
 
+    // Add small delay to ensure UI updates
+    await new Promise(resolve => setTimeout(resolve, 100));
+
     try {
+      console.log('Starting mobile-friendly login...');
       const success = await login(loginEmail, loginPassword);
+      console.log('Login result:', success);
+      
       if (success) {
+        console.log('Login successful, navigating...');
+        // Add small delay before navigation
+        await new Promise(resolve => setTimeout(resolve, 200));
+        
         // Redirect to intended destination
         if (bookingData) {
           navigate('/booking', { state: bookingData });
@@ -106,6 +123,11 @@ const GuestAuthPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Mobile-friendly login handler without form
+  const handleMobileLogin = async () => {
+    await handleLogin();
   };
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -276,10 +298,21 @@ const GuestAuthPage: React.FC = () => {
                   type="submit"
                   fullWidth
                   variant="contained"
-                  sx={{ mt: 3, mb: 2 }}
+                  sx={{ mt: 3, mb: 1 }}
                   disabled={loading}
                 >
                   {loading ? 'Signing In...' : 'Sign In'}
+                </Button>
+                
+                {/* Mobile-friendly fallback button */}
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  sx={{ mb: 2 }}
+                  disabled={loading}
+                  onClick={handleMobileLogin}
+                >
+                  {loading ? 'Signing In...' : 'Mobile Sign In (Tap Here)'}
                 </Button>
               </Box>
             </TabPanel>
