@@ -50,6 +50,7 @@ interface AvailableRoom {
   pricePerNight: number;
   capacity: number;
   description?: string;
+  isAvailable?: boolean;
 }
 
 interface WalkInBookingModalProps {
@@ -225,6 +226,8 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
             available: 'true' // Filter for available rooms only
           });
           
+          console.log('Hotel admin fetching rooms for date range:', format(checkInDate, 'yyyy-MM-dd'), 'to', format(checkOutDate, 'yyyy-MM-dd'));
+          
           const response = await fetch(`${API_BASE_URL}/api/hotel-admin/rooms?${params.toString()}`, {
             headers
           });
@@ -276,8 +279,15 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
           }
         }
         
-        console.log('Available rooms loaded:', rooms);
-        setAvailableRooms(rooms);
+        // Filter rooms that can accommodate the guest count
+        const filteredRooms = rooms.filter(room => 
+          room.capacity >= guests && 
+          (room.isAvailable !== false)
+        );
+        
+        console.log('Available rooms loaded:', filteredRooms.length, 'out of', rooms.length, 'total rooms');
+        console.log('Filtered for', guests, 'guests on', format(checkInDate, 'yyyy-MM-dd'), 'to', format(checkOutDate, 'yyyy-MM-dd'));
+        setAvailableRooms(filteredRooms);
         setSelectedRoom(null);
       } catch (error) {
         console.error('Failed to load available rooms:', error);
@@ -514,7 +524,8 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
               <Typography>Loading available rooms...</Typography>
             ) : availableRooms.length === 0 ? (
               <Alert severity="warning">
-                No rooms available for the selected dates. Please try different dates.
+                No rooms available for {guests} guest{guests !== 1 ? 's' : ''} from {format(checkInDate, 'MMM dd')} to {format(checkOutDate, 'MMM dd')}. 
+                Please try different dates or reduce the number of guests.
               </Alert>
             ) : (
               <Grid container spacing={2} sx={{ mt: 1 }}>

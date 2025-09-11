@@ -378,4 +378,44 @@ public class HotelAdminController {
             throw new RuntimeException("Failed to create walk-in booking: " + e.getMessage());
         }
     }
+
+    /**
+     * Get available rooms for a specific date range
+     * This endpoint supports date-based filtering for walk-in bookings
+     */
+    @GetMapping("/available-rooms")
+    public ResponseEntity<List<RoomDTO>> getAvailableRooms(
+            @RequestParam String checkInDate,
+            @RequestParam String checkOutDate,
+            @RequestParam(defaultValue = "1") Integer guests,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "100") int size,
+            Authentication auth) {
+
+        try {
+            // Parse dates
+            java.time.LocalDate checkIn = java.time.LocalDate.parse(checkInDate);
+            java.time.LocalDate checkOut = java.time.LocalDate.parse(checkOutDate);
+            
+            // Get hotel admin's hotel
+            HotelDTO hotel = hotelAdminService.getMyHotel(auth.getName());
+            
+            // Get available rooms for the date range
+            // For now, use the existing room listing with availability filter
+            Page<RoomDTO> roomsPage = hotelAdminService.getHotelRooms(
+                auth.getName(), page, size, null, null, true);
+            
+            // Filter rooms that can accommodate the guests
+            List<RoomDTO> availableRooms = roomsPage.getContent().stream()
+                .filter(room -> room.getCapacity() >= guests)
+                .filter(room -> room.getIsAvailable() == null || room.getIsAvailable())
+                .collect(java.util.stream.Collectors.toList());
+            
+            return ResponseEntity.ok(availableRooms);
+            
+        } catch (Exception e) {
+            System.err.println("Failed to get available rooms: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 }

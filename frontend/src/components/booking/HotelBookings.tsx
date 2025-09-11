@@ -432,7 +432,7 @@ const HotelBookings: React.FC<HotelBookingsProps> = ({
           
           {/* Table Pagination */}
           <TablePagination
-            rowsPerPageOptions={[5, 10, 25, 50]}
+            rowsPerPageOptions={[10, 25, 50]}
             component="div"
             count={totalElements}
             rowsPerPage={size}
