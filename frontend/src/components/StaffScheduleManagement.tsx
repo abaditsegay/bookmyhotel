@@ -302,9 +302,20 @@ const StaffScheduleManagement: React.FC = () => {
         });
 
         if (!response.ok) {
-          const errorData = await response.text();
-          console.error('Server response:', errorData);
-          throw new Error(`HTTP error! status: ${response.status} - ${errorData}`);
+          const errorText = await response.text();
+          console.error('Server response:', errorText);
+          
+          // Try to parse JSON error message
+          let errorMessage = 'Failed to save schedule';
+          try {
+            const errorData = JSON.parse(errorText);
+            errorMessage = errorData.error || errorData.message || errorMessage;
+          } catch (parseError) {
+            // If JSON parsing fails, use the raw text or a generic message
+            errorMessage = errorText || errorMessage;
+          }
+          
+          throw new Error(errorMessage);
         }
 
         setSuccess('Schedule created successfully');
@@ -316,7 +327,18 @@ const StaffScheduleManagement: React.FC = () => {
       await fetchSchedules();
     } catch (error: any) {
       console.error('Error saving schedule:', error);
-      setError(error.response?.data?.message || 'Failed to save schedule');
+      // Extract the error message from various possible error formats
+      let errorMessage = 'Failed to save schedule';
+      
+      if (error.message) {
+        errorMessage = error.message;
+      } else if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
+      
+      setError(errorMessage);
     }
   };
 
@@ -818,6 +840,12 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
         
         <form onSubmit={handleSubmit}>
           <DialogContent dividers>
+            {/* Display error within dialog */}
+            {error && (
+              <Alert severity="error" onClose={() => setError(null)} sx={{ mb: 3 }}>
+                {error}
+              </Alert>
+            )}
             <Grid container spacing={3}>
               <Grid item xs={12} md={6}>
                 <FormControl fullWidth>

@@ -3,8 +3,9 @@ import { Typography, Box } from '@mui/material';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import './i18n'; // Initialize i18n
 import EnhancedLayout from './components/layout/EnhancedLayout';
-import PWAInstallPrompt from './components/common/PWAInstallPrompt';
-import { usePWAInstall } from './hooks/usePWAInstall';
+// PWA install functionality disabled
+// import PWAInstallPrompt from './components/common/PWAInstallPrompt';
+// import { usePWAInstall } from './hooks/usePWAInstall';
 import ProtectedRoute from './components/ProtectedRoute';
 import { useAuth } from './contexts/AuthContext';
 import HotelSearchPage from './pages/HotelSearchPage';
@@ -144,13 +145,14 @@ const PlaceholderPage: React.FC<{ title: string; message: string }> = ({ title, 
 function App() {
   const { isAuthenticated } = useAuth();
   const location = useLocation();
-  const { 
-    showIOSPrompt, 
-    showAndroidPrompt, 
-    dismissIOSPrompt, 
-    dismissAndroidPrompt, 
-    installApp 
-  } = usePWAInstall();
+  // PWA install functionality disabled
+  // const { 
+  //   showIOSPrompt, 
+  //   showAndroidPrompt, 
+  //   dismissIOSPrompt, 
+  //   dismissAndroidPrompt, 
+  //   installApp 
+  // } = usePWAInstall();
   
   // Check if we're on a route that should use full width layout
   const isFullWidthRoute = location.pathname.startsWith('/frontdesk') || 
@@ -456,20 +458,23 @@ function App() {
         } />
       </Routes>
       
-      {/* PWA Install Prompt for iOS */}
+      {/* PWA Install Prompt functionality disabled */}
+      {/* 
       <PWAInstallPrompt 
         open={showIOSPrompt} 
-        onClose={dismissIOSPrompt}
+        onClose={() => dismissIOSPrompt(false)}
+        onPermanentDismiss={() => dismissIOSPrompt(true)}
         deviceType="ios"
       />
       
-      {/* PWA Install Prompt for Android */}
       <PWAInstallPrompt 
         open={showAndroidPrompt} 
-        onClose={dismissAndroidPrompt}
+        onClose={() => dismissAndroidPrompt(false)}
+        onPermanentDismiss={() => dismissAndroidPrompt(true)}
         deviceType="android"
         onInstall={installApp}
       />
+      */}
     </EnhancedLayout>
   );
 }

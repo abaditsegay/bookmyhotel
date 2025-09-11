@@ -23,6 +23,7 @@ import {
 interface PWAInstallPromptProps {
   open: boolean;
   onClose: () => void;
+  onPermanentDismiss?: () => void;
   deviceType?: 'ios' | 'android';
   onInstall?: () => void;
 }
@@ -30,6 +31,7 @@ interface PWAInstallPromptProps {
 const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ 
   open, 
   onClose, 
+  onPermanentDismiss,
   deviceType, 
   onInstall 
 }) => {
@@ -214,10 +216,20 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({
         )}
       </DialogContent>
       
-      <DialogActions>
-        <Button onClick={onClose} variant="contained" color="primary">
+      <DialogActions sx={{ flexDirection: 'column', gap: 1, pb: 2 }}>
+        <Button onClick={onClose} variant="contained" color="primary" fullWidth>
           Got it!
         </Button>
+        {onPermanentDismiss && (
+          <Button 
+            onClick={onPermanentDismiss} 
+            variant="text" 
+            size="small"
+            sx={{ color: 'text.secondary' }}
+          >
+            Don't show this again
+          </Button>
+        )}
       </DialogActions>
     </Dialog>
   );
