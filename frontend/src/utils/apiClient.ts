@@ -93,12 +93,29 @@ class ApiClient {
     
     try {
       if (response.ok) {
-        const data = isJson ? await response.json() : await response.text();
-        return {
-          data: data as T,
-          status: response.status,
-          success: true,
-        };
+        // Handle different successful response types
+        if (response.status === 204 || response.headers.get('content-length') === '0') {
+          // No content response (e.g., DELETE operations)
+          return {
+            data: undefined as T,
+            status: response.status,
+            success: true,
+          };
+        } else if (isJson) {
+          const data = await response.json();
+          return {
+            data: data as T,
+            status: response.status,
+            success: true,
+          };
+        } else {
+          const text = await response.text();
+          return {
+            data: text as T,
+            status: response.status,
+            success: true,
+          };
+        }
       } else {
         // Try to extract error message from response
         let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
@@ -108,7 +125,25 @@ class ApiClient {
             const errorData = await response.json();
             errorMessage = errorData.message || errorData.error || errorMessage;
           } catch (e) {
-            // If JSON parsing fails, use default error message
+            // If JSON parsing fails, use text response or default message
+            try {
+              const textResponse = await response.text();
+              if (textResponse) {
+                errorMessage = textResponse;
+              }
+            } catch (textError) {
+              // Use default error message
+            }
+          }
+        } else {
+          // Try to get error message from text response
+          try {
+            const textResponse = await response.text();
+            if (textResponse) {
+              errorMessage = textResponse;
+            }
+          } catch (textError) {
+            // Use default error message
           }
         }
 
