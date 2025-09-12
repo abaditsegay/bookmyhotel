@@ -534,27 +534,80 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                     <Card 
                       sx={{ 
                         cursor: 'pointer',
-                        border: selectedRoom?.id === room.id ? '2px solid' : '1px solid',
+                        border: selectedRoom?.id === room.id ? '3px solid' : '1px solid',
                         borderColor: selectedRoom?.id === room.id ? 'primary.main' : 'divider',
+                        backgroundColor: selectedRoom?.id === room.id ? 'primary.light' : 'background.paper',
+                        transform: selectedRoom?.id === room.id ? 'scale(1.02)' : 'scale(1)',
+                        boxShadow: selectedRoom?.id === room.id ? '0 8px 25px rgba(25, 118, 210, 0.15)' : '0 2px 8px rgba(0,0,0,0.1)',
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        position: 'relative',
+                        '&:hover': {
+                          transform: 'scale(1.02)',
+                          boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                        }
                       }}
                       onClick={() => setSelectedRoom(room)}
                     >
-                      <CardContent>
+                      {selectedRoom?.id === room.id && (
+                        <Box
+                          sx={{
+                            position: 'absolute',
+                            top: 8,
+                            right: 8,
+                            backgroundColor: 'primary.main',
+                            color: 'white',
+                            borderRadius: '50%',
+                            width: 24,
+                            height: 24,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            zIndex: 1,
+                          }}
+                        >
+                          ✓
+                        </Box>
+                      )}
+                      <CardContent sx={{ 
+                        color: selectedRoom?.id === room.id ? 'primary.contrastText' : 'inherit',
+                        '& .MuiTypography-root': {
+                          color: selectedRoom?.id === room.id ? 'white' : 'inherit'
+                        }
+                      }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-                          <Typography variant="h6">
+                          <Typography variant="h6" sx={{ 
+                            fontWeight: selectedRoom?.id === room.id ? 600 : 500,
+                            color: selectedRoom?.id === room.id ? 'white' : 'inherit'
+                          }}>
                             Room {room.roomNumber}
                           </Typography>
-                          <Chip label={room.roomType} size="small" />
+                          <Chip 
+                            label={room.roomType} 
+                            size="small" 
+                            sx={{
+                              backgroundColor: selectedRoom?.id === room.id ? 'rgba(255,255,255,0.2)' : 'inherit',
+                              color: selectedRoom?.id === room.id ? 'white' : 'inherit'
+                            }}
+                          />
                         </Box>
-                        <Typography variant="body2" color="text.secondary" gutterBottom>
+                        <Typography variant="body2" sx={{ 
+                          color: selectedRoom?.id === room.id ? 'rgba(255,255,255,0.9)' : 'text.secondary',
+                          mb: 1
+                        }}>
                           Capacity: {room.capacity} guest{room.capacity !== 1 ? 's' : ''}
                         </Typography>
                         {room.description && (
-                          <Typography variant="body2" color="text.secondary" gutterBottom>
+                          <Typography variant="body2" sx={{ 
+                            color: selectedRoom?.id === room.id ? 'rgba(255,255,255,0.8)' : 'text.secondary',
+                            mb: 1
+                          }}>
                             {room.description}
                           </Typography>
                         )}
-                        <Typography variant="h6" color="primary.main">
+                        <Typography variant="h6" sx={{
+                          color: selectedRoom?.id === room.id ? 'white' : 'primary.main',
+                          fontWeight: 600
+                        }}>
                           ETB {room.pricePerNight?.toFixed(0)}/night
                         </Typography>
                       </CardContent>
