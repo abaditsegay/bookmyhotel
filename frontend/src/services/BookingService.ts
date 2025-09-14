@@ -112,7 +112,7 @@ export class BookingService {
   static getStatusColor(status: string): 'primary' | 'success' | 'warning' | 'error' | 'default' {
     switch (status.toUpperCase()) {
       case 'CONFIRMED':
-        return 'success';
+        return 'primary';
       case 'PENDING':
         return 'warning';
       case 'CANCELLED':
@@ -120,7 +120,7 @@ export class BookingService {
         return 'error';
       case 'CHECKED_IN':
       case 'CHECKED_OUT':
-        return 'primary';
+        return 'success';
       default:
         return 'default';
     }

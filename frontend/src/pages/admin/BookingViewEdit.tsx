@@ -480,8 +480,8 @@ const BookingViewEdit: React.FC = () => {
     // Handle both API format (CHECKED_OUT) and display format (Checked Out)
     const normalizedStatus = status.toLowerCase().replace(/_/g, ' ');
     switch (normalizedStatus) {
-      case 'confirmed': return 'success';
-      case 'checked in': return 'primary';
+      case 'confirmed': return 'primary';
+      case 'checked in': return 'success';
       case 'checked out': return 'info';
       case 'cancelled': return 'error';
       case 'pending': return 'warning';

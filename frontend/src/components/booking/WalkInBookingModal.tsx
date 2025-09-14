@@ -21,6 +21,8 @@ import {
   FormControl,
   InputLabel,
   Select,
+  CircularProgress,
+  Backdrop,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -531,7 +533,12 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
             </Typography>
             
             {roomsLoading ? (
-              <Typography>Loading available rooms...</Typography>
+              <Box sx={{ textAlign: 'center', py: 4 }}>
+                <CircularProgress size={40} />
+                <Typography variant="body2" sx={{ mt: 2 }}>
+                  Loading available rooms...
+                </Typography>
+              </Box>
             ) : availableRooms.length === 0 ? (
               <Alert severity="warning">
                 No rooms available for {guests} guest{guests !== 1 ? 's' : ''} from {format(checkInDate, 'MMM dd')} to {format(checkOutDate, 'MMM dd')}. 
@@ -758,11 +765,36 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
         </Box>
       </DialogTitle>
       
-      <DialogContent>
+      <DialogContent sx={{ position: 'relative', minHeight: '400px' }}>
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
             {error}
           </Alert>
+        )}
+        
+        {/* Loading overlay for entire dialog content */}
+        {loading && (
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(255, 255, 255, 0.7)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1000,
+            }}
+          >
+            <Box sx={{ textAlign: 'center' }}>
+              <CircularProgress size={40} />
+              <Typography variant="body2" sx={{ mt: 2 }}>
+                Creating walk-in booking...
+              </Typography>
+            </Box>
+          </Box>
         )}
         
         {renderStepContent()}
@@ -784,14 +816,16 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
             variant="contained" 
             onClick={handleNext}
             disabled={loading || (activeStep === 1 && (!selectedRoom || roomsLoading))}
+            startIcon={roomsLoading && activeStep === 1 ? <CircularProgress size={16} /> : undefined}
           >
-            Next
+            {roomsLoading && activeStep === 1 ? 'Loading Rooms...' : 'Next'}
           </Button>
         ) : (
           <Button 
             variant="contained" 
             onClick={handleCreateBooking}
             disabled={loading || !selectedRoom}
+            startIcon={loading ? <CircularProgress size={16} /> : undefined}
           >
             {loading ? 'Creating Booking...' : 'Create Booking'}
           </Button>

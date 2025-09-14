@@ -20,6 +20,7 @@ import {
   Radio,
   InputAdornment,
   Chip,
+  CircularProgress,
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -420,7 +421,32 @@ const BookingPage: React.FC = () => {
 
         {/* Booking Form */}
         <form onSubmit={handleSubmit}>
-          <Card elevation={1} sx={{ p: 3 }}>
+          <Card elevation={1} sx={{ p: 3, position: 'relative' }}>
+            {/* Loading overlay for booking form */}
+            {loading && (
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  zIndex: 1000,
+                  borderRadius: 1,
+                }}
+              >
+                <Box sx={{ textAlign: 'center' }}>
+                  <CircularProgress size={40} />
+                  <Typography variant="body2" sx={{ mt: 2 }}>
+                    Processing your booking...
+                  </Typography>
+                </Box>
+              </Box>
+            )}
             <Grid container spacing={3}>
               {/* Dates and Guests */}
               <Grid item xs={12} sm={4}>
@@ -938,6 +964,7 @@ const BookingPage: React.FC = () => {
               disabled={loading}
               size="large"
               sx={{ minWidth: 150 }}
+              startIcon={loading ? <CircularProgress size={16} /> : undefined}
             >
               {loading ? 'Booking...' : `Book Now - ETB ${totalAmount?.toFixed(0)}`}
             </Button>

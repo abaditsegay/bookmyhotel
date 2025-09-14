@@ -693,10 +693,10 @@ const HotelAdminDashboard: React.FC = () => {
                                 </Typography>
                                 <Chip 
                                   label={status.replace('_', ' ')}
-                                  size="small"
+                                  size="small"  
                                   color={
-                                    status === 'CONFIRMED' ? 'success' :
-                                    status === 'CHECKED_IN' ? 'primary' :
+                                    status === 'CONFIRMED' ? 'primary' :
+                                    status === 'CHECKED_IN' ? 'success' :
                                     status === 'CHECKED_OUT' ? 'info' :
                                     status === 'CANCELLED' ? 'error' :
                                     'default'

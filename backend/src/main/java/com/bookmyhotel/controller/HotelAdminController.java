@@ -34,6 +34,8 @@ import com.bookmyhotel.service.HotelAdminService;
 import com.bookmyhotel.service.RoomTypePricingService;
 
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * REST Controller for hotel admin operations
@@ -42,6 +44,8 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/hotel-admin")
 @PreAuthorize("hasRole('HOTEL_ADMIN')")
 public class HotelAdminController {
+
+    private static final Logger logger = LoggerFactory.getLogger(HotelAdminController.class);
 
     @Autowired
     private HotelAdminService hotelAdminService;
@@ -356,6 +360,10 @@ public class HotelAdminController {
     /**
      * Create a walk-in booking
      * Hotel admins can create immediate bookings for walk-in guests
+     * 
+     * IMPORTANT: Walk-in bookings automatically send email confirmation to the guest's email address,
+     * not to the staff member who creates the booking. This ensures guests receive their
+     * booking confirmation details for their records.
      */
     @PostMapping("/walk-in-booking")
     public ResponseEntity<BookingResponse> createWalkInBooking(
@@ -370,7 +378,12 @@ public class HotelAdminController {
         }
 
         try {
-            BookingResponse response = bookingService.createBooking(request, userEmail);
+            // For walk-in bookings, create as anonymous guest so email goes to guest, not staff
+            // Pass null as userEmail to ensure guest gets the confirmation email
+            // This ensures the booking confirmation email is sent to the guest's email address
+            BookingResponse response = bookingService.createBooking(request, null);
+            logger.info("Walk-in booking created successfully with confirmation number: {} for guest email: {}", 
+                       response.getConfirmationNumber(), request.getGuestEmail());
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (Exception e) {
             // Log error and return appropriate response

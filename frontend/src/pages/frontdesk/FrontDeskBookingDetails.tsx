@@ -250,9 +250,9 @@ const FrontDeskBookingDetails: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'confirmed': return 'success';
+      case 'confirmed': return 'primary';
       case 'checked in': 
-      case 'checked_in': return 'primary';
+      case 'checked_in': return 'success';
       case 'checked out': 
       case 'checked_out': return 'info';
       case 'cancelled': return 'error';

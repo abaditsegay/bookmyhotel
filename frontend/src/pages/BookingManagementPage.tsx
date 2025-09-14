@@ -96,7 +96,7 @@ const BookingManagementPage: React.FC = () => {
   const getStatusColor = (status: string) => {
     switch (status?.toLowerCase()) {
       case 'confirmed':
-        return 'success';
+        return 'primary';
       case 'cancelled':
         return 'error';
       case 'pending':

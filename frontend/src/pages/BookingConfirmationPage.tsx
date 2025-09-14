@@ -132,7 +132,7 @@ const BookingConfirmationPage: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'confirmed': return 'success';
+      case 'confirmed': return 'primary';
       case 'pending': return 'warning';
       case 'cancelled': return 'error';
       case 'checked in': return 'info';

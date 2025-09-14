@@ -40,14 +40,14 @@ const BookingDetailsScreen = ({ route, navigation }) => {
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
       case 'confirmed':
-        return colors.success;
+        return colors.primary;
       case 'pending':
         return colors.warning;
       case 'cancelled':
         return colors.error;
       case 'checked_in':
       case 'checked-in':
-        return colors.primary;
+        return colors.success;
       default:
         return colors.textSecondary;
     }

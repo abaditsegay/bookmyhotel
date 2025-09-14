@@ -11,6 +11,8 @@ import {
   Alert,
   Divider,
   Paper,
+  CircularProgress,
+  Box,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -126,11 +128,36 @@ const BookingForm: React.FC<BookingFormProps> = ({
           )}
         </DialogTitle>
 
-        <DialogContent>
+        <DialogContent sx={{ position: 'relative' }}>
           {error && (
             <Alert severity="error" sx={{ mb: 2 }}>
               {error}
             </Alert>
+          )}
+
+          {/* Loading overlay for booking form */}
+          {loading && (
+            <Box
+              sx={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 1000,
+              }}
+            >
+              <Box sx={{ textAlign: 'center' }}>
+                <CircularProgress size={40} />
+                <Typography variant="body2" sx={{ mt: 2 }}>
+                  Processing your booking...
+                </Typography>
+              </Box>
+            </Box>
           )}
 
           {room && (
@@ -282,6 +309,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
             variant="contained"
             disabled={loading}
             sx={{ ml: 1 }}
+            startIcon={loading ? <CircularProgress size={16} /> : undefined}
           >
             {loading ? 'Processing...' : `Book Now - ETB ${totalAmount?.toFixed(0)}`}
           </Button>

@@ -395,7 +395,17 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
             </Grid>
             <Grid item xs={12} md={6}>
               <Typography variant="body2" color="text.secondary">Status</Typography>
-              <Chip label={booking.status} size="small" color="warning" />
+              <Chip 
+                label={booking.status} 
+                size="small" 
+                color={
+                  booking.status === 'CONFIRMED' ? 'primary' :
+                  booking.status === 'CHECKED_IN' ? 'success' :
+                  booking.status === 'CHECKED_OUT' ? 'info' :
+                  booking.status === 'CANCELLED' ? 'error' :
+                  'warning'
+                } 
+              />
             </Grid>
           </Grid>
         </Paper>

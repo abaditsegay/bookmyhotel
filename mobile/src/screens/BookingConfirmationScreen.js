@@ -111,7 +111,7 @@ const BookingConfirmationScreen = ({ route, navigation }) => {
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
       case 'confirmed':
-        return colors.success;
+        return colors.primary;
       case 'pending':
         return colors.warning;
       case 'cancelled':
