@@ -1143,4 +1143,48 @@ public class HotelAdminService {
     private String generateConfirmationNumber(Long reservationId) {
         return String.format("BK%08d", reservationId);
     }
+
+    /**
+     * Get available rooms for a specific date range (excludes occupied/assigned rooms)
+     */
+    public List<RoomDTO> getAvailableRoomsForDateRange(String adminEmail, LocalDate checkInDate, LocalDate checkOutDate, Integer guests, int page, int size) {
+        User admin = getUserByEmail(adminEmail);
+        Hotel hotel = admin.getHotel();
+
+        // Get all rooms for the hotel that are available (not disabled)
+        List<Room> allRooms = roomRepository.findByHotelIdAndIsAvailableTrueAndStatus(
+                hotel.getId(), RoomStatus.AVAILABLE);
+
+        // Filter out rooms that are occupied or assigned for the given date range
+        List<RoomDTO> availableRooms = allRooms.stream()
+                .filter(room -> {
+                    // Check if room has capacity for guests
+                    if (room.getCapacity() < guests) {
+                        return false;
+                    }
+
+                    // Check if room has any conflicting reservations for the date range
+                    boolean hasConflicts = room.getReservations().stream()
+                            .anyMatch(reservation -> {
+                                // Only consider active reservations (confirmed or checked-in)
+                                if (reservation.getStatus() != ReservationStatus.CONFIRMED && 
+                                    reservation.getStatus() != ReservationStatus.CHECKED_IN) {
+                                    return false;
+                                }
+
+                                // Check for date overlap
+                                LocalDate resCheckIn = reservation.getCheckInDate();
+                                LocalDate resCheckOut = reservation.getCheckOutDate();
+                                
+                                // Dates conflict if they overlap
+                                return !(checkOutDate.isBefore(resCheckIn) || checkInDate.isAfter(resCheckOut));
+                            });
+
+                    return !hasConflicts;
+                })
+                .map(this::convertToRoomDTO)
+                .collect(Collectors.toList());
+
+        return availableRooms;
+    }
 }

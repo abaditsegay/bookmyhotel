@@ -210,7 +210,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
         let rooms: AvailableRoom[] = [];
         
         if (isHotelAdmin) {
-          // For hotel admin, use the hotel admin rooms API with availability filter
+          // For hotel admin, use the date-specific available rooms API 
           const headers: Record<string, string> = {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -221,21 +221,23 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
           }
           
           const params = new URLSearchParams({
+            checkInDate: format(checkInDate, 'yyyy-MM-dd'),
+            checkOutDate: format(checkOutDate, 'yyyy-MM-dd'),
+            guests: guests.toString(),
             page: '0',
-            size: '100', // Get all available rooms
-            available: 'true' // Filter for available rooms only
+            size: '100'
           });
           
-          console.log('Hotel admin fetching rooms for date range:', format(checkInDate, 'yyyy-MM-dd'), 'to', format(checkOutDate, 'yyyy-MM-dd'));
+          console.log('Hotel admin fetching available rooms for date range:', format(checkInDate, 'yyyy-MM-dd'), 'to', format(checkOutDate, 'yyyy-MM-dd'), 'guests:', guests);
           
-          const response = await fetch(`${API_BASE_URL}/api/hotel-admin/rooms?${params.toString()}`, {
+          const response = await fetch(`${API_BASE_URL}/api/hotel-admin/available-rooms?${params.toString()}`, {
             headers
           });
           
           if (response.ok) {
             const data = await response.json();
             // Convert hotel admin room format to AvailableRoom format
-            rooms = data.content.map((room: any) => ({
+            rooms = data.map((room: any) => ({
               id: room.id,
               roomNumber: room.roomNumber,
               roomType: room.roomType,
@@ -245,10 +247,10 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
               isAvailable: room.isAvailable
             }));
           } else {
-            throw new Error(`Failed to fetch rooms: ${response.status}`);
+            throw new Error(`Failed to fetch available rooms: ${response.status}`);
           }
         } else {
-          // For front desk users, use the front desk available rooms API
+          // For front desk users, use the front desk available rooms API with date filtering
           const headers: Record<string, string> = {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -258,7 +260,15 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
             headers['X-Tenant-ID'] = tenantId;
           }
           
-          const response = await fetch(`${API_BASE_URL}/api/front-desk/hotels/${hotelId}/available-rooms`, {
+          const params = new URLSearchParams({
+            checkInDate: format(checkInDate, 'yyyy-MM-dd'),
+            checkOutDate: format(checkOutDate, 'yyyy-MM-dd'),
+            guests: guests.toString()
+          });
+          
+          console.log('Front desk fetching available rooms for date range:', format(checkInDate, 'yyyy-MM-dd'), 'to', format(checkOutDate, 'yyyy-MM-dd'), 'guests:', guests);
+          
+          const response = await fetch(`${API_BASE_URL}/api/front-desk/hotels/${hotelId}/available-rooms?${params.toString()}`, {
             headers
           });
           

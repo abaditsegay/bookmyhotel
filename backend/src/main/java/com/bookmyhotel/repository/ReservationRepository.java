@@ -112,7 +112,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
        /**
         * Find reservation by confirmation number (public search across all tenants)
         */
-       @Query(value = "SELECT * FROM reservations WHERE confirmation_number = ?1", nativeQuery = true)
+       @Query("SELECT r FROM Reservation r JOIN FETCH r.hotel WHERE r.confirmationNumber = ?1")
        Optional<Reservation> findByConfirmationNumberPublic(String confirmationNumber);
 
        /**

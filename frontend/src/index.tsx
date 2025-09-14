@@ -67,7 +67,17 @@ root.render(
   </React.StrictMode>
 );
 
-// Register service worker for PWA functionality
+// Cleanup existing service workers to prevent errors
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then((registrations) => {
+    registrations.forEach((registration) => {
+      registration.unregister();
+    });
+  });
+}
+
+// Register service worker for PWA functionality - DISABLED to prevent development errors
+/*
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
@@ -107,3 +117,4 @@ if ('serviceWorker' in navigator) {
 } else {
   console.log('Service workers are not supported in this browser');
 }
+*/

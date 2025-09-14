@@ -226,7 +226,7 @@ const GuestBookingManagementPage: React.FC = () => {
       
       if (token) {
         // Modify via token (from email link)
-        const apiResponse = await fetch(`/api/booking-management?token=${token}`, {
+        const apiResponse = await fetch(buildApiUrl(`/booking-management?token=${token}`), {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -297,7 +297,7 @@ const GuestBookingManagementPage: React.FC = () => {
       
       if (token) {
         // Cancel via token (from email link)
-        response = await fetch(`/api/booking-management?token=${token}`, {
+        response = await fetch(buildApiUrl(`/booking-management?token=${token}`), {
           method: 'DELETE',
         });
       } else {

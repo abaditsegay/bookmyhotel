@@ -25,6 +25,7 @@ import {
   Cancel
 } from '@mui/icons-material';
 import { BookingResponse } from '../types/hotel';
+import { buildApiUrl } from '../config/apiConfig';
 
 const BookingManagementPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -39,7 +40,7 @@ const BookingManagementPage: React.FC = () => {
   const fetchBooking = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/booking-management?token=${token}`);
+      const response = await fetch(buildApiUrl(`/booking-management?token=${token}`));
       
       if (!response.ok) {
         const errorText = await response.text();
@@ -70,7 +71,7 @@ const BookingManagementPage: React.FC = () => {
     if (!token) return;
 
     try {
-      const response = await fetch(`/api/booking-management?token=${token}`, {
+      const response = await fetch(buildApiUrl(`/booking-management?token=${token}`), {
         method: 'DELETE',
       });
 

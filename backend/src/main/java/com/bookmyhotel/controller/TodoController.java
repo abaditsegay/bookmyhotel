@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -46,6 +47,12 @@ public class TodoController {
             @AuthenticationPrincipal UserDetails userDetails,
             @RequestParam(required = false) Boolean completed,
             @RequestParam(required = false) String sortBy) {
+
+        // Check if user has GUEST or CUSTOMER role - these roles should not have access to todos
+        if (hasGuestOrCustomerRole(userDetails)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Access denied: Todos are not available for guest and customer users");
+        }
 
         try {
             List<Todo> todos;
@@ -161,6 +168,12 @@ public class TodoController {
             @AuthenticationPrincipal UserDetails userDetails,
             @Valid @RequestBody Todo todoRequest) {
 
+        // Check if user has GUEST or CUSTOMER role - these roles should not have access to todos
+        if (hasGuestOrCustomerRole(userDetails)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Access denied: Todos are not available for guest and customer users");
+        }
+
         try {
             Todo createdTodo = todoService.createTodo(userDetails.getUsername(), todoRequest);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdTodo);
@@ -207,6 +220,12 @@ public class TodoController {
             @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable Long id) {
 
+        // Check if user has GUEST or CUSTOMER role - these roles should not have access to todos
+        if (hasGuestOrCustomerRole(userDetails)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Access denied: Todos are not available for guest and customer users");
+        }
+
         try {
             todoService.deleteTodo(userDetails.getUsername(), id);
             return ResponseEntity.noContent().build();
@@ -216,5 +235,14 @@ public class TodoController {
             errorResponse.put("message", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
+    }
+
+    /**
+     * Helper method to check if user has GUEST or CUSTOMER role
+     */
+    private boolean hasGuestOrCustomerRole(UserDetails userDetails) {
+        return userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(role -> role.equals("ROLE_GUEST") || role.equals("ROLE_CUSTOMER"));
     }
 }

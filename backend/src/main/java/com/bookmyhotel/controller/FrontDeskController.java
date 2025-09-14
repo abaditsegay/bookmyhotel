@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -131,11 +132,35 @@ public class FrontDeskController {
 
     /**
      * Get available rooms for check-in at a specific hotel
+     * Enhanced to support date-based filtering to exclude occupied rooms
      */
     @GetMapping("/hotels/{hotelId}/available-rooms")
-    public ResponseEntity<List<RoomResponse>> getAvailableRoomsForCheckin(@PathVariable Long hotelId) {
-        List<RoomResponse> availableRooms = frontDeskService.getAvailableRoomsForHotel(hotelId);
-        return ResponseEntity.ok(availableRooms);
+    public ResponseEntity<List<RoomResponse>> getAvailableRoomsForCheckin(
+            @PathVariable Long hotelId,
+            @RequestParam(required = false) String checkInDate,
+            @RequestParam(required = false) String checkOutDate,
+            @RequestParam(defaultValue = "1") Integer guests) {
+        
+        try {
+            List<RoomResponse> availableRooms;
+            
+            if (checkInDate != null && checkOutDate != null) {
+                // Use date-based filtering to exclude occupied rooms
+                java.time.LocalDate checkIn = java.time.LocalDate.parse(checkInDate);
+                java.time.LocalDate checkOut = java.time.LocalDate.parse(checkOutDate);
+                
+                availableRooms = frontDeskService.getAvailableRoomsForDateRange(hotelId, checkIn, checkOut, guests);
+            } else {
+                // Fallback to basic availability (existing behavior)
+                availableRooms = frontDeskService.getAvailableRoomsForHotel(hotelId);
+            }
+            
+            return ResponseEntity.ok(availableRooms);
+        } catch (Exception e) {
+            System.err.println("Failed to get available rooms: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     /**

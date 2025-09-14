@@ -1191,8 +1191,9 @@ public class BookingService {
                     return new BookingModificationResponse(false, "Check-in date cannot be in the past");
                 }
 
-                // Check room availability for new dates
-                if (!isRoomAvailableForModification(reservation.getRoom().getId(), newCheckIn, newCheckOut,
+                // Check room availability for new dates (only if room is assigned)
+                if (reservation.getRoom() != null && 
+                    !isRoomAvailableForModification(reservation.getRoom().getId(), newCheckIn, newCheckOut,
                         reservation.getId())) {
                     return new BookingModificationResponse(false, "Room is not available for the new dates");
                 }
@@ -1200,8 +1201,17 @@ public class BookingService {
                 // Calculate price difference
                 long oldNights = ChronoUnit.DAYS.between(reservation.getCheckInDate(), reservation.getCheckOutDate());
                 long newNights = ChronoUnit.DAYS.between(newCheckIn, newCheckOut);
-                BigDecimal priceDifference = reservation.getRoom().getPricePerNight()
-                        .multiply(BigDecimal.valueOf(newNights - oldNights));
+                
+                BigDecimal priceDifference;
+                if (reservation.getRoom() != null) {
+                    // Use room price per night if room is assigned
+                    priceDifference = reservation.getRoom().getPricePerNight()
+                            .multiply(BigDecimal.valueOf(newNights - oldNights));
+                } else {
+                    // Use reservation price per night if no room assigned
+                    priceDifference = reservation.getPricePerNight()
+                            .multiply(BigDecimal.valueOf(newNights - oldNights));
+                }
 
                 if (priceDifference.compareTo(BigDecimal.ZERO) > 0) {
                     additionalCharges = priceDifference;
@@ -1212,13 +1222,20 @@ public class BookingService {
                 // Update dates
                 reservation.setCheckInDate(newCheckIn);
                 reservation.setCheckOutDate(newCheckOut);
-                reservation.setTotalAmount(
-                        reservation.getRoom().getPricePerNight().multiply(BigDecimal.valueOf(newNights)));
+                
+                // Update total amount
+                if (reservation.getRoom() != null) {
+                    reservation.setTotalAmount(
+                            reservation.getRoom().getPricePerNight().multiply(BigDecimal.valueOf(newNights)));
+                } else {
+                    reservation.setTotalAmount(
+                            reservation.getPricePerNight().multiply(BigDecimal.valueOf(newNights)));
+                }
             }
 
             // Handle room changes by room type
             if (request.getNewRoomType() != null
-                    && !request.getNewRoomType().equals(reservation.getRoom().getRoomType().name())) {
+                    && (reservation.getRoom() == null || !request.getNewRoomType().equals(reservation.getRoom().getRoomType().name()))) {
                 // Find an available room of the new type
                 Room newRoom = roomRepository.findFirstAvailableRoomOfTypePublic(
                         reservation.getHotel().getId(),
@@ -1232,7 +1249,14 @@ public class BookingService {
 
                 // Calculate price difference for room upgrade/downgrade
                 long nights = ChronoUnit.DAYS.between(reservation.getCheckInDate(), reservation.getCheckOutDate());
-                BigDecimal oldRoomTotal = reservation.getRoom().getPricePerNight().multiply(BigDecimal.valueOf(nights));
+                BigDecimal oldRoomTotal;
+                if (reservation.getRoom() != null) {
+                    // Use current room price if room is assigned
+                    oldRoomTotal = reservation.getRoom().getPricePerNight().multiply(BigDecimal.valueOf(nights));
+                } else {
+                    // Use reservation price per night if no room assigned yet
+                    oldRoomTotal = reservation.getPricePerNight().multiply(BigDecimal.valueOf(nights));
+                }
                 BigDecimal newRoomTotal = newRoom.getPricePerNight().multiply(BigDecimal.valueOf(nights));
                 BigDecimal roomPriceDifference = newRoomTotal.subtract(oldRoomTotal);
 
@@ -1258,7 +1282,7 @@ public class BookingService {
                 }
 
                 // Check if it's actually a different room type
-                if (!requestedRoomType.equals(reservation.getRoom().getRoomType())) {
+                if (reservation.getRoom() == null || !requestedRoomType.equals(reservation.getRoom().getRoomType())) {
 
                     // Use the effective dates (new dates if they were modified, otherwise current
                     // dates)
@@ -1572,7 +1596,7 @@ public class BookingService {
 
             // Handle room changes by room type
             if (request.getNewRoomType() != null
-                    && !request.getNewRoomType().equals(reservation.getRoom().getRoomType().name())) {
+                    && (reservation.getRoom() == null || !request.getNewRoomType().equals(reservation.getRoom().getRoomType().name()))) {
                 // Find an available room of the new type
                 Room newRoom = roomRepository.findFirstAvailableRoomOfTypePublic(
                         reservation.getHotel().getId(),
@@ -1987,11 +2011,22 @@ public class BookingService {
         map.put("specialRequests", reservation.getSpecialRequests());
         map.put("totalAmount", reservation.getTotalAmount());
         map.put("status", reservation.getStatus().toString());
-        map.put("roomId", reservation.getRoom().getId());
-        map.put("roomNumber", reservation.getRoom().getRoomNumber());
-        map.put("roomType", reservation.getRoom().getRoomType().toString());
-        map.put("guestId", reservation.getGuest().getId());
-        map.put("guestEmail", reservation.getGuest().getEmail());
+        if (reservation.getRoom() != null) {
+            map.put("roomId", reservation.getRoom().getId());
+            map.put("roomNumber", reservation.getRoom().getRoomNumber());
+            map.put("roomType", reservation.getRoom().getRoomType().toString());
+        } else {
+            map.put("roomId", null);
+            map.put("roomNumber", "To be assigned");
+            map.put("roomType", reservation.getRoomType() != null ? reservation.getRoomType().toString() : "Not specified");
+        }
+        if (reservation.getGuest() != null) {
+            map.put("guestId", reservation.getGuest().getId());
+            map.put("guestEmail", reservation.getGuest().getEmail());
+        } else {
+            map.put("guestId", null);
+            map.put("guestEmail", reservation.getGuestInfo() != null ? reservation.getGuestInfo().getEmail() : null);
+        }
         map.put("updatedAt", reservation.getUpdatedAt());
         return map;
     }

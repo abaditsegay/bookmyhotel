@@ -1,7 +1,6 @@
 package com.bookmyhotel.dto;
 
 import java.time.LocalDate;
-
 import jakarta.validation.constraints.NotNull;
 
 /**
@@ -9,10 +8,13 @@ import jakarta.validation.constraints.NotNull;
  */
 public class BookingModificationRequest {
     
+    // Confirmation number is optional for token-based modifications
+    // It will be set by the controller from the token data
     @NotNull(message = "Confirmation number is required")
     private String confirmationNumber;
     
-    @NotNull(message = "Guest email is required")
+    // Guest email is optional for token-based modifications  
+    // It will be set by the controller from the token data
     private String guestEmail;
     
     // Optional fields for modification

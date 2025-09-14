@@ -18,16 +18,16 @@ import io.jsonwebtoken.SignatureAlgorithm;
  */
 @Service
 public class BookingTokenService {
-    
+
     @Autowired
     private JwtUtil jwtUtil;
-    
-    @Value("${app.jwt.secret}")
+
+    @Value("${jwt.secret.key}")
     private String jwtSecret;
-    
+
     // Token validity: 365 days (1 year)
     private static final long BOOKING_TOKEN_VALIDITY = 365 * 24 * 60 * 60 * 1000L;
-    
+
     /**
      * Generate a booking management token for a specific reservation
      * This token allows the guest to view and manage only this specific booking
@@ -35,57 +35,61 @@ public class BookingTokenService {
     public String generateBookingManagementToken(Long reservationId, String guestEmail) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + BOOKING_TOKEN_VALIDITY);
-        
+
         return Jwts.builder()
-            .setSubject("booking:" + reservationId)
-            .claim("reservationId", reservationId)
-            .claim("guestEmail", guestEmail)
-            .claim("type", "booking_management")
-            .setIssuedAt(now)
-            .setExpiration(expiryDate)
-            .signWith(SignatureAlgorithm.HS512, jwtSecret)
-            .compact();
+                .subject("booking:" + reservationId)
+                .claim("reservationId", reservationId)
+                .claim("guestEmail", guestEmail)
+                .claim("type", "booking_management")
+                .issuedAt(now)
+                .expiration(expiryDate)
+                .signWith(new javax.crypto.spec.SecretKeySpec(jwtSecret.getBytes(), "HmacSHA512"))
+                .compact();
     }
-    
+
     /**
      * Validate booking management token and extract reservation ID
      */
     public Long validateBookingToken(String token) {
         try {
             Claims claims = Jwts.parser()
-                .setSigningKey(jwtSecret)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-                
+                    .verifyWith(javax.crypto.spec.SecretKeySpec.class.cast(new javax.crypto.spec.SecretKeySpec(jwtSecret.getBytes(), "HmacSHA512")))
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+
             String type = claims.get("type", String.class);
             if (!"booking_management".equals(type)) {
                 return null;
             }
-            
+
             return claims.get("reservationId", Long.class);
         } catch (Exception e) {
+            System.err.println("JWT validation error: " + e.getClass().getSimpleName() + " - " + e.getMessage());
+            e.printStackTrace();
             return null;
         }
     }
-    
+
     /**
      * Extract guest email from booking token
      */
     public String getGuestEmailFromToken(String token) {
         try {
             Claims claims = Jwts.parser()
-                .setSigningKey(jwtSecret)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-                
+                    .verifyWith(javax.crypto.spec.SecretKeySpec.class.cast(new javax.crypto.spec.SecretKeySpec(jwtSecret.getBytes(), "HmacSHA512")))
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+
             return claims.get("guestEmail", String.class);
         } catch (Exception e) {
+            System.err.println("JWT email extraction error: " + e.getClass().getSimpleName() + " - " + e.getMessage());
+            e.printStackTrace();
             return null;
         }
     }
-    
+
     /**
      * Generate management URL for booking
      */

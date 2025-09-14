@@ -67,8 +67,23 @@ public class BookingController {
     public ResponseEntity<BookingResponse> createBookingByRoomType(
             @Valid @RequestBody BookingRequest request,
             Authentication auth) {
-        // Delegate to main endpoint
-        return createBooking(request, auth);
+
+        logger.info("Received booking request at /room-type endpoint:");
+        logger.info("Hotel ID: {}", request.getHotelId());
+        logger.info("Room Type: {}", request.getRoomType());
+        logger.info("Room ID: {}", request.getRoomId());
+        logger.info("Check-in: {}, Check-out: {}", request.getCheckInDate(), request.getCheckOutDate());
+        logger.info("Guests: {}", request.getGuests());
+        logger.info("Guest Name: {}, Email: {}, Phone: {}", request.getGuestName(), request.getGuestEmail(),
+                request.getGuestPhone());
+
+        try {
+            // Delegate to main endpoint
+            return createBooking(request, auth);
+        } catch (Exception e) {
+            logger.error("Error processing booking request: ", e);
+            throw e;
+        }
     }
 
     /**

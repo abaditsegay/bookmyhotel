@@ -1107,4 +1107,44 @@ public class FrontDeskService {
 
         return response;
     }
+
+    /**
+     * Get available rooms for a specific date range (excludes occupied/assigned rooms)
+     */
+    public List<RoomResponse> getAvailableRoomsForDateRange(Long hotelId, LocalDate checkInDate, LocalDate checkOutDate, Integer guests) {
+        // Get all available rooms for the hotel
+        List<Room> allRooms = roomRepository.findByHotelIdAndIsAvailableTrue(hotelId);
+
+        // Filter out rooms that are occupied or assigned for the given date range
+        List<RoomResponse> availableRooms = allRooms.stream()
+                .filter(room -> {
+                    // Check if room has capacity for guests
+                    if (room.getCapacity() < guests) {
+                        return false;
+                    }
+
+                    // Check if room has any conflicting reservations for the date range
+                    boolean hasConflicts = room.getReservations().stream()
+                            .anyMatch(reservation -> {
+                                // Only consider active reservations (confirmed or checked-in)
+                                if (reservation.getStatus() != ReservationStatus.CONFIRMED && 
+                                    reservation.getStatus() != ReservationStatus.CHECKED_IN) {
+                                    return false;
+                                }
+
+                                // Check for date overlap
+                                LocalDate resCheckIn = reservation.getCheckInDate();
+                                LocalDate resCheckOut = reservation.getCheckOutDate();
+                                
+                                // Dates conflict if they overlap
+                                return !(checkOutDate.isBefore(resCheckIn) || checkInDate.isAfter(resCheckOut));
+                            });
+
+                    return !hasConflicts;
+                })
+                .map(this::convertToRoomResponse)
+                .collect(Collectors.toList());
+
+        return availableRooms;
+    }
 }

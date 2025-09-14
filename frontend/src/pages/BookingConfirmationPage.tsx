@@ -240,7 +240,7 @@ const BookingConfirmationPage: React.FC = () => {
         <Paper elevation={2} sx={{ p: 6, borderRadius: 3 }}>
           <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" minHeight="400px">
             <CircularProgress size={80} thickness={4} sx={{ color: '#1976d2', mb: 4 }} />
-            <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 2 }}>
+            <Typography variant="h5" component="div" sx={{ fontWeight: 'bold', mb: 2 }}>
               Loading booking confirmation...
             </Typography>
             <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'center' }}>
@@ -507,7 +507,7 @@ const BookingConfirmationPage: React.FC = () => {
                 <Typography variant="subtitle2" color="text.secondary" sx={{ fontSize: '0.9rem', fontWeight: '600', mb: 1 }}>
                   Total Amount
                 </Typography>
-                <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#2e7d32' }}>
+                <Typography variant="h5" component="div" sx={{ fontWeight: 'bold', color: '#2e7d32' }}>
                   ETB {booking.totalAmount?.toFixed(0)}
                 </Typography>
               </CardContent>
@@ -687,7 +687,7 @@ const BookingConfirmationPage: React.FC = () => {
         }}
       >
         <DialogTitle sx={{ pb: 2 }}>
-          <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#1976d2' }}>
+          <Typography variant="h5" component="div" sx={{ fontWeight: 'bold', color: '#1976d2' }}>
             Email Booking Confirmation
           </Typography>
         </DialogTitle>
