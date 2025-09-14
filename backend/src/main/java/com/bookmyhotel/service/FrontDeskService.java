@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -15,6 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.bookmyhotel.config.CacheConfig;
 import com.bookmyhotel.dto.BookingResponse;
 import com.bookmyhotel.dto.CheckoutResponse;
 import com.bookmyhotel.dto.ConsolidatedReceiptResponse;
@@ -47,6 +51,9 @@ public class FrontDeskService {
 
     @Autowired
     private RoomRepository roomRepository;
+
+    @Autowired
+    private RoomCacheService roomCacheService;
 
     @Autowired
     private HotelRepository hotelRepository;
@@ -396,6 +403,7 @@ public class FrontDeskService {
     /**
      * Get available rooms for a hotel
      */
+    @Cacheable(value = CacheConfig.ROOMS_BY_HOTEL_CACHE, key = "'hotel:' + #hotelId + ':available:frontdesk'")
     @Transactional(readOnly = true)
     public List<RoomResponse> getAvailableRoomsForHotel(Long hotelId) {
         String tenantId = TenantContext.getTenantId();
@@ -403,7 +411,7 @@ public class FrontDeskService {
             throw new IllegalStateException("Tenant context is not set");
         }
 
-        List<Room> availableRooms = roomRepository.findByHotelIdAndIsAvailableTrueAndStatus(hotelId,
+        List<Room> availableRooms = roomCacheService.findByHotelIdAndIsAvailableTrueAndStatus(hotelId,
                 RoomStatus.AVAILABLE);
 
         return availableRooms.stream()
@@ -801,13 +809,13 @@ public class FrontDeskService {
 
         // Get room counts for this specific hotel
         long totalRooms = roomRepository.countByHotelId(hotel.getId());
-        long availableRooms = roomRepository.findByHotelId(hotel.getId()).stream()
+        long availableRooms = roomCacheService.findByHotelId(hotel.getId()).stream()
                 .filter(room -> room.getStatus() == RoomStatus.AVAILABLE)
                 .count();
-        long roomsOutOfOrder = roomRepository.findByHotelId(hotel.getId()).stream()
+        long roomsOutOfOrder = roomCacheService.findByHotelId(hotel.getId()).stream()
                 .filter(room -> room.getStatus() == RoomStatus.OUT_OF_ORDER)
                 .count();
-        long roomsUnderMaintenance = roomRepository.findByHotelId(hotel.getId()).stream()
+        long roomsUnderMaintenance = roomCacheService.findByHotelId(hotel.getId()).stream()
                 .filter(room -> room.getStatus() == RoomStatus.MAINTENANCE)
                 .count();
 
@@ -854,6 +862,7 @@ public class FrontDeskService {
     /**
      * Get all rooms with pagination and filtering
      */
+    @Cacheable(value = CacheConfig.ROOMS_BY_HOTEL_CACHE, key = "'all:page:' + #pageable.pageNumber + ':size:' + #pageable.pageSize + ':search:' + (#search != null ? #search : 'null') + ':type:' + (#roomType != null ? #roomType : 'null') + ':status:' + (#status != null ? #status : 'null')")
     @Transactional(readOnly = true)
     public Page<RoomResponse> getAllRooms(Pageable pageable, String search, String roomType, String status) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -878,7 +887,7 @@ public class FrontDeskService {
             if (hotel == null) {
                 throw new ResourceNotFoundException("User is not associated with any hotel");
             }
-            allRooms = roomRepository.findByHotelIdOrderByRoomNumber(hotel.getId());
+            allRooms = roomCacheService.findByHotelIdOrderByRoomNumber(hotel.getId());
         }
 
         // Convert to responses first (this computes the actual status including
@@ -911,6 +920,12 @@ public class FrontDeskService {
     /**
      * Update room status
      */
+    @Caching(evict = {
+            @CacheEvict(value = CacheConfig.AVAILABLE_ROOMS_CACHE, allEntries = true),
+            @CacheEvict(value = CacheConfig.ROOMS_BY_HOTEL_CACHE, allEntries = true),
+            @CacheEvict(value = CacheConfig.ROOM_AVAILABILITY_CACHE, allEntries = true),
+            @CacheEvict(value = CacheConfig.ROOM_COUNTS_CACHE, allEntries = true)
+    })
     public RoomResponse updateRoomStatus(Long roomId, String status, String notes) {
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new ResourceNotFoundException("Room not found with id: " + roomId));
@@ -952,6 +967,12 @@ public class FrontDeskService {
     /**
      * Toggle room availability
      */
+    @Caching(evict = {
+            @CacheEvict(value = CacheConfig.AVAILABLE_ROOMS_CACHE, allEntries = true),
+            @CacheEvict(value = CacheConfig.ROOMS_BY_HOTEL_CACHE, allEntries = true),
+            @CacheEvict(value = CacheConfig.ROOM_AVAILABILITY_CACHE, allEntries = true),
+            @CacheEvict(value = CacheConfig.ROOM_COUNTS_CACHE, allEntries = true)
+    })
     public RoomResponse toggleRoomAvailability(Long roomId, boolean available, String reason) {
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new ResourceNotFoundException("Room not found with id: " + roomId));
@@ -979,12 +1000,21 @@ public class FrontDeskService {
 
         room = roomRepository.save(room);
 
+        // Invalidate room caches when availability changes
+        roomCacheService.evictRoomSpecificCaches(room.getId(), room.getHotel().getId());
+
         return convertToRoomResponse(room);
     }
 
     /**
      * Toggle room availability (overloaded method for actual toggling)
      */
+    @Caching(evict = {
+            @CacheEvict(value = CacheConfig.AVAILABLE_ROOMS_CACHE, allEntries = true),
+            @CacheEvict(value = CacheConfig.ROOMS_BY_HOTEL_CACHE, allEntries = true),
+            @CacheEvict(value = CacheConfig.ROOM_AVAILABILITY_CACHE, allEntries = true),
+            @CacheEvict(value = CacheConfig.ROOM_COUNTS_CACHE, allEntries = true)
+    })
     public RoomResponse toggleRoomAvailability(Long roomId) {
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new ResourceNotFoundException("Room not found with id: " + roomId));
@@ -998,6 +1028,7 @@ public class FrontDeskService {
     /**
      * Get room details by ID
      */
+    @Cacheable(value = CacheConfig.ROOMS_BY_HOTEL_CACHE, key = "'frontdesk:room:' + #roomId")
     public RoomResponse getRoomById(Long roomId) {
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new ResourceNotFoundException("Room not found with id: " + roomId));
@@ -1109,11 +1140,14 @@ public class FrontDeskService {
     }
 
     /**
-     * Get available rooms for a specific date range (excludes occupied/assigned rooms)
+     * Get available rooms for a specific date range (excludes occupied/assigned
+     * rooms)
      */
-    public List<RoomResponse> getAvailableRoomsForDateRange(Long hotelId, LocalDate checkInDate, LocalDate checkOutDate, Integer guests) {
+    @Cacheable(value = CacheConfig.AVAILABLE_ROOMS_CACHE, key = "'frontdesk:hotel:' + #hotelId + ':checkin:' + #checkInDate + ':checkout:' + #checkOutDate + ':guests:' + #guests")
+    public List<RoomResponse> getAvailableRoomsForDateRange(Long hotelId, LocalDate checkInDate, LocalDate checkOutDate,
+            Integer guests) {
         // Get all available rooms for the hotel
-        List<Room> allRooms = roomRepository.findByHotelIdAndIsAvailableTrue(hotelId);
+        List<Room> allRooms = roomCacheService.findByHotelIdAndIsAvailableTrue(hotelId);
 
         // Filter out rooms that are occupied or assigned for the given date range
         List<RoomResponse> availableRooms = allRooms.stream()
@@ -1127,15 +1161,15 @@ public class FrontDeskService {
                     boolean hasConflicts = room.getReservations().stream()
                             .anyMatch(reservation -> {
                                 // Only consider active reservations (confirmed or checked-in)
-                                if (reservation.getStatus() != ReservationStatus.CONFIRMED && 
-                                    reservation.getStatus() != ReservationStatus.CHECKED_IN) {
+                                if (reservation.getStatus() != ReservationStatus.CONFIRMED &&
+                                        reservation.getStatus() != ReservationStatus.CHECKED_IN) {
                                     return false;
                                 }
 
                                 // Check for date overlap
                                 LocalDate resCheckIn = reservation.getCheckInDate();
                                 LocalDate resCheckOut = reservation.getCheckOutDate();
-                                
+
                                 // Dates conflict if they overlap
                                 return !(checkOutDate.isBefore(resCheckIn) || checkInDate.isAfter(resCheckOut));
                             });

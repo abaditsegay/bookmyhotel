@@ -59,6 +59,9 @@ public class BookingService {
     private RoomRepository roomRepository;
 
     @Autowired
+    private RoomCacheService roomCacheService;
+
+    @Autowired
     private UserRepository userRepository;
 
     @Autowired
@@ -1192,16 +1195,16 @@ public class BookingService {
                 }
 
                 // Check room availability for new dates (only if room is assigned)
-                if (reservation.getRoom() != null && 
-                    !isRoomAvailableForModification(reservation.getRoom().getId(), newCheckIn, newCheckOut,
-                        reservation.getId())) {
+                if (reservation.getRoom() != null &&
+                        !isRoomAvailableForModification(reservation.getRoom().getId(), newCheckIn, newCheckOut,
+                                reservation.getId())) {
                     return new BookingModificationResponse(false, "Room is not available for the new dates");
                 }
 
                 // Calculate price difference
                 long oldNights = ChronoUnit.DAYS.between(reservation.getCheckInDate(), reservation.getCheckOutDate());
                 long newNights = ChronoUnit.DAYS.between(newCheckIn, newCheckOut);
-                
+
                 BigDecimal priceDifference;
                 if (reservation.getRoom() != null) {
                     // Use room price per night if room is assigned
@@ -1222,7 +1225,7 @@ public class BookingService {
                 // Update dates
                 reservation.setCheckInDate(newCheckIn);
                 reservation.setCheckOutDate(newCheckOut);
-                
+
                 // Update total amount
                 if (reservation.getRoom() != null) {
                     reservation.setTotalAmount(
@@ -1235,7 +1238,8 @@ public class BookingService {
 
             // Handle room changes by room type
             if (request.getNewRoomType() != null
-                    && (reservation.getRoom() == null || !request.getNewRoomType().equals(reservation.getRoom().getRoomType().name()))) {
+                    && (reservation.getRoom() == null
+                            || !request.getNewRoomType().equals(reservation.getRoom().getRoomType().name()))) {
                 // Find an available room of the new type
                 Room newRoom = roomRepository.findFirstAvailableRoomOfTypePublic(
                         reservation.getHotel().getId(),
@@ -1596,7 +1600,8 @@ public class BookingService {
 
             // Handle room changes by room type
             if (request.getNewRoomType() != null
-                    && (reservation.getRoom() == null || !request.getNewRoomType().equals(reservation.getRoom().getRoomType().name()))) {
+                    && (reservation.getRoom() == null
+                            || !request.getNewRoomType().equals(reservation.getRoom().getRoomType().name()))) {
                 // Find an available room of the new type
                 Room newRoom = roomRepository.findFirstAvailableRoomOfTypePublic(
                         reservation.getHotel().getId(),
@@ -1902,7 +1907,7 @@ public class BookingService {
 
         // Use the proper hotel-filtered availability query
         RoomType roomTypeEnum = RoomType.valueOf(roomType);
-        List<Room> availableRooms = roomRepository.findAvailableRooms(
+        List<Room> availableRooms = roomCacheService.findAvailableRooms(
                 reservation.getRoom().getHotel().getId(),
                 checkIn,
                 checkOut,
@@ -2018,7 +2023,8 @@ public class BookingService {
         } else {
             map.put("roomId", null);
             map.put("roomNumber", "To be assigned");
-            map.put("roomType", reservation.getRoomType() != null ? reservation.getRoomType().toString() : "Not specified");
+            map.put("roomType",
+                    reservation.getRoomType() != null ? reservation.getRoomType().toString() : "Not specified");
         }
         if (reservation.getGuest() != null) {
             map.put("guestId", reservation.getGuest().getId());
@@ -2067,6 +2073,19 @@ public class BookingService {
         } catch (Exception e) {
             logger.error("Failed to process Ethiopian payment for method {}: {}", paymentMethod, e.getMessage());
             throw new BookingException("Ethiopian payment processing failed: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Helper method to invalidate room caches after reservation changes
+     * Should be called after any operation that affects room availability
+     */
+    private void invalidateRoomCaches() {
+        try {
+            roomCacheService.evictAvailabilityCaches();
+            logger.debug("Invalidated room availability caches after reservation change");
+        } catch (Exception e) {
+            logger.warn("Failed to invalidate room caches: {}", e.getMessage());
         }
     }
 }

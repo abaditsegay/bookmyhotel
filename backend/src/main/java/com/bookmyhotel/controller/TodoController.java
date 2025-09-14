@@ -48,7 +48,8 @@ public class TodoController {
             @RequestParam(required = false) Boolean completed,
             @RequestParam(required = false) String sortBy) {
 
-        // Check if user has GUEST or CUSTOMER role - these roles should not have access to todos
+        // Check if user has GUEST or CUSTOMER role - these roles should not have access
+        // to todos
         if (hasGuestOrCustomerRole(userDetails)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("Access denied: Todos are not available for guest and customer users");
@@ -168,7 +169,8 @@ public class TodoController {
             @AuthenticationPrincipal UserDetails userDetails,
             @Valid @RequestBody Todo todoRequest) {
 
-        // Check if user has GUEST or CUSTOMER role - these roles should not have access to todos
+        // Check if user has GUEST or CUSTOMER role - these roles should not have access
+        // to todos
         if (hasGuestOrCustomerRole(userDetails)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("Access denied: Todos are not available for guest and customer users");
@@ -220,7 +222,8 @@ public class TodoController {
             @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable Long id) {
 
-        // Check if user has GUEST or CUSTOMER role - these roles should not have access to todos
+        // Check if user has GUEST or CUSTOMER role - these roles should not have access
+        // to todos
         if (hasGuestOrCustomerRole(userDetails)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("Access denied: Todos are not available for guest and customer users");

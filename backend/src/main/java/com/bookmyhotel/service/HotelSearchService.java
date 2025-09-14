@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +19,7 @@ import com.bookmyhotel.entity.RoomType;
 import com.bookmyhotel.entity.RoomTypePricing;
 import com.bookmyhotel.repository.HotelRepository;
 import com.bookmyhotel.repository.RoomRepository;
+import com.bookmyhotel.config.CacheConfig;
 
 /**
  * Hotel search service
@@ -31,6 +33,9 @@ public class HotelSearchService {
 
     @Autowired
     private RoomRepository roomRepository;
+
+    @Autowired
+    private RoomCacheService roomCacheService;
 
     @Autowired
     private RoomTypePricingService roomTypePricingService;
@@ -79,6 +84,7 @@ public class HotelSearchService {
     /**
      * Get available rooms for a hotel
      */
+    @Cacheable(value = CacheConfig.AVAILABLE_ROOMS_CACHE, key = "'search:hotel:' + #hotelId + ':checkin:' + #request.checkInDate + ':checkout:' + #request.checkOutDate + ':guests:' + #request.guests + ':roomtype:' + #request.roomType")
     public List<HotelSearchResult.AvailableRoomDto> getAvailableRooms(
             Long hotelId, HotelSearchRequest request) {
 
@@ -93,7 +99,7 @@ public class HotelSearchService {
             }
         }
 
-        List<Room> availableRooms = roomRepository.findAvailableRooms(
+        List<Room> availableRooms = roomCacheService.findAvailableRooms(
                 hotelId,
                 request.getCheckInDate(),
                 request.getCheckOutDate(),
@@ -109,11 +115,12 @@ public class HotelSearchService {
     /**
      * Get room type availability for a hotel (new approach)
      */
+    @Cacheable(value = CacheConfig.ROOM_AVAILABILITY_CACHE, key = "'availability:hotel:' + #hotelId + ':checkin:' + #request.checkInDate + ':checkout:' + #request.checkOutDate + ':guests:' + #request.guests")
     public List<RoomTypeAvailabilityDto> getRoomTypeAvailability(
             Long hotelId, HotelSearchRequest request) {
 
         // Get distinct room types for the hotel
-        List<RoomType> roomTypes = roomRepository.findDistinctRoomTypesByHotel(hotelId);
+        List<RoomType> roomTypes = roomCacheService.findDistinctRoomTypesByHotel(hotelId);
 
         return roomTypes.stream()
                 .map(roomType -> createRoomTypeAvailability(hotelId, roomType, request))
@@ -129,7 +136,7 @@ public class HotelSearchService {
     private RoomTypeAvailabilityDto createRoomTypeAvailability(
             Long hotelId, RoomType roomType, HotelSearchRequest request) {
 
-        long availableCount = roomRepository.countAvailableRoomsByType(
+        long availableCount = roomCacheService.countAvailableRoomsByType(
                 hotelId,
                 roomType,
                 request.getCheckInDate(),
@@ -139,7 +146,7 @@ public class HotelSearchService {
         long totalCount = roomRepository.countTotalRoomsByType(hotelId, roomType);
 
         // Get a sample room for pricing and details
-        Room sampleRoom = roomRepository.findAvailableRooms(
+        Room sampleRoom = roomCacheService.findAvailableRooms(
                 hotelId,
                 request.getCheckInDate(),
                 request.getCheckOutDate(),

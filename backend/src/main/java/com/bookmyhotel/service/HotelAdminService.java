@@ -13,6 +13,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -21,6 +24,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.bookmyhotel.config.CacheConfig;
 import com.bookmyhotel.dto.BookingModificationRequest;
 import com.bookmyhotel.dto.BookingModificationResponse;
 import com.bookmyhotel.dto.BookingResponse;
@@ -324,6 +328,7 @@ public class HotelAdminService {
     /**
      * Get hotel rooms with filtering
      */
+    @Cacheable(value = CacheConfig.ROOMS_BY_HOTEL_CACHE, key = "'admin:' + #adminEmail + ':page:' + #page + ':size:' + #size + ':search:' + (#search != null ? #search : 'null') + ':type:' + (#roomType != null ? #roomType : 'null') + ':available:' + (#available != null ? #available : 'null')")
     public Page<RoomDTO> getHotelRooms(String adminEmail, int page, int size, String search, String roomType,
             Boolean available) {
         System.err.println("🔍 HotelAdminService.getHotelRooms called with adminEmail: " + adminEmail);
@@ -392,6 +397,11 @@ public class HotelAdminService {
     /**
      * Add a new room
      */
+    @Caching(evict = {
+            @CacheEvict(value = CacheConfig.ROOMS_BY_HOTEL_CACHE, allEntries = true),
+            @CacheEvict(value = CacheConfig.ROOM_TYPES_CACHE, allEntries = true),
+            @CacheEvict(value = CacheConfig.AVAILABLE_ROOMS_CACHE, allEntries = true)
+    })
     public RoomDTO addRoom(RoomDTO roomDTO, String adminEmail) {
         User admin = getUserByEmail(adminEmail);
         Hotel hotel = admin.getHotel();
@@ -431,6 +441,7 @@ public class HotelAdminService {
     /**
      * Get room by ID
      */
+    @Cacheable(value = CacheConfig.ROOMS_BY_HOTEL_CACHE, key = "'room:' + #roomId + ':admin:' + #adminEmail")
     public RoomDTO getRoomById(Long roomId, String adminEmail) {
         User admin = getUserByEmail(adminEmail);
         Hotel hotel = admin.getHotel();
@@ -449,6 +460,12 @@ public class HotelAdminService {
     /**
      * Update room
      */
+    @Caching(evict = {
+            @CacheEvict(value = CacheConfig.ROOMS_BY_HOTEL_CACHE, allEntries = true),
+            @CacheEvict(value = CacheConfig.ROOM_TYPES_CACHE, allEntries = true),
+            @CacheEvict(value = CacheConfig.AVAILABLE_ROOMS_CACHE, allEntries = true),
+            @CacheEvict(value = CacheConfig.ROOM_AVAILABILITY_CACHE, allEntries = true)
+    })
     public RoomDTO updateRoom(Long roomId, RoomDTO roomDTO, String adminEmail) {
         User admin = getUserByEmail(adminEmail);
         Hotel hotel = admin.getHotel();
@@ -494,6 +511,11 @@ public class HotelAdminService {
     /**
      * Toggle room availability
      */
+    @Caching(evict = {
+            @CacheEvict(value = CacheConfig.ROOMS_BY_HOTEL_CACHE, allEntries = true),
+            @CacheEvict(value = CacheConfig.AVAILABLE_ROOMS_CACHE, allEntries = true),
+            @CacheEvict(value = CacheConfig.ROOM_AVAILABILITY_CACHE, allEntries = true)
+    })
     public RoomDTO toggleRoomAvailability(Long roomId, Boolean available, String adminEmail) {
         User admin = getUserByEmail(adminEmail);
         Hotel hotel = admin.getHotel();
@@ -537,6 +559,11 @@ public class HotelAdminService {
     /**
      * Update room status
      */
+    @Caching(evict = {
+            @CacheEvict(value = CacheConfig.ROOMS_BY_HOTEL_CACHE, allEntries = true),
+            @CacheEvict(value = CacheConfig.AVAILABLE_ROOMS_CACHE, allEntries = true),
+            @CacheEvict(value = CacheConfig.ROOM_AVAILABILITY_CACHE, allEntries = true)
+    })
     public RoomDTO updateRoomStatus(Long roomId, String status, String notes, String adminEmail) {
         User admin = getUserByEmail(adminEmail);
         Hotel hotel = admin.getHotel();
@@ -1145,9 +1172,12 @@ public class HotelAdminService {
     }
 
     /**
-     * Get available rooms for a specific date range (excludes occupied/assigned rooms)
+     * Get available rooms for a specific date range (excludes occupied/assigned
+     * rooms)
      */
-    public List<RoomDTO> getAvailableRoomsForDateRange(String adminEmail, LocalDate checkInDate, LocalDate checkOutDate, Integer guests, int page, int size) {
+    @Cacheable(value = CacheConfig.AVAILABLE_ROOMS_CACHE, key = "'admin:' + #adminEmail + ':checkin:' + #checkInDate + ':checkout:' + #checkOutDate + ':guests:' + #guests + ':page:' + #page + ':size:' + #size")
+    public List<RoomDTO> getAvailableRoomsForDateRange(String adminEmail, LocalDate checkInDate, LocalDate checkOutDate,
+            Integer guests, int page, int size) {
         User admin = getUserByEmail(adminEmail);
         Hotel hotel = admin.getHotel();
 
@@ -1167,15 +1197,15 @@ public class HotelAdminService {
                     boolean hasConflicts = room.getReservations().stream()
                             .anyMatch(reservation -> {
                                 // Only consider active reservations (confirmed or checked-in)
-                                if (reservation.getStatus() != ReservationStatus.CONFIRMED && 
-                                    reservation.getStatus() != ReservationStatus.CHECKED_IN) {
+                                if (reservation.getStatus() != ReservationStatus.CONFIRMED &&
+                                        reservation.getStatus() != ReservationStatus.CHECKED_IN) {
                                     return false;
                                 }
 
                                 // Check for date overlap
                                 LocalDate resCheckIn = reservation.getCheckInDate();
                                 LocalDate resCheckOut = reservation.getCheckOutDate();
-                                
+
                                 // Dates conflict if they overlap
                                 return !(checkOutDate.isBefore(resCheckIn) || checkInDate.isAfter(resCheckOut));
                             });

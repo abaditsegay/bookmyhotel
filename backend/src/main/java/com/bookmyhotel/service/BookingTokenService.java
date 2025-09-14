@@ -53,7 +53,8 @@ public class BookingTokenService {
     public Long validateBookingToken(String token) {
         try {
             Claims claims = Jwts.parser()
-                    .verifyWith(javax.crypto.spec.SecretKeySpec.class.cast(new javax.crypto.spec.SecretKeySpec(jwtSecret.getBytes(), "HmacSHA512")))
+                    .verifyWith(javax.crypto.spec.SecretKeySpec.class
+                            .cast(new javax.crypto.spec.SecretKeySpec(jwtSecret.getBytes(), "HmacSHA512")))
                     .build()
                     .parseSignedClaims(token)
                     .getPayload();
@@ -77,7 +78,8 @@ public class BookingTokenService {
     public String getGuestEmailFromToken(String token) {
         try {
             Claims claims = Jwts.parser()
-                    .verifyWith(javax.crypto.spec.SecretKeySpec.class.cast(new javax.crypto.spec.SecretKeySpec(jwtSecret.getBytes(), "HmacSHA512")))
+                    .verifyWith(javax.crypto.spec.SecretKeySpec.class
+                            .cast(new javax.crypto.spec.SecretKeySpec(jwtSecret.getBytes(), "HmacSHA512")))
                     .build()
                     .parseSignedClaims(token)
                     .getPayload();
