@@ -46,6 +46,7 @@ import OperationsPage from './pages/operations/OperationsPage';
 import StaffDashboardPage from './pages/StaffDashboardPage';
 import ShopRoutes from './pages/shop/ShopRoutes';
 import PublicHotelRegistration from './pages/PublicHotelRegistration';
+import UserDebugPage from './pages/UserDebugPage';
 
 // Role-based Router Component - redirects based on user role
 const RoleBasedRouter: React.FC = () => {
@@ -224,6 +225,11 @@ function App() {
         <Route path="/profile" element={
           <ProtectedRoute>
             <ProfilePage />
+          </ProtectedRoute>
+        } />
+        <Route path="/debug-user" element={
+          <ProtectedRoute>
+            <UserDebugPage />
           </ProtectedRoute>
         } />
         

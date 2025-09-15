@@ -361,8 +361,10 @@ public class HotelAdminController {
      * Create a walk-in booking
      * Hotel admins can create immediate bookings for walk-in guests
      * 
-     * IMPORTANT: Walk-in bookings automatically send email confirmation to the guest's email address,
-     * not to the staff member who creates the booking. This ensures guests receive their
+     * IMPORTANT: Walk-in bookings automatically send email confirmation to the
+     * guest's email address,
+     * not to the staff member who creates the booking. This ensures guests receive
+     * their
      * booking confirmation details for their records.
      */
     @PostMapping("/walk-in-booking")
@@ -377,19 +379,15 @@ public class HotelAdminController {
             request.setPaymentMethodId("pay_at_frontdesk");
         }
 
-        try {
-            // For walk-in bookings, create as anonymous guest so email goes to guest, not staff
-            // Pass null as userEmail to ensure guest gets the confirmation email
-            // This ensures the booking confirmation email is sent to the guest's email address
-            BookingResponse response = bookingService.createBooking(request, null);
-            logger.info("Walk-in booking created successfully with confirmation number: {} for guest email: {}", 
-                       response.getConfirmationNumber(), request.getGuestEmail());
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (Exception e) {
-            // Log error and return appropriate response
-            System.err.println("Failed to create walk-in booking: " + e.getMessage());
-            throw new RuntimeException("Failed to create walk-in booking: " + e.getMessage());
-        }
+        // For walk-in bookings, create as anonymous guest so email goes to guest, not
+        // staff
+        // Pass null as userEmail to ensure guest gets the confirmation email
+        // This ensures the booking confirmation email is sent to the guest's email
+        // address
+        BookingResponse response = bookingService.createBooking(request, null);
+        logger.info("Walk-in booking created successfully with confirmation number: {} for guest email: {}",
+                response.getConfirmationNumber(), request.getGuestEmail());
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     /**

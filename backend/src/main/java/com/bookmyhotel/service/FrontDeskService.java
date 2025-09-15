@@ -135,10 +135,14 @@ public class FrontDeskService {
                                     : "";
                         }
 
+                        String roomNumber = reservation.getRoom() != null
+                                ? reservation.getRoom().getRoomNumber().toLowerCase()
+                                : "";
+
                         return firstName.toLowerCase().contains(searchLower) ||
                                 lastName.toLowerCase().contains(searchLower) ||
                                 email.toLowerCase().contains(searchLower) ||
-                                reservation.getRoom().getRoomNumber().toLowerCase().contains(searchLower) ||
+                                roomNumber.contains(searchLower) ||
                                 reservation.getConfirmationNumber().toLowerCase().contains(searchLower);
                     })
                     .collect(Collectors.toList());
@@ -746,8 +750,9 @@ public class FrontDeskService {
                 })
                 .filter(reservation -> {
                     if (roomNumber != null && !roomNumber.trim().isEmpty()) {
-                        return reservation.getRoom().getRoomNumber()
-                                .toLowerCase().contains(roomNumber.toLowerCase().trim());
+                        return reservation.getRoom() != null &&
+                                reservation.getRoom().getRoomNumber()
+                                        .toLowerCase().contains(roomNumber.toLowerCase().trim());
                     }
                     return true;
                 })

@@ -15,10 +15,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.bookmyhotel.dto.BookingRequest;
 import com.bookmyhotel.dto.BookingResponse;
 import com.bookmyhotel.dto.CheckoutResponse;
 import com.bookmyhotel.dto.ConsolidatedReceiptResponse;
@@ -32,9 +34,10 @@ import com.bookmyhotel.entity.RoomStatus;
 import com.bookmyhotel.exception.ResourceNotFoundException;
 import com.bookmyhotel.repository.ReservationRepository;
 import com.bookmyhotel.repository.RoomRepository;
-import com.bookmyhotel.service.BookingService;
 import com.bookmyhotel.service.CheckoutReceiptService;
 import com.bookmyhotel.service.FrontDeskService;
+
+import jakarta.validation.Valid;
 
 /**
  * REST controller for front desk operations
@@ -140,21 +143,21 @@ public class FrontDeskController {
             @RequestParam(required = false) String checkInDate,
             @RequestParam(required = false) String checkOutDate,
             @RequestParam(defaultValue = "1") Integer guests) {
-        
+
         try {
             List<RoomResponse> availableRooms;
-            
+
             if (checkInDate != null && checkOutDate != null) {
                 // Use date-based filtering to exclude occupied rooms
                 java.time.LocalDate checkIn = java.time.LocalDate.parse(checkInDate);
                 java.time.LocalDate checkOut = java.time.LocalDate.parse(checkOutDate);
-                
+
                 availableRooms = frontDeskService.getAvailableRoomsForDateRange(hotelId, checkIn, checkOut, guests);
             } else {
                 // Fallback to basic availability (existing behavior)
                 availableRooms = frontDeskService.getAvailableRoomsForHotel(hotelId);
             }
-            
+
             return ResponseEntity.ok(availableRooms);
         } catch (Exception e) {
             System.err.println("Failed to get available rooms: " + e.getMessage());
@@ -313,5 +316,42 @@ public class FrontDeskController {
     public ResponseEntity<HotelDTO> getHotelInfo() {
         HotelDTO hotel = frontDeskService.getHotelInfo();
         return ResponseEntity.ok(hotel);
+    }
+
+    /**
+     * Create a walk-in booking
+     * Front desk staff can create immediate bookings for walk-in guests
+     * 
+     * IMPORTANT: Walk-in bookings automatically send email confirmation to the
+     * guest's email address,
+     * not to the staff member who creates the booking. This ensures guests receive
+     * their
+     * booking confirmation details for their records.
+     */
+    @PostMapping("/walk-in-booking")
+    @PreAuthorize("hasRole('FRONTDESK') or hasRole('HOTEL_ADMIN') or hasRole('SYSTEM_ADMIN')")
+    public ResponseEntity<BookingResponse> createWalkInBooking(
+            @Valid @RequestBody BookingRequest request,
+            Authentication auth) {
+
+        // Set payment method to front desk payment for walk-in bookings
+        if (request.getPaymentMethodId() == null || request.getPaymentMethodId().isEmpty()) {
+            request.setPaymentMethodId("pay_at_frontdesk");
+        }
+
+        // For walk-in bookings, create as anonymous guest so email goes to guest, not
+        // staff
+        // Pass null as userEmail to ensure guest gets the confirmation email
+        // This ensures the booking confirmation email is sent to the guest's email
+        // address
+        BookingResponse response = bookingService.createBooking(request, null);
+
+        // Log the walk-in booking creation for audit purposes
+        String staffEmail = auth.getName();
+        System.out.println("Walk-in booking created by front desk staff: " + staffEmail +
+                " with confirmation number: " + response.getConfirmationNumber() +
+                " for guest email: " + request.getGuestEmail());
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }

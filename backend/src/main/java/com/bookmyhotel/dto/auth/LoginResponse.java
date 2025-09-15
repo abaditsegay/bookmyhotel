@@ -10,6 +10,7 @@ import com.bookmyhotel.entity.UserRole;
 public class LoginResponse {
 
     private String token;
+    private String refreshToken;
     private String type = "Bearer";
     private Long id;
     private String email;
@@ -58,6 +59,20 @@ public class LoginResponse {
         this.tenantId = tenantId;
     }
 
+    public LoginResponse(String token, String refreshToken, Long id, String email, String firstName, String lastName,
+            Set<UserRole> roles, Long hotelId, String hotelName, String tenantId) {
+        this.token = token;
+        this.refreshToken = refreshToken;
+        this.id = id;
+        this.email = email;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.roles = roles;
+        this.hotelId = hotelId;
+        this.hotelName = hotelName;
+        this.tenantId = tenantId;
+    }
+
     // Getters and Setters
     public String getToken() {
         return token;
@@ -65,6 +80,14 @@ public class LoginResponse {
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    public String getRefreshToken() {
+        return refreshToken;
+    }
+
+    public void setRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
     }
 
     public String getType() {

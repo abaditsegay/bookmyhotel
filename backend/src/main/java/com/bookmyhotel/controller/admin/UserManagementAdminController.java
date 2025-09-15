@@ -32,7 +32,7 @@ import jakarta.validation.Valid;
  */
 @RestController
 @RequestMapping("/api/admin/users")
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasRole('SYSTEM_ADMIN') or hasRole('ADMIN')")
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class UserManagementAdminController {
 

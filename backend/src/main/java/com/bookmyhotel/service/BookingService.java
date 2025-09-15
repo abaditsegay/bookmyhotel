@@ -223,11 +223,14 @@ public class BookingService {
             // Send booking confirmation email automatically (separate transaction)
             try {
                 String emailAddress = user != null ? user.getEmail() : reservation.getGuestInfo().getEmail();
+                logger.debug("Attempting to send booking confirmation email to: {}", emailAddress);
                 emailService.sendBookingConfirmationEmail(bookingResponse, emailAddress, true);
+                logger.info("Booking confirmation email sent successfully to: {} for reservation: {}", emailAddress,
+                        bookingResponse.getConfirmationNumber());
             } catch (Exception e) {
                 // Log email sending failure but don't fail the booking
-                System.err.println("Failed to send booking confirmation email: " + e.getMessage());
-                e.printStackTrace();
+                logger.error("Failed to send booking confirmation email for reservation {}: {}",
+                        bookingResponse.getConfirmationNumber(), e.getMessage(), e);
             }
 
             return bookingResponse;
@@ -332,11 +335,14 @@ public class BookingService {
             // Send booking confirmation email automatically (separate transaction)
             try {
                 String emailAddress = user != null ? user.getEmail() : reservation.getGuestInfo().getEmail();
+                logger.debug("Attempting to send booking confirmation email to: {}", emailAddress);
                 emailService.sendBookingConfirmationEmail(bookingResponse, emailAddress, true);
+                logger.info("Booking confirmation email sent successfully to: {} for reservation: {}", emailAddress,
+                        bookingResponse.getConfirmationNumber());
             } catch (Exception e) {
                 // Log email sending failure but don't fail the booking
-                System.err.println("Failed to send booking confirmation email: " + e.getMessage());
-                e.printStackTrace();
+                logger.error("Failed to send booking confirmation email for reservation {}: {}",
+                        bookingResponse.getConfirmationNumber(), e.getMessage(), e);
             }
 
             return bookingResponse;

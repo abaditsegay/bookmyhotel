@@ -32,6 +32,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useTenant } from '../../contexts/TenantContext';
 import { hotelApiService } from '../../services/hotelApi';
 import { hotelAdminApi } from '../../services/hotelAdminApi';
+import { frontDeskApiService } from '../../services/frontDeskApi';
 import { API_CONFIG } from '../../config/apiConfig';
 
 // API base URL for backend calls
@@ -379,7 +380,13 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
         }
       } else {
         console.log('Creating walk-in booking via front desk API');
-        response = await hotelApiService.createBooking(bookingRequest);
+        // Use the new front desk walk-in booking endpoint that ensures email goes to guest
+        response = await frontDeskApiService.createWalkInBooking(token, bookingRequest);
+        if (response.success) {
+          response = response.data;
+        } else {
+          throw new Error(response.message || 'Failed to create booking');
+        }
       }
       
       if (response) {

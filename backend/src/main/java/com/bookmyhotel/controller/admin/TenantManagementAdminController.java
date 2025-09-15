@@ -22,7 +22,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/admin/tenants")
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasRole('SYSTEM_ADMIN') or hasRole('ADMIN')")
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class TenantManagementAdminController {
 
@@ -40,11 +40,10 @@ public class TenantManagementAdminController {
             @RequestParam(defaultValue = "asc") String sortDir,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) Boolean isActive) {
-        
-        Sort sort = sortDir.equalsIgnoreCase("desc") ? 
-            Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+
+        Sort sort = sortDir.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
         Pageable pageable = PageRequest.of(page, size, sort);
-        
+
         Page<TenantDTO> tenants = tenantManagementService.getAllTenants(pageable, search, isActive);
         return ResponseEntity.ok(tenants);
     }

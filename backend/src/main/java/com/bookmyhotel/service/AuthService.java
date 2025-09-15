@@ -35,6 +35,15 @@ public class AuthService {
     @Autowired
     private EmailService emailService;
 
+    @Autowired
+    private SessionManagementService sessionManagementService;
+
+    @Autowired
+    private RefreshTokenService refreshTokenService;
+
+    @Autowired
+    private PasswordSecurityService passwordSecurityService;
+
     /**
      * Register a new customer user (system-wide registered users)
      */
@@ -43,6 +52,16 @@ public class AuthService {
         if (userRepository.findByEmail(registerRequest.getEmail()).isPresent()) {
             throw new ResourceAlreadyExistsException(
                     "User with email " + registerRequest.getEmail() + " already exists");
+        }
+
+        // Validate password security
+        PasswordSecurityService.PasswordValidationResult passwordValidation = passwordSecurityService
+                .validatePassword(registerRequest.getPassword());
+
+        if (!passwordValidation.isValid()) {
+            throw new IllegalArgumentException(
+                    "Password does not meet security requirements: "
+                            + String.join(", ", passwordValidation.getErrors()));
         }
 
         // Create new user with CUSTOMER role (system-wide registered users)
@@ -74,8 +93,15 @@ public class AuthService {
         // Generate token for immediate login
         String token = jwtUtil.generateToken(user);
 
+        // Generate refresh token
+        String refreshToken = refreshTokenService.generateRefreshToken(user.getId());
+
+        // Create session for the newly registered user (no user agent/IP for now)
+        sessionManagementService.createSession(user.getId(), token, null, null);
+
         return new LoginResponse(
                 token,
+                refreshToken,
                 user.getId(),
                 user.getEmail(),
                 user.getFirstName(),
@@ -90,6 +116,13 @@ public class AuthService {
      * Authenticate user and generate JWT token
      */
     public LoginResponse login(LoginRequest loginRequest) {
+        return login(loginRequest, null, null);
+    }
+
+    /**
+     * Authenticate user and generate JWT token with session management
+     */
+    public LoginResponse login(LoginRequest loginRequest, String userAgent, String ipAddress) {
         Optional<User> userOpt = userRepository.findByEmail(loginRequest.getEmail());
 
         if (userOpt.isEmpty()) {
@@ -108,6 +141,12 @@ public class AuthService {
 
         String token = jwtUtil.generateToken(user);
 
+        // Generate refresh token
+        String refreshToken = refreshTokenService.generateRefreshToken(user.getId());
+
+        // Create session for the user
+        sessionManagementService.createSession(user.getId(), token, userAgent, ipAddress);
+
         // Include hotel information if user is associated with a hotel
         Long hotelId = null;
         String hotelName = null;
@@ -118,6 +157,7 @@ public class AuthService {
 
         return new LoginResponse(
                 token,
+                refreshToken,
                 user.getId(),
                 user.getEmail(),
                 user.getFirstName(),

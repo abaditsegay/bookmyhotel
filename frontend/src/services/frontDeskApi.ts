@@ -913,4 +913,36 @@ export const frontDeskApiService = {
       };
     }
   },
+
+  /**
+   * Create a walk-in booking
+   * This endpoint ensures the email confirmation is sent to the guest, not the staff member
+   */
+  createWalkInBooking: async (
+    token: string,
+    bookingRequest: any,
+    tenantId: string | null = 'default'
+  ): Promise<{ success: boolean; data?: any; message?: string }> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/front-desk/walk-in-booking`, {
+        method: 'POST',
+        headers: getAuthHeaders(token, tenantId),
+        body: JSON.stringify(bookingRequest),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to create walk-in booking');
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      console.error('Walk-in booking creation error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to create walk-in booking' 
+      };
+    }
+  },
 };

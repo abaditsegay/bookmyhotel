@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.bookmyhotel.entity.User;
+import com.bookmyhotel.service.SessionManagementService;
 import com.bookmyhotel.tenant.TenantContext;
 import com.bookmyhotel.tenant.HotelContext;
 import com.bookmyhotel.util.JwtUtil;
@@ -33,6 +34,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired
     private UserDetailsService userDetailsService;
+
+    @Autowired
+    private SessionManagementService sessionManagementService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
@@ -62,7 +66,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (username != null) {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
 
-            if (jwtUtil.validateToken(jwt, userDetails)) {
+            // Validate JWT token and check session
+            if (jwtUtil.validateToken(jwt, userDetails) && sessionManagementService.isSessionValid(jwt)) {
+                // Update session activity
+                sessionManagementService.updateSessionActivity(jwt);
                 // Check if user is system-wide (GUEST or ADMIN with null tenant_id)
                 User user = (User) userDetails;
                 boolean isSystemWideUser = user.isSystemWideUser();

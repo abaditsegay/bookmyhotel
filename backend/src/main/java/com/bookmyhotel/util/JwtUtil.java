@@ -7,11 +7,15 @@ import java.util.function.Function;
 
 import javax.crypto.SecretKey;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import com.bookmyhotel.entity.User;
+import com.bookmyhotel.service.TokenBlacklistService;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -23,11 +27,16 @@ import io.jsonwebtoken.security.Keys;
 @Component
 public class JwtUtil {
 
+    private static final Logger logger = LoggerFactory.getLogger(JwtUtil.class);
+
     @Value("${jwt.secret.key}")
     private String secret;
 
     @Value("${jwt.expiration.time}")
     private Long expiration;
+
+    @Autowired
+    private TokenBlacklistService tokenBlacklistService;
 
     /**
      * Generate JWT token for user
@@ -139,22 +148,62 @@ public class JwtUtil {
     }
 
     /**
-     * Validate token
+     * Validate token (checks expiration and blacklist)
      */
     public Boolean isTokenValid(String token) {
         try {
-            return !isTokenExpired(token);
+            // Check if token is blacklisted first
+            if (tokenBlacklistService.isTokenBlacklisted(token)) {
+                logger.debug("Token validation failed: token is blacklisted");
+                return false;
+            }
+
+            // Check if token is expired
+            if (isTokenExpired(token)) {
+                logger.debug("Token validation failed: token is expired");
+                return false;
+            }
+
+            return true;
         } catch (Exception e) {
+            logger.warn("Token validation failed with exception: {}", e.getMessage());
             return false;
         }
     }
 
     /**
-     * Validate token against user details
+     * Validate token against user details (checks expiration, blacklist, and user
+     * match)
      */
     public Boolean validateToken(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+        try {
+            final String username = extractUsername(token);
+
+            // Check username match first
+            if (!username.equals(userDetails.getUsername())) {
+                logger.debug("Token validation failed: username mismatch");
+                return false;
+            }
+
+            // Use the comprehensive isTokenValid method
+            return isTokenValid(token);
+        } catch (Exception e) {
+            logger.warn("Token validation against user details failed: {}", e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Blacklist a token (for logout functionality)
+     */
+    public void blacklistToken(String token) {
+        try {
+            Date expirationDate = extractExpiration(token);
+            tokenBlacklistService.blacklistToken(token, expirationDate);
+            logger.debug("Token successfully blacklisted");
+        } catch (Exception e) {
+            logger.warn("Failed to blacklist token: {}", e.getMessage());
+        }
     }
 
     /**
