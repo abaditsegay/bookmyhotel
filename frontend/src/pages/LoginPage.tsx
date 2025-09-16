@@ -158,7 +158,8 @@ const LoginPage: React.FC = () => {
   };
 
   // Get the error to display (prefer auth context error, then local error)
-  const displayError = authError || error;
+  // But exclude session expiration errors since they're handled by the modal dialog
+  const displayError = (authError && !authError.includes('session has expired')) ? authError : error;
 
   // Show loading state while checking authentication from localStorage
   if (isInitializing) {

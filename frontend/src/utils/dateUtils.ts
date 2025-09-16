@@ -9,11 +9,8 @@
 export const formatDateForInput = (dateString: string): string => {
   if (!dateString) return '';
   
-  console.log('🗓️ formatDateForInput - Input:', dateString);
-  
   // If the date is already in YYYY-MM-DD format, return as-is
   if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
-    console.log('🗓️ formatDateForInput - Already YYYY-MM-DD format, returning as-is:', dateString);
     return dateString;
   }
   
@@ -24,9 +21,7 @@ export const formatDateForInput = (dateString: string): string => {
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
   
-  const result = `${year}-${month}-${day}`;
-  console.log('🗓️ formatDateForInput - Converted:', dateString, '→', result);
-  return result;
+  return `${year}-${month}-${day}`;
 };
 
 /**
@@ -36,22 +31,16 @@ export const formatDateForInput = (dateString: string): string => {
 export const formatDateForDisplay = (dateString: string): string => {
   if (!dateString) return '';
   
-  console.log('📅 formatDateForDisplay - Input:', dateString);
-  
   // For display, we want to show the actual date without timezone conversion
   // If it's in YYYY-MM-DD format, create date with local timezone
   if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
     const [year, month, day] = dateString.split('-');
     const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-    const result = date.toLocaleDateString();
-    console.log('📅 formatDateForDisplay - YYYY-MM-DD format:', dateString, '→', result);
-    return result;
+    return date.toLocaleDateString();
   }
   
   // For other formats, use standard conversion but be careful about timezone
-  const result = new Date(dateString).toLocaleDateString();
-  console.log('📅 formatDateForDisplay - Other format:', dateString, '→', result);
-  return result;
+  return new Date(dateString).toLocaleDateString();
 };
 
 /**

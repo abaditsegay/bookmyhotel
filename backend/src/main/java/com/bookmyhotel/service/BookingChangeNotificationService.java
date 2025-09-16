@@ -39,11 +39,12 @@ public class BookingChangeNotificationService {
      * Create a cancellation notification
      */
     public BookingNotification createCancellationNotification(Reservation reservation, String cancellationReason,
-            BigDecimal refundAmount) {
+            BigDecimal refundAmount, String updatedBy) {
         try {
             BookingNotification notification = new BookingNotification(reservation, NotificationType.CANCELLED);
             notification.setCancellationReason(cancellationReason);
             notification.setRefundAmount(refundAmount);
+            notification.setUpdatedBy(updatedBy);
 
             BookingNotification savedNotification = notificationRepository.save(notification);
             logger.info("Created cancellation notification for booking {} (ID: {})",
@@ -61,12 +62,13 @@ public class BookingChangeNotificationService {
      * Create a modification notification
      */
     public BookingNotification createModificationNotification(Reservation reservation, String changeDetails,
-            BigDecimal additionalCharges, BigDecimal refundAmount) {
+            BigDecimal additionalCharges, BigDecimal refundAmount, String updatedBy) {
         try {
             BookingNotification notification = new BookingNotification(reservation, NotificationType.MODIFIED);
             notification.setChangeDetails(changeDetails);
             notification.setAdditionalCharges(additionalCharges);
             notification.setRefundAmount(refundAmount);
+            notification.setUpdatedBy(updatedBy);
 
             BookingNotification savedNotification = notificationRepository.save(notification);
             logger.info("Created modification notification for booking {} (ID: {})",

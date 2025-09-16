@@ -26,6 +26,7 @@ import {
 } from '@mui/icons-material';
 import { BookingResponse } from '../types/hotel';
 import { buildApiUrl } from '../config/apiConfig';
+import { formatDateForDisplay } from '../utils/dateUtils';
 
 const BookingManagementPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -164,10 +165,10 @@ const BookingManagementPage: React.FC = () => {
                   Stay Details
                 </Typography>
                 <Typography variant="body1" sx={{ mb: 1 }}>
-                  <strong>Check-in:</strong> {new Date(booking.checkInDate).toLocaleDateString()}
+                  <strong>Check-in:</strong> {formatDateForDisplay(booking.checkInDate)}
                 </Typography>
                 <Typography variant="body1" sx={{ mb: 1 }}>
-                  <strong>Check-out:</strong> {new Date(booking.checkOutDate).toLocaleDateString()}
+                  <strong>Check-out:</strong> {formatDateForDisplay(booking.checkOutDate)}
                 </Typography>
                 <Typography variant="body1" sx={{ mb: 1 }}>
                   <strong>Total Amount:</strong> ETB {booking.totalAmount?.toFixed(0)}

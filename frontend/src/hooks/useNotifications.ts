@@ -18,6 +18,7 @@ export interface BookingNotification {
   additionalCharges?: number;
   refundAmount?: number;
   createdAt: string;
+  updatedBy?: string;
 }
 
 export interface NotificationStats {
@@ -56,7 +57,7 @@ export interface PaginatedResponse<T> {
 }
 
 export const useNotifications = () => {
-  const { token, isInitializing, user, hasRole } = useAuth();
+  const { token, isInitializing, hasRole } = useAuth();
   const [notifications, setNotifications] = useState<BookingNotification[]>([]);
   const [stats, setStats] = useState<NotificationStats>({ 
     totalUnread: 0, 

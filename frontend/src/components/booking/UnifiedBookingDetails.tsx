@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Container,
   Typography,
@@ -106,8 +106,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
     setErrorDialogOpen(true);
   };
 
-  useEffect(() => {
-    const loadBooking = async () => {
+  const loadBooking = useCallback(async () => {
       if (!token) {
         setError('Authentication required');
         setLoading(false);
@@ -156,6 +155,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
           console.log('🔍 UnifiedBookingDetails - Raw API response:', responseData);
           console.log('🔍 UnifiedBookingDetails - Mapped booking:', mappedBooking);
           setBooking(mappedBooking);
+          
           setEditedBooking({ ...mappedBooking });
         } else {
           console.log('Booking not found for reservation ID:', reservationId);
@@ -167,12 +167,18 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
       } finally {
         setLoading(false);
       }
-    };
+    }, [id, token, mode, tenant?.id]);
 
+  // Refresh function to reload booking data
+  const refreshBooking = async () => {
+    await loadBooking();
+  };
+
+  useEffect(() => {
     if (id) {
       loadBooking();
     }
-  }, [id, token, mode, tenant?.id]);
+  }, [id, token, mode, tenant?.id, loadBooking]);
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -208,6 +214,9 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
       // Use unified save logic for both roles since they perform the same actions
       await handleUnifiedSave();
       
+      // Refresh booking data to ensure cache-busting works
+      await refreshBooking();
+      
       setIsEditing(false);
     } catch (err) {
       showErrorDialog(err instanceof Error ? err.message : 'Failed to update booking');
@@ -225,7 +234,8 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
     try {
       // Check what types of changes were made
       const statusChanged = editedBooking.status !== booking.status;
-      const roomChanged = selectedRoomId !== null || editedBooking.roomType !== booking.roomType;
+      const roomAssignmentChanged = selectedRoomId !== null;
+      const roomTypeChanged = editedBooking.roomType !== booking.roomType;
       const guestInfoChanged = editedBooking.guestName !== booking.guestName || 
                               editedBooking.guestEmail !== booking.guestEmail;
       const datesChanged = editedBooking.checkInDate !== booking.checkInDate || 
@@ -233,7 +243,8 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
       
       console.log('🔍 Change Detection:', {
         statusChanged,
-        roomChanged,
+        roomAssignmentChanged,
+        roomTypeChanged,
         guestInfoChanged,
         datesChanged,
         originalBooking: booking,
@@ -287,7 +298,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
       }
 
       // STEP 2: Handle room assignment changes using Front Desk API (works for both roles)
-      if (roomChanged && selectedRoomId) {
+      if (roomAssignmentChanged && selectedRoomId) {
         console.log('🏠 Room assignment change detected, using room ID:', selectedRoomId);
         try {
           const result = await frontDeskApiService.updateBookingRoomAssignment(
@@ -341,9 +352,9 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
         }
       }
 
-      // STEP 3: Handle comprehensive booking updates (dates, guest info, etc.) using unified API
-      if ((datesChanged || guestInfoChanged) && !statusChanged && !roomChanged) {
-        console.log('🗓️ Comprehensive booking update detected for dates/guest info');
+            // STEP 3: Handle comprehensive booking updates (dates, guest info, etc.) using unified API
+      if ((datesChanged || guestInfoChanged || roomTypeChanged) && !statusChanged && !roomAssignmentChanged) {
+        console.log('🗓️ Comprehensive booking update detected for room type/dates/guest info');
         try {
           // Get hotel ID from current booking data (we need it for the comprehensive update)
           const hotelId = 1; // This should be derived from the booking, but for now use default
@@ -394,8 +405,16 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
             finalBookingData = { ...updatedBooking };
             hasUpdates = true;
             
-            if (datesChanged && guestInfoChanged) {
+            if (roomTypeChanged && datesChanged && guestInfoChanged) {
+              setSuccess('Room type, booking dates, and guest information updated successfully');
+            } else if (roomTypeChanged && datesChanged) {
+              setSuccess('Room type and booking dates updated successfully');
+            } else if (roomTypeChanged && guestInfoChanged) {
+              setSuccess('Room type and guest information updated successfully');
+            } else if (datesChanged && guestInfoChanged) {
               setSuccess('Booking dates and guest information updated successfully');
+            } else if (roomTypeChanged) {
+              setSuccess('Room type updated successfully');
             } else if (datesChanged) {
               setSuccess('Booking dates updated successfully');
             } else if (guestInfoChanged) {
@@ -417,13 +436,13 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
         setEditedBooking({ ...finalBookingData });
         setSelectedRoomId(null);
         
-        if (statusChanged && !roomChanged && !datesChanged && !guestInfoChanged) {
+        if (statusChanged && !roomAssignmentChanged && !roomTypeChanged && !datesChanged && !guestInfoChanged) {
           setSuccess('Booking status updated successfully');
-        } else if (!statusChanged && roomChanged && !datesChanged && !guestInfoChanged) {
-          setSuccess('Room assignment updated successfully');
-        } else if (statusChanged && roomChanged && !datesChanged && !guestInfoChanged) {
-          setSuccess('Booking status and room assignment updated successfully');
-        } else if (!statusChanged && !roomChanged && (datesChanged || guestInfoChanged)) {
+        } else if (!statusChanged && (roomAssignmentChanged || roomTypeChanged) && !datesChanged && !guestInfoChanged) {
+          setSuccess('Room details updated successfully');
+        } else if (statusChanged && (roomAssignmentChanged || roomTypeChanged) && !datesChanged && !guestInfoChanged) {
+          setSuccess('Booking status and room details updated successfully');
+        } else if (!statusChanged && !roomAssignmentChanged && !roomTypeChanged && (datesChanged || guestInfoChanged)) {
           // Success message already set in comprehensive update section
         } else {
           setSuccess('Booking updated successfully');
@@ -574,59 +593,48 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
     setRoomDialogOpen(true);
   };
 
-  const handleFieldChange = (field: keyof BookingData, value: any) => {
+  const handleFieldChange = (name: string, value: any) => {
     if (editedBooking) {
-      const updatedBooking = {
-        ...editedBooking,
-        [field]: value
-      };
-      
-      // Recalculate total amount when dates change
-      if (field === 'checkInDate' || field === 'checkOutDate') {
-        const checkInDate = field === 'checkInDate' ? value : updatedBooking.checkInDate;
-        const checkOutDate = field === 'checkOutDate' ? value : updatedBooking.checkOutDate;
-        
-        if (checkInDate && checkOutDate) {
-          const checkIn = new Date(checkInDate);
-          const checkOut = new Date(checkOutDate);
-          
-          if (checkOut > checkIn) {
-            const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
-            updatedBooking.totalAmount = updatedBooking.pricePerNight * nights;
-          }
-        }
-      }
+      const updatedBooking = { ...editedBooking, [name]: value };
       
       // Handle room type change with automatic price calculation (Hotel Admin only)
-      if (field === 'roomType' && mode === 'hotel-admin') {
-        // Clear room number when room type changes
-        updatedBooking.roomNumber = '';
-        setSelectedRoomId(null);
+      if (mode === 'hotel-admin' && name === 'roomType') {
+        // Clear room number when room type changes (use updatedBooking, not separate call)
+        if (name === 'roomType') {
+          updatedBooking.roomNumber = '';
+        }
+        
+        // Update the state immediately so the Select component reflects the change
+        setEditedBooking(updatedBooking);
         
         // Load new pricing for the selected room type
         loadRoomTypePricing(value).then((pricing) => {
-          if (pricing && editedBooking) {
+          if (pricing && updatedBooking) {
             const newPricePerNight = pricing.basePricePerNight;
             const newTotal = calculateTotalWithRoomTypePricing(
               value, 
-              editedBooking.checkInDate, 
-              editedBooking.checkOutDate, 
+              updatedBooking.checkInDate, 
+              updatedBooking.checkOutDate, 
               pricing
             );
             
-            setEditedBooking({
-              ...updatedBooking,
-              pricePerNight: newPricePerNight,
-              totalAmount: newTotal
+            setEditedBooking((prev) => {
+              if (!prev) return null;
+              return {
+                ...prev,
+                pricePerNight: newPricePerNight,
+                totalAmount: newTotal
+              };
             });
-          } else {
-            setEditedBooking(updatedBooking);
           }
+        }).catch((error) => {
+          console.error('Pricing API error, but room type change should persist:', error);
         });
         
-        return; // Exit early to prevent setting state twice
+        return; // Exit after setting state and initiating async pricing update
       }
       
+      // For all other cases (including front-desk mode room type changes)
       setEditedBooking(updatedBooking);
     }
   };
@@ -686,6 +694,8 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
   };
 
   const currentBooking = isEditing ? editedBooking : booking;
+  
+
 
   if (loading) {
     return (
@@ -914,8 +924,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                           value={currentBooking?.roomType || ''}
                           onChange={(e) => {
                             handleFieldChange('roomType', e.target.value);
-                            // Clear room number when room type changes
-                            handleFieldChange('roomNumber', '');
+                            // Room number clearing is handled inside handleFieldChange for room type changes
                             setSelectedRoomId(null);
                           }}
                         >

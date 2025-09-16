@@ -271,6 +271,7 @@ public class NotificationController {
         response.setAdditionalCharges(notification.getAdditionalCharges());
         response.setCancellationReason(notification.getCancellationReason());
         response.setCreatedAt(notification.getCreatedAt());
+        response.setUpdatedBy(notification.getUpdatedBy());
 
         // Add reservation ID if available
         if (notification.getReservation() != null) {

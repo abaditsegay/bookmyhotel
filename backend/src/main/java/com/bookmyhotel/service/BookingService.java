@@ -5,17 +5,26 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
+
+import com.bookmyhotel.config.CacheConfig;
 
 import com.bookmyhotel.dto.BookingCancellationRequest;
 import com.bookmyhotel.dto.BookingModificationRequest;
@@ -377,10 +386,72 @@ public class BookingService {
             throw new BookingException("Cannot cancel reservation less than 24 hours before check-in");
         }
 
+        // Determine who is cancelling and set appropriate details
+        String cancelledBy = "System";
+        String cancellationReason = "Cancelled by system";
+
+        logger.info("🚨 BookingService.cancelBooking(Long) called for reservation: {}", reservationId);
+
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            logger.info("🔍 Authentication object: {}",
+                    authentication != null ? authentication.getClass().getSimpleName() : "null");
+
+            if (authentication != null && authentication.isAuthenticated()) {
+                String userEmail = authentication.getName();
+                Collection<String> authorities = authentication.getAuthorities().stream()
+                        .map(GrantedAuthority::getAuthority)
+                        .collect(Collectors.toList());
+
+                logger.info("👤 Authenticated user: {}, authorities: {}", userEmail, authorities);
+
+                if (authorities.contains("ROLE_HOTEL_ADMIN")) {
+                    cancelledBy = "Hotel Admin";
+                    cancellationReason = "Cancelled by hotel admin";
+                    logger.info("✅ Detected HOTEL_ADMIN role, setting cancelledBy to: {}", cancelledBy);
+                } else if (authorities.contains("ROLE_FRONT_DESK")) {
+                    cancelledBy = "Front Desk Staff";
+                    cancellationReason = "Cancelled by front desk staff";
+                    logger.info("✅ Detected FRONT_DESK role, setting cancelledBy to: {}", cancelledBy);
+                } else if (authorities.contains("ROLE_HOUSEKEEPING")) {
+                    cancelledBy = "Housekeeping Staff";
+                    cancellationReason = "Cancelled by housekeeping staff";
+                    logger.info("✅ Detected HOUSEKEEPING role, setting cancelledBy to: {}", cancelledBy);
+                } else if (authorities.contains("ROLE_GUEST")) {
+                    cancelledBy = "Guest";
+                    cancellationReason = "Cancelled by guest";
+                    logger.info("✅ Detected GUEST role, setting cancelledBy to: {}", cancelledBy);
+                } else {
+                    cancelledBy = "Staff";
+                    cancellationReason = "Cancelled by staff";
+                    logger.info("⚠️ No specific role detected, defaulting to Staff, setting cancelledBy to: {}",
+                            cancelledBy);
+                }
+            } else {
+                logger.warn("⚠️ No authenticated user found or authentication is null");
+            }
+        } catch (Exception e) {
+            logger.warn("❌ Failed to determine cancelling user: {}", e.getMessage());
+            cancelledBy = "System";
+            cancellationReason = "Cancelled by system";
+        }
+
         reservation.setStatus(ReservationStatus.CANCELLED);
         reservation.setCancelledAt(LocalDateTime.now());
-        reservation.setCancellationReason("Cancelled by guest");
+        reservation.setCancellationReason(cancellationReason);
         reservation = reservationRepository.save(reservation);
+
+        // Create booking change notification for hotel admin/front desk
+        try {
+            BigDecimal refundAmount = BigDecimal.ZERO; // TODO: Calculate actual refund amount
+            logger.info("📧 Creating cancellation notification with cancelledBy: '{}', reason: '{}'", cancelledBy,
+                    cancellationReason);
+            bookingChangeNotificationService.createCancellationNotification(
+                    reservation, cancellationReason, refundAmount, cancelledBy);
+            logger.info("✅ Cancellation notification created successfully");
+        } catch (Exception e) {
+            logger.warn("❌ Failed to create booking cancellation notification: {}", e.getMessage());
+        }
 
         // Record booking cancellation in history
         // TODO: Complete history integration after Phase 3.3
@@ -1152,6 +1223,12 @@ public class BookingService {
     /**
      * Modify an existing booking (for guests)
      */
+    @Caching(evict = {
+            @CacheEvict(value = CacheConfig.AVAILABLE_ROOMS_CACHE, allEntries = true),
+            @CacheEvict(value = CacheConfig.ROOMS_BY_HOTEL_CACHE, allEntries = true),
+            @CacheEvict(value = CacheConfig.ROOM_AVAILABILITY_CACHE, allEntries = true),
+            @CacheEvict(value = CacheConfig.ROOM_COUNTS_CACHE, allEntries = true)
+    })
     public BookingModificationResponse modifyBooking(BookingModificationRequest request) {
         try {
             // Find booking using public search to work across tenants
@@ -1402,7 +1479,7 @@ public class BookingService {
                                 ? request.getReason().trim()
                                 : "Booking details updated";
                 bookingChangeNotificationService.createModificationNotification(reservation, modificationReason,
-                        additionalCharges, refundAmount);
+                        additionalCharges, refundAmount, "Guest");
             } catch (Exception e) {
                 logger.warn("Failed to create booking modification notification: {}", e.getMessage());
             }
@@ -1453,6 +1530,12 @@ public class BookingService {
     /**
      * Cancel a booking (for guests)
      */
+    @Caching(evict = {
+            @CacheEvict(value = CacheConfig.AVAILABLE_ROOMS_CACHE, allEntries = true),
+            @CacheEvict(value = CacheConfig.ROOMS_BY_HOTEL_CACHE, allEntries = true),
+            @CacheEvict(value = CacheConfig.ROOM_AVAILABILITY_CACHE, allEntries = true),
+            @CacheEvict(value = CacheConfig.ROOM_COUNTS_CACHE, allEntries = true)
+    })
     public BookingModificationResponse cancelBooking(BookingCancellationRequest request) {
         try {
             // Find booking using public search to work across tenants
@@ -1513,7 +1596,7 @@ public class BookingService {
                                 ? request.getCancellationReason().trim()
                                 : "No reason provided";
                 bookingChangeNotificationService.createCancellationNotification(reservation, cancellationReason,
-                        refundAmount);
+                        refundAmount, "Guest");
             } catch (Exception e) {
                 logger.warn("Failed to create booking cancellation notification: {}", e.getMessage());
             }
@@ -1554,6 +1637,12 @@ public class BookingService {
     /**
      * Modify a booking for authenticated customers
      */
+    @Caching(evict = {
+            @CacheEvict(value = CacheConfig.AVAILABLE_ROOMS_CACHE, allEntries = true),
+            @CacheEvict(value = CacheConfig.ROOMS_BY_HOTEL_CACHE, allEntries = true),
+            @CacheEvict(value = CacheConfig.ROOM_AVAILABILITY_CACHE, allEntries = true),
+            @CacheEvict(value = CacheConfig.ROOM_COUNTS_CACHE, allEntries = true)
+    })
     public BookingModificationResponse modifyCustomerBooking(Long reservationId, BookingModificationRequest request,
             String userEmail) {
         try {
@@ -1745,7 +1834,7 @@ public class BookingService {
                         ? request.getReason().trim()
                         : "Booking details updated";
                 bookingChangeNotificationService.createModificationNotification(reservation, modificationReason,
-                        additionalCharges, refundAmount);
+                        additionalCharges, refundAmount, "Staff");
             } catch (Exception e) {
                 logger.warn("Failed to create booking modification notification: {}", e.getMessage());
             }
@@ -1768,6 +1857,12 @@ public class BookingService {
     /**
      * Cancel a booking for authenticated customers
      */
+    @Caching(evict = {
+            @CacheEvict(value = CacheConfig.AVAILABLE_ROOMS_CACHE, allEntries = true),
+            @CacheEvict(value = CacheConfig.ROOMS_BY_HOTEL_CACHE, allEntries = true),
+            @CacheEvict(value = CacheConfig.ROOM_AVAILABILITY_CACHE, allEntries = true),
+            @CacheEvict(value = CacheConfig.ROOM_COUNTS_CACHE, allEntries = true)
+    })
     public BookingModificationResponse cancelCustomerBooking(Long reservationId, String cancellationReason,
             String userEmail) {
         try {
@@ -1831,7 +1926,8 @@ public class BookingService {
                 String reason = cancellationReason != null && !cancellationReason.trim().isEmpty()
                         ? cancellationReason.trim()
                         : "No reason provided";
-                bookingChangeNotificationService.createCancellationNotification(reservation, reason, refundAmount);
+                bookingChangeNotificationService.createCancellationNotification(reservation, reason, refundAmount,
+                        "Staff");
             } catch (Exception e) {
                 logger.warn("Failed to create booking cancellation notification: {}", e.getMessage());
             }

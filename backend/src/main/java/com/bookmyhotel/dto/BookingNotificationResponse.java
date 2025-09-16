@@ -28,6 +28,7 @@ public class BookingNotificationResponse {
     private BigDecimal additionalCharges;
     private String cancellationReason;
     private LocalDateTime createdAt;
+    private String updatedBy;
 
     // Constructors
     public BookingNotificationResponse() {
@@ -160,5 +161,13 @@ public class BookingNotificationResponse {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getUpdatedBy() {
+        return updatedBy;
+    }
+
+    public void setUpdatedBy(String updatedBy) {
+        this.updatedBy = updatedBy;
     }
 }

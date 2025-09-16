@@ -6,6 +6,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -47,6 +49,8 @@ import com.bookmyhotel.tenant.TenantContext;
 @Service
 @Transactional
 public class FrontDeskService {
+
+    private static final Logger logger = LoggerFactory.getLogger(FrontDeskService.class);
 
     @Autowired
     private ReservationRepository reservationRepository;
@@ -193,7 +197,46 @@ public class FrontDeskService {
      * Update booking status
      */
     public BookingResponse updateBookingStatus(Long reservationId, String status) {
-        return bookingStatusUpdateService.updateBookingStatus(reservationId, status, "front desk");
+        // 🚨 Debug logging for FrontDeskService.updateBookingStatus
+        logger.info("🚨 FrontDeskService.updateBookingStatus called for reservation: {}, status: {}", reservationId,
+                status);
+
+        // Detect who is making the change
+        String updatedBy = "System";
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            logger.info("👤 Authentication object: {}", authentication);
+
+            if (authentication != null && authentication.isAuthenticated() &&
+                    !authentication.getName().equals("anonymousUser")) {
+
+                String username = authentication.getName();
+                logger.info("👤 Authenticated user: {}, authorities: {}", username, authentication.getAuthorities());
+
+                // Determine role-based display name
+                String authoritiesString = authentication.getAuthorities().toString();
+                if (authoritiesString.contains("ROLE_HOTEL_ADMIN")) {
+                    updatedBy = "Hotel Admin";
+                    logger.info("🔐 Detected Hotel Admin role");
+                } else if (authoritiesString.contains("ROLE_FRONT_DESK")) {
+                    updatedBy = "Front Desk";
+                    logger.info("🔐 Detected Front Desk role");
+                } else if (authoritiesString.contains("ROLE_HOUSEKEEPING")) {
+                    updatedBy = "Housekeeping";
+                    logger.info("🔐 Detected Housekeeping role");
+                } else {
+                    updatedBy = username; // Fallback to username
+                    logger.info("🔐 Using username as fallback: {}", username);
+                }
+            } else {
+                logger.warn("⚠️ No authenticated user found or anonymous user");
+            }
+        } catch (Exception e) {
+            logger.error("❌ Error detecting authenticated user: {}", e.getMessage());
+        }
+
+        logger.info("🎯 Final updatedBy value: {}", updatedBy);
+        return bookingStatusUpdateService.updateBookingStatus(reservationId, status, updatedBy);
     }
 
     /**

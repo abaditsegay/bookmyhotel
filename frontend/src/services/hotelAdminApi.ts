@@ -144,6 +144,7 @@ const getAuthHeaders = (providedToken?: string) => {
   return {
     'Authorization': `Bearer ${token}`,
     'Content-Type': 'application/json',
+    'Cache-Control': 'no-cache, no-store, must-revalidate'
   };
 };
 
@@ -173,7 +174,7 @@ export const hotelAdminApi = {
       const user = TokenManager.getUser();
       const tenantId = user?.tenantId || '';
 
-      const response = await fetch(`${API_BASE_URL}/hotel-admin/bookings?${params.toString()}`, {
+      const response = await fetch(`${API_BASE_URL}/hotel-admin/bookings?${params.toString()}&_t=${Date.now()}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -201,7 +202,7 @@ export const hotelAdminApi = {
   // Get booking statistics
   getBookingStats: async (token: string): Promise<{ success: boolean; data?: BookingStats; message?: string }> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/hotel-admin/bookings/statistics`, {
+      const response = await fetch(`${API_BASE_URL}/hotel-admin/bookings/statistics?_t=${Date.now()}`, {
         method: 'GET',
         headers: getAuthHeaders(token),
       });

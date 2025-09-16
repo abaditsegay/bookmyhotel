@@ -171,8 +171,14 @@ public class BookingNotificationService {
 
         // Format dates
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy");
-        templateData.put("checkInFormatted", booking.getCheckInDate().format(formatter));
-        templateData.put("checkOutFormatted", booking.getCheckOutDate().format(formatter));
+        String formattedCheckIn = booking.getCheckInDate().format(formatter);
+        String formattedCheckOut = booking.getCheckOutDate().format(formatter);
+
+        // Provide both variable names for template compatibility
+        templateData.put("checkInFormatted", formattedCheckIn);
+        templateData.put("checkOutFormatted", formattedCheckOut);
+        templateData.put("formattedCheckInDate", formattedCheckIn);
+        templateData.put("formattedCheckOutDate", formattedCheckOut);
 
         // Calculate stay duration
         long nights = ChronoUnit.DAYS.between(booking.getCheckInDate(), booking.getCheckOutDate());
@@ -201,8 +207,14 @@ public class BookingNotificationService {
 
         // Format dates for display
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMMM dd, yyyy");
-        templateData.put("checkInFormatted", booking.getCheckInDate().format(formatter));
-        templateData.put("checkOutFormatted", booking.getCheckOutDate().format(formatter));
+        String formattedCheckIn = booking.getCheckInDate().format(formatter);
+        String formattedCheckOut = booking.getCheckOutDate().format(formatter);
+
+        // Provide both variable names for template compatibility
+        templateData.put("checkInFormatted", formattedCheckIn);
+        templateData.put("checkOutFormatted", formattedCheckOut);
+        templateData.put("formattedCheckInDate", formattedCheckIn);
+        templateData.put("formattedCheckOutDate", formattedCheckOut);
 
         // Calculate stay duration
         long nights = ChronoUnit.DAYS.between(booking.getCheckInDate(), booking.getCheckOutDate());

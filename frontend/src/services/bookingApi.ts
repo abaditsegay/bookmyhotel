@@ -18,10 +18,13 @@ export interface BookingSearchResponse {
   pricePerNight: number;
   guestName: string;
   guestEmail: string;
+  numberOfGuests?: number;
+  specialRequests?: string;
 }
 
 const getHeaders = () => ({
   'Content-Type': 'application/json',
+  'Cache-Control': 'no-cache, no-store, must-revalidate'
 });
 
 export const bookingApiService = {
@@ -31,14 +34,12 @@ export const bookingApiService = {
   searchByConfirmationNumber: async (confirmationNumber: string): Promise<{ success: boolean; data?: BookingSearchResponse; message?: string }> => {
     try {
       const response = await fetch(
-        `${API_BASE_URL}${API_ENDPOINTS.BOOKINGS.SEARCH}?confirmationNumber=${encodeURIComponent(confirmationNumber.trim())}`,
+        `${API_BASE_URL}/bookings/confirmation/${encodeURIComponent(confirmationNumber.trim())}?_t=${Date.now()}`,
         {
           method: 'GET',
           headers: getHeaders(),
         }
-      );
-
-      if (!response.ok) {
+      );      if (!response.ok) {
         if (response.status === 404) {
           return { success: false, message: 'No booking found with the provided confirmation number' };
         }
@@ -65,7 +66,7 @@ export const bookingApiService = {
   searchByEmailAndName: async (email: string, lastName: string): Promise<{ success: boolean; data?: BookingSearchResponse; message?: string }> => {
     try {
       const response = await fetch(
-        `${API_BASE_URL}${API_ENDPOINTS.BOOKINGS.SEARCH}?email=${encodeURIComponent(email.trim())}&lastName=${encodeURIComponent(lastName.trim())}`,
+        `${API_BASE_URL}${API_ENDPOINTS.BOOKINGS.SEARCH}?email=${encodeURIComponent(email.trim())}&lastName=${encodeURIComponent(lastName.trim())}&_t=${Date.now()}`,
         {
           method: 'GET',
           headers: getHeaders(),
@@ -128,29 +129,45 @@ export const bookingApiService = {
   },
 
   /**
-   * Modify a booking
+   * Modify a booking - supports comprehensive changes except pricing
    */
   modifyBooking: async (modificationRequest: {
     confirmationNumber: string;
     guestEmail: string;
+    // Guest information changes
+    newGuestName?: string;
+    newGuestEmail?: string;
+    newNumberOfGuests?: number;
+    // Booking details changes
     newCheckInDate?: string;
     newCheckOutDate?: string;
     newRoomType?: string;
+    // Additional information
     modificationReason?: string;
+    reason?: string; // Alternative field name used by frontend
+    specialRequests?: string;
   }): Promise<{ success: boolean; data?: any; message?: string }> => {
     try {
       const response = await fetch(
         `${API_BASE_URL}/bookings/modify`,
         {
-          method: 'POST',
+          method: 'PUT',
           headers: getHeaders(),
           body: JSON.stringify({
             confirmationNumber: modificationRequest.confirmationNumber.trim(),
             guestEmail: modificationRequest.guestEmail.trim(),
+            // Guest information updates
+            newGuestName: modificationRequest.newGuestName?.trim(),
+            newGuestEmail: modificationRequest.newGuestEmail?.trim(),
+            newNumberOfGuests: modificationRequest.newNumberOfGuests,
+            // Booking details updates
             newCheckInDate: modificationRequest.newCheckInDate,
             newCheckOutDate: modificationRequest.newCheckOutDate,
             newRoomType: modificationRequest.newRoomType?.trim(),
-            modificationReason: modificationRequest.modificationReason?.trim() || ''
+            // Additional information
+            modificationReason: modificationRequest.modificationReason?.trim() || '',
+            reason: modificationRequest.reason?.trim() || '', // Support both field names
+            specialRequests: modificationRequest.specialRequests?.trim()
           }),
         }
       );

@@ -135,6 +135,7 @@ const NotificationsPage: React.FC = () => {
             <TableCell>Check-out</TableCell>
             <TableCell>Details</TableCell>
             <TableCell>Amount</TableCell>
+            <TableCell>Updated By</TableCell>
             <TableCell>Created</TableCell>
             <TableCell align="center">Actions</TableCell>
           </TableRow>
@@ -213,6 +214,11 @@ const NotificationsPage: React.FC = () => {
                     </Typography>
                   )}
                 </Box>
+              </TableCell>
+              <TableCell>
+                <Typography variant="body2" fontWeight={notification.status === 'UNREAD' ? 'bold' : 'normal'}>
+                  {notification.updatedBy || 'System'}
+                </Typography>
               </TableCell>
               <TableCell>
                 <Typography variant="body2" fontWeight={notification.status === 'UNREAD' ? 'bold' : 'normal'}>

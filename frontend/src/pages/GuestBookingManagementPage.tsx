@@ -33,6 +33,16 @@ import {
 import { bookingApiService } from '../services/bookingApi';
 import { buildApiUrl } from '../config/apiConfig';
 import { ROOM_TYPES } from '../constants/roomTypes';
+import { formatDateForInput, formatDateForAPI, formatDateForDisplay } from '../utils/dateUtils';
+
+// Get today's date in YYYY-MM-DD format (avoiding timezone issues)
+const getTodayForInput = (): string => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 
 interface BookingData {
   reservationId: number;
@@ -73,10 +83,11 @@ const GuestBookingManagementPage: React.FC = () => {
   
     // Modification form state
   const [modificationData, setModificationData] = useState({
-    newCheckInDate: booking?.checkInDate || '',
-    newCheckOutDate: booking?.checkOutDate || '',
-    newRoomType: booking?.roomType || '',
+    newGuestName: booking?.guestName || '',
     newGuestEmail: booking?.guestEmail || '',
+    newCheckInDate: formatDateForInput(booking?.checkInDate || ''),
+    newCheckOutDate: formatDateForInput(booking?.checkOutDate || ''),
+    newRoomType: booking?.roomType || '',
     newNumberOfGuests: booking?.numberOfGuests || 1,
     modificationReason: ''
   });
@@ -92,7 +103,13 @@ const GuestBookingManagementPage: React.FC = () => {
       setLoading(true);
       setErrorMessage('');
       
-      const response = await fetch(buildApiUrl(`/booking-management?token=${token}`));
+      const response = await fetch(buildApiUrl(`/booking-management?token=${token}&_t=${Date.now()}&_cache_bust=${Math.random()}`), {
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
+      });
       
       if (!response.ok) {
         const errorText = await response.text();
@@ -116,12 +133,15 @@ const GuestBookingManagementPage: React.FC = () => {
       setLoading(true);
       setErrorMessage('');
       
-            const response = await fetch(
-        `${buildApiUrl('/bookings/search')}?confirmationNumber=${encodeURIComponent(confirmationNumber)}&email=${encodeURIComponent(email)}`,
+      const response = await fetch(
+        `${buildApiUrl('/bookings/search')}?confirmationNumber=${encodeURIComponent(confirmationNumber)}&email=${encodeURIComponent(email)}&_t=${Date.now()}&_cache_bust=${Math.random()}`,
         {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
           },
         }
       );
@@ -139,32 +159,68 @@ const GuestBookingManagementPage: React.FC = () => {
     }
   }, [confirmationNumber, email]);
 
-  // Load booking data on component mount
+  // Fetch fresh booking data using confirmation number and email from initial booking
+  const fetchFreshDataFromInitialBooking = useCallback(async () => {
+    if (!initialBooking?.confirmationNumber || !initialBooking?.guestEmail) return;
+    
+    try {
+      setLoading(true);
+      setErrorMessage('');
+      
+      const response = await fetch(
+        `${buildApiUrl('/bookings/search')}?confirmationNumber=${encodeURIComponent(initialBooking.confirmationNumber)}&email=${encodeURIComponent(initialBooking.guestEmail)}&_t=${Date.now()}&_cache_bust=${Math.random()}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+          },
+        }
+      );
+      
+      if (!response.ok) {
+        throw new Error('Booking not found or access denied');
+      }
+      
+      const bookingData = await response.json();
+      setBooking(bookingData);
+    } catch (err) {
+      setErrorMessage('Could not refresh booking data. Showing cached information.');
+      setLoading(false);
+    } finally {
+      setLoading(false);
+    }
+  }, [initialBooking]);
+
+  // Load booking data on component mount - ALWAYS fetch fresh data from server
   useEffect(() => {
-    if (token && !initialBooking) {
-      // Load from token if no initial booking data
+    if (token) {
+      // Always load from token, even if initial booking data exists (to get fresh data)
       fetchBookingFromToken();
-    } else if (confirmationNumber && email && !initialBooking) {
-      // Load from URL parameters (confirmation number and email)
+    } else if (confirmationNumber && email) {
+      // Always load from URL parameters (confirmation number and email) for fresh data
       fetchBookingFromParams();
-    } else if (!token && !confirmationNumber && !email && !initialBooking) {
+    } else if (initialBooking && !token && !confirmationNumber && !email) {
+      // If we only have initialBooking, fetch fresh data using its confirmation details
+      fetchFreshDataFromInitialBooking();
+    } else {
       // No token, no URL params, and no initial data - redirect to find booking
       setErrorMessage('No booking information available. Please search for your booking first.');
       setLoading(false);
-    } else {
-      // Already have booking data from navigation state
-      setLoading(false);
     }
-  }, [token, confirmationNumber, email, initialBooking, fetchBookingFromToken, fetchBookingFromParams]);
+  }, [token, confirmationNumber, email, initialBooking, fetchBookingFromToken, fetchBookingFromParams, fetchFreshDataFromInitialBooking]);
 
   // Update modification form when booking data changes
   useEffect(() => {
     if (booking) {
       setModificationData({
-        newCheckInDate: booking.checkInDate || '',
-        newCheckOutDate: booking.checkOutDate || '',
-        newRoomType: booking.roomType || '',
+        newGuestName: booking.guestName || '',
         newGuestEmail: booking.guestEmail || '',
+        newCheckInDate: formatDateForInput(booking.checkInDate || ''),
+        newCheckOutDate: formatDateForInput(booking.checkOutDate || ''),
+        newRoomType: booking.roomType || '',
         newNumberOfGuests: booking.numberOfGuests || 1,
         modificationReason: ''
       });
@@ -208,12 +264,7 @@ const GuestBookingManagementPage: React.FC = () => {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+    return formatDateForDisplay(dateString);
   };
 
   const getStatusColor = (status: string) => {
@@ -250,9 +301,10 @@ const GuestBookingManagementPage: React.FC = () => {
       const modificationRequest = {
         confirmationNumber: booking.confirmationNumber,
         guestEmail: booking.guestEmail, // Always send original email for authentication
+        newGuestName: modificationData.newGuestName !== booking.guestName ? modificationData.newGuestName : undefined,
         newGuestEmail: modificationData.newGuestEmail !== booking.guestEmail ? modificationData.newGuestEmail : undefined,
-        newCheckInDate: modificationData.newCheckInDate !== booking.checkInDate ? modificationData.newCheckInDate : undefined,
-        newCheckOutDate: modificationData.newCheckOutDate !== booking.checkOutDate ? modificationData.newCheckOutDate : undefined,
+        newCheckInDate: formatDateForAPI(modificationData.newCheckInDate) !== formatDateForAPI(booking.checkInDate) ? formatDateForAPI(modificationData.newCheckInDate) : undefined,
+        newCheckOutDate: formatDateForAPI(modificationData.newCheckOutDate) !== formatDateForAPI(booking.checkOutDate) ? formatDateForAPI(modificationData.newCheckOutDate) : undefined,
         newRoomType: modificationData.newRoomType !== booking.roomType ? modificationData.newRoomType : undefined,
         newNumberOfGuests: modificationData.newNumberOfGuests !== booking.numberOfGuests ? modificationData.newNumberOfGuests : undefined,
         reason: modificationData.modificationReason
@@ -281,14 +333,25 @@ const GuestBookingManagementPage: React.FC = () => {
           setSuccessMessage(response.message || 'Booking modified successfully');
           setModifyDialogOpen(false);
           
-          // Update booking state with the modified booking data
+          // Wait a moment for backend cache eviction and database commit
+          await new Promise(resolve => setTimeout(resolve, 500));
+          
+          // Force refresh the booking data from server to get latest state
+          await fetchBookingFromToken();
+          
+          // Auto-clear success message after 5 seconds
+          setTimeout(() => setSuccessMessage(''), 5000);
+          
+          // Update booking state with the modified booking data as fallback
           if (response.updatedBooking) {
             setBooking({
               ...booking,
+              guestName: response.updatedBooking.guestName,
+              guestEmail: response.updatedBooking.guestEmail,
               checkInDate: response.updatedBooking.checkInDate,
               checkOutDate: response.updatedBooking.checkOutDate,
               roomType: response.updatedBooking.roomType,
-              guestEmail: response.updatedBooking.guestEmail,
+              numberOfGuests: response.updatedBooking.numberOfGuests,
               totalAmount: response.updatedBooking.totalAmount
             });
           }
@@ -303,13 +366,30 @@ const GuestBookingManagementPage: React.FC = () => {
           setSuccessMessage(response.message || 'Booking modified successfully');
           setModifyDialogOpen(false);
           
-          // Update booking state with the modified booking data
+          // Wait a moment for backend cache eviction and database commit
+          await new Promise(resolve => setTimeout(resolve, 500));
+          
+          // Force refresh the booking data from server to get latest state
+          if (token) {
+            await fetchBookingFromToken();
+          } else {
+            // For search-based bookings, refresh by fetching again
+            await fetchBookingFromParams();
+          }
+          
+          // Auto-clear success message after 5 seconds
+          setTimeout(() => setSuccessMessage(''), 5000);
+          
+          // Update booking state with the modified booking data as fallback
           if (response.data?.updatedBooking) {
             setBooking({
               ...booking,
+              guestName: response.data.updatedBooking.guestName,
+              guestEmail: response.data.updatedBooking.guestEmail,
               checkInDate: response.data.updatedBooking.checkInDate,
               checkOutDate: response.data.updatedBooking.checkOutDate,
               roomType: response.data.updatedBooking.roomType,
+              numberOfGuests: response.data.updatedBooking.numberOfGuests,
               totalAmount: response.data.updatedBooking.totalAmount
             });
           }
@@ -564,6 +644,16 @@ const GuestBookingManagementPage: React.FC = () => {
           <Grid container spacing={2} sx={{ mt: 1 }}>
             <Grid item xs={12}>
               <TextField
+                label="Guest Name"
+                fullWidth
+                value={modificationData.newGuestName}
+                onChange={(e) => setModificationData({ ...modificationData, newGuestName: e.target.value })}
+                helperText="Update the primary guest name for this booking"
+                required
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
                 label="Email Address"
                 type="email"
                 fullWidth
@@ -581,7 +671,7 @@ const GuestBookingManagementPage: React.FC = () => {
                 value={modificationData.newCheckInDate}
                 onChange={(e) => setModificationData({ ...modificationData, newCheckInDate: e.target.value })}
                 InputLabelProps={{ shrink: true }}
-                inputProps={{ min: new Date().toISOString().split('T')[0] }}
+                inputProps={{ min: getTodayForInput() }}
               />
             </Grid>
             <Grid item xs={12} sm={6}>

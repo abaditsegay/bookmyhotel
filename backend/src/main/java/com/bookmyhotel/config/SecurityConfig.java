@@ -121,7 +121,9 @@ public class SecurityConfig {
                 "X-Requested-With",
                 "Accept",
                 "Origin",
-                "Cache-Control"));
+                "Cache-Control",
+                "Pragma",
+                "Expires"));
         configuration.setAllowCredentials(true);
         configuration.setExposedHeaders(Arrays.asList("Authorization", "X-Tenant-ID", "Content-Type"));
         configuration.setMaxAge(3600L); // Cache preflight for 1 hour

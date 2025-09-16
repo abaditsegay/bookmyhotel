@@ -98,8 +98,8 @@ public class BookingStatusUpdateService {
                 bookingChangeNotificationService.createCancellationNotification(
                         reservation,
                         reason,
-                        java.math.BigDecimal.ZERO // No refund calculation for admin/front desk cancellations
-                );
+                        java.math.BigDecimal.ZERO, // No refund calculation for admin/front desk cancellations
+                        initiatedBy);
                 System.out.println("✅ Successfully created cancellation notification");
             } catch (Exception e) {
                 // Log error but don't fail the status update

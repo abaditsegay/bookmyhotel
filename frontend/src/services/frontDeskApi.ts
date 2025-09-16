@@ -142,19 +142,12 @@ export interface BookingPage {
   empty: boolean;
 }
 
-const getAuthHeaders = (token: string, tenantId: string | null = 'default') => {
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`,
-  };
-  
-  // Only add tenant ID header if tenantId is not null (for tenant-bound users)
-  if (tenantId) {
-    headers['X-Tenant-ID'] = tenantId;
-  }
-  
-  return headers;
-};
+const getAuthHeaders = (token: string, tenantId: string | null = 'default') => ({
+  'Content-Type': 'application/json',
+  'Authorization': `Bearer ${token}`,
+  'X-Tenant-ID': tenantId || 'default',
+  'Cache-Control': 'no-cache, no-store, must-revalidate'
+});
 
 export const frontDeskApiService = {
   /**
@@ -177,7 +170,7 @@ export const frontDeskApiService = {
         params.append('search', search.trim());
       }
 
-      const response = await fetch(`${API_BASE_URL}/front-desk/bookings?${params.toString()}`, {
+      const response = await fetch(`${API_BASE_URL}/front-desk/bookings?${params.toString()}&_t=${Date.now()}`, {
         method: 'GET',
         headers: getAuthHeaders(token, tenantId),
       });
@@ -203,7 +196,7 @@ export const frontDeskApiService = {
    */
   getBookingById: async (token: string, reservationId: number, tenantId: string | null = 'default'): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/front-desk/bookings/${reservationId}`, {
+      const response = await fetch(`${API_BASE_URL}/front-desk/bookings/${reservationId}?_t=${Date.now()}`, {
         method: 'GET',
         headers: getAuthHeaders(token, tenantId),
       });

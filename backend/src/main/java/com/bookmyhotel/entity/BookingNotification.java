@@ -88,6 +88,9 @@ public class BookingNotification {
     @Column(name = "hotel_id")
     private Long hotelId;
 
+    @Column(name = "updated_by")
+    private String updatedBy;
+
     // Constructors
     public BookingNotification() {
         this.createdAt = LocalDateTime.now();
@@ -289,5 +292,13 @@ public class BookingNotification {
 
     public void setHotelId(Long hotelId) {
         this.hotelId = hotelId;
+    }
+
+    public String getUpdatedBy() {
+        return updatedBy;
+    }
+
+    public void setUpdatedBy(String updatedBy) {
+        this.updatedBy = updatedBy;
     }
 }
