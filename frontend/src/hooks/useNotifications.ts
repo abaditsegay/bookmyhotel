@@ -56,7 +56,7 @@ export interface PaginatedResponse<T> {
 }
 
 export const useNotifications = () => {
-  const { token, isInitializing } = useAuth();
+  const { token, isInitializing, user, hasRole } = useAuth();
   const [notifications, setNotifications] = useState<BookingNotification[]>([]);
   const [stats, setStats] = useState<NotificationStats>({ 
     totalUnread: 0, 
@@ -83,6 +83,24 @@ export const useNotifications = () => {
       setLoading(true);
       setError(null);
       
+      // Skip notifications for system admin users - they don't have access
+      if (hasRole('SYSTEM_ADMIN')) {
+        console.log('🔑 System admin detected - skipping notifications API call');
+        setNotifications([]);
+        setStats({ totalUnread: 0, unreadCancellations: 0, unreadModifications: 0 });
+        setLoading(false);
+        return;
+      }
+      
+      // Only load notifications for HOTEL_ADMIN and FRONTDESK roles
+      if (!hasRole('HOTEL_ADMIN') && !hasRole('FRONTDESK')) {
+        console.log('🚫 User does not have required role for notifications');
+        setNotifications([]);
+        setStats({ totalUnread: 0, unreadCancellations: 0, unreadModifications: 0 });
+        setLoading(false);
+        return;
+      }
+      
       const response = await apiClient.get<PaginatedResponse<BookingNotification>>('/notifications');
       
       if (response.success && response.data) {
@@ -99,9 +117,15 @@ export const useNotifications = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [hasRole]);
 
   const markAsRead = async (notificationId: number) => {
+    // Skip for system admin or users without proper roles
+    if (hasRole('SYSTEM_ADMIN') || (!hasRole('HOTEL_ADMIN') && !hasRole('FRONTDESK'))) {
+      console.log('🚫 User does not have permission to mark notifications as read');
+      return false;
+    }
+    
     try {
       const response = await apiClient.put(`/notifications/${notificationId}/read`);
       
@@ -127,6 +151,12 @@ export const useNotifications = () => {
   };
 
   const markAllAsRead = async () => {
+    // Skip for system admin or users without proper roles
+    if (hasRole('SYSTEM_ADMIN') || (!hasRole('HOTEL_ADMIN') && !hasRole('FRONTDESK'))) {
+      console.log('🚫 User does not have permission to mark all notifications as read');
+      return false;
+    }
+    
     try {
       const response = await apiClient.put('/notifications/mark-all-read');
       
@@ -150,6 +180,12 @@ export const useNotifications = () => {
   };
 
   const archiveNotification = async (notificationId: number) => {
+    // Skip for system admin or users without proper roles
+    if (hasRole('SYSTEM_ADMIN') || (!hasRole('HOTEL_ADMIN') && !hasRole('FRONTDESK'))) {
+      console.log('🚫 User does not have permission to archive notifications');
+      return false;
+    }
+    
     try {
       const response = await apiClient.put(`/notifications/${notificationId}/archive`);
       
@@ -175,6 +211,11 @@ export const useNotifications = () => {
   };
 
   const getUnreadCount = async (): Promise<number> => {
+    // Skip for system admin or users without proper roles
+    if (hasRole('SYSTEM_ADMIN') || (!hasRole('HOTEL_ADMIN') && !hasRole('FRONTDESK'))) {
+      return 0;
+    }
+    
     try {
       const response = await apiClient.get<{ count: number }>('/notifications/unread-count');
       

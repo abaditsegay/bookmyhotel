@@ -60,10 +60,10 @@ public class NotificationController {
         logger.info("🔔 NotificationController.getNotifications called - user: {}, authorities: {}",
                 auth.getName(), auth.getAuthorities());
 
-        Long hotelId = getCurrentUserHotelId(auth);
-        logger.info("🏨 Hotel ID for user {}: {}", auth.getName(), hotelId);
+        Long currentHotelId = getCurrentUserHotelId(auth);
+        logger.info("🏨 Hotel ID for user {}: {}", auth.getName(), currentHotelId);
 
-        if (hotelId == null) {
+        if (currentHotelId == null) {
             logger.warn("❌ No hotel ID found for user: {}", auth.getName());
             return ResponseEntity.badRequest().build();
         }
@@ -73,12 +73,12 @@ public class NotificationController {
 
         if (type != null && !type.isEmpty()) {
             NotificationType notificationType = NotificationType.valueOf(type.toUpperCase());
-            notifications = notificationService.getHotelNotificationsByType(hotelId, notificationType, pageable);
+            notifications = notificationService.getHotelNotificationsByType(currentHotelId, notificationType, pageable);
         } else {
-            notifications = notificationService.getHotelNotifications(hotelId, pageable);
+            notifications = notificationService.getHotelNotifications(currentHotelId, pageable);
         }
 
-        logger.info("📊 Found {} notifications for hotel {}", notifications.getTotalElements(), hotelId);
+        logger.info("📊 Found {} notifications for hotel {}", notifications.getTotalElements(), currentHotelId);
 
         Page<BookingNotificationResponse> response = notifications.map(this::convertToResponse);
         logger.info("✅ Successfully returning notifications response");
