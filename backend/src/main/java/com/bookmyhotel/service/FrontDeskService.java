@@ -202,11 +202,11 @@ public class FrontDeskService {
     @CacheEvict(value = CacheConfig.AVAILABLE_ROOMS_CACHE, allEntries = true)
     public BookingResponse updateBooking(Long reservationId, BookingRequest request) {
         Reservation reservation = reservationRepository.findById(reservationId)
-            .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
+                .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
 
         // Validate that dates are valid
-        if (request.getCheckInDate().isAfter(request.getCheckOutDate()) || 
-            request.getCheckInDate().isBefore(LocalDate.now())) {
+        if (request.getCheckInDate().isAfter(request.getCheckOutDate()) ||
+                request.getCheckInDate().isBefore(LocalDate.now())) {
             throw new IllegalArgumentException("Invalid check-in or check-out dates");
         }
 
@@ -214,7 +214,7 @@ public class FrontDeskService {
         if (reservation.getGuestInfo() == null) {
             reservation.setGuestInfo(new GuestInfo());
         }
-        
+
         if (request.getGuestName() != null && !request.getGuestName().trim().isEmpty()) {
             reservation.getGuestInfo().setName(request.getGuestName().trim());
         }
@@ -242,7 +242,7 @@ public class FrontDeskService {
         // Handle room type change
         if (request.getRoomType() != null && !request.getRoomType().equals(reservation.getRoomType())) {
             reservation.setRoomType(request.getRoomType());
-            
+
             // If room type changed, we might need to clear the specific room assignment
             // unless a specific room is provided
             if (request.getRoomId() == null && reservation.getAssignedRoom() != null) {
@@ -257,8 +257,8 @@ public class FrontDeskService {
         // Handle room assignment change
         if (request.getRoomId() != null) {
             Room newRoom = roomRepository.findById(request.getRoomId())
-                .orElseThrow(() -> new ResourceNotFoundException("Room not found with id: " + request.getRoomId()));
-            
+                    .orElseThrow(() -> new ResourceNotFoundException("Room not found with id: " + request.getRoomId()));
+
             // Verify room is available (unless it's the same room already assigned)
             if (!newRoom.equals(reservation.getAssignedRoom()) && newRoom.getStatus() != RoomStatus.AVAILABLE) {
                 throw new IllegalStateException("Selected room is not available");
@@ -281,12 +281,13 @@ public class FrontDeskService {
             // Update pricing based on new room
             recalculateBookingTotal(reservation, newRoom.getPricePerNight());
         } else {
-            // If no specific room but room type changed, recalculate based on room type pricing
+            // If no specific room but room type changed, recalculate based on room type
+            // pricing
             if (request.getRoomType() != null) {
                 // Get base price for room type (you might want to implement this method)
                 // For now, keep existing price per night or use a default calculation
                 long nights = java.time.temporal.ChronoUnit.DAYS.between(
-                    reservation.getCheckInDate(), reservation.getCheckOutDate());
+                        reservation.getCheckInDate(), reservation.getCheckOutDate());
                 reservation.setTotalAmount(reservation.getPricePerNight().multiply(BigDecimal.valueOf(nights)));
             }
         }

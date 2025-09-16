@@ -1397,10 +1397,12 @@ public class BookingService {
 
             // Create booking change notification for hotel admin/front desk
             try {
-                String modificationReason = request.getReason() != null && 
-                    !request.getReason().trim().isEmpty() 
-                    ? request.getReason().trim() : "Booking details updated";
-                bookingChangeNotificationService.createModificationNotification(reservation, modificationReason, additionalCharges, refundAmount);
+                String modificationReason = request.getReason() != null &&
+                        !request.getReason().trim().isEmpty()
+                                ? request.getReason().trim()
+                                : "Booking details updated";
+                bookingChangeNotificationService.createModificationNotification(reservation, modificationReason,
+                        additionalCharges, refundAmount);
             } catch (Exception e) {
                 logger.warn("Failed to create booking modification notification: {}", e.getMessage());
             }
@@ -1506,10 +1508,12 @@ public class BookingService {
 
             // Create booking change notification for hotel admin/front desk
             try {
-                String cancellationReason = request.getCancellationReason() != null && 
-                    !request.getCancellationReason().trim().isEmpty() 
-                    ? request.getCancellationReason().trim() : "No reason provided";
-                bookingChangeNotificationService.createCancellationNotification(reservation, cancellationReason, refundAmount);
+                String cancellationReason = request.getCancellationReason() != null &&
+                        !request.getCancellationReason().trim().isEmpty()
+                                ? request.getCancellationReason().trim()
+                                : "No reason provided";
+                bookingChangeNotificationService.createCancellationNotification(reservation, cancellationReason,
+                        refundAmount);
             } catch (Exception e) {
                 logger.warn("Failed to create booking cancellation notification: {}", e.getMessage());
             }
@@ -1737,9 +1741,11 @@ public class BookingService {
 
             // Create booking change notification for hotel admin/front desk
             try {
-                String modificationReason = request.getReason() != null && !request.getReason().trim().isEmpty() 
-                    ? request.getReason().trim() : "Booking details updated";
-                bookingChangeNotificationService.createModificationNotification(reservation, modificationReason, additionalCharges, refundAmount);
+                String modificationReason = request.getReason() != null && !request.getReason().trim().isEmpty()
+                        ? request.getReason().trim()
+                        : "Booking details updated";
+                bookingChangeNotificationService.createModificationNotification(reservation, modificationReason,
+                        additionalCharges, refundAmount);
             } catch (Exception e) {
                 logger.warn("Failed to create booking modification notification: {}", e.getMessage());
             }
@@ -1822,8 +1828,9 @@ public class BookingService {
 
             // Create booking change notification for hotel admin/front desk
             try {
-                String reason = cancellationReason != null && !cancellationReason.trim().isEmpty() 
-                    ? cancellationReason.trim() : "No reason provided";
+                String reason = cancellationReason != null && !cancellationReason.trim().isEmpty()
+                        ? cancellationReason.trim()
+                        : "No reason provided";
                 bookingChangeNotificationService.createCancellationNotification(reservation, reason, refundAmount);
             } catch (Exception e) {
                 logger.warn("Failed to create booking cancellation notification: {}", e.getMessage());

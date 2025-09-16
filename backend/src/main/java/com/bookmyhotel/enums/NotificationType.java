@@ -8,7 +8,7 @@ public enum NotificationType {
      * Notification for booking cancellation
      */
     CANCELLED,
-    
+
     /**
      * Notification for booking modification
      */

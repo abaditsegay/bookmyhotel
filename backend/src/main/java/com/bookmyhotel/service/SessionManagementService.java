@@ -89,12 +89,13 @@ public class SessionManagementService {
         // Check concurrent session limit
         if (existingSession != null && maxConcurrentSessions <= 1) {
             // Invalidate existing session if only one session allowed
-            logger.warn("🚨 POTENTIAL ISSUE: Invalidating existing session for user {} due to concurrent session limit. " +
-                       "Old token: {}..., New token: {}..., UserAgent: {}", 
-                       userId, 
-                       existingSession.getToken().substring(0, Math.min(20, existingSession.getToken().length())),
-                       token.substring(0, Math.min(20, token.length())),
-                       userAgent);
+            logger.warn(
+                    "🚨 POTENTIAL ISSUE: Invalidating existing session for user {} due to concurrent session limit. " +
+                            "Old token: {}..., New token: {}..., UserAgent: {}",
+                    userId,
+                    existingSession.getToken().substring(0, Math.min(20, existingSession.getToken().length())),
+                    token.substring(0, Math.min(20, token.length())),
+                    userAgent);
             invalidateSession(existingSession.getToken());
         }
 
@@ -110,8 +111,8 @@ public class SessionManagementService {
         activeSessions.put(userId, newSession);
         tokenToUser.put(token, userId);
 
-        logger.info("✅ Created new session for user {} from IP {} (Token: {}...)", 
-                   userId, ipAddress, token.substring(0, Math.min(20, token.length())));
+        logger.info("✅ Created new session for user {} from IP {} (Token: {}...)",
+                userId, ipAddress, token.substring(0, Math.min(20, token.length())));
         return true;
     }
 

@@ -41,25 +41,29 @@ public class BookingStatusUpdateService {
      * Update booking status with notification creation
      * 
      * @param reservationId The reservation ID to update
-     * @param newStatus The new status to set
-     * @param initiatedBy Who initiated the status change (e.g., "hotel admin", "front desk")
+     * @param newStatus     The new status to set
+     * @param initiatedBy   Who initiated the status change (e.g., "hotel admin",
+     *                      "front desk")
      * @return BookingResponse with updated booking information
      */
     public BookingResponse updateBookingStatus(Long reservationId, ReservationStatus newStatus, String initiatedBy) {
-        System.out.println("🔄 BookingStatusUpdateService.updateBookingStatus called - reservationId: " + reservationId + ", newStatus: " + newStatus + ", initiatedBy: " + initiatedBy);
-        
+        System.out.println("🔄 BookingStatusUpdateService.updateBookingStatus called - reservationId: " + reservationId
+                + ", newStatus: " + newStatus + ", initiatedBy: " + initiatedBy);
+
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
 
-        System.out.println("📋 Found reservation: " + generateConfirmationNumber(reservation.getId()) + " - Current status: " + reservation.getStatus());
+        System.out.println("📋 Found reservation: " + generateConfirmationNumber(reservation.getId())
+                + " - Current status: " + reservation.getStatus());
 
         // Store old status for comparison
         ReservationStatus oldStatus = reservation.getStatus();
-        
+
         // Update reservation status
         reservation.setStatus(newStatus);
 
-        // Handle room status updates based on reservation status (only if room is assigned)
+        // Handle room status updates based on reservation status (only if room is
+        // assigned)
         Room room = reservation.getRoom();
         if (room != null) {
             switch (newStatus) {
@@ -87,13 +91,14 @@ public class BookingStatusUpdateService {
 
         // Create booking notification if status changed to CANCELLED
         if (newStatus == ReservationStatus.CANCELLED) {
-            System.out.println("📢 Creating cancellation notification for reservation: " + generateConfirmationNumber(reservation.getId()));
+            System.out.println("📢 Creating cancellation notification for reservation: "
+                    + generateConfirmationNumber(reservation.getId()));
             try {
                 String reason = "Booking cancelled by " + initiatedBy;
                 bookingChangeNotificationService.createCancellationNotification(
-                    reservation, 
-                    reason, 
-                    java.math.BigDecimal.ZERO // No refund calculation for admin/front desk cancellations
+                        reservation,
+                        reason,
+                        java.math.BigDecimal.ZERO // No refund calculation for admin/front desk cancellations
                 );
                 System.out.println("✅ Successfully created cancellation notification");
             } catch (Exception e) {

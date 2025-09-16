@@ -33,7 +33,6 @@ import {
   Edit as EditIcon,
   Archive as ArchiveIcon,
   Refresh as RefreshIcon,
-  MarkEmailRead as MarkReadIcon,
   Info as InfoIcon
 } from '@mui/icons-material';
 // import { useAuth } from '../contexts/AuthContext';
@@ -234,7 +233,7 @@ const NotificationsPage: React.FC = () => {
                           markAsRead(notification.id);
                         }}
                       >
-                        <MarkReadIcon fontSize="small" />
+                        <InfoIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
                   )}
@@ -288,7 +287,7 @@ const NotificationsPage: React.FC = () => {
           {stats.totalUnread > 0 && (
             <Button
               variant="contained"
-              startIcon={<MarkReadIcon />}
+              startIcon={<InfoIcon />}
               onClick={markAllAsRead}
             >
               Mark All Read ({stats.totalUnread})
@@ -436,32 +435,6 @@ const NotificationsPage: React.FC = () => {
           )}
         </DialogContent>
         <DialogActions>
-          {selectedNotification?.status === 'UNREAD' && (
-            <Button 
-              onClick={() => {
-                if (selectedNotification) {
-                  markAsRead(selectedNotification.id);
-                  closeDetails();
-                }
-              }}
-              startIcon={<MarkReadIcon />}
-            >
-              Mark as Read
-            </Button>
-          )}
-          {selectedNotification?.status !== 'ARCHIVED' && (
-            <Button 
-              onClick={() => {
-                if (selectedNotification) {
-                  archiveNotification(selectedNotification.id);
-                  closeDetails();
-                }
-              }}
-              startIcon={<ArchiveIcon />}
-            >
-              Archive
-            </Button>
-          )}
           <Button onClick={closeDetails}>Close</Button>
         </DialogActions>
       </Dialog>

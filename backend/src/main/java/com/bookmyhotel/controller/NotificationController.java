@@ -31,19 +31,21 @@ import com.bookmyhotel.service.BookingChangeNotificationService.NotificationStat
 
 /**
  * REST controller for booking notifications
- * Provides endpoints for hotel admin and front desk staff to view and manage booking notifications
+ * Provides endpoints for hotel admin and front desk staff to view and manage
+ * booking notifications
  */
 @RestController
 @RequestMapping("/api/notifications")
-@CrossOrigin(origins = {"http://localhost:3000", "https://yourdomain.com"})
+@CrossOrigin(origins = { "http://localhost:3000", "https://yourdomain.com" })
 public class NotificationController {
 
     private static final Logger logger = LoggerFactory.getLogger(NotificationController.class);
 
     @Autowired
-    private BookingChangeNotificationService notificationService;    @Autowired
+    private BookingChangeNotificationService notificationService;
+    @Autowired
     private UserRepository userRepository;
-    
+
     /**
      * Get notifications for the hotel with pagination
      */
@@ -54,35 +56,35 @@ public class NotificationController {
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(required = false) String type,
             Authentication auth) {
-        
-        logger.info("🔔 NotificationController.getNotifications called - user: {}, authorities: {}", 
-                   auth.getName(), auth.getAuthorities());
-        
+
+        logger.info("🔔 NotificationController.getNotifications called - user: {}, authorities: {}",
+                auth.getName(), auth.getAuthorities());
+
         Long hotelId = getCurrentUserHotelId(auth);
         logger.info("🏨 Hotel ID for user {}: {}", auth.getName(), hotelId);
-        
+
         if (hotelId == null) {
             logger.warn("❌ No hotel ID found for user: {}", auth.getName());
             return ResponseEntity.badRequest().build();
         }
-        
+
         Pageable pageable = PageRequest.of(page, size);
         Page<BookingNotification> notifications;
-        
+
         if (type != null && !type.isEmpty()) {
             NotificationType notificationType = NotificationType.valueOf(type.toUpperCase());
             notifications = notificationService.getHotelNotificationsByType(hotelId, notificationType, pageable);
         } else {
             notifications = notificationService.getHotelNotifications(hotelId, pageable);
         }
-        
+
         logger.info("📊 Found {} notifications for hotel {}", notifications.getTotalElements(), hotelId);
-        
+
         Page<BookingNotificationResponse> response = notifications.map(this::convertToResponse);
         logger.info("✅ Successfully returning notifications response");
         return ResponseEntity.ok(response);
     }
-    
+
     /**
      * Get recent notifications for dashboard
      */
@@ -91,20 +93,20 @@ public class NotificationController {
     public ResponseEntity<List<BookingNotificationResponse>> getRecentNotifications(
             @RequestParam(defaultValue = "5") int limit,
             Authentication auth) {
-        
+
         Long hotelId = getCurrentUserHotelId(auth);
         if (hotelId == null) {
             return ResponseEntity.badRequest().build();
         }
-        
+
         List<BookingNotification> notifications = notificationService.getRecentNotifications(hotelId, limit);
         List<BookingNotificationResponse> response = notifications.stream()
-            .map(this::convertToResponse)
-            .toList();
-        
+                .map(this::convertToResponse)
+                .toList();
+
         return ResponseEntity.ok(response);
     }
-    
+
     /**
      * Get unread notification count
      */
@@ -115,13 +117,13 @@ public class NotificationController {
         if (hotelId == null) {
             return ResponseEntity.badRequest().build();
         }
-        
+
         long count = notificationService.getUnreadNotificationCount(hotelId);
         Map<String, Long> response = new HashMap<>();
         response.put("unreadCount", count);
         return ResponseEntity.ok(response);
     }
-    
+
     /**
      * Get notification statistics
      */
@@ -132,11 +134,11 @@ public class NotificationController {
         if (hotelId == null) {
             return ResponseEntity.badRequest().build();
         }
-        
+
         NotificationStats stats = notificationService.getNotificationStats(hotelId);
         return ResponseEntity.ok(stats);
     }
-    
+
     /**
      * Mark a notification as read
      */
@@ -147,13 +149,13 @@ public class NotificationController {
             // Verify the notification belongs to the user's hotel
             BookingNotification notification = notificationService.getNotificationById(id);
             Long userHotelId = getCurrentUserHotelId(auth);
-            
+
             if (!notification.getHotelId().equals(userHotelId)) {
                 return ResponseEntity.status(403).body(buildErrorResponse("Access denied"));
             }
-            
+
             notificationService.markAsRead(id);
-            
+
             Map<String, String> response = new HashMap<>();
             response.put("message", "Notification marked as read");
             return ResponseEntity.ok(response);
@@ -163,7 +165,7 @@ public class NotificationController {
             return ResponseEntity.badRequest().body(errorResponse);
         }
     }
-    
+
     /**
      * Mark all notifications as read for the hotel
      */
@@ -176,15 +178,15 @@ public class NotificationController {
             errorResponse.put("error", "Hotel ID not found");
             return ResponseEntity.badRequest().body(errorResponse);
         }
-        
+
         int markedCount = notificationService.markAllAsRead(hotelId);
-        
+
         Map<String, Object> response = new HashMap<>();
         response.put("message", "All notifications marked as read");
         response.put("markedCount", markedCount);
         return ResponseEntity.ok(response);
     }
-    
+
     /**
      * Archive a notification
      */
@@ -195,13 +197,13 @@ public class NotificationController {
             // Verify the notification belongs to the user's hotel
             BookingNotification notification = notificationService.getNotificationById(id);
             Long userHotelId = getCurrentUserHotelId(auth);
-            
+
             if (!notification.getHotelId().equals(userHotelId)) {
                 return ResponseEntity.status(403).body(buildErrorResponse("Access denied"));
             }
-            
+
             notificationService.archiveNotification(id);
-            
+
             Map<String, String> response = new HashMap<>();
             response.put("message", "Notification archived");
             return ResponseEntity.ok(response);
@@ -211,7 +213,7 @@ public class NotificationController {
             return ResponseEntity.badRequest().body(errorResponse);
         }
     }
-    
+
     /**
      * Get a specific notification by ID
      */
@@ -221,18 +223,18 @@ public class NotificationController {
         try {
             BookingNotification notification = notificationService.getNotificationById(id);
             Long userHotelId = getCurrentUserHotelId(auth);
-            
+
             if (!notification.getHotelId().equals(userHotelId)) {
                 return ResponseEntity.notFound().build();
             }
-            
+
             BookingNotificationResponse response = convertToResponse(notification);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.notFound().build();
         }
     }
-    
+
     /**
      * Helper method to get current user's hotel ID
      */
@@ -240,15 +242,15 @@ public class NotificationController {
         if (auth == null || auth.getName() == null) {
             return null;
         }
-        
+
         User user = userRepository.findByEmail(auth.getName()).orElse(null);
         if (user == null || user.getHotel() == null) {
             return null;
         }
-        
+
         return user.getHotel().getId();
     }
-    
+
     /**
      * Convert BookingNotification entity to response DTO
      */
@@ -269,15 +271,15 @@ public class NotificationController {
         response.setAdditionalCharges(notification.getAdditionalCharges());
         response.setCancellationReason(notification.getCancellationReason());
         response.setCreatedAt(notification.getCreatedAt());
-        
+
         // Add reservation ID if available
         if (notification.getReservation() != null) {
             response.setReservationId(notification.getReservation().getId());
         }
-        
+
         return response;
     }
-    
+
     /**
      * Helper method to build error response
      */

@@ -13,8 +13,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.bookmyhotel.entity.User;
 import com.bookmyhotel.service.SessionManagementService;
-import com.bookmyhotel.tenant.TenantContext;
 import com.bookmyhotel.tenant.HotelContext;
+import com.bookmyhotel.tenant.TenantContext;
 import com.bookmyhotel.util.JwtUtil;
 
 import jakarta.servlet.FilterChain;
@@ -57,7 +57,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 tenantId = jwtUtil.extractTenantId(jwt); // Extract tenant ID from JWT
                 hotelId = jwtUtil.extractHotelId(jwt); // Extract hotel ID from JWT
                 hotelName = jwtUtil.extractClaim(jwt, claims -> (String) claims.get("hotelName"));
-                logger.debug("🔑 JWT extracted - username: " + username + ", tenantId: " + tenantId + ", hotelId: " + hotelId);
+                logger.debug("🔑 JWT extracted - username: " + username + ", tenantId: " + tenantId + ", hotelId: "
+                        + hotelId);
             } catch (Exception e) {
                 logger.warn("JWT token extraction failed: " + e.getMessage());
             }
