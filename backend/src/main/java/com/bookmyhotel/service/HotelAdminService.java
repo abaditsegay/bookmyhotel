@@ -44,6 +44,7 @@ import com.bookmyhotel.repository.HotelRepository;
 import com.bookmyhotel.repository.ReservationRepository;
 import com.bookmyhotel.repository.RoomRepository;
 import com.bookmyhotel.repository.UserRepository;
+import com.bookmyhotel.service.BookingChangeNotificationService;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -79,6 +80,12 @@ public class HotelAdminService {
 
     @Autowired
     private RoomTypePricingService roomTypePricingService;
+
+    @Autowired
+    private BookingChangeNotificationService bookingChangeNotificationService;
+
+    @Autowired
+    private BookingStatusUpdateService bookingStatusUpdateService;
 
     /**
      * Get the hotel for the logged-in hotel admin
@@ -975,29 +982,7 @@ public class HotelAdminService {
      */
     @Transactional
     public BookingResponse updateBookingStatus(Long reservationId, ReservationStatus newStatus) {
-        Reservation reservation = reservationRepository.findById(reservationId)
-                .orElseThrow(() -> new RuntimeException("Reservation not found"));
-
-        reservation.setStatus(newStatus);
-
-        // Fix guestInfo validation issue for guest users
-        if (reservation.getGuestInfo() != null) {
-            GuestInfo guestInfo = reservation.getGuestInfo();
-
-            if (guestInfo.getName() == null || guestInfo.getName().trim().isEmpty()) {
-                // Use guest_id from reservation to fetch guest information
-                if (reservation.getGuest() != null) {
-                    User guest = fetchGuestUserById(reservation.getGuest().getId());
-                    if (guest != null) {
-                        guestInfo.setName(guest.getFirstName() + " " + guest.getLastName());
-                    }
-                }
-            }
-        }
-
-        reservation = reservationRepository.save(reservation);
-
-        return convertToBookingResponse(reservation);
+        return bookingStatusUpdateService.updateBookingStatus(reservationId, newStatus, "hotel admin");
     }
 
     /**

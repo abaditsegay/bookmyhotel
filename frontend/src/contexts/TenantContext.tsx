@@ -1,6 +1,7 @@
 import React, { createContext, useContext, ReactNode, useState, useEffect, useCallback } from 'react';
 import { getTenantIdFromToken } from '../utils/jwtUtils';
 import TokenManager from '../utils/tokenManager';
+import { apiClient } from '../utils/apiClient';
 
 /**
  * TenantContext - Manages tenant information for multi-tenant application
@@ -66,6 +67,11 @@ export const TenantProvider: React.FC<TenantProviderProps> = ({ children }) => {
     // For system-wide users, extractedTenantId will be null
     setTenantId(extractedTenantId);
     
+    // CRITICAL: Set the token in apiClient so authenticated requests work
+    apiClient.setToken(token);
+    apiClient.setTenantId(extractedTenantId);
+    console.log('🔑 Token and tenant set in apiClient during restoration');
+    
     if (extractedTenantId === null) {
       console.log('System-wide user detected - no tenant context');
     }
@@ -84,6 +90,11 @@ export const TenantProvider: React.FC<TenantProviderProps> = ({ children }) => {
       const extractedTenantId = getTenantIdFromToken(savedToken);
       console.log('Extracted tenant ID from JWT during initialization:', extractedTenantId);
       setTenantId(extractedTenantId); // This can be null for system-wide users
+      
+      // CRITICAL: Also set the token in apiClient during initialization
+      apiClient.setToken(savedToken);
+      apiClient.setTenantId(extractedTenantId);
+      console.log('🔑 Token and tenant set in apiClient during initialization');
     }
   }, [setTenantId]);
 

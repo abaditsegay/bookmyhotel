@@ -302,6 +302,52 @@ export const frontDeskApiService = {
   },
 
   /**
+   * Update full booking details
+   */
+  updateBooking: async (
+    token: string,
+    reservationId: number,
+    bookingData: {
+      hotelId: number;
+      roomType: string;
+      roomId?: number;
+      checkInDate: string;
+      checkOutDate: string;
+      guests: number;
+      specialRequests?: string;
+      guestName: string;
+      guestEmail: string;
+      guestPhone?: string;
+    },
+    tenantId: string | null = 'default'
+  ): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/front-desk/bookings/${reservationId}`,
+        {
+          method: 'PUT',
+          headers: getAuthHeaders(token, tenantId),
+          body: JSON.stringify(bookingData),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update booking');
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      console.error('Booking update error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to update booking' 
+      };
+    }
+  },
+
+  /**
    * Delete booking
    */
   deleteBooking: async (

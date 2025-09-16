@@ -1,5 +1,5 @@
 import React from 'react';
-import { Typography, Box } from '@mui/material';
+import { Typography, Box, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import './i18n'; // Initialize i18n
 import EnhancedLayout from './components/layout/EnhancedLayout';
@@ -47,6 +47,7 @@ import StaffDashboardPage from './pages/StaffDashboardPage';
 import ShopRoutes from './pages/shop/ShopRoutes';
 import PublicHotelRegistration from './pages/PublicHotelRegistration';
 import UserDebugPage from './pages/UserDebugPage';
+import NotificationsPage from './pages/NotificationsPage';
 
 // Role-based Router Component - redirects based on user role
 const RoleBasedRouter: React.FC = () => {
@@ -144,7 +145,7 @@ const PlaceholderPage: React.FC<{ title: string; message: string }> = ({ title, 
 );
 
 function App() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, sessionExpired, clearSessionExpired } = useAuth();
   const location = useLocation();
   // PWA install functionality disabled
   // const { 
@@ -166,8 +167,39 @@ function App() {
                            location.pathname.startsWith('/shop') ||
                            location.pathname.startsWith('/hotels/search') ||
                            location.pathname === '/home';
+
+  const handleSessionExpiredClose = () => {
+    clearSessionExpired();
+  };
   
   return (
+    <>
+      {/* Session Expired Dialog */}
+      <Dialog
+        open={sessionExpired}
+        onClose={handleSessionExpiredClose}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Session Expired</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Your session has expired. Please log in again to continue.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button 
+            onClick={handleSessionExpiredClose} 
+            color="primary" 
+            variant="contained"
+            fullWidth
+          >
+            OK
+          </Button>
+        </DialogActions>
+      </Dialog>
+      
+      {/* Main App Content */}
     <EnhancedLayout hideSidebar={!isAuthenticated} maxWidth={isFullWidthRoute ? false : 'xl'}>
       <Routes>
         <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />} />
@@ -420,6 +452,13 @@ function App() {
           </ProtectedRoute>
         } />
         
+        {/* Notifications Route - Accessible by Hotel Admin and Front Desk */}
+        <Route path="/notifications" element={
+          <ProtectedRoute requiredRoles={['HOTEL_ADMIN', 'FRONTDESK']}>
+            <NotificationsPage />
+          </ProtectedRoute>
+        } />
+        
         {/* Shop Routes - Accessible by Hotel Admin and Front Desk */}
         <Route path="/shop/*" element={
           <ProtectedRoute requiredRoles={['HOTEL_ADMIN', 'FRONTDESK']}>
@@ -482,6 +521,7 @@ function App() {
       />
       */}
     </EnhancedLayout>
+    </>
   );
 }
 

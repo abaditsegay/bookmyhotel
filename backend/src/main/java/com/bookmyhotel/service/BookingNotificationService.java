@@ -1,6 +1,7 @@
 package com.bookmyhotel.service;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
@@ -81,10 +82,15 @@ public class BookingNotificationService {
                 return;
             }
             
-            String subject = "Booking Cancellation Confirmed - " + booking.getConfirmationNumber();
-            String body = buildCancellationEmailBody(booking, refundAmount);
+            String subject = "Your Reservation with " + booking.getHotelName() + " has been cancelled";
             
-            emailService.sendEmail(booking.getGuestEmail(), subject, body);
+            // Prepare template data
+            Map<String, Object> templateData = prepareCancellationEmailData(booking, refundAmount);
+            
+            // Generate email content using the template
+            String htmlContent = templateEngine.process("booking-cancellation-template1", createContext(templateData));
+            
+            emailService.sendEmail(booking.getGuestEmail(), subject, htmlContent);
             logger.info("Cancellation confirmation email sent to: {}", booking.getGuestEmail());
             
         } catch (Exception e) {
@@ -168,6 +174,66 @@ public class BookingNotificationService {
     }
     
     /**
+     * Prepare cancellation email template data
+     */
+    private Map<String, Object> prepareCancellationEmailData(BookingResponse booking, BigDecimal refundAmount) {
+        Map<String, Object> templateData = new HashMap<>();
+        templateData.put("booking", booking);
+        templateData.put("refundAmount", refundAmount);
+        templateData.put("appName", appName);
+        templateData.put("appUrl", appUrl);
+        
+        // Generate authenticated booking URL for guest access (if needed for future reference)
+        String bookingUrl = bookingTokenService.generateManagementUrl(
+            booking.getReservationId(), 
+            booking.getGuestEmail(), 
+            appUrl
+        );
+        templateData.put("bookingUrl", bookingUrl);
+        
+        // Format dates for display
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMMM dd, yyyy");
+        templateData.put("checkInFormatted", booking.getCheckInDate().format(formatter));
+        templateData.put("checkOutFormatted", booking.getCheckOutDate().format(formatter));
+        
+        // Calculate stay duration
+        long nights = ChronoUnit.DAYS.between(booking.getCheckInDate(), booking.getCheckOutDate());
+        templateData.put("nights", nights);
+        
+        // Add refund information (using Ethiopian Birr currency)
+        templateData.put("hasRefund", refundAmount != null && refundAmount.compareTo(BigDecimal.ZERO) > 0);
+        if (refundAmount != null) {
+            templateData.put("refundAmountFormatted", String.format("ETB %.2f", refundAmount));
+        }
+        
+        // Add cancellation date (current date/time)
+        templateData.put("cancellationDate", DateTimeFormatter.ofPattern("MMMM dd, yyyy 'at' hh:mm a").format(LocalDateTime.now()));
+        
+        // Add cancellation reason (if available from booking special requests or other source)
+        String cancellationReason = extractCancellationReason(booking);
+        templateData.put("cancellationReason", cancellationReason);
+        
+        // Add URLs for buttons
+        templateData.put("bookingDetailUrl", appUrl + "/guest-booking-management?confirmationNumber=" + booking.getConfirmationNumber() + "&email=" + booking.getGuestEmail());
+        templateData.put("newBookingUrl", appUrl + "/hotels");
+        
+        return templateData;
+    }
+    
+    /**
+     * Extract cancellation reason from booking special requests or return null
+     */
+    private String extractCancellationReason(BookingResponse booking) {
+        if (booking.getSpecialRequests() != null && booking.getSpecialRequests().contains("Cancellation reason:")) {
+            String[] parts = booking.getSpecialRequests().split("Cancellation reason:");
+            if (parts.length > 1) {
+                return parts[parts.length - 1].trim();
+            }
+        }
+        return null;
+    }
+    
+    /**
      * Create Thymeleaf context
      */
     private Context createContext(Map<String, Object> templateData) {
@@ -176,61 +242,7 @@ public class BookingNotificationService {
         return context;
     }
     
-    /**
-     * Build cancellation confirmation email body
-     */
-    private String buildCancellationEmailBody(BookingResponse booking, BigDecimal refundAmount) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("<!DOCTYPE html>");
-        sb.append("<html><head><meta charset='UTF-8'></head><body>");
-        sb.append("<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>");
-        
-        // Header
-        sb.append("<div style='background-color: #dc3545; color: white; padding: 20px; text-align: center;'>");
-        sb.append("<h1>Booking Cancellation Confirmed</h1>");
-        sb.append("</div>");
-        
-        // Content
-        sb.append("<div style='padding: 20px;'>");
-        sb.append("<p>Dear ").append(booking.getGuestName()).append(",</p>");
-        sb.append("<p>Your booking has been successfully cancelled.</p>");
-        
-        // Booking Details
-        sb.append("<div style='background-color: #f5f5f5; padding: 15px; margin: 20px 0; border-radius: 5px;'>");
-        sb.append("<h3>Cancelled Booking Details</h3>");
-        sb.append("<p><strong>Confirmation Number:</strong> ").append(booking.getConfirmationNumber()).append("</p>");
-        sb.append("<p><strong>Hotel:</strong> ").append(booking.getHotelName()).append("</p>");
-        sb.append("<p><strong>Original Check-in Date:</strong> ").append(booking.getCheckInDate().format(DATE_FORMATTER)).append("</p>");
-        sb.append("<p><strong>Original Check-out Date:</strong> ").append(booking.getCheckOutDate().format(DATE_FORMATTER)).append("</p>");
-        sb.append("</div>");
-        
-        // Refund Information
-        if (refundAmount != null && refundAmount.compareTo(BigDecimal.ZERO) > 0) {
-            sb.append("<div style='background-color: #d4edda; padding: 15px; margin: 20px 0; border-radius: 5px; border-left: 4px solid #28a745;'>");
-            sb.append("<h4>Refund Information</h4>");
-            sb.append("<p>Refund Amount: $").append(refundAmount).append("</p>");
-            sb.append("<p>The refund will be processed to your original payment method within 3-5 business days.</p>");
-            sb.append("</div>");
-        } else {
-            sb.append("<div style='background-color: #f8d7da; padding: 15px; margin: 20px 0; border-radius: 5px; border-left: 4px solid #dc3545;'>");
-            sb.append("<h4>No Refund Available</h4>");
-            sb.append("<p>Based on the cancellation policy and timing, no refund is applicable for this booking.</p>");
-            sb.append("</div>");
-        }
-        
-        // Footer
-        sb.append("<p>We're sorry to see you cancel your reservation. We hope to serve you again in the future.</p>");
-        sb.append("<p>Thank you for choosing BookMyHotel!</p>");
-        sb.append("</div>");
-        
-        sb.append("<div style='background-color: #f8f9fa; padding: 15px; text-align: center; font-size: 12px; color: #6c757d;'>");
-        sb.append("<p>This is an automated message. Please do not reply to this email.</p>");
-        sb.append("</div>");
-        
-        sb.append("</div></body></html>");
-        
-        return sb.toString();
-    }
+
     
     /**
      * Build payment receipt email body

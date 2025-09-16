@@ -112,6 +112,18 @@ public class FrontDeskController {
     }
 
     /**
+     * Update full booking details
+     */
+    @PutMapping("/bookings/{reservationId}")
+    public ResponseEntity<BookingResponse> updateBooking(
+            @PathVariable Long reservationId,
+            @Valid @RequestBody BookingRequest request) {
+
+        BookingResponse booking = frontDeskService.updateBooking(reservationId, request);
+        return ResponseEntity.ok(booking);
+    }
+
+    /**
      * Check in a guest (simple status update)
      */
     @PostMapping("/bookings/{reservationId}/checkin-simple")

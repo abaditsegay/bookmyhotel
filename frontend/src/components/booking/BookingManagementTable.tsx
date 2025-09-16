@@ -42,6 +42,7 @@ import { frontDeskApiService, CheckoutResponse } from '../../services/frontDeskA
 import CheckoutReceiptDialog from '../receipts/CheckoutReceiptDialog';
 import CheckInDialog from './CheckInDialog';
 import { Booking } from '../../types/booking-shared';
+import { formatDateForDisplay } from '../../utils/dateUtils';
 
 interface BookingManagementTableProps {
   mode: 'hotel-admin' | 'front-desk';
@@ -546,9 +547,9 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
     }
   };
 
-  // Format date
+  // Format date - using centralized utility to ensure consistency
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString();
+    return formatDateForDisplay(dateString);
   };
 
   // Format currency

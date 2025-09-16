@@ -19,12 +19,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.bookmyhotel.config.CacheConfig;
+import com.bookmyhotel.dto.BookingRequest;
 import com.bookmyhotel.dto.BookingResponse;
 import com.bookmyhotel.dto.CheckoutResponse;
 import com.bookmyhotel.dto.ConsolidatedReceiptResponse;
 import com.bookmyhotel.dto.FrontDeskStats;
 import com.bookmyhotel.dto.HotelDTO;
 import com.bookmyhotel.dto.RoomResponse;
+import com.bookmyhotel.entity.GuestInfo;
 import com.bookmyhotel.entity.Hotel;
 import com.bookmyhotel.entity.Reservation;
 import com.bookmyhotel.entity.ReservationStatus;
@@ -69,6 +71,9 @@ public class FrontDeskService {
 
     @Autowired
     private BookingService bookingService;
+
+    @Autowired
+    private BookingStatusUpdateService bookingStatusUpdateService;
 
     // TODO: Temporarily commented out for compilation - will reintegrate after
     // Phase 3.3
@@ -188,44 +193,108 @@ public class FrontDeskService {
      * Update booking status
      */
     public BookingResponse updateBookingStatus(Long reservationId, String status) {
+        return bookingStatusUpdateService.updateBookingStatus(reservationId, status, "front desk");
+    }
+
+    /**
+     * Update full booking details
+     */
+    @CacheEvict(value = CacheConfig.AVAILABLE_ROOMS_CACHE, allEntries = true)
+    public BookingResponse updateBooking(Long reservationId, BookingRequest request) {
         Reservation reservation = reservationRepository.findById(reservationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
+            .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
 
-        try {
-            ReservationStatus newStatus = ReservationStatus.valueOf(status.toUpperCase());
-            reservation.setStatus(newStatus);
-
-            // Update room status based on reservation status (only if room is assigned)
-            Room room = reservation.getRoom();
-            if (room != null) {
-                switch (newStatus) {
-                    case CHECKED_IN:
-                        room.setStatus(RoomStatus.OCCUPIED);
-                        reservation.setActualCheckInTime(LocalDateTime.now());
-                        break;
-                    case CHECKED_OUT:
-                        room.setStatus(RoomStatus.MAINTENANCE);
-                        reservation.setActualCheckOutTime(LocalDateTime.now());
-                        break;
-                    case CANCELLED:
-                    case NO_SHOW:
-                        room.setStatus(RoomStatus.AVAILABLE);
-                        break;
-                    default:
-                        // For other statuses, keep room status as is
-                        break;
-                }
-                roomRepository.save(room);
-            }
-            // If no room assigned yet (e.g., PENDING -> CONFIRMED), just update reservation
-            // status
-
-            reservation = reservationRepository.save(reservation);
-
-            return convertToBookingResponse(reservation);
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Invalid reservation status: " + status);
+        // Validate that dates are valid
+        if (request.getCheckInDate().isAfter(request.getCheckOutDate()) || 
+            request.getCheckInDate().isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Invalid check-in or check-out dates");
         }
+
+        // Update guest information through GuestInfo embeddable
+        if (reservation.getGuestInfo() == null) {
+            reservation.setGuestInfo(new GuestInfo());
+        }
+        
+        if (request.getGuestName() != null && !request.getGuestName().trim().isEmpty()) {
+            reservation.getGuestInfo().setName(request.getGuestName().trim());
+        }
+        if (request.getGuestEmail() != null && !request.getGuestEmail().trim().isEmpty()) {
+            reservation.getGuestInfo().setEmail(request.getGuestEmail().trim());
+        }
+        if (request.getGuestPhone() != null) {
+            reservation.getGuestInfo().setPhone(request.getGuestPhone().trim());
+        }
+
+        // Update dates
+        reservation.setCheckInDate(request.getCheckInDate());
+        reservation.setCheckOutDate(request.getCheckOutDate());
+
+        // Update number of guests
+        if (request.getGuests() != null && request.getGuests() > 0) {
+            reservation.setNumberOfGuests(request.getGuests());
+        }
+
+        // Update special requests
+        if (request.getSpecialRequests() != null) {
+            reservation.setSpecialRequests(request.getSpecialRequests().trim());
+        }
+
+        // Handle room type change
+        if (request.getRoomType() != null && !request.getRoomType().equals(reservation.getRoomType())) {
+            reservation.setRoomType(request.getRoomType());
+            
+            // If room type changed, we might need to clear the specific room assignment
+            // unless a specific room is provided
+            if (request.getRoomId() == null && reservation.getAssignedRoom() != null) {
+                // Free up the current room
+                Room currentRoom = reservation.getAssignedRoom();
+                currentRoom.setStatus(RoomStatus.AVAILABLE);
+                roomRepository.save(currentRoom);
+                reservation.setAssignedRoom(null);
+            }
+        }
+
+        // Handle room assignment change
+        if (request.getRoomId() != null) {
+            Room newRoom = roomRepository.findById(request.getRoomId())
+                .orElseThrow(() -> new ResourceNotFoundException("Room not found with id: " + request.getRoomId()));
+            
+            // Verify room is available (unless it's the same room already assigned)
+            if (!newRoom.equals(reservation.getAssignedRoom()) && newRoom.getStatus() != RoomStatus.AVAILABLE) {
+                throw new IllegalStateException("Selected room is not available");
+            }
+
+            // Free up current room if different
+            if (reservation.getAssignedRoom() != null && !reservation.getAssignedRoom().equals(newRoom)) {
+                Room currentRoom = reservation.getAssignedRoom();
+                currentRoom.setStatus(RoomStatus.AVAILABLE);
+                roomRepository.save(currentRoom);
+            }
+
+            // Assign new room
+            reservation.setAssignedRoom(newRoom);
+            if (reservation.getStatus() == ReservationStatus.CONFIRMED) {
+                newRoom.setStatus(RoomStatus.OCCUPIED);
+                roomRepository.save(newRoom);
+            }
+
+            // Update pricing based on new room
+            recalculateBookingTotal(reservation, newRoom.getPricePerNight());
+        } else {
+            // If no specific room but room type changed, recalculate based on room type pricing
+            if (request.getRoomType() != null) {
+                // Get base price for room type (you might want to implement this method)
+                // For now, keep existing price per night or use a default calculation
+                long nights = java.time.temporal.ChronoUnit.DAYS.between(
+                    reservation.getCheckInDate(), reservation.getCheckOutDate());
+                reservation.setTotalAmount(reservation.getPricePerNight().multiply(BigDecimal.valueOf(nights)));
+            }
+        }
+
+        reservation.setUpdatedAt(LocalDateTime.now());
+        reservation = reservationRepository.save(reservation);
+
+        return convertToBookingResponse(reservation);
     }
 
     /**

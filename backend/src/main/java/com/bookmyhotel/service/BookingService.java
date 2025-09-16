@@ -67,6 +67,9 @@ public class BookingService {
     @Autowired
     private BookingNotificationService notificationService;
 
+    @Autowired
+    private BookingChangeNotificationService bookingChangeNotificationService;
+
     // TODO: Temporarily commented out for compilation - will reintegrate after
     // Phase 3.3
     // @Autowired
@@ -1392,6 +1395,16 @@ public class BookingService {
                 logger.warn("Failed to send modification confirmation email: {}", e.getMessage());
             }
 
+            // Create booking change notification for hotel admin/front desk
+            try {
+                String modificationReason = request.getReason() != null && 
+                    !request.getReason().trim().isEmpty() 
+                    ? request.getReason().trim() : "Booking details updated";
+                bookingChangeNotificationService.createModificationNotification(reservation, modificationReason, additionalCharges, refundAmount);
+            } catch (Exception e) {
+                logger.warn("Failed to create booking modification notification: {}", e.getMessage());
+            }
+
             // Record booking modification in history
             // TODO: Complete history integration after Phase 3.3
             /*
@@ -1489,6 +1502,16 @@ public class BookingService {
                         convertToBookingResponse(reservation), refundAmount);
             } catch (Exception e) {
                 logger.warn("Failed to send cancellation confirmation email: {}", e.getMessage());
+            }
+
+            // Create booking change notification for hotel admin/front desk
+            try {
+                String cancellationReason = request.getCancellationReason() != null && 
+                    !request.getCancellationReason().trim().isEmpty() 
+                    ? request.getCancellationReason().trim() : "No reason provided";
+                bookingChangeNotificationService.createCancellationNotification(reservation, cancellationReason, refundAmount);
+            } catch (Exception e) {
+                logger.warn("Failed to create booking cancellation notification: {}", e.getMessage());
             }
 
             // Record booking cancellation in history
@@ -1712,6 +1735,15 @@ public class BookingService {
                 logger.warn("Failed to send modification confirmation email: {}", e.getMessage());
             }
 
+            // Create booking change notification for hotel admin/front desk
+            try {
+                String modificationReason = request.getReason() != null && !request.getReason().trim().isEmpty() 
+                    ? request.getReason().trim() : "Booking details updated";
+                bookingChangeNotificationService.createModificationNotification(reservation, modificationReason, additionalCharges, refundAmount);
+            } catch (Exception e) {
+                logger.warn("Failed to create booking modification notification: {}", e.getMessage());
+            }
+
             // Handle payment processing if there are additional charges
             if (additionalCharges.compareTo(BigDecimal.ZERO) > 0) {
                 response.setMessage(
@@ -1786,6 +1818,15 @@ public class BookingService {
                         convertToBookingResponse(reservation), refundAmount);
             } catch (Exception e) {
                 logger.warn("Failed to send cancellation confirmation email: {}", e.getMessage());
+            }
+
+            // Create booking change notification for hotel admin/front desk
+            try {
+                String reason = cancellationReason != null && !cancellationReason.trim().isEmpty() 
+                    ? cancellationReason.trim() : "No reason provided";
+                bookingChangeNotificationService.createCancellationNotification(reservation, reason, refundAmount);
+            } catch (Exception e) {
+                logger.warn("Failed to create booking cancellation notification: {}", e.getMessage());
             }
 
             if (refundAmount.compareTo(BigDecimal.ZERO) > 0) {

@@ -23,12 +23,20 @@ export interface ApiResponse<T = any> {
 class ApiClient {
   private token: string | null = null;
   private defaultTenantId: string | null = null;
+  private onSessionExpired: (() => void) | null = null;
 
   /**
    * Set the authentication token for all requests
    */
   setToken(token: string | null): void {
     this.token = token;
+  }
+
+  /**
+   * Set session expiration callback
+   */
+  setSessionExpiredCallback(callback: (() => void) | null): void {
+    this.onSessionExpired = callback;
   }
 
   /**
@@ -50,6 +58,34 @@ class ApiClient {
    */
   getTenantId(): string | null {
     return this.defaultTenantId;
+  }
+
+  /**
+   * Check if the current JWT token is expired
+   */
+  private isTokenExpired(): boolean {
+    if (!this.token) return true;
+
+    try {
+      // Decode JWT payload (without verification - just to check expiration)
+      const base64Url = this.token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      );
+      
+      const payload = JSON.parse(jsonPayload);
+      const currentTime = Math.floor(Date.now() / 1000);
+      
+      // Check if token has expired (exp is in seconds)
+      return payload.exp && payload.exp < currentTime;
+    } catch (error) {
+      console.warn('Failed to decode JWT token:', error);
+      return true; // Assume expired if we can't decode
+    }
   }
 
   /**
@@ -147,6 +183,53 @@ class ApiClient {
           }
         }
 
+        // Handle different types of authentication/authorization errors
+        if (response.status === 401) {
+          // 401 = Session expired or invalid token
+          const hasToken = this.getToken() !== null;
+          console.log('Authentication failed (401) - session expired, triggering logout...', { hasToken });
+          
+          // Only trigger session expiration for users who actually have tokens/sessions
+          if (hasToken && this.onSessionExpired) {
+            setTimeout(() => this.onSessionExpired?.(), 100); // Delay to avoid state conflicts
+          }
+        } else if (response.status === 403) {
+          // 403 = Authorization failed
+          // For notification endpoints or other authenticated endpoints, treat 403 as session issue
+          // since these endpoints should work for authenticated users with proper roles
+          const isAuthenticatedEndpoint = (endpoint: string): boolean => {
+            return endpoint.includes('/notifications') || 
+                   endpoint.includes('/dashboard') ||
+                   endpoint.includes('/users/current') ||
+                   // Only treat user-specific booking endpoints as authenticated (not guest booking endpoints)
+                   (endpoint.includes('/bookings') && !endpoint.includes('/bookings/search') && !endpoint.includes('/bookings/cancel') && !endpoint.includes('/bookings/modify'));
+          };
+          
+          const requestUrl = response.url || '';
+          const tokenExpired = this.isTokenExpired();
+          const isAuthEndpoint = isAuthenticatedEndpoint(requestUrl);
+          const hasToken = this.getToken() !== null;
+          
+          console.log('403 Error Analysis:', {
+            url: requestUrl,
+            tokenExpired,
+            isAuthEndpoint,
+            hasToken,
+            willTriggerLogout: hasToken && (tokenExpired || isAuthEndpoint)
+          });
+          
+          // Only trigger session expiration for users who actually have tokens/sessions
+          if (hasToken && (tokenExpired || isAuthEndpoint)) {
+            console.log('Session validation failed (403) - treating as session expiration, triggering logout...');
+            if (this.onSessionExpired) {
+              setTimeout(() => this.onSessionExpired?.(), 100);
+            }
+          } else {
+            console.log('Authorization failed (403) - insufficient permissions for:', requestUrl);
+            // Don't auto-logout for permission issues on non-core endpoints or guest users
+          }
+        }
+
         return {
           error: errorMessage,
           status: response.status,
@@ -203,6 +286,16 @@ class ApiClient {
     options: ApiRequestOptions = {}
   ): Promise<ApiResponse<T>> {
     try {
+      // Check if we're making an authenticated request without a token
+      if (!options.skipAuth && !this.token) {
+        console.warn('API request attempted without token - likely race condition during initialization');
+        return {
+          error: 'Authentication token not available - request aborted to prevent 403',
+          status: 401,
+          success: false,
+        };
+      }
+
       const url = buildApiUrl(endpoint);
       const response = await this.requestWithTimeout(url, options);
       return await this.handleResponse<T>(response);

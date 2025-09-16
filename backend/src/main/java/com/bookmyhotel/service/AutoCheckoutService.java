@@ -36,8 +36,9 @@ public class AutoCheckoutService {
     /**
      * Automatically check out guests whose checkout date has passed
      * Runs every day at 12:00 PM (noon) to check for expired stays
+     * DISABLED: Auto-checkout has been disabled to prevent immediate checkouts
      */
-    @Scheduled(cron = "0 0 12 * * ?") // Daily at 12:00 PM
+    // @Scheduled(cron = "0 0 12 * * ?") // Daily at 12:00 PM - DISABLED
     public void autoCheckoutExpiredReservations() {
         logger.info("Starting automatic checkout process for expired reservations");
 

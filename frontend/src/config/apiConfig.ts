@@ -3,13 +3,13 @@
  * This file contains all API-related configuration for the frontend application.
  */
 
-// Environment variables - no hardcoded fallbacks
+// Environment variables with fallbacks for local development
 export const API_CONFIG = {
   // Main API base URL - used for all backend API calls
-  BASE_URL: process.env.REACT_APP_API_URL!,
+  BASE_URL: process.env.REACT_APP_API_URL || 'http://localhost:8080/managemyhotel/api',
   
   // Backend server URL (without /api suffix) - for direct server calls if needed
-  SERVER_URL: process.env.REACT_APP_SERVER_URL!,
+  SERVER_URL: process.env.REACT_APP_SERVER_URL || 'http://localhost:8080/managemyhotel',
   
   // Timeout for API calls (in milliseconds)
   REQUEST_TIMEOUT: 30000,
@@ -91,6 +91,14 @@ export const API_ENDPOINTS = {
   OPERATIONS: {
     DASHBOARD: (hotelId: string | number) => `/hotels/${hotelId}/operations`,
     TASKS: (hotelId: string | number) => `/hotels/${hotelId}/operations/tasks`,
+  },
+  
+  // Notifications
+  NOTIFICATIONS: {
+    LIST: '/notifications',
+    BY_ID: (id: string | number) => `/notifications/${id}`,
+    MARK_AS_READ: (id: string | number) => `/notifications/${id}/mark-as-read`,
+    MARK_ALL_AS_READ: '/notifications/mark-all-as-read',
   },
 } as const;
 

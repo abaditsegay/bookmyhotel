@@ -61,6 +61,8 @@ const GuestBookingManagementPage: React.FC = () => {
   
   const initialBooking: BookingData = location.state?.booking;
   const token = searchParams.get('token');
+  const confirmationNumber = searchParams.get('confirmationNumber');
+  const email = searchParams.get('email');
   
   const [booking, setBooking] = useState<BookingData | null>(initialBooking);
   const [loading, setLoading] = useState(!initialBooking); // Only load if no initial booking
@@ -106,20 +108,54 @@ const GuestBookingManagementPage: React.FC = () => {
     }
   }, [token]);
 
+  // Fetch booking data from URL parameters (confirmation number and email)
+  const fetchBookingFromParams = useCallback(async () => {
+    if (!confirmationNumber || !email) return;
+    
+    try {
+      setLoading(true);
+      setErrorMessage('');
+      
+            const response = await fetch(
+        `${buildApiUrl('/bookings/search')}?confirmationNumber=${encodeURIComponent(confirmationNumber)}&email=${encodeURIComponent(email)}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      
+      if (!response.ok) {
+        throw new Error('Booking not found or access denied');
+      }
+      
+      const bookingData = await response.json();
+      setBooking(bookingData);
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : 'Failed to load booking');
+    } finally {
+      setLoading(false);
+    }
+  }, [confirmationNumber, email]);
+
   // Load booking data on component mount
   useEffect(() => {
     if (token && !initialBooking) {
       // Load from token if no initial booking data
       fetchBookingFromToken();
-    } else if (!token && !initialBooking) {
-      // No token and no initial data - redirect to find booking
+    } else if (confirmationNumber && email && !initialBooking) {
+      // Load from URL parameters (confirmation number and email)
+      fetchBookingFromParams();
+    } else if (!token && !confirmationNumber && !email && !initialBooking) {
+      // No token, no URL params, and no initial data - redirect to find booking
       setErrorMessage('No booking information available. Please search for your booking first.');
       setLoading(false);
     } else {
       // Already have booking data from navigation state
       setLoading(false);
     }
-  }, [token, initialBooking, fetchBookingFromToken]);
+  }, [token, confirmationNumber, email, initialBooking, fetchBookingFromToken, fetchBookingFromParams]);
 
   // Update modification form when booking data changes
   useEffect(() => {

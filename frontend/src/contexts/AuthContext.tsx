@@ -1,8 +1,9 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { jwtDecode } from 'jwt-decode';
+
 import { API_CONFIG } from '../config/apiConfig';
 import { updateUserProfile, changeUserPassword } from '../services/userApi';
 import TokenManager, { type AuthUser } from '../utils/tokenManager';
+import { apiClient } from '../utils/apiClient';
 
 interface User {
   id: string;
@@ -29,13 +30,16 @@ interface AuthContextType {
   token: string | null;
   error: string | null;
   isInitializing: boolean; // Add to interface
+  sessionExpired: boolean; // Add session expired state
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
+  handleSessionExpired: () => void; // Add session expiration handler
   updateProfile: (updates: Partial<User>) => Promise<boolean>;
   changePassword: (currentPassword: string, newPassword: string) => Promise<boolean>;
   isAuthenticated: boolean;
   onTokenChange?: (token: string) => void;
   clearError: () => void;
+  clearSessionExpired: () => void; // Add method to clear session expired state
   // Helper functions for role checking
   hasRole: (role: string) => boolean;
   hasAnyRole: (roles: string[]) => boolean;
@@ -59,11 +63,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
   const [error, setError] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isInitializing, setIsInitializing] = useState(true); // Add initialization state
+  const [sessionExpired, setSessionExpired] = useState(false); // Add session expired state
 
   const clearError = () => setError(null);
+  const clearSessionExpired = () => setSessionExpired(false);
 
   // Load authentication state from localStorage on startup
   useEffect(() => {
+    // Set up API client session expiration callback
+    apiClient.setSessionExpiredCallback(() => {
+      console.log('Session expired - logging out user');
+      setSessionExpired(true);
+      setUser(null);
+      setToken(null);
+      setError('Your session has expired. Please log in again.');
+      
+      // Clear localStorage using TokenManager
+      TokenManager.clearAuth();
+      
+      // Clear tenant context
+      onLogout?.();
+    });
+    
     // Migrate any legacy tokens
     TokenManager.migrateLegacyTokens();
     
@@ -86,7 +107,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
     
     // Set initialization complete after checking localStorage
     setIsInitializing(false);
-  }, [onTokenChange]);
+  }, [onTokenChange, onLogout]);
 
   const login = async (email: string, password: string): Promise<boolean> => {
     setLoading(true);
@@ -178,6 +199,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
   const logout = () => {
     setUser(null);
     setToken(null);
+    setSessionExpired(false); // Clear session expired state on manual logout
     
     // Clear localStorage using TokenManager
     TokenManager.clearAuth();
@@ -186,6 +208,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
     onLogout?.();
     
     console.log('User logged out');
+  };
+
+  const handleSessionExpired = () => {
+    console.log('Session expired - logging out user');
+    setSessionExpired(true);
+    setUser(null);
+    setToken(null);
+    setError('Your session has expired. Please log in again.');
+    
+    // Clear localStorage using TokenManager
+    TokenManager.clearAuth();
+    
+    // Clear tenant context
+    onLogout?.();
   };
 
   const updateProfile = async (updates: Partial<User>): Promise<boolean> => {
@@ -286,13 +322,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
     token,
     error,
     isInitializing,
+    sessionExpired,
     login,
     logout,
+    handleSessionExpired,
     updateProfile,
     changePassword,
     isAuthenticated: !!user,
     onTokenChange,
     clearError,
+    clearSessionExpired,
     hasRole,
     hasAnyRole,
     isFrontDesk,

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Logo Converter</title>
+    <style>
+        canvas { border: 1px solid #ccc; margin: 10px; }
+        .container { display: flex; flex-wrap: wrap; }
+    </style>
+</head>
+<body>
+    <h1>BookMyHotel Logo Converter</h1>
+    <p>This page converts the SVG logos to PNG/ICO formats. Right-click on the canvas to save as image.</p>
+    
+    <div class="container">
+        <div>
+            <h3>Favicon (32x32)</h3>
+            <canvas id="favicon" width="32" height="32"></canvas>
+        </div>
+        <div>
+            <h3>Logo 192x192</h3>
+            <canvas id="logo192" width="192" height="192"></canvas>
+        </div>
+        <div>
+            <h3>Logo 512x512</h3>
+            <canvas id="logo512" width="512" height="512"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // Draw favicon
+        const faviconCanvas = document.getElementById('favicon');
+        const faviconCtx = faviconCanvas.getContext('2d');
+        
+        // Hotel building for favicon
+        const gradient = faviconCtx.createLinearGradient(0, 0, 0, 32);
+        gradient.addColorStop(0, '#FF6B35');
+        gradient.addColorStop(1, '#DC2626');
+        
+        faviconCtx.fillStyle = gradient;
+        faviconCtx.fillRect(6, 8, 20, 20);
+        
+        // Windows
+        faviconCtx.fillStyle = 'rgba(254, 243, 199, 0.9)';
+        for (let row = 0; row < 3; row++) {
+            for (let col = 0; col < 4; col++) {
+                faviconCtx.fillRect(8 + col * 4, 10 + row * 4, 2, 2);
+            }
+        }
+        
+        // Door
+        faviconCtx.fillStyle = '#F59E0B';
+        faviconCtx.fillRect(14, 22, 4, 6);
+
+        // Draw logo192
+        const logo192Canvas = document.getElementById('logo192');
+        const logo192Ctx = logo192Canvas.getContext('2d');
+        
+        // Background circle
+        logo192Ctx.fillStyle = 'white';
+        logo192Ctx.strokeStyle = '#DC2626';
+        logo192Ctx.lineWidth = 4;
+        logo192Ctx.beginPath();
+        logo192Ctx.arc(96, 96, 90, 0, 2 * Math.PI);
+        logo192Ctx.fill();
+        logo192Ctx.stroke();
+        
+        // Hotel building
+        const gradient192 = logo192Ctx.createLinearGradient(0, 60, 0, 140);
+        gradient192.addColorStop(0, '#FF6B35');
+        gradient192.addColorStop(1, '#DC2626');
+        
+        logo192Ctx.fillStyle = gradient192;
+        logo192Ctx.fillRect(40, 60, 112, 80);
+        
+        // Windows
+        logo192Ctx.fillStyle = 'rgba(254, 243, 199, 0.9)';
+        for (let row = 0; row < 3; row++) {
+            for (let col = 0; col < 5; col++) {
+                logo192Ctx.fillRect(50 + col * 20, 70 + row * 20, 12, 12);
+            }
+        }
+        
+        // Door
+        logo192Ctx.fillStyle = '#F59E0B';
+        logo192Ctx.fillRect(85, 125, 22, 15);
+        
+        // Text
+        logo192Ctx.fillStyle = '#DC2626';
+        logo192Ctx.font = 'bold 14px Arial';
+        logo192Ctx.textAlign = 'center';
+        logo192Ctx.fillText('BookMyHotel', 96, 155);
+
+        // Draw logo512 (scaled version)
+        const logo512Canvas = document.getElementById('logo512');
+        const logo512Ctx = logo512Canvas.getContext('2d');
+        
+        // Scale factor
+        const scale = 512 / 192;
+        logo512Ctx.scale(scale, scale);
+        
+        // Background circle
+        logo512Ctx.fillStyle = 'white';
+        logo512Ctx.strokeStyle = '#DC2626';
+        logo512Ctx.lineWidth = 4;
+        logo512Ctx.beginPath();
+        logo512Ctx.arc(96, 96, 90, 0, 2 * Math.PI);
+        logo512Ctx.fill();
+        logo512Ctx.stroke();
+        
+        // Hotel building
+        const gradient512 = logo512Ctx.createLinearGradient(0, 60, 0, 140);
+        gradient512.addColorStop(0, '#FF6B35');
+        gradient512.addColorStop(1, '#DC2626');
+        
+        logo512Ctx.fillStyle = gradient512;
+        logo512Ctx.fillRect(40, 60, 112, 80);
+        
+        // Windows
+        logo512Ctx.fillStyle = 'rgba(254, 243, 199, 0.9)';
+        for (let row = 0; row < 3; row++) {
+            for (let col = 0; col < 5; col++) {
+                logo512Ctx.fillRect(50 + col * 20, 70 + row * 20, 12, 12);
+            }
+        }
+        
+        // Door
+        logo512Ctx.fillStyle = '#F59E0B';
+        logo512Ctx.fillRect(85, 125, 22, 15);
+        
+        // Text
+        logo512Ctx.fillStyle = '#DC2626';
+        logo512Ctx.font = 'bold 14px Arial';
+        logo512Ctx.textAlign = 'center';
+        logo512Ctx.fillText('BookMyHotel', 96, 155);
+    </script>
+</body>
+</html>

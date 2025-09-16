@@ -57,9 +57,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 tenantId = jwtUtil.extractTenantId(jwt); // Extract tenant ID from JWT
                 hotelId = jwtUtil.extractHotelId(jwt); // Extract hotel ID from JWT
                 hotelName = jwtUtil.extractClaim(jwt, claims -> (String) claims.get("hotelName"));
+                logger.debug("🔑 JWT extracted - username: " + username + ", tenantId: " + tenantId + ", hotelId: " + hotelId);
             } catch (Exception e) {
                 logger.warn("JWT token extraction failed: " + e.getMessage());
             }
+        } else {
+            logger.debug("❌ No valid Authorization header found: " + authorizationHeader);
         }
 
         // Handle tenant context for authenticated users
@@ -68,6 +71,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             // Validate JWT token and check session
             if (jwtUtil.validateToken(jwt, userDetails) && sessionManagementService.isSessionValid(jwt)) {
+                logger.debug("✅ JWT validation successful for user: " + username);
                 // Update session activity
                 sessionManagementService.updateSessionActivity(jwt);
                 // Check if user is system-wide (GUEST or ADMIN with null tenant_id)

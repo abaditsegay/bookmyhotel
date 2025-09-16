@@ -95,9 +95,20 @@ public class ShopOrderService {
             // room
             targetReservation = findCheckedInReservationByRoomNumber(hotelId, request.getRoomNumber());
             if (targetReservation == null) {
-                throw new IllegalArgumentException(
-                        "No checked-in guest found in room " + request.getRoomNumber() +
-                                ". Room charges can only be applied to currently occupied rooms.");
+                // Try alternative approach: allow room charges if customer info is provided
+                // This handles cases where room assignment might not be in the system yet
+                if (request.getCustomerName() != null && !request.getCustomerName().trim().isEmpty()) {
+                    System.out.println("DEBUG: No reservation found for room " + request.getRoomNumber() +
+                            ", but customer name provided: " + request.getCustomerName() +
+                            ". Allowing room charge with manual tracking.");
+                    // Continue without targetReservation - order will be created with room number
+                    // and customer info
+                } else {
+                    throw new IllegalArgumentException(
+                            "No checked-in guest found in room " + request.getRoomNumber() +
+                                    ". Room charges require either a valid reservation or customer information. " +
+                                    "Please verify the room number or provide customer details.");
+                }
             }
         }
 
@@ -111,6 +122,15 @@ public class ShopOrderService {
             }
 
             order.setReservation(targetReservation);
+        } else if (request.getPaymentMethod() == PaymentMethod.ROOM_CHARGE) {
+            // If no reservation found but room charge requested, validate customer info is
+            // provided
+            if (request.getCustomerName() == null || request.getCustomerName().trim().isEmpty()) {
+                throw new IllegalArgumentException(
+                        "Room charge orders without a linked reservation require customer name to be provided.");
+            }
+            // Continue - the order will be created with room number and customer info for
+            // manual tracking
         }
 
         order.setPaymentMethod(request.getPaymentMethod() != null ? request.getPaymentMethod().toString() : null);
@@ -538,7 +558,7 @@ public class ShopOrderService {
      * Find the current checked-in reservation for a specific room number
      */
     private Reservation findCheckedInReservationByRoomNumber(Long hotelId, String roomNumber) {
-        // Find all reservations for this hotel that are currently checked in
+        // First try to find reservations with specific room assignments
         List<Reservation> checkedInReservations = reservationRepository.findAll()
                 .stream()
                 .filter(r -> r.getHotel().getId().equals(hotelId))
@@ -547,8 +567,27 @@ public class ShopOrderService {
                         roomNumber.equalsIgnoreCase(r.getRoom().getRoomNumber()))
                 .collect(Collectors.toList());
 
-        // Return the first match (there should only be one checked-in guest per room)
-        return checkedInReservations.isEmpty() ? null : checkedInReservations.get(0);
+        if (!checkedInReservations.isEmpty()) {
+            return checkedInReservations.get(0);
+        }
+
+        // If no specific room assignment found, check for room-type bookings
+        // that might be checked in but without specific room assignment
+        List<Reservation> roomTypeReservations = reservationRepository.findAll()
+                .stream()
+                .filter(r -> r.getHotel().getId().equals(hotelId))
+                .filter(r -> r.getStatus() == ReservationStatus.CHECKED_IN)
+                .filter(r -> r.getRoom() == null) // Room-type bookings without specific room
+                .collect(Collectors.toList());
+
+        // For debugging: log what we found
+        System.out.println("DEBUG: Looking for room " + roomNumber + " in hotel " + hotelId);
+        System.out.println("DEBUG: Found " + checkedInReservations.size() + " specific room reservations");
+        System.out.println(
+                "DEBUG: Found " + roomTypeReservations.size() + " room-type reservations without specific rooms");
+
+        // Return null if no suitable reservation found
+        return null;
     }
 
     /**

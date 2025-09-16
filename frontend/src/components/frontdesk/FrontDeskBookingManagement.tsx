@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Typography,
@@ -26,6 +26,7 @@ import {
   CardContent,
   Snackbar
 } from '@mui/material';
+import { formatDateForDisplay } from '../../utils/dateUtils';
 import {
   Visibility as VisibilityIcon,
   Delete as DeleteIcon,
@@ -59,7 +60,7 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
 
   // Load bookings
-  const loadBookings = async () => {
+  const loadBookings = useCallback(async () => {
     if (!token) return;
     
     console.log('Loading bookings with params:', { page, size, search, tenantId });
@@ -70,6 +71,7 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
       const result = await frontDeskApiService.getAllBookings(token, page, size, search, tenantId);
       
       if (result.success && result.data) {
+        console.log('🏨 FrontDeskBookingManagement - Raw API data:', result.data.content);
         setBookings(result.data.content);
         setTotalElements(result.data.totalElements || 0);
       } else {
@@ -85,12 +87,39 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [token, page, size, search, tenantId]);
 
   // Load bookings on component mount and when dependencies change
   useEffect(() => {
     loadBookings();
-  }, [token, page, size, search, tenantId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [loadBookings]);
+
+  // Add window focus listener to refresh bookings when returning from other pages
+  useEffect(() => {
+    const handleWindowFocus = () => {
+      console.log('Window gained focus, refreshing bookings...');
+      loadBookings();
+    };
+
+    // Add event listener for window focus
+    window.addEventListener('focus', handleWindowFocus);
+
+    // Also listen for visibility change (more reliable than focus on some browsers)
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        console.log('Page became visible, refreshing bookings...');
+        loadBookings();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Cleanup listeners on unmount
+    return () => {
+      window.removeEventListener('focus', handleWindowFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [loadBookings]);
 
   // Handle search
   const handleSearchSubmit = () => {
@@ -205,7 +234,7 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString();
+    return formatDateForDisplay(dateString);
   };
 
   const formatCurrency = (amount: number) => {

@@ -17,6 +17,7 @@ import {
   useTheme,
   useMediaQuery,
   Chip,
+  Badge,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -26,10 +27,12 @@ import {
   AppRegistration as RegisterIcon,
   Search as SearchIcon,
   Store as StoreIcon,
+  Notifications as NotificationsIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { themeConstants } from '../../theme/theme';
+import { useNotifications } from '../../hooks/useNotifications';
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
@@ -38,6 +41,7 @@ const Navbar: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
   const { user, logout } = useAuth();
+  const { stats } = useNotifications();
   
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
@@ -135,17 +139,35 @@ const Navbar: React.FC = () => {
         return [...baseItems];
       }
 
-      // For hotel admin, show shop navigation
+      // For hotel admin, show notifications and shop navigation
       if (user.role === 'HOTEL_ADMIN') {
         const hotelAdminItems = [
+          { 
+            label: 'Notifications', 
+            path: '/notifications', 
+            icon: stats.totalUnread > 0 ? (
+              <Badge badgeContent={stats.totalUnread} color="error">
+                <NotificationsIcon />
+              </Badge>
+            ) : <NotificationsIcon />
+          },
           { label: 'Shop', path: '/shop', icon: <StoreIcon /> },
         ];
         return [...baseItems, ...hotelAdminItems];
       }
 
-      // For front desk staff, show shop navigation
+      // For front desk staff, show notifications and shop navigation
       if (user.role === 'FRONTDESK') {
         const frontdeskItems = [
+          { 
+            label: 'Notifications', 
+            path: '/notifications', 
+            icon: stats.totalUnread > 0 ? (
+              <Badge badgeContent={stats.totalUnread} color="error">
+                <NotificationsIcon />
+              </Badge>
+            ) : <NotificationsIcon />
+          },
           { label: 'Shop', path: '/shop', icon: <StoreIcon /> },
         ];
         return [...baseItems, ...frontdeskItems];

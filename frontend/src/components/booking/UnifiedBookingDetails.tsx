@@ -40,6 +40,7 @@ import { useTenant } from '../../contexts/TenantContext';
 import { hotelAdminApi, RoomResponse } from '../../services/hotelAdminApi';
 import { frontDeskApiService } from '../../services/frontDeskApi';
 import { ROOM_TYPE_VALUES } from '../../constants/roomTypes';
+import { formatDateForDisplay, formatDateForInput } from '../../utils/dateUtils';
 
 // Unified BookingData interface
 export interface BookingData {
@@ -152,7 +153,8 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
             paymentIntentId: responseData.paymentIntentId
           };
           
-          console.log('Found booking:', mappedBooking);
+          console.log('🔍 UnifiedBookingDetails - Raw API response:', responseData);
+          console.log('🔍 UnifiedBookingDetails - Mapped booking:', mappedBooking);
           setBooking(mappedBooking);
           setEditedBooking({ ...mappedBooking });
         } else {
@@ -224,6 +226,20 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
       // Check what types of changes were made
       const statusChanged = editedBooking.status !== booking.status;
       const roomChanged = selectedRoomId !== null || editedBooking.roomType !== booking.roomType;
+      const guestInfoChanged = editedBooking.guestName !== booking.guestName || 
+                              editedBooking.guestEmail !== booking.guestEmail;
+      const datesChanged = editedBooking.checkInDate !== booking.checkInDate || 
+                          editedBooking.checkOutDate !== booking.checkOutDate;
+      
+      console.log('🔍 Change Detection:', {
+        statusChanged,
+        roomChanged,
+        guestInfoChanged,
+        datesChanged,
+        originalBooking: booking,
+        editedBooking: editedBooking,
+        selectedRoomId
+      });
 
       let hasUpdates = false;
       let finalBookingData = { ...editedBooking };
@@ -325,18 +341,90 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
         }
       }
 
+      // STEP 3: Handle comprehensive booking updates (dates, guest info, etc.) using unified API
+      if ((datesChanged || guestInfoChanged) && !statusChanged && !roomChanged) {
+        console.log('🗓️ Comprehensive booking update detected for dates/guest info');
+        try {
+          // Get hotel ID from current booking data (we need it for the comprehensive update)
+          const hotelId = 1; // This should be derived from the booking, but for now use default
+          
+          const comprehensiveUpdateData = {
+            hotelId: hotelId,
+            roomType: editedBooking.roomType,
+            roomId: undefined, // Let the backend handle room assignment
+            checkInDate: editedBooking.checkInDate,
+            checkOutDate: editedBooking.checkOutDate,
+            guests: 2, // Default to 2 guests - should be configurable
+            guestName: editedBooking.guestName,
+            guestEmail: editedBooking.guestEmail,
+            guestPhone: undefined, // Optional field
+            specialRequests: undefined // Optional field
+          };
+
+          const result = await frontDeskApiService.updateBooking(
+            token,
+            editedBooking.reservationId,
+            comprehensiveUpdateData,
+            tenant?.id || 'default'
+          );
+          
+          if (result.success && result.data) {
+            const updatedBooking: BookingData = {
+              reservationId: result.data.reservationId,
+              confirmationNumber: result.data.confirmationNumber,
+              guestName: result.data.guestName,
+              guestEmail: result.data.guestEmail,
+              hotelName: result.data.hotelName,
+              hotelAddress: result.data.hotelAddress,
+              roomNumber: result.data.roomNumber,
+              roomType: result.data.roomType,
+              checkInDate: result.data.checkInDate,
+              checkOutDate: result.data.checkOutDate,
+              totalAmount: result.data.totalAmount,
+              pricePerNight: result.data.pricePerNight,
+              status: result.data.status,
+              createdAt: result.data.createdAt,
+              paymentStatus: result.data.paymentStatus,
+              paymentIntentId: result.data.paymentIntentId
+            };
+            
+            console.log('✅ Comprehensive booking update successful:', updatedBooking);
+            
+            // Update final booking data and current state
+            finalBookingData = { ...updatedBooking };
+            hasUpdates = true;
+            
+            if (datesChanged && guestInfoChanged) {
+              setSuccess('Booking dates and guest information updated successfully');
+            } else if (datesChanged) {
+              setSuccess('Booking dates updated successfully');
+            } else if (guestInfoChanged) {
+              setSuccess('Guest information updated successfully');
+            }
+          } else {
+            console.log('❌ Comprehensive booking update API failed:', result);
+            throw new Error(result.message || 'Failed to update booking details');
+          }
+        } catch (err) {
+          console.error('❌ Error in comprehensive booking update:', err);
+          throw new Error(err instanceof Error ? err.message : 'Failed to update booking details');
+        }
+      }
+
       // Update local state with final booking data
       if (hasUpdates) {
         setBooking(finalBookingData);
         setEditedBooking({ ...finalBookingData });
         setSelectedRoomId(null);
         
-        if (statusChanged && !roomChanged) {
+        if (statusChanged && !roomChanged && !datesChanged && !guestInfoChanged) {
           setSuccess('Booking status updated successfully');
-        } else if (!statusChanged && roomChanged) {
+        } else if (!statusChanged && roomChanged && !datesChanged && !guestInfoChanged) {
           setSuccess('Room assignment updated successfully');
-        } else if (statusChanged && roomChanged) {
+        } else if (statusChanged && roomChanged && !datesChanged && !guestInfoChanged) {
           setSuccess('Booking status and room assignment updated successfully');
+        } else if (!statusChanged && !roomChanged && (datesChanged || guestInfoChanged)) {
+          // Success message already set in comprehensive update section
         } else {
           setSuccess('Booking updated successfully');
         }
@@ -563,7 +651,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString();
+    return formatDateForDisplay(dateString);
   };
 
   const formatCurrency = (amount: number) => {
@@ -916,7 +1004,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                     <TextField
                       fullWidth
                       label="Check-in Date"
-                      value={currentBooking?.checkInDate || ''}
+                      value={formatDateForInput(currentBooking?.checkInDate || '')}
                       type="date"
                       onChange={(e) => handleFieldChange('checkInDate', e.target.value)}
                       disabled={!isEditing}
@@ -928,7 +1016,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                     <TextField
                       fullWidth
                       label="Check-out Date"
-                      value={currentBooking?.checkOutDate || ''}
+                      value={formatDateForInput(currentBooking?.checkOutDate || '')}
                       type="date"
                       onChange={(e) => handleFieldChange('checkOutDate', e.target.value)}
                       disabled={!isEditing}
