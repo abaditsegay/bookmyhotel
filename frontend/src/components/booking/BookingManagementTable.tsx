@@ -78,11 +78,6 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
     ),
   }), []);
   
-  // Memoize search handler to prevent re-creation on every render
-  const handleSearchChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-  }, []);
-  
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
@@ -97,6 +92,11 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
     message: '', 
     severity: 'success' as 'success' | 'error' 
   });
+  
+  // Memoize search handler to prevent input focus loss
+  const handleSearchChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+  }, []);
   
   // Debug state logging
   console.log('BookingManagementTable: Current state:', {

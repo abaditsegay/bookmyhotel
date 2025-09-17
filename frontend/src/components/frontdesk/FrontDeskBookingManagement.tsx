@@ -59,6 +59,11 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
 
+  // Memoize search handler to prevent input focus loss
+  const handleSearchInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.target.value);
+  }, []);
+
   // Load bookings
   const loadBookings = useCallback(async () => {
     if (!token) return;
@@ -274,7 +279,7 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
           variant="outlined"
           fullWidth
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={handleSearchInputChange}
           onKeyPress={handleSearchKeyPress}
         />
         <Button 

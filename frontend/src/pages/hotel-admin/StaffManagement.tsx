@@ -130,13 +130,14 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
     loadStaff();
   }, [loadStaff]);
 
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  // Memoized search handler to prevent input focus loss
+  const handleSearchChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     setFilters(prev => ({
       ...prev,
       search: event.target.value
     }));
     setPage(0);
-  };
+  }, []);
 
   const handleFilterChange = (filterName: keyof StaffFilters, value: string) => {
     setFilters(prev => ({
