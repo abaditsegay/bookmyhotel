@@ -11,10 +11,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.bookmyhotel.dto.RoomTypePricingDTO;
 import com.bookmyhotel.entity.Hotel;
+import com.bookmyhotel.entity.Room;
 import com.bookmyhotel.entity.RoomType;
 import com.bookmyhotel.entity.RoomTypePricing;
 import com.bookmyhotel.entity.User;
 import com.bookmyhotel.repository.HotelRepository;
+import com.bookmyhotel.repository.RoomRepository;
 import com.bookmyhotel.repository.RoomTypePricingRepository;
 import com.bookmyhotel.repository.UserRepository;
 
@@ -33,6 +35,9 @@ public class RoomTypePricingService {
 
     @Autowired
     private HotelRepository hotelRepository;
+
+    @Autowired
+    private RoomRepository roomRepository;
 
     /**
      * Get all room type pricing for a hotel admin's hotel
@@ -84,6 +89,10 @@ public class RoomTypePricingService {
         pricing.setUpdatedAt(LocalDateTime.now());
 
         RoomTypePricing saved = roomTypePricingRepository.save(pricing);
+        
+        // Update all existing rooms of this type with the new price
+        updateExistingRoomPrices(hotel, dto.getRoomType(), dto.getBasePricePerNight());
+        
         return convertToDTO(saved);
     }
 
@@ -155,6 +164,9 @@ public class RoomTypePricingService {
                 RoomTypePricing pricing = new RoomTypePricing(hotel, roomType, defaultPrices[i]);
                 pricing.setDescription("Default pricing for " + roomType.name().toLowerCase() + " rooms");
                 roomTypePricingRepository.save(pricing);
+                
+                // Update existing rooms of this type with the default price
+                updateExistingRoomPrices(hotel, roomType, defaultPrices[i]);
             }
         }
     }
@@ -193,6 +205,24 @@ public class RoomTypePricingService {
         dto.setCreatedAt(pricing.getCreatedAt());
         dto.setUpdatedAt(pricing.getUpdatedAt());
         return dto;
+    }
+
+    /**
+     * Update all existing rooms of a specific type with new pricing
+     */
+    private void updateExistingRoomPrices(Hotel hotel, RoomType roomType, BigDecimal newPrice) {
+        // Find all rooms of this type in the hotel
+        List<Room> roomsToUpdate = roomRepository.findByHotelIdAndRoomType(hotel.getId(), roomType);
+        
+        // Update the price for each room
+        for (Room room : roomsToUpdate) {
+            room.setPricePerNight(newPrice);
+        }
+        
+        // Save all updated rooms
+        if (!roomsToUpdate.isEmpty()) {
+            roomRepository.saveAll(roomsToUpdate);
+        }
     }
 
     /**
