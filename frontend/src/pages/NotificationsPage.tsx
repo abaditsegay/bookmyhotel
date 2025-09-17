@@ -5,7 +5,6 @@ import {
   Button,
   Chip,
   Divider,
-  IconButton,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -18,7 +17,6 @@ import {
   Select,
   MenuItem,
   Grid,
-  Tooltip,
   Table,
   TableBody,
   TableCell,
@@ -31,7 +29,6 @@ import {
   NotificationsActive as NotificationsActiveIcon,
   Cancel as CancelIcon,
   Edit as EditIcon,
-  Archive as ArchiveIcon,
   Refresh as RefreshIcon,
   Info as InfoIcon
 } from '@mui/icons-material';
@@ -48,7 +45,6 @@ const NotificationsPage: React.FC = () => {
     loadNotifications, 
     markAsRead, 
     markAllAsRead, 
-    archiveNotification,
     setError,
     triggerRefresh
   } = useNotificationsWithEvents();
@@ -115,8 +111,15 @@ const NotificationsPage: React.FC = () => {
       console.log('  - After type filter:', filtered.length, 'notifications');
     }
     
-    // Sort by creation date (newest first)
-    const sorted = filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    // Sort by status first (UNREAD on top), then by creation date (newest first)
+    const sorted = filtered.sort((a, b) => {
+      // First, prioritize UNREAD notifications
+      if (a.status === 'UNREAD' && b.status !== 'UNREAD') return -1;
+      if (a.status !== 'UNREAD' && b.status === 'UNREAD') return 1;
+      
+      // If both have same status, sort by creation date (newest first)
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
     console.log('  - Final result:', sorted.length, 'notifications');
     console.log('  - Final notifications:', sorted);
     
@@ -138,7 +141,6 @@ const NotificationsPage: React.FC = () => {
             <TableCell>Amount</TableCell>
             <TableCell>Updated By</TableCell>
             <TableCell>Created</TableCell>
-            <TableCell align="center">Actions</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -228,36 +230,6 @@ const NotificationsPage: React.FC = () => {
                 <Typography variant="caption" color="textSecondary" fontWeight={notification.status === 'UNREAD' ? 'bold' : 'normal'}>
                   {new Date(notification.createdAt).toLocaleTimeString()}
                 </Typography>
-              </TableCell>
-              <TableCell align="center">
-                <Box display="flex" gap={0.5}>
-                  {notification.status === 'UNREAD' && (
-                    <Tooltip title="Mark as Read">
-                      <IconButton 
-                        size="small"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          markAsRead(notification.id);
-                        }}
-                      >
-                        <InfoIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  )}
-                  {notification.status !== 'ARCHIVED' && (
-                    <Tooltip title="Archive">
-                      <IconButton 
-                        size="small"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          archiveNotification(notification.id);
-                        }}
-                      >
-                        <ArchiveIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  )}
-                </Box>
               </TableCell>
             </TableRow>
           ))}
