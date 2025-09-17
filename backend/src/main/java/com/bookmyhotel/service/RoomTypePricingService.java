@@ -6,9 +6,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.bookmyhotel.config.CacheConfig;
 import com.bookmyhotel.dto.RoomTypePricingDTO;
 import com.bookmyhotel.entity.Hotel;
 import com.bookmyhotel.entity.Room;
@@ -59,6 +61,7 @@ public class RoomTypePricingService {
     /**
      * Create or update room type pricing
      */
+    @CacheEvict(value = {CacheConfig.ROOMS_BY_HOTEL_CACHE, CacheConfig.AVAILABLE_ROOMS_CACHE}, allEntries = true)
     public RoomTypePricingDTO saveRoomTypePricing(RoomTypePricingDTO dto, String adminEmail) {
         User admin = getUserByEmail(adminEmail);
         Hotel hotel = admin.getHotel();
@@ -99,6 +102,7 @@ public class RoomTypePricingService {
     /**
      * Delete room type pricing
      */
+    @CacheEvict(value = {CacheConfig.ROOMS_BY_HOTEL_CACHE, CacheConfig.AVAILABLE_ROOMS_CACHE}, allEntries = true)
     public void deleteRoomTypePricing(Long pricingId, String adminEmail) {
         User admin = getUserByEmail(adminEmail);
         Hotel hotel = admin.getHotel();
