@@ -43,6 +43,7 @@ import CheckoutReceiptDialog from '../receipts/CheckoutReceiptDialog';
 import CheckInDialog from './CheckInDialog';
 import { Booking } from '../../types/booking-shared';
 import { formatDateForDisplay } from '../../utils/dateUtils';
+import BookingNotificationEvents from '../../utils/bookingNotificationEvents';
 
 interface BookingManagementTableProps {
   mode: 'hotel-admin' | 'front-desk';
@@ -371,6 +372,8 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
         });
         setDeleteDialogOpen(false);
         await loadBookings();
+        // Trigger notification refresh after booking deletion
+        BookingNotificationEvents.afterCancellation();
       } else {
         setSnackbar({
           open: true,
@@ -421,6 +424,9 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                 : b
             ));
             
+            // Trigger notification refresh after check-out
+            BookingNotificationEvents.afterUpdate();
+            
             setSnackbar({
               open: true,
               message: result.data.message || `Guest ${booking.guestName} checked out successfully. ${result.data.receiptGenerated ? 'Final receipt generated.' : ''}`,
@@ -456,6 +462,9 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
         ? { ...b, ...updatedBooking, status: 'CHECKED_IN' } 
         : b
     ));
+    
+    // Trigger notification refresh after check-in
+    BookingNotificationEvents.afterUpdate();
     
     setSnackbar({
       open: true,

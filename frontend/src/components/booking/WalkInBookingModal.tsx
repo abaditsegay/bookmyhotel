@@ -392,6 +392,9 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
       if (response) {
         onSuccess(response);
         onClose();
+        // Import and trigger notification refresh after booking creation
+        const { BookingNotificationEvents } = await import('../../utils/bookingNotificationEvents');
+        BookingNotificationEvents.afterCreation();
       }
     } catch (error) {
       console.error('Failed to create walk-in booking:', error);

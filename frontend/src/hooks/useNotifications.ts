@@ -242,14 +242,30 @@ export const useNotifications = () => {
     }
   }, [loadNotifications, isInitializing, token]);
 
-  // Reload notifications every 30 seconds to keep data fresh
+  // Event-based refresh: Refresh when user returns to the page/tab
   useEffect(() => {
-    const interval = setInterval(() => {
-      loadNotifications();
-    }, 30000); // 30 seconds
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && !loading && token) {
+        // Refresh notifications when user returns to the tab
+        loadNotifications();
+      }
+    };
 
-    return () => clearInterval(interval);
-  }, [loadNotifications]);
+    const handleFocus = () => {
+      if (!loading && token) {
+        // Refresh notifications when window gains focus
+        loadNotifications();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [loadNotifications, loading, token]);
 
   return {
     notifications,
@@ -262,6 +278,61 @@ export const useNotifications = () => {
     archiveNotification,
     getUnreadCount,
     setError
+  };
+};
+
+// Custom event system for triggering notification refreshes
+class NotificationEventEmitter {
+  private static instance: NotificationEventEmitter;
+  private listeners: Set<() => void> = new Set();
+
+  static getInstance(): NotificationEventEmitter {
+    if (!NotificationEventEmitter.instance) {
+      NotificationEventEmitter.instance = new NotificationEventEmitter();
+    }
+    return NotificationEventEmitter.instance;
+  }
+
+  subscribe(callback: () => void): () => void {
+    this.listeners.add(callback);
+    return () => this.listeners.delete(callback);
+  }
+
+  emit(action?: 'cancel' | 'modify' | 'create' | 'update'): void {
+    console.log(`🔄 NotificationEventEmitter: Triggering refresh${action ? ` after booking ${action}` : ''}`);
+    
+    // Add a small delay to ensure backend has processed the changes
+    setTimeout(() => {
+      this.listeners.forEach(callback => {
+        try {
+          callback();
+        } catch (error) {
+          console.error('Error in notification refresh callback:', error);
+        }
+      });
+    }, action ? 1000 : 0); // 1 second delay for booking actions, immediate for manual refresh
+  }
+}
+
+export const notificationEventEmitter = NotificationEventEmitter.getInstance();
+
+/**
+ * Enhanced hook that listens for booking-related events to refresh notifications
+ * Use this in components that need automatic refresh when bookings change
+ */
+export const useNotificationsWithEvents = () => {
+  const notificationsData = useNotifications();
+
+  useEffect(() => {
+    const unsubscribe = notificationEventEmitter.subscribe(notificationsData.loadNotifications);
+    return unsubscribe;
+  }, [notificationsData.loadNotifications]);
+
+  return {
+    ...notificationsData,
+    triggerRefresh: () => notificationEventEmitter.emit(),
+    triggerRefreshAfterBookingAction: (action: 'cancel' | 'modify' | 'create' | 'update') => 
+      notificationEventEmitter.emit(action)
   };
 };
 

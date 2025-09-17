@@ -36,7 +36,7 @@ import {
   Info as InfoIcon
 } from '@mui/icons-material';
 // import { useAuth } from '../contexts/AuthContext';
-import { useNotifications, BookingNotification } from '../hooks/useNotifications';
+import { useNotificationsWithEvents, BookingNotification } from '../hooks/useNotifications';
 
 const NotificationsPage: React.FC = () => {
   // const { user } = useAuth(); // Keep for future role-based features
@@ -49,8 +49,9 @@ const NotificationsPage: React.FC = () => {
     markAsRead, 
     markAllAsRead, 
     archiveNotification,
-    setError 
-  } = useNotifications();
+    setError,
+    triggerRefresh
+  } = useNotificationsWithEvents();
 
   const [selectedNotification, setSelectedNotification] = useState<BookingNotification | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -285,7 +286,7 @@ const NotificationsPage: React.FC = () => {
           <Button
             variant="outlined"
             startIcon={<RefreshIcon />}
-            onClick={loadNotifications}
+            onClick={triggerRefresh || loadNotifications}
             disabled={loading}
           >
             Refresh

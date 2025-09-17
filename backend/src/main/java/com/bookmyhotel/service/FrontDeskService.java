@@ -351,6 +351,15 @@ public class FrontDeskService {
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new ResourceNotFoundException("Room not found with id: " + roomId));
 
+        // Validate that check-in is allowed (same validation as checkIn method)
+        if (reservation.getStatus() != ReservationStatus.CONFIRMED) {
+            throw new IllegalStateException("Only confirmed reservations can be checked in");
+        }
+
+        if (reservation.getCheckInDate().isAfter(LocalDate.now().plusDays(1))) {
+            throw new IllegalStateException("Cannot check in more than 1 day early");
+        }
+
         // Verify room is available
         if (room.getStatus() != RoomStatus.AVAILABLE) {
             throw new IllegalStateException("Room is not available for check-in");

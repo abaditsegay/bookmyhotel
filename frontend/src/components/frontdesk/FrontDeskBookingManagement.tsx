@@ -39,6 +39,7 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import { useTenant } from '../../contexts/TenantContext';
 import { frontDeskApiService, FrontDeskBooking } from '../../services/frontDeskApi';
+import BookingNotificationEvents from '../../utils/bookingNotificationEvents';
 
 interface FrontDeskBookingManagementProps {
   onRefresh?: () => void;
@@ -172,6 +173,8 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
         });
         loadBookings();
         onRefresh?.();
+        // Trigger notification refresh after status update
+        BookingNotificationEvents.afterUpdate();
       } else {
         setSnackbar({ 
           open: true, 
@@ -205,6 +208,8 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
         setSelectedBooking(null);
         loadBookings();
         onRefresh?.();
+        // Trigger notification refresh after booking deletion
+        BookingNotificationEvents.afterCancellation();
       } else {
         setSnackbar({ 
           open: true, 
