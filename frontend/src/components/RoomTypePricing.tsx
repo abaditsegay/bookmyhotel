@@ -92,7 +92,7 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
     loadPricing();
   }, [loadPricing]);
 
-  const handleOpenDialog = (pricing?: RoomTypePricingResponse) => {
+  const handleOpenDialog = useCallback((pricing?: RoomTypePricingResponse) => {
     if (pricing) {
       setEditingPricing(pricing);
       setFormData({
@@ -123,7 +123,17 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
       });
     }
     setDialogOpen(true);
-  };
+  }, [pricingList]);
+
+  // Listen for custom event to open dialog
+  useEffect(() => {
+    const handleAddPricingEvent = () => {
+      handleOpenDialog();
+    };
+
+    window.addEventListener('addPricing', handleAddPricingEvent);
+    return () => window.removeEventListener('addPricing', handleAddPricingEvent);
+  }, [handleOpenDialog]);
 
   const handleCloseDialog = () => {
     setDialogOpen(false);
@@ -253,15 +263,6 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
               Initialize Defaults
             </Button>
           )}
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<AddIcon />}
-            onClick={() => handleOpenDialog()}
-            disabled={loading}
-          >
-            Add Pricing
-          </Button>
         </Box>
       </Box>
 

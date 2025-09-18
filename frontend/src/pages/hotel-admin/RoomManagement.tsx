@@ -387,30 +387,43 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mb: 3 }}>
-          {tabValue === 0 && (
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={() => setCreateDialogOpen(true)}
-            >
-              Add New Room
-            </Button>
-          )}
-        </Box>
-
         {error && (
           <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
             {error}
           </Alert>
         )}
 
-        {/* Tabs */}
-        <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
+        {/* Tabs with Add Buttons */}
+        <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Tabs value={tabValue} onChange={(e, newValue) => setTabValue(newValue)}>
             <Tab label="Rooms" />
             <Tab label="Pricing" />
           </Tabs>
+          {tabValue === 0 && (
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => setCreateDialogOpen(true)}
+              sx={{ minHeight: 36 }}
+            >
+              Add New Room
+            </Button>
+          )}
+          {tabValue === 1 && (
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => {
+                // This will trigger the add pricing functionality in RoomTypePricing
+                // We need to pass a ref or callback to handle this
+                const event = new CustomEvent('addPricing');
+                window.dispatchEvent(event);
+              }}
+              sx={{ minHeight: 36 }}
+            >
+              Add Pricing
+            </Button>
+          )}
         </Box>
 
         {/* Tab Panel 0 - Rooms */}

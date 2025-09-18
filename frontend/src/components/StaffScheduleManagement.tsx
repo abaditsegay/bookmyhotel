@@ -549,30 +549,6 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
 
   return (
     <Box sx={{ mt: 4, mb: 4 }}>
-      {/* Header Section */}
-      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => {
-              setEditingSchedule(null);
-              resetForm();
-              setShowModal(true);
-            }}
-          >
-            Add Schedule
-          </Button>
-          <Button
-            variant="outlined"
-            startIcon={<UploadIcon />}
-            onClick={() => setShowUploadModal(true)}
-          >
-            Upload Schedule
-          </Button>
-        </Box>
-      </Box>
-
       {/* Alerts */}
       {error && (
         <Alert severity="error" onClose={() => setError(null)} sx={{ mb: 2 }}>
@@ -587,11 +563,33 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
 
       {/* Filters Section */}
       <Paper elevation={1} sx={{ p: 3, mb: 3 }}>
-        <Box display="flex" alignItems="center" mb={2}>
-          <FilterIcon sx={{ mr: 1, color: 'primary.main' }} />
-          <Typography variant="h6" component="h2">
-            Filters
-          </Typography>
+        <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+          <Box display="flex" alignItems="center">
+            <FilterIcon sx={{ mr: 1, color: 'primary.main' }} />
+            <Typography variant="h6" component="h2">
+              Filters
+            </Typography>
+          </Box>
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => {
+                setEditingSchedule(null);
+                resetForm();
+                setShowModal(true);
+              }}
+            >
+              Add Schedule
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={<UploadIcon />}
+              onClick={() => setShowUploadModal(true)}
+            >
+              Upload Schedule
+            </Button>
+          </Box>
         </Box>
         <Grid container spacing={2} alignItems="center">
           <Grid item xs={12} sm={6} md={3}>

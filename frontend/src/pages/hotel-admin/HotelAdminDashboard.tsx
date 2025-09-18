@@ -18,7 +18,6 @@ import {
   TrendingUp,
   Hotel as HotelIcon,
   People,
-  ArrowBack,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -93,9 +92,7 @@ const HotelAdminDashboard: React.FC = () => {
     error: null
   });
 
-  // Navigation state to track if user came from Reports
-  const [cameFromReports, setCameFromReports] = useState(false);
-  
+
   const [hotelEditDialogOpen, setHotelEditDialogOpen] = useState(false);
 
   // All useEffect hooks must be defined before any conditional returns
@@ -173,33 +170,9 @@ const HotelAdminDashboard: React.FC = () => {
     );
   }
 
-  // Helper function to render breadcrumb navigation
-  const renderBackToReportsButton = () => {
-    if (!cameFromReports) return null;
-    
-    return (
-      <Box sx={{ mb: 2 }}>
-        <Button
-          startIcon={<ArrowBack />}
-          onClick={() => setActiveTab(4)}
-          variant="outlined"
-          size="small"
-          color="primary"
-        >
-          Back to Reports
-        </Button>
-      </Box>
-    );
-  };
+
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    // Track if user is coming from Reports tab (index 4)
-    if (activeTab === 4 && (newValue === 1 || newValue === 2 || newValue === 3)) {
-      setCameFromReports(true);
-    } else {
-      setCameFromReports(false);
-    }
-    
     setActiveTab(newValue);
     
     // Update URL parameter to persist tab state
@@ -482,13 +455,11 @@ const HotelAdminDashboard: React.FC = () => {
 
         <TabPanel value={activeTab} index={1}>
           {/* Staff Management Tab */}
-          {renderBackToReportsButton()}
           <StaffManagement onNavigateToStaff={handleStaffNavigation} />
         </TabPanel>
 
         <TabPanel value={activeTab} index={2}>
           {/* Room Management Tab */}
-          {renderBackToReportsButton()}
           <RoomManagement onNavigateToRoom={handleRoomNavigation} />
         </TabPanel>
 
