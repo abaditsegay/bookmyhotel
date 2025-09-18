@@ -1,19 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
-  Container,
   Typography,
   Box,
-  Card,
-  CardContent,
-  Grid,
-  TextField,
   Button,
-  InputAdornment,
-  Chip,
-  Avatar,
-  IconButton,
-  Tooltip,
   Paper,
+  TextField,
+  Grid,
   Table,
   TableBody,
   TableCell,
@@ -21,519 +14,1810 @@ import {
   TableHead,
   TableRow,
   TablePagination,
+  Chip,
   Dialog,
   DialogTitle,
   DialogContent,
+  DialogContentText,
   DialogActions,
-  Divider,
-  LinearProgress,
+  Alert,
+  CircularProgress,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  IconButton,
+  Tabs,
+  Tab,
+  Card,
+  CardContent
 } from '@mui/material';
-import {
-  Search as SearchIcon,
-  Hotel as HotelIcon,
-  LocationOn as LocationIcon,
-  Star as StarIcon,
-  Visibility as VisibilityIcon,
-  Block as BlockIcon,
-  CheckCircle as CheckCircleIcon,
-  Refresh as RefreshIcon,
-  FilterList as FilterListIcon,
+import { 
+  ArrowBack as ArrowBackIcon, 
+  Visibility as ViewIcon, 
+  Edit as EditIcon, 
+  ToggleOn as ToggleOnIcon, 
+  ToggleOff as ToggleOffIcon, 
+  Delete as DeleteIcon,
+  Add as AddIcon,
+  Check as CheckIcon,
+  Close as CloseIcon,
+  Refresh as RefreshIcon
 } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
+import { adminApiService, HotelDTO, UpdateHotelRequest, TenantDTO, ApproveRegistrationRequest, HotelRegistrationResponse } from '../../services/adminApi';
+import HotelEditDialog from '../../components/hotel/HotelEditDialog';
 
-interface Hotel {
-  id: number;
-  name: string;
-  description: string;
-  address: string;
-  city: string;
-  country: string;
-  phone: string;
-  email: string;
-  rating: number;
-  totalRooms: number;
-  availableRooms: number;
-  priceRange: string;
-  amenities: string[];
-  status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
-  tenantId: string;
-  createdAt: string;
-  lastModified: string;
+interface Hotel extends HotelDTO {}
+
+interface RegistrationStatistics {
+  pending: number;
+  underReview: number;
+  approved: number;
+  rejected: number;
+  total: number;
 }
-
-// Mock data - replace with actual API calls
-const mockHotels: Hotel[] = [
-  {
-    id: 1,
-    name: "Grand Plaza Hotel",
-    description: "Luxury hotel in downtown with premium amenities",
-    address: "123 Main Street",
-    city: "New York",
-    country: "USA",
-    phone: "+1-555-0123",
-    email: "info@grandplaza.com",
-    rating: 4.5,
-    totalRooms: 150,
-    availableRooms: 45,
-    priceRange: "$200-$500",
-    amenities: ["WiFi", "Pool", "Spa", "Restaurant", "Gym"],
-    status: "ACTIVE",
-    tenantId: "grand-plaza",
-    createdAt: "2024-01-15",
-    lastModified: "2024-08-10",
-  },
-  {
-    id: 2,
-    name: "Seaside Resort",
-    description: "Beautiful beachfront resort with ocean views",
-    address: "456 Ocean Drive",
-    city: "Miami",
-    country: "USA",
-    phone: "+1-555-0456",
-    email: "reservations@seasideresort.com",
-    rating: 4.8,
-    totalRooms: 200,
-    availableRooms: 78,
-    priceRange: "$150-$400",
-    amenities: ["Beach Access", "Pool", "Restaurant", "WiFi", "Spa"],
-    status: "ACTIVE",
-    tenantId: "seaside-resort",
-    createdAt: "2024-02-20",
-    lastModified: "2024-08-12",
-  },
-  {
-    id: 3,
-    name: "Mountain View Inn",
-    description: "Cozy mountain retreat with hiking trails",
-    address: "789 Mountain Road",
-    city: "Denver",
-    country: "USA",
-    phone: "+1-555-0789",
-    email: "contact@mountainview.com",
-    rating: 4.2,
-    totalRooms: 80,
-    availableRooms: 12,
-    priceRange: "$100-$250",
-    amenities: ["WiFi", "Restaurant", "Hiking", "Pet Friendly"],
-    status: "INACTIVE",
-    tenantId: "mountain-view",
-    createdAt: "2024-03-10",
-    lastModified: "2024-07-15",
-  },
-];
 
 const HotelManagementAdmin: React.FC = () => {
   const navigate = useNavigate();
+  const { token } = useAuth();
+
+  // Tab state
+  const [activeTab, setActiveTab] = useState(0);
+
+  // State management
   const [hotels, setHotels] = useState<Hotel[]>([]);
+  const [registrations, setRegistrations] = useState<HotelRegistrationResponse[]>([]);
+  const [registrationStats, setRegistrationStats] = useState<RegistrationStatistics | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  // Search and filter state
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedHotel, setSelectedHotel] = useState<Hotel | null>(null);
-  const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+
+  // Pagination state
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [totalHotels, setTotalHotels] = useState(0);
+
+  // Dialog state
+  const [selectedHotel, setSelectedHotel] = useState<Hotel | null>(null);
+  const [selectedRegistration, setSelectedRegistration] = useState<HotelRegistrationResponse | null>(null);
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [registerDialogOpen, setRegisterDialogOpen] = useState(false);
+  const [registrationViewDialogOpen, setRegistrationViewDialogOpen] = useState(false);
+  const [registrationEditMode, setRegistrationEditMode] = useState(false);
+  const [approveDialogOpen, setApproveDialogOpen] = useState(false);
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+
+  // Approval/Rejection form state
+  const [approvalComments, setApprovalComments] = useState('');
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [tenantId, setTenantId] = useState('');
+
+  // Tenant management state
+  const [tenants, setTenants] = useState<TenantDTO[]>([]);
+  const [tenantsLoading, setTenantsLoading] = useState(false);
+
+  // Registration form state
+  const [registrationForm, setRegistrationForm] = useState({
+    hotelName: '',
+    description: '',
+    address: '',
+    city: '',
+    state: '',
+    country: '',
+    zipCode: '',
+    phone: '',
+    contactEmail: '',
+    contactPerson: '',
+    licenseNumber: '',
+    taxId: '',
+    websiteUrl: '',
+    facilityAmenities: '',
+    numberOfRooms: '',
+    checkInTime: '15:00',
+    checkOutTime: '11:00'
+  });
+
+  // Edit registration form state
+  const [editRegistrationForm, setEditRegistrationForm] = useState({
+    hotelName: '',
+    description: '',
+    address: '',
+    city: '',
+    state: '',
+    country: '',
+    zipCode: '',
+    phone: '',
+    contactEmail: '',
+    contactPerson: '',
+    licenseNumber: '',
+    taxId: '',
+    websiteUrl: '',
+    facilityAmenities: '',
+    numberOfRooms: '',
+    checkInTime: '15:00',
+    checkOutTime: '11:00'
+  });
+
+  // Debounced search
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
 
   useEffect(() => {
-    const loadHotelsData = async () => {
-      setLoading(true);
-      try {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        let filteredHotels = mockHotels;
-        if (searchTerm) {
-          filteredHotels = mockHotels.filter(hotel =>
-            hotel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            hotel.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            hotel.email.toLowerCase().includes(searchTerm.toLowerCase())
-          );
-        }
-        
-        setHotels(filteredHotels);
-        setTotalHotels(filteredHotels.length);
-      } catch (error) {
-        console.error('Error loading hotels:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 300);
 
-    loadHotelsData();
-  }, [page, rowsPerPage, searchTerm]);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
-  const loadHotels = async () => {
-    setLoading(true);
+  // Set token in API service when component mounts
+  useEffect(() => {
+    if (token) {
+      adminApiService.setToken(token);
+    }
+  }, [token]);
+
+  // Load hotels data
+  const loadHotels = useCallback(async () => {
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      setLoading(true);
+      setError(null);
+      const response = await adminApiService.getHotels(0, 1000); // Get all hotels for now
+      setHotels(response.content || []);
+    } catch (err) {
+      console.error('Error loading hotels:', err);
+      setError('Failed to load hotels. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadHotels();
+  }, [loadHotels]);
+
+  // Load hotel registrations
+  const loadRegistrations = useCallback(async () => {
+    try {
+      adminApiService.setToken(token);
+      const response = await adminApiService.getHotelRegistrations(page, rowsPerPage);
+      setRegistrations(response.content || response);
+    } catch (err) {
+      console.error('Error loading registrations:', err);
+    }
+  }, [token, page, rowsPerPage]);
+
+  // Load active tenants for dropdown
+  const loadTenants = useCallback(async () => {
+    try {
+      setTenantsLoading(true);
+      const response = await adminApiService.getActiveTenants();
+      setTenants(response);
+    } catch (err) {
+      console.error('Error loading tenants:', err);
+    } finally {
+      setTenantsLoading(false);
+    }
+  }, []);
+
+  const loadRegistrationStatistics = useCallback(async () => {
+    try {
+      adminApiService.setToken(token);
+      const data = await adminApiService.getHotelRegistrationStatistics();
+      setRegistrationStats({
+        pending: data.pendingRegistrations,
+        underReview: data.underReviewRegistrations,
+        approved: data.approvedRegistrations,
+        rejected: data.rejectedRegistrations,
+        total: data.totalRegistrations
+      });
+    } catch (err) {
+      console.error('Error loading registration statistics:', err);
+    }
+  }, [token]);
+
+  // Load registrations when tab changes
+  useEffect(() => {
+    if (activeTab === 0) {
+      loadTenants(); // Load tenants when hotels tab is accessed to show tenant names
+    } else if (activeTab === 1) {
+      loadRegistrations();
+      loadRegistrationStatistics();
+      loadTenants(); // Load tenants when registration tab is accessed
+    }
+  }, [activeTab, loadRegistrations, loadRegistrationStatistics, loadTenants]);
+
+  // Filter hotels based on search term and status
+  const filteredHotels = useMemo(() => {
+    return hotels.filter(hotel => {
+      const matchesSearch = hotel.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+                           hotel.city.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+                           (hotel.email && hotel.email.toLowerCase().includes(debouncedSearchTerm.toLowerCase()));
       
-      let filteredHotels = mockHotels;
-      if (searchTerm) {
-        filteredHotels = mockHotels.filter(hotel =>
-          hotel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          hotel.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          hotel.email.toLowerCase().includes(searchTerm.toLowerCase())
-        );
+      const matchesStatus = statusFilter === 'all' || 
+                           (statusFilter === 'active' && hotel.isActive) ||
+                           (statusFilter === 'inactive' && !hotel.isActive);
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [hotels, debouncedSearchTerm, statusFilter]);
+
+  // Pagination handlers
+  const handleChangePage = (event: unknown, newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  // Tab handling
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setActiveTab(newValue);
+    
+    // Load data when switching tabs
+    if (newValue === 0) {
+      // Loading hotels for Existing Hotels tab
+      loadHotels();
+    } else if (newValue === 1) {
+      // Loading registrations for Hotel Registrations tab
+      loadRegistrations();
+      loadRegistrationStatistics();
+      loadTenants();
+    }
+  };
+
+  // Hotel registration functions
+  const handleRegisterHotel = () => {
+    setRegisterDialogOpen(true);
+  };
+
+  const handleRegistrationSubmit = async () => {
+    try {
+      // Basic validation
+      if (!registrationForm.hotelName.trim()) {
+        setError('Hotel name is required');
+        return;
       }
+      if (!registrationForm.address.trim()) {
+        setError('Address is required');
+        return;
+      }
+      if (!registrationForm.city.trim()) {
+        setError('City is required');
+        return;
+      }
+      if (!registrationForm.country.trim()) {
+        setError('Country is required');
+        return;
+      }
+      if (!registrationForm.contactEmail.trim()) {
+        setError('Contact email is required');
+        return;
+      }
+      if (!registrationForm.contactPerson.trim()) {
+        setError('Contact person is required');
+        return;
+      }
+
+      const response = await fetch('/api/admin/hotel-registrations', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          hotelName: registrationForm.hotelName,
+          description: registrationForm.description,
+          address: registrationForm.address,
+          city: registrationForm.city,
+          country: registrationForm.country,
+          phone: registrationForm.phone,
+          contactEmail: registrationForm.contactEmail,
+          contactPerson: registrationForm.contactPerson,
+          licenseNumber: registrationForm.licenseNumber,
+          taxId: registrationForm.taxId,
+          websiteUrl: registrationForm.websiteUrl,
+          facilityAmenities: registrationForm.facilityAmenities,
+          numberOfRooms: registrationForm.numberOfRooms ? parseInt(registrationForm.numberOfRooms) : null,
+          checkInTime: registrationForm.checkInTime,
+          checkOutTime: registrationForm.checkOutTime
+        })
+      });
+
+      if (response.ok) {
+        setRegisterDialogOpen(false);
+        setRegistrationForm({
+          hotelName: '',
+          description: '',
+          address: '',
+          city: '',
+          state: '',
+          country: '',
+          zipCode: '',
+          phone: '',
+          contactEmail: '',
+          contactPerson: '',
+          licenseNumber: '',
+          taxId: '',
+          websiteUrl: '',
+          facilityAmenities: '',
+          numberOfRooms: '',
+          checkInTime: '15:00',
+          checkOutTime: '11:00'
+        });
+        setSuccess('Hotel registration submitted successfully');
+        setTimeout(() => setSuccess(null), 3000);
+        if (activeTab === 1) {
+          loadRegistrations();
+          loadRegistrationStatistics();
+        }
+      } else {
+        const errorData = await response.text();
+        console.error('Registration failed:', response.status, errorData);
+        throw new Error(`Failed to submit registration: ${response.status} ${errorData}`);
+      }
+    } catch (err) {
+      console.error('Error submitting registration:', err);
+      setError('Failed to submit hotel registration. Please try again.');
+    }
+  };
+
+  const handleRegistrationFormChange = (field: string, value: string) => {
+    setRegistrationForm(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const viewRegistration = (registration: HotelRegistrationResponse) => {
+    setSelectedRegistration(registration);
+    setRegistrationEditMode(false);
+    // Initialize edit form with registration data
+    setEditRegistrationForm({
+      hotelName: registration.hotelName || '',
+      description: registration.description || '',
+      address: registration.address || '',
+      city: registration.city || '',
+      state: registration.state || '',
+      country: registration.country || '',
+      zipCode: registration.zipCode || '',
+      phone: registration.phone || '',
+      contactEmail: registration.contactEmail || '',
+      contactPerson: registration.contactPerson || '',
+      licenseNumber: registration.licenseNumber || '',
+      taxId: registration.taxId || '',
+      websiteUrl: registration.websiteUrl || '',
+      facilityAmenities: registration.facilityAmenities || '',
+      numberOfRooms: registration.numberOfRooms?.toString() || '',
+      checkInTime: registration.checkInTime || '15:00',
+      checkOutTime: registration.checkOutTime || '11:00'
+    });
+    setRegistrationViewDialogOpen(true);
+  };
+
+  const handleEditRegistrationFormChange = (field: string, value: string) => {
+    setEditRegistrationForm(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleSaveRegistrationEdit = async () => {
+    if (!selectedRegistration) return;
+
+    try {
+      const response = await fetch(`/api/admin/hotel-registrations/${selectedRegistration.id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          hotelName: editRegistrationForm.hotelName,
+          description: editRegistrationForm.description,
+          address: editRegistrationForm.address,
+          city: editRegistrationForm.city,
+          state: editRegistrationForm.state,
+          country: editRegistrationForm.country,
+          zipCode: editRegistrationForm.zipCode,
+          phone: editRegistrationForm.phone,
+          contactEmail: editRegistrationForm.contactEmail,
+          contactPerson: editRegistrationForm.contactPerson,
+          licenseNumber: editRegistrationForm.licenseNumber,
+          taxId: editRegistrationForm.taxId,
+          websiteUrl: editRegistrationForm.websiteUrl,
+          facilityAmenities: editRegistrationForm.facilityAmenities,
+          numberOfRooms: editRegistrationForm.numberOfRooms ? parseInt(editRegistrationForm.numberOfRooms) : null,
+          checkInTime: editRegistrationForm.checkInTime,
+          checkOutTime: editRegistrationForm.checkOutTime
+        })
+      });
+
+      if (response.ok) {
+        setRegistrationEditMode(false);
+        setSuccess('Hotel registration updated successfully');
+        setTimeout(() => setSuccess(null), 3000);
+        loadRegistrations(); // Refresh the list
+        
+        // Update the selected registration with new data
+        const updatedRegistration = await response.json();
+        setSelectedRegistration(updatedRegistration);
+      } else {
+        throw new Error('Failed to update registration');
+      }
+    } catch (err) {
+      console.error('Error updating registration:', err);
+      setError('Failed to update hotel registration. Please try again.');
+      setTimeout(() => setError(null), 3000);
+    }
+  };
+
+  const handleCancelRegistrationEdit = () => {
+    setRegistrationEditMode(false);
+    // Reset form to original values
+    if (selectedRegistration) {
+      setEditRegistrationForm({
+        hotelName: selectedRegistration.hotelName || '',
+        description: selectedRegistration.description || '',
+        address: selectedRegistration.address || '',
+        city: selectedRegistration.city || '',
+        state: selectedRegistration.state || '',
+        country: selectedRegistration.country || '',
+        zipCode: selectedRegistration.zipCode || '',
+        phone: selectedRegistration.phone || '',
+        contactEmail: selectedRegistration.contactEmail || '',
+        contactPerson: selectedRegistration.contactPerson || '',
+        licenseNumber: selectedRegistration.licenseNumber || '',
+        taxId: selectedRegistration.taxId || '',
+        websiteUrl: selectedRegistration.websiteUrl || '',
+        facilityAmenities: selectedRegistration.facilityAmenities || '',
+        numberOfRooms: selectedRegistration.numberOfRooms?.toString() || '',
+        checkInTime: selectedRegistration.checkInTime || '15:00',
+        checkOutTime: selectedRegistration.checkOutTime || '11:00'
+      });
+    }
+  };
+
+  const openApprovalDialog = (registration: HotelRegistrationResponse) => {
+    setSelectedRegistration(registration);
+    setApprovalComments('');
+    setTenantId('');
+    setApproveDialogOpen(true);
+  };
+
+  const openRejectionDialog = (registration: HotelRegistrationResponse) => {
+    setSelectedRegistration(registration);
+    setRejectionReason('');
+    setRejectDialogOpen(true);
+  };
+
+
+
+  const handleApproveRegistration = async () => {
+    if (!selectedRegistration || !tenantId.trim()) {
+      setError('Tenant is required for approval');
+      return;
+    }
+
+    try {
+      const request: ApproveRegistrationRequest = {
+        comments: approvalComments,
+        tenantId: tenantId
+      };
+
+      await adminApiService.approveHotelRegistration(selectedRegistration.id, request);
       
-      setHotels(filteredHotels);
-      setTotalHotels(filteredHotels.length);
-    } catch (error) {
-      console.error('Error loading hotels:', error);
+      setApproveDialogOpen(false);
+      setSelectedRegistration(null);
+      setApprovalComments('');
+      setTenantId('');
+      setSuccess('Hotel registration approved successfully! The hotel is now active and available in the Existing Hotels list.');
+      setTimeout(() => setSuccess(null), 5000);
+      
+      // Refresh both registrations and hotels list
+      loadRegistrations();
+      loadRegistrationStatistics();
+      loadHotels(); // Refresh hotels list to show the newly created hotel
+    } catch (err) {
+      console.error('Error approving registration:', err);
+      setError('Failed to approve registration. Please try again.');
+      setTimeout(() => setError(null), 3000);
+    }
+  };
+
+  const handleRejectRegistration = async () => {
+    if (!selectedRegistration || !rejectionReason.trim()) {
+      setError('Rejection reason is required');
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/hotel-registrations/${selectedRegistration.id}/reject`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          reason: rejectionReason
+        })
+      });
+
+      if (response.ok) {
+        setRejectDialogOpen(false);
+        setSelectedRegistration(null);
+        setRejectionReason('');
+        setSuccess('Hotel registration rejected successfully');
+        setTimeout(() => setSuccess(null), 3000);
+        loadRegistrations();
+        loadRegistrationStatistics();
+      } else {
+        throw new Error('Failed to reject registration');
+      }
+    } catch (err) {
+      console.error('Error rejecting registration:', err);
+      setError('Failed to reject hotel registration. Please try again.');
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  const statusColors = {
+    PENDING: 'warning',
+    UNDER_REVIEW: 'info',
+    APPROVED: 'success',
+    REJECTED: 'error',
+    CANCELLED: 'default',
+  } as const;
+
+  // Helper function to get tenant name by tenant ID
+  const getTenantName = (tenantId: string | undefined): string => {
+    if (!tenantId) return 'No Tenant';
+    const tenant = tenants.find(t => t.tenantId === tenantId);
+    return tenant ? tenant.name : tenantId;
+  };
+
+  // View hotel details
+  const handleViewHotel = (hotel: Hotel) => {
+    setSelectedHotel(hotel);
+    setViewDialogOpen(true);
+  };
+
+  const handleCloseViewDialog = () => {
+    setViewDialogOpen(false);
+    setSelectedHotel(null);
+  };
+
+  // Edit hotel
+  const handleEditHotel = (hotel: Hotel) => {
+    setSelectedHotel(hotel);
+    setEditDialogOpen(true);
+  };
+
+  const handleUpdateHotel = async (hotelData: Partial<Hotel>) => {
+    if (!selectedHotel || !token) return;
+
+    try {
+      const updateRequest: UpdateHotelRequest = {
+        name: hotelData.name || selectedHotel.name,
+        description: hotelData.description || selectedHotel.description || '',
+        address: hotelData.address || selectedHotel.address || '',
+        city: hotelData.city || selectedHotel.city || '',
+        country: hotelData.country || selectedHotel.country || '',
+        phone: hotelData.phone || selectedHotel.phone || '',
+        email: hotelData.email || selectedHotel.email || '',
+        tenantId: selectedHotel.tenantId || null
+      };
+
+      await adminApiService.updateHotel(selectedHotel.id, updateRequest);
+      setEditDialogOpen(false);
+      setSelectedHotel(null);
+      loadHotels(); // Refresh the list
+      setSuccess('Hotel updated successfully');
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err) {
+      console.error('Error updating hotel:', err);
+      setError('Failed to update hotel. Please try again.');
+    }
+  };
+
+  // Toggle hotel status
+  const handleToggleHotelStatus = async (hotel: Hotel) => {
+    if (!token) return;
+    
+    try {
+      setLoading(true);
+      await adminApiService.toggleHotelStatus(hotel.id);
+      loadHotels(); // Refresh the list
+      setError(null);
+      setSuccess(`Hotel ${hotel.isActive ? 'deactivated' : 'activated'} successfully`);
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err) {
+      console.error('Error toggling hotel status:', err);
+      setError('Failed to update hotel status. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleViewDetails = (hotel: Hotel) => {
+  // Delete hotel functions
+  const openDeleteDialog = (hotel: Hotel) => {
     setSelectedHotel(hotel);
-    setDetailsDialogOpen(true);
+    setDeleteDialogOpen(true);
   };
 
-  const handleStatusChange = async (hotelId: number, newStatus: string) => {
+  const handleDeleteHotel = async () => {
+    if (!selectedHotel || !token) return;
+
     try {
-      // Simulate API call
-      console.log(`Changing hotel ${hotelId} status to ${newStatus}`);
-      await loadHotels(); // Refresh data
-    } catch (error) {
-      console.error('Error updating hotel status:', error);
+      setLoading(true);
+      await adminApiService.deleteHotel(selectedHotel.id);
+      setDeleteDialogOpen(false);
+      setSelectedHotel(null);
+      loadHotels(); // Refresh the list
+      setError(null);
+      setSuccess('Hotel deleted successfully');
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err) {
+      console.error('Error deleting hotel:', err);
+      setError('Failed to delete hotel. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'ACTIVE': return 'success';
-      case 'INACTIVE': return 'warning';
-      case 'SUSPENDED': return 'error';
-      default: return 'default';
-    }
-  };
-
-  const getRatingStars = (rating: number) => {
-    return Array.from({ length: 5 }, (_, index) => (
-      <StarIcon
-        key={index}
-        sx={{
-          fontSize: 16,
-          color: index < Math.floor(rating) ? '#ffc107' : '#e0e0e0',
-        }}
-      />
-    ));
-  };
-
-  const HotelDetailsDialog = () => (
-    <Dialog
-      open={detailsDialogOpen}
-      onClose={() => setDetailsDialogOpen(false)}
-      maxWidth="md"
-      fullWidth
-    >
-      <DialogTitle>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <HotelIcon />
-          Hotel Details - {selectedHotel?.name}
-        </Box>
-      </DialogTitle>
-      <DialogContent>
-        {selectedHotel && (
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
-              <Typography variant="h6" gutterBottom>Basic Information</Typography>
-              <Box sx={{ mb: 2 }}>
-                <Typography variant="body2" color="text.secondary">Name</Typography>
-                <Typography variant="body1">{selectedHotel.name}</Typography>
-              </Box>
-              <Box sx={{ mb: 2 }}>
-                <Typography variant="body2" color="text.secondary">Description</Typography>
-                <Typography variant="body1">{selectedHotel.description}</Typography>
-              </Box>
-              <Box sx={{ mb: 2 }}>
-                <Typography variant="body2" color="text.secondary">Address</Typography>
-                <Typography variant="body1">
-                  {selectedHotel.address}, {selectedHotel.city}, {selectedHotel.country}
-                </Typography>
-              </Box>
-              <Box sx={{ mb: 2 }}>
-                <Typography variant="body2" color="text.secondary">Contact</Typography>
-                <Typography variant="body1">📞 {selectedHotel.phone}</Typography>
-                <Typography variant="body1">✉️ {selectedHotel.email}</Typography>
-              </Box>
-            </Grid>
-            
-            <Grid item xs={12} md={6}>
-              <Typography variant="h6" gutterBottom>Operational Details</Typography>
-              <Box sx={{ mb: 2 }}>
-                <Typography variant="body2" color="text.secondary">Rating</Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  {getRatingStars(selectedHotel.rating)}
-                  <Typography variant="body1">({selectedHotel.rating}/5)</Typography>
-                </Box>
-              </Box>
-              <Box sx={{ mb: 2 }}>
-                <Typography variant="body2" color="text.secondary">Rooms</Typography>
-                <Typography variant="body1">
-                  {selectedHotel.availableRooms}/{selectedHotel.totalRooms} available
-                </Typography>
-              </Box>
-              <Box sx={{ mb: 2 }}>
-                <Typography variant="body2" color="text.secondary">Price Range</Typography>
-                <Typography variant="body1">{selectedHotel.priceRange}</Typography>
-              </Box>
-              <Box sx={{ mb: 2 }}>
-                <Typography variant="body2" color="text.secondary">Status</Typography>
-                <Chip
-                  label={selectedHotel.status}
-                  color={getStatusColor(selectedHotel.status) as any}
-                  size="small"
-                />
-              </Box>
-              <Box sx={{ mb: 2 }}>
-                <Typography variant="body2" color="text.secondary">Tenant ID</Typography>
-                <Typography variant="body1">{selectedHotel.tenantId}</Typography>
-              </Box>
-            </Grid>
-            
-            <Grid item xs={12}>
-              <Typography variant="h6" gutterBottom>Amenities</Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                {selectedHotel.amenities.map((amenity, index) => (
-                  <Chip key={index} label={amenity} variant="outlined" size="small" />
-                ))}
-              </Box>
-            </Grid>
-            
-            <Grid item xs={12}>
-              <Divider sx={{ my: 2 }} />
-              <Grid container spacing={2}>
-                <Grid item xs={6}>
-                  <Typography variant="body2" color="text.secondary">Created</Typography>
-                  <Typography variant="body1">{selectedHotel.createdAt}</Typography>
-                </Grid>
-                <Grid item xs={6}>
-                  <Typography variant="body2" color="text.secondary">Last Modified</Typography>
-                  <Typography variant="body1">{selectedHotel.lastModified}</Typography>
-                </Grid>
-              </Grid>
-            </Grid>
-          </Grid>
-        )}
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={() => setDetailsDialogOpen(false)}>Close</Button>
-      </DialogActions>
-    </Dialog>
-  );
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
-      {/* Header */}
-      <Box sx={{ mb: 4 }}>
-        <Button
-          variant="outlined"
-          onClick={() => navigate('/admin')}
-          sx={{ mb: 2 }}
-        >
-          ← Back to Admin Dashboard
-        </Button>
-      </Box>
+    <Box sx={{ width: '100%', p: 3 }}>
+      <Box sx={{ py: 4 }}>
+        {/* Header */}
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+          <IconButton 
+            onClick={() => navigate('/system-dashboard')}
+            sx={{ mr: 2 }}
+          >
+            <ArrowBackIcon />
+          </IconButton>
+          <Typography variant="h5" component="h1" sx={{ flexGrow: 1 }}>
+            Hotel Management
+          </Typography>
+          <Button
+            variant="outlined"
+            startIcon={<RefreshIcon />}
+            onClick={() => {
+              if (activeTab === 0) {
+                loadHotels();
+              } else {
+                loadRegistrations();
+                loadRegistrationStatistics();
+              }
+            }}
+            sx={{ mr: 2 }}
+          >
+            Refresh
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={handleRegisterHotel}
+            sx={{ mr: 2 }}
+          >
+            Register Hotel
+          </Button>
+        </Box>
 
-      {/* Statistics Cards */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white' }}>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>Total Hotels</Typography>
-              <Typography variant="h4">{totalHotels}</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)', color: 'white' }}>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>Active Hotels</Typography>
-              <Typography variant="h4">
-                {hotels.filter(h => h.status === 'ACTIVE').length}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', color: 'white' }}>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>Total Rooms</Typography>
-              <Typography variant="h4">
-                {hotels.reduce((sum, hotel) => sum + hotel.totalRooms, 0)}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', color: 'white' }}>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>Available Rooms</Typography>
-              <Typography variant="h4">
-                {hotels.reduce((sum, hotel) => sum + hotel.availableRooms, 0)}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+        {/* Error and Success Messages */}
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+            {error}
+          </Alert>
+        )}
 
-      {/* Search and Filters */}
-      <Card sx={{ mb: 3 }}>
-        <CardContent>
-          <Grid container spacing={2} alignItems="center">
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                placeholder="Search hotels by name, city, or email..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
-                <Button
-                  variant="outlined"
-                  startIcon={<FilterListIcon />}
-                  onClick={() => {/* Add filter functionality */}}
-                >
-                  Filters
-                </Button>
-                <Button
-                  variant="outlined"
-                  startIcon={<RefreshIcon />}
-                  onClick={loadHotels}
-                >
-                  Refresh
-                </Button>
-              </Box>
-            </Grid>
-          </Grid>
-        </CardContent>
-      </Card>
+        {success && (
+          <Alert severity="success" sx={{ mb: 2 }} onClose={() => setSuccess(null)}>
+            {success}
+          </Alert>
+        )}
 
-      {/* Hotels Table */}
-      <Card>
-        <CardContent sx={{ p: 0 }}>
-          {loading && <LinearProgress />}
-          
-          <TableContainer component={Paper} elevation={0}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Hotel</TableCell>
-                  <TableCell>Location</TableCell>
-                  <TableCell>Contact</TableCell>
-                  <TableCell>Rooms</TableCell>
-                  <TableCell>Rating</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {hotels.map((hotel) => (
-                  <TableRow key={hotel.id} hover>
-                    <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Avatar sx={{ bgcolor: 'primary.main' }}>
-                          <HotelIcon />
-                        </Avatar>
-                        <Box>
-                          <Typography variant="subtitle2" fontWeight="bold">
-                            {hotel.name}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            {hotel.tenantId}
-                          </Typography>
-                        </Box>
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <LocationIcon fontSize="small" color="action" />
-                        <Typography variant="body2">
-                          {hotel.city}, {hotel.country}
-                        </Typography>
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2">{hotel.phone}</Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {hotel.email}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2">
-                        {hotel.availableRooms}/{hotel.totalRooms}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        available
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        {getRatingStars(hotel.rating)}
-                        <Typography variant="body2">({hotel.rating})</Typography>
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        label={hotel.status}
-                        color={getStatusColor(hotel.status) as any}
-                        size="small"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Box sx={{ display: 'flex', gap: 0.5 }}>
-                        <Tooltip title="View Details">
-                          <IconButton
-                            size="small"
-                            onClick={() => handleViewDetails(hotel)}
-                          >
-                            <VisibilityIcon />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title={hotel.status === 'ACTIVE' ? 'Suspend' : 'Activate'}>
-                          <IconButton
-                            size="small"
-                            onClick={() => handleStatusChange(
-                              hotel.id, 
-                              hotel.status === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE'
-                            )}
-                          >
-                            {hotel.status === 'ACTIVE' ? <BlockIcon /> : <CheckCircleIcon />}
-                          </IconButton>
-                        </Tooltip>
-                      </Box>
-                    </TableCell>
+        {/* Tabs */}
+        <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
+          <Tabs value={activeTab} onChange={handleTabChange}>
+            <Tab label="Existing Hotels" />
+            <Tab label="Hotel Registrations" />
+          </Tabs>
+        </Box>
+
+        {/* Tab Content */}
+        {activeTab === 0 && (
+          <>
+            {/* Search and Filters */}
+            <Paper sx={{ p: 2, mb: 2 }}>
+              <Grid container spacing={2}>
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    fullWidth
+                    label="Search hotels..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Search by name, city, or email"
+                  />
+                </Grid>
+                <Grid item xs={12} md={3}>
+                  <FormControl fullWidth>
+                    <InputLabel>Status</InputLabel>
+                    <Select
+                      value={statusFilter}
+                      label="Status"
+                      onChange={(e) => setStatusFilter(e.target.value)}
+                    >
+                      <MenuItem value="all">All Hotels</MenuItem>
+                      <MenuItem value="active">Active Only</MenuItem>
+                      <MenuItem value="inactive">Inactive Only</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+              </Grid>
+            </Paper>
+
+            {/* Hotels Table */}
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Hotel Name</TableCell>
+                    <TableCell>Location</TableCell>
+                    <TableCell>Tenant</TableCell>
+                    <TableCell>Contact</TableCell>
+                    <TableCell>Rooms</TableCell>
+                    <TableCell>Rating</TableCell>
+                    <TableCell>Status</TableCell>
+                    <TableCell>Actions</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                </TableHead>
+                <TableBody>
+                  {loading ? (
+                    <TableRow>
+                      <TableCell colSpan={8} align="center">
+                        <CircularProgress />
+                      </TableCell>
+                    </TableRow>
+                  ) : filteredHotels.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={8} align="center">
+                        <Typography variant="body2" color="text.secondary">
+                          No hotels found
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    filteredHotels
+                      .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                      .map((hotel) => (
+                        <TableRow key={hotel.id}>
+                          <TableCell>
+                            <Typography variant="subtitle2">{hotel.name}</Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">
+                              {hotel.city}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {hotel.country}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">
+                              {getTenantName(hotel.tenantId)}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">{hotel.email}</Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {hotel.phone}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">
+                              {hotel.totalRooms || 0}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">
+                              Not available
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              label={hotel.isActive ? 'Active' : 'Inactive'}
+                              color={hotel.isActive ? 'success' : 'error'}
+                              size="small"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Box sx={{ display: 'flex', gap: 1 }}>
+                              <IconButton
+                                size="small"
+                                onClick={() => handleViewHotel(hotel)}
+                                title="View Details"
+                              >
+                                <ViewIcon />
+                              </IconButton>
+                              <IconButton
+                                size="small"
+                                onClick={() => handleToggleHotelStatus(hotel)}
+                                title={hotel.isActive ? "Deactivate" : "Activate"}
+                                color={hotel.isActive ? "success" : "error"}
+                              >
+                                {hotel.isActive ? <ToggleOnIcon /> : <ToggleOffIcon />}
+                              </IconButton>
+                              <IconButton
+                                size="small"
+                                onClick={() => openDeleteDialog(hotel)}
+                                title="Delete Hotel"
+                                color="error"
+                              >
+                                <DeleteIcon />
+                              </IconButton>
+                            </Box>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                  )}
+                </TableBody>
+              </Table>
+              <TablePagination
+                component="div"
+                count={filteredHotels.length}
+                page={page}
+                onPageChange={handleChangePage}
+                rowsPerPage={rowsPerPage}
+                onRowsPerPageChange={handleChangeRowsPerPage}
+                rowsPerPageOptions={[5, 10, 25]}
+              />
+            </TableContainer>
+          </>
+        )}
 
-          <TablePagination
-            component="div"
-            count={totalHotels}
-            page={page}
-            onPageChange={(_, newPage) => setPage(newPage)}
-            rowsPerPage={rowsPerPage}
-            onRowsPerPageChange={(e) => setRowsPerPage(parseInt(e.target.value))}
-            rowsPerPageOptions={[5, 10, 25, 50]}
-          />
-        </CardContent>
-      </Card>
+        {/* Hotel Registrations Tab */}
+        {activeTab === 1 && (
+          <>
+            {/* Registration Statistics */}
+            {registrationStats && (
+              <Grid container spacing={3} sx={{ mb: 4 }}>
+                <Grid item xs={12} sm={6} md={3}>
+                  <Card>
+                    <CardContent>
+                      <Typography color="textSecondary" gutterBottom>
+                        Total
+                      </Typography>
+                      <Typography variant="h4">
+                        {registrationStats.total}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <Card>
+                    <CardContent>
+                      <Typography color="textSecondary" gutterBottom>
+                        Pending
+                      </Typography>
+                      <Typography variant="h4" color="warning.main">
+                        {registrationStats.pending}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <Card>
+                    <CardContent>
+                      <Typography color="textSecondary" gutterBottom>
+                        Approved
+                      </Typography>
+                      <Typography variant="h4" color="success.main">
+                        {registrationStats.approved}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <Card>
+                    <CardContent>
+                      <Typography color="textSecondary" gutterBottom>
+                        Rejected
+                      </Typography>
+                      <Typography variant="h4" color="error.main">
+                        {registrationStats.rejected}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              </Grid>
+            )}
 
-      <HotelDetailsDialog />
-    </Container>
+            {/* Registration Table */}
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Hotel Name</TableCell>
+                    <TableCell>Contact Person</TableCell>
+                    <TableCell>Email</TableCell>
+                    <TableCell>City</TableCell>
+                    <TableCell>Status</TableCell>
+                    <TableCell>Submitted</TableCell>
+                    <TableCell>Actions</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {registrations.map((registration) => (
+                    <TableRow key={registration.id}>
+                      <TableCell>
+                        <Typography variant="subtitle2">
+                          {registration.hotelName}
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary">
+                          {registration.address}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>{registration.contactPerson}</TableCell>
+                      <TableCell>{registration.contactEmail}</TableCell>
+                      <TableCell>{registration.city}, {registration.country}</TableCell>
+                      <TableCell>
+                        <Chip 
+                          label={registration.status} 
+                          color={statusColors[registration.status as keyof typeof statusColors]}
+                          size="small"
+                        />
+                      </TableCell>
+                      <TableCell>{formatDate(registration.submittedAt)}</TableCell>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                          <Button
+                            size="small"
+                            startIcon={<ViewIcon />}
+                            onClick={() => viewRegistration(registration)}
+                            variant="outlined"
+                          >
+                            View
+                          </Button>
+                          
+                          {registration.status === 'PENDING' && (
+                            <>
+                              <Button
+                                size="small"
+                                startIcon={<CheckIcon />}
+                                onClick={() => openApprovalDialog(registration)}
+                                variant="contained"
+                                color="success"
+                              >
+                                Approve
+                              </Button>
+                              <Button
+                                size="small"
+                                startIcon={<CloseIcon />}
+                                onClick={() => openRejectionDialog(registration)}
+                                variant="contained"
+                                color="error"
+                              >
+                                Reject
+                              </Button>
+                            </>
+                          )}
+
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </>
+        )}
+
+        {/* Hotel Registration Dialog */}
+        <Dialog open={registerDialogOpen} onClose={() => setRegisterDialogOpen(false)} maxWidth="md" fullWidth>
+          <DialogTitle>Register New Hotel</DialogTitle>
+          <DialogContent>
+            <Grid container spacing={2} sx={{ mt: 1 }}>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Hotel Name"
+                  fullWidth
+                  required
+                  value={registrationForm.hotelName}
+                  onChange={(e) => handleRegistrationFormChange('hotelName', e.target.value)}
+                />
+              </Grid>
+              
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Contact Person"
+                  fullWidth
+                  required
+                  value={registrationForm.contactPerson}
+                  onChange={(e) => handleRegistrationFormChange('contactPerson', e.target.value)}
+                />
+              </Grid>
+              
+              <Grid item xs={12}>
+                <TextField
+                  label="Description"
+                  multiline
+                  rows={3}
+                  fullWidth
+                  value={registrationForm.description}
+                  onChange={(e) => handleRegistrationFormChange('description', e.target.value)}
+                />
+              </Grid>
+              
+              <Grid item xs={12}>
+                <TextField
+                  label="Address"
+                  fullWidth
+                  required
+                  value={registrationForm.address}
+                  onChange={(e) => handleRegistrationFormChange('address', e.target.value)}
+                />
+              </Grid>
+              
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="City"
+                  fullWidth
+                  required
+                  value={registrationForm.city}
+                  onChange={(e) => handleRegistrationFormChange('city', e.target.value)}
+                />
+              </Grid>
+              
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Country"
+                  fullWidth
+                  required
+                  value={registrationForm.country}
+                  onChange={(e) => handleRegistrationFormChange('country', e.target.value)}
+                />
+              </Grid>
+              
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Phone"
+                  fullWidth
+                  required
+                  value={registrationForm.phone}
+                  onChange={(e) => handleRegistrationFormChange('phone', e.target.value)}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Contact Email"
+                  type="email"
+                  fullWidth
+                  required
+                  value={registrationForm.contactEmail}
+                  onChange={(e) => handleRegistrationFormChange('contactEmail', e.target.value)}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="License Number"
+                  fullWidth
+                  value={registrationForm.licenseNumber}
+                  onChange={(e) => handleRegistrationFormChange('licenseNumber', e.target.value)}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Tax ID"
+                  fullWidth
+                  value={registrationForm.taxId}
+                  onChange={(e) => handleRegistrationFormChange('taxId', e.target.value)}
+                />
+              </Grid>
+
+              <Grid item xs={12}>
+                <TextField
+                  label="Website URL"
+                  fullWidth
+                  value={registrationForm.websiteUrl}
+                  onChange={(e) => handleRegistrationFormChange('websiteUrl', e.target.value)}
+                />
+              </Grid>
+
+              <Grid item xs={12}>
+                <TextField
+                  label="Facility Amenities"
+                  multiline
+                  rows={2}
+                  fullWidth
+                  value={registrationForm.facilityAmenities}
+                  onChange={(e) => handleRegistrationFormChange('facilityAmenities', e.target.value)}
+                  placeholder="WiFi, Pool, Spa, Restaurant, etc."
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={4}>
+                <TextField
+                  label="Number of Rooms"
+                  fullWidth
+                  value={registrationForm.numberOfRooms}
+                  onChange={(e) => handleRegistrationFormChange('numberOfRooms', e.target.value)}
+                  placeholder="Enter number of rooms"
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={4}>
+                <TextField
+                  label="Check-in Time"
+                  type="time"
+                  fullWidth
+                  value={registrationForm.checkInTime}
+                  onChange={(e) => handleRegistrationFormChange('checkInTime', e.target.value)}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={4}>
+                <TextField
+                  label="Check-out Time"
+                  type="time"
+                  fullWidth
+                  value={registrationForm.checkOutTime}
+                  onChange={(e) => handleRegistrationFormChange('checkOutTime', e.target.value)}
+                />
+              </Grid>
+            </Grid>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setRegisterDialogOpen(false)}>Cancel</Button>
+            <Button 
+              variant="contained" 
+              onClick={handleRegistrationSubmit}
+              disabled={!registrationForm.hotelName || !registrationForm.contactPerson || !registrationForm.contactEmail}
+            >
+              Submit Registration
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Registration View Dialog */}
+        <Dialog open={registrationViewDialogOpen} onClose={() => setRegistrationViewDialogOpen(false)} maxWidth="md" fullWidth>
+          <DialogTitle>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span>Hotel Registration Details</span>
+              {selectedRegistration?.status === 'PENDING' && !registrationEditMode && (
+                <Button
+                  startIcon={<EditIcon />}
+                  onClick={() => setRegistrationEditMode(true)}
+                  variant="outlined"
+                  size="small"
+                >
+                  Edit
+                </Button>
+              )}
+            </Box>
+          </DialogTitle>
+          <DialogContent>
+            {selectedRegistration && (
+              <Grid container spacing={2} sx={{ mt: 1 }}>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="Hotel Name"
+                    fullWidth
+                    value={registrationEditMode ? editRegistrationForm.hotelName : selectedRegistration.hotelName}
+                    disabled={!registrationEditMode}
+                    variant={registrationEditMode ? "outlined" : "filled"}
+                    onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('hotelName', e.target.value) : undefined}
+                    required={registrationEditMode}
+                  />
+                </Grid>
+                
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="Contact Person"
+                    fullWidth
+                    value={registrationEditMode ? editRegistrationForm.contactPerson : selectedRegistration.contactPerson}
+                    disabled={!registrationEditMode}
+                    variant={registrationEditMode ? "outlined" : "filled"}
+                    onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('contactPerson', e.target.value) : undefined}
+                    required={registrationEditMode}
+                  />
+                </Grid>
+                
+                <Grid item xs={12}>
+                  <TextField
+                    label="Description"
+                    multiline
+                    rows={3}
+                    fullWidth
+                    value={registrationEditMode ? editRegistrationForm.description : selectedRegistration.description}
+                    disabled={!registrationEditMode}
+                    variant={registrationEditMode ? "outlined" : "filled"}
+                    onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('description', e.target.value) : undefined}
+                  />
+                </Grid>
+                
+                <Grid item xs={12}>
+                  <TextField
+                    label="Address"
+                    fullWidth
+                    value={registrationEditMode ? editRegistrationForm.address : selectedRegistration.address}
+                    disabled={!registrationEditMode}
+                    variant={registrationEditMode ? "outlined" : "filled"}
+                    onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('address', e.target.value) : undefined}
+                    required={registrationEditMode}
+                  />
+                </Grid>
+                
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="City"
+                    fullWidth
+                    value={registrationEditMode ? editRegistrationForm.city : selectedRegistration.city}
+                    disabled={!registrationEditMode}
+                    variant={registrationEditMode ? "outlined" : "filled"}
+                    onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('city', e.target.value) : undefined}
+                    required={registrationEditMode}
+                  />
+                </Grid>
+                
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="Country"
+                    fullWidth
+                    value={registrationEditMode ? editRegistrationForm.country : selectedRegistration.country}
+                    disabled={!registrationEditMode}
+                    variant={registrationEditMode ? "outlined" : "filled"}
+                    onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('country', e.target.value) : undefined}
+                    required={registrationEditMode}
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="State"
+                    fullWidth
+                    value={registrationEditMode ? editRegistrationForm.state : (selectedRegistration.state || '')}
+                    disabled={!registrationEditMode}
+                    variant={registrationEditMode ? "outlined" : "filled"}
+                    onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('state', e.target.value) : undefined}
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="Zip Code"
+                    fullWidth
+                    value={registrationEditMode ? editRegistrationForm.zipCode : (selectedRegistration.zipCode || '')}
+                    disabled={!registrationEditMode}
+                    variant={registrationEditMode ? "outlined" : "filled"}
+                    onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('zipCode', e.target.value) : undefined}
+                  />
+                </Grid>
+                
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="Phone"
+                    fullWidth
+                    value={registrationEditMode ? editRegistrationForm.phone : selectedRegistration.phone}
+                    disabled={!registrationEditMode}
+                    variant={registrationEditMode ? "outlined" : "filled"}
+                    onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('phone', e.target.value) : undefined}
+                    required={registrationEditMode}
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="Contact Email"
+                    fullWidth
+                    value={registrationEditMode ? editRegistrationForm.contactEmail : selectedRegistration.contactEmail}
+                    disabled={!registrationEditMode}
+                    variant={registrationEditMode ? "outlined" : "filled"}
+                    onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('contactEmail', e.target.value) : undefined}
+                    required={registrationEditMode}
+                    type="email"
+                  />
+                </Grid>
+
+                {!registrationEditMode && (
+                  <>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Status"
+                        fullWidth
+                        value={selectedRegistration.status}
+                        disabled
+                        variant="filled"
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Submitted At"
+                        fullWidth
+                        value={formatDate(selectedRegistration.submittedAt)}
+                        disabled
+                        variant="filled"
+                      />
+                    </Grid>
+                  </>
+                )}
+
+                {(selectedRegistration.licenseNumber || registrationEditMode) && (
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      label="License Number"
+                      fullWidth
+                      value={registrationEditMode ? editRegistrationForm.licenseNumber : (selectedRegistration.licenseNumber || '')}
+                      disabled={!registrationEditMode}
+                      variant={registrationEditMode ? "outlined" : "filled"}
+                      onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('licenseNumber', e.target.value) : undefined}
+                    />
+                  </Grid>
+                )}
+
+                {(selectedRegistration.taxId || registrationEditMode) && (
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      label="Tax ID"
+                      fullWidth
+                      value={registrationEditMode ? editRegistrationForm.taxId : (selectedRegistration.taxId || '')}
+                      disabled={!registrationEditMode}
+                      variant={registrationEditMode ? "outlined" : "filled"}
+                      onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('taxId', e.target.value) : undefined}
+                    />
+                  </Grid>
+                )}
+
+                {(selectedRegistration.websiteUrl || registrationEditMode) && (
+                  <Grid item xs={12}>
+                    <TextField
+                      label="Website URL"
+                      fullWidth
+                      value={registrationEditMode ? editRegistrationForm.websiteUrl : (selectedRegistration.websiteUrl || '')}
+                      disabled={!registrationEditMode}
+                      variant={registrationEditMode ? "outlined" : "filled"}
+                      onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('websiteUrl', e.target.value) : undefined}
+                    />
+                  </Grid>
+                )}
+
+                {(selectedRegistration.facilityAmenities || registrationEditMode) && (
+                  <Grid item xs={12}>
+                    <TextField
+                      label="Facility Amenities"
+                      multiline
+                      rows={2}
+                      fullWidth
+                      value={registrationEditMode ? editRegistrationForm.facilityAmenities : (selectedRegistration.facilityAmenities || '')}
+                      disabled={!registrationEditMode}
+                      variant={registrationEditMode ? "outlined" : "filled"}
+                      onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('facilityAmenities', e.target.value) : undefined}
+                      placeholder={registrationEditMode ? "WiFi, Pool, Spa, Restaurant, etc." : undefined}
+                    />
+                  </Grid>
+                )}
+
+                {(selectedRegistration.numberOfRooms || registrationEditMode) && (
+                  <Grid item xs={12} sm={4}>
+                    <TextField
+                      label="Number of Rooms"
+                      fullWidth
+                      value={registrationEditMode ? editRegistrationForm.numberOfRooms : (selectedRegistration.numberOfRooms?.toString() || '')}
+                      disabled={!registrationEditMode}
+                      variant={registrationEditMode ? "outlined" : "filled"}
+                      onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('numberOfRooms', e.target.value) : undefined}
+                      placeholder={registrationEditMode ? "Enter number of rooms" : undefined}
+                    />
+                  </Grid>
+                )}
+
+                {(selectedRegistration.checkInTime || registrationEditMode) && (
+                  <Grid item xs={12} sm={4}>
+                    <TextField
+                      label="Check-in Time"
+                      fullWidth
+                      value={registrationEditMode ? editRegistrationForm.checkInTime : (selectedRegistration.checkInTime || '')}
+                      disabled={!registrationEditMode}
+                      variant={registrationEditMode ? "outlined" : "filled"}
+                      onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('checkInTime', e.target.value) : undefined}
+                      type="time"
+                    />
+                  </Grid>
+                )}
+
+                {(selectedRegistration.checkOutTime || registrationEditMode) && (
+                  <Grid item xs={12} sm={4}>
+                    <TextField
+                      label="Check-out Time"
+                      fullWidth
+                      value={registrationEditMode ? editRegistrationForm.checkOutTime : (selectedRegistration.checkOutTime || '')}
+                      disabled={!registrationEditMode}
+                      variant={registrationEditMode ? "outlined" : "filled"}
+                      onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('checkOutTime', e.target.value) : undefined}
+                      type="time"
+                    />
+                  </Grid>
+                )}
+
+                {!registrationEditMode && selectedRegistration.reviewedAt && (
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      label="Reviewed At"
+                      fullWidth
+                      value={formatDate(selectedRegistration.reviewedAt)}
+                      disabled
+                      variant="filled"
+                    />
+                  </Grid>
+                )}
+
+                {!registrationEditMode && selectedRegistration.reviewComments && (
+                  <Grid item xs={12}>
+                    <TextField
+                      label="Review Comments"
+                      multiline
+                      rows={3}
+                      fullWidth
+                      value={selectedRegistration.reviewComments}
+                      disabled
+                      variant="filled"
+                    />
+                  </Grid>
+                )}
+
+                {/* Approved hotel ID field removed - not part of API response */}
+                {false && selectedRegistration && (
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      label="Created Hotel ID"
+                      fullWidth
+                      value=""
+                      disabled
+                      variant="filled"
+                    />
+                  </Grid>
+                )}
+
+                {!registrationEditMode && selectedRegistration.tenantId && (
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      label="Tenant ID"
+                      fullWidth
+                      value={selectedRegistration.tenantId}
+                      disabled
+                      variant="filled"
+                    />
+                  </Grid>
+                )}
+              </Grid>
+            )}
+          </DialogContent>
+          <DialogActions>
+            {registrationEditMode ? (
+              <>
+                <Button onClick={handleCancelRegistrationEdit}>Cancel</Button>
+                <Button 
+                  variant="contained" 
+                  onClick={handleSaveRegistrationEdit}
+                  disabled={!editRegistrationForm.hotelName || !editRegistrationForm.contactPerson || !editRegistrationForm.contactEmail}
+                >
+                  Save Changes
+                </Button>
+              </>
+            ) : (
+              <Button onClick={() => setRegistrationViewDialogOpen(false)}>Close</Button>
+            )}
+          </DialogActions>
+        </Dialog>
+
+        {/* View Hotel Dialog */}
+        <Dialog open={viewDialogOpen} onClose={handleCloseViewDialog} maxWidth="md" fullWidth>
+          <DialogTitle>Hotel Details</DialogTitle>
+          <DialogContent>
+            {selectedHotel && (
+              <Grid container spacing={2} sx={{ mt: 1 }}>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="Hotel Name"
+                    fullWidth
+                    value={selectedHotel.name || ''}
+                    disabled
+                    variant="filled"
+                  />
+                </Grid>
+                
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="Email"
+                    type="email"
+                    fullWidth
+                    value={selectedHotel.email || ''}
+                    disabled
+                    variant="filled"
+                  />
+                </Grid>
+                
+                <Grid item xs={12}>
+                  <TextField
+                    label="Description"
+                    multiline
+                    rows={3}
+                    fullWidth
+                    value={selectedHotel.description || ''}
+                    disabled
+                    variant="filled"
+                  />
+                </Grid>
+                
+                <Grid item xs={12}>
+                  <TextField
+                    label="Address"
+                    fullWidth
+                    value={selectedHotel.address || ''}
+                    disabled
+                    variant="filled"
+                  />
+                </Grid>
+                
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="City"
+                    fullWidth
+                    value={selectedHotel.city || ''}
+                    disabled
+                    variant="filled"
+                  />
+                </Grid>
+                
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="Country"
+                    fullWidth
+                    value={selectedHotel.country || ''}
+                    disabled
+                    variant="filled"
+                  />
+                </Grid>
+                
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="Phone"
+                    fullWidth
+                    value={selectedHotel.phone || ''}
+                    disabled
+                    variant="filled"
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="Status"
+                    fullWidth
+                    value={selectedHotel.isActive ? 'Active' : 'Inactive'}
+                    disabled
+                    variant="filled"
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="Total Rooms"
+                    fullWidth
+                    value={selectedHotel.totalRooms?.toString() || '0'}
+                    disabled
+                    variant="filled"
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="Available Rooms"
+                    fullWidth
+                    value={selectedHotel.availableRooms?.toString() || '0'}
+                    disabled
+                    variant="filled"
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="Created At"
+                    fullWidth
+                    value={selectedHotel.createdAt ? new Date(selectedHotel.createdAt).toLocaleString() : ''}
+                    disabled
+                    variant="filled"
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="Last Updated"
+                    fullWidth
+                    value={selectedHotel.updatedAt ? new Date(selectedHotel.updatedAt).toLocaleString() : ''}
+                    disabled
+                    variant="filled"
+                  />
+                </Grid>
+              </Grid>
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseViewDialog}>Close</Button>
+            <Button 
+              variant="contained" 
+              startIcon={<EditIcon />}
+              onClick={() => {
+                if (selectedHotel) {
+                  handleEditHotel(selectedHotel);
+                  setViewDialogOpen(false);
+                }
+              }}
+            >
+              Edit
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Hotel Edit Dialog */}
+        <HotelEditDialog
+          open={editDialogOpen}
+          onClose={() => setEditDialogOpen(false)}
+          onSave={handleUpdateHotel}
+          hotel={selectedHotel}
+          loading={loading}
+        />
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog
+          open={deleteDialogOpen}
+          onClose={() => setDeleteDialogOpen(false)}
+        >
+          <DialogTitle>Confirm Delete</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Are you sure you want to delete the hotel "{selectedHotel?.name}"? This action cannot be undone.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setDeleteDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleDeleteHotel}
+              color="error"
+              variant="contained"
+            >
+              Delete
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Approve Registration Dialog */}
+        <Dialog
+          open={approveDialogOpen}
+          onClose={() => setApproveDialogOpen(false)}
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogTitle>Approve Hotel Registration</DialogTitle>
+          <DialogContent>
+            <DialogContentText sx={{ mb: 2 }}>
+              You are about to approve the registration for "{selectedRegistration?.hotelName}". 
+              This will create a new hotel in the system.
+            </DialogContentText>
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <FormControl fullWidth required>
+                  <InputLabel>Tenant</InputLabel>
+                  <Select
+                    value={tenantId}
+                    onChange={(e) => setTenantId(e.target.value)}
+                    disabled={tenantsLoading}
+                  >
+                    {tenantsLoading ? (
+                      <MenuItem disabled>
+                        <CircularProgress size={20} sx={{ mr: 1 }} />
+                        Loading tenants...
+                      </MenuItem>
+                    ) : (
+                      tenants.map((tenant) => (
+                        <MenuItem key={tenant.id} value={tenant.id}>
+                          {tenant.name} ({tenant.tenantId})
+                        </MenuItem>
+                      ))
+                    )}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  label="Approval Comments (Optional)"
+                  multiline
+                  rows={3}
+                  fullWidth
+                  value={approvalComments}
+                  onChange={(e) => setApprovalComments(e.target.value)}
+                  placeholder="Add any comments about the approval..."
+                />
+              </Grid>
+            </Grid>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setApproveDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleApproveRegistration}
+              color="success"
+              variant="contained"
+              disabled={!tenantId.trim()}
+            >
+              Approve Registration
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Reject Registration Dialog */}
+        <Dialog
+          open={rejectDialogOpen}
+          onClose={() => setRejectDialogOpen(false)}
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogTitle>Reject Hotel Registration</DialogTitle>
+          <DialogContent>
+            <DialogContentText sx={{ mb: 2 }}>
+              You are about to reject the registration for "{selectedRegistration?.hotelName}". 
+              Please provide a reason for the rejection.
+            </DialogContentText>
+            <TextField
+              label="Rejection Reason"
+              multiline
+              rows={4}
+              fullWidth
+              required
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+              placeholder="Please provide a detailed reason for rejecting this registration..."
+              helperText="This reason will be visible to the hotel applicant"
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setRejectDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleRejectRegistration}
+              color="error"
+              variant="contained"
+              disabled={!rejectionReason.trim()}
+            >
+              Reject Registration
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </Box>
+    </Box>
   );
 };
 

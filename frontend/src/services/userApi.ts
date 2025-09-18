@@ -1,7 +1,10 @@
 // User API service functions
 // This file contains functions for user profile management API calls
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
+import TokenManager from '../utils/tokenManager';
+import { API_CONFIG } from '../config/apiConfig';
+
+const API_BASE_URL = API_CONFIG.BASE_URL;
 
 export interface UpdateProfileRequest {
   firstName?: string;

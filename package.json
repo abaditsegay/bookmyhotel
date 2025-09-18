@@ -1,0 +1,48 @@
+{
+  "name": "bookmyhotel",
+  "version": "1.0.0",
+  "description": "Multi-tenant hotel booking and management system built with Spring Boot, React, and MySQL",
+  "scripts": {
+    "install:frontend": "cd frontend && npm install",
+    "install:backend": "cd backend && mvn clean install",
+    "build:frontend": "cd frontend && npm run build",
+    "build:backend": "cd backend && mvn clean package -DskipTests",
+    "build": "npm run build:backend && npm run build:frontend",
+    "start:frontend": "cd frontend && npm start",
+    "start:backend": "cd backend && mvn spring-boot:run",
+    "start:docker": "docker-compose -f infra/docker-compose.yml up -d",
+    "stop:docker": "docker-compose -f infra/docker-compose.yml down",
+    "test:frontend": "cd frontend && npm test",
+    "test:backend": "cd backend && mvn test",
+    "test:e2e": "npx playwright test",
+    "dev": "npm run start:docker && npm run start:backend & npm run start:frontend",
+    "clean": "cd backend && mvn clean && cd ../frontend && rm -rf build node_modules"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/abaditsegay/bookmyhotel.git"
+  },
+  "keywords": [
+    "hotel",
+    "booking",
+    "multi-tenant",
+    "spring-boot",
+    "react",
+    "mysql",
+    "jwt",
+    "rest-api"
+  ],
+  "author": "Samuel Weldegebriel",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/abaditsegay/bookmyhotel/issues"
+  },
+  "homepage": "https://github.com/abaditsegay/bookmyhotel#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.55.0"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  }
+}

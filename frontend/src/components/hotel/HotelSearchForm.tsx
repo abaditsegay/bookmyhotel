@@ -17,6 +17,7 @@ import {
   LocationOn as LocationIcon, 
   People as PeopleIcon 
 } from '@mui/icons-material';
+import { useTranslation } from 'react-i18next';
 import { HotelSearchRequest } from '../../types/hotel';
 
 interface HotelSearchFormProps {
@@ -25,10 +26,11 @@ interface HotelSearchFormProps {
 }
 
 const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = false }) => {
+  const { t } = useTranslation();
   const [location, setLocation] = useState('');
-  const [checkInDate, setCheckInDate] = useState<Dayjs | null>(dayjs().add(1, 'day'));
-  const [checkOutDate, setCheckOutDate] = useState<Dayjs | null>(dayjs().add(2, 'day'));
-  const [guests, setGuests] = useState(2);
+  const [checkInDate, setCheckInDate] = useState<Dayjs | null>(dayjs().add(7, 'day'));
+  const [checkOutDate, setCheckOutDate] = useState<Dayjs | null>(dayjs().add(9, 'day'));
+  const [guests, setGuests] = useState(1);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,8 +69,25 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <Paper elevation={3} sx={{ p: 3, mb: 3 }}>
-        <Typography variant="h5" gutterBottom sx={{ mb: 3, fontWeight: 'bold' }}>
+      <Paper 
+        elevation={3} 
+        sx={{ 
+          p: { xs: 2, sm: 3 }, // Responsive padding
+          mb: 3,
+          width: '100%',
+          boxSizing: 'border-box', // Ensure padding doesn't cause overflow
+        }}
+      >
+        <Typography 
+          variant="h5" 
+          gutterBottom 
+          sx={{ 
+            mb: 3, 
+            fontWeight: 'bold',
+            fontSize: { xs: '1.25rem', sm: '1.5rem' }, // Responsive font size
+            textAlign: { xs: 'center', sm: 'left' } // Center on mobile
+          }}
+        >
           Find Your Perfect Stay
         </Typography>
         
@@ -78,8 +97,8 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
-                label="Destination"
-                placeholder="Where do you want to stay?"
+                label={t('hotelSearch.form.destination')}
+                placeholder={t('hotelSearch.form.destinationPlaceholder')}
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 InputProps={{
@@ -97,7 +116,7 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
               <TextField
                 fullWidth
                 type="number"
-                label="Guests"
+                label={t('hotelSearch.form.guests')}
                 value={guests}
                 onChange={(e) => setGuests(Number(e.target.value))}
                 inputProps={{ min: 1, max: 10 }}
@@ -114,7 +133,7 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
             {/* Check-in Date */}
             <Grid item xs={12} md={6}>
               <DatePicker
-                label="Check-in Date"
+                label={t('hotelSearch.form.checkin')}
                 value={checkInDate}
                 onChange={handleCheckInDateChange}
                 minDate={dayjs()}
@@ -131,7 +150,7 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
             {/* Check-out Date */}
             <Grid item xs={12} md={6}>
               <DatePicker
-                label="Check-out Date"
+                label={t('hotelSearch.form.checkout')}
                 value={checkOutDate}
                 onChange={handleCheckOutDateChange}
                 minDate={checkInDate || dayjs().add(1, 'day')}
@@ -145,7 +164,7 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
               />
             </Grid>
 
-            {/* Search Button */}
+            {/* Search Button - Mobile optimized */}
             <Grid item xs={12}>
               <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
                 <Button
@@ -155,19 +174,21 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
                   disabled={loading}
                   startIcon={<SearchIcon />}
                   sx={{
-                    px: 4,
+                    px: { xs: 3, sm: 4 }, // Responsive padding
                     py: 1.5,
                     borderRadius: 3,
-                    fontSize: '1.1rem',
+                    fontSize: { xs: '1rem', sm: '1.1rem' }, // Responsive font size
                     fontWeight: 'bold',
                     textTransform: 'none',
+                    width: { xs: '100%', sm: 'auto' }, // Full width on mobile
+                    maxWidth: { xs: '300px', sm: 'none' }, // Limit max width on mobile
                     background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
                     '&:hover': {
                       background: 'linear-gradient(45deg, #1976D2 30%, #1BA3D3 90%)',
                     },
                   }}
                 >
-                  {loading ? 'Searching...' : 'Search Hotels'}
+                  {loading ? t('hotelSearch.form.searching') : t('hotelSearch.form.searchButton')}
                 </Button>
               </Box>
             </Grid>

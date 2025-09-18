@@ -3,6 +3,7 @@ package com.bookmyhotel.dto;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import com.bookmyhotel.entity.RoomStatus;
 import com.bookmyhotel.entity.RoomType;
 
 import jakarta.validation.constraints.NotBlank;
@@ -35,8 +36,11 @@ public class RoomDTO {
     
     private Boolean isAvailable;
     
+    private RoomStatus status;
+    
     private Long hotelId;
     private String hotelName;
+    private String currentGuest; // Current guest name if room is occupied
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     
@@ -109,6 +113,14 @@ public class RoomDTO {
         this.isAvailable = isAvailable;
     }
     
+    public RoomStatus getStatus() {
+        return status;
+    }
+    
+    public void setStatus(RoomStatus status) {
+        this.status = status;
+    }
+    
     public Long getHotelId() {
         return hotelId;
     }
@@ -123,6 +135,14 @@ public class RoomDTO {
     
     public void setHotelName(String hotelName) {
         this.hotelName = hotelName;
+    }
+    
+    public String getCurrentGuest() {
+        return currentGuest;
+    }
+    
+    public void setCurrentGuest(String currentGuest) {
+        this.currentGuest = currentGuest;
     }
     
     public LocalDateTime getCreatedAt() {

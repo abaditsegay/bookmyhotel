@@ -5,16 +5,28 @@ import {
   HotelSearchResult, 
   BookingRequest, 
   BookingResponse,
-  AvailableRoom 
+  AvailableRoom,
+  BookingModificationRequest,
+  BookingModificationResponse,
+  BookingCancellationRequest,
+  BookingCancellationResponse
 } from '../types/hotel';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
+import TokenManager from '../utils/tokenManager';
+import { API_CONFIG } from '../config/apiConfig';
+
+const API_BASE_URL = API_CONFIG.BASE_URL;
 
 class HotelApiService {
   private token: string | null = null;
+  private tenantId: string | null = null;
 
   setToken(token: string | null) {
     this.token = token;
+  }
+
+  setTenantId(tenantId: string | null) {
+    this.tenantId = tenantId;
   }
 
   private async fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> {
@@ -32,13 +44,28 @@ class HotelApiService {
       headers['Authorization'] = `Bearer ${this.token}`;
     }
 
+    // Add tenant ID header if available
+    if (this.tenantId) {
+      headers['X-Tenant-ID'] = this.tenantId;
+    }
+
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       ...options,
       headers,
     });
 
     if (!response.ok) {
-      throw new Error(`API Error: ${response.status} ${response.statusText}`);
+      // Try to parse error message from response body
+      let errorMessage = `API Error: ${response.status} ${response.statusText}`;
+      
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorData.error || errorMessage;
+      } catch (parseError) {
+        // If JSON parsing fails, use the default error message
+      }
+      
+      throw new Error(errorMessage);
     }
 
     return response.json();
@@ -50,6 +77,26 @@ class HotelApiService {
       method: 'POST',
       body: JSON.stringify(searchRequest),
     });
+  }
+
+  // Public hotel search (without tenant context for anonymous users)
+  async searchHotelsPublic(searchRequest: HotelSearchRequest): Promise<HotelSearchResult[]> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    // Deliberately NOT adding Authorization or X-Tenant-ID headers for public search
+    const response = await fetch(`${API_BASE_URL}/hotels/search`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(searchRequest),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Public Hotel Search Error: ${response.status} ${response.statusText}`);
+    }
+
+    return response.json();
   }
 
   async getHotelDetails(
@@ -65,6 +112,96 @@ class HotelApiService {
 
     const query = params.toString() ? `?${params.toString()}` : '';
     return this.fetchApi<HotelSearchResult>(`/hotels/${hotelId}${query}`);
+  }
+
+  // Public hotel details (without tenant context for anonymous users)
+  async getHotelDetailsPublic(
+    hotelId: number, 
+    checkInDate?: string, 
+    checkOutDate?: string, 
+    guests?: number
+  ): Promise<HotelSearchResult> {
+    const params = new URLSearchParams();
+    if (checkInDate) params.append('checkInDate', checkInDate);
+    if (checkOutDate) params.append('checkOutDate', checkOutDate);
+    if (guests) params.append('guests', guests.toString());
+
+    const query = params.toString() ? `?${params.toString()}` : '';
+    
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    // Deliberately NOT adding Authorization or X-Tenant-ID headers for public access
+    const response = await fetch(`${API_BASE_URL}/hotels/${hotelId}${query}`, {
+      method: 'GET',
+      headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Public Hotel Details Error: ${response.status} ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+
+  // Public hotel rooms (without tenant context for anonymous users)
+  async getHotelRoomsPublic(
+    hotelId: number,
+    searchRequest: HotelSearchRequest
+  ): Promise<HotelSearchResult> {
+    const params = new URLSearchParams();
+    if (searchRequest.checkInDate) params.append('checkInDate', searchRequest.checkInDate);
+    if (searchRequest.checkOutDate) params.append('checkOutDate', searchRequest.checkOutDate);
+    if (searchRequest.guests) params.append('guests', searchRequest.guests.toString());
+    if (searchRequest.roomType) params.append('roomType', searchRequest.roomType);
+    if (searchRequest.location) params.append('location', searchRequest.location);
+
+    const query = params.toString() ? `?${params.toString()}` : '';
+    
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    // Deliberately NOT adding Authorization or X-Tenant-ID headers for public access
+    const response = await fetch(`${API_BASE_URL}/hotels/${hotelId}/rooms${query}`, {
+      method: 'GET',
+      headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Public Hotel Rooms Error: ${response.status} ${response.statusText}`);
+    }
+
+    const rooms = await response.json();
+    
+    // The backend returns an array of rooms, but we need to structure it like HotelSearchResult
+    // We'll get the hotel details first and then combine with room data
+    const hotelDetails = await this.getHotelDetailsPublic(hotelId, searchRequest.checkInDate, searchRequest.checkOutDate, searchRequest.guests);
+    
+    return {
+      ...hotelDetails,
+      availableRooms: rooms || [],
+    };
+  }
+
+  // Public random hotels for advertisement display
+  async getRandomHotels(): Promise<HotelSearchResult[]> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    // Public endpoint - no auth required
+    const response = await fetch(`${API_BASE_URL}/hotels/random`, {
+      method: 'GET',
+      headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Random Hotels Error: ${response.status} ${response.statusText}`);
+    }
+
+    return response.json();
   }
 
   async getAvailableRooms(
@@ -86,7 +223,44 @@ class HotelApiService {
 
   // Booking methods
   async createBooking(bookingRequest: BookingRequest): Promise<BookingResponse> {
-    return this.fetchApi<BookingResponse>('/bookings', {
+    // Use different endpoints based on booking type
+    const endpoint = bookingRequest.roomId ? '/bookings' : '/bookings/room-type';
+    
+    // For room-type bookings (public booking flow), don't send tenant header
+    // Let the backend determine the tenant from the hotel being booked
+    if (!bookingRequest.roomId) {
+      // Make request without tenant header for cross-tenant booking
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+
+      // Add Authorization header if token is available
+      if (this.token) {
+        headers['Authorization'] = `Bearer ${this.token}`;
+      }
+
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(bookingRequest),
+      });
+
+      if (!response.ok) {
+        // Try to get the actual error message from the response
+        try {
+          const errorData = await response.json();
+          throw new Error(errorData.error || errorData.message || `API Error: ${response.status} ${response.statusText}`);
+        } catch (jsonError) {
+          // If we can't parse the JSON, fall back to the status text
+          throw new Error(`API Error: ${response.status} ${response.statusText}`);
+        }
+      }
+
+      return response.json();
+    }
+    
+    // For specific room bookings, use the normal fetchApi with tenant context
+    return this.fetchApi<BookingResponse>(endpoint, {
       method: 'POST',
       body: JSON.stringify(bookingRequest),
     });
@@ -104,6 +278,94 @@ class HotelApiService {
 
   async getUserBookings(userId: number): Promise<BookingResponse[]> {
     return this.fetchApi<BookingResponse[]>(`/bookings/user/${userId}`);
+  }
+
+  // Email booking confirmation
+  async sendBookingEmail(reservationId: number, emailAddress: string, includeItinerary: boolean = true): Promise<void> {
+    await this.fetchApi<void>(`/bookings/${reservationId}/email`, {
+      method: 'POST',
+      body: JSON.stringify({
+        emailAddress,
+        includeItinerary
+      }),
+    });
+  }
+
+  // Download booking PDF
+  async downloadBookingPDF(reservationId: number): Promise<void> {
+    const headers: Record<string, string> = {};
+    
+    // Add Authorization header if token is available
+    if (this.token) {
+      headers['Authorization'] = `Bearer ${this.token}`;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/bookings/${reservationId}/pdf`, {
+      method: 'GET',
+      headers,
+    });
+
+    if (!response.ok) {
+      // Try to get error message from JSON response
+      try {
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || `PDF Download Error: ${response.status} ${response.statusText}`);
+        }
+      } catch (jsonError) {
+        // If JSON parsing fails, use the original error
+      }
+      throw new Error(`PDF Download Error: ${response.status} ${response.statusText}`);
+    }
+
+    // Create blob and download
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `booking-confirmation-${reservationId}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  }
+
+  // Search booking by confirmation number or email/name
+  async searchBooking(confirmationNumber?: string, email?: string, lastName?: string): Promise<BookingResponse> {
+    const params = new URLSearchParams();
+    if (confirmationNumber) params.append('confirmationNumber', confirmationNumber);
+    if (email) params.append('email', email);
+    if (lastName) params.append('lastName', lastName);
+
+    const query = params.toString() ? `?${params.toString()}` : '';
+    return this.fetchApi<BookingResponse>(`/bookings/search${query}`);
+  }
+
+  // Search booking by reference number AND email (both required)
+  async searchBookingByReferenceAndEmail(confirmationNumber: string, email: string): Promise<BookingResponse> {
+    const params = new URLSearchParams();
+    params.append('confirmationNumber', confirmationNumber);
+    params.append('email', email);
+
+    const query = `?${params.toString()}`;
+    return this.fetchApi<BookingResponse>(`/bookings/search${query}`);
+  }
+
+  // Booking modification
+  async modifyBooking(modificationRequest: BookingModificationRequest): Promise<BookingModificationResponse> {
+    return this.fetchApi<BookingModificationResponse>('/bookings/modify', {
+      method: 'PUT',
+      body: JSON.stringify(modificationRequest),
+    });
+  }
+
+  // Booking cancellation
+  async cancelBookingGuest(cancellationRequest: BookingCancellationRequest): Promise<BookingCancellationResponse> {
+    return this.fetchApi<BookingCancellationResponse>('/bookings/cancel', {
+      method: 'POST',
+      body: JSON.stringify(cancellationRequest),
+    });
   }
 }
 

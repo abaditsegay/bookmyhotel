@@ -1,0 +1,237 @@
+package com.bookmyhotel.service;
+
+import com.bookmyhotel.entity.*;
+import com.bookmyhotel.repository.HousekeepingTaskRepository;
+import com.bookmyhotel.repository.UserRepository;
+import com.bookmyhotel.exception.ResourceNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * Service for managing housekeeping tasks
+ */
+@Service
+@Transactional
+public class HousekeepingService {
+    
+    @Autowired
+    private HousekeepingTaskRepository housekeepingTaskRepository;
+    
+    @Autowired
+    private UserRepository userRepository;
+    
+    // Create new housekeeping task
+    public HousekeepingTask createTask(HousekeepingTask task) {
+        task.setStatus(TaskStatus.PENDING);
+        task.setCreatedAt(LocalDateTime.now());
+        task.setUpdatedAt(LocalDateTime.now());
+        return housekeepingTaskRepository.save(task);
+    }
+    
+    // Get task by ID
+    public HousekeepingTask getTaskById(String tenantId, Long taskId) {
+        return housekeepingTaskRepository.findById(taskId)
+            .filter(task -> task.getTenantId().equals(tenantId))
+            .orElseThrow(() -> new ResourceNotFoundException("Housekeeping task not found with ID: " + taskId));
+    }
+    
+    // Get all tasks for tenant
+    public List<HousekeepingTask> getAllTasks(String tenantId) {
+        return housekeepingTaskRepository.findByTenantIdOrderByCreatedAtDesc(tenantId);
+    }
+    
+    // Get tasks by hotel
+    public List<HousekeepingTask> getTasksByHotel(String tenantId, Long hotelId) {
+        return housekeepingTaskRepository.findByTenantIdAndHotelIdOrderByCreatedAtDesc(tenantId, hotelId);
+    }
+    
+    // Get tasks by status
+    public List<HousekeepingTask> getTasksByStatus(String tenantId, TaskStatus status) {
+        return housekeepingTaskRepository.findByTenantIdAndStatusOrderByCreatedAtDesc(tenantId, status);
+    }
+    
+    // Get tasks assigned to a staff member
+    public List<HousekeepingTask> getTasksByAssignedStaff(String tenantId, Long staffId) {
+        User staff = userRepository.findById(staffId)
+            .orElseThrow(() -> new ResourceNotFoundException("Staff member not found with ID: " + staffId));
+        return housekeepingTaskRepository.findByTenantIdAndAssignedToOrderByScheduledStartTimeAsc(tenantId, staff);
+    }
+    
+    // Get tasks by assigned staff and status
+    public List<HousekeepingTask> getTasksByAssignedStaffAndStatus(String tenantId, Long staffId, TaskStatus status) {
+        User staff = userRepository.findById(staffId)
+            .orElseThrow(() -> new ResourceNotFoundException("Staff member not found with ID: " + staffId));
+        return housekeepingTaskRepository.findByTenantIdAndAssignedToAndStatusOrderByScheduledStartTimeAsc(
+            tenantId, staff, status);
+    }
+    
+    // Assign task to staff member
+    public HousekeepingTask assignTask(String tenantId, Long taskId, Long staffId) {
+        HousekeepingTask task = getTaskById(tenantId, taskId);
+        User staff = userRepository.findById(staffId)
+            .orElseThrow(() -> new ResourceNotFoundException("Staff member not found with ID: " + staffId));
+        
+        // Verify staff has housekeeping role
+        if (!staff.getRoles().contains(UserRole.HOUSEKEEPING) && !staff.getRoles().contains(UserRole.HOTEL_ADMIN)) {
+            throw new IllegalArgumentException("Only housekeeping staff or hotel admins can be assigned housekeeping tasks");
+        }
+        
+        task.setAssignedTo(staff);
+        task.setStatus(TaskStatus.ASSIGNED);
+        task.setUpdatedAt(LocalDateTime.now());
+        
+        return housekeepingTaskRepository.save(task);
+    }
+    
+    // Start task
+    public HousekeepingTask startTask(String tenantId, Long taskId, Long staffId) {
+        HousekeepingTask task = getTaskById(tenantId, taskId);
+        
+        // Verify the staff member is assigned to this task
+        if (task.getAssignedTo() == null || !task.getAssignedTo().getId().equals(staffId)) {
+            throw new IllegalArgumentException("Task is not assigned to this staff member");
+        }
+        
+        if (task.getStatus() != TaskStatus.ASSIGNED) {
+            throw new IllegalStateException("Task must be in ASSIGNED status to start");
+        }
+        
+        task.setStatus(TaskStatus.IN_PROGRESS);
+        task.setActualStartTime(LocalDateTime.now());
+        task.setUpdatedAt(LocalDateTime.now());
+        
+        return housekeepingTaskRepository.save(task);
+    }
+    
+    // Complete task
+    public HousekeepingTask completeTask(String tenantId, Long taskId, Long staffId, String notes) {
+        HousekeepingTask task = getTaskById(tenantId, taskId);
+        
+        // Verify the staff member is assigned to this task
+        if (task.getAssignedTo() == null || !task.getAssignedTo().getId().equals(staffId)) {
+            throw new IllegalArgumentException("Task is not assigned to this staff member");
+        }
+        
+        if (task.getStatus() != TaskStatus.IN_PROGRESS) {
+            throw new IllegalStateException("Task must be in IN_PROGRESS status to complete");
+        }
+        
+        LocalDateTime endTime = LocalDateTime.now();
+        task.setStatus(TaskStatus.COMPLETED);
+        task.setActualEndTime(endTime);
+        task.setNotes(notes);
+        task.setUpdatedAt(endTime);
+        
+        // Calculate actual duration if start time is available
+        if (task.getActualStartTime() != null) {
+            long durationMinutes = java.time.Duration.between(task.getActualStartTime(), endTime).toMinutes();
+            task.setActualDurationMinutes((int) durationMinutes);
+        }
+        
+        return housekeepingTaskRepository.save(task);
+    }
+    
+    // Verify task completion (by supervisor)
+    public HousekeepingTask verifyTask(String tenantId, Long taskId, Long supervisorId, 
+                                      String verificationNotes, boolean approved) {
+        HousekeepingTask task = getTaskById(tenantId, taskId);
+        User supervisor = userRepository.findById(supervisorId)
+            .orElseThrow(() -> new ResourceNotFoundException("Supervisor not found with ID: " + supervisorId));
+        
+        if (task.getStatus() != TaskStatus.COMPLETED) {
+            throw new IllegalStateException("Task must be completed before verification");
+        }
+        
+        task.setStatus(approved ? TaskStatus.VERIFIED : TaskStatus.ASSIGNED); // Reassign if not approved
+        task.setVerifiedBy(supervisor);
+        task.setVerificationTime(LocalDateTime.now());
+        task.setVerificationNotes(verificationNotes);
+        task.setUpdatedAt(LocalDateTime.now());
+        
+        return housekeepingTaskRepository.save(task);
+    }
+    
+    // Update task
+    public HousekeepingTask updateTask(String tenantId, Long taskId, HousekeepingTask updatedTask) {
+        HousekeepingTask existingTask = getTaskById(tenantId, taskId);
+        
+        // Update allowed fields
+        existingTask.setTitle(updatedTask.getTitle());
+        existingTask.setDescription(updatedTask.getDescription());
+        existingTask.setPriority(updatedTask.getPriority());
+        existingTask.setEstimatedDurationMinutes(updatedTask.getEstimatedDurationMinutes());
+        existingTask.setScheduledStartTime(updatedTask.getScheduledStartTime());
+        existingTask.setUpdatedAt(LocalDateTime.now());
+        
+        return housekeepingTaskRepository.save(existingTask);
+    }
+    
+    // Delete task
+    public void deleteTask(String tenantId, Long taskId) {
+        HousekeepingTask task = getTaskById(tenantId, taskId);
+        housekeepingTaskRepository.delete(task);
+    }
+    
+    // Get overdue tasks
+    public List<HousekeepingTask> getOverdueTasks(String tenantId) {
+        return housekeepingTaskRepository.findOverdueTasks(tenantId, LocalDateTime.now());
+    }
+    
+    // Get tasks scheduled for today
+    public List<HousekeepingTask> getTodaysTasks(String tenantId) {
+        return housekeepingTaskRepository.findTasksScheduledForDate(tenantId, LocalDateTime.now());
+    }
+    
+    // Get task statistics
+    public TaskStatistics getTaskStatistics(String tenantId) {
+        Long pending = housekeepingTaskRepository.countByTenantIdAndStatus(tenantId, TaskStatus.PENDING);
+        Long assigned = housekeepingTaskRepository.countByTenantIdAndStatus(tenantId, TaskStatus.ASSIGNED);
+        Long inProgress = housekeepingTaskRepository.countByTenantIdAndStatus(tenantId, TaskStatus.IN_PROGRESS);
+        Long completed = housekeepingTaskRepository.countByTenantIdAndStatus(tenantId, TaskStatus.COMPLETED);
+        Long verified = housekeepingTaskRepository.countByTenantIdAndStatus(tenantId, TaskStatus.VERIFIED);
+        
+        return new TaskStatistics(pending, assigned, inProgress, completed, verified);
+    }
+    
+    // Get paginated tasks
+    public Page<HousekeepingTask> getTasksPaginated(String tenantId, Pageable pageable) {
+        return housekeepingTaskRepository.findByTenantIdOrderByCreatedAtDesc(tenantId, pageable);
+    }
+    
+    // Get paginated tasks by hotel
+    public Page<HousekeepingTask> getTasksByHotelPaginated(String tenantId, Long hotelId, Pageable pageable) {
+        return housekeepingTaskRepository.findByTenantIdAndHotelIdOrderByCreatedAtDesc(tenantId, hotelId, pageable);
+    }
+    
+    // Inner class for task statistics
+    public static class TaskStatistics {
+        private final Long pending;
+        private final Long assigned;
+        private final Long inProgress;
+        private final Long completed;
+        private final Long verified;
+        
+        public TaskStatistics(Long pending, Long assigned, Long inProgress, Long completed, Long verified) {
+            this.pending = pending;
+            this.assigned = assigned;
+            this.inProgress = inProgress;
+            this.completed = completed;
+            this.verified = verified;
+        }
+        
+        // Getters
+        public Long getPending() { return pending; }
+        public Long getAssigned() { return assigned; }
+        public Long getInProgress() { return inProgress; }
+        public Long getCompleted() { return completed; }
+        public Long getVerified() { return verified; }
+        public Long getTotal() { return pending + assigned + inProgress + completed + verified; }
+    }
+}

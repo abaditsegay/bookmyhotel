@@ -150,7 +150,7 @@ const RoomViewEdit: React.FC = () => {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD'
+      currency: 'ETB'
     }).format(amount);
   };
 
@@ -176,13 +176,12 @@ const RoomViewEdit: React.FC = () => {
           <Alert severity="error" sx={{ mb: 2 }}>
             {error}
           </Alert>
-          <Button
-            variant="contained"
-            startIcon={<ArrowBackIcon />}
+          <IconButton
             onClick={handleBack}
+            aria-label="back to room management"
           >
-            Back to Room Management
-          </Button>
+            <ArrowBackIcon />
+          </IconButton>
         </Box>
       </Container>
     );
@@ -195,13 +194,12 @@ const RoomViewEdit: React.FC = () => {
           <Alert severity="info" sx={{ mb: 2 }}>
             Room not found
           </Alert>
-          <Button
-            variant="contained"
-            startIcon={<ArrowBackIcon />}
+          <IconButton
             onClick={handleBack}
+            aria-label="back to room management"
           >
-            Back to Room Management
-          </Button>
+            <ArrowBackIcon />
+          </IconButton>
         </Box>
       </Container>
     );
@@ -343,7 +341,7 @@ const RoomViewEdit: React.FC = () => {
                       disabled={!isEditing}
                       variant={isEditing ? 'outlined' : 'filled'}
                       InputProps={{
-                        startAdornment: '$',
+                        startAdornment: 'ETB ',
                       }}
                     />
                   </Grid>

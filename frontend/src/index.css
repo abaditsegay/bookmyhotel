@@ -20,6 +20,12 @@ code {
   min-height: 100vh;
 }
 
+/* Ensure navbar logo displays at proper size */
+.MuiAppBar-root img {
+  max-height: none !important;
+  height: auto !important;
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;

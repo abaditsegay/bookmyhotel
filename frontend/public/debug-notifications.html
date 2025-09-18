@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Notification Debug</title>
+</head>
+<body>
+    <h1>Notification API Debug</h1>
+    <div id="results"></div>
+    
+    <script>
+        async function testAPI() {
+            const resultsDiv = document.getElementById('results');
+            
+            // Get auth token from localStorage (assuming user is logged in via the main app)
+            const token = localStorage.getItem('authToken');
+            
+            if (!token) {
+                resultsDiv.innerHTML = '<p style="color: red;">No auth token found. Please log in via the main app first.</p>';
+                return;
+            }
+            
+            try {
+                const response = await fetch('http://localhost:8080/managemyhotel/api/notifications?page=0&size=20', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                let html = '<h2>API Response:</h2>';
+                html += '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                
+                if (data.content && Array.isArray(data.content)) {
+                    html += '<h2>Notifications Summary:</h2>';
+                    html += '<p>Total notifications: ' + data.content.length + '</p>';
+                    
+                    const byType = data.content.reduce((acc, n) => {
+                        acc[n.type] = (acc[n.type] || 0) + 1;
+                        return acc;
+                    }, {});
+                    
+                    html += '<p>By type: ' + JSON.stringify(byType) + '</p>';
+                    
+                    html += '<h3>Individual Notifications:</h3>';
+                    html += '<table border="1" style="border-collapse: collapse;">';
+                    html += '<tr><th>ID</th><th>Type</th><th>Status</th><th>Guest</th><th>Confirmation</th></tr>';
+                    
+                    data.content.forEach(n => {
+                        html += `<tr>
+                            <td>${n.id}</td>
+                            <td>${n.type}</td>
+                            <td>${n.status}</td>
+                            <td>${n.guestName}</td>
+                            <td>${n.confirmationNumber}</td>
+                        </tr>`;
+                    });
+                    
+                    html += '</table>';
+                }
+                
+                resultsDiv.innerHTML = html;
+                
+            } catch (error) {
+                resultsDiv.innerHTML = '<p style="color: red;">Error: ' + error.message + '</p>';
+            }
+        }
+        
+        // Run test when page loads
+        testAPI();
+    </script>
+</body>
+</html>

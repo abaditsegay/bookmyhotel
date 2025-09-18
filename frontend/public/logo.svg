@@ -1,0 +1,40 @@
+<svg width="200" height="40" viewBox="0 0 200 40" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Red gradient for the building -->
+    <linearGradient id="buildingGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#DC2626;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#B91C1C;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- White gradient for text -->
+    <linearGradient id="textGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f5f5f5;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Red Hotel Building -->
+  <rect x="8" y="10" width="16" height="20" fill="url(#buildingGradient)" rx="2" stroke="#ffffff" stroke-width="1"/>
+  
+  <!-- White roof -->
+  <rect x="8" y="8" width="16" height="2" fill="#ffffff" rx="1"/>
+  
+  <!-- White window pattern -->
+  <rect x="11" y="14" width="2" height="2" fill="#ffffff" opacity="0.9" rx="0.5"/>
+  <rect x="15" y="14" width="2" height="2" fill="#ffffff" opacity="0.9" rx="0.5"/>
+  <rect x="19" y="14" width="2" height="2" fill="#ffffff" opacity="0.9" rx="0.5"/>
+  
+  <rect x="11" y="18" width="2" height="2" fill="#ffffff" opacity="0.9" rx="0.5"/>
+  <rect x="15" y="18" width="2" height="2" fill="#ffffff" opacity="0.9" rx="0.5"/>
+  <rect x="19" y="18" width="2" height="2" fill="#ffffff" opacity="0.9" rx="0.5"/>
+  
+  <rect x="11" y="22" width="2" height="2" fill="#ffffff" opacity="0.9" rx="0.5"/>
+  <rect x="15" y="22" width="2" height="2" fill="#ffffff" opacity="0.9" rx="0.5"/>
+  <rect x="19" y="22" width="2" height="2" fill="#ffffff" opacity="0.9" rx="0.5"/>
+  
+  <!-- White door -->
+  <rect x="15" y="26" width="2" height="4" fill="#ffffff" rx="0.5"/>
+  
+  <!-- White text -->
+  <text x="35" y="20" font-family="'Segoe UI', 'Roboto', Arial, sans-serif" font-size="16" font-weight="700" fill="url(#textGradient)">BookMyHotel</text>
+</svg>

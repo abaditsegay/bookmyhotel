@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Container,
   Typography,
@@ -21,6 +21,7 @@ import {
   DialogContent,
   DialogActions,
   CircularProgress,
+  IconButton,
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -63,6 +64,7 @@ interface HotelData {
 const HotelViewEdit: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { adminApiService } = useAuthenticatedApi();
   const { tenantId } = useTenant();
   
@@ -160,6 +162,15 @@ const HotelViewEdit: React.FC = () => {
     }
   };
 
+  const handleBackToAdmin = () => {
+    const returnTab = searchParams.get('returnTab');
+    if (returnTab) {
+      navigate(`/admin/dashboard?tab=${returnTab}`);
+    } else {
+      navigate('/system-dashboard');
+    }
+  };
+
   const handleInputChange = (field: keyof HotelData, value: any) => {
     if (editedHotel) {
       setEditedHotel({
@@ -183,12 +194,9 @@ const HotelViewEdit: React.FC = () => {
         <Alert severity="error" sx={{ mb: 2 }}>
           {error}
         </Alert>
-        <Button
-          startIcon={<ArrowBackIcon />}
-          onClick={() => navigate('/admin/dashboard')}
-        >
-          Back to Dashboard
-        </Button>
+        <IconButton onClick={handleBackToAdmin} sx={{ mr: 1 }}>
+          <ArrowBackIcon />
+        </IconButton>
       </Container>
     );
   }
@@ -200,13 +208,9 @@ const HotelViewEdit: React.FC = () => {
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <Button
-            startIcon={<ArrowBackIcon />}
-            onClick={() => navigate('/admin/dashboard')}
-            sx={{ mr: 2 }}
-          >
-            Back to Dashboard
-          </Button>
+          <IconButton onClick={handleBackToAdmin} sx={{ mr: 1 }}>
+            <ArrowBackIcon />
+          </IconButton>
           <Box>
             <Typography variant="h4" sx={{ fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
               <HotelIcon sx={{ mr: 1 }} />

@@ -1,4 +1,22 @@
-import React, { createContext, useContext, ReactNode, useState, useEffect, useMemo } from 'react';
+import React, { createContext, useContext, ReactNode, useState, useEffect, useCallback } from 'react';
+import { getTenantIdFromToken } from '../utils/jwtUtils';
+import TokenManager from '../utils/tokenManager';
+import { apiClient } from '../utils/apiClient';
+
+/**
+ * TenantContext - Manages tenant information for multi-tenant application
+ * 
+ * Architecture:
+ * - Tenants are top-level organizations (e.g., hotel chains)
+ * - Users belong to specific tenants (extracted from JWT token)
+ * - System admins can be tenant-less (system-wide access)
+ * 
+ * The context extracts tenantId from JWT tokens and creates a basic tenant object.
+ * Detailed tenant information (name, settings) can be fetched via API when needed.
+ * 
+ * This approach eliminates the need for hardcoded tenant lists while maintaining
+ * proper tenant isolation and validation.
+ */
 
 interface Tenant {
   id: string;
@@ -7,10 +25,12 @@ interface Tenant {
 }
 
 interface TenantContextType {
-  tenantId: string;
+  tenantId: string | null; // Can be null for system-wide users
   tenant: Tenant | null;
-  setTenantId: (tenantId: string) => void;
-  availableTenants: Tenant[];
+  setTenantId: (tenantId: string | null) => void;
+  updateTenantFromToken: (token: string) => void;
+  clearTenant: () => void; // Add method to clear tenant context
+  isSystemWideContext: boolean; // True when no tenant is set (system-wide user)
 }
 
 const TenantContext = createContext<TenantContextType | undefined>(undefined);
@@ -20,34 +40,71 @@ interface TenantProviderProps {
 }
 
 export const TenantProvider: React.FC<TenantProviderProps> = ({ children }) => {
-  const [tenantId, setTenantIdState] = useState<string>('default');
+  const [tenantId, setTenantIdState] = useState<string | null>(null); // Start with null for anonymous users
   const [tenant, setTenant] = useState<Tenant | null>(null);
   
-  // Mock available tenants - in real app, this would come from an API
-  const availableTenants: Tenant[] = useMemo(() => [
-    { id: 'default', name: 'Default Tenant', subdomain: 'default' },
-    { id: 'hotel-chain-1', name: 'Luxury Hotels Inc.', subdomain: 'luxury' },
-    { id: 'hotel-chain-2', name: 'Budget Stay Corp.', subdomain: 'budget' },
-  ], []);
-
-  const setTenantId = (newTenantId: string) => {
+  const setTenantId = useCallback((newTenantId: string | null) => {
     setTenantIdState(newTenantId);
-    const foundTenant = availableTenants.find(t => t.id === newTenantId);
-    setTenant(foundTenant || null);
-  };
+    if (newTenantId) {
+      // Create a tenant object with the available information
+      // In a production app, you might want to fetch additional tenant details from an API
+      // but for validation purposes, having the tenantId is sufficient
+      setTenant({
+        id: newTenantId,
+        name: `Tenant ${newTenantId.substring(0, 8)}...`, // Fallback display name
+        subdomain: 'current' // Placeholder - would come from API if needed
+      });
+    } else {
+      // System-wide user - no tenant context
+      setTenant(null);
+    }
+  }, []);
+
+  const updateTenantFromToken = useCallback((token: string) => {
+    const extractedTenantId = getTenantIdFromToken(token);
+    console.log('Extracted tenant ID from JWT:', extractedTenantId);
+    
+    // For system-wide users, extractedTenantId will be null
+    setTenantId(extractedTenantId);
+    
+    // CRITICAL: Set the token in apiClient so authenticated requests work
+    apiClient.setToken(token);
+    apiClient.setTenantId(extractedTenantId);
+    console.log('🔑 Token and tenant set in apiClient during restoration');
+    
+    if (extractedTenantId === null) {
+      console.log('System-wide user detected - no tenant context');
+    }
+  }, [setTenantId]);
+
+  const clearTenant = useCallback(() => {
+    console.log('Clearing tenant context on logout');
+    setTenantId(null);
+  }, [setTenantId]);
 
   // Initialize tenant on mount
   useEffect(() => {
-    // In a real app, you'd detect tenant from subdomain or header
-    const currentTenant = availableTenants.find(t => t.id === tenantId);
-    setTenant(currentTenant || null);
-  }, [tenantId, availableTenants]);
+    // Check if there's a saved token in localStorage and extract tenant from it
+    const savedToken = TokenManager.getToken();
+    if (savedToken) {
+      const extractedTenantId = getTenantIdFromToken(savedToken);
+      console.log('Extracted tenant ID from JWT during initialization:', extractedTenantId);
+      setTenantId(extractedTenantId); // This can be null for system-wide users
+      
+      // CRITICAL: Also set the token in apiClient during initialization
+      apiClient.setToken(savedToken);
+      apiClient.setTenantId(extractedTenantId);
+      console.log('🔑 Token and tenant set in apiClient during initialization');
+    }
+  }, [setTenantId]);
 
   const value: TenantContextType = {
     tenantId,
     tenant,
     setTenantId,
-    availableTenants,
+    updateTenantFromToken,
+    clearTenant,
+    isSystemWideContext: tenantId === null,
   };
 
   return (

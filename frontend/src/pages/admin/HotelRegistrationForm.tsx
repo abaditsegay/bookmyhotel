@@ -15,13 +15,14 @@ import {
   Stepper,
   Step,
   StepLabel,
+  IconButton,
 } from '@mui/material';
 import {
   ArrowBack,
   Send,
   Hotel,
 } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthenticatedApi } from '../../hooks/useAuthenticatedApi';
 import { useTenant } from '../../contexts/TenantContext';
 
@@ -54,6 +55,7 @@ interface HotelFormData {
 
 const HotelRegistrationForm: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { adminApiService } = useAuthenticatedApi();
   const { tenantId } = useTenant();
   const [activeStep, setActiveStep] = useState(0);
@@ -76,6 +78,16 @@ const HotelRegistrationForm: React.FC = () => {
   });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  
+  // Helper function to handle back navigation
+  const handleBackToAdmin = () => {
+    const returnTab = searchParams.get('returnTab');
+    if (returnTab) {
+      navigate(`/admin/dashboard?tab=${returnTab}`);
+    } else {
+      navigate('/system-dashboard');
+    }
+  };
   const [error, setError] = useState('');
 
   const steps = [
@@ -132,7 +144,7 @@ const HotelRegistrationForm: React.FC = () => {
       
       // Redirect after success
       setTimeout(() => {
-        navigate('/admin/dashboard');
+        handleBackToAdmin();
       }, 2000);
       
     } catch (err: any) {
@@ -330,12 +342,9 @@ const HotelRegistrationForm: React.FC = () => {
           <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
             The hotel "{formData.hotelName}" has been registered and is now pending review.
           </Typography>
-          <Button
-            variant="contained"
-            onClick={() => navigate('/admin/dashboard')}
-          >
-            Back to Dashboard
-          </Button>
+          <IconButton onClick={handleBackToAdmin} sx={{ mr: 1 }}>
+            <ArrowBack />
+          </IconButton>
         </Paper>
       </Container>
     );
@@ -345,13 +354,9 @@ const HotelRegistrationForm: React.FC = () => {
     <Container maxWidth="lg" sx={{ py: 4 }}>
       {/* Header */}
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
-        <Button
-          startIcon={<ArrowBack />}
-          onClick={() => navigate('/admin')}
-          sx={{ mr: 2 }}
-        >
-          Back to Dashboard
-        </Button>
+        <IconButton onClick={handleBackToAdmin} sx={{ mr: 1 }}>
+          <ArrowBack />
+        </IconButton>
         <Box>
           <Typography variant="h4" component="h1" gutterBottom>
             Register New Hotel

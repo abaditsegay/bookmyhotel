@@ -1,6 +1,9 @@
 // Admin API service for user and hotel management
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
+import { API_CONFIG } from '../config/apiConfig';
+import TokenManager from '../utils/tokenManager';
+
+const API_BASE_URL = API_CONFIG.BASE_URL;
 
 class AdminApiService {
   private token: string | null = null;
@@ -30,7 +33,16 @@ class AdminApiService {
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
+      let errorText = '';
+      try {
+        // Try to get error as JSON first
+        const errorJson = await response.json();
+        errorText = errorJson.message || errorJson.error || JSON.stringify(errorJson);
+      } catch {
+        // Fallback to text if JSON parsing fails
+        errorText = await response.text();
+      }
+      console.error(`API Error Details: ${response.status} ${response.statusText}`, errorText);
       throw new Error(`API Error: ${response.status} ${response.statusText} - ${errorText}`);
     }
 
@@ -152,6 +164,12 @@ class AdminApiService {
     });
   }
 
+  async toggleHotelStatus(hotelId: number): Promise<HotelDTO> {
+    return this.fetchApi<HotelDTO>(`/admin/hotels/${hotelId}/toggle-status`, {
+      method: 'POST',
+    });
+  }
+
   // Room Management Methods
   async getHotelRooms(hotelId: number): Promise<RoomDTO[]> {
     return this.fetchApi<RoomDTO[]>(`/admin/hotels/${hotelId}/rooms`);
@@ -176,24 +194,128 @@ class AdminApiService {
       method: 'DELETE',
     });
   }
+
+  // Tenant Management Methods
+  async getTenants(page: number = 0, size: number = 10, search?: string, isActive?: boolean): Promise<PagedResponse<TenantDTO>> {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      size: size.toString(),
+    });
+    
+    if (search) {
+      params.append('search', search);
+    }
+    
+    if (isActive !== undefined) {
+      params.append('isActive', isActive.toString());
+    }
+    
+    return this.fetchApi<PagedResponse<TenantDTO>>(`/admin/tenants?${params.toString()}`);
+  }
+
+  async getTenantById(tenantId: string): Promise<TenantDTO> {
+    return this.fetchApi<TenantDTO>(`/admin/tenants/${tenantId}`);
+  }
+
+  async createTenant(request: CreateTenantRequest): Promise<TenantDTO> {
+    return this.fetchApi<TenantDTO>('/admin/tenants', {
+      method: 'POST',
+      body: JSON.stringify(request),
+    });
+  }
+
+  async updateTenant(tenantId: string, request: UpdateTenantRequest): Promise<TenantDTO> {
+    return this.fetchApi<TenantDTO>(`/admin/tenants/${tenantId}`, {
+      method: 'PUT',
+      body: JSON.stringify(request),
+    });
+  }
+
+  async toggleTenantStatus(tenantId: string): Promise<TenantDTO> {
+    return this.fetchApi<TenantDTO>(`/admin/tenants/${tenantId}/toggle-status`, {
+      method: 'POST',
+    });
+  }
+
+  async deleteTenant(tenantId: string): Promise<void> {
+    return this.fetchApi<void>(`/admin/tenants/${tenantId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async getTenantStatistics(): Promise<TenantStatistics> {
+    return this.fetchApi<TenantStatistics>('/admin/tenants/statistics');
+  }
+
+  async getActiveTenants(): Promise<TenantDTO[]> {
+    return this.fetchApi<TenantDTO[]>('/admin/tenants/active');
+  }
+
+  async getHotelsByTenant(tenantId: string): Promise<HotelDTO[]> {
+    return this.fetchApi<HotelDTO[]>(`/admin/hotels/tenant/${tenantId}/options`);
+  }
+
+  // Hotel Registration Management Methods
+  async getHotelRegistrations(page: number = 0, size: number = 10): Promise<PagedResponse<HotelRegistrationResponse>> {
+    return this.fetchApi<PagedResponse<HotelRegistrationResponse>>(`/admin/hotel-registrations?page=${page}&size=${size}`);
+  }
+
+  async getHotelRegistrationsByStatus(status: string, page: number = 0, size: number = 10): Promise<PagedResponse<HotelRegistrationResponse>> {
+    return this.fetchApi<PagedResponse<HotelRegistrationResponse>>(`/admin/hotel-registrations/status/${status}?page=${page}&size=${size}`);
+  }
+
+  async getHotelRegistrationById(id: number): Promise<HotelRegistrationResponse> {
+    return this.fetchApi<HotelRegistrationResponse>(`/admin/hotel-registrations/${id}`);
+  }
+
+  async approveHotelRegistration(id: number, request: ApproveRegistrationRequest): Promise<HotelRegistrationResponse> {
+    return this.fetchApi<HotelRegistrationResponse>(`/admin/hotel-registrations/${id}/approve`, {
+      method: 'POST',
+      body: JSON.stringify(request),
+    });
+  }
+
+  async rejectHotelRegistration(id: number, request: RejectRegistrationRequest): Promise<HotelRegistrationResponse> {
+    return this.fetchApi<HotelRegistrationResponse>(`/admin/hotel-registrations/${id}/reject`, {
+      method: 'POST',
+      body: JSON.stringify(request),
+    });
+  }
+
+  async markHotelRegistrationUnderReview(id: number, request: UnderReviewRequest): Promise<HotelRegistrationResponse> {
+    return this.fetchApi<HotelRegistrationResponse>(`/admin/hotel-registrations/${id}/under-review`, {
+      method: 'POST',
+      body: JSON.stringify(request),
+    });
+  }
+
+  async getHotelRegistrationStatistics(): Promise<HotelRegistrationStatistics> {
+    return this.fetchApi<HotelRegistrationStatistics>('/admin/hotel-registrations/statistics');
+  }
+
+  async searchHotelRegistrations(searchTerm: string, page: number = 0, size: number = 10): Promise<PagedResponse<HotelRegistrationResponse>> {
+    return this.fetchApi<PagedResponse<HotelRegistrationResponse>>(`/admin/hotel-registrations/search?searchTerm=${encodeURIComponent(searchTerm)}&page=${page}&size=${size}`);
+  }
 }
 
 // Type definitions for API responses
 export interface PagedResponse<T> {
   content: T[];
-  page: {
-    number: number;
+  page?: {
     size: number;
+    number: number;
     totalElements: number;
     totalPages: number;
   };
-  totalPages: number;
-  totalElements: number;
-  first: boolean;
-  last: boolean;
-  numberOfElements: number;
-  size: number;
-  number: number;
+  // Direct Spring Boot Page properties (fallback)
+  size?: number;
+  number?: number;
+  totalElements?: number;
+  totalPages?: number;
+  numberOfElements?: number;
+  first?: boolean;
+  last?: boolean;
+  empty?: boolean;
 }
 
 export interface UserManagementResponse {
@@ -227,6 +349,7 @@ export interface CreateUserRequest {
   password: string;
   roles: string[];
   tenantId?: string;
+  hotelId?: number;
 }
 
 export interface UserStatistics {
@@ -248,6 +371,7 @@ export interface HotelDTO {
   tenantId?: string;
   totalRooms?: number;
   availableRooms?: number;
+  isActive?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -260,7 +384,7 @@ export interface CreateHotelRequest {
   country: string;
   phone?: string;
   email?: string;
-  tenantId: string;
+  tenantId: string | null;
 }
 
 export interface UpdateHotelRequest {
@@ -271,7 +395,7 @@ export interface UpdateHotelRequest {
   country: string;
   phone?: string;
   email?: string;
-  tenantId: string;
+  tenantId: string | null;
 }
 
 export interface HotelStatistics {
@@ -304,6 +428,88 @@ export interface UpdateRoomRequest {
   capacity: number;
   pricePerNight: number;
   isAvailable: boolean;
+}
+
+export interface TenantDTO {
+  id: number;
+  tenantId: string;
+  name: string;
+  subdomain?: string;
+  description?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  totalUsers?: number;
+  totalHotels?: number;
+}
+
+export interface CreateTenantRequest {
+  name: string;
+  subdomain?: string;
+  description?: string;
+}
+
+export interface UpdateTenantRequest {
+  name: string;
+  subdomain?: string;
+  description?: string;
+}
+
+export interface TenantStatistics {
+  totalTenants: number;
+  activeTenants: number;
+  inactiveTenants: number;
+  totalUsers: number;
+  totalHotels: number;
+}
+
+export interface HotelRegistrationResponse {
+  id: number;
+  hotelName: string;
+  description?: string;
+  address: string;
+  city: string;
+  state?: string;
+  country: string;
+  zipCode?: string;
+  phone?: string;
+  contactEmail: string;
+  contactPerson: string;
+  licenseNumber?: string;
+  taxId?: string;
+  websiteUrl?: string;
+  facilityAmenities?: string;
+  numberOfRooms?: number;
+  checkInTime?: string;
+  checkOutTime?: string;
+  status: 'PENDING' | 'UNDER_REVIEW' | 'APPROVED' | 'REJECTED';
+  submittedAt: string;
+  reviewedAt?: string;
+  reviewedBy?: number;
+  reviewComments?: string;
+  tenantId?: string;
+}
+
+export interface ApproveRegistrationRequest {
+  comments?: string;
+  tenantId: string;
+}
+
+export interface RejectRegistrationRequest {
+  reason: string;
+  comments?: string;
+}
+
+export interface UnderReviewRequest {
+  comments?: string;
+}
+
+export interface HotelRegistrationStatistics {
+  totalRegistrations: number;
+  pendingRegistrations: number;
+  underReviewRegistrations: number;
+  approvedRegistrations: number;
+  rejectedRegistrations: number;
 }
 
 export const adminApiService = new AdminApiService();

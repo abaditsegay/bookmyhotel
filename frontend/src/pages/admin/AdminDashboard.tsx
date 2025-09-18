@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  Container,
   Typography,
   Button,
   Box,
@@ -34,14 +33,23 @@ import {
   LocationOn as LocationIcon,
   Search as SearchIcon,
 } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { adminApiService, UserManagementResponse, HotelDTO, PagedResponse } from '../../services/adminApi';
 
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
   const { token } = useAuth();
-  const [currentTab, setCurrentTab] = useState(0);
+  const [searchParams, setSearchParams] = useSearchParams();
+  
+  // Get initial tab from URL parameter, default to 0 if not present
+  const getInitialTab = () => {
+    const tabParam = searchParams.get('tab');
+    const tab = tabParam ? parseInt(tabParam, 10) : 0;
+    return isNaN(tab) || tab < 0 || tab > 1 ? 0 : tab; // Only 2 tabs (0-1)
+  };
+  
+  const [currentTab, setCurrentTab] = useState(() => getInitialTab());
 
   // Hotel management state
   const [hotels, setHotels] = useState<HotelDTO[]>([]);
@@ -49,7 +57,6 @@ const AdminDashboard: React.FC = () => {
   const [hotelRowsPerPage, setHotelRowsPerPage] = useState(10);
   const [hotelSearchTerm, setHotelSearchTerm] = useState('');
   const [hotelStatusFilter, setHotelStatusFilter] = useState('');
-  const [hotelTotalElements, setHotelTotalElements] = useState(0);
   const [hotelLoading, setHotelLoading] = useState(false);
   const [hotelError, setHotelError] = useState<string | null>(null);
 
@@ -60,7 +67,6 @@ const AdminDashboard: React.FC = () => {
   const [userSearchTerm, setUserSearchTerm] = useState('');
   const [userRoleFilter, setUserRoleFilter] = useState('');
   const [userStatusFilter, setUserStatusFilter] = useState('');
-  const [userTotalElements, setUserTotalElements] = useState(0);
   const [userLoading, setUserLoading] = useState(false);
   const [userError, setUserError] = useState<string | null>(null);
 
@@ -85,22 +91,20 @@ const AdminDashboard: React.FC = () => {
       let result: PagedResponse<HotelDTO>;
       
       if (hotelSearchTerm.trim()) {
-        result = await adminApiService.searchHotels(hotelSearchTerm, hotelPage, hotelRowsPerPage);
+        result = await adminApiService.searchHotels(hotelSearchTerm, 0, 1000); // Load many results for client-side filtering
       } else {
-        result = await adminApiService.getHotels(hotelPage, hotelRowsPerPage);
+        result = await adminApiService.getHotels(0, 1000); // Load many results for client-side pagination
       }
 
       setHotels(result.content || []);
-      setHotelTotalElements(result.totalElements || 0);
     } catch (error) {
       setHotelError('Failed to load hotels');
       setHotels([]);
-      setHotelTotalElements(0);
       console.error('Error loading hotels:', error);
     } finally {
       setHotelLoading(false);
     }
-  }, [token, hotelSearchTerm, hotelPage, hotelRowsPerPage]);
+  }, [token, hotelSearchTerm]);
 
   const loadUsers = useCallback(async () => {
     if (!token) {
@@ -115,26 +119,41 @@ const AdminDashboard: React.FC = () => {
       let result: PagedResponse<UserManagementResponse>;
       
       if (userSearchTerm.trim()) {
-        result = await adminApiService.searchUsers(userSearchTerm, userPage, userRowsPerPage);
+        result = await adminApiService.searchUsers(userSearchTerm, 0, 1000); // Load many results for client-side filtering
       } else {
-        result = await adminApiService.getUsers(userPage, userRowsPerPage);
+        result = await adminApiService.getUsers(0, 1000); // Load many results for client-side pagination
       }
 
       setUsers(result.content || []);
-      setUserTotalElements(result.totalElements || 0);
     } catch (error) {
       setUserError('Failed to load users');
       setUsers([]);
-      setUserTotalElements(0);
       console.error('Error loading users:', error);
     } finally {
       setUserLoading(false);
     }
-  }, [token, userSearchTerm, userPage, userRowsPerPage]);
+  }, [token, userSearchTerm]);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setCurrentTab(newValue);
+    
+    // Update URL parameter to persist tab state
+    setSearchParams(prev => {
+      const newParams = new URLSearchParams(prev);
+      newParams.set('tab', newValue.toString());
+      return newParams;
+    });
   };
+
+  // Sync tab state with URL parameter changes (for browser back/forward navigation)
+  useEffect(() => {
+    const currentTabFromUrl = getInitialTab();
+    console.log('AdminDashboard useEffect - currentTab:', currentTab, 'currentTabFromUrl:', currentTabFromUrl);
+    if (currentTabFromUrl !== currentTab) {
+      console.log('AdminDashboard useEffect - updating tab from', currentTab, 'to', currentTabFromUrl);
+      setCurrentTab(currentTabFromUrl);
+    }
+  }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Hotel pagination handlers
   const handleHotelChangePage = (event: unknown, newPage: number) => {
@@ -163,28 +182,9 @@ const AdminDashboard: React.FC = () => {
     } else if (currentTab === 1) {
       loadUsers();
     }
-  }, [currentTab, hotelPage, hotelRowsPerPage, userPage, userRowsPerPage, loadHotels, loadUsers]);
+  }, [currentTab, loadHotels, loadUsers]);
 
   // Search handlers
-  const handleHotelSearch = () => {
-    setHotelPage(0);
-    loadHotels();
-  };
-
-  const handleUserSearch = () => {
-    setUserPage(0);
-    loadUsers();
-  };
-
-  // Navigation handlers
-  const handleViewHotel = (hotelId: number) => {
-    navigate(`/admin/hotels/${hotelId}`);
-  };
-
-  const handleViewUser = (userId: number) => {
-    navigate(`/admin/users/${userId}`);
-  };
-
   // Filter and paginate hotels
   const filteredHotels = hotels.filter(hotel => {
     const matchesSearch = hotel.name.toLowerCase().includes(hotelSearchTerm.toLowerCase()) ||
@@ -218,14 +218,23 @@ const AdminDashboard: React.FC = () => {
   );
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
+    <Box sx={{ width: '100%', p: 3 }}>
       {/* Main Management Tabs */}
       <Paper sx={{ width: '100%', mb: 4 }}>
         <Tabs
           value={currentTab}
           onChange={handleTabChange}
           aria-label="admin management tabs"
-          sx={{ borderBottom: 1, borderColor: 'divider' }}
+          variant="scrollable"
+          scrollButtons="auto"
+          allowScrollButtonsMobile
+          sx={{ 
+            borderBottom: 1, 
+            borderColor: 'divider',
+            '& .MuiTabs-scrollButtons': {
+              '&.Mui-disabled': { opacity: 0.3 },
+            },
+          }}
         >
           <Tab
             icon={<Hotel />}
@@ -246,16 +255,11 @@ const AdminDashboard: React.FC = () => {
           <Box sx={{ p: 3 }}>
             {/* Header with Register Hotel Button */}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Box>
-                <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
-                  Hotel Management
-                </Typography>
-              </Box>
               <Button
                 variant="contained"
                 startIcon={<AddIcon />}
-                onClick={() => navigate('/admin/register-hotel')}
-                sx={{ height: 'fit-content' }}
+                onClick={() => navigate(`/admin/register-hotel?returnTab=${currentTab}`)}
+                sx={{ height: 'fit-content', ml: 'auto' }}
               >
                 Register Hotel
               </Button>
@@ -373,7 +377,7 @@ const AdminDashboard: React.FC = () => {
                           <Tooltip title="View Details">
                             <IconButton
                               size="small"
-                              onClick={() => navigate(`/admin/hotels/${hotel.id}`)}
+                              onClick={() => navigate(`/admin/hotels/${hotel.id}?returnTab=${currentTab}`)}
                             >
                               <ViewIcon fontSize="small" />
                             </IconButton>
@@ -407,16 +411,11 @@ const AdminDashboard: React.FC = () => {
           <Box sx={{ p: 3 }}>
             {/* Header with Add User Button */}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Box>
-                <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
-                  User Management
-                </Typography>
-              </Box>
               <Button
                 variant="contained"
                 startIcon={<PersonAddIcon />}
-                onClick={() => navigate('/admin/add-user')}
-                sx={{ height: 'fit-content' }}
+                onClick={() => navigate(`/admin/add-user?returnTab=${currentTab}`)}
+                sx={{ height: 'fit-content', ml: 'auto' }}
               >
                 Add User
               </Button>
@@ -554,7 +553,7 @@ const AdminDashboard: React.FC = () => {
                           <Tooltip title="View Details">
                             <IconButton
                               size="small"
-                              onClick={() => navigate(`/admin/users/${user.id}`)}
+                              onClick={() => navigate(`/admin/users/${user.id}?returnTab=${currentTab}`)}
                             >
                               <ViewIcon fontSize="small" />
                             </IconButton>
@@ -593,7 +592,7 @@ const AdminDashboard: React.FC = () => {
           Secure administration interface for platform management
         </Typography>
       </Box>
-    </Container>
+    </Box>
   );
 };
 

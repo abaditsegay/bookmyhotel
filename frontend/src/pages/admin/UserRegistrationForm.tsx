@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Container,
   Typography,
@@ -17,13 +17,16 @@ import {
   StepLabel,
   FormControlLabel,
   Switch,
+  IconButton,
 } from '@mui/material';
 import {
   ArrowBack,
   Send,
   PersonAdd,
 } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { adminApiService, CreateUserRequest, TenantDTO, HotelDTO } from '../../services/adminApi';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface UserFormData {
   // Basic Information
@@ -36,6 +39,8 @@ interface UserFormData {
   password: string;
   confirmPassword: string;
   role: string;
+  tenantId: string;
+  hotelId: string;
   
   // Profile Information
   phone: string;
@@ -52,6 +57,7 @@ interface UserFormData {
 
 const UserRegistrationForm: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [activeStep, setActiveStep] = useState(0);
   const [formData, setFormData] = useState<UserFormData>({
     firstName: '',
@@ -61,6 +67,8 @@ const UserRegistrationForm: React.FC = () => {
     password: '',
     confirmPassword: '',
     role: '',
+    tenantId: '',
+    hotelId: '',
     phone: '',
     address: '',
     city: '',
@@ -74,6 +82,68 @@ const UserRegistrationForm: React.FC = () => {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [tenants, setTenants] = useState<TenantDTO[]>([]);
+  const [hotels, setHotels] = useState<HotelDTO[]>([]);
+  const [loadingTenants, setLoadingTenants] = useState(true);
+  const [loadingHotels, setLoadingHotels] = useState(false);
+  const { token } = useAuth();
+  
+  // Load tenants on component mount
+  useEffect(() => {
+    const loadTenants = async () => {
+      try {
+        setLoadingTenants(true);
+        if (token) {
+          adminApiService.setToken(token);
+          const activeTenants = await adminApiService.getActiveTenants();
+          setTenants(activeTenants);
+        }
+      } catch (error) {
+        console.error('Failed to load tenants:', error);
+        setError('Failed to load tenants');
+      } finally {
+        setLoadingTenants(false);
+      }
+    };
+    
+    loadTenants();
+  }, [token]);
+  
+  // Load hotels when tenant changes and role is HOTEL_ADMIN
+  useEffect(() => {
+    const loadHotels = async () => {
+      if (formData.tenantId && formData.role === 'HOTEL_ADMIN') {
+        try {
+          setLoadingHotels(true);
+          if (token) {
+            adminApiService.setToken(token);
+            const tenantHotels = await adminApiService.getHotelsByTenant(formData.tenantId);
+            setHotels(tenantHotels);
+          }
+        } catch (error) {
+          console.error('Failed to load hotels:', error);
+          setError('Failed to load hotels for selected tenant');
+        } finally {
+          setLoadingHotels(false);
+        }
+      } else {
+        setHotels([]);
+        setFormData(prev => ({ ...prev, hotelId: '' }));
+      }
+    };
+    
+    loadHotels();
+  }, [formData.tenantId, formData.role, token]);
+  
+  // Helper function to handle back navigation
+  const handleBackToAdmin = () => {
+    const returnTab = searchParams.get('returnTab');
+    if (returnTab) {
+      navigate(`/admin/dashboard?tab=${returnTab}`);
+    } else {
+      navigate('/system-dashboard');
+    }
+  };
 
   const steps = [
     'Basic Information',
@@ -140,19 +210,36 @@ const UserRegistrationForm: React.FC = () => {
     setError('');
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      if (!token) {
+        setError('Authentication required');
+        return;
+      }
       
-      console.log('User registration data:', formData);
+      adminApiService.setToken(token);
+      
+      // Prepare the create user request
+      const createUserRequest: CreateUserRequest = {
+        email: formData.email,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        phone: formData.phone || undefined,
+        password: formData.password,
+        roles: [formData.role],
+        tenantId: formData.tenantId || undefined,
+        hotelId: formData.role === 'HOTEL_ADMIN' && formData.hotelId ? Number(formData.hotelId) : undefined,
+      };
+      
+      await adminApiService.createUser(createUserRequest);
       setSuccess(true);
       
       // Redirect after success
       setTimeout(() => {
-        navigate('/admin');
+        handleBackToAdmin();
       }, 2000);
       
-    } catch (err) {
-      setError('Failed to register user. Please try again.');
+    } catch (err: any) {
+      console.error('User creation failed:', err);
+      setError(err.message || 'Failed to create user. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -235,7 +322,7 @@ const UserRegistrationForm: React.FC = () => {
                 helperText={passwordError}
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid item xs={12} md={6}>
               <FormControl fullWidth required>
                 <InputLabel>User Role</InputLabel>
                 <Select
@@ -245,11 +332,53 @@ const UserRegistrationForm: React.FC = () => {
                 >
                   <MenuItem value="CUSTOMER">Customer</MenuItem>
                   <MenuItem value="HOTEL_ADMIN">Hotel Admin</MenuItem>
-                  <MenuItem value="HOTEL_STAFF">Hotel Staff</MenuItem>
-                  <MenuItem value="ADMIN">Admin</MenuItem>
+                  <MenuItem value="FRONTDESK">Front Desk</MenuItem>
+                  <MenuItem value="HOUSEKEEPING">Housekeeping</MenuItem>
+                  <MenuItem value="ADMIN">System Admin</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth required>
+                <InputLabel>Tenant</InputLabel>
+                <Select
+                  value={formData.tenantId}
+                  onChange={handleSelectChange('tenantId')}
+                  label="Tenant"
+                  disabled={loadingTenants}
+                >
+                  {tenants.map((tenant) => (
+                    <MenuItem key={tenant.tenantId} value={tenant.tenantId}>
+                      {tenant.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            {formData.role === 'HOTEL_ADMIN' && (
+              <Grid item xs={12}>
+                <FormControl fullWidth required>
+                  <InputLabel>Hotel Assignment</InputLabel>
+                  <Select
+                    value={formData.hotelId}
+                    onChange={handleSelectChange('hotelId')}
+                    label="Hotel Assignment"
+                    disabled={loadingHotels || !formData.tenantId}
+                  >
+                    {hotels.map((hotel) => (
+                      <MenuItem key={hotel.id} value={hotel.id?.toString()}>
+                        {hotel.name} - {hotel.city}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {formData.tenantId && hotels.length === 0 && !loadingHotels && (
+                    <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
+                      No hotels available for the selected tenant
+                    </Typography>
+                  )}
+                </FormControl>
+              </Grid>
+            )}
           </Grid>
         );
       
@@ -359,12 +488,9 @@ const UserRegistrationForm: React.FC = () => {
           <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
             {formData.firstName} {formData.lastName} has been successfully registered as a {formData.role.toLowerCase()}.
           </Typography>
-          <Button
-            variant="contained"
-            onClick={() => navigate('/admin')}
-          >
-            Back to Dashboard
-          </Button>
+          <IconButton onClick={handleBackToAdmin} sx={{ mr: 1 }}>
+            <ArrowBack />
+          </IconButton>
         </Paper>
       </Container>
     );
@@ -374,13 +500,9 @@ const UserRegistrationForm: React.FC = () => {
     <Container maxWidth="lg" sx={{ py: 4 }}>
       {/* Header */}
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
-        <Button
-          startIcon={<ArrowBack />}
-          onClick={() => navigate('/admin')}
-          sx={{ mr: 2 }}
-        >
-          Back to Dashboard
-        </Button>
+        <IconButton onClick={handleBackToAdmin} sx={{ mr: 1 }}>
+          <ArrowBack />
+        </IconButton>
         <Box>
           <Typography variant="h4" component="h1" gutterBottom>
             Add New User
@@ -471,6 +593,20 @@ const UserRegistrationForm: React.FC = () => {
               <Typography variant="body2" color="text.secondary">Role:</Typography>
               <Typography variant="body1">{formData.role || 'Not specified'}</Typography>
             </Grid>
+            <Grid item xs={12} md={6}>
+              <Typography variant="body2" color="text.secondary">Tenant:</Typography>
+              <Typography variant="body1">
+                {formData.tenantId ? tenants.find(t => t.tenantId === formData.tenantId)?.name : 'Not specified'}
+              </Typography>
+            </Grid>
+            {formData.role === 'HOTEL_ADMIN' && formData.hotelId && (
+              <Grid item xs={12} md={6}>
+                <Typography variant="body2" color="text.secondary">Hotel Assignment:</Typography>
+                <Typography variant="body1">
+                  {hotels.find(h => h.id?.toString() === formData.hotelId)?.name || 'Not specified'}
+                </Typography>
+              </Grid>
+            )}
             <Grid item xs={12} md={6}>
               <Typography variant="body2" color="text.secondary">Status:</Typography>
               <Typography variant="body1">{formData.isActive ? 'Active' : 'Inactive'}</Typography>

@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  Container,
   Paper,
   Table,
   TableBody,
@@ -49,7 +48,11 @@ interface StaffFilters {
   status: string;
 }
 
-const StaffManagement: React.FC = () => {
+interface StaffManagementProps {
+  onNavigateToStaff?: (staffId: number) => void;
+}
+
+const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) => {
   const { token } = useAuth();
   const navigate = useNavigate();
   const [staff, setStaff] = useState<StaffResponse[]>([]);
@@ -94,27 +97,30 @@ const StaffManagement: React.FC = () => {
         page,
         rowsPerPage,
         filters.search || undefined,
-        filters.role || undefined
+        filters.role || undefined,
+        filters.status || undefined
       );
       
       if (response.success && response.data) {
-        let filteredStaff = response.data.content;
+        console.log('Staff API Response:', response.data);
+        console.log('Page Object:', response.data.page);
         
-        // Apply status filter if specified
-        if (filters.status && filters.status !== 'ALL') {
-          filteredStaff = filteredStaff.filter(member => 
-            filters.status === 'ACTIVE' ? member.isActive : !member.isActive
-          );
-        }
+        setStaff(response.data.content);
         
-        setStaff(filteredStaff);
-        setTotalElements(response.data.totalElements);
+        // Extract pagination info from the page object
+        const pageInfo = response.data.page || {};
+        const totalElements = pageInfo.totalElements || 0;
+        
+        console.log('Total Elements from page object:', totalElements);
+        setTotalElements(totalElements);
       } else {
         setError(response.message || 'Failed to load staff');
+        setTotalElements(0);
       }
     } catch (err) {
       console.error('Error loading staff:', err);
       setError('Failed to load staff. Please try again.');
+      setTotalElements(0);
     } finally {
       setLoading(false);
     }
@@ -124,13 +130,14 @@ const StaffManagement: React.FC = () => {
     loadStaff();
   }, [loadStaff]);
 
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  // Memoized search handler to prevent input focus loss
+  const handleSearchChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     setFilters(prev => ({
       ...prev,
       search: event.target.value
     }));
     setPage(0);
-  };
+  }, []);
 
   const handleFilterChange = (filterName: keyof StaffFilters, value: string) => {
     setFilters(prev => ({
@@ -150,11 +157,31 @@ const StaffManagement: React.FC = () => {
   };
 
   const handleViewStaff = (staffId: number) => {
-    navigate(`/hotel-admin/staff/${staffId}`);
+    if (onNavigateToStaff) {
+      onNavigateToStaff(staffId);
+    } else {
+      navigate(`/hotel-admin/staff/${staffId}`);
+    }
   };
 
   const handleCreateStaff = async () => {
     if (!token) return;
+    
+    // Validate form data before submitting
+    if (!staffForm.email || !staffForm.password || !staffForm.firstName || !staffForm.lastName) {
+      setError('Please fill in all required fields.');
+      return;
+    }
+    
+    if (staffForm.password.length < 8) {
+      setError('Password must be at least 8 characters long.');
+      return;
+    }
+    
+    if (staffForm.roles.length === 0) {
+      setError('Please select at least one role.');
+      return;
+    }
     
     try {
       setLoading(true);
@@ -251,25 +278,22 @@ const StaffManagement: React.FC = () => {
 
   if (!token) {
     return (
-      <Container maxWidth="xl">
+      <Box>
         <Alert severity="error">
           Authentication required. Please log in.
         </Alert>
-      </Container>
+      </Box>
     );
   }
 
   return (
-    <Container maxWidth="xl">
-      <Box sx={{ py: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-          <Typography variant="h4" component="h1">
-            Staff Management
-          </Typography>
+    <Box>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Button
             variant="contained"
             startIcon={<PersonAddIcon />}
             onClick={() => setCreateDialogOpen(true)}
+            sx={{ ml: 'auto' }}
           >
             Add New Staff
           </Button>
@@ -446,7 +470,7 @@ const StaffManagement: React.FC = () => {
           <TablePagination
             rowsPerPageOptions={[5, 10, 25]}
             component="div"
-            count={totalElements}
+            count={totalElements || 0}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handlePageChange}
@@ -482,7 +506,12 @@ const StaffManagement: React.FC = () => {
                   value={staffForm.password}
                   onChange={(e) => setStaffForm({ ...staffForm, password: e.target.value })}
                   required
-                  helperText="Minimum 8 characters"
+                  error={staffForm.password.length > 0 && staffForm.password.length < 8}
+                  helperText={
+                    staffForm.password.length > 0 && staffForm.password.length < 8 
+                      ? "Password must be at least 8 characters" 
+                      : "Minimum 8 characters required"
+                  }
                 />
               </Grid>
               <Grid item xs={12} md={6}>
@@ -537,7 +566,15 @@ const StaffManagement: React.FC = () => {
             <Button 
               onClick={handleCreateStaff}
               variant="contained"
-              disabled={loading || !staffForm.email || !staffForm.password || !staffForm.firstName || !staffForm.lastName || staffForm.roles.length === 0}
+              disabled={
+                loading || 
+                !staffForm.email || 
+                !staffForm.password || 
+                staffForm.password.length < 8 ||
+                !staffForm.firstName || 
+                !staffForm.lastName || 
+                staffForm.roles.length === 0
+              }
             >
               Create Staff
             </Button>
@@ -568,8 +605,7 @@ const StaffManagement: React.FC = () => {
             </Button>
           </DialogActions>
         </Dialog>
-      </Box>
-    </Container>
+    </Box>
   );
 };
 

@@ -1,9 +1,11 @@
 package com.bookmyhotel.controller;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -17,14 +19,23 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.bookmyhotel.dto.BookingModificationRequest;
+import com.bookmyhotel.dto.BookingModificationResponse;
+import com.bookmyhotel.dto.BookingRequest;
 import com.bookmyhotel.dto.BookingResponse;
 import com.bookmyhotel.dto.HotelDTO;
 import com.bookmyhotel.dto.RoomDTO;
+import com.bookmyhotel.dto.RoomTypePricingDTO;
 import com.bookmyhotel.dto.UserDTO;
 import com.bookmyhotel.entity.ReservationStatus;
+import com.bookmyhotel.entity.RoomType;
+import com.bookmyhotel.service.BookingService;
 import com.bookmyhotel.service.HotelAdminService;
+import com.bookmyhotel.service.RoomTypePricingService;
 
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * REST Controller for hotel admin operations
@@ -34,8 +45,16 @@ import jakarta.validation.Valid;
 @PreAuthorize("hasRole('HOTEL_ADMIN')")
 public class HotelAdminController {
 
+    private static final Logger logger = LoggerFactory.getLogger(HotelAdminController.class);
+
     @Autowired
     private HotelAdminService hotelAdminService;
+
+    @Autowired
+    private RoomTypePricingService roomTypePricingService;
+
+    @Autowired
+    private BookingService bookingService;
 
     // Hotel Management
     @GetMapping("/hotel")
@@ -49,15 +68,17 @@ public class HotelAdminController {
         return ResponseEntity.ok(updated);
     }
 
-    // Staff Management - Hotel admin can manage frontdesk, housekeeping, and other hotel_admin users
+    // Staff Management - Hotel admin can manage frontdesk, housekeeping, and other
+    // hotel_admin users
     @GetMapping("/staff")
     public ResponseEntity<Page<UserDTO>> getHotelStaff(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String role,
+            @RequestParam(required = false) String status,
             Authentication auth) {
-        Page<UserDTO> staff = hotelAdminService.getHotelStaff(auth.getName(), page, size, search, role);
+        Page<UserDTO> staff = hotelAdminService.getHotelStaff(auth.getName(), page, size, search, role, status);
         return ResponseEntity.ok(staff);
     }
 
@@ -149,6 +170,16 @@ public class HotelAdminController {
         return ResponseEntity.ok(updated);
     }
 
+    @PutMapping("/rooms/{roomId}/status")
+    public ResponseEntity<RoomDTO> updateRoomStatus(
+            @PathVariable Long roomId,
+            @RequestParam String status,
+            @RequestParam(required = false) String notes,
+            Authentication auth) {
+        RoomDTO updated = hotelAdminService.updateRoomStatus(roomId, status, notes, auth.getName());
+        return ResponseEntity.ok(updated);
+    }
+
     // Statistics for hotel admin dashboard
     @GetMapping("/statistics")
     public ResponseEntity<?> getHotelStatistics(Authentication auth) {
@@ -168,7 +199,7 @@ public class HotelAdminController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String search,
             Authentication auth) {
-        
+
         // First get the hotel ID from the authenticated user
         HotelDTO hotel = hotelAdminService.getMyHotel(auth.getName());
         Page<BookingResponse> bookings = hotelAdminService.getHotelBookings(hotel.getId(), page, size, search);
@@ -182,7 +213,7 @@ public class HotelAdminController {
     public ResponseEntity<BookingResponse> getBookingById(
             @PathVariable Long reservationId,
             Authentication auth) {
-        
+
         // First get the hotel ID from the authenticated user
         HotelDTO hotel = hotelAdminService.getMyHotel(auth.getName());
         BookingResponse booking = hotelAdminService.getBookingById(reservationId, hotel.getId());
@@ -205,13 +236,45 @@ public class HotelAdminController {
     @PutMapping("/bookings/{reservationId}/status")
     public ResponseEntity<BookingResponse> updateBookingStatus(
             @PathVariable Long reservationId,
-            @RequestParam ReservationStatus status,
+            @RequestParam String status,
             Authentication auth) {
-        
+
         // Verify the reservation belongs to the hotel admin's hotel
         HotelDTO hotel = hotelAdminService.getMyHotel(auth.getName());
-        BookingResponse updated = hotelAdminService.updateBookingStatus(reservationId, status);
+
+        // Convert string to enum (case-insensitive, handle spaces)
+        ReservationStatus reservationStatus;
+        try {
+            // Replace spaces with underscores and convert to uppercase
+            String normalizedStatus = status.replace(" ", "_").toUpperCase();
+            reservationStatus = ReservationStatus.valueOf(normalizedStatus);
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid status value: " + status);
+        }
+
+        BookingResponse updated = hotelAdminService.updateBookingStatus(reservationId, reservationStatus);
         return ResponseEntity.ok(updated);
+    }
+
+    /**
+     * Modify booking details (admin version)
+     */
+    @PutMapping("/bookings/{reservationId}")
+    public ResponseEntity<BookingModificationResponse> modifyBooking(
+            @PathVariable Long reservationId,
+            @Valid @RequestBody BookingModificationRequest request,
+            Authentication auth) {
+
+        // Verify the reservation belongs to the hotel admin's hotel
+        HotelDTO hotel = hotelAdminService.getMyHotel(auth.getName());
+
+        BookingModificationResponse response = hotelAdminService.modifyBooking(reservationId, request, hotel.getId());
+
+        if (response.isSuccess()) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.badRequest().body(response);
+        }
     }
 
     /**
@@ -221,10 +284,143 @@ public class HotelAdminController {
     public ResponseEntity<Void> deleteBooking(
             @PathVariable Long reservationId,
             Authentication auth) {
-        
+
         // Get the hotel ID from the authenticated user
         HotelDTO hotel = hotelAdminService.getMyHotel(auth.getName());
         hotelAdminService.deleteBooking(reservationId, hotel.getId());
         return ResponseEntity.noContent().build();
+    }
+
+    // Room Type Pricing Management
+
+    /**
+     * Get all room type pricing for the hotel
+     */
+    @GetMapping("/room-type-pricing")
+    public ResponseEntity<List<RoomTypePricingDTO>> getRoomTypePricing(Authentication auth) {
+        List<RoomTypePricingDTO> pricing = roomTypePricingService.getRoomTypePricing(auth.getName());
+        return ResponseEntity.ok(pricing);
+    }
+
+    /**
+     * Create or update room type pricing
+     */
+    @PostMapping("/room-type-pricing")
+    public ResponseEntity<RoomTypePricingDTO> saveRoomTypePricing(
+            @Valid @RequestBody RoomTypePricingDTO pricingDTO,
+            Authentication auth) {
+        RoomTypePricingDTO saved = roomTypePricingService.saveRoomTypePricing(pricingDTO, auth.getName());
+        return ResponseEntity.ok(saved);
+    }
+
+    /**
+     * Update room type pricing
+     */
+    @PutMapping("/room-type-pricing/{id}")
+    public ResponseEntity<RoomTypePricingDTO> updateRoomTypePricing(
+            @PathVariable Long id,
+            @Valid @RequestBody RoomTypePricingDTO pricingDTO,
+            Authentication auth) {
+        pricingDTO.setId(id);
+        RoomTypePricingDTO updated = roomTypePricingService.saveRoomTypePricing(pricingDTO, auth.getName());
+        return ResponseEntity.ok(updated);
+    }
+
+    /**
+     * Delete room type pricing
+     */
+    @DeleteMapping("/room-type-pricing/{id}")
+    public ResponseEntity<Void> deleteRoomTypePricing(@PathVariable Long id, Authentication auth) {
+        roomTypePricingService.deleteRoomTypePricing(id, auth.getName());
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Get room type pricing by room type
+     */
+    @GetMapping("/room-type-pricing/{roomType}")
+    public ResponseEntity<RoomTypePricingDTO> getRoomTypePricing(
+            @PathVariable RoomType roomType,
+            Authentication auth) {
+        RoomTypePricingDTO pricing = roomTypePricingService.getRoomTypePricing(auth.getName(), roomType);
+        return ResponseEntity.ok(pricing);
+    }
+
+    /**
+     * Initialize default pricing for all room types
+     */
+    @PostMapping("/room-type-pricing/initialize-defaults")
+    public ResponseEntity<Void> initializeDefaultPricing(Authentication auth) {
+        roomTypePricingService.initializeDefaultPricing(auth.getName());
+        return ResponseEntity.ok().build();
+    }
+
+    // Walk-in Booking Management
+
+    /**
+     * Create a walk-in booking
+     * Hotel admins can create immediate bookings for walk-in guests
+     * 
+     * IMPORTANT: Walk-in bookings automatically send email confirmation to the
+     * guest's email address,
+     * not to the staff member who creates the booking. This ensures guests receive
+     * their
+     * booking confirmation details for their records.
+     */
+    @PostMapping("/walk-in-booking")
+    public ResponseEntity<BookingResponse> createWalkInBooking(
+            @Valid @RequestBody BookingRequest request,
+            Authentication auth) {
+
+        String userEmail = auth.getName();
+
+        // Set payment method to front desk payment for walk-in bookings
+        if (request.getPaymentMethodId() == null || request.getPaymentMethodId().isEmpty()) {
+            request.setPaymentMethodId("pay_at_frontdesk");
+        }
+
+        // For walk-in bookings, create as anonymous guest so email goes to guest, not
+        // staff
+        // Pass null as userEmail to ensure guest gets the confirmation email
+        // This ensures the booking confirmation email is sent to the guest's email
+        // address
+        BookingResponse response = bookingService.createBooking(request, null);
+        logger.info("Walk-in booking created successfully with confirmation number: {} for guest email: {}",
+                response.getConfirmationNumber(), request.getGuestEmail());
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    /**
+     * Get available rooms for a specific date range
+     * This endpoint supports date-based filtering for walk-in bookings
+     */
+    @GetMapping("/available-rooms")
+    public ResponseEntity<List<RoomDTO>> getAvailableRooms(
+            @RequestParam String checkInDate,
+            @RequestParam String checkOutDate,
+            @RequestParam(defaultValue = "1") Integer guests,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "100") int size,
+            Authentication auth) {
+
+        try {
+            // Parse dates
+            java.time.LocalDate checkIn = java.time.LocalDate.parse(checkInDate);
+            java.time.LocalDate checkOut = java.time.LocalDate.parse(checkOutDate);
+
+            // Get hotel admin's hotel
+            HotelDTO hotel = hotelAdminService.getMyHotel(auth.getName());
+
+            // Get rooms that are truly available for the date range (not occupied/assigned)
+            List<RoomDTO> availableRooms = hotelAdminService.getAvailableRoomsForDateRange(
+                    auth.getName(), checkIn, checkOut, guests, page, size);
+
+            return ResponseEntity.ok(availableRooms);
+
+        } catch (Exception e) {
+            System.err.println("Failed to get available rooms: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 }

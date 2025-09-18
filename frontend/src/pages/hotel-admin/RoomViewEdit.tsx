@@ -27,13 +27,15 @@ import {
   Save as SaveIcon,
   Cancel as CancelIcon,
 } from '@mui/icons-material';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { hotelAdminApi, RoomResponse } from '../../services/hotelAdminApi';
+import { ROOM_TYPES } from '../../constants/roomTypes';
 
 const RoomViewEdit: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { token } = useAuth();
   
   const [room, setRoom] = useState<RoomResponse | null>(null);
@@ -144,13 +146,18 @@ const RoomViewEdit: React.FC = () => {
   };
 
   const handleBack = () => {
-    navigate('/hotel-admin/dashboard');
+    const returnTab = searchParams.get('returnTab');
+    if (returnTab) {
+      navigate(`/hotel-admin/dashboard?tab=${returnTab}`);
+    } else {
+      navigate('/hotel-admin/dashboard');
+    }
   };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD'
+      currency: 'ETB'
     }).format(amount);
   };
 
@@ -176,13 +183,9 @@ const RoomViewEdit: React.FC = () => {
           <Alert severity="error" sx={{ mb: 2 }}>
             {error}
           </Alert>
-          <Button
-            variant="contained"
-            startIcon={<ArrowBackIcon />}
-            onClick={handleBack}
-          >
-            Back to Dashboard
-          </Button>
+          <IconButton onClick={handleBack} sx={{ mr: 1 }}>
+            <ArrowBackIcon />
+          </IconButton>
         </Box>
       </Container>
     );
@@ -195,13 +198,9 @@ const RoomViewEdit: React.FC = () => {
           <Alert severity="info" sx={{ mb: 2 }}>
             Room not found
           </Alert>
-          <Button
-            variant="contained"
-            startIcon={<ArrowBackIcon />}
-            onClick={handleBack}
-          >
-            Back to Dashboard
-          </Button>
+          <IconButton onClick={handleBack} sx={{ mr: 1 }}>
+            <ArrowBackIcon />
+          </IconButton>
         </Box>
       </Container>
     );
@@ -281,11 +280,11 @@ const RoomViewEdit: React.FC = () => {
                           value={currentRoom?.roomType || ''}
                           onChange={(e) => handleFieldChange('roomType', e.target.value)}
                         >
-                          <MenuItem value="SINGLE">Single</MenuItem>
-                          <MenuItem value="DOUBLE">Double</MenuItem>
-                          <MenuItem value="SUITE">Suite</MenuItem>
-                          <MenuItem value="DELUXE">Deluxe</MenuItem>
-                          <MenuItem value="FAMILY">Family</MenuItem>
+                          {ROOM_TYPES.map((roomType) => (
+                            <MenuItem key={roomType.value} value={roomType.value}>
+                              {roomType.value}
+                            </MenuItem>
+                          ))}
                         </Select>
                       </FormControl>
                     ) : (
@@ -343,7 +342,7 @@ const RoomViewEdit: React.FC = () => {
                       disabled={!isEditing}
                       variant={isEditing ? 'outlined' : 'filled'}
                       InputProps={{
-                        startAdornment: '$',
+                        startAdornment: 'ETB ',
                       }}
                     />
                   </Grid>

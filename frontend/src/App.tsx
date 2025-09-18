@@ -1,276 +1,310 @@
 import React from 'react';
-import { Typography, Box, Button, Grid, Card, CardContent } from '@mui/material';
-import { Routes, Route, useNavigate, Navigate } from 'react-router-dom';
-import { 
-  Hotel as HotelIcon, 
-  Security as SecurityIcon,
-  Speed as SpeedIcon,
-  CloudQueue as CloudIcon 
-} from '@mui/icons-material';
-import { Layout } from './components/layout';
+import { Typography, Box, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import './i18n'; // Initialize i18n
+import EnhancedLayout from './components/layout/EnhancedLayout';
+// PWA install functionality disabled
+// import PWAInstallPrompt from './components/common/PWAInstallPrompt';
+// import { usePWAInstall } from './hooks/usePWAInstall';
 import ProtectedRoute from './components/ProtectedRoute';
 import { useAuth } from './contexts/AuthContext';
 import HotelSearchPage from './pages/HotelSearchPage';
 import SearchResultsPage from './pages/SearchResultsPage';
+import HotelListPage from './pages/HotelListPage';
+import HotelDetailPage from './pages/HotelDetailPage';
+import BookingPage from './pages/BookingPage';
+import BookingConfirmationPage from './pages/BookingConfirmationPage';
+import FindBookingPage from './pages/FindBookingPage';
+import BookingSearchPage from './pages/BookingSearchPage';
 import LoginPage from './pages/LoginPage';
+import GuestAuthPage from './pages/GuestAuthPage';
 import ProfilePage from './pages/ProfilePage';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import HotelRegistrationAdmin from './pages/admin/HotelRegistrationAdmin';
 import HotelRegistrationForm from './pages/admin/HotelRegistrationForm';
 import HotelManagementAdmin from './pages/admin/HotelManagementAdmin';
+import TenantManagementAdmin from './pages/admin/TenantManagementAdmin';
 import UserManagementAdmin from './pages/admin/UserManagementAdmin';
 import UserRegistrationForm from './pages/admin/UserRegistrationForm';
 import HotelViewEdit from './pages/admin/HotelViewEdit';
 import UserViewEdit from './pages/admin/UserViewEdit';
-import BookingViewEdit from './pages/admin/BookingViewEdit';
 import HotelAdminDashboard from './pages/hotel-admin/HotelAdminDashboard';
 import RoomManagement from './pages/hotel-admin/RoomManagement';
 import RoomViewEdit from './pages/hotel-admin/RoomViewEdit';
 import StaffManagement from './pages/hotel-admin/StaffManagement';
 import StaffDetails from './pages/hotel-admin/StaffDetails';
+import StaffScheduleManagement from './components/StaffScheduleManagement';
+import StaffScheduleDashboard from './components/StaffScheduleDashboard';
 import FrontDeskDashboard from './pages/frontdesk/FrontDeskDashboard';
+import FrontDeskUnifiedBookingDetails from './pages/frontdesk/FrontDeskUnifiedBookingDetails';
+import HotelAdminBookingDetails from './pages/hotel-admin/HotelAdminBookingDetails';
+import BookingManagementPage from './pages/BookingManagementPage';
+import GuestBookingManagementPage from './pages/GuestBookingManagementPage';
+import { SystemDashboardPage } from './pages/SystemDashboardPage';
+import MyBookings from './components/MyBookings';
+import OperationsPage from './pages/operations/OperationsPage';
+import StaffDashboardPage from './pages/StaffDashboardPage';
+import ShopRoutes from './pages/shop/ShopRoutes';
+import PublicHotelRegistration from './pages/PublicHotelRegistration';
+import UserDebugPage from './pages/UserDebugPage';
+import NotificationsPage from './pages/NotificationsPage';
 
-// Home Page Router Component - redirects based on user role
-const HomePageRouter: React.FC = () => {
-  const { user, isAuthenticated } = useAuth();
+// Role-based Router Component - redirects based on user role
+const RoleBasedRouter: React.FC = () => {
+  const { user, isAuthenticated, isInitializing } = useAuth();
   
-  // If user is authenticated, check their roles
+  // Show loading state while authentication is being initialized
+  if (isInitializing) {
+    return (
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          flexDirection: 'column',
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          height: '50vh',
+          gap: 2 
+        }}
+      >
+        <Typography variant="h6">Loading...</Typography>
+      </Box>
+    );
+  }
+  
+  // If user is authenticated, check their roles and redirect to appropriate dashboard
   if (isAuthenticated && user?.roles) {
-    // Priority order: ADMIN (system admin) > HOTEL_ADMIN > FRONTDESK
-    if (user.roles.includes('ADMIN')) {
-      return <Navigate to="/admin/dashboard" replace />;
+    // System-wide users (no tenant binding) - SYSTEM_ADMIN or ADMIN without tenantId
+    if (user.roles.includes('SYSTEM_ADMIN') || (user.roles.includes('ADMIN') && !user.tenantId)) {
+      return <Navigate to="/system-dashboard" replace />;
     }
     
+    // Tenant-bound users - redirect to their respective dashboards
+    // Priority order: HOTEL_ADMIN > ADMIN (tenant-bound) > FRONTDESK > OPERATIONS_SUPERVISOR > HOUSEKEEPING/MAINTENANCE
     if (user.roles.includes('HOTEL_ADMIN')) {
       return <Navigate to="/hotel-admin/dashboard" replace />;
+    }
+    
+    if (user.roles.includes('ADMIN') && user.tenantId) {
+      return <Navigate to="/admin/dashboard" replace />;
     }
     
     if (user.roles.includes('FRONTDESK')) {
       return <Navigate to="/frontdesk/dashboard" replace />;
     }
     
-    // Legacy role handling for backward compatibility
-    if (user.role === 'ADMIN') {
-      return <Navigate to="/admin/dashboard" replace />;
+    if (user.roles.includes('OPERATIONS_SUPERVISOR')) {
+      return <Navigate to="/operations/dashboard" replace />;
+    }
+    
+    if (user.roles.includes('HOUSEKEEPING') || user.roles.includes('MAINTENANCE')) {
+      return <Navigate to="/staff/dashboard" replace />;
+    }
+    
+    // Legacy single role handling for backward compatibility
+    if (user.role === 'SYSTEM_ADMIN') {
+      return <Navigate to="/system-dashboard" replace />;
     }
     
     if (user.role === 'HOTEL_ADMIN') {
       return <Navigate to="/hotel-admin/dashboard" replace />;
     }
     
+    if (user.role === 'ADMIN' && user.tenantId) {
+      return <Navigate to="/admin/dashboard" replace />;
+    }
+    
+    if (user.role === 'ADMIN' && !user.tenantId) {
+      return <Navigate to="/system-dashboard" replace />;
+    }
+    
     if (user.role === 'FRONTDESK') {
       return <Navigate to="/frontdesk/dashboard" replace />;
     }
+    
+    if (user.role === 'OPERATIONS_SUPERVISOR') {
+      return <Navigate to="/operations/dashboard" replace />;
+    }
+    
+    if (user.role === 'HOUSEKEEPING' || user.role === 'MAINTENANCE') {
+      return <Navigate to="/staff/dashboard" replace />;
+    }
   }
   
-  // For all other users (including unauthenticated), show hotel search page
-  return <HotelSearchPage />;
-};
-
-// Home Page Component
-const HomePage: React.FC = () => {
-  const navigate = useNavigate();
-
-  const features = [
-    {
-      icon: <HotelIcon sx={{ fontSize: 40, color: 'primary.main' }} />,
-      title: 'Multi-Tenant Architecture',
-      description: 'Secure tenant isolation with shared database architecture for efficient resource utilization.',
-    },
-    {
-      icon: <SecurityIcon sx={{ fontSize: 40, color: 'primary.main' }} />,
-      title: 'Enterprise Security',
-      description: 'JWT authentication, role-based access control, and comprehensive audit logging.',
-    },
-    {
-      icon: <SpeedIcon sx={{ fontSize: 40, color: 'primary.main' }} />,
-      title: 'High Performance',
-      description: 'Optimized queries, caching strategies, and reactive frontend for lightning-fast booking.',
-    },
-    {
-      icon: <CloudIcon sx={{ fontSize: 40, color: 'primary.main' }} />,
-      title: 'Cloud Native',
-      description: 'Docker containerization, health checks, and monitoring for production deployment.',
-    },
-  ];
-
-  return (
-    <Box>
-      {/* Hero Section */}
-      <Box
-        sx={{
-          background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
-          color: 'white',
-          py: 8,
-          mb: 6,
-          borderRadius: 2,
-          textAlign: 'center',
-        }}
-      >
-        <Box sx={{ mt: 4, display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
-          <Button
-            variant="contained"
-            color="secondary"
-            size="large"
-            onClick={() => navigate('/hotels')}
-            sx={{ px: 4, py: 1.5, fontSize: '1.1rem', borderRadius: 3 }}
-          >
-            Browse Hotels
-          </Button>
-          <Button
-            variant="outlined"
-            color="inherit"
-            size="large"
-            onClick={() => navigate('/hotels/search')}
-            sx={{ 
-              px: 4, 
-              py: 1.5, 
-              fontSize: '1.1rem', 
-              borderRadius: 3,
-              borderColor: 'rgba(255, 255, 255, 0.5)',
-              '&:hover': { borderColor: 'white', backgroundColor: 'rgba(255, 255, 255, 0.1)' }
-            }}
-          >
-            Search Hotels
-          </Button>
-        </Box>
-      </Box>
-
-      {/* Features Section */}
-      <Box sx={{ mb: 6 }}>
-        <Typography variant="h4" component="h2" gutterBottom sx={{ textAlign: 'center', mb: 4, fontWeight: 'bold' }}>
-          Built for the Modern Enterprise
-        </Typography>
-        <Grid container spacing={4}>
-          {features.map((feature, index) => (
-            <Grid item xs={12} sm={6} md={3} key={index}>
-              <Card 
-                sx={{ 
-                  height: '100%', 
-                  textAlign: 'center', 
-                  p: 2,
-                  transition: 'transform 0.2s, box-shadow 0.2s',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: 4,
-                  }
-                }}
-              >
-                <CardContent>
-                  <Box sx={{ mb: 2 }}>
-                    {feature.icon}
-                  </Box>
-                  <Typography variant="h6" component="h3" gutterBottom sx={{ fontWeight: 'bold' }}>
-                    {feature.title}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {feature.description}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      </Box>
-
-      {/* Tech Stack Section */}
-      <Box
-        sx={{
-          backgroundColor: 'grey.50',
-          p: 4,
-          borderRadius: 2,
-          textAlign: 'center',
-        }}
-      >
-        <Typography variant="h5" component="h2" gutterBottom sx={{ fontWeight: 'bold', mb: 3 }}>
-          Technology Stack
-        </Typography>
-        <Grid container spacing={3} justifyContent="center">
-          <Grid item xs={12} sm={6} md={3}>
-            <Typography variant="h6" color="primary" sx={{ fontWeight: 'bold' }}>
-              � Backend
-            </Typography>
-            <Typography variant="body2">Spring Boot 3.2.2 with Java 17</Typography>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <Typography variant="h6" color="primary" sx={{ fontWeight: 'bold' }}>
-              ⚛️ Frontend
-            </Typography>
-            <Typography variant="body2">React 18 with TypeScript</Typography>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <Typography variant="h6" color="primary" sx={{ fontWeight: 'bold' }}>
-              🗄️ Database
-            </Typography>
-            <Typography variant="body2">MySQL 8.0 with Flyway</Typography>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <Typography variant="h6" color="primary" sx={{ fontWeight: 'bold' }}>
-              🐳 Infrastructure
-            </Typography>
-            <Typography variant="body2">Docker with Monitoring</Typography>
-          </Grid>
-        </Grid>
-      </Box>
-    </Box>
-  );
+  // For unauthenticated users or users without specific roles, redirect to hotel search
+  return <Navigate to="/hotels/search" replace />;
 };
 
 // Placeholder Components for Routes
-const HotelsPage: React.FC = () => (
+const PlaceholderPage: React.FC<{ title: string; message: string }> = ({ title, message }) => (
   <Box sx={{ textAlign: 'center', py: 8 }}>
-    <HotelIcon sx={{ fontSize: 80, color: 'primary.main', mb: 2 }} />
-    <Typography variant="h4" gutterBottom>Hotels</Typography>
+    <Typography variant="h4" gutterBottom>{title}</Typography>
     <Typography variant="body1" color="text.secondary">
-      Browse and discover amazing hotels. Coming soon!
-    </Typography>
-  </Box>
-);
-
-const SearchPage: React.FC = () => (
-  <Box sx={{ textAlign: 'center', py: 8 }}>
-    <Typography variant="h4" gutterBottom>Legacy Search</Typography>
-    <Typography variant="body1" color="text.secondary">
-      This page has been replaced. Please use the new Hotel Search.
-    </Typography>
-  </Box>
-);
-
-const RegisterPage: React.FC = () => (
-  <Box sx={{ textAlign: 'center', py: 8 }}>
-    <Typography variant="h4" gutterBottom>Register</Typography>
-    <Typography variant="body1" color="text.secondary">
-      User registration coming soon!
-    </Typography>
-  </Box>
-);
-
-const DashboardPage: React.FC = () => (
-  <Box sx={{ textAlign: 'center', py: 8 }}>
-    <Typography variant="h4" gutterBottom>Dashboard</Typography>
-    <Typography variant="body1" color="text.secondary">
-      User dashboard coming soon!
+      {message}
     </Typography>
   </Box>
 );
 
 function App() {
+  const { isAuthenticated, sessionExpired, clearSessionExpired } = useAuth();
+  const location = useLocation();
+  // PWA install functionality disabled
+  // const { 
+  //   showIOSPrompt, 
+  //   showAndroidPrompt, 
+  //   dismissIOSPrompt, 
+  //   dismissAndroidPrompt, 
+  //   installApp 
+  // } = usePWAInstall();
+  
+  // Check if we're on a route that should use full width layout
+  const isFullWidthRoute = location.pathname.startsWith('/frontdesk') || 
+                           location.pathname.startsWith('/hotel-admin') ||
+                           location.pathname.startsWith('/admin') ||
+                           location.pathname.startsWith('/system-dashboard') ||
+                           location.pathname.startsWith('/system/') ||
+                           location.pathname.startsWith('/operations') ||
+                           location.pathname.startsWith('/staff') ||
+                           location.pathname.startsWith('/shop') ||
+                           location.pathname.startsWith('/hotels/search') ||
+                           location.pathname === '/home';
+
+  const handleSessionExpiredClose = () => {
+    clearSessionExpired();
+  };
+  
   return (
-    <Layout>
+    <>
+      {/* Session Expired Dialog */}
+      <Dialog
+        open={sessionExpired}
+        onClose={handleSessionExpiredClose}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Session Expired</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Your session has expired. Please log in again to continue.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button 
+            onClick={handleSessionExpiredClose} 
+            color="primary" 
+            variant="contained"
+            fullWidth
+          >
+            OK
+          </Button>
+        </DialogActions>
+      </Dialog>
+      
+      {/* Main App Content */}
+    <EnhancedLayout hideSidebar={!isAuthenticated} maxWidth={isFullWidthRoute ? false : 'xl'}>
       <Routes>
-        <Route path="/" element={<HomePageRouter />} />
-        <Route path="/home" element={<HomePage />} />
-        <Route path="/hotels" element={<HotelsPage />} />
+        <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />} />
+        <Route path="/dashboard" element={<RoleBasedRouter />} />
+        <Route path="/home" element={<HotelSearchPage />} />
+        <Route path="/hotels" element={
+          <PlaceholderPage 
+            title="Hotels" 
+            message="Browse and discover amazing hotels. Feature coming soon!" 
+          />
+        } />
         <Route path="/hotels/search" element={<HotelSearchPage />} />
+        <Route path="/hotels/search-results" element={<HotelListPage />} />
+        <Route path="/hotels/:hotelId" element={<HotelDetailPage />} />
         <Route path="/search-results" element={<SearchResultsPage />} />
-        <Route path="/search" element={<SearchPage />} />
+        <Route path="/find-booking" element={<FindBookingPage />} />
+        <Route path="/booking" element={<BookingPage />} />
+        <Route path="/booking-confirmation/:reservationId" element={<BookingConfirmationPage />} />
+        <Route path="/booking-management" element={<BookingManagementPage />} />
+        <Route path="/guest-booking-management" element={<GuestBookingManagementPage />} />
+        <Route path="/booking-search" element={<BookingSearchPage />} />
+        <Route path="/search" element={
+          <PlaceholderPage 
+            title="Legacy Search" 
+            message="This page has been replaced. Please use the new Hotel Search." 
+          />
+        } />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/bookings" element={<DashboardPage />} />
+        <Route path="/guest-auth" element={<GuestAuthPage />} />
+        <Route path="/register-hotel" element={<PublicHotelRegistration />} />
+        <Route path="/register-hotel-admin" element={
+          <PlaceholderPage 
+            title="Admin Hotel Registration" 
+            message="Admin hotel registration coming soon!" 
+          />
+        } />
+        <Route path="/register" element={
+          <PlaceholderPage 
+            title="Register" 
+            message="User registration feature coming soon!" 
+          />
+        } />
+        <Route path="/dashboard" element={
+          <PlaceholderPage 
+            title="Dashboard" 
+            message="User dashboard coming soon!" 
+          />
+        } />
+        <Route path="/bookings" element={
+          <PlaceholderPage 
+            title="Bookings" 
+            message="User bookings dashboard coming soon!" 
+          />
+        } />
         <Route path="/profile" element={
           <ProtectedRoute>
             <ProfilePage />
+          </ProtectedRoute>
+        } />
+        <Route path="/debug-user" element={
+          <ProtectedRoute>
+            <UserDebugPage />
+          </ProtectedRoute>
+        } />
+        
+        {/* System-Wide User Routes */}
+        <Route path="/system-dashboard" element={
+          <ProtectedRoute>
+            <SystemDashboardPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/system/hotels" element={
+          <ProtectedRoute requiredRole="ADMIN">
+            <HotelManagementAdmin />
+          </ProtectedRoute>
+        } />
+        <Route path="/system/tenants" element={
+          <ProtectedRoute requiredRole="ADMIN">
+            <TenantManagementAdmin />
+          </ProtectedRoute>
+        } />
+        <Route path="/system/users" element={
+          <ProtectedRoute requiredRole="ADMIN">
+            <UserManagementAdmin />
+          </ProtectedRoute>
+        } />
+        <Route path="/system/analytics" element={
+          <ProtectedRoute requiredRole="ADMIN">
+            <PlaceholderPage 
+              title="System Analytics" 
+              message="Platform-wide analytics dashboard coming soon!" 
+            />
+          </ProtectedRoute>
+        } />
+        <Route path="/system/settings" element={
+          <ProtectedRoute requiredRole="ADMIN">
+            <PlaceholderPage 
+              title="System Settings" 
+              message="Global system configuration coming soon!" 
+            />
+          </ProtectedRoute>
+        } />
+        <Route path="/my-bookings" element={
+          <ProtectedRoute>
+            <MyBookings />
           </ProtectedRoute>
         } />
         
@@ -343,18 +377,21 @@ function App() {
           </ProtectedRoute>
         } />
         <Route path="/hotel-admin/bookings/:id" element={
-          <ProtectedRoute requiredRole="FRONTDESK">
-            <BookingViewEdit />
+          <ProtectedRoute requiredRole="HOTEL_ADMIN">
+            <HotelAdminBookingDetails />
           </ProtectedRoute>
         } />
         <Route path="/hotel-admin/bookings/:id/edit" element={
-          <ProtectedRoute requiredRole="FRONTDESK">
-            <BookingViewEdit />
+          <ProtectedRoute requiredRole="HOTEL_ADMIN">
+            <HotelAdminBookingDetails />
           </ProtectedRoute>
         } />
         <Route path="/hotel-admin/hotel" element={
           <ProtectedRoute requiredRole="HOTEL_ADMIN">
-            <div>Hotel Management - Coming Soon</div>
+            <PlaceholderPage 
+              title="Hotel Management" 
+              message="Hotel settings and configuration coming soon!" 
+            />
           </ProtectedRoute>
         } />
         <Route path="/hotel-admin/staff" element={
@@ -365,6 +402,16 @@ function App() {
         <Route path="/hotel-admin/staff/:id" element={
           <ProtectedRoute requiredRole="HOTEL_ADMIN">
             <StaffDetails />
+          </ProtectedRoute>
+        } />
+        <Route path="/hotel-admin/schedules" element={
+          <ProtectedRoute requiredRole="HOTEL_ADMIN">
+            <StaffScheduleManagement />
+          </ProtectedRoute>
+        } />
+        <Route path="/hotel-admin/schedule-dashboard" element={
+          <ProtectedRoute requiredRole="HOTEL_ADMIN">
+            <StaffScheduleDashboard />
           </ProtectedRoute>
         } />
         <Route path="/hotel-admin/rooms" element={
@@ -389,8 +436,92 @@ function App() {
             <FrontDeskDashboard />
           </ProtectedRoute>
         } />
+        <Route path="/frontdesk/bookings/:id" element={
+          <ProtectedRoute requiredRole="FRONTDESK">
+            <FrontDeskUnifiedBookingDetails />
+          </ProtectedRoute>
+        } />
+        <Route path="/frontdesk/bookings/:id/edit" element={
+          <ProtectedRoute requiredRole="FRONTDESK">
+            <FrontDeskUnifiedBookingDetails />
+          </ProtectedRoute>
+        } />
+        <Route path="/frontdesk/schedules" element={
+          <ProtectedRoute requiredRole="FRONTDESK">
+            <StaffScheduleDashboard />
+          </ProtectedRoute>
+        } />
+        
+        {/* Notifications Route - Accessible by Hotel Admin and Front Desk */}
+        <Route path="/notifications" element={
+          <ProtectedRoute requiredRoles={['HOTEL_ADMIN', 'FRONTDESK']}>
+            <NotificationsPage />
+          </ProtectedRoute>
+        } />
+        
+        {/* Shop Routes - Accessible by Hotel Admin and Front Desk */}
+        <Route path="/shop/*" element={
+          <ProtectedRoute requiredRoles={['HOTEL_ADMIN', 'FRONTDESK']}>
+            <ShopRoutes />
+          </ProtectedRoute>
+        } />
+        
+        {/* Staff Routes */}
+        <Route path="/staff" element={
+          <ProtectedRoute requiredRoles={['HOUSEKEEPING', 'MAINTENANCE']}>
+            <Navigate to="/staff/dashboard" replace />
+          </ProtectedRoute>
+        } />
+        <Route path="/staff/dashboard" element={
+          <ProtectedRoute requiredRoles={['HOUSEKEEPING', 'MAINTENANCE']}>
+            <StaffDashboardPage />
+          </ProtectedRoute>
+        } />
+        
+        {/* Operations Routes */}
+        <Route path="/operations" element={
+          <ProtectedRoute requiredRoles={['OPERATIONS_SUPERVISOR', 'MAINTENANCE']}>
+            <Navigate to="/operations/dashboard" replace />
+          </ProtectedRoute>
+        } />
+        <Route path="/operations/dashboard" element={
+          <ProtectedRoute requiredRoles={['OPERATIONS_SUPERVISOR', 'MAINTENANCE']}>
+            <OperationsPage />
+          </ProtectedRoute>
+        } />
+        
+        {/* Housekeeping Routes */}
+        <Route path="/housekeeping" element={
+          <ProtectedRoute requiredRole="HOUSEKEEPING">
+            <Navigate to="/housekeeping/schedules" replace />
+          </ProtectedRoute>
+        } />
+        <Route path="/housekeeping/schedules" element={
+          <ProtectedRoute requiredRole="HOUSEKEEPING">
+            <StaffScheduleDashboard />
+          </ProtectedRoute>
+        } />
       </Routes>
-    </Layout>
+      
+      {/* PWA Install Prompt functionality disabled */}
+      {/* 
+      <PWAInstallPrompt 
+        open={showIOSPrompt} 
+        onClose={() => dismissIOSPrompt(false)}
+        onPermanentDismiss={() => dismissIOSPrompt(true)}
+        deviceType="ios"
+      />
+      
+      <PWAInstallPrompt 
+        open={showAndroidPrompt} 
+        onClose={() => dismissAndroidPrompt(false)}
+        onPermanentDismiss={() => dismissAndroidPrompt(true)}
+        deviceType="android"
+        onInstall={installApp}
+      />
+      */}
+    </EnhancedLayout>
+    </>
   );
 }
 

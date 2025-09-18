@@ -157,6 +157,12 @@ SPRING_DATASOURCE_PASSWORD=password
 APP_JWT_SECRET=your-256-bit-secret-key
 APP_JWT_EXPIRATION=86400000
 
+# Microsoft Graph OAuth2 (for email service)
+MICROSOFT_GRAPH_CLIENT_ID=your-azure-ad-client-id
+MICROSOFT_GRAPH_TENANT_ID=your-azure-ad-tenant-id
+MICROSOFT_GRAPH_CLIENT_SECRET=your-azure-ad-client-secret
+APP_EMAIL_FROM=noreply@your-domain.com
+
 # Stripe
 STRIPE_API_KEY=sk_test_your_stripe_secret_key
 STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
@@ -167,6 +173,8 @@ STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
 REACT_APP_API_URL=http://localhost:8080/api
 REACT_APP_STRIPE_PUBLISHABLE_KEY=pk_test_your_stripe_publishable_key
 ```
+
+**Note**: Copy `.env.example` to `.env` and configure your actual values. Never commit the `.env` file to version control.
 
 ## 🧪 Testing
 

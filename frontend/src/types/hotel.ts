@@ -20,6 +20,16 @@ export interface AvailableRoom {
   description?: string;
 }
 
+export interface RoomTypeAvailability {
+  roomType: string;
+  availableCount: number;
+  totalCount: number;
+  pricePerNight: number;
+  capacity: number;
+  description?: string;
+  displayMessage: string;
+}
+
 export interface HotelSearchResult {
   id: number;
   name: string;
@@ -29,21 +39,40 @@ export interface HotelSearchResult {
   country: string;
   phone?: string;
   email?: string;
-  availableRooms: AvailableRoom[];
+  availableRooms: AvailableRoom[]; // Keep for backward compatibility
+  roomTypeAvailability?: RoomTypeAvailability[]; // New room type approach
   minPrice: number;
   maxPrice: number;
 }
 
 export interface BookingRequest {
-  roomId: number;
+  // For individual room booking (traditional approach)
+  roomId?: number;
+  
+  // For room type booking (new approach)
+  hotelId?: number;
+  roomType?: string;
+  
   checkInDate: string;
   checkOutDate: string;
   guests: number;
   specialRequests?: string;
-  paymentMethodId?: string;
-  guestName: string;
-  guestEmail: string;
+  guestName?: string;
+  guestEmail?: string;
   guestPhone?: string;
+  
+  // Payment information (optional for backward compatibility)
+  paymentMethod?: 'credit_card' | 'mobile_money' | 'mbirr' | 'telebirr';
+  
+  // Credit card fields
+  creditCardNumber?: string;
+  expiryDate?: string;
+  cvv?: string;
+  cardholderName?: string;
+  
+  // Mobile money fields
+  mobileNumber?: string;
+  transferReceiptNumber?: string;
 }
 
 export interface BookingResponse {
@@ -86,7 +115,42 @@ export interface Hotel {
   roomCount?: number;
   totalRooms?: number;
   availableRooms?: number;
+  bookedRooms?: number;
   totalStaff?: number;
   createdAt?: string;
   updatedAt?: string;
+}
+
+// Booking modification and cancellation types
+export interface BookingModificationRequest {
+  confirmationNumber: string;
+  guestEmail: string;
+  newCheckInDate?: string;
+  newCheckOutDate?: string;
+  newRoomId?: number;
+  newSpecialRequests?: string;
+  guestName?: string;
+  guestPhone?: string;
+  reason?: string;
+}
+
+export interface BookingModificationResponse {
+  success: boolean;
+  message: string;
+  updatedBooking?: BookingResponse;
+  additionalCharges?: number;
+  refundAmount?: number;
+}
+
+export interface BookingCancellationRequest {
+  confirmationNumber: string;
+  guestEmail: string;
+  cancellationReason?: string;
+}
+
+export interface BookingCancellationResponse {
+  success: boolean;
+  message: string;
+  refundAmount?: number;
+  cancellationFee?: number;
 }

@@ -17,6 +17,8 @@
 
 - [x] Ensure Documentation is Complete - README.md created with comprehensive setup and usage instructions
 
+- [x] Use system-admin-tenant-management.spec e2e testing as a rference for future tests.
+
 	 Make sure to write a modular and reusable code.
 	 Follow best practices for code organization and structure.
 	 Keep the code DRY (Don't Repeat Yourself) by reusing components and services where applicable.

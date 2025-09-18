@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to BookMyHotel</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+        
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 300;
+        }
+        
+        .header .tagline {
+            margin: 10px 0 0 0;
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 40px 30px;
+        }
+        
+        .welcome-message {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .welcome-message h2 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+        
+        .welcome-message p {
+            font-size: 16px;
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .features {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 30px;
+            margin: 30px 0;
+        }
+        
+        .features h3 {
+            color: #333;
+            font-size: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            align-items: center;
+        }
+        
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .feature-icon {
+            color: #667eea;
+            margin-right: 12px;
+            font-size: 18px;
+        }
+        
+        .cta-section {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: transform 0.2s ease;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-2px);
+            color: white;
+        }
+        
+        .account-info {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .account-info h4 {
+            margin-top: 0;
+            color: #1976d2;
+        }
+        
+        .support-section {
+            background: #fff3e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 30px 0;
+            text-align: center;
+        }
+        
+        .support-section h4 {
+            color: #f57c00;
+            margin-bottom: 10px;
+        }
+        
+        .footer {
+            background: #f8f9fa;
+            color: #666;
+            text-align: center;
+            padding: 30px;
+            font-size: 14px;
+        }
+        
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        .social-links {
+            margin: 20px 0;
+        }
+        
+        .social-links a {
+            display: inline-block;
+            margin: 0 10px;
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        @media (max-width: 600px) {
+            .email-container {
+                margin: 0 10px;
+            }
+            
+            .header, .content, .footer {
+                padding: 20px;
+            }
+            
+            .features {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+            <h1 th:text="${appName}">BookMyHotel</h1>
+            <p class="tagline">Your Gateway to Amazing Hotel Experiences</p>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <!-- Welcome Message -->
+            <div class="welcome-message">
+                <h2>Welcome to BookMyHotel, <span th:text="${firstName}">Guest</span>! 🎉</h2>
+                <p>
+                    Thank you for joining our community! Your account has been successfully created and you're now ready to explore and book amazing hotel experiences around the world.
+                </p>
+            </div>
+
+            <!-- Account Information -->
+            <div class="account-info">
+                <h4>Your Account Details</h4>
+                <p><strong>Email:</strong> <span th:text="${email}">user@example.com</span></p>
+                <p><strong>Name:</strong> <span th:text="${firstName + ' ' + lastName}">John Doe</span></p>
+                <p><strong>Registration Date:</strong> <span th:text="${#temporals.format(registrationDate, 'MMM dd, yyyy')}">Aug 21, 2025</span></p>
+            </div>
+
+            <!-- Features Section -->
+            <div class="features">
+                <h3>What You Can Do Now</h3>
+                <ul class="feature-list">
+                    <li>
+                        <span class="feature-icon">🔍</span>
+                        Search and compare hotels worldwide
+                    </li>
+                    <li>
+                        <span class="feature-icon">📅</span>
+                        Book rooms for your preferred dates
+                    </li>
+                    <li>
+                        <span class="feature-icon">💼</span>
+                        Manage your bookings and reservations
+                    </li>
+                    <li>
+                        <span class="feature-icon">⭐</span>
+                        Access exclusive deals and offers
+                    </li>
+                    <li>
+                        <span class="feature-icon">📱</span>
+                        Receive instant booking confirmations
+                    </li>
+                    <li>
+                        <span class="feature-icon">🏨</span>
+                        Save your favorite hotels for future bookings
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Call to Action -->
+            <div class="cta-section">
+                <h3>Ready to Start Your Journey?</h3>
+                <p>Explore thousands of hotels and find your perfect stay.</p>
+                <a th:href="${appUrl}" class="cta-button">Start Exploring Hotels</a>
+            </div>
+
+            <!-- Support Section -->
+            <div class="support-section">
+                <h4>Need Help Getting Started?</h4>
+                <p>Our support team is here to help you make the most of your BookMyHotel experience.</p>
+                <p>Visit our <a th:href="${appUrl + '/help'}" style="color: #f57c00;">Help Center</a> or contact us anytime.</p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>
+                This email was sent to <span th:text="${email}">user@example.com</span> because you created an account with BookMyHotel.
+            </p>
+            
+            <div class="social-links">
+                <a href="#" style="margin-right: 15px;">Privacy Policy</a>
+                <a href="#" style="margin-right: 15px;">Terms of Service</a>
+                <a href="#">Unsubscribe</a>
+            </div>
+            
+            <p style="margin-top: 20px;">
+                © 2025 <span th:text="${appName}">BookMyHotel</span>. All rights reserved.
+            </p>
+            
+            <p style="font-size: 12px; color: #999; margin-top: 15px;">
+                If you're having trouble with the button above, copy and paste the URL below into your web browser:<br>
+                <span th:text="${appUrl}">http://localhost:3000</span>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

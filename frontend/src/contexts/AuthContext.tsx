@@ -1,4 +1,9 @@
-import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+
+import { API_CONFIG } from '../config/apiConfig';
+import { updateUserProfile, changeUserPassword } from '../services/userApi';
+import TokenManager, { type AuthUser } from '../utils/tokenManager';
+import { apiClient } from '../utils/apiClient';
 
 interface User {
   id: string;
@@ -6,80 +11,141 @@ interface User {
   firstName?: string;
   lastName?: string;
   phone?: string;
-  role: 'ADMIN' | 'HOTEL_ADMIN' | 'HOTEL_MANAGER' | 'FRONTDESK' | 'HOUSEKEEPING' | 'GUEST';
+  role: 'ADMIN' | 'HOTEL_ADMIN' | 'HOTEL_MANAGER' | 'FRONTDESK' | 'HOUSEKEEPING' | 'OPERATIONS_SUPERVISOR' | 'MAINTENANCE' | 'CUSTOMER' | 'GUEST' | 'SYSTEM_ADMIN';
   roles: string[]; // Support multiple roles
+  tenantId?: string | null; // null for system-wide users
   hotelId?: string;
   hotelName?: string;
   createdAt?: string;
   lastLogin?: string;
   isActive?: boolean;
+  // Helper properties
+  isSystemWide?: boolean; // true if tenantId is null
+  isTenantBound?: boolean; // true if tenantId is not null
 }
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   token: string | null;
+  error: string | null;
+  isInitializing: boolean; // Add to interface
+  sessionExpired: boolean; // Add session expired state
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
+  handleSessionExpired: () => void; // Add session expiration handler
   updateProfile: (updates: Partial<User>) => Promise<boolean>;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<boolean>;
   isAuthenticated: boolean;
+  onTokenChange?: (token: string) => void;
+  clearError: () => void;
+  clearSessionExpired: () => void; // Add method to clear session expired state
+  // Helper functions for role checking
+  hasRole: (role: string) => boolean;
+  hasAnyRole: (roles: string[]) => boolean;
+  isFrontDesk: () => boolean;
+  isHotelAdmin: () => boolean;
+  canAccessCheckout: () => boolean;
+  canEditBookings: () => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 interface AuthProviderProps {
   children: ReactNode;
+  onTokenChange?: (token: string) => void;
+  onLogout?: () => void;
 }
 
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenChange, onLogout }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [isInitializing, setIsInitializing] = useState(true); // Add initialization state
+  const [sessionExpired, setSessionExpired] = useState(false); // Add session expired state
+
+  const clearError = () => setError(null);
+  const clearSessionExpired = () => setSessionExpired(false);
 
   // Load authentication state from localStorage on startup
   useEffect(() => {
-    const savedToken = localStorage.getItem('auth_token');
-    const savedUser = localStorage.getItem('auth_user');
+    // Set up API client session expiration callback
+    apiClient.setSessionExpiredCallback(() => {
+      console.log('Session expired - logging out user');
+      setSessionExpired(true);
+      setUser(null);
+      setToken(null);
+      setError('Your session has expired. Please log in again.');
+      
+      // Clear localStorage using TokenManager
+      TokenManager.clearAuth();
+      
+      // Clear tenant context
+      onLogout?.();
+    });
+    
+    // Migrate any legacy tokens
+    TokenManager.migrateLegacyTokens();
+    
+    const savedToken = TokenManager.getToken();
+    const savedUser = TokenManager.getUser();
     
     if (savedToken && savedUser) {
       try {
         setToken(savedToken);
-        setUser(JSON.parse(savedUser));
-        console.log('Restored auth state from localStorage');
+        setUser(savedUser as User);
+        console.log('Restored auth state from TokenManager');
+        
+        // Notify parent component of token change
+        onTokenChange?.(savedToken);
       } catch (error) {
         console.error('Failed to restore auth state:', error);
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('auth_user');
+        TokenManager.clearAuth();
       }
     }
-  }, []);
+    
+    // Set initialization complete after checking localStorage
+    setIsInitializing(false);
+  }, [onTokenChange, onLogout]);
 
   const login = async (email: string, password: string): Promise<boolean> => {
     setLoading(true);
+    setError(null);
+    
     try {
-      console.log('Attempting login with:', email, password);
+      console.log('Mobile AuthContext: Starting login process');
+      console.log('Mobile AuthContext: API URL:', API_CONFIG.BASE_URL);
+      console.log('Mobile AuthContext: User Agent:', navigator.userAgent);
       
-      const response = await fetch('http://localhost:8080/api/auth/login', {
+      const requestBody = { email, password };
+      console.log('Mobile AuthContext: Request body prepared');
+      
+      const response = await fetch(`${API_CONFIG.BASE_URL}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
+        body: JSON.stringify(requestBody),
       });
+
+      console.log('Mobile AuthContext: Response received:', response.status, response.statusText);
+      console.log('Mobile AuthContext: Response headers:', Object.fromEntries(response.headers));
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Login failed:', errorText);
+        console.error('Mobile AuthContext: Login failed with error:', errorText);
+        setError(errorText || 'Login failed');
         return false;
       }
 
       const loginData = await response.json();
-      console.log('Login successful:', loginData);
+      console.log('Mobile AuthContext: Login successful, parsing data...');
+      console.log('Mobile AuthContext: Login data keys:', Object.keys(loginData));
 
       // Map backend response to frontend User interface
+      console.log('Mobile AuthContext: Mapping user data...');
       const user: User = {
         id: loginData.id.toString(),
         email: loginData.email,
@@ -88,23 +154,42 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         phone: '', // Backend doesn't provide phone in login response
         role: Array.isArray(loginData.roles) ? loginData.roles[0] : loginData.roles, // Take first role if multiple
         roles: Array.isArray(loginData.roles) ? loginData.roles : [loginData.roles], // Store all roles
+        tenantId: loginData.tenantId || null, // Support null for system-wide users
         hotelId: loginData.hotelId?.toString(),
         hotelName: loginData.hotelName,
         createdAt: new Date().toISOString(),
         lastLogin: new Date().toISOString(),
         isActive: true,
+        // Helper properties
+        isSystemWide: (loginData.tenantId === null || loginData.tenantId === undefined) && 
+                      (Array.isArray(loginData.roles) ? loginData.roles : [loginData.roles])
+                      .some((role: string) => ['SYSTEM_ADMIN', 'ADMIN', 'GUEST', 'CUSTOMER'].includes(role)), // true if no tenant AND has system-wide role
+        isTenantBound: (loginData.tenantId !== null && loginData.tenantId !== undefined), // true if user has a tenant assignment
       };
 
+      console.log('Mobile AuthContext: Setting user state...');
       setUser(user);
       setToken(loginData.token);
       
-      // Persist to localStorage
-      localStorage.setItem('auth_token', loginData.token);
-      localStorage.setItem('auth_user', JSON.stringify(user));
+      // Persist to localStorage using TokenManager
+      console.log('Mobile AuthContext: Persisting to localStorage...');
+      try {
+        TokenManager.setAuth(loginData.token, user as AuthUser);
+        console.log('Mobile AuthContext: localStorage save successful');
+      } catch (storageError) {
+        console.error('Mobile AuthContext: localStorage save failed:', storageError);
+      }
       
+      // Notify parent component of token change
+      console.log('Mobile AuthContext: Notifying token change...');
+      onTokenChange?.(loginData.token);
+      
+      console.log('Mobile AuthContext: Login process completed successfully');
       return true;
     } catch (error) {
-      console.error('Login failed:', error);
+      console.error('Mobile AuthContext: Login failed with error:', error);
+      console.error('Mobile AuthContext: Error stack:', (error as Error).stack);
+      setError((error as Error).message || 'Login failed');
       return false;
     } finally {
       setLoading(false);
@@ -114,47 +199,145 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = () => {
     setUser(null);
     setToken(null);
+    setSessionExpired(false); // Clear session expired state on manual logout
     
-    // Clear localStorage
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('auth_user');
+    // Clear localStorage using TokenManager
+    TokenManager.clearAuth();
+    
+    // Clear tenant context
+    onLogout?.();
     
     console.log('User logged out');
   };
 
+  const handleSessionExpired = () => {
+    console.log('Session expired - logging out user');
+    setSessionExpired(true);
+    setUser(null);
+    setToken(null);
+    setError('Your session has expired. Please log in again.');
+    
+    // Clear localStorage using TokenManager
+    TokenManager.clearAuth();
+    
+    // Clear tenant context
+    onLogout?.();
+  };
+
   const updateProfile = async (updates: Partial<User>): Promise<boolean> => {
+    if (!user || !token) {
+      setError('User not authenticated');
+      return false;
+    }
+
     try {
       setLoading(true);
+      setError(null);
       
-      // In a real application, this would make an API call to update the user profile
-      console.log('Updating profile with:', updates);
+      // Call the API to update profile
+      const result = await updateUserProfile(user.id, updates, token);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Update the user state with the new information
-      if (user) {
+      if (result.success) {
+        // Update the user state with the new information
         const updatedUser = { ...user, ...updates };
         setUser(updatedUser);
+        
+        // Update localStorage using TokenManager
+        TokenManager.setAuth(token, updatedUser as AuthUser);
+        
+        return true;
+      } else {
+        setError(result.message || 'Failed to update profile');
+        return false;
       }
-      
-      return true;
     } catch (error) {
       console.error('Profile update failed:', error);
+      setError('Failed to update profile. Please try again.');
       return false;
     } finally {
       setLoading(false);
     }
   };
 
+  const changePassword = async (currentPassword: string, newPassword: string): Promise<boolean> => {
+    if (!user || !token) {
+      setError('User not authenticated');
+      return false;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Call the API to change password
+      const result = await changeUserPassword(user.id, { currentPassword, newPassword }, token);
+      
+      if (result.success) {
+        return true;
+      } else {
+        setError(result.message || 'Failed to change password');
+        return false;
+      }
+    } catch (error) {
+      console.error('Password change failed:', error);
+      setError('Failed to change password. Please try again.');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Helper functions for role checking
+  const hasRole = (role: string): boolean => {
+    if (!user) return false;
+    const userRoles = user.roles && user.roles.length > 0 ? user.roles : (user.role ? [user.role] : []);
+    return userRoles.includes(role);
+  };
+
+  const hasAnyRole = (roles: string[]): boolean => {
+    if (!user) return false;
+    const userRoles = user.roles && user.roles.length > 0 ? user.roles : (user.role ? [user.role] : []);
+    return roles.some(role => userRoles.includes(role));
+  };
+
+  const isFrontDesk = (): boolean => {
+    return hasRole('FRONTDESK');
+  };
+
+  const isHotelAdmin = (): boolean => {
+    return hasRole('HOTEL_ADMIN');
+  };
+
+  const canAccessCheckout = (): boolean => {
+    return hasAnyRole(['FRONTDESK', 'HOTEL_ADMIN', 'ADMIN']);
+  };
+
+  const canEditBookings = (): boolean => {
+    return hasAnyRole(['FRONTDESK', 'HOTEL_ADMIN', 'ADMIN']);
+  };
+
   const value: AuthContextType = {
     user,
     loading,
     token,
+    error,
+    isInitializing,
+    sessionExpired,
     login,
     logout,
+    handleSessionExpired,
     updateProfile,
+    changePassword,
     isAuthenticated: !!user,
+    onTokenChange,
+    clearError,
+    clearSessionExpired,
+    hasRole,
+    hasAnyRole,
+    isFrontDesk,
+    isHotelAdmin,
+    canAccessCheckout,
+    canEditBookings,
   };
 
   return (

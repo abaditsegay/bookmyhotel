@@ -5,19 +5,23 @@ import {
   DialogContent,
   DialogActions,
   Button,
-  TextField,
   Grid,
   Typography,
-  Box,
   Alert,
   Divider,
   Paper,
+  Box,
+  LinearProgress,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs, { Dayjs } from 'dayjs';
 import { BookingRequest, AvailableRoom } from '../../types/hotel';
+import { LoadingSpinner } from '../common/LoadingComponents';
+import { ValidatedInput, ValidationSummary, ValidationStatus } from '../common/ValidationComponents';
+import { useAsyncOperation } from '../../hooks/useLoading';
+import { useFormValidation } from '../../hooks/useFormValidation';
 
 interface BookingFormProps {
   open: boolean;
@@ -46,13 +50,75 @@ const BookingForm: React.FC<BookingFormProps> = ({
   const [checkOutDate, setCheckOutDate] = useState<Dayjs | null>(
     defaultCheckOut ? dayjs(defaultCheckOut) : dayjs().add(1, 'day')
   );
-  const [guests, setGuests] = useState(defaultGuests);
-  const [guestName, setGuestName] = useState('');
-  const [guestEmail, setGuestEmail] = useState('');
-  const [guestPhone, setGuestPhone] = useState('');
-  const [specialRequests, setSpecialRequests] = useState('');
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const bookingOperation = useAsyncOperation();
+
+  // Form validation setup
+  const formValidation = useFormValidation({
+    guests: {
+      rules: {
+        required: true,
+        min: 1,
+        max: room?.capacity || 10,
+      },
+      messages: {
+        required: 'Number of guests is required',
+        min: 'At least 1 guest is required',
+        max: `Maximum ${room?.capacity || 10} guests allowed`,
+      },
+      initialValue: defaultGuests,
+    },
+    guestName: {
+      rules: {
+        required: true,
+        minLength: 2,
+        maxLength: 100,
+        pattern: /^[a-zA-Z\s]+$/,
+      },
+      messages: {
+        required: 'Guest name is required',
+        minLength: 'Name must be at least 2 characters',
+        maxLength: 'Name must be less than 100 characters',
+        pattern: 'Name can only contain letters and spaces',
+      },
+      initialValue: '',
+    },
+    guestEmail: {
+      rules: {
+        required: true,
+        email: true,
+        maxLength: 255,
+      },
+      messages: {
+        required: 'Email address is required',
+        email: 'Please enter a valid email address',
+        maxLength: 'Email must be less than 255 characters',
+      },
+      initialValue: '',
+    },
+    guestPhone: {
+      rules: {
+        phone: true,
+        minLength: 10,
+        maxLength: 15,
+      },
+      messages: {
+        phone: 'Please enter a valid phone number',
+        minLength: 'Phone number must be at least 10 digits',
+        maxLength: 'Phone number must be less than 15 digits',
+      },
+      initialValue: '',
+    },
+    specialRequests: {
+      rules: {
+        maxLength: 500,
+      },
+      messages: {
+        maxLength: 'Special requests must be less than 500 characters',
+      },
+      initialValue: '',
+    },
+  });
 
   const calculateTotalAmount = () => {
     if (!room || !checkInDate || !checkOutDate) return 0;
@@ -74,38 +140,36 @@ const BookingForm: React.FC<BookingFormProps> = ({
       return;
     }
 
-    if (!guestName.trim() || !guestEmail.trim()) {
-      setError('Please provide guest name and email');
+    // Validate form using our validation hook
+    const isFormValid = formValidation.validateAll();
+    if (!isFormValid) {
+      setError('Please fix the validation errors before submitting');
       return;
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(guestEmail)) {
-      setError('Please provide a valid email address');
-      return;
-    }
+    const bookingRequest: BookingRequest = {
+      roomId: room.id,
+      checkInDate: checkInDate.format('YYYY-MM-DD'),
+      checkOutDate: checkOutDate.format('YYYY-MM-DD'),
+      guests: formValidation.values.guests,
+      specialRequests: formValidation.values.specialRequests?.trim() || undefined,
+      guestName: formValidation.values.guestName.trim(),
+      guestEmail: formValidation.values.guestEmail.trim(),
+      guestPhone: formValidation.values.guestPhone?.trim() || undefined,
+    };
 
-    setLoading(true);
-
-    try {
-      const bookingRequest: BookingRequest = {
-        roomId: room.id,
-        checkInDate: checkInDate.format('YYYY-MM-DD'),
-        checkOutDate: checkOutDate.format('YYYY-MM-DD'),
-        guests,
-        specialRequests: specialRequests.trim() || undefined,
-        guestName: guestName.trim(),
-        guestEmail: guestEmail.trim(),
-        guestPhone: guestPhone.trim() || undefined,
-      };
-
-      await onSubmit(bookingRequest);
-      onClose();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred while booking');
-    } finally {
-      setLoading(false);
-    }
+    await bookingOperation.execute(
+      async () => {
+        await onSubmit(bookingRequest);
+        onClose();
+        return bookingRequest;
+      },
+      {
+        onError: (err: any) => {
+          setError(err.message || 'Failed to create booking. Please try again.');
+        }
+      }
+    );
   };
 
   const totalAmount = calculateTotalAmount();
@@ -127,16 +191,62 @@ const BookingForm: React.FC<BookingFormProps> = ({
           )}
         </DialogTitle>
 
-        <DialogContent>
+        <DialogContent sx={{ position: 'relative' }}>
           {error && (
             <Alert severity="error" sx={{ mb: 2 }}>
               {error}
             </Alert>
           )}
 
+          {/* Validation Summary */}
+          <ValidationSummary
+            errors={formValidation.errors}
+            touched={Object.fromEntries(
+              Object.entries(formValidation.validation).map(([key, val]) => [key, val.touched])
+            )}
+            showOnlyTouched={true}
+            maxErrors={5}
+          />
+
+          {/* Form Validation Status */}
+          <ValidationStatus
+            isValid={formValidation.isValid}
+            isDirty={formValidation.isDirty}
+            hasErrors={formValidation.hasError}
+            validationText={
+              formValidation.isValid && formValidation.isDirty 
+                ? 'All fields are valid - ready to book!' 
+                : formValidation.hasError 
+                ? 'Please fix the errors above' 
+                : undefined
+            }
+          />
+
+          {/* Loading overlay for booking form */}
+                    {bookingOperation.loading && (
+            <Box display="flex" justifyContent="center" alignItems="center" py={2}>
+              <LoadingSpinner 
+                message="Processing your booking..."
+                size={40}
+              />
+            </Box>
+          )}
+
+          {bookingOperation.loading && (
+            <LinearProgress 
+              sx={{ 
+                position: 'absolute', 
+                top: 0, 
+                left: 0, 
+                right: 0,
+                borderRadius: '4px 4px 0 0'
+              }} 
+            />
+          )}
+
           {room && (
             <Paper elevation={1} sx={{ p: 2, mb: 3, bgcolor: 'grey.50' }}>
-              <Typography variant="h6" gutterBottom>
+              <Typography variant="h6" component="div" gutterBottom>
                 Room Details
               </Typography>
               <Grid container spacing={2}>
@@ -160,7 +270,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
                       <Typography variant="body2">
                         <strong>Nights:</strong> {nights}
                       </Typography>
-                      <Typography variant="h6" color="primary.main">
+                      <Typography variant="h6" component="div" color="primary.main">
                         <strong>Total: ${totalAmount}</strong>
                       </Typography>
                     </>
@@ -209,65 +319,89 @@ const BookingForm: React.FC<BookingFormProps> = ({
               </Grid>
 
               <Grid item xs={12} sm={4}>
-                <TextField
+                <ValidatedInput
                   fullWidth
                   label="Number of Guests"
                   type="number"
-                  value={guests}
-                  onChange={(e) => setGuests(Math.max(1, parseInt(e.target.value) || 1))}
-                  inputProps={{ min: 1, max: room?.capacity || 10 }}
+                  {...formValidation.getFieldProps('guests')}
+                  InputProps={{ inputProps: { min: 1, max: room?.capacity || 10 } }}
                   required
+                  validationState={
+                    formValidation.validation.guests?.error ? 'error' : 
+                    formValidation.validation.guests?.touched && !formValidation.validation.guests?.error ? 'success' : 
+                    undefined
+                  }
                 />
               </Grid>
 
               <Grid item xs={12}>
                 <Divider sx={{ my: 1 }} />
-                <Typography variant="h6" gutterBottom>
+                <Typography variant="h6" component="div" gutterBottom>
                   Guest Information
                 </Typography>
               </Grid>
 
               {/* Guest Details */}
               <Grid item xs={12} sm={6}>
-                <TextField
+                <ValidatedInput
                   fullWidth
                   label="Full Name"
-                  value={guestName}
-                  onChange={(e) => setGuestName(e.target.value)}
+                  {...formValidation.getFieldProps('guestName')}
+                  helperText={formValidation.getFieldProps('guestName').helperText || undefined}
                   required
+                  validationState={
+                    formValidation.validation.guestName?.error ? 'error' : 
+                    formValidation.validation.guestName?.touched && !formValidation.validation.guestName?.error ? 'success' : 
+                    undefined
+                  }
                 />
               </Grid>
 
               <Grid item xs={12} sm={6}>
-                <TextField
+                <ValidatedInput
                   fullWidth
                   label="Email Address"
                   type="email"
-                  value={guestEmail}
-                  onChange={(e) => setGuestEmail(e.target.value)}
+                  {...formValidation.getFieldProps('guestEmail')}
+                  helperText={formValidation.getFieldProps('guestEmail').helperText || undefined}
                   required
+                  validationState={
+                    formValidation.validation.guestEmail?.error ? 'error' : 
+                    formValidation.validation.guestEmail?.touched && !formValidation.validation.guestEmail?.error ? 'success' : 
+                    undefined
+                  }
                 />
               </Grid>
 
               <Grid item xs={12} sm={6}>
-                <TextField
+                <ValidatedInput
                   fullWidth
                   label="Phone Number"
-                  value={guestPhone}
-                  onChange={(e) => setGuestPhone(e.target.value)}
+                  {...formValidation.getFieldProps('guestPhone')}
+                  helperText={formValidation.getFieldProps('guestPhone').helperText || 'Optional'}
                   placeholder="Optional"
+                  validationState={
+                    formValidation.validation.guestPhone?.error ? 'error' : 
+                    formValidation.validation.guestPhone?.touched && !formValidation.validation.guestPhone?.error ? 'success' : 
+                    undefined
+                  }
                 />
               </Grid>
 
               <Grid item xs={12}>
-                <TextField
+                <ValidatedInput
                   fullWidth
                   label="Special Requests"
                   multiline
                   rows={3}
-                  value={specialRequests}
-                  onChange={(e) => setSpecialRequests(e.target.value)}
+                  {...formValidation.getFieldProps('specialRequests')}
+                  helperText={formValidation.getFieldProps('specialRequests').helperText || 'Any special requests or requirements...'}
                   placeholder="Any special requests or requirements..."
+                  validationState={
+                    formValidation.validation.specialRequests?.error ? 'error' : 
+                    formValidation.validation.specialRequests?.touched && !formValidation.validation.specialRequests?.error ? 'success' : 
+                    undefined
+                  }
                 />
               </Grid>
             </Grid>
@@ -275,16 +409,33 @@ const BookingForm: React.FC<BookingFormProps> = ({
         </DialogContent>
 
         <DialogActions sx={{ p: 3, pt: 1 }}>
-          <Button onClick={onClose} disabled={loading}>
+          <Button onClick={onClose} disabled={bookingOperation.loading}>
             Cancel
           </Button>
           <Button
-            onClick={handleSubmit}
+            onClick={() => handleSubmit({ preventDefault: () => {} } as React.FormEvent)}
             variant="contained"
-            disabled={loading}
-            sx={{ ml: 1 }}
+            disabled={bookingOperation.loading}
+            sx={{ 
+              ml: 1,
+              position: 'relative'
+            }}
+            startIcon={bookingOperation.loading ? (
+              <Box 
+                sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center',
+                  '& .MuiCircularProgress-root': {
+                    width: '16px !important',
+                    height: '16px !important'
+                  }
+                }}
+              >
+                <LoadingSpinner size={16} />
+              </Box>
+            ) : undefined}
           >
-            {loading ? 'Processing...' : `Book Now - $${totalAmount}`}
+            {bookingOperation.loading ? 'Processing...' : `Book Now - ETB ${totalAmount?.toFixed(0)}`}
           </Button>
         </DialogActions>
       </Dialog>

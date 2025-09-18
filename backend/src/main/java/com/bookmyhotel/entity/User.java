@@ -21,6 +21,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -28,65 +30,136 @@ import jakarta.validation.constraints.Size;
 
 /**
  * User entity for authentication and authorization
+ * Supports both tenant-bound users (HOTEL_ADMIN, FRONTDESK, etc.)
+ * and system-wide users (SYSTEM_ADMIN, ADMIN, CUSTOMER, GUEST)
+ * CUSTOMER: Registered users with accounts (can book across hotels)
+ * GUEST: Anonymous users without accounts (temporary token-based access)
+ * SYSTEM_ADMIN: System administrators with global access
+ * ADMIN: Regular administrators with global access
  */
 @Entity
-@Table(name = "users",
-       indexes = {
-           @Index(name = "idx_user_tenant", columnList = "tenant_id"),
-           @Index(name = "idx_user_email", columnList = "email", unique = true)
-       })
-public class User extends TenantEntity implements UserDetails {
-    
+@Table(name = "users", indexes = {
+        @Index(name = "idx_user_email", columnList = "email", unique = true)
+})
+public class User extends BaseEntity implements UserDetails {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
+    // NOTE: Tenant access is now through hotel.tenant_id relationship
+    // No direct tenant_id field - users belong to hotels, hotels belong to tenants
+
     @NotBlank(message = "Email is required")
     @Email(message = "Email should be valid")
     @Size(max = 100, message = "Email must not exceed 100 characters")
     @Column(name = "email", nullable = false, unique = true, length = 100)
     private String email;
-    
+
     @Column(name = "password", nullable = false)
     private String password;
-    
+
     @NotBlank(message = "First name is required")
     @Size(max = 50, message = "First name must not exceed 50 characters")
     @Column(name = "first_name", nullable = false, length = 50)
     private String firstName;
-    
+
     @NotBlank(message = "Last name is required")
     @Size(max = 50, message = "Last name must not exceed 50 characters")
     @Column(name = "last_name", nullable = false, length = 50)
     private String lastName;
-    
+
     @Size(max = 20, message = "Phone must not exceed 20 characters")
     @Column(name = "phone", length = 20)
     private String phone;
-    
+
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
-    
+
     @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "role")
     private Set<UserRole> roles;
-    
-    @ManyToOne(fetch = FetchType.LAZY)
+
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "hotel_id")
     private Hotel hotel;
-    
+
     // Constructors
-    public User() {}
-    
+    public User() {
+    }
+
     public User(String email, String password, String firstName, String lastName) {
         this.email = email;
         this.password = password;
         this.firstName = firstName;
         this.lastName = lastName;
     }
-    
+
+    // Lifecycle methods for hotel management
+    @PrePersist
+    public void prePersist() {
+        super.prePersist(); // Call BaseEntity's prePersist first
+
+        // For hotel-bound users, ensure they have a hotel assigned
+        if (isTenantBoundUser() && hotel == null) {
+            throw new IllegalStateException("Hotel-bound users must have a hotel assigned");
+        }
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        super.preUpdate(); // Call BaseEntity's preUpdate
+    }
+
+    /**
+     * Determines if this user should be bound to a hotel
+     * SYSTEM_ADMIN, GUEST, and CUSTOMER users are system-wide (no hotel)
+     * All other roles (HOTEL_ADMIN, FRONTDESK, etc.) are hotel-bound
+     */
+    public boolean isTenantBoundUser() {
+        // Check if user has system-wide roles
+        if (roles != null) {
+            boolean hasSystemWideRole = roles.contains(UserRole.SYSTEM_ADMIN) ||
+                    roles.contains(UserRole.GUEST) ||
+                    roles.contains(UserRole.CUSTOMER) ||
+                    roles.contains(UserRole.ADMIN);
+            return !hasSystemWideRole;
+        }
+        return false; // If no roles, not hotel-bound
+    }
+
+    /**
+     * Checks if this user is a system-wide user (not bound to any hotel)
+     * SYSTEM_ADMIN, ADMIN, GUEST, and CUSTOMER users are system-wide
+     */
+    public boolean isSystemWideUser() {
+        if (roles != null) {
+            boolean hasSystemWideRole = roles.stream()
+                    .anyMatch(role -> role == UserRole.SYSTEM_ADMIN ||
+                            role == UserRole.ADMIN ||
+                            role == UserRole.GUEST ||
+                            role == UserRole.CUSTOMER);
+            return hasSystemWideRole;
+        }
+
+        // Fallback: if no hotel, consider system-wide
+        return this.hotel == null;
+    }
+
+    /**
+     * Gets the tenant ID through hotel relationship
+     * For hotel-bound users: returns hotel.tenant_id
+     * For system-wide users: returns null
+     */
+    public String getTenantId() {
+        if (hotel != null) {
+            return hotel.getTenantId();
+        }
+        return null; // System-wide users have no tenant
+    }
+
     // UserDetails implementation
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -94,101 +167,102 @@ public class User extends TenantEntity implements UserDetails {
                 .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
                 .collect(Collectors.toList());
     }
-    
+
     @Override
     public String getUsername() {
         return email;
     }
-    
+
     @Override
     public boolean isAccountNonExpired() {
         return true;
     }
-    
+
     @Override
     public boolean isAccountNonLocked() {
         return true;
     }
-    
+
     @Override
     public boolean isCredentialsNonExpired() {
         return true;
     }
-    
+
     @Override
     public boolean isEnabled() {
         return isActive;
     }
-    
+
     // Getters and Setters
     public Long getId() {
         return id;
     }
-    
+
     public void setId(Long id) {
         this.id = id;
     }
-    
+
     public String getEmail() {
         return email;
     }
-    
+
     public void setEmail(String email) {
         this.email = email;
     }
-    
+
+    @Override
     public String getPassword() {
         return password;
     }
-    
+
     public void setPassword(String password) {
         this.password = password;
     }
-    
+
     public String getFirstName() {
         return firstName;
     }
-    
+
     public void setFirstName(String firstName) {
         this.firstName = firstName;
     }
-    
+
     public String getLastName() {
         return lastName;
     }
-    
+
     public void setLastName(String lastName) {
         this.lastName = lastName;
     }
-    
+
     public String getPhone() {
         return phone;
     }
-    
+
     public void setPhone(String phone) {
         this.phone = phone;
     }
-    
+
     public Boolean getIsActive() {
         return isActive;
     }
-    
+
     public void setIsActive(Boolean isActive) {
         this.isActive = isActive;
     }
-    
+
     public Set<UserRole> getRoles() {
         return roles;
     }
-    
+
     public void setRoles(Set<UserRole> roles) {
         this.roles = roles;
     }
-    
+
     public Hotel getHotel() {
         return hotel;
     }
-    
+
     public void setHotel(Hotel hotel) {
         this.hotel = hotel;
     }

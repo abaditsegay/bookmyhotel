@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Container,
   Typography,
@@ -23,6 +23,7 @@ import {
   CircularProgress,
   Switch,
   FormControlLabel,
+  IconButton,
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -52,6 +53,7 @@ interface UserData {
 const UserViewEdit: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { adminApiService } = useAuthenticatedApi();
   
   const [user, setUser] = useState<UserData | null>(null);
@@ -146,6 +148,15 @@ const UserViewEdit: React.FC = () => {
     }
   };
 
+  const handleBackToAdmin = () => {
+    const returnTab = searchParams.get('returnTab');
+    if (returnTab) {
+      navigate(`/admin/dashboard?tab=${returnTab}`);
+    } else {
+      navigate('/system-dashboard');
+    }
+  };
+
   const handleInputChange = (field: keyof UserData, value: any) => {
     if (editedUser) {
       setEditedUser({
@@ -178,12 +189,9 @@ const UserViewEdit: React.FC = () => {
         <Alert severity="error" sx={{ mb: 2 }}>
           {error}
         </Alert>
-        <Button
-          startIcon={<ArrowBackIcon />}
-          onClick={() => navigate('/admin/dashboard')}
-        >
-          Back to Dashboard
-        </Button>
+        <IconButton onClick={handleBackToAdmin} sx={{ mr: 1 }}>
+          <ArrowBackIcon />
+        </IconButton>
       </Container>
     );
   }
@@ -195,13 +203,9 @@ const UserViewEdit: React.FC = () => {
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <Button
-            startIcon={<ArrowBackIcon />}
-            onClick={() => navigate('/admin/dashboard')}
-            sx={{ mr: 2 }}
-          >
-            Back to Dashboard
-          </Button>
+          <IconButton onClick={handleBackToAdmin} sx={{ mr: 1 }}>
+            <ArrowBackIcon />
+          </IconButton>
           <Box>
             <Typography variant="h4" sx={{ fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
               <PersonIcon sx={{ mr: 1 }} />

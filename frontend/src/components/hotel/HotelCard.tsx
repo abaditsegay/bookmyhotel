@@ -3,13 +3,12 @@ import {
   Card,
   CardContent,
   CardActions,
+  CardMedia,
   Typography,
   Button,
-  Chip,
   Box,
   Grid,
   Divider,
-  Rating,
 } from '@mui/material';
 import {
   LocationOn as LocationIcon,
@@ -22,8 +21,25 @@ import { HotelSearchResult } from '../../types/hotel';
 interface HotelCardProps {
   hotel: HotelSearchResult;
   onViewDetails: (hotelId: number) => void;
-  onBookRoom: (hotelId: number, roomId: number) => void;
+  onBookRoom: (hotelId: number, roomId: number, asGuest?: boolean) => void;
 }
+
+// Professional hotel images based on hotel name/location
+const getHotelImage = (hotelName: string, city: string): string => {
+  const cityImages = {
+    'New York': 'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=400&h=200&fit=crop&crop=center', // Luxury NYC hotel exterior
+    'Miami': 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=400&h=200&fit=crop&crop=center', // Modern Miami beachfront hotel
+    'Los Angeles': 'https://images.unsplash.com/photo-1455587734955-081b22074882?w=400&h=200&fit=crop&crop=center', // Elegant LA hotel facade
+    'San Francisco': 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=400&h=200&fit=crop&crop=center', // Victorian SF hotel
+    'Chicago': 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=200&fit=crop&crop=center', // Modern Chicago hotel
+    'Philadelphia': 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=400&h=200&fit=crop&crop=center', // Historic Philadelphia hotel
+    'Seattle': 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=400&h=200&fit=crop&crop=center', // Seattle waterfront hotel
+    'San Diego': 'https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=400&h=200&fit=crop&crop=center', // San Diego resort hotel
+    'Las Vegas': 'https://images.unsplash.com/photo-1540541338287-41700207dee6?w=400&h=200&fit=crop&crop=center', // Vegas luxury hotel
+    'Boston': 'https://images.unsplash.com/photo-1445019980597-93fa8acb246c?w=400&h=200&fit=crop&crop=center', // Historic Boston hotel
+  };
+  return cityImages[city as keyof typeof cityImages] || cityImages['New York'];
+};
 
 const HotelCard: React.FC<HotelCardProps> = ({ hotel, onViewDetails, onBookRoom }) => {
   const hasAvailableRooms = hotel.availableRooms && hotel.availableRooms.length > 0;
@@ -42,6 +58,16 @@ const HotelCard: React.FC<HotelCardProps> = ({ hotel, onViewDetails, onBookRoom 
         },
       }}
     >
+      {/* Hotel Image */}
+      <CardMedia
+        component="img"
+        height="200"
+        image={getHotelImage(hotel.name, hotel.city)}
+        alt={hotel.name}
+        sx={{
+          objectFit: 'cover',
+        }}
+      />
       <CardContent sx={{ flexGrow: 1 }}>
         {/* Hotel Header */}
         <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
@@ -161,7 +187,7 @@ const HotelCard: React.FC<HotelCardProps> = ({ hotel, onViewDetails, onBookRoom 
               fullWidth 
               variant="contained" 
               disabled={!hasAvailableRooms}
-              onClick={() => hasAvailableRooms && onBookRoom(hotel.id, hotel.availableRooms[0].id)}
+              onClick={() => hasAvailableRooms && onBookRoom(hotel.id, hotel.availableRooms[0].id, false)}
               size="small"
             >
               {hasAvailableRooms ? 'Book Now' : 'Unavailable'}

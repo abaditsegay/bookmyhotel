@@ -100,10 +100,27 @@ jspm_packages/
 
 # dotenv environment variable files
 .env
+.env.*
 .env.development.local
 .env.test.local
 .env.production.local
 .env.local
+
+# Azure and OAuth credentials
+*oauth2-credentials*
+*azure-credentials*
+oauth2-credentials.env
+setup-oauth2.sh
+start-backend-with-oauth2.sh
+*.pem
+*.p12
+*.pfx
+
+# Azure deployment files
+azure.yaml
+deploy-azure.sh
+**/application-aws.properties
+application-aws.properties
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
@@ -196,3 +213,70 @@ coverage/
 # Application specific
 application-local.properties
 application-dev.properties
+
+# Development and testing files
+*.sql
+!backend/src/main/resources/db/migration/*.sql
+*.py
+debug-*.js
+test-*.js
+*test*.sh
+*debug*.sh
+*generate*.sh
+*setup*.sh
+*start*.sh
+*stop*.sh
+*insert*.sh
+*fix*.sh
+cleanup.sh
+debug-*.java
+GeneratePasswordHash.java
+DebugPassword.java
+token.txt
+*.txt
+diagnostic.sh
+navbar-demo.sh
+
+# Development documentation
+*_IMPLEMENTATION.md
+*_FIXED.md
+*_SUMMARY.md
+*_SETUP_COMPLETE.md
+*_ROADMAP.md
+*_GUIDE.md
+CONTROLLER_ARCHITECTURE.md
+ENDPOINT_STRUCTURE.md
+UI_MOCKUP_*.md
+E2E_TESTING_*.md
+EXPERT_*.md
+ENHANCED_*.md
+ETHIOPIAN_*.md
+GRAND_PLAZA_*.md
+HOTEL_*.md
+MY_BOOKINGS_*.md
+OPERATIONS_*.md
+REVIEW_SYSTEM_*.md
+TASK_ASSIGNMENT_*.md
+TRANSPARENT_PRICING_COMPONENT.tsx
+
+# Production readiness excludes
+/infra/mysql/*.sql
+!backend/src/main/resources/db/migration/
+sample-*.sql
+test-data-*.sql
+insert-*.sql
+fix-*.sql
+comprehensive-*.sql
+
+# Keep essential documentation
+!README.md
+!API_DOCUMENTATION.md
+!STANDARDIZED_LOGIN_CREDENTIALS.md
+!APPLICATION_SECURITY_ANALYSIS.md
+!DATA_SEGREGATION_ANALYSIS.md
+!SYSTEM_ADMIN_ACCESS_SUMMARY.md
+!CREDENTIALS_SETUP.md
+!LOCAL_DEPLOYMENT.md
+!ENVIRONMENT_VARIABLES_SETUP.md
+!OAUTH2_EMAIL_SETUP.md
+!PRODUCTION_DEPLOYMENT_CHECKLIST.md

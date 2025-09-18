@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Container,
   Typography,
@@ -11,6 +11,10 @@ import {
   Link,
   Fab,
   IconButton,
+  useMediaQuery,
+  useTheme,
+  Stack,
+  Button,
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -18,20 +22,21 @@ import {
   Sort as SortIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { hotelApiService } from '../services/hotelApi';
 import HotelDetailsCard from '../components/hotel/HotelDetailsCard';
-import BookingForm from '../components/booking/BookingForm';
-import { useAuthenticatedApi } from '../hooks/useAuthenticatedApi';
 import { 
   HotelSearchRequest, 
   HotelSearchResult,
-  BookingRequest,
-  AvailableRoom 
 } from '../types/hotel';
 
 const SearchResultsPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { hotelApiService } = useAuthenticatedApi();
+  const { isAuthenticated } = useAuth();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
   
   // State from search parameters
   const [searchRequest, setSearchRequest] = useState<HotelSearchRequest | null>(null);
@@ -39,64 +44,147 @@ const SearchResultsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   
-  // Booking form state
-  const [bookingFormOpen, setBookingFormOpen] = useState(false);
-  const [selectedRoom, setSelectedRoom] = useState<AvailableRoom | null>(null);
-  const [selectedHotelName, setSelectedHotelName] = useState('');
-  
   // Success/error feedback
   const [successMessage, setSuccessMessage] = useState('');
 
+  // Function to perform a new search when we have searchRequest but no hotels
+  const performSearch = useCallback(async (searchReq: HotelSearchRequest) => {
+    try {
+      setLoading(true);
+      setError('');
+      console.log('🔍 Re-performing hotel search:', searchReq);
+      const results = await hotelApiService.searchHotelsPublic(searchReq);
+      console.log('✅ Hotel search results:', results);
+      setHotels(results);
+    } catch (err) {
+      console.error('❌ Hotel search failed:', err);
+      setError(err instanceof Error ? err.message : 'An error occurred while searching for hotels');
+      // If search fails, redirect back to search page
+      navigate('/hotels/search');
+    } finally {
+      setLoading(false);
+    }
+  }, [navigate]);
+
   // Extract search parameters from location state or URL
   useEffect(() => {
-    const state = location.state as { searchRequest?: HotelSearchRequest; hotels?: HotelSearchResult[] };
+    const state = location.state as { 
+      searchRequest?: HotelSearchRequest; 
+      hotels?: HotelSearchResult[];
+      successMessage?: string;
+    };
     
-    if (state?.searchRequest && state?.hotels) {
+    if (state?.searchRequest && state?.hotels && state.hotels.length > 0) {
       // If we have data passed from the search page
       setSearchRequest(state.searchRequest);
       setHotels(state.hotels);
       setLoading(false);
+    } else if (state?.searchRequest) {
+      // If we have searchRequest but no hotels, perform a new search
+      setSearchRequest(state.searchRequest);
+      performSearch(state.searchRequest);
     } else {
       // If no data, redirect back to search
-      navigate('/');
+      navigate('/hotels/search');
     }
-  }, [location, navigate]);
 
-  const handleBookRoom = async (hotelId: number, roomId: number) => {
-    // Find the selected room and hotel
-    const hotel = hotels.find(h => h.id === hotelId);
-    const room = hotel?.availableRooms.find(r => r.id === roomId);
+    // Handle success message from booking
+    if (state?.successMessage) {
+      setSuccessMessage(state.successMessage);
+    }
+  }, [location, navigate, performSearch]);
+
+  const handleBookRoom = async (hotelId: number, roomId: number, asGuest: boolean = false) => {
+    // Get room details for booking
+    const hotel = hotels.find((h: HotelSearchResult) => h.id === hotelId);
+    if (!hotel) return;
     
-    if (!room || !hotel) {
-      setError('Selected room not found');
-      return;
-    }
+    const room = hotel.availableRooms.find((r: any) => r.id === roomId);
+    if (!room) return;
 
-    setSelectedRoom(room);
-    setSelectedHotelName(hotel.name);
-    setBookingFormOpen(true);
+    if (asGuest) {
+      // For explicit guest bookings, navigate directly to booking page
+      navigate('/booking', {
+        state: {
+          room,
+          hotelName: hotel.name,
+          hotelId: hotelId,
+          searchRequest: searchRequest,
+          asGuest: true
+        }
+      });
+    } else if (!isAuthenticated) {
+      // For "Sign in to Book" when user is not authenticated, redirect to login page
+      navigate('/login', {
+        state: {
+          redirectTo: '/booking',
+          bookingData: {
+            room,
+            hotelName: hotel.name,
+            hotelId: hotelId,
+            searchRequest: searchRequest,
+            asGuest: false
+          }
+        }
+      });
+    } else {
+      // For authenticated users who want to book with their account
+      navigate('/booking', {
+        state: {
+          room,
+          hotelName: hotel.name,
+          hotelId: hotelId,
+          searchRequest: searchRequest,
+          asGuest: false // Authenticated user booking
+        }
+      });
+    }
   };
 
-  const handleBookingSubmit = async (bookingRequest: BookingRequest) => {
-    try {
-      const result = await hotelApiService.createBooking(bookingRequest);
-      setSuccessMessage(`Booking confirmed! Confirmation number: ${result.confirmationNumber}`);
-      setBookingFormOpen(false);
-      
-      // Optionally refresh search results to update availability
-      if (searchRequest) {
-        setLoading(true);
-        try {
-          const refreshedResults = await hotelApiService.searchHotels(searchRequest);
-          setHotels(refreshedResults);
-        } catch (err) {
-          console.error('Failed to refresh results:', err);
-        } finally {
-          setLoading(false);
+  const handleBookRoomType = async (hotelId: number, roomType: string, asGuest: boolean = false) => {
+    // Get hotel details for booking
+    const hotel = hotels.find((h: HotelSearchResult) => h.id === hotelId);
+    if (!hotel) return;
+    
+    const roomTypeInfo = hotel.roomTypeAvailability?.find((rt: any) => rt.roomType === roomType);
+    if (!roomTypeInfo) return;
+
+    if (asGuest) {
+      // For explicit guest bookings, navigate directly to booking page
+      navigate('/booking', {
+        state: {
+          roomType: roomTypeInfo,
+          hotelName: hotel.name,
+          hotelId: hotelId,
+          searchRequest: searchRequest,
+          asGuest: true
         }
-      }
-    } catch (err) {
-      throw err; // Let the form handle the error
+      });
+    } else if (!isAuthenticated) {
+      // For "Sign in to Book" when user is not authenticated, redirect to login page
+      navigate('/login', {
+        state: {
+          redirectTo: '/booking',
+          bookingData: {
+            roomType: roomTypeInfo,
+            hotelName: hotel.name,
+            hotelId: hotelId,
+            searchRequest: searchRequest,
+            asGuest: false
+          }
+        }
+      });
+    } else {
+      // For authenticated users who want to book with their account
+      navigate('/booking', {
+        state: {
+          roomType: roomTypeInfo,
+          hotelName: hotel.name,
+          hotelId: hotelId,
+          searchRequest: searchRequest,
+          asGuest: false // Authenticated user booking
+        }
+      });
     }
   };
 
@@ -136,66 +224,130 @@ const SearchResultsPage: React.FC = () => {
   }
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
+    <Container 
+      maxWidth={isMobile ? "lg" : "xl"} 
+      sx={{ 
+        py: isMobile ? 2 : 4,
+        px: isMobile ? 1 : 3,
+      }}
+    >
       {/* Header Section */}
-      <Box sx={{ mb: 4 }}>
-        {/* Back Navigation */}
+      <Box sx={{ mb: isMobile ? 2 : 4 }}>
+        {/* Back Navigation - Mobile Optimized */}
         <Box sx={{ mb: 2 }}>
           <IconButton 
             onClick={handleBackToSearch}
-            sx={{ mr: 1 }}
+            sx={{ 
+              mr: 1,
+              p: isMobile ? 1.5 : 1,
+            }}
             aria-label="back to search"
           >
             <ArrowBackIcon />
           </IconButton>
-          <Breadcrumbs aria-label="breadcrumb">
-            <Link 
-              component="button" 
-              variant="body2" 
-              onClick={handleBackToSearch}
-              sx={{ textDecoration: 'none' }}
-            >
-              Hotel Search
-            </Link>
-            <Typography variant="body2" color="text.primary">
-              Search Results
-            </Typography>
-          </Breadcrumbs>
+          {!isSmallMobile && (
+            <Breadcrumbs aria-label="breadcrumb">
+              <Link 
+                component="button" 
+                variant="body2" 
+                onClick={handleBackToSearch}
+                sx={{ textDecoration: 'none' }}
+              >
+                Hotel Search
+              </Link>
+              <Typography variant="body2" color="text.primary">
+                Search Results
+              </Typography>
+            </Breadcrumbs>
+          )}
         </Box>
 
-        {/* Search Summary */}
-        <Paper elevation={1} sx={{ p: 3, mb: 3, backgroundColor: 'primary.50' }}>
-          <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
+        {/* Search Summary - Mobile Responsive */}
+        <Paper 
+          elevation={1} 
+          sx={{ 
+            p: isMobile ? 2 : 3, 
+            mb: isMobile ? 2 : 3, 
+            backgroundColor: 'primary.50' 
+          }}
+        >
+          <Typography 
+            variant={isMobile ? "h5" : "h4"} 
+            component="h1" 
+            gutterBottom 
+            sx={{ fontWeight: 'bold' }}
+          >
             Search Results
           </Typography>
-          <Typography variant="h6" color="text.secondary" gutterBottom>
+          <Typography 
+            variant={isMobile ? "body1" : "h6"} 
+            color="text.secondary" 
+            gutterBottom
+            sx={{ 
+              fontSize: isMobile ? '0.9rem' : undefined,
+              lineHeight: isMobile ? 1.4 : undefined,
+            }}
+          >
             Hotels {formatSearchSummary()}
           </Typography>
-          <Typography variant="body1" color="success.main" sx={{ fontWeight: 'medium' }}>
+          <Typography 
+            variant="body1" 
+            color="success.main" 
+            sx={{ fontWeight: 'medium' }}
+          >
             {hotels.length} hotel{hotels.length === 1 ? '' : 's'} found
           </Typography>
         </Paper>
 
-        {/* Action Buttons */}
-        <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-          <Fab 
-            variant="extended" 
-            size="medium" 
-            color="primary"
-            onClick={() => console.log('Open filters')}
-          >
-            <FilterIcon sx={{ mr: 1 }} />
-            Filter Results
-          </Fab>
-          <Fab 
-            variant="extended" 
-            size="medium" 
-            onClick={() => console.log('Open sort options')}
-          >
-            <SortIcon sx={{ mr: 1 }} />
-            Sort By Price
-          </Fab>
-        </Box>
+        {/* Action Buttons - Mobile Responsive */}
+        <Stack 
+          direction={isMobile ? "column" : "row"} 
+          spacing={isMobile ? 1 : 2} 
+          sx={{ mb: isMobile ? 2 : 3 }}
+        >
+          {isMobile ? (
+            <>
+              <Button 
+                variant="outlined" 
+                startIcon={<FilterIcon />}
+                onClick={() => console.log('Open filters')}
+                fullWidth
+                sx={{ py: 1.5 }}
+              >
+                Filter Results
+              </Button>
+              <Button 
+                variant="outlined"
+                startIcon={<SortIcon />}
+                onClick={() => console.log('Open sort options')}
+                fullWidth
+                sx={{ py: 1.5 }}
+              >
+                Sort By Price
+              </Button>
+            </>
+          ) : (
+            <>
+              <Fab 
+                variant="extended" 
+                size="medium" 
+                color="primary"
+                onClick={() => console.log('Open filters')}
+              >
+                <FilterIcon sx={{ mr: 1 }} />
+                Filter Results
+              </Fab>
+              <Fab 
+                variant="extended" 
+                size="medium" 
+                onClick={() => console.log('Open sort options')}
+              >
+                <SortIcon sx={{ mr: 1 }} />
+                Sort By Price
+              </Fab>
+            </>
+          )}
+        </Stack>
       </Box>
 
       {/* Error State */}
@@ -213,7 +365,9 @@ const SearchResultsPage: React.FC = () => {
               key={hotel.id}
               hotel={hotel}
               onBookRoom={handleBookRoom}
+              onBookRoomType={handleBookRoomType}
               defaultExpanded={index === 0} // Expand first hotel by default
+              horizontalLayout={true}
             />
           ))}
         </Box>
@@ -230,18 +384,6 @@ const SearchResultsPage: React.FC = () => {
           </Typography>
         </Paper>
       )}
-
-      {/* Booking Form Dialog */}
-      <BookingForm
-        open={bookingFormOpen}
-        onClose={() => setBookingFormOpen(false)}
-        onSubmit={handleBookingSubmit}
-        room={selectedRoom}
-        hotelName={selectedHotelName}
-        defaultCheckIn={searchRequest ? new Date(searchRequest.checkInDate) : undefined}
-        defaultCheckOut={searchRequest ? new Date(searchRequest.checkOutDate) : undefined}
-        defaultGuests={searchRequest?.guests}
-      />
 
       {/* Success Snackbar */}
       <Snackbar
