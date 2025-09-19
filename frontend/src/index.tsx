@@ -12,9 +12,22 @@ import { AuthProvider } from './contexts/AuthContext';
 import { TenantProvider, useTenant } from './contexts/TenantContext';
 import './index.css';
 
-// Initialize Stripe only if we have a publishable key
+// Initialize Stripe with better offline handling
 const stripePublishableKey = process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY;
-const stripePromise = stripePublishableKey ? loadStripe(stripePublishableKey) : null;
+let stripePromise: Promise<any> | null = null;
+
+// Only initialize Stripe if we have a key and can connect
+if (stripePublishableKey) {
+  try {
+    // Create a promise that resolves to null if offline
+    stripePromise = navigator.onLine 
+      ? loadStripe(stripePublishableKey)
+      : Promise.resolve(null);
+  } catch (error) {
+    console.warn('Stripe initialization failed, continuing without payment processing:', error);
+    stripePromise = null;
+  }
+}
 
 // Initialize React Query
 const queryClient = new QueryClient({

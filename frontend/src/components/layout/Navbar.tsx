@@ -33,6 +33,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { themeConstants } from '../../theme/theme';
 import { useNotifications } from '../../hooks/useNotifications';
+import NetworkStatusIndicator from '../NetworkStatusIndicator';
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
@@ -510,6 +511,14 @@ const Navbar: React.FC = () => {
                     zIndex: 10, // Ensure it stays above other elements
                   }}
                 />
+                
+                {/* Network Status Indicator - Only for staff/admin roles */}
+                {user.roles && user.roles.some(role => ['HOTEL_ADMIN', 'ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'MAINTENANCE', 'OPERATIONS_SUPERVISOR', 'SYSTEM_ADMIN'].includes(role)) && (
+                  <NetworkStatusIndicator 
+                    variant="minimal" 
+                    className="network-status-navbar"
+                  />
+                )}
                 
                 {/* User Icon & Menu */}
                 <IconButton onClick={handleMenuOpen} sx={{ p: 0.5, color: 'white', position: 'relative', zIndex: 10 }}>

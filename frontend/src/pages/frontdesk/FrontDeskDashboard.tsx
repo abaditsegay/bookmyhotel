@@ -10,13 +10,20 @@ import {
   Tab,
   Paper,
   Snackbar,
-  Alert
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button
 } from '@mui/material';
 import { useAuth } from '../../contexts/AuthContext';
 import { frontDeskApiService, FrontDeskStats } from '../../services/frontDeskApi';
 import BookingManagementTable from '../../components/booking/BookingManagementTable';
 import WalkInBookingModal from '../../components/booking/WalkInBookingModal';
 import FrontDeskRoomManagement from '../../components/frontdesk/FrontDeskRoomManagement';
+import OfflineWalkInBooking from '../../components/OfflineWalkInBooking';
+import { roomCacheService } from '../../services/RoomCacheService';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -40,12 +47,12 @@ function TabPanel(props: TabPanelProps) {
 }
 
 const FrontDeskDashboard: React.FC = () => {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   
   // Get initial tab from URL parameter, default to 0
   const initialTab = parseInt(searchParams.get('tab') || '0', 10);
-  const [activeTab, setActiveTab] = useState(Math.max(0, Math.min(initialTab, 2))); // Ensure tab is 0, 1, or 2
+  const [activeTab, setActiveTab] = useState(Math.max(0, Math.min(initialTab, 3))); // Ensure tab is 0, 1, 2, or 3
   const [stats, setStats] = useState<FrontDeskStats | null>(null);
   const [walkInModalOpen, setWalkInModalOpen] = useState(false);
   
@@ -57,6 +64,12 @@ const FrontDeskDashboard: React.FC = () => {
     open: false,
     message: '',
     severity: 'success' as 'success' | 'error'
+  });
+
+  // Success dialog state for booking confirmations
+  const [successDialog, setSuccessDialog] = useState({
+    open: false,
+    message: ''
   });
 
   // Debug modal state changes
@@ -84,10 +97,42 @@ const FrontDeskDashboard: React.FC = () => {
     }
   };
 
+  // Preload and cache room data for offline use
+  const preloadRoomData = async () => {
+    console.log('🚀 FrontDesk Dashboard: preloadRoomData called');
+    console.log('🔍 FrontDesk Dashboard: user?.hotelId:', user?.hotelId);
+    console.log('🔍 FrontDesk Dashboard: token exists:', !!token);
+    console.log('🔍 FrontDesk Dashboard: user object:', user);
+    
+    if (!user?.hotelId || !token) {
+      console.warn('⚠️ FrontDesk Dashboard: Missing hotelId or token, skipping room preload');
+      return;
+    }
+    
+    try {
+      const hotelId = parseInt(user.hotelId);
+      console.log('🏨 FrontDesk Dashboard: Preloading room data for hotel', hotelId);
+      
+      // Force refresh to get latest room data and cache it
+      const rooms = await roomCacheService.getRooms(hotelId, true);
+      console.log('📊 FrontDesk Dashboard: Retrieved rooms:', rooms.length, 'rooms');
+      console.log('🔍 FrontDesk Dashboard: Sample room data:', rooms.slice(0, 2));
+      
+      // Start periodic refresh for this hotel
+      roomCacheService.startPeriodicRefresh(hotelId);
+      
+      console.log('✅ FrontDesk Dashboard: Room data preloaded successfully');
+    } catch (error) {
+      console.error('❌ FrontDesk Dashboard: Failed to preload room data:', error);
+      console.error('❌ FrontDesk Dashboard: Error stack:', error instanceof Error ? error.stack : 'No stack');
+    }
+  };
+
   // Load front desk statistics and initial data
   useEffect(() => {
     loadStats();
-  }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
+    preloadRoomData(); // Preload room data for offline use
+  }, [token, user?.hotelId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleRefresh = () => {
     loadStats();
@@ -98,11 +143,10 @@ const FrontDeskDashboard: React.FC = () => {
     // Close modal first
     setWalkInModalOpen(false);
     
-    // Show success message
-    setSnackbar({
+    // Show success dialog
+    setSuccessDialog({
       open: true,
-      message: `Walk-in booking created successfully! Confirmation: ${bookingData.confirmationNumber}`,
-      severity: 'success'
+      message: `Walk-in booking created successfully! Confirmation: ${bookingData.confirmationNumber}`
     });
     
     // Refresh stats and trigger booking list refresh
@@ -215,11 +259,23 @@ const FrontDeskDashboard: React.FC = () => {
             '& .MuiTabs-scrollButtons': {
               '&.Mui-disabled': { opacity: 0.3 },
             },
+            '& .MuiTab-root:nth-of-type(4)': { // Target the 4th tab (Offline Bookings)
+              backgroundColor: '#ff9800', // Orange background
+              color: '#fff',
+              '&:hover': {
+                backgroundColor: '#f57c00', // Darker orange on hover
+              },
+              '&.Mui-selected': {
+                backgroundColor: '#e65100', // Even darker orange when selected
+                color: '#fff',
+              },
+            },
           }}
         >
           <Tab label="Bookings" />
           <Tab label="Rooms" />
           <Tab label="Housekeeping" />
+          <Tab label="Offline Bookings" />
         </Tabs>
       </Paper>
 
@@ -269,6 +325,22 @@ const FrontDeskDashboard: React.FC = () => {
         </Box>
       </TabPanel>
 
+      {/* Offline Bookings Tab */}
+      <TabPanel value={activeTab} index={3}>
+        <OfflineWalkInBooking
+          onBookingComplete={(booking) => {
+            console.log('Offline booking created:', booking);
+            setSnackbar({
+              open: true,
+              message: `Offline booking created successfully for ${booking.guestName}`,
+              severity: 'success'
+            });
+            // Refresh booking data
+            setBookingRefreshTrigger(prev => prev + 1);
+          }}
+        />
+      </TabPanel>
+
       {/* Walk-in Booking Modal */}
       <WalkInBookingModal
         key={walkInModalOpen ? 'modal-open' : 'modal-closed'} // Force re-render
@@ -295,6 +367,33 @@ const FrontDeskDashboard: React.FC = () => {
           {snackbar.message}
         </Alert>
       </Snackbar>
+
+      {/* Success Dialog for Booking Confirmations */}
+      <Dialog
+        open={successDialog.open}
+        onClose={() => setSuccessDialog({ ...successDialog, open: false })}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ textAlign: 'center', color: 'success.main' }}>
+          ✅ Success
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body1" sx={{ textAlign: 'center', py: 2 }}>
+            {successDialog.message}
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: 'center', pb: 2 }}>
+          <Button 
+            onClick={() => setSuccessDialog({ ...successDialog, open: false })} 
+            variant="contained" 
+            color="primary"
+            sx={{ minWidth: 100 }}
+          >
+            OK
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

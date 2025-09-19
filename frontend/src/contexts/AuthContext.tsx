@@ -4,6 +4,7 @@ import { API_CONFIG } from '../config/apiConfig';
 import { updateUserProfile, changeUserPassword } from '../services/userApi';
 import TokenManager, { type AuthUser } from '../utils/tokenManager';
 import { apiClient } from '../utils/apiClient';
+import { offlineStorage, type StaffSession } from '../services/OfflineStorageService';
 
 interface User {
   id: string;
@@ -180,6 +181,38 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
         console.error('Mobile AuthContext: localStorage save failed:', storageError);
       }
       
+      // Save staff session for offline use
+      console.log('Mobile AuthContext: Saving staff session for offline use...');
+      try {
+        const staffSession: StaffSession = {
+          id: `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          userId: parseInt(loginData.id.toString()),
+          username: `${loginData.firstName || ''} ${loginData.lastName || ''}`.trim(),
+          email: loginData.email,
+          role: Array.isArray(loginData.roles) ? loginData.roles[0] : loginData.roles,
+          roles: Array.isArray(loginData.roles) ? loginData.roles : [loginData.roles],
+          hotelId: loginData.hotelId ? parseInt(loginData.hotelId.toString()) : undefined,
+          hotelName: loginData.hotelName,
+          tenantId: loginData.tenantId || undefined,
+          token: loginData.token,
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours from now
+          lastActivity: new Date().toISOString(),
+          isActive: true
+        };
+        
+        console.log('🔍 Mobile AuthContext: Staff session object:', staffSession);
+        await offlineStorage.saveStaffSession(staffSession);
+        console.log('✅ Mobile AuthContext: Staff session saved successfully');
+        
+        // Verify session was saved
+        const savedSession = await offlineStorage.getActiveStaffSession();
+        console.log('🔍 Mobile AuthContext: Verification - saved session:', savedSession);
+      } catch (sessionError) {
+        console.error('❌ Mobile AuthContext: Failed to save staff session:', sessionError);
+        console.error('❌ Mobile AuthContext: Session error stack:', sessionError instanceof Error ? sessionError.stack : 'No stack');
+        // Don't fail login if offline storage fails
+      }
+      
       // Notify parent component of token change
       console.log('Mobile AuthContext: Notifying token change...');
       onTokenChange?.(loginData.token);
@@ -200,6 +233,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
     setUser(null);
     setToken(null);
     setSessionExpired(false); // Clear session expired state on manual logout
+    
+    // Clear staff sessions from offline storage
+    offlineStorage.clearStaffSessions().catch(error => {
+      console.error('Failed to clear staff sessions:', error);
+    });
     
     // Clear localStorage using TokenManager
     TokenManager.clearAuth();

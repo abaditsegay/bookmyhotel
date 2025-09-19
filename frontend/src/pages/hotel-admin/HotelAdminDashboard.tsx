@@ -11,6 +11,11 @@ import {
   Chip,
   CircularProgress,
   Alert,
+  Snackbar,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
 import {
   Refresh,
@@ -29,6 +34,8 @@ import StaffScheduleManagement from '../../components/StaffScheduleManagement';
 import HotelEditDialog from '../../components/hotel/HotelEditDialog';
 import WalkInBookingModal from '../../components/booking/WalkInBookingModal';
 import BookingManagementTable from '../../components/booking/BookingManagementTable';
+import OfflineWalkInBooking from '../../components/OfflineWalkInBooking';
+import { roomCacheService } from '../../services/RoomCacheService';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -65,7 +72,7 @@ const HotelAdminDashboard: React.FC = () => {
   const getInitialTab = () => {
     const tabParam = searchParams.get('tab');
     const tab = tabParam ? parseInt(tabParam, 10) : 0;
-    return isNaN(tab) || tab < 0 || tab > 5 ? 0 : tab;
+    return isNaN(tab) || tab < 0 || tab > 6 ? 0 : tab;
   };
   
   const [activeTab, setActiveTab] = useState(getInitialTab);
@@ -73,6 +80,19 @@ const HotelAdminDashboard: React.FC = () => {
   // Walk-in booking modal state
   const [walkInModalOpen, setWalkInModalOpen] = useState(false);
   const [bookingRefreshTrigger, setBookingRefreshTrigger] = useState(0);
+
+  // Snackbar state for success notifications
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success' as 'success' | 'error'
+  });
+
+  // Success dialog state for booking confirmations
+  const [successDialog, setSuccessDialog] = useState({
+    open: false,
+    message: ''
+  });
 
   // Hotel state
   const [hotel, setHotel] = useState<Hotel | null>(null);
@@ -107,8 +127,9 @@ const HotelAdminDashboard: React.FC = () => {
   useEffect(() => {
     if (token) {
       loadHotelData();
+      preloadRoomData(); // Preload room data for offline use
     }
-  }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [token, user?.hotelId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Load initial data when component mounts or tab changes
   useEffect(() => {
@@ -267,6 +288,37 @@ const HotelAdminDashboard: React.FC = () => {
     }
   };
 
+  // Preload and cache room data for offline use
+  const preloadRoomData = async () => {
+    console.log('🚀 Hotel Admin Dashboard: preloadRoomData called');
+    console.log('🔍 Hotel Admin Dashboard: user?.hotelId:', user?.hotelId);
+    console.log('🔍 Hotel Admin Dashboard: token exists:', !!token);
+    console.log('🔍 Hotel Admin Dashboard: user object:', user);
+    
+    if (!user?.hotelId || !token) {
+      console.warn('⚠️ Hotel Admin Dashboard: Missing hotelId or token, skipping room preload');
+      return;
+    }
+    
+    try {
+      const hotelId = parseInt(user.hotelId);
+      console.log('🏨 Hotel Admin Dashboard: Preloading room data for hotel', hotelId);
+      
+      // Force refresh to get latest room data and cache it
+      const rooms = await roomCacheService.getRooms(hotelId, true);
+      console.log('📊 Hotel Admin Dashboard: Retrieved rooms:', rooms.length, 'rooms');
+      console.log('🔍 Hotel Admin Dashboard: Sample room data:', rooms.slice(0, 2));
+      
+      // Start periodic refresh for this hotel
+      roomCacheService.startPeriodicRefresh(hotelId);
+      
+      console.log('✅ Hotel Admin Dashboard: Room data preloaded successfully');
+    } catch (error) {
+      console.error('❌ Hotel Admin Dashboard: Failed to preload room data:', error);
+      console.error('❌ Hotel Admin Dashboard: Error stack:', error instanceof Error ? error.stack : 'No stack');
+    }
+  };
+
   // Update hotel data
   const handleHotelUpdate = async (hotelData: Partial<Hotel>) => {
     if (!token) {
@@ -360,6 +412,17 @@ const HotelAdminDashboard: React.FC = () => {
               '& .MuiTabs-scrollButtons': {
                 '&.Mui-disabled': { opacity: 0.3 },
               },
+              '& .MuiTab-root:nth-of-type(7)': { // Target the 7th tab (Offline Bookings)
+                backgroundColor: '#ff9800', // Orange background
+                color: '#fff',
+                '&:hover': {
+                  backgroundColor: '#f57c00', // Darker orange on hover
+                },
+                '&.Mui-selected': {
+                  backgroundColor: '#e65100', // Even darker orange when selected
+                  color: '#fff',
+                },
+              },
             }}
           >
             <Tab label="Hotel Detail" />
@@ -368,6 +431,7 @@ const HotelAdminDashboard: React.FC = () => {
             <Tab label="Bookings" />
             <Tab label="Staff Schedules" />
             <Tab label="Reports" />
+            <Tab label="Offline Bookings" />
           </Tabs>
         </Box>
 
@@ -821,6 +885,23 @@ const HotelAdminDashboard: React.FC = () => {
             )}
           </Box>
         </TabPanel>
+
+        <TabPanel value={activeTab} index={6}>
+          {/* Offline Bookings Tab */}
+          <OfflineWalkInBooking
+            hotelId={hotel?.id}
+            onBookingComplete={(booking) => {
+              console.log('Offline booking created:', booking);
+              setSnackbar({
+                open: true,
+                message: `Offline booking created successfully for ${booking.guestName}`,
+                severity: 'success'
+              });
+              // Trigger booking table refresh
+              setBookingRefreshTrigger(prev => prev + 1);
+            }}
+          />
+        </TabPanel>
       </Card>
 
       {/* Walk-in Booking Modal */}
@@ -830,6 +911,11 @@ const HotelAdminDashboard: React.FC = () => {
         onSuccess={(bookingData) => {
           console.log('Walk-in booking created successfully:', bookingData);
           setWalkInModalOpen(false);
+          // Show success dialog
+          setSuccessDialog({
+            open: true,
+            message: `Walk-in booking created successfully! Confirmation: ${bookingData.confirmationNumber}`
+          });
           // Trigger booking table refresh
           setBookingRefreshTrigger(prev => prev + 1);
         }}
@@ -845,6 +931,49 @@ const HotelAdminDashboard: React.FC = () => {
         loading={hotelLoading}
         error={hotelError || undefined}
       />
+
+      {/* Success/Error Snackbar */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+
+      {/* Success Dialog for Booking Confirmations */}
+      <Dialog
+        open={successDialog.open}
+        onClose={() => setSuccessDialog({ ...successDialog, open: false })}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ textAlign: 'center', color: 'success.main' }}>
+          ✅ Success
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body1" sx={{ textAlign: 'center', py: 2 }}>
+            {successDialog.message}
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: 'center', pb: 2 }}>
+          <Button 
+            onClick={() => setSuccessDialog({ ...successDialog, open: false })} 
+            variant="contained" 
+            color="primary"
+            sx={{ minWidth: 100 }}
+          >
+            OK
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

@@ -153,7 +153,7 @@ class TokenManager {
     }
 
     try {
-      const response = await fetch('/api/auth/refresh', {
+      const response = await fetch('/managemyhotel/api/auth/refresh', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
