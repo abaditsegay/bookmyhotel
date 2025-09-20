@@ -26,15 +26,16 @@ import jakarta.validation.Valid;
 
 /**
  * REST controller for managing hotel pricing configurations
- * Provides endpoints for hotel administrators to configure their pricing and tax settings
+ * Provides endpoints for hotel administrators to configure their pricing and
+ * tax settings
  */
 @RestController
 @RequestMapping("/api/hotel-admin/pricing-config")
-@CrossOrigin(origins = { 
-    "http://localhost:3000", 
-    "http://192.168.1.230:3000", 
-    "https://shegeroom.com", 
-    "https://www.shegeroom.com" 
+@CrossOrigin(origins = {
+        "http://localhost:3000",
+        "http://192.168.1.230:3000",
+        "https://shegeroom.com",
+        "https://www.shegeroom.com"
 })
 public class HotelPricingConfigController {
 
@@ -54,15 +55,15 @@ public class HotelPricingConfigController {
     public ResponseEntity<HotelPricingConfig> getActiveConfiguration(@PathVariable Long hotelId) {
         try {
             logger.info("Fetching active pricing configuration for hotel: {}", hotelId);
-            
+
             HotelPricingConfig config = pricingConfigService.getActiveConfiguration(hotelId);
-            
+
             if (config != null) {
                 return ResponseEntity.ok(config);
             } else {
                 return ResponseEntity.notFound().build();
             }
-            
+
         } catch (Exception e) {
             logger.error("Error fetching active configuration for hotel {}: {}", hotelId, e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -81,10 +82,10 @@ public class HotelPricingConfigController {
     public ResponseEntity<HotelPricingConfig> getOrCreateActiveConfiguration(@PathVariable Long hotelId) {
         try {
             logger.info("Fetching or creating active pricing configuration for hotel: {}", hotelId);
-            
+
             HotelPricingConfig config = pricingConfigService.getOrCreateActiveConfiguration(hotelId);
             return ResponseEntity.ok(config);
-            
+
         } catch (IllegalArgumentException e) {
             logger.warn("Hotel not found: {}", e.getMessage());
             return ResponseEntity.notFound().build();
@@ -105,10 +106,10 @@ public class HotelPricingConfigController {
     public ResponseEntity<List<HotelPricingConfig>> getAllConfigurations(@PathVariable Long hotelId) {
         try {
             logger.info("Fetching all pricing configurations for hotel: {}", hotelId);
-            
+
             List<HotelPricingConfig> configurations = pricingConfigService.getConfigurationHistory(hotelId);
             return ResponseEntity.ok(configurations);
-            
+
         } catch (Exception e) {
             logger.error("Error fetching configurations for hotel {}: {}", hotelId, e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -119,27 +120,27 @@ public class HotelPricingConfigController {
      * Create a new pricing configuration for a hotel
      * 
      * @param hotelId the hotel ID
-     * @param config the configuration to create
+     * @param config  the configuration to create
      * @return the created configuration
      */
     @PostMapping("/hotel/{hotelId}")
     @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('SYSTEM_ADMIN')")
     public ResponseEntity<HotelPricingConfig> createConfiguration(
-            @PathVariable Long hotelId, 
+            @PathVariable Long hotelId,
             @Valid @RequestBody HotelPricingConfig config) {
         try {
             logger.info("Creating new pricing configuration for hotel: {}", hotelId);
-            
+
             // Validate the configuration
             pricingConfigService.validateConfiguration(config);
-            
+
             HotelPricingConfig createdConfig = pricingConfigService.createConfiguration(hotelId, config);
-            
-            logger.info("Successfully created pricing configuration with ID: {} for hotel: {}", 
-                       createdConfig.getId(), hotelId);
-            
+
+            logger.info("Successfully created pricing configuration with ID: {} for hotel: {}",
+                    createdConfig.getId(), hotelId);
+
             return ResponseEntity.status(HttpStatus.CREATED).body(createdConfig);
-            
+
         } catch (IllegalArgumentException e) {
             logger.warn("Invalid configuration data: {}", e.getMessage());
             return ResponseEntity.badRequest().build();
@@ -153,26 +154,26 @@ public class HotelPricingConfigController {
      * Update an existing pricing configuration
      * 
      * @param configId the configuration ID
-     * @param updates the updates to apply
+     * @param updates  the updates to apply
      * @return the updated configuration
      */
     @PutMapping("/{configId}")
     @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('SYSTEM_ADMIN')")
     public ResponseEntity<HotelPricingConfig> updateConfiguration(
-            @PathVariable Long configId, 
+            @PathVariable Long configId,
             @Valid @RequestBody HotelPricingConfig updates) {
         try {
             logger.info("Updating pricing configuration: {}", configId);
-            
+
             // Validate the updates
             pricingConfigService.validateConfiguration(updates);
-            
+
             HotelPricingConfig updatedConfig = pricingConfigService.updateConfiguration(configId, updates);
-            
+
             logger.info("Successfully updated pricing configuration: {}", configId);
-            
+
             return ResponseEntity.ok(updatedConfig);
-            
+
         } catch (IllegalArgumentException e) {
             logger.warn("Invalid configuration update: {}", e.getMessage());
             return ResponseEntity.badRequest().build();
@@ -193,13 +194,13 @@ public class HotelPricingConfigController {
     public ResponseEntity<Void> deleteConfiguration(@PathVariable Long configId) {
         try {
             logger.info("Deactivating pricing configuration: {}", configId);
-            
+
             pricingConfigService.deleteConfiguration(configId);
-            
+
             logger.info("Successfully deactivated pricing configuration: {}", configId);
-            
+
             return ResponseEntity.noContent().build();
-            
+
         } catch (IllegalArgumentException e) {
             logger.warn("Configuration not found: {}", e.getMessage());
             return ResponseEntity.notFound().build();
@@ -220,14 +221,14 @@ public class HotelPricingConfigController {
     public ResponseEntity<HotelPricingConfig> createDefaultConfiguration(@PathVariable Long hotelId) {
         try {
             logger.info("Creating default pricing configuration for hotel: {}", hotelId);
-            
+
             HotelPricingConfig defaultConfig = pricingConfigService.createDefaultConfiguration(hotelId);
-            
-            logger.info("Successfully created default configuration with ID: {} for hotel: {}", 
-                       defaultConfig.getId(), hotelId);
-            
+
+            logger.info("Successfully created default configuration with ID: {} for hotel: {}",
+                    defaultConfig.getId(), hotelId);
+
             return ResponseEntity.status(HttpStatus.CREATED).body(defaultConfig);
-            
+
         } catch (IllegalArgumentException e) {
             logger.warn("Hotel not found: {}", e.getMessage());
             return ResponseEntity.notFound().build();
@@ -249,11 +250,11 @@ public class HotelPricingConfigController {
             @RequestParam(defaultValue = "30") int withinDays) {
         try {
             logger.info("Fetching configurations expiring within {} days", withinDays);
-            
+
             List<HotelPricingConfig> expiringConfigs = pricingConfigService.getConfigurationsExpiringWithin(withinDays);
-            
+
             return ResponseEntity.ok(expiringConfigs);
-            
+
         } catch (Exception e) {
             logger.error("Error fetching expiring configurations: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -270,11 +271,11 @@ public class HotelPricingConfigController {
     public ResponseEntity<List<HotelPricingConfig>> getAllActiveConfigurations() {
         try {
             logger.info("Fetching all active pricing configurations");
-            
+
             List<HotelPricingConfig> activeConfigs = pricingConfigService.getAllActiveConfigurations();
-            
+
             return ResponseEntity.ok(activeConfigs);
-            
+
         } catch (Exception e) {
             logger.error("Error fetching all active configurations: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -282,10 +283,11 @@ public class HotelPricingConfigController {
     }
 
     /**
-     * Deactivate all existing configurations for a hotel and create a new active one
+     * Deactivate all existing configurations for a hotel and create a new active
+     * one
      * This is useful for replacing the current configuration with a new one
      * 
-     * @param hotelId the hotel ID
+     * @param hotelId   the hotel ID
      * @param newConfig the new configuration to activate
      * @return the newly activated configuration
      */
@@ -296,20 +298,20 @@ public class HotelPricingConfigController {
             @Valid @RequestBody HotelPricingConfig newConfig) {
         try {
             logger.info("Replacing active configuration for hotel: {}", hotelId);
-            
+
             // Validate the new configuration
             pricingConfigService.validateConfiguration(newConfig);
-            
+
             // Deactivate existing configurations
             pricingConfigService.deactivateExistingConfigurations(hotelId);
-            
+
             // Create the new configuration (version will be handled by service)
             HotelPricingConfig createdConfig = pricingConfigService.createConfiguration(hotelId, newConfig);
-            
+
             logger.info("Successfully replaced active configuration for hotel: {}", hotelId);
-            
+
             return ResponseEntity.ok(createdConfig);
-            
+
         } catch (IllegalArgumentException e) {
             logger.warn("Invalid configuration data: {}", e.getMessage());
             return ResponseEntity.badRequest().build();
@@ -331,18 +333,17 @@ public class HotelPricingConfigController {
     public ResponseEntity<PricingMultipliers> getPricingMultipliers(@PathVariable Long hotelId) {
         try {
             logger.info("Fetching pricing multipliers for hotel: {}", hotelId);
-            
+
             HotelPricingConfig config = pricingConfigService.getOrCreateActiveConfiguration(hotelId);
-            
+
             PricingMultipliers multipliers = new PricingMultipliers();
             multipliers.setWeekendMultiplier(config.getWeekendMultiplier());
             multipliers.setHolidayMultiplier(config.getHolidayMultiplier());
             multipliers.setPeakSeasonMultiplier(config.getPeakSeasonMultiplier());
-            multipliers.setCurrencyCode(config.getCurrencyCode() != null ? 
-                config.getCurrencyCode() : "ETB");
-            
+            multipliers.setCurrencyCode(config.getCurrencyCode() != null ? config.getCurrencyCode() : "ETB");
+
             return ResponseEntity.ok(multipliers);
-            
+
         } catch (Exception e) {
             logger.error("Error fetching multipliers for hotel {}: {}", hotelId, e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -358,16 +359,36 @@ public class HotelPricingConfigController {
         private java.math.BigDecimal peakSeasonMultiplier;
         private String currencyCode;
 
-        public java.math.BigDecimal getWeekendMultiplier() { return weekendMultiplier; }
-        public void setWeekendMultiplier(java.math.BigDecimal weekendMultiplier) { this.weekendMultiplier = weekendMultiplier; }
-        
-        public java.math.BigDecimal getHolidayMultiplier() { return holidayMultiplier; }
-        public void setHolidayMultiplier(java.math.BigDecimal holidayMultiplier) { this.holidayMultiplier = holidayMultiplier; }
-        
-        public java.math.BigDecimal getPeakSeasonMultiplier() { return peakSeasonMultiplier; }
-        public void setPeakSeasonMultiplier(java.math.BigDecimal peakSeasonMultiplier) { this.peakSeasonMultiplier = peakSeasonMultiplier; }
-        
-        public String getCurrencyCode() { return currencyCode; }
-        public void setCurrencyCode(String currencyCode) { this.currencyCode = currencyCode; }
+        public java.math.BigDecimal getWeekendMultiplier() {
+            return weekendMultiplier;
+        }
+
+        public void setWeekendMultiplier(java.math.BigDecimal weekendMultiplier) {
+            this.weekendMultiplier = weekendMultiplier;
+        }
+
+        public java.math.BigDecimal getHolidayMultiplier() {
+            return holidayMultiplier;
+        }
+
+        public void setHolidayMultiplier(java.math.BigDecimal holidayMultiplier) {
+            this.holidayMultiplier = holidayMultiplier;
+        }
+
+        public java.math.BigDecimal getPeakSeasonMultiplier() {
+            return peakSeasonMultiplier;
+        }
+
+        public void setPeakSeasonMultiplier(java.math.BigDecimal peakSeasonMultiplier) {
+            this.peakSeasonMultiplier = peakSeasonMultiplier;
+        }
+
+        public String getCurrencyCode() {
+            return currencyCode;
+        }
+
+        public void setCurrencyCode(String currencyCode) {
+            this.currencyCode = currencyCode;
+        }
     }
 }

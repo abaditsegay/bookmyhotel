@@ -18,7 +18,8 @@ import com.bookmyhotel.entity.HotelPricingConfig.PricingStrategy;
 
 /**
  * Repository interface for HotelPricingConfig entity
- * Provides data access methods for hotel-specific pricing and tax configurations
+ * Provides data access methods for hotel-specific pricing and tax
+ * configurations
  */
 @Repository
 public interface HotelPricingConfigRepository extends JpaRepository<HotelPricingConfig, Long> {
@@ -26,7 +27,8 @@ public interface HotelPricingConfigRepository extends JpaRepository<HotelPricing
     /**
      * Find the most recent pricing configuration for a hotel by version
      * Returns the single configuration with the highest version number
-     * Uses Spring Data JPA method naming convention to automatically limit to 1 result
+     * Uses Spring Data JPA method naming convention to automatically limit to 1
+     * result
      * 
      * @param hotelId the hotel ID
      * @return Optional containing the latest configuration if found
@@ -47,13 +49,13 @@ public interface HotelPricingConfigRepository extends JpaRepository<HotelPricing
      * Find the most recent pricing configuration for a hotel
      * Uses native Spring Data JPA method with Pageable to get only first result
      * 
-     * @param hotelId the hotel ID
+     * @param hotelId  the hotel ID
      * @param pageable page request (limit 1)
      * @return Page containing the latest configuration
      */
     @Query("SELECT hpc FROM HotelPricingConfig hpc " +
-           "WHERE hpc.hotel.id = :hotelId " +
-           "ORDER BY hpc.version DESC")
+            "WHERE hpc.hotel.id = :hotelId " +
+            "ORDER BY hpc.version DESC")
     Page<HotelPricingConfig> findByHotelIdOrderByVersionDesc(@Param("hotelId") Long hotelId, Pageable pageable);
 
     /**
@@ -70,8 +72,8 @@ public interface HotelPricingConfigRepository extends JpaRepository<HotelPricing
      * @return List of all configurations for the hotel
      */
     @Query("SELECT hpc FROM HotelPricingConfig hpc " +
-           "WHERE hpc.hotel.id = :hotelId " +
-           "ORDER BY hpc.createdAt DESC")
+            "WHERE hpc.hotel.id = :hotelId " +
+            "ORDER BY hpc.createdAt DESC")
     List<HotelPricingConfig> findAllByHotelId(@Param("hotelId") Long hotelId);
 
     /**
@@ -80,7 +82,7 @@ public interface HotelPricingConfigRepository extends JpaRepository<HotelPricing
      * @return List of all configurations
      */
     @Query("SELECT hpc FROM HotelPricingConfig hpc " +
-           "ORDER BY hpc.hotel.name, hpc.version DESC")
+            "ORDER BY hpc.hotel.name, hpc.version DESC")
     List<HotelPricingConfig> findAllConfigurations();
 
     /**
@@ -97,9 +99,9 @@ public interface HotelPricingConfigRepository extends JpaRepository<HotelPricing
      * @return true if hotel has configuration
      */
     @Query("SELECT COUNT(hpc) > 0 FROM HotelPricingConfig hpc " +
-           "WHERE hpc.hotel.id = :hotelId " +
-           "AND (hpc.effectiveFrom IS NULL OR hpc.effectiveFrom <= :now) " +
-           "AND (hpc.effectiveUntil IS NULL OR hpc.effectiveUntil > :now)")
+            "WHERE hpc.hotel.id = :hotelId " +
+            "AND (hpc.effectiveFrom IS NULL OR hpc.effectiveFrom <= :now) " +
+            "AND (hpc.effectiveUntil IS NULL OR hpc.effectiveUntil > :now)")
     boolean hasActiveConfiguration(@Param("hotelId") Long hotelId, @Param("now") LocalDateTime now);
 
     /**
@@ -113,16 +115,17 @@ public interface HotelPricingConfigRepository extends JpaRepository<HotelPricing
      * Find latest hotel pricing configurations by strategy
      * 
      * @param pricingStrategy the pricing strategy
-     * @param now current timestamp
+     * @param now             current timestamp
      * @return list of configurations
      */
     @Query("SELECT hpc FROM HotelPricingConfig hpc " +
-           "WHERE hpc.pricingStrategy = :pricingStrategy " +
-           "AND (hpc.effectiveFrom IS NULL OR hpc.effectiveFrom <= :now) " +
-           "AND (hpc.effectiveUntil IS NULL OR hpc.effectiveUntil > :now) " +
-           "ORDER BY hpc.version DESC")
-    List<HotelPricingConfig> findByPricingStrategy(@Param("pricingStrategy") HotelPricingConfig.PricingStrategy pricingStrategy, 
-                                                   @Param("now") LocalDateTime now);
+            "WHERE hpc.pricingStrategy = :pricingStrategy " +
+            "AND (hpc.effectiveFrom IS NULL OR hpc.effectiveFrom <= :now) " +
+            "AND (hpc.effectiveUntil IS NULL OR hpc.effectiveUntil > :now) " +
+            "ORDER BY hpc.version DESC")
+    List<HotelPricingConfig> findByPricingStrategy(
+            @Param("pricingStrategy") HotelPricingConfig.PricingStrategy pricingStrategy,
+            @Param("now") LocalDateTime now);
 
     /**
      * Find configurations that will expire soon
@@ -131,13 +134,12 @@ public interface HotelPricingConfigRepository extends JpaRepository<HotelPricing
      * @return List of configurations expiring within the specified days
      */
     @Query("SELECT hpc FROM HotelPricingConfig hpc " +
-           "WHERE hpc.effectiveUntil IS NOT NULL " +
-           "AND hpc.effectiveUntil BETWEEN :now AND :expiryDate " +
-           "ORDER BY hpc.effectiveUntil ASC")
+            "WHERE hpc.effectiveUntil IS NOT NULL " +
+            "AND hpc.effectiveUntil BETWEEN :now AND :expiryDate " +
+            "ORDER BY hpc.effectiveUntil ASC")
     List<HotelPricingConfig> findConfigurationsExpiringWithin(
-        @Param("now") LocalDateTime now,
-        @Param("expiryDate") LocalDateTime expiryDate
-    );
+            @Param("now") LocalDateTime now,
+            @Param("expiryDate") LocalDateTime expiryDate);
 
     /**
      * Find configurations expiring within specified days (convenience method)
@@ -155,8 +157,8 @@ public interface HotelPricingConfigRepository extends JpaRepository<HotelPricing
      * @return List of configurations using the specified currency
      */
     @Query("SELECT hpc FROM HotelPricingConfig hpc " +
-           "WHERE hpc.currencyCode = :currencyCode " +
-           "ORDER BY hpc.hotel.name, hpc.version DESC")
+            "WHERE hpc.currencyCode = :currencyCode " +
+            "ORDER BY hpc.hotel.name, hpc.version DESC")
     List<HotelPricingConfig> findByCurrencyCode(@Param("currencyCode") String currencyCode);
 
     /**
@@ -165,8 +167,8 @@ public interface HotelPricingConfigRepository extends JpaRepository<HotelPricing
      * @return List of configurations with dynamic pricing enabled
      */
     @Query("SELECT hpc FROM HotelPricingConfig hpc " +
-           "WHERE hpc.dynamicPricingEnabled = true " +
-           "ORDER BY hpc.hotel.name, hpc.version DESC")
+            "WHERE hpc.dynamicPricingEnabled = true " +
+            "ORDER BY hpc.hotel.name, hpc.version DESC")
     List<HotelPricingConfig> findWithDynamicPricingEnabled();
 
     /**
@@ -175,8 +177,8 @@ public interface HotelPricingConfigRepository extends JpaRepository<HotelPricing
      * @return List of arrays containing hotel_id and count
      */
     @Query("SELECT hpc.hotel.id, COUNT(hpc) FROM HotelPricingConfig hpc " +
-           "GROUP BY hpc.hotel.id " +
-           "ORDER BY COUNT(hpc) DESC")
+            "GROUP BY hpc.hotel.id " +
+            "ORDER BY COUNT(hpc) DESC")
     List<Object[]> countActiveConfigurationsByHotel();
 
     /**
@@ -187,13 +189,12 @@ public interface HotelPricingConfigRepository extends JpaRepository<HotelPricing
      * @return Optional containing the configuration if found
      */
     @Query("SELECT hpc FROM HotelPricingConfig hpc " +
-           "WHERE hpc.hotel.id = :hotelId " +
-           "AND hpc.version = :version " +
-           "ORDER BY hpc.createdAt DESC")
+            "WHERE hpc.hotel.id = :hotelId " +
+            "AND hpc.version = :version " +
+            "ORDER BY hpc.createdAt DESC")
     Optional<HotelPricingConfig> findByHotelIdAndVersion(
-        @Param("hotelId") Long hotelId, 
-        @Param("version") Integer version
-    );
+            @Param("hotelId") Long hotelId,
+            @Param("version") Integer version);
 
     /**
      * Find the latest configuration for a hotel (active or inactive)
@@ -202,30 +203,29 @@ public interface HotelPricingConfigRepository extends JpaRepository<HotelPricing
      * @return Optional containing the latest configuration
      */
     @Query("SELECT hpc FROM HotelPricingConfig hpc " +
-           "WHERE hpc.hotel.id = :hotelId " +
-           "ORDER BY hpc.version DESC, hpc.createdAt DESC")
+            "WHERE hpc.hotel.id = :hotelId " +
+            "ORDER BY hpc.version DESC, hpc.createdAt DESC")
     Optional<HotelPricingConfig> findLatestConfigurationByHotelId(@Param("hotelId") Long hotelId);
 
     /**
      * Custom query to expire all current configurations for a hotel
      * This is used when creating a new configuration
      * 
-     * @param hotelId the hotel ID
+     * @param hotelId   the hotel ID
      * @param updatedBy the user making the change
      * @return number of configurations expired
      */
     @Modifying
     @Query("UPDATE HotelPricingConfig hpc " +
-           "SET hpc.effectiveUntil = :now, " +
-           "    hpc.updatedBy = :updatedBy, " +
-           "    hpc.updatedAt = :now " +
-           "WHERE hpc.hotel.id = :hotelId " +
-           "AND (hpc.effectiveUntil IS NULL OR hpc.effectiveUntil > :now)")
+            "SET hpc.effectiveUntil = :now, " +
+            "    hpc.updatedBy = :updatedBy, " +
+            "    hpc.updatedAt = :now " +
+            "WHERE hpc.hotel.id = :hotelId " +
+            "AND (hpc.effectiveUntil IS NULL OR hpc.effectiveUntil > :now)")
     int deactivateAllConfigurationsForHotel(
-        @Param("hotelId") Long hotelId,
-        @Param("updatedBy") String updatedBy,
-        @Param("now") LocalDateTime now
-    );
+            @Param("hotelId") Long hotelId,
+            @Param("updatedBy") String updatedBy,
+            @Param("now") LocalDateTime now);
 
     /**
      * Find configurations created by a specific user

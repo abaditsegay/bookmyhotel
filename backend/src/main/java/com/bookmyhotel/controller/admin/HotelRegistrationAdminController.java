@@ -132,9 +132,9 @@ public class HotelRegistrationAdminController {
             if (authentication == null) {
                 throw new IllegalStateException("Authentication required for hotel registration approval");
             }
-            
+
             String reviewerEmail = authentication.getName();
-            
+
             // For now, use a placeholder until proper user lookup is implemented
             // TODO: Implement proper user repository lookup
             Long reviewerId = null; // This will force the service to handle the null case properly
@@ -163,7 +163,7 @@ public class HotelRegistrationAdminController {
             if (authentication == null) {
                 throw new IllegalStateException("Authentication required for hotel registration rejection");
             }
-            
+
             String reviewerEmail = authentication.getName();
             // TODO: Implement proper user repository lookup
             Long reviewerId = null; // Force service to handle null case properly
@@ -188,7 +188,7 @@ public class HotelRegistrationAdminController {
             if (authentication == null) {
                 throw new IllegalStateException("Authentication required for marking hotel under review");
             }
-            
+
             String reviewerEmail = authentication.getName();
             // TODO: Implement proper user repository lookup
             Long reviewerId = null; // Force service to handle null case properly

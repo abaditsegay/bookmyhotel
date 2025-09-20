@@ -87,19 +87,19 @@ public class DataInitializer implements CommandLineRunner {
      */
     private boolean isDevOrTestProfile() {
         String[] activeProfiles = environment.getActiveProfiles();
-        
+
         // If no active profiles, assume development
         if (activeProfiles.length == 0) {
             return true;
         }
-        
+
         for (String profile : activeProfiles) {
-            if ("development".equals(profile) || "dev".equals(profile) || 
-                "test".equals(profile) || "local".equals(profile)) {
+            if ("development".equals(profile) || "dev".equals(profile) ||
+                    "test".equals(profile) || "local".equals(profile)) {
                 return true;
             }
         }
-        
+
         return false;
     }
 
@@ -142,11 +142,12 @@ public class DataInitializer implements CommandLineRunner {
      * Create the system admin user if it doesn't exist
      */
     private void createSystemAdminUser() {
-        // TODO: Get admin credentials from environment variables or secure configuration
-        String adminEmail = System.getenv("SYSTEM_ADMIN_EMAIL") != null ? 
-            System.getenv("SYSTEM_ADMIN_EMAIL") : "admin@bookmyhotel.com";
-        String adminPassword = System.getenv("SYSTEM_ADMIN_PASSWORD") != null ? 
-            System.getenv("SYSTEM_ADMIN_PASSWORD") : "admin123";
+        // TODO: Get admin credentials from environment variables or secure
+        // configuration
+        String adminEmail = System.getenv("SYSTEM_ADMIN_EMAIL") != null ? System.getenv("SYSTEM_ADMIN_EMAIL")
+                : "admin@bookmyhotel.com";
+        String adminPassword = System.getenv("SYSTEM_ADMIN_PASSWORD") != null ? System.getenv("SYSTEM_ADMIN_PASSWORD")
+                : "admin123";
 
         logger.info("Checking for system admin user with email: {}", adminEmail);
 
@@ -349,8 +350,9 @@ public class DataInitializer implements CommandLineRunner {
         // Create hotel admin user
         String adminEmail = "admin." + hotelNameShort + "@bookmyhotel.com";
         // TODO: Generate secure random password for hotel admin users
-        String adminPassword = System.getenv("DEFAULT_HOTEL_ADMIN_PASSWORD") != null ? 
-            System.getenv("DEFAULT_HOTEL_ADMIN_PASSWORD") : "admin123";
+        String adminPassword = System.getenv("DEFAULT_HOTEL_ADMIN_PASSWORD") != null
+                ? System.getenv("DEFAULT_HOTEL_ADMIN_PASSWORD")
+                : "admin123";
 
         if (!userRepository.findByEmail(adminEmail).isPresent()) {
             User hotelAdmin = new User();
@@ -370,8 +372,9 @@ public class DataInitializer implements CommandLineRunner {
         // Create front desk user
         String frontdeskEmail = "frontdesk." + hotelNameShort + "@bookmyhotel.com";
         // TODO: Generate secure random password for front desk users
-        String frontdeskPassword = System.getenv("DEFAULT_FRONTDESK_PASSWORD") != null ? 
-            System.getenv("DEFAULT_FRONTDESK_PASSWORD") : "front123";
+        String frontdeskPassword = System.getenv("DEFAULT_FRONTDESK_PASSWORD") != null
+                ? System.getenv("DEFAULT_FRONTDESK_PASSWORD")
+                : "front123";
 
         if (!userRepository.findByEmail(frontdeskEmail).isPresent()) {
             User frontdeskUser = new User();

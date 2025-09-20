@@ -21,7 +21,8 @@ import com.bookmyhotel.repository.HotelRepository;
 
 /**
  * Service class for managing hotel pricing configurations
- * Handles CRUD operations and business logic for hotel-specific pricing and tax settings
+ * Handles CRUD operations and business logic for hotel-specific pricing and tax
+ * settings
  */
 @Service
 @Transactional
@@ -44,9 +45,9 @@ public class HotelPricingConfigService {
     @Transactional(readOnly = true)
     public HotelPricingConfig getActiveConfiguration(Long hotelId) {
         logger.debug("Getting pricing configuration for hotel ID: {}", hotelId);
-        
+
         Optional<HotelPricingConfig> config = pricingConfigRepository.findByHotelId(hotelId);
-        
+
         if (config.isPresent()) {
             logger.debug("Found configuration for hotel {}: version {}", hotelId, config.get().getVersion());
             return config.get();
@@ -80,7 +81,7 @@ public class HotelPricingConfigService {
     @Transactional
     public HotelPricingConfig createDefaultConfiguration(Long hotelId) {
         logger.info("Creating default pricing configuration for hotel ID: {}", hotelId);
-        
+
         Optional<Hotel> hotel = hotelRepository.findById(hotelId);
         if (!hotel.isPresent()) {
             throw new IllegalArgumentException("Hotel not found with ID: " + hotelId);
@@ -97,12 +98,12 @@ public class HotelPricingConfigService {
         config.setModificationFeeRate(new BigDecimal("0.00"));
         // Set meaningful default multipliers for Ethiopian hotels
         config.setPeakSeasonMultiplier(new BigDecimal("1.30")); // 30% increase for peak season
-        config.setOffSeasonMultiplier(new BigDecimal("0.90")); // 10% discount for off season  
+        config.setOffSeasonMultiplier(new BigDecimal("0.90")); // 10% discount for off season
         config.setWeekendMultiplier(new BigDecimal("1.20")); // 20% increase for weekends
         config.setHolidayMultiplier(new BigDecimal("1.50")); // 50% increase for holidays
         config.setCreatedAt(LocalDateTime.now());
         config.setUpdatedAt(LocalDateTime.now());
-        
+
         // Set the creator
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.getName() != null) {
@@ -117,21 +118,21 @@ public class HotelPricingConfigService {
      * Update pricing configuration for a hotel (versioned approach)
      * 
      * @param hotelId the hotel ID
-     * @param config the updated configuration
+     * @param config  the updated configuration
      * @return the saved configuration
      */
     @Transactional
     public HotelPricingConfig updateConfiguration(Long hotelId, HotelPricingConfig updatedConfig) {
         logger.info("Updating pricing configuration for hotel ID: {}", hotelId);
-        
+
         // Get the existing configuration
         HotelPricingConfig existingConfig = getActiveConfiguration(hotelId);
-        
+
         if (existingConfig == null) {
             // No existing configuration, create new one
             updatedConfig.setVersion(1);
             updatedConfig.setCreatedAt(LocalDateTime.now());
-            
+
             // Set the creator
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             if (auth != null && auth.getName() != null) {
@@ -144,9 +145,9 @@ public class HotelPricingConfigService {
             updatedConfig.setCreatedAt(existingConfig.getCreatedAt());
             updatedConfig.setCreatedBy(existingConfig.getCreatedBy());
         }
-        
+
         updatedConfig.setUpdatedAt(LocalDateTime.now());
-        
+
         // Set the updater
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.getName() != null) {
@@ -155,7 +156,7 @@ public class HotelPricingConfigService {
 
         HotelPricingConfig saved = pricingConfigRepository.save(updatedConfig);
         logger.info("Updated pricing configuration for hotel {}: new version {}", hotelId, saved.getVersion());
-        
+
         return saved;
     }
 
@@ -182,16 +183,16 @@ public class HotelPricingConfigService {
     @Transactional(readOnly = true)
     public BigDecimal getTotalTaxRate(Long hotelId) {
         HotelPricingConfig config = getOrCreateActiveConfiguration(hotelId);
-        
+
         BigDecimal vatRate = config.getVatRate();
         BigDecimal serviceRate = config.getServiceTaxRate();
-        
+
         BigDecimal totalRate = vatRate.add(serviceRate);
-        logger.debug("Total tax rate for hotel {}: {}% (VAT: {}%, Service: {}%)", 
-                    hotelId, totalRate.multiply(new BigDecimal("100")), 
-                    config.getVatRate().multiply(new BigDecimal("100")), 
-                    config.getServiceTaxRate().multiply(new BigDecimal("100")));
-        
+        logger.debug("Total tax rate for hotel {}: {}% (VAT: {}%, Service: {}%)",
+                hotelId, totalRate.multiply(new BigDecimal("100")),
+                config.getVatRate().multiply(new BigDecimal("100")),
+                config.getServiceTaxRate().multiply(new BigDecimal("100")));
+
         return totalRate;
     }
 
@@ -228,7 +229,7 @@ public class HotelPricingConfigService {
     @Transactional
     public boolean deleteConfiguration(Long hotelId) {
         logger.info("Deleting pricing configuration for hotel ID: {}", hotelId);
-        
+
         Optional<HotelPricingConfig> config = pricingConfigRepository.findByHotelId(hotelId);
         if (config.isPresent()) {
             pricingConfigRepository.delete(config.get());
@@ -379,28 +380,29 @@ public class HotelPricingConfigService {
         if (config == null || config.getHotel() == null) {
             return false;
         }
-        
+
         // Validate tax rates are within reasonable bounds
-        if (config.getVatRate() != null && 
-            (config.getVatRate().compareTo(BigDecimal.ZERO) < 0 || 
-             config.getVatRate().compareTo(BigDecimal.ONE) > 0)) {
+        if (config.getVatRate() != null &&
+                (config.getVatRate().compareTo(BigDecimal.ZERO) < 0 ||
+                        config.getVatRate().compareTo(BigDecimal.ONE) > 0)) {
             return false;
         }
-        
-        if (config.getServiceTaxRate() != null && 
-            (config.getServiceTaxRate().compareTo(BigDecimal.ZERO) < 0 || 
-             config.getServiceTaxRate().compareTo(BigDecimal.ONE) > 0)) {
+
+        if (config.getServiceTaxRate() != null &&
+                (config.getServiceTaxRate().compareTo(BigDecimal.ZERO) < 0 ||
+                        config.getServiceTaxRate().compareTo(BigDecimal.ONE) > 0)) {
             return false;
         }
-        
+
         return true;
     }
 
     /**
-     * Create new configuration (alias for updateConfiguration for backwards compatibility)
+     * Create new configuration (alias for updateConfiguration for backwards
+     * compatibility)
      * 
      * @param hotelId the hotel ID
-     * @param config the configuration
+     * @param config  the configuration
      * @return the saved configuration
      */
     @Transactional

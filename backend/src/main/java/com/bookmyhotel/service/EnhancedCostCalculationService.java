@@ -396,20 +396,20 @@ public class EnhancedCostCalculationService {
         try {
             // Get hotel ID directly from the request
             Long hotelId = request.getHotelId();
-            
+
             if (hotelId == null) {
                 logger.warn("Hotel ID not provided in request. Using zero tax rate.");
                 return BigDecimal.ZERO;
             }
-            
+
             // Get hotel-specific tax rate from configuration
             BigDecimal totalTaxRate = hotelPricingConfigService.getTotalTaxRate(hotelId);
-            
-            logger.debug("Calculating taxes for hotel {}: subtotal = {}, tax rate = {}", 
-                        hotelId, subtotal, totalTaxRate);
-            
+
+            logger.debug("Calculating taxes for hotel {}: subtotal = {}, tax rate = {}",
+                    hotelId, subtotal, totalTaxRate);
+
             return subtotal.multiply(totalTaxRate).setScale(2, RoundingMode.HALF_UP);
-            
+
         } catch (Exception e) {
             logger.error("Error calculating taxes for hotel {}: {}", request.getHotelId(), e.getMessage());
             // Fallback to zero tax to prevent calculation failures

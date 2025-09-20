@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { API_CONFIG } from '../config/apiConfig';
 import {
   Box,
   Typography,
@@ -93,7 +94,7 @@ const PricingConfigurationComponent: React.FC = () => {
       setError(null);
 
       const response = await fetch(
-        `http://localhost:8080/managemyhotel/api/hotel-admin/pricing-config/hotel/${user.hotelId}/active-or-create`,
+        `${API_CONFIG.BASE_URL}/hotel-admin/pricing-config/hotel/${user.hotelId}/active-or-create`,
         {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -128,8 +129,8 @@ const PricingConfigurationComponent: React.FC = () => {
       setSuccess(null);
 
       const endpoint = config.id
-        ? `http://localhost:8080/managemyhotel/api/hotel-admin/pricing-config/${config.id}`
-        : `http://localhost:8080/managemyhotel/api/hotel-admin/pricing-config/hotel/${user.hotelId}/replace-active`;
+        ? `${API_CONFIG.BASE_URL}/managemyhotel/api/hotel-admin/pricing-config/${config.id}`
+        : `${API_CONFIG.BASE_URL}/managemyhotel/api/hotel-admin/pricing-config/hotel/${user.hotelId}/replace-active`;
 
       const method = config.id ? 'PUT' : 'POST';
 

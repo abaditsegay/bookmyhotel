@@ -575,18 +575,20 @@ public class BookingService {
 
         if (pricePerNight == null) {
             logger.warn("No pricing found for hotel {} and room type {}, using default price", hotelId, roomType);
-            throw new IllegalStateException("Room pricing not configured for hotel " + hotelId + " and room type " + roomType + ". Please configure pricing before accepting bookings.");
+            throw new IllegalStateException("Room pricing not configured for hotel " + hotelId + " and room type "
+                    + roomType + ". Please configure pricing before accepting bookings.");
         }
 
         long numberOfNights = ChronoUnit.DAYS.between(request.getCheckInDate(), request.getCheckOutDate());
-        
+
         // Apply seasonal multiplier based on hotel pricing configuration
-        BigDecimal seasonalMultiplier = getSeasonalMultiplier(hotelId, request.getCheckInDate(), request.getCheckOutDate());
+        BigDecimal seasonalMultiplier = getSeasonalMultiplier(hotelId, request.getCheckInDate(),
+                request.getCheckOutDate());
         BigDecimal adjustedPricePerNight = pricePerNight.multiply(seasonalMultiplier);
-        
+
         // Calculate subtotal (base price * nights * seasonal multiplier)
         BigDecimal subtotal = adjustedPricePerNight.multiply(BigDecimal.valueOf(numberOfNights));
-        
+
         // Apply taxes based on hotel pricing configuration
         BigDecimal taxRate = hotelPricingConfigService.getTotalTaxRate(hotelId);
         BigDecimal taxAmount = subtotal.multiply(taxRate);
@@ -601,7 +603,7 @@ public class BookingService {
         logger.debug("  Tax rate: {}", taxRate);
         logger.debug("  Tax amount: {}", taxAmount);
         logger.debug("  Total amount: {}", totalAmount);
-        
+
         return totalAmount;
     }
 
@@ -617,18 +619,20 @@ public class BookingService {
 
         if (pricePerNight == null) {
             logger.warn("No pricing found for hotel {} and room type {}, using default price", hotelId, roomType);
-            throw new IllegalStateException("Room pricing not configured for hotel " + hotelId + " and room type " + roomType + ". Please configure pricing before accepting bookings.");
+            throw new IllegalStateException("Room pricing not configured for hotel " + hotelId + " and room type "
+                    + roomType + ". Please configure pricing before accepting bookings.");
         }
 
         long numberOfNights = ChronoUnit.DAYS.between(request.getCheckInDate(), request.getCheckOutDate());
-        
+
         // Apply seasonal multiplier based on hotel pricing configuration
-        BigDecimal seasonalMultiplier = getSeasonalMultiplier(hotelId, request.getCheckInDate(), request.getCheckOutDate());
+        BigDecimal seasonalMultiplier = getSeasonalMultiplier(hotelId, request.getCheckInDate(),
+                request.getCheckOutDate());
         BigDecimal adjustedPricePerNight = pricePerNight.multiply(seasonalMultiplier);
-        
+
         // Calculate subtotal (base price * nights * seasonal multiplier)
         BigDecimal subtotal = adjustedPricePerNight.multiply(BigDecimal.valueOf(numberOfNights));
-        
+
         // Apply taxes based on hotel pricing configuration
         BigDecimal taxRate = hotelPricingConfigService.getTotalTaxRate(hotelId);
         BigDecimal taxAmount = subtotal.multiply(taxRate);
@@ -643,7 +647,7 @@ public class BookingService {
         logger.debug("  Tax rate: {}", taxRate);
         logger.debug("  Tax amount: {}", taxAmount);
         logger.debug("  Total amount: {}", totalAmount);
-        
+
         return totalAmount;
     }
 
@@ -2085,18 +2089,20 @@ public class BookingService {
 
         // Get modification fee from hotel-specific configuration
         try {
-            BigDecimal modificationFeeRate = hotelPricingConfigService.getActiveConfiguration(targetRoom.getHotel().getId())
-                .getModificationFeeRate();
-            BigDecimal modificationFee = currentTotal.multiply(modificationFeeRate != null ? modificationFeeRate : BigDecimal.ZERO);
+            BigDecimal modificationFeeRate = hotelPricingConfigService
+                    .getActiveConfiguration(targetRoom.getHotel().getId())
+                    .getModificationFeeRate();
+            BigDecimal modificationFee = currentTotal
+                    .multiply(modificationFeeRate != null ? modificationFeeRate : BigDecimal.ZERO);
             newTotal = newTotal.add(modificationFee);
-            
+
             if (modificationFee.compareTo(BigDecimal.ZERO) > 0) {
-                logger.info("Applied modification fee of {} ({}) to reservation {}", 
-                          modificationFee, modificationFeeRate, reservation.getId());
+                logger.info("Applied modification fee of {} ({}) to reservation {}",
+                        modificationFee, modificationFeeRate, reservation.getId());
             }
         } catch (Exception e) {
-            logger.warn("Could not calculate modification fee for hotel {}: {}", 
-                       targetRoom.getHotel().getId(), e.getMessage());
+            logger.warn("Could not calculate modification fee for hotel {}: {}",
+                    targetRoom.getHotel().getId(), e.getMessage());
             // Continue without modification fee
         }
 
@@ -2298,27 +2304,30 @@ public class BookingService {
      * Determine the appropriate seasonal multiplier based on booking dates
      * For simplicity, we consider December-February as peak season
      * 
-     * @param hotelId the hotel ID
-     * @param checkInDate the check-in date
+     * @param hotelId      the hotel ID
+     * @param checkInDate  the check-in date
      * @param checkOutDate the check-out date
      * @return the seasonal multiplier to apply
      */
     private BigDecimal getSeasonalMultiplier(Long hotelId, LocalDate checkInDate, LocalDate checkOutDate) {
         HotelPricingConfig config = hotelPricingConfigService.getActiveConfiguration(hotelId);
-        
+
         if (config == null) {
             logger.warn("No pricing configuration found for hotel {}. Using default multiplier of 1.0", hotelId);
             return BigDecimal.ONE;
         }
 
-        // Simple seasonal logic: December (12), January (1), February (2) are peak months
+        // Simple seasonal logic: December (12), January (1), February (2) are peak
+        // months
         boolean isPeakSeason = isPeakSeasonPeriod(checkInDate, checkOutDate);
-        
+
         if (isPeakSeason) {
-            logger.debug("Peak season detected for hotel {}, applying multiplier: {}", hotelId, config.getPeakSeasonMultiplier());
+            logger.debug("Peak season detected for hotel {}, applying multiplier: {}", hotelId,
+                    config.getPeakSeasonMultiplier());
             return config.getPeakSeasonMultiplier();
         } else {
-            logger.debug("Off season detected for hotel {}, applying multiplier: {}", hotelId, config.getOffSeasonMultiplier());
+            logger.debug("Off season detected for hotel {}, applying multiplier: {}", hotelId,
+                    config.getOffSeasonMultiplier());
             return config.getOffSeasonMultiplier();
         }
     }
@@ -2327,24 +2336,24 @@ public class BookingService {
      * Check if the given date range falls within peak season months
      * Peak season: December, January, February
      * 
-     * @param checkInDate the check-in date
+     * @param checkInDate  the check-in date
      * @param checkOutDate the check-out date
      * @return true if any part of the stay falls in peak season
      */
     private boolean isPeakSeasonPeriod(LocalDate checkInDate, LocalDate checkOutDate) {
         // Peak season months: December (12), January (1), February (2)
         Set<Integer> peakMonths = Set.of(12, 1, 2);
-        
+
         // Check if check-in month is peak season
         if (peakMonths.contains(checkInDate.getMonthValue())) {
             return true;
         }
-        
+
         // Check if check-out month is peak season
         if (peakMonths.contains(checkOutDate.getMonthValue())) {
             return true;
         }
-        
+
         // Check if the stay spans across peak season months
         LocalDate current = checkInDate;
         while (!current.isAfter(checkOutDate)) {
@@ -2353,7 +2362,7 @@ public class BookingService {
             }
             current = current.plusDays(1);
         }
-        
+
         return false;
     }
 }

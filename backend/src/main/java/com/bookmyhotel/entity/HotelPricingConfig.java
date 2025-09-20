@@ -21,9 +21,12 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * Entity representing hotel-specific pricing and tax configuration
- * This allows each hotel to have their own tax rates, pricing strategies, and business rules
+ * This allows each hotel to have their own tax rates, pricing strategies, and
+ * business rules
  */
 @Entity
 @Table(name = "hotel_pricing_config")
@@ -36,7 +39,12 @@ public class HotelPricingConfig {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "hotel_id", nullable = false)
     @NotNull
+    @JsonIgnore // Prevent serialization of lazy-loaded hotel entity
     private Hotel hotel;
+
+    // Add hotel ID for API responses (avoids lazy loading issues)
+    @Column(name = "hotel_id", insertable = false, updatable = false)
+    private Long hotelId;
 
     // Tax Configuration
     @Column(name = "service_tax_rate", precision = 5, scale = 4)
@@ -130,7 +138,8 @@ public class HotelPricingConfig {
     @Column(name = "early_booking_days_threshold")
     private Integer earlyBookingDaysThreshold = 30; // Default 30 days
 
-    // Configuration Status - Using version for optimistic locking and change tracking
+    // Configuration Status - Using version for optimistic locking and change
+    // tracking
     @Column(name = "version")
     private Integer version = 1;
 
@@ -192,7 +201,8 @@ public class HotelPricingConfig {
     }
 
     // Constructors
-    public HotelPricingConfig() {}
+    public HotelPricingConfig() {
+    }
 
     public HotelPricingConfig(Hotel hotel) {
         this.hotel = hotel;
@@ -214,6 +224,16 @@ public class HotelPricingConfig {
 
     public void setHotel(Hotel hotel) {
         this.hotel = hotel;
+        // Set hotelId when hotel is set
+        this.hotelId = hotel != null ? hotel.getId() : null;
+    }
+
+    public Long getHotelId() {
+        return hotelId;
+    }
+
+    public void setHotelId(Long hotelId) {
+        this.hotelId = hotelId;
     }
 
     public BigDecimal getServiceTaxRate() {
@@ -443,16 +463,19 @@ public class HotelPricingConfig {
     // Utility methods
     public BigDecimal getTotalTaxRate() {
         BigDecimal total = BigDecimal.ZERO;
-        if (serviceTaxRate != null) total = total.add(serviceTaxRate);
-        if (vatRate != null) total = total.add(vatRate);
-        if (cityTaxRate != null) total = total.add(cityTaxRate);
+        if (serviceTaxRate != null)
+            total = total.add(serviceTaxRate);
+        if (vatRate != null)
+            total = total.add(vatRate);
+        if (cityTaxRate != null)
+            total = total.add(cityTaxRate);
         return total;
     }
 
     public boolean isCurrentlyActive() {
         LocalDateTime now = LocalDateTime.now();
         return (effectiveFrom == null || !now.isBefore(effectiveFrom)) &&
-               (effectiveUntil == null || !now.isAfter(effectiveUntil));
+                (effectiveUntil == null || !now.isAfter(effectiveUntil));
     }
 
     @Override

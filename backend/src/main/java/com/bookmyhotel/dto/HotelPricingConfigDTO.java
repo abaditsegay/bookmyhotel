@@ -13,7 +13,8 @@ import jakarta.validation.constraints.Size;
 
 /**
  * DTO for hotel pricing configuration requests
- * Provides a simplified interface for creating and updating pricing configurations
+ * Provides a simplified interface for creating and updating pricing
+ * configurations
  */
 public class HotelPricingConfigDTO {
 
@@ -95,7 +96,8 @@ public class HotelPricingConfigDTO {
     private String notes;
 
     // Constructors
-    public HotelPricingConfigDTO() {}
+    public HotelPricingConfigDTO() {
+    }
 
     // Getters and Setters
     public BigDecimal getServiceTaxRate() {
@@ -277,9 +279,12 @@ public class HotelPricingConfigDTO {
     // Utility methods
     public BigDecimal getTotalTaxRate() {
         BigDecimal total = BigDecimal.ZERO;
-        if (serviceTaxRate != null) total = total.add(serviceTaxRate);
-        if (vatRate != null) total = total.add(vatRate);
-        if (cityTaxRate != null) total = total.add(cityTaxRate);
+        if (serviceTaxRate != null)
+            total = total.add(serviceTaxRate);
+        if (vatRate != null)
+            total = total.add(vatRate);
+        if (cityTaxRate != null)
+            total = total.add(cityTaxRate);
         return total;
     }
 

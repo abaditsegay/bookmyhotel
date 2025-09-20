@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { API_CONFIG } from '../config/apiConfig';
 import {
   Box,
   Card,
@@ -87,7 +88,7 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
     if (!token || !hotelId) return;
 
     try {
-      const response = await fetch(`http://localhost:8080/managemyhotel/api/hotel-admin/pricing-config/hotel/${hotelId}/multipliers`, {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/managemyhotel/api/hotel-admin/pricing-config/hotel/${hotelId}/multipliers`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

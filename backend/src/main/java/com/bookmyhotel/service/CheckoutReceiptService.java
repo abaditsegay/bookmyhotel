@@ -206,16 +206,19 @@ public class CheckoutReceiptService {
     }
 
     private void calculateRoomCharges(ConsolidatedReceiptResponse receipt, Reservation reservation) {
-        // The stored reservation.getPricePerNight() should be the base room rate (before taxes)
-        // This ensures the receipt shows the base rate and taxes are calculated separately
+        // The stored reservation.getPricePerNight() should be the base room rate
+        // (before taxes)
+        // This ensures the receipt shows the base rate and taxes are calculated
+        // separately
         BigDecimal baseRatePerNight = reservation.getPricePerNight();
         receipt.setRoomChargePerNight(baseRatePerNight);
 
-        // Calculate total room charges based on actual stay or reservation dates (base rate only)
+        // Calculate total room charges based on actual stay or reservation dates (base
+        // rate only)
         long nights = receipt.getNumberOfNights();
         BigDecimal totalRoomCharges = baseRatePerNight.multiply(BigDecimal.valueOf(nights));
         receipt.setTotalRoomCharges(totalRoomCharges);
-        
+
         logger.debug("Receipt room charges: {} per night × {} nights = {} (base rate before taxes)",
                 baseRatePerNight, nights, totalRoomCharges);
     }
@@ -244,28 +247,28 @@ public class CheckoutReceiptService {
             // Get hotel pricing configuration to determine tax rates
             Long hotelId = reservation.getHotel().getId();
             BigDecimal totalTaxRate = hotelPricingConfigService.getTotalTaxRate(hotelId);
-            
+
             // Calculate subtotal (room charges + additional charges, excluding taxes)
             BigDecimal subtotal = receipt.getTotalRoomCharges().add(receipt.getTotalAdditionalCharges());
-            
+
             // Calculate tax amount based on subtotal
             BigDecimal taxAmount = subtotal.multiply(totalTaxRate);
-            
+
             if (taxAmount.compareTo(BigDecimal.ZERO) > 0) {
                 // Format tax rate as percentage for display
                 BigDecimal taxPercentage = totalTaxRate.multiply(BigDecimal.valueOf(100));
                 String taxDescription = String.format("Service Charge & VAT (%.1f%%)", taxPercentage.doubleValue());
-                
+
                 ReceiptChargeItem taxItem = new ReceiptChargeItem(
                         taxDescription, taxAmount, "TAX");
                 taxesAndFees.add(taxItem);
-                
-                logger.debug("Applied tax for hotel {}: {}% on subtotal {} = {}", 
+
+                logger.debug("Applied tax for hotel {}: {}% on subtotal {} = {}",
                         hotelId, taxPercentage, subtotal, taxAmount);
             }
-            
+
         } catch (Exception e) {
-            logger.warn("Failed to calculate taxes for hotel {}: {}. Using zero tax.", 
+            logger.warn("Failed to calculate taxes for hotel {}: {}. Using zero tax.",
                     reservation.getHotel().getId(), e.getMessage());
         }
 
