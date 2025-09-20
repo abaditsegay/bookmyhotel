@@ -8,7 +8,9 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.env.Environment;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -41,6 +43,9 @@ public class DataInitializer implements CommandLineRunner {
     private UserRepository userRepository;
 
     @Autowired
+    private Environment environment;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Autowired
@@ -59,13 +64,43 @@ public class DataInitializer implements CommandLineRunner {
     public void run(String... args) throws Exception {
         logger.info("Starting data initialization...");
 
-        createDevelopmentTenant();
+        // Always create system admin user for administrative access
         createSystemAdminUser();
-        createSampleHotelWithRooms();
-        createHotelStaffUsers();
-        createEthiopianProducts();
+
+        // Only create sample data in development/test profiles
+        if (isDevOrTestProfile()) {
+            logger.info("Development/Test profile detected - creating sample data");
+            createDevelopmentTenant();
+            createSampleHotelWithRooms();
+            createHotelStaffUsers();
+            createEthiopianProducts();
+        } else {
+            logger.info("Production profile detected - skipping sample data creation");
+            logger.info("Only system admin user will be created for initial setup");
+        }
 
         logger.info("Data initialization completed successfully.");
+    }
+
+    /**
+     * Check if we're running in development or test profile
+     */
+    private boolean isDevOrTestProfile() {
+        String[] activeProfiles = environment.getActiveProfiles();
+        
+        // If no active profiles, assume development
+        if (activeProfiles.length == 0) {
+            return true;
+        }
+        
+        for (String profile : activeProfiles) {
+            if ("development".equals(profile) || "dev".equals(profile) || 
+                "test".equals(profile) || "local".equals(profile)) {
+                return true;
+            }
+        }
+        
+        return false;
     }
 
     /**
@@ -107,8 +142,11 @@ public class DataInitializer implements CommandLineRunner {
      * Create the system admin user if it doesn't exist
      */
     private void createSystemAdminUser() {
-        String adminEmail = "admin@bookmyhotel.com";
-        String adminPassword = "admin123";
+        // TODO: Get admin credentials from environment variables or secure configuration
+        String adminEmail = System.getenv("SYSTEM_ADMIN_EMAIL") != null ? 
+            System.getenv("SYSTEM_ADMIN_EMAIL") : "admin@bookmyhotel.com";
+        String adminPassword = System.getenv("SYSTEM_ADMIN_PASSWORD") != null ? 
+            System.getenv("SYSTEM_ADMIN_PASSWORD") : "admin123";
 
         logger.info("Checking for system admin user with email: {}", adminEmail);
 
@@ -310,7 +348,9 @@ public class DataInitializer implements CommandLineRunner {
 
         // Create hotel admin user
         String adminEmail = "admin." + hotelNameShort + "@bookmyhotel.com";
-        String adminPassword = "admin123";
+        // TODO: Generate secure random password for hotel admin users
+        String adminPassword = System.getenv("DEFAULT_HOTEL_ADMIN_PASSWORD") != null ? 
+            System.getenv("DEFAULT_HOTEL_ADMIN_PASSWORD") : "admin123";
 
         if (!userRepository.findByEmail(adminEmail).isPresent()) {
             User hotelAdmin = new User();
@@ -329,7 +369,9 @@ public class DataInitializer implements CommandLineRunner {
 
         // Create front desk user
         String frontdeskEmail = "frontdesk." + hotelNameShort + "@bookmyhotel.com";
-        String frontdeskPassword = "front123";
+        // TODO: Generate secure random password for front desk users
+        String frontdeskPassword = System.getenv("DEFAULT_FRONTDESK_PASSWORD") != null ? 
+            System.getenv("DEFAULT_FRONTDESK_PASSWORD") : "front123";
 
         if (!userRepository.findByEmail(frontdeskEmail).isPresent()) {
             User frontdeskUser = new User();

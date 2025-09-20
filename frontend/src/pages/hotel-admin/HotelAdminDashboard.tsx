@@ -36,6 +36,7 @@ import WalkInBookingModal from '../../components/booking/WalkInBookingModal';
 import BookingManagementTable from '../../components/booking/BookingManagementTable';
 import OfflineWalkInBooking from '../../components/OfflineWalkInBooking';
 import { roomCacheService } from '../../services/RoomCacheService';
+import PricingConfiguration from '../../components/PricingConfiguration';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -72,7 +73,7 @@ const HotelAdminDashboard: React.FC = () => {
   const getInitialTab = () => {
     const tabParam = searchParams.get('tab');
     const tab = tabParam ? parseInt(tabParam, 10) : 0;
-    return isNaN(tab) || tab < 0 || tab > 6 ? 0 : tab;
+    return isNaN(tab) || tab < 0 || tab > 7 ? 0 : tab;
   };
   
   const [activeTab, setActiveTab] = useState(getInitialTab);
@@ -412,7 +413,18 @@ const HotelAdminDashboard: React.FC = () => {
               '& .MuiTabs-scrollButtons': {
                 '&.Mui-disabled': { opacity: 0.3 },
               },
-              '& .MuiTab-root:nth-of-type(7)': { // Target the 7th tab (Offline Bookings)
+              '& .MuiTab-root:nth-of-type(7)': { // Target the 7th tab (Pricing)
+                backgroundColor: '#4caf50', // Green background
+                color: '#fff',
+                '&:hover': {
+                  backgroundColor: '#388e3c', // Darker green on hover
+                },
+                '&.Mui-selected': {
+                  backgroundColor: '#2e7d32', // Even darker green when selected
+                  color: '#fff',
+                },
+              },
+              '& .MuiTab-root:nth-of-type(8)': { // Target the 8th tab (Offline Bookings)
                 backgroundColor: '#ff9800', // Orange background
                 color: '#fff',
                 '&:hover': {
@@ -431,6 +443,7 @@ const HotelAdminDashboard: React.FC = () => {
             <Tab label="Bookings" />
             <Tab label="Staff Schedules" />
             <Tab label="Reports" />
+            <Tab label="Pricing & Tax" />
             <Tab label="Offline Bookings" />
           </Tabs>
         </Box>
@@ -887,6 +900,11 @@ const HotelAdminDashboard: React.FC = () => {
         </TabPanel>
 
         <TabPanel value={activeTab} index={6}>
+          {/* Pricing & Tax Configuration Tab */}
+          <PricingConfiguration />
+        </TabPanel>
+
+        <TabPanel value={activeTab} index={7}>
           {/* Offline Bookings Tab */}
           <OfflineWalkInBooking
             hotelId={hotel?.id}

@@ -53,6 +53,9 @@ public class CheckoutReceiptService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private HotelPricingConfigService hotelPricingConfigService;
+
     /**
      * Generate a consolidated receipt for checkout
      */
@@ -73,7 +76,8 @@ public class CheckoutReceiptService {
             if (authentication != null) {
                 currentUserEmail = authentication.getName();
                 // System admin users have hotel_id = null and SYSTEM_ADMIN role
-                if (currentUserEmail != null && (currentUserEmail.equals("admin@bookmyhotel.com") ||
+                // TODO: Replace hardcoded check with proper role-based authorization
+                if (currentUserEmail != null && (currentUserEmail.equals(System.getenv("SYSTEM_ADMIN_EMAIL")) ||
                         currentUserEmail.contains("system"))) {
                     isSystemWideUser = true;
                     logger.info("System-wide user detected: {} - bypassing tenant validation", currentUserEmail);
@@ -202,12 +206,18 @@ public class CheckoutReceiptService {
     }
 
     private void calculateRoomCharges(ConsolidatedReceiptResponse receipt, Reservation reservation) {
-        receipt.setRoomChargePerNight(reservation.getPricePerNight());
+        // The stored reservation.getPricePerNight() should be the base room rate (before taxes)
+        // This ensures the receipt shows the base rate and taxes are calculated separately
+        BigDecimal baseRatePerNight = reservation.getPricePerNight();
+        receipt.setRoomChargePerNight(baseRatePerNight);
 
-        // Calculate total room charges based on actual stay or reservation dates
+        // Calculate total room charges based on actual stay or reservation dates (base rate only)
         long nights = receipt.getNumberOfNights();
-        BigDecimal totalRoomCharges = reservation.getPricePerNight().multiply(BigDecimal.valueOf(nights));
+        BigDecimal totalRoomCharges = baseRatePerNight.multiply(BigDecimal.valueOf(nights));
         receipt.setTotalRoomCharges(totalRoomCharges);
+        
+        logger.debug("Receipt room charges: {} per night × {} nights = {} (base rate before taxes)",
+                baseRatePerNight, nights, totalRoomCharges);
     }
 
     private void setAdditionalCharges(ConsolidatedReceiptResponse receipt, Reservation reservation) {
@@ -230,14 +240,33 @@ public class CheckoutReceiptService {
     private void setTaxesAndFees(ConsolidatedReceiptResponse receipt, Reservation reservation) {
         List<ReceiptChargeItem> taxesAndFees = new ArrayList<>();
 
-        // Example: Add city tax (you can customize this based on your requirements)
-        BigDecimal cityTaxRate = BigDecimal.valueOf(0.05); // 5% city tax
-        BigDecimal cityTax = receipt.getTotalRoomCharges().multiply(cityTaxRate);
-
-        if (cityTax.compareTo(BigDecimal.ZERO) > 0) {
-            ReceiptChargeItem cityTaxItem = new ReceiptChargeItem(
-                    "City Tax (5%)", cityTax, "TAX");
-            taxesAndFees.add(cityTaxItem);
+        try {
+            // Get hotel pricing configuration to determine tax rates
+            Long hotelId = reservation.getHotel().getId();
+            BigDecimal totalTaxRate = hotelPricingConfigService.getTotalTaxRate(hotelId);
+            
+            // Calculate subtotal (room charges + additional charges, excluding taxes)
+            BigDecimal subtotal = receipt.getTotalRoomCharges().add(receipt.getTotalAdditionalCharges());
+            
+            // Calculate tax amount based on subtotal
+            BigDecimal taxAmount = subtotal.multiply(totalTaxRate);
+            
+            if (taxAmount.compareTo(BigDecimal.ZERO) > 0) {
+                // Format tax rate as percentage for display
+                BigDecimal taxPercentage = totalTaxRate.multiply(BigDecimal.valueOf(100));
+                String taxDescription = String.format("Service Charge & VAT (%.1f%%)", taxPercentage.doubleValue());
+                
+                ReceiptChargeItem taxItem = new ReceiptChargeItem(
+                        taxDescription, taxAmount, "TAX");
+                taxesAndFees.add(taxItem);
+                
+                logger.debug("Applied tax for hotel {}: {}% on subtotal {} = {}", 
+                        hotelId, taxPercentage, subtotal, taxAmount);
+            }
+            
+        } catch (Exception e) {
+            logger.warn("Failed to calculate taxes for hotel {}: {}. Using zero tax.", 
+                    reservation.getHotel().getId(), e.getMessage());
         }
 
         receipt.setTaxesAndFees(taxesAndFees);

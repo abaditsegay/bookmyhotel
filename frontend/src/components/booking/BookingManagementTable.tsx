@@ -155,7 +155,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
           page,
           size,
           searchTerm,
-          tenant?.id || 'default'
+          tenant?.id || null
         );
       } else {
         result = await hotelAdminApi.getHotelBookings(
@@ -241,7 +241,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
             page,
             size,
             debouncedSearchTerm,
-            tenant?.id || 'default'
+            tenant?.id || null
           );
         } else {
           // Use hotel admin API
@@ -407,7 +407,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
           return; // Return early to prevent status update until dialog completes
         } else if (action === 'check-out') {
           // Use unified front-desk API for check-out operations (same for both modes)
-          const result = await frontDeskApiService.checkOutGuestWithReceipt(token, booking.reservationId, tenant?.id || 'default');
+          const result = await frontDeskApiService.checkOutGuestWithReceipt(token, booking.reservationId, tenant?.id || null);
           
           if (result.success && result.data) {
             setCheckoutReceipt(result.data);
@@ -486,7 +486,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
 
     try {
       // Use the unified receipt preview API for both hotel-admin and front-desk modes
-      const result = await frontDeskApiService.generateReceiptPreview(token, booking.reservationId, tenant?.id || 'default');
+      const result = await frontDeskApiService.generateReceiptPreview(token, booking.reservationId, tenant?.id || null);
       
       if (result.success && result.data) {
         // Create a mock CheckoutResponse structure to work with the existing dialog

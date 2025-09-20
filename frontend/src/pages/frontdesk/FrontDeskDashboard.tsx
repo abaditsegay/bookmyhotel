@@ -81,6 +81,17 @@ const FrontDeskDashboard: React.FC = () => {
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
     setSearchParams({ tab: newValue.toString() });
+    
+    // If switching to Rooms tab (index 1), ensure room cache is loaded
+    if (newValue === 1 && user?.hotelId) {
+      const hotelId = parseInt(user.hotelId);
+      console.log('🏨 Switching to Rooms tab, ensuring room cache is loaded...');
+      roomCacheService.getRooms(hotelId).then(rooms => {
+        console.log(`✅ Room cache ready: ${rooms.length} rooms available`);
+      }).catch(error => {
+        console.warn('Failed to load room cache for Rooms tab:', error);
+      });
+    }
   };
 
   // Load front desk statistics
@@ -307,6 +318,13 @@ const FrontDeskDashboard: React.FC = () => {
             console.log('Room updated:', room);
             // Refresh stats when room is updated
             loadStats();
+            // Also refresh room cache to keep IndexedDB in sync
+            if (user?.hotelId) {
+              const hotelId = parseInt(user.hotelId);
+              roomCacheService.getRooms(hotelId, true).catch(error => {
+                console.warn('Failed to refresh room cache after update:', error);
+              });
+            }
           }}
         />
       </TabPanel>

@@ -1232,9 +1232,10 @@ public class FrontDeskService {
         // operational status
         response.setIsAvailable(room.getIsAvailable());
 
-        // Set hotel name
+        // Set hotel name and hotel ID
         if (room.getHotel() != null) {
             response.setHotelName(room.getHotel().getName());
+            response.setHotelId(room.getHotel().getId());
         }
 
         // Check if room has current guest (checked-in reservation)

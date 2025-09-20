@@ -141,39 +141,68 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
   const [cachedRooms, setCachedRooms] = useState<CachedRoom[]>([]);
   const [roomsLoaded, setRoomsLoaded] = useState(false);
 
-  // Load rooms from cache
+  // Load room data from cache
   const loadRoomsFromCache = useCallback(async () => {
-    if (!hotelId) return;
+    const resolvedHotelId = hotelId || (user?.hotelId ? parseInt(user.hotelId) : null);
+    
+    if (!resolvedHotelId) {
+      console.warn('⚠️ No hotelId available for room cache loading - neither from props nor user data');
+      setError('Hotel ID is required to load room data. Please ensure you are logged in with proper hotel access.');
+      setRoomsLoaded(true);
+      return;
+    }
     
     try {
-      console.log('📦 Loading rooms from cache for hotel:', hotelId);
-      const rooms = await roomCacheService.getRooms(hotelId);
+      console.log('📦 Loading rooms from cache for hotel:', resolvedHotelId);
+      const rooms = await roomCacheService.getRooms(resolvedHotelId);
       setCachedRooms(rooms);
       setRoomsLoaded(true);
       console.log(`✅ Loaded ${rooms.length} cached rooms`);
+      
+      // If no cached rooms, try to fetch fresh data
+      if (rooms.length === 0 && navigator.onLine && token) {
+        console.log('🔄 No cached rooms found, fetching fresh data...');
+        try {
+          const freshRooms = await roomCacheService.fetchAndCacheRooms(resolvedHotelId);
+          setCachedRooms(freshRooms);
+          console.log(`✨ Fetched and cached ${freshRooms.length} fresh rooms`);
+        } catch (fetchError) {
+          console.warn('Failed to fetch fresh room data:', fetchError);
+        }
+      }
     } catch (error) {
       console.error('Failed to load cached rooms:', error);
       setRoomsLoaded(true); // Still mark as loaded to prevent infinite loading
     }
-  }, [hotelId]);
+  }, [hotelId, token, user?.hotelId]);
 
-  // Track if offline storage is initialized
-  const [offlineStorageInitialized, setOfflineStorageInitialized] = useState(false);
-
-  // Initialize room caching when component loads (only after offline storage is ready)
+  // Initialize room caching when component loads
   useEffect(() => {
-    if (hotelId && token && !roomsLoaded && offlineStorageInitialized) {
-      loadRoomsFromCache();
-      
-      // Start periodic refresh for this hotel
-      roomCacheService.startPeriodicRefresh(hotelId);
-      
-      // Cleanup on unmount
-      return () => {
-        roomCacheService.stopPeriodicRefresh();
-      };
-    }
-  }, [hotelId, token, roomsLoaded, offlineStorageInitialized, loadRoomsFromCache]);
+    const initializeRooms = async () => {
+      if (hotelId && token && !roomsLoaded) {
+        try {
+          // Initialize offline storage first
+          await offlineStorage.init();
+          
+          // Then load rooms from cache
+          await loadRoomsFromCache();
+          
+          // Start periodic refresh for this hotel
+          roomCacheService.startPeriodicRefresh(hotelId);
+        } catch (error) {
+          console.error('Failed to initialize rooms:', error);
+          setRoomsLoaded(true); // Prevent infinite retry
+        }
+      }
+    };
+
+    initializeRooms();
+    
+    // Cleanup on unmount
+    return () => {
+      roomCacheService.stopPeriodicRefresh();
+    };
+  }, [hotelId, token, roomsLoaded, loadRoomsFromCache]);
 
   // Memoized change handlers (matching online version)
   // Memoized change handlers to prevent input focus loss (matching online component exactly)
@@ -542,15 +571,17 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
   };
 
   const loadOfflineBookings = useCallback(async () => {
+    const resolvedHotelId = hotelId || (user?.hotelId ? parseInt(user.hotelId) : null);
+    
     try {
-      const bookings = await offlineStorage.getOfflineBookings(hotelId);
-      console.log('🔍 Debug: Loaded offline bookings:', bookings.length, 'for hotel:', hotelId);
+      const bookings = await offlineStorage.getOfflineBookings(resolvedHotelId || undefined);
+      console.log('🔍 Debug: Loaded offline bookings:', bookings.length, 'for hotel:', resolvedHotelId);
       console.log('🔍 Debug: Booking statuses:', bookings.map(b => `${b.id}: ${b.status}`));
       setOfflineBookings(bookings);
     } catch (error) {
       console.error('Failed to load offline bookings:', error);
     }
-  }, [hotelId]);
+  }, [hotelId, user?.hotelId]);
 
   const loadPendingSyncCount = useCallback(async () => {
     try {
@@ -566,7 +597,6 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
     const initializeOfflineSupport = async () => {
       try {
         await offlineStorage.init();
-        setOfflineStorageInitialized(true); // Mark as initialized
         await loadOfflineBookings();
         await loadPendingSyncCount();
         
@@ -597,8 +627,10 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
         
         // Load from same API endpoints as main walk-in booking component
         // Use same validation logic as main component
-        if (!hotelId || !token) {
-          console.log('Cannot load rooms - missing hotelId or token:', { hotelId, hasToken: !!token });
+        const resolvedHotelId = hotelId || (user?.hotelId ? parseInt(user.hotelId) : null);
+        
+        if (!resolvedHotelId || !token) {
+          console.log('Cannot load rooms - missing hotelId or token:', { hotelId: resolvedHotelId, hasToken: !!token });
           // Fall back to cached room data
           console.log('💾 Using cached room data due to missing hotelId or token');
           rooms = cachedRooms.filter(room => room.capacity >= guests);
@@ -661,7 +693,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
               
               console.log('Front desk fetching available rooms for date range:', format(checkInDate, 'yyyy-MM-dd'), 'to', format(checkOutDate, 'yyyy-MM-dd'), 'guests:', guests);
               
-              const response = await fetch(`${API_BASE_URL}/api/front-desk/hotels/${hotelId}/available-rooms?${params.toString()}`, {
+              const response = await fetch(`${API_BASE_URL}/api/front-desk/hotels/${resolvedHotelId}/available-rooms?${params.toString()}`, {
                 headers
               });
               
@@ -701,9 +733,9 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
           // Fallback to enhanced cached room availability check
           console.log('💾 Using enhanced cached room availability data');
           try {
-            if (hotelId) {
+            if (resolvedHotelId) {
               const availableCachedRooms = await offlineStorage.getAvailableRoomsForDateRange(
-                hotelId,
+                resolvedHotelId,
                 format(checkInDate, 'yyyy-MM-dd'),
                 format(checkOutDate, 'yyyy-MM-dd'),
                 guests
@@ -733,6 +765,28 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
             rooms = cachedRooms.filter(room => room.capacity >= guests);
             dataSource = 'cached';
           }
+          
+          // If we still have no rooms, try to refresh the cache
+          if (rooms.length === 0 && resolvedHotelId && navigator.onLine) {
+            console.log('🔄 No cached rooms found, attempting to fetch and cache fresh data...');
+            try {
+              const freshRooms = await roomCacheService.fetchAndCacheRooms(resolvedHotelId);
+              const availableRooms = freshRooms.filter(room => room.capacity >= guests);
+              rooms = availableRooms.map(room => ({
+                id: room.id,
+                roomNumber: room.roomNumber,
+                roomType: room.roomType,
+                pricePerNight: room.pricePerNight,
+                capacity: room.capacity,
+                description: room.description,
+                isAvailable: room.isAvailable
+              }));
+              dataSource = 'fresh-cache';
+              console.log(`✨ Fresh cache: ${rooms.length} rooms available after refreshing cache`);
+            } catch (refreshError) {
+              console.error('Failed to refresh room cache:', refreshError);
+            }
+          }
         }
         
         setAvailableRooms(rooms);
@@ -761,7 +815,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
     if (activeStep === 1 && checkInDate && checkOutDate) {
       loadAvailableRooms();
     }
-  }, [activeStep, checkInDate, checkOutDate, guests, cachedRooms, hotelId, token, tenantId, user?.role, user?.roles, API_BASE_URL]);
+  }, [activeStep, checkInDate, checkOutDate, guests, cachedRooms, hotelId, token, tenantId, user?.role, user?.roles, user?.hotelId, API_BASE_URL]);
 
   // Monitor online/offline status
   useEffect(() => {
@@ -811,8 +865,15 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
       const totalAmount = nights * selectedRoom.pricePerNight;
 
       // Save offline booking (matching online component structure)
+      const resolvedHotelId = hotelId || (user?.hotelId ? parseInt(user.hotelId) : null);
+      
+      if (!resolvedHotelId) {
+        setError('Hotel ID is required for booking creation');
+        return;
+      }
+
       const bookingData = {
-        hotelId: hotelId || (user?.hotelId ? parseInt(user.hotelId) : 1),
+        hotelId: resolvedHotelId,
         guestName: `${guestInfo.firstName} ${guestInfo.lastName}`,
         guestEmail: guestInfo.email,
         guestPhone: guestInfo.phone,
@@ -903,7 +964,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
 
       // Call callback if provided
       if (onBookingComplete) {
-        const fullBooking = await offlineStorage.getOfflineBookings(hotelId);
+        const fullBooking = await offlineStorage.getOfflineBookings(resolvedHotelId || undefined);
         const newBooking = fullBooking.find(b => b.id === bookingId);
         if (newBooking) {
           onBookingComplete(newBooking);

@@ -135,7 +135,10 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
         let hotelId = booking.hotelId;
         if (!hotelId && tenant?.id) {
           console.log('🏨 CheckInDialog: No hotelId in booking, using fallback for front-desk mode');
-          hotelId = 1; // Temporary fallback
+          // No fallback - hotel ID should come from user context or API
+          console.error('Hotel ID not available for check-in operation');
+          setError('Hotel ID not available. Please ensure you have proper access.');
+          return;
         }
 
         if (!hotelId) {
@@ -148,7 +151,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
         result = await frontDeskApiService.getAvailableRoomsForCheckin(
           token, 
           hotelId, 
-          tenant?.id || 'default'
+          tenant?.id || null
         );
       }
 
@@ -229,7 +232,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
         booking.reservationId,
         roomId,
         assignedRoom?.roomType || booking.roomType, // Use the selected room's type
-        tenant?.id || 'default'
+        tenant?.id || null
       );
 
       if (result.success && result.data) {
@@ -291,7 +294,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
         booking.reservationId,
         roomId,
         currentRoomType || booking.roomType, // Use current room type if available
-        tenant?.id || 'default'
+        tenant?.id || null
       );
 
       if (result.success && result.data) {

@@ -675,7 +675,7 @@ export const hotelAdminApi = {
           phone: user.phone || '',
           roles: user.roles ? user.roles.map((role: any) => typeof role === 'string' ? role : role.name || role.toString()) : [],
           isActive: user.isActive === true,
-          hotelId: user.hotelId || 0,
+          hotelId: user.hotelId || null,
           hotelName: user.hotelName || '',
           createdAt: user.createdAt || new Date().toISOString(),
           updatedAt: user.updatedAt || new Date().toISOString(),
@@ -729,7 +729,7 @@ export const hotelAdminApi = {
         phone: user.phone || '',
         roles: user.roles ? user.roles.map((role: any) => typeof role === 'string' ? role : role.name || role.toString()) : [],
         isActive: user.isActive === true,
-        hotelId: user.hotelId || 0,
+        hotelId: user.hotelId || null,
         hotelName: user.hotelName || '',
         createdAt: user.createdAt || new Date().toISOString(),
         updatedAt: user.updatedAt || new Date().toISOString(),
@@ -816,7 +816,7 @@ export const hotelAdminApi = {
         phone: user.phone || '',
         roles: user.roles ? user.roles.map((role: any) => typeof role === 'string' ? role : role.name || role.toString()) : [],
         isActive: user.isActive === true,
-        hotelId: user.hotelId || 0,
+        hotelId: user.hotelId || null,
         hotelName: user.hotelName || '',
         createdAt: user.createdAt || new Date().toISOString(),
         updatedAt: user.updatedAt || new Date().toISOString(),
@@ -862,7 +862,7 @@ export const hotelAdminApi = {
         phone: user.phone || '',
         roles: user.roles ? user.roles.map((role: any) => typeof role === 'string' ? role : role.name || role.toString()) : [],
         isActive: user.isActive === true,
-        hotelId: user.hotelId || 0,
+        hotelId: user.hotelId || null,
         hotelName: user.hotelName || '',
         createdAt: user.createdAt || new Date().toISOString(),
         updatedAt: user.updatedAt || new Date().toISOString(),
@@ -1037,18 +1037,10 @@ export const hotelAdminApi = {
 
       if (!response.ok) {
         if (response.status === 404) {
-          // No pricing found for this room type, return default
+          // No pricing found for this room type, return error
           return { 
-            success: true, 
-            data: { 
-              roomType, 
-              basePricePerNight: 100, // Default price
-              weekendMultiplier: 1.2,
-              holidayMultiplier: 1.5,
-              peakSeasonMultiplier: 1.3,
-              isActive: true,
-              currency: 'ETB'
-            } 
+            success: false, 
+            message: `No pricing configuration found for room type: ${roomType}. Please configure pricing before using this room type.` 
           };
         }
         const errorData = await response.json();

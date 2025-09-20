@@ -60,6 +60,9 @@ public class EnhancedCostCalculationService {
     @Autowired
     private ReservationRepository reservationRepository;
 
+    @Autowired
+    private HotelPricingConfigService hotelPricingConfigService;
+
     /**
      * Calculate comprehensive cost for a booking with all applicable pricing
      * strategies
@@ -311,10 +314,14 @@ public class EnhancedCostCalculationService {
                         BigDecimal
                                 .valueOf(ChronoUnit.DAYS.between(request.getCheckInDate(), request.getCheckOutDate())),
                         2, RoundingMode.HALF_UP);
-                BigDecimal weekendPremium = dailyRate.multiply(BigDecimal.valueOf(0.20));
+                // TODO: Get weekend premium from hotel configuration
+                // For now, skip weekend pricing to avoid hardcoded values
+                BigDecimal weekendPremium = BigDecimal.ZERO; // No premium until properly configured
                 finalTotal = finalTotal.add(weekendPremium);
 
-                dayAdjustments.add(currentDate + " (Weekend): " + formatCurrency(weekendPremium));
+                if (weekendPremium.compareTo(BigDecimal.ZERO) > 0) {
+                    dayAdjustments.add(currentDate + " (Weekend): " + formatCurrency(weekendPremium));
+                }
             }
 
             currentDate = currentDate.plusDays(1);
@@ -383,13 +390,31 @@ public class EnhancedCostCalculationService {
     }
 
     /**
-     * Calculate taxes and fees
+     * Calculate taxes and fees based on hotel-specific configuration
      */
     private BigDecimal calculateTaxesAndFees(BigDecimal subtotal, CostCalculationRequest request) {
-        // Simple tax calculation - in real implementation, this would be more complex
-        // based on location, tax rates, etc.
-        BigDecimal taxRate = BigDecimal.valueOf(0.15); // 15% tax
-        return subtotal.multiply(taxRate).setScale(2, RoundingMode.HALF_UP);
+        try {
+            // Get hotel ID directly from the request
+            Long hotelId = request.getHotelId();
+            
+            if (hotelId == null) {
+                logger.warn("Hotel ID not provided in request. Using zero tax rate.");
+                return BigDecimal.ZERO;
+            }
+            
+            // Get hotel-specific tax rate from configuration
+            BigDecimal totalTaxRate = hotelPricingConfigService.getTotalTaxRate(hotelId);
+            
+            logger.debug("Calculating taxes for hotel {}: subtotal = {}, tax rate = {}", 
+                        hotelId, subtotal, totalTaxRate);
+            
+            return subtotal.multiply(totalTaxRate).setScale(2, RoundingMode.HALF_UP);
+            
+        } catch (Exception e) {
+            logger.error("Error calculating taxes for hotel {}: {}", request.getHotelId(), e.getMessage());
+            // Fallback to zero tax to prevent calculation failures
+            return BigDecimal.ZERO;
+        }
     }
 
     /**

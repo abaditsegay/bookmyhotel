@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.bookmyhotel.config.CacheConfig;
 import com.bookmyhotel.dto.RoomTypePricingDTO;
 import com.bookmyhotel.entity.Hotel;
+import com.bookmyhotel.entity.HotelPricingConfig;
 import com.bookmyhotel.entity.Room;
 import com.bookmyhotel.entity.RoomType;
 import com.bookmyhotel.entity.RoomTypePricing;
@@ -40,6 +41,9 @@ public class RoomTypePricingService {
 
     @Autowired
     private RoomRepository roomRepository;
+
+    @Autowired
+    private HotelPricingConfigService hotelPricingConfigService;
 
     /**
      * Get all room type pricing for a hotel admin's hotel
@@ -79,12 +83,12 @@ public class RoomTypePricingService {
         pricing.setHotel(hotel);
         pricing.setRoomType(dto.getRoomType());
         pricing.setBasePricePerNight(dto.getBasePricePerNight());
-        pricing.setWeekendPrice(dto.getWeekendPrice());
-        pricing.setHolidayPrice(dto.getHolidayPrice());
-        pricing.setPeakSeasonPrice(dto.getPeakSeasonPrice());
         pricing.setIsActive(dto.getIsActive() != null ? dto.getIsActive() : true);
         pricing.setCurrency(dto.getCurrency() != null ? dto.getCurrency() : "ETB");
         pricing.setDescription(dto.getDescription());
+
+        // Calculate pricing with hotel-specific multipliers instead of using hardcoded values
+        calculatePricingWithMultipliers(hotel.getId(), dto.getBasePricePerNight(), pricing);
 
         if (pricing.getId() == null) {
             pricing.setCreatedAt(LocalDateTime.now());
@@ -167,6 +171,10 @@ public class RoomTypePricingService {
             if (!roomTypePricingRepository.existsByHotelAndRoomType(hotel, roomType)) {
                 RoomTypePricing pricing = new RoomTypePricing(hotel, roomType, defaultPrices[i]);
                 pricing.setDescription("Default pricing for " + roomType.name().toLowerCase() + " rooms");
+                
+                // Calculate pricing with hotel-specific multipliers
+                calculatePricingWithMultipliers(hotel.getId(), defaultPrices[i], pricing);
+                
                 roomTypePricingRepository.save(pricing);
                 
                 // Update existing rooms of this type with the default price
@@ -190,6 +198,36 @@ public class RoomTypePricingService {
     public RoomTypePricing getRoomTypePricing(Long hotelId, RoomType roomType) {
         return roomTypePricingRepository.findByHotelIdAndRoomType(hotelId, roomType)
                 .orElse(null);
+    }
+
+    /**
+     * Calculate pricing with hotel-specific multipliers
+     * 
+     * @param hotelId the hotel ID
+     * @param basePricePerNight the base price per night
+     * @param pricing the pricing entity to update
+     */
+    private void calculatePricingWithMultipliers(Long hotelId, BigDecimal basePricePerNight, RoomTypePricing pricing) {
+        HotelPricingConfig config = hotelPricingConfigService.getOrCreateActiveConfiguration(hotelId);
+        
+        if (config != null) {
+            // Calculate weekend price
+            BigDecimal weekendPrice = basePricePerNight.multiply(config.getWeekendMultiplier());
+            pricing.setWeekendPrice(weekendPrice);
+            
+            // Calculate holiday price  
+            BigDecimal holidayPrice = basePricePerNight.multiply(config.getHolidayMultiplier());
+            pricing.setHolidayPrice(holidayPrice);
+            
+            // Calculate peak season price
+            BigDecimal peakSeasonPrice = basePricePerNight.multiply(config.getPeakSeasonMultiplier());
+            pricing.setPeakSeasonPrice(peakSeasonPrice);
+        } else {
+            // Fallback to base price if no configuration
+            pricing.setWeekendPrice(basePricePerNight);
+            pricing.setHolidayPrice(basePricePerNight);
+            pricing.setPeakSeasonPrice(basePricePerNight);
+        }
     }
 
     /**

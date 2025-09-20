@@ -38,14 +38,14 @@ public class EmailService {
     @Value("${app.url:http://localhost:3000}")
     private String appUrl;
 
-    // OAuth2 configuration values
-    @Value("${microsoft.graph.client-id}")
+    // OAuth2 configuration values - with defaults to avoid startup errors
+    @Value("${microsoft.graph.client-id:}")
     private String oauthClientId;
 
-    @Value("${microsoft.graph.tenant-id}")
+    @Value("${microsoft.graph.tenant-id:}")
     private String oauthTenantId;
 
-    @Value("${microsoft.graph.client-secret}")
+    @Value("${microsoft.graph.client-secret:}")
     private String oauthClientSecret;
 
     @Autowired

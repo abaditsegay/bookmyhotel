@@ -43,12 +43,20 @@ import roomTypePricingService, {
 } from '../services/roomTypePricingApi';
 import { ROOM_TYPES } from '../constants/roomTypes';
 
+// Interface for backend pricing multipliers
+interface PricingMultipliers {
+  weekendMultiplier: number;
+  holidayMultiplier: number;
+  peakSeasonMultiplier: number;
+  currencyCode: string;
+}
+
 interface RoomTypePricingProps {
   onPricingUpdate?: () => void;
 }
 
 const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) => {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [pricingList, setPricingList] = useState<RoomTypePricingResponse[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -56,6 +64,12 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
   const [editingPricing, setEditingPricing] = useState<RoomTypePricingResponse | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedPricing, setSelectedPricing] = useState<RoomTypePricingResponse | null>(null);
+  const [pricingMultipliers, setPricingMultipliers] = useState<PricingMultipliers>({
+    weekendMultiplier: 1.2,
+    holidayMultiplier: 1.5,
+    peakSeasonMultiplier: 1.3,
+    currencyCode: 'ETB'
+  });
 
   const [formData, setFormData] = useState<RoomTypePricingRequest>({
     roomType: 'SINGLE',
@@ -67,6 +81,30 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
     currency: 'ETB',
     description: ''
   });
+
+  // Function to fetch pricing multipliers from backend
+  const fetchPricingMultipliers = useCallback(async (hotelId: string) => {
+    if (!token || !hotelId) return;
+
+    try {
+      const response = await fetch(`http://localhost:8080/managemyhotel/api/hotel-admin/pricing-config/hotel/${hotelId}/multipliers`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const multipliers: PricingMultipliers = await response.json();
+        setPricingMultipliers(multipliers);
+        console.log('🎯 Fetched pricing multipliers:', multipliers);
+      } else {
+        console.warn('Failed to fetch pricing multipliers, using defaults');
+      }
+    } catch (error) {
+      console.error('Error fetching pricing multipliers:', error);
+    }
+  }, [token]);
 
   const loadPricing = useCallback(async () => {
     if (!token) return;
@@ -92,7 +130,12 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
     loadPricing();
   }, [loadPricing]);
 
-  const handleOpenDialog = useCallback((pricing?: RoomTypePricingResponse) => {
+  const handleOpenDialog = useCallback(async (pricing?: RoomTypePricingResponse) => {
+    // Fetch current pricing multipliers from backend
+    if (user?.hotelId) {
+      await fetchPricingMultipliers(user.hotelId.toString());
+    }
+
     if (pricing) {
       setEditingPricing(pricing);
       setFormData({
@@ -114,16 +157,16 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
       setFormData({
         roomType: availableType?.value || 'SINGLE',
         basePricePerNight: 100,
-        weekendMultiplier: 1.2,
-        holidayMultiplier: 1.5,
-        peakSeasonMultiplier: 1.3,
+        weekendMultiplier: pricingMultipliers.weekendMultiplier,
+        holidayMultiplier: pricingMultipliers.holidayMultiplier,
+        peakSeasonMultiplier: pricingMultipliers.peakSeasonMultiplier,
         isActive: true,
-        currency: 'ETB',
+        currency: pricingMultipliers.currencyCode,
         description: ''
       });
     }
     setDialogOpen(true);
-  }, [pricingList]);
+  }, [pricingList, user?.hotelId, fetchPricingMultipliers, pricingMultipliers]);
 
   // Listen for custom event to open dialog
   useEffect(() => {
@@ -147,14 +190,23 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
       setLoading(true);
       let response;
       
+      // Use backend multipliers for submission
+      const submissionData = {
+        ...formData,
+        weekendMultiplier: pricingMultipliers.weekendMultiplier,
+        holidayMultiplier: pricingMultipliers.holidayMultiplier,
+        peakSeasonMultiplier: pricingMultipliers.peakSeasonMultiplier,
+        currency: pricingMultipliers.currencyCode
+      };
+      
       if (editingPricing) {
         response = await roomTypePricingService.updateRoomTypePricing(
           token, 
           editingPricing.id, 
-          formData
+          submissionData
         );
       } else {
-        response = await roomTypePricingService.saveRoomTypePricing(token, formData);
+        response = await roomTypePricingService.saveRoomTypePricing(token, submissionData);
       }
 
       if (response.success) {
@@ -476,42 +528,36 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
               <TextField
                 fullWidth
                 label="Weekend Multiplier"
-                type="number"
-                value={formData.weekendMultiplier}
-                onChange={(e) => setFormData({ 
-                  ...formData, 
-                  weekendMultiplier: e.target.value === '' ? undefined : (parseFloat(e.target.value) || undefined)
-                })}
-                inputProps={{ min: 0.1, step: 0.1 }}
-                helperText="1.2 = 20% increase"
+                value={pricingMultipliers.weekendMultiplier.toFixed(1)}
+                InputProps={{
+                  readOnly: true,
+                }}
+                helperText="From hotel pricing configuration"
+                variant="filled"
               />
             </Grid>
             <Grid item xs={12} md={4}>
               <TextField
                 fullWidth
                 label="Holiday Multiplier"
-                type="number"
-                value={formData.holidayMultiplier}
-                onChange={(e) => setFormData({ 
-                  ...formData, 
-                  holidayMultiplier: e.target.value === '' ? undefined : (parseFloat(e.target.value) || undefined)
-                })}
-                inputProps={{ min: 0.1, step: 0.1 }}
-                helperText="1.5 = 50% increase"
+                value={pricingMultipliers.holidayMultiplier.toFixed(1)}
+                InputProps={{
+                  readOnly: true,
+                }}
+                helperText="From hotel pricing configuration"
+                variant="filled"
               />
             </Grid>
             <Grid item xs={12} md={4}>
               <TextField
                 fullWidth
                 label="Peak Season Multiplier"
-                type="number"
-                value={formData.peakSeasonMultiplier}
-                onChange={(e) => setFormData({ 
-                  ...formData, 
-                  peakSeasonMultiplier: e.target.value === '' ? undefined : (parseFloat(e.target.value) || undefined)
-                })}
-                inputProps={{ min: 0.1, step: 0.1 }}
-                helperText="1.3 = 30% increase"
+                value={pricingMultipliers.peakSeasonMultiplier.toFixed(1)}
+                InputProps={{
+                  readOnly: true,
+                }}
+                helperText="From hotel pricing configuration"
+                variant="filled"
               />
             </Grid>
             <Grid item xs={12} md={6}>
@@ -567,7 +613,7 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
                   Weekend Price
                 </Typography>
                 <Typography variant="h6">
-                  {formatCurrency(formData.basePricePerNight * (formData.weekendMultiplier || 1))}
+                  {formatCurrency(formData.basePricePerNight * pricingMultipliers.weekendMultiplier)}
                 </Typography>
               </Grid>
               <Grid item xs={6} md={3}>
@@ -575,7 +621,7 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
                   Holiday Price
                 </Typography>
                 <Typography variant="h6">
-                  {formatCurrency(formData.basePricePerNight * (formData.holidayMultiplier || 1))}
+                  {formatCurrency(formData.basePricePerNight * pricingMultipliers.holidayMultiplier)}
                 </Typography>
               </Grid>
               <Grid item xs={6} md={3}>
@@ -583,7 +629,7 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
                   Peak Season Price
                 </Typography>
                 <Typography variant="h6">
-                  {formatCurrency(formData.basePricePerNight * (formData.peakSeasonMultiplier || 1))}
+                  {formatCurrency(formData.basePricePerNight * pricingMultipliers.peakSeasonMultiplier)}
                 </Typography>
               </Grid>
             </Grid>

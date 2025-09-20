@@ -34,6 +34,8 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { buildApiUrl } from '../../config/apiConfig';
+import { roomCacheService } from '../../services/RoomCacheService';
+import { CachedRoom } from '../../services/OfflineStorageService';
 
 interface RoomResponse {
   id: number;
@@ -235,6 +237,7 @@ const FrontDeskRoomManagement: React.FC<FrontDeskRoomManagementProps> = ({ onRoo
     setError(null);
     
     try {
+      // First try to load from API
       const result = await frontDeskRoomApi.getAllRooms(
         token,
         page,
@@ -248,11 +251,73 @@ const FrontDeskRoomManagement: React.FC<FrontDeskRoomManagementProps> = ({ onRoo
         setRooms(result.data.content);
         setTotalElements(result.data.totalElements);
       } else {
-        setError(result.message || 'Failed to load rooms');
+        throw new Error(result.message || 'Failed to load rooms from API');
       }
     } catch (error) {
-      console.error('Failed to load rooms:', error);
-      setError('Failed to load rooms');
+      console.error('API call failed, trying IndexedDB fallback:', error);
+      
+      // Fallback to cached rooms from IndexedDB
+      try {
+        console.log('📦 Loading rooms from IndexedDB cache...');
+        const user = JSON.parse(localStorage.getItem('auth_user') || '{}');
+        const hotelId = user.hotelId ? parseInt(user.hotelId) : null;
+        
+        if (hotelId) {
+          const cachedRooms = await roomCacheService.getRooms(hotelId);
+          console.log(`✅ Loaded ${cachedRooms.length} rooms from IndexedDB cache`);
+          
+          // Convert CachedRoom to RoomResponse format
+          const convertedRooms: RoomResponse[] = cachedRooms.map((room: CachedRoom) => ({
+            id: room.id,
+            roomNumber: room.roomNumber,
+            roomType: room.roomType,
+            pricePerNight: room.pricePerNight,
+            capacity: room.capacity,
+            description: room.description || '',
+            isAvailable: room.isAvailable,
+            status: room.offlineStatus === 'occupied' ? 'OCCUPIED' : 
+                   room.offlineStatus === 'reserved' ? 'RESERVED' : 'AVAILABLE',
+            hotelId: room.hotelId,
+            hotelName: 'Cached Hotel',
+            createdAt: room.lastUpdated,
+            updatedAt: room.lastUpdated,
+            currentGuest: room.occupiedBy || undefined
+          }));
+          
+          // Apply filters
+          let filteredRooms = convertedRooms;
+          
+          if (searchQuery && searchQuery.trim()) {
+            const query = searchQuery.toLowerCase();
+            filteredRooms = filteredRooms.filter(room => 
+              room.roomNumber.toLowerCase().includes(query) ||
+              room.roomType.toLowerCase().includes(query)
+            );
+          }
+          
+          if (statusFilter !== 'ALL') {
+            filteredRooms = filteredRooms.filter(room => room.status === statusFilter);
+          }
+          
+          // Apply pagination
+          const startIndex = page * rowsPerPage;
+          const paginatedRooms = filteredRooms.slice(startIndex, startIndex + rowsPerPage);
+          
+          setRooms(paginatedRooms);
+          setTotalElements(filteredRooms.length);
+          
+          if (cachedRooms.length > 0) {
+            setError('Using cached room data (offline mode)');
+          } else {
+            setError('No cached room data available');
+          }
+        } else {
+          setError('No hotel ID found in user data');
+        }
+      } catch (cacheError) {
+        console.error('Failed to load rooms from cache:', cacheError);
+        setError('Failed to load rooms from both API and cache');
+      }
     } finally {
       setLoading(false);
     }

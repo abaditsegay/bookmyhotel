@@ -422,10 +422,10 @@ const StaffScheduleManagement: React.FC = () => {
   };
 
   const resetForm = () => {
-    const defaultHotelId = isHotelAdmin && user?.hotelId ? parseInt(user.hotelId) : 0;
+    const defaultHotelId = isHotelAdmin && user?.hotelId ? parseInt(user.hotelId) : null;
     setFormData({
       staffId: 0,
-      hotelId: defaultHotelId,
+      hotelId: defaultHotelId || 0, // Keep 0 as UI fallback, will validate before API calls
       scheduleDate: '',
       startTime: '',
       endTime: '',

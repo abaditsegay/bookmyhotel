@@ -57,6 +57,7 @@ export interface StaffSession {
   expiresAt: string;
   lastActivity: string;
   isActive: boolean;
+  passwordHash?: string; // Simple hash for offline password validation
 }
 
 interface OfflineBooking {
@@ -102,7 +103,7 @@ interface GuestInfo {
 
 export class OfflineStorageService {
   private dbName = 'BookMyHotelOffline';
-  private version = 2; // Increment version for schema update
+  private version = 3; // Increment version to force schema recreation with proper room ID support
   private db: IDBDatabase | null = null;
   private isInitialized = false;
   private initPromise: Promise<void> | null = null;
@@ -275,6 +276,22 @@ export class OfflineStorageService {
             if (!roomStore.indexNames.contains('occupiedBy')) {
               roomStore.createIndex('occupiedBy', 'occupiedBy', { unique: false });
             }
+          }
+        }
+
+        // Add improvements for version 3 (room ID caching fixes)
+        if (oldVersion < 3) {
+          console.log('⬆️ Upgrading database to version 3 - ensuring proper room ID support');
+          
+          // Clear and recreate cachedRooms to ensure proper room ID indexing
+          if (db.objectStoreNames.contains('cachedRooms')) {
+            console.log('🔄 Recreating cachedRooms store for proper room ID support');
+            
+            // Note: We can't delete and recreate stores in the same transaction
+            // But we can clear the data to ensure fresh room caching
+            const roomStore = transaction.objectStore('cachedRooms');
+            roomStore.clear();
+            console.log('✅ Cleared existing room cache - will be repopulated on next login');
           }
         }
 
@@ -1076,33 +1093,123 @@ export class OfflineStorageService {
   // ===== STAFF SESSION MANAGEMENT =====
 
   /**
+   * Simple hash function for password validation (client-side only)
+   * Note: This is not cryptographically secure, just for basic offline validation
+   */
+  private simpleHash(input: string): string {
+    let hash = 0;
+    for (let i = 0; i < input.length; i++) {
+      const char = input.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    return hash.toString(36);
+  }
+
+  /**
    * Save staff session for offline authentication
    */
-  async saveStaffSession(session: StaffSession): Promise<void> {
-    await this.init();
+  async saveStaffSession(session: StaffSession, password?: string): Promise<void> {
+    console.log(`👤 OfflineStorageService.saveStaffSession: Starting session save process...`);
+    
+    try {
+      await this.init();
+      console.log(`✅ OfflineStorageService.saveStaffSession: Database initialized`);
+    } catch (initError) {
+      console.error(`❌ OfflineStorageService.saveStaffSession: Database initialization failed:`, initError);
+      throw initError;
+    }
+
+    // Ensure database is fully initialized before cleanup operations
+    if (!this.isInitialized || !this.db) {
+      console.warn(`⚠️ OfflineStorageService.saveStaffSession: Database not fully initialized, initializing now...`);
+      await this.init();
+    }
+
+    // First, clean up any existing sessions for this user to prevent duplicates
+    await this.cleanupExistingUserSessions(session.email, session.userId);
+    console.log(`🧹 OfflineStorageService.saveStaffSession: Cleaned up existing sessions for user`);
+
+    // Also clean up any expired sessions to prevent database bloat
+    await this.cleanupExpiredSessions();
+    console.log(`🧹 OfflineStorageService.saveStaffSession: Cleaned up expired sessions`);
+    
     console.log(`👤 OfflineStorageService.saveStaffSession: Saving staff session:`, session);
+    console.log(`🔍 OfflineStorageService.saveStaffSession: Database state:`, {
+      isInitialized: this.isInitialized,
+      dbExists: !!this.db,
+      dbName: this.db?.name,
+      version: this.db?.version,
+      objectStoreNames: this.db ? Array.from(this.db.objectStoreNames) : []
+    });
+
+    // Double-check that database is properly initialized
+    if (!this.isInitialized || !this.db) {
+      console.error(`❌ OfflineStorageService.saveStaffSession: Database not initialized after init()`);
+      console.error(`❌ Debug: isInitialized=${this.isInitialized}, db=${!!this.db}`);
+      throw new Error('Database not initialized after init()');
+    }
+
+    // Create a copy of the session to avoid modifying the original
+    const sessionToSave = { ...session };
+    
+    // Add password hash if password is provided
+    if (password) {
+      sessionToSave.passwordHash = this.simpleHash(password + session.email); // Salt with email
+      console.log(`🔐 OfflineStorageService.saveStaffSession: Password hash added for offline validation`);
+    }
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction(['staffSessions'], 'readwrite');
-      const store = transaction.objectStore('staffSessions');
-      
-      transaction.oncomplete = () => {
-        console.log(`✅ OfflineStorageService.saveStaffSession: Staff session saved successfully`);
-        resolve();
-      };
-      transaction.onerror = () => {
-        console.error(`❌ OfflineStorageService.saveStaffSession: Failed to save staff session:`, transaction.error);
-        reject(transaction.error);
-      };
+      try {
+        console.log(`🔄 OfflineStorageService.saveStaffSession: Creating transaction...`);
+        const transaction = this.db!.transaction(['staffSessions'], 'readwrite');
+        const store = transaction.objectStore('staffSessions');
+        console.log(`✅ OfflineStorageService.saveStaffSession: Transaction and store created`);
+        
+        transaction.oncomplete = () => {
+          console.log(`✅ OfflineStorageService.saveStaffSession: Transaction completed successfully`);
+          resolve();
+        };
+        
+        transaction.onerror = (event) => {
+          console.error(`❌ OfflineStorageService.saveStaffSession: Transaction failed:`, {
+            error: transaction.error,
+            event: event,
+            target: event.target
+          });
+          reject(transaction.error || new Error('Transaction failed'));
+        };
 
-      const putRequest = store.put(session);
-      putRequest.onsuccess = () => {
-        console.log(`💾 OfflineStorageService.saveStaffSession: Put request successful`);
-      };
-      putRequest.onerror = () => {
-        console.error(`❌ OfflineStorageService.saveStaffSession: Put request failed:`, putRequest.error);
-      };
+        transaction.onabort = (event) => {
+          console.error(`❌ OfflineStorageService.saveStaffSession: Transaction aborted:`, event);
+          reject(new Error('Transaction aborted'));
+        };
+
+        console.log(`💾 OfflineStorageService.saveStaffSession: Attempting to put session:`, sessionToSave);
+        const putRequest = store.put(sessionToSave);
+        
+        putRequest.onsuccess = () => {
+          console.log(`💾 OfflineStorageService.saveStaffSession: Put request successful`);
+        };
+        
+        putRequest.onerror = () => {
+          console.error(`❌ OfflineStorageService.saveStaffSession: Put request failed:`, putRequest.error);
+          reject(putRequest.error || new Error('Put request failed'));
+        };
+        
+      } catch (error) {
+        console.error(`❌ OfflineStorageService.saveStaffSession: Exception during transaction creation:`, error);
+        reject(error);
+      }
     });
+  }
+
+  /**
+   * Validate password against stored hash
+   */
+  validatePassword(password: string, email: string, storedHash: string): boolean {
+    const inputHash = this.simpleHash(password + email);
+    return inputHash === storedHash;
   }
 
   /**
@@ -1110,6 +1217,12 @@ export class OfflineStorageService {
    */
   async getActiveStaffSession(): Promise<StaffSession | null> {
     await this.init();
+
+    // Double-check that database is properly initialized
+    if (!this.db) {
+      console.error(`❌ OfflineStorageService.getActiveStaffSession: Database not initialized`);
+      return null;
+    }
 
     return new Promise((resolve, reject) => {
       const transaction = this.db!.transaction(['staffSessions'], 'readonly');
@@ -1133,17 +1246,210 @@ export class OfflineStorageService {
   }
 
   /**
-   * Clear staff sessions (logout)
+   * Get staff session for offline authentication (includes inactive sessions)
    */
-  async clearStaffSessions(): Promise<void> {
-    await this.init();
+  async getStaffSessionForOfflineAuth(email: string): Promise<StaffSession | null> {
+    // Ensure database is properly initialized
+    try {
+      await this.init();
+      
+      // Wait a moment to ensure initialization is complete
+      if (!this.isInitialized || !this.db) {
+        console.warn(`⚠️ OfflineStorageService.getStaffSessionForOfflineAuth: Database still not ready, retrying...`);
+        await new Promise(resolve => setTimeout(resolve, 100)); // Brief wait
+        await this.init(); // Try again
+      }
+
+      if (!this.isInitialized || !this.db) {
+        console.error(`❌ OfflineStorageService.getStaffSessionForOfflineAuth: Database initialization failed`);
+        console.error(`❌ Debug info: isInitialized=${this.isInitialized}, db=${!!this.db}`);
+        return null;
+      }
+      
+      console.log(`✅ OfflineStorageService.getStaffSessionForOfflineAuth: Database ready for offline auth`);
+    } catch (initError) {
+      console.error(`❌ OfflineStorageService.getStaffSessionForOfflineAuth: Initialization error:`, initError);
+      return null;
+    }
+
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction(['staffSessions'], 'readonly');
+      const store = transaction.objectStore('staffSessions');
+      
+      transaction.onerror = () => reject(transaction.error);
+
+      // Get all sessions and find the matching email (regardless of isActive status)
+      const getAllRequest = store.getAll();
+      getAllRequest.onsuccess = () => {
+        const sessions = getAllRequest.result as StaffSession[];
+        
+        // Find session by email (most recent one if multiple exist)
+        const matchingSession = sessions
+          .filter(session => session.email === email)
+          .sort((a, b) => new Date(b.lastActivity).getTime() - new Date(a.lastActivity).getTime())[0];
+        
+        if (matchingSession && new Date(matchingSession.expiresAt) > new Date()) {
+          console.log(`🔍 OfflineStorageService: Found cached session for offline auth: ${email}`);
+          resolve(matchingSession);
+        } else {
+          console.log(`❌ OfflineStorageService: No valid cached session found for: ${email}`);
+          resolve(null);
+        }
+      };
+    });
+  }
+
+  /**
+   * Clean up existing sessions for a specific user to prevent duplicates
+   */
+  private async cleanupExistingUserSessions(email: string, userId: number): Promise<void> {
+    if (!this.isInitialized || !this.db) {
+      console.error(`❌ OfflineStorageService.cleanupExistingUserSessions: Database not initialized properly`);
+      throw new Error('Database not initialized');
+    }
 
     return new Promise((resolve, reject) => {
       const transaction = this.db!.transaction(['staffSessions'], 'readwrite');
       const store = transaction.objectStore('staffSessions');
       
-      transaction.oncomplete = () => resolve();
-      transaction.onerror = () => reject(transaction.error);
+      transaction.oncomplete = () => {
+        console.log(`✅ OfflineStorageService: Cleaned up existing sessions for user ${email}`);
+        resolve();
+      };
+      
+      transaction.onerror = () => {
+        console.error(`❌ OfflineStorageService: Failed to cleanup existing sessions:`, transaction.error);
+        reject(transaction.error);
+      };
+
+      // Get all sessions and remove ones matching this user
+      const getAllRequest = store.getAll();
+      getAllRequest.onsuccess = () => {
+        const sessions = getAllRequest.result as StaffSession[];
+        
+        // Find sessions to delete (matching email or userId)
+        const sessionsToDelete = sessions.filter(s => 
+          s.email === email || s.userId === userId
+        );
+        
+        console.log(`🧹 OfflineStorageService: Found ${sessionsToDelete.length} existing sessions to cleanup for user ${email}`);
+        
+        // Delete each matching session
+        sessionsToDelete.forEach(sessionToDelete => {
+          store.delete(sessionToDelete.id);
+        });
+      };
+    });
+  }
+
+  /**
+   * Deactivate staff sessions (logout) - preserves sessions for offline authentication
+   */
+  async deactivateStaffSessions(): Promise<void> {
+    await this.init();
+
+    if (!this.db) {
+      console.error(`❌ OfflineStorageService.deactivateStaffSessions: Database not initialized`);
+      throw new Error('Database not initialized');
+    }
+
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction(['staffSessions'], 'readwrite');
+      const store = transaction.objectStore('staffSessions');
+      
+      transaction.oncomplete = () => {
+        console.log('✅ OfflineStorageService: Staff sessions deactivated (preserved for offline auth)');
+        resolve();
+      };
+      transaction.onerror = () => {
+        console.error('❌ OfflineStorageService: Failed to deactivate staff sessions:', transaction.error);
+        reject(transaction.error);
+      };
+
+      // Get all sessions and mark them as inactive
+      const getAllRequest = store.getAll();
+      getAllRequest.onsuccess = () => {
+        const sessions = getAllRequest.result as StaffSession[];
+        
+        // Update each session to mark as inactive
+        sessions.forEach(session => {
+          session.isActive = false;
+          session.lastActivity = new Date().toISOString();
+          store.put(session);
+        });
+      };
+    });
+  }
+
+  /**
+   * Clean up expired sessions to prevent database bloat
+   */
+  async cleanupExpiredSessions(): Promise<void> {
+    await this.init();
+
+    if (!this.db) {
+      console.error(`❌ OfflineStorageService.cleanupExpiredSessions: Database not initialized`);
+      throw new Error('Database not initialized');
+    }
+
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction(['staffSessions'], 'readwrite');
+      const store = transaction.objectStore('staffSessions');
+      
+      transaction.oncomplete = () => {
+        console.log('✅ OfflineStorageService: Expired sessions cleaned up');
+        resolve();
+      };
+      
+      transaction.onerror = () => {
+        console.error('❌ OfflineStorageService: Failed to cleanup expired sessions:', transaction.error);
+        reject(transaction.error);
+      };
+
+      // Get all sessions and remove expired ones
+      const getAllRequest = store.getAll();
+      getAllRequest.onsuccess = () => {
+        const sessions = getAllRequest.result as StaffSession[];
+        const now = new Date();
+        
+        // Find expired sessions
+        const expiredSessions = sessions.filter(session => 
+          new Date(session.expiresAt) <= now
+        );
+        
+        console.log(`🧹 OfflineStorageService: Found ${expiredSessions.length} expired sessions to cleanup`);
+        
+        // Delete each expired session
+        expiredSessions.forEach(expiredSession => {
+          store.delete(expiredSession.id);
+        });
+      };
+    });
+  }
+
+  /**
+   * Clear staff sessions completely (use sparingly - prevents offline auth)
+   */
+  async clearStaffSessions(): Promise<void> {
+    await this.init();
+
+    if (!this.db) {
+      console.error(`❌ OfflineStorageService.clearStaffSessions: Database not initialized`);
+      throw new Error('Database not initialized');
+    }
+
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction(['staffSessions'], 'readwrite');
+      const store = transaction.objectStore('staffSessions');
+      
+      transaction.oncomplete = () => {
+        console.log('✅ OfflineStorageService: Staff sessions cleared completely');
+        resolve();
+      };
+      transaction.onerror = () => {
+        console.error('❌ OfflineStorageService: Failed to clear staff sessions:', transaction.error);
+        reject(transaction.error);
+      };
 
       store.clear();
     });
@@ -1246,7 +1552,7 @@ export const offlineStorage = new OfflineStorageService();
 // Export types
 export type { OfflineBooking, RoomAvailability, GuestInfo };
 
-// Global debugging function for browser console
+// Global debugging functions for browser console
 (window as any).debugOfflineStorage = async () => {
   console.log('🔍 Offline Storage Debug Information:');
   try {
@@ -1261,5 +1567,231 @@ export type { OfflineBooking, RoomAvailability, GuestInfo };
   } catch (error) {
     console.error('❌ Debug failed:', error);
     return { error };
+  }
+};
+
+// Global room caching debug function
+(window as any).debugRoomCaching = async () => {
+  console.log('🏨 Room Caching Debug Information:');
+  
+  // Check authentication
+  const authToken = localStorage.getItem('auth_token');
+  const authUser = localStorage.getItem('auth_user');
+  
+  console.log('🔑 Authentication Status:');
+  console.log('- auth_token exists:', !!authToken);
+  console.log('- auth_user exists:', !!authUser);
+  
+  if (authUser) {
+    try {
+      const user = JSON.parse(authUser);
+      console.log('- Hotel ID:', user.hotelId);
+      console.log('- Tenant ID:', user.tenantId);
+      console.log('- Email:', user.email);
+    } catch (e) {
+      console.error('Failed to parse auth_user:', e);
+    }
+  }
+  
+  // Check cached rooms
+  try {
+    const allRooms = await offlineStorage.getCachedRooms();
+    console.log(`\n🏠 Cached Rooms: ${allRooms.length} total`);
+    
+    if (allRooms.length > 0) {
+      console.log('Sample rooms:');
+      allRooms.slice(0, 3).forEach((room, index) => {
+        console.log(`Room ${index + 1}:`, {
+          id: room.id,
+          roomNumber: room.roomNumber,
+          roomType: room.roomType,
+          hotelId: room.hotelId,
+          isAvailable: room.isAvailable
+        });
+      });
+    } else {
+      console.log('⚠️ No rooms in cache. Try logging out and back in.');
+    }
+    
+    return { rooms: allRooms.length };
+  } catch (error) {
+    console.error('❌ Room debug failed:', error);
+    return { error };
+  }
+};
+
+// Global staff sessions debug function
+(window as any).debugStaffSessions = async () => {
+  console.log('👤 Staff Sessions Debug Information:');
+  
+  try {
+    const activeSession = await offlineStorage.getActiveStaffSession();
+    
+    if (activeSession) {
+      console.log('✅ Active Staff Session Found:');
+      console.log('🔍 Session Details:', {
+        id: activeSession.id,
+        email: activeSession.email,
+        username: activeSession.username,
+        role: activeSession.role,
+        roles: activeSession.roles,
+        hotelId: activeSession.hotelId,
+        hotelName: activeSession.hotelName,
+        tenantId: activeSession.tenantId,
+        hasPasswordHash: !!activeSession.passwordHash,
+        expiresAt: activeSession.expiresAt,
+        lastActivity: activeSession.lastActivity,
+        isExpired: new Date(activeSession.expiresAt) <= new Date(),
+        timeUntilExpiry: new Date(activeSession.expiresAt).getTime() - new Date().getTime(),
+        isActive: activeSession.isActive
+      });
+      
+      return activeSession;
+    } else {
+      console.log('❌ No active staff session found');
+      return null;
+    }
+  } catch (error) {
+    console.error('❌ Staff sessions debug failed:', error);
+    return { error };
+  }
+};
+
+// Global function to test offline authentication
+(window as any).testOfflineAuth = async (email: string, password: string) => {
+  console.log('🧪 Testing Offline Authentication:');
+  console.log('📧 Email:', email);
+  console.log('🔐 Password length:', password.length);
+  
+  try {
+    const cachedSession = await offlineStorage.getStaffSessionForOfflineAuth(email);
+    
+    if (!cachedSession) {
+      console.log('❌ No cached session found');
+      return { success: false, reason: 'No cached session' };
+    }
+    
+    console.log('✅ Cached session found for:', cachedSession.email);
+    
+    // Check email match
+    if (cachedSession.email !== email) {
+      console.log('❌ Email mismatch');
+      return { success: false, reason: 'Email mismatch' };
+    }
+    
+    // Check expiry
+    const isExpired = new Date(cachedSession.expiresAt) <= new Date();
+    if (isExpired) {
+      console.log('❌ Session expired');
+      return { success: false, reason: 'Session expired' };
+    }
+    
+    // Check password if hash available
+    if (cachedSession.passwordHash) {
+      const isPasswordValid = offlineStorage.validatePassword(password, email, cachedSession.passwordHash);
+      if (!isPasswordValid) {
+        console.log('❌ Password validation failed');
+        return { success: false, reason: 'Invalid password' };
+      }
+      console.log('✅ Password validated successfully');
+    } else {
+      console.log('⚠️ No password hash available');
+    }
+    
+    // Check role
+    const isHotelStaff = cachedSession.roles?.some(role => 
+      ['HOTEL_ADMIN', 'FRONTDESK'].includes(role)
+    ) || ['HOTEL_ADMIN', 'FRONTDESK'].includes(cachedSession.role);
+    
+    if (!isHotelStaff) {
+      console.log('❌ Not hotel staff');
+      return { success: false, reason: 'Not hotel staff' };
+    }
+    
+    console.log('✅ All offline authentication checks passed!');
+    return { 
+      success: true, 
+      session: {
+        email: cachedSession.email,
+        role: cachedSession.role,
+        hotelId: cachedSession.hotelId,
+        hotelName: cachedSession.hotelName
+      }
+    };
+    
+  } catch (error) {
+    console.error('❌ Offline auth test failed:', error);
+    return { success: false, error };
+  }
+};
+
+// Global function to completely clear staff sessions (for testing)
+(window as any).clearAllStaffSessions = async () => {
+  console.log('🧹 Clearing all staff sessions completely...');
+  try {
+    await offlineStorage.clearStaffSessions();
+    console.log('✅ All staff sessions cleared');
+    return { success: true };
+  } catch (error) {
+    console.error('❌ Failed to clear staff sessions:', error);
+    return { success: false, error };
+  }
+};
+
+// Global function to clean up expired sessions
+(window as any).cleanupExpiredSessions = async () => {
+  console.log('🧹 Cleaning up expired staff sessions...');
+  try {
+    await offlineStorage.cleanupExpiredSessions();
+    console.log('✅ Expired staff sessions cleaned up');
+    
+    // Show remaining sessions count
+    console.log('🔍 Checking remaining sessions...');
+    const activeSession = await offlineStorage.getActiveStaffSession();
+    console.log('📊 Active sessions remaining:', activeSession ? 1 : 0);
+    return { success: true, activeSession };
+  } catch (error) {
+    console.error('❌ Failed to cleanup expired sessions:', error);
+    return { success: false, error };
+  }
+};
+
+// Global function to test database initialization
+(window as any).testDatabaseInit = async () => {
+  console.log('🔬 Testing database initialization...');
+  try {
+    await offlineStorage.init();
+    console.log('✅ Database initialization successful');
+    
+    // Test a simple write operation
+    const testSession: StaffSession = {
+      id: 'test-session-' + Date.now(),
+      userId: 999,
+      username: 'Test User',
+      email: 'test@example.com',
+      role: 'HOTEL_ADMIN',
+      roles: ['HOTEL_ADMIN'],
+      hotelId: undefined, // Should be set from actual user data
+      hotelName: 'Test Hotel',
+      tenantId: 'test',
+      token: 'test-token',
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      lastActivity: new Date().toISOString(),
+      isActive: true,
+      passwordHash: 'test-hash'
+    };
+    
+    console.log('🔬 Testing staff session save...');
+    await offlineStorage.saveStaffSession(testSession);
+    console.log('✅ Test session saved successfully');
+    
+    console.log('🔬 Testing staff session retrieval...');
+    const retrievedSession = await offlineStorage.getActiveStaffSession();
+    console.log('📄 Retrieved session:', retrievedSession);
+    
+    return { success: true, session: retrievedSession };
+  } catch (error) {
+    console.error('❌ Database test failed:', error);
+    return { success: false, error };
   }
 };

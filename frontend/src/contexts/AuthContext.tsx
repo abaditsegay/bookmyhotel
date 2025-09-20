@@ -5,6 +5,7 @@ import { updateUserProfile, changeUserPassword } from '../services/userApi';
 import TokenManager, { type AuthUser } from '../utils/tokenManager';
 import { apiClient } from '../utils/apiClient';
 import { offlineStorage, type StaffSession } from '../services/OfflineStorageService';
+import { roomCacheService } from '../services/RoomCacheService';
 
 interface User {
   id: string;
@@ -71,6 +72,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
 
   // Load authentication state from localStorage on startup
   useEffect(() => {
+    // Initialize OfflineStorageService early
+    const initOfflineStorage = async () => {
+      try {
+        console.log('🔄 AuthContext: Initializing OfflineStorageService...');
+        await offlineStorage.init();
+        console.log('✅ AuthContext: OfflineStorageService initialized successfully');
+      } catch (error) {
+        console.error('❌ AuthContext: Failed to initialize OfflineStorageService:', error);
+      }
+    };
+    
+    initOfflineStorage();
+    
     // Set up API client session expiration callback
     apiClient.setSessionExpiredCallback(() => {
       console.log('Session expired - logging out user');
@@ -78,6 +92,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
       setUser(null);
       setToken(null);
       setError('Your session has expired. Please log in again.');
+      
+      // Stop room cache periodic refresh
+      roomCacheService.stopPeriodicRefresh();
       
       // Clear localStorage using TokenManager
       TokenManager.clearAuth();
@@ -110,6 +127,100 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
     setIsInitializing(false);
   }, [onTokenChange, onLogout]);
 
+  const attemptOfflineLogin = async (email: string, password: string): Promise<boolean> => {
+    try {
+      console.log('🔄 Mobile AuthContext: Attempting offline authentication for:', email);
+      
+      // Ensure OfflineStorageService is initialized
+      try {
+        await offlineStorage.init();
+        console.log('✅ Mobile AuthContext: OfflineStorageService ready for offline login');
+      } catch (initError) {
+        console.error('❌ Mobile AuthContext: Failed to initialize OfflineStorageService for offline login:', initError);
+        return false;
+      }
+      
+      // Get cached staff session for offline authentication (includes inactive sessions)
+      const cachedSession = await offlineStorage.getStaffSessionForOfflineAuth(email);
+      if (!cachedSession) {
+        console.log('❌ Mobile AuthContext: No cached session found for offline login');
+        return false;
+      }
+
+      // Check if cached session matches login credentials
+      if (cachedSession.email !== email) {
+        console.log('❌ Mobile AuthContext: Cached session email does not match login email');
+        return false;
+      }
+
+      // Validate password if hash is available
+      if (cachedSession.passwordHash) {
+        const isPasswordValid = offlineStorage.validatePassword(password, email, cachedSession.passwordHash);
+        if (!isPasswordValid) {
+          console.log('❌ Mobile AuthContext: Password validation failed for offline login');
+          return false;
+        }
+        console.log('✅ Mobile AuthContext: Password validated successfully for offline login');
+      } else {
+        console.log('⚠️ Mobile AuthContext: No password hash available for validation - proceeding with email-only validation');
+      }
+
+      // Check if session is not expired
+      if (new Date(cachedSession.expiresAt) <= new Date()) {
+        console.log('❌ Mobile AuthContext: Cached session has expired');
+        return false;
+      }
+
+      // Check if it's a hotel staff role (HOTEL_ADMIN or FRONTDESK)
+      const isHotelStaff = cachedSession.roles?.some(role => 
+        ['HOTEL_ADMIN', 'FRONTDESK'].includes(role)
+      ) || ['HOTEL_ADMIN', 'FRONTDESK'].includes(cachedSession.role);
+
+      if (!isHotelStaff) {
+        console.log('❌ Mobile AuthContext: Cached session is not for hotel staff');
+        return false;
+      }
+
+      console.log('✅ Mobile AuthContext: Offline authentication successful');
+      
+      // Map cached session to user format
+      const offlineUser: User = {
+        id: cachedSession.userId.toString(),
+        email: cachedSession.email,
+        firstName: cachedSession.username.split(' ')[0] || cachedSession.username,
+        lastName: cachedSession.username.split(' ').slice(1).join(' ') || '',
+        phone: '', // Not available in cached session
+        role: cachedSession.role as User['role'],
+        roles: cachedSession.roles || [cachedSession.role],
+        hotelId: cachedSession.hotelId?.toString(),
+        hotelName: cachedSession.hotelName,
+        tenantId: cachedSession.tenantId || 'development',
+        isActive: true,
+        createdAt: '',
+        lastLogin: cachedSession.lastActivity
+      };
+
+      // Set user state
+      setUser(offlineUser);
+      setToken(cachedSession.token);
+      
+      // Update session as active and update last activity
+      cachedSession.isActive = true;
+      cachedSession.lastActivity = new Date().toISOString();
+      await offlineStorage.saveStaffSession(cachedSession);
+
+      // Notify parent component of token change
+      onTokenChange?.(cachedSession.token);
+
+      console.log('🏨 Mobile AuthContext: Offline login completed for hotel staff');
+      return true;
+
+    } catch (error) {
+      console.error('❌ Mobile AuthContext: Offline authentication failed:', error);
+      return false;
+    }
+  };
+
   const login = async (email: string, password: string): Promise<boolean> => {
     setLoading(true);
     setError(null);
@@ -136,7 +247,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Mobile AuthContext: Login failed with error:', errorText);
+        console.error('Mobile AuthContext: Online login failed with status:', response.status, errorText);
+        
+        // Attempt offline authentication for hotel staff when server responds with error
+        console.log('🔄 Mobile AuthContext: Server error - attempting offline login fallback...');
+        const offlineSuccess = await attemptOfflineLogin(email, password);
+        
+        if (offlineSuccess) {
+          console.log('✅ Mobile AuthContext: Offline login successful after server error');
+          return true;
+        }
+        
+        console.error('❌ Mobile AuthContext: Both server and offline login failed');
         setError(errorText || 'Login failed');
         return false;
       }
@@ -184,6 +306,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
       // Save staff session for offline use
       console.log('Mobile AuthContext: Saving staff session for offline use...');
       try {
+        // Ensure OfflineStorageService is initialized before saving session
+        try {
+          await offlineStorage.init(); // This will be a no-op if already initialized
+          console.log('✅ Mobile AuthContext: OfflineStorageService is ready');
+        } catch (initError) {
+          console.error('❌ Mobile AuthContext: Failed to initialize OfflineStorageService:', initError);
+          throw initError;
+        }
+        
         const staffSession: StaffSession = {
           id: `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           userId: parseInt(loginData.id.toString()),
@@ -201,12 +332,44 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
         };
         
         console.log('🔍 Mobile AuthContext: Staff session object:', staffSession);
-        await offlineStorage.saveStaffSession(staffSession);
+        await offlineStorage.saveStaffSession(staffSession, password);
         console.log('✅ Mobile AuthContext: Staff session saved successfully');
         
         // Verify session was saved
         const savedSession = await offlineStorage.getActiveStaffSession();
         console.log('🔍 Mobile AuthContext: Verification - saved session:', savedSession);
+        
+        // Cache room data immediately after successful login for hotel staff
+        const userRoles = Array.isArray(loginData.roles) ? loginData.roles : [loginData.roles];
+        const isHotelStaff = userRoles.some((role: string) => ['HOTEL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'OPERATIONS_SUPERVISOR'].includes(role));
+        
+        console.log('🔍 Mobile AuthContext: Checking room caching conditions...');
+        console.log('🔍 Mobile AuthContext: loginData.hotelId:', loginData.hotelId);
+        console.log('🔍 Mobile AuthContext: userRoles:', userRoles);
+        console.log('🔍 Mobile AuthContext: isHotelStaff:', isHotelStaff);
+        
+        if (loginData.hotelId && isHotelStaff) {
+          console.log('🏨 Mobile AuthContext: Triggering room data cache for hotel staff...');
+          try {
+            const hotelId = parseInt(loginData.hotelId.toString());
+            console.log('🏨 Mobile AuthContext: Parsed hotel ID:', hotelId);
+            // Start room caching in background - don't wait for it to complete
+            roomCacheService.fetchAndCacheRooms(hotelId).then((cachedRooms) => {
+              console.log(`✅ Mobile AuthContext: Successfully cached ${cachedRooms.length} rooms for hotel ${hotelId}`);
+              // Start periodic refresh for cached rooms
+              roomCacheService.startPeriodicRefresh(hotelId);
+            }).catch((cacheError) => {
+              console.warn('⚠️ Mobile AuthContext: Room caching failed, but login continues:', cacheError);
+              console.error('⚠️ Mobile AuthContext: Room caching error details:', cacheError);
+            });
+          } catch (cacheError) {
+            console.warn('⚠️ Mobile AuthContext: Failed to start room caching:', cacheError);
+          }
+        } else {
+          console.log('❌ Mobile AuthContext: Room caching skipped - conditions not met');
+          console.log('❌ Mobile AuthContext: hotelId exists:', !!loginData.hotelId);
+          console.log('❌ Mobile AuthContext: isHotelStaff:', isHotelStaff);
+        }
       } catch (sessionError) {
         console.error('❌ Mobile AuthContext: Failed to save staff session:', sessionError);
         console.error('❌ Mobile AuthContext: Session error stack:', sessionError instanceof Error ? sessionError.stack : 'No stack');
@@ -220,9 +383,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
       console.log('Mobile AuthContext: Login process completed successfully');
       return true;
     } catch (error) {
-      console.error('Mobile AuthContext: Login failed with error:', error);
+      console.error('Mobile AuthContext: Online login failed with error:', error);
       console.error('Mobile AuthContext: Error stack:', (error as Error).stack);
-      setError((error as Error).message || 'Login failed');
+      
+      // Attempt offline authentication for hotel staff
+      console.log('🔄 Mobile AuthContext: Attempting offline login fallback...');
+      const offlineSuccess = await attemptOfflineLogin(email, password);
+      
+      if (offlineSuccess) {
+        console.log('✅ Mobile AuthContext: Offline login successful');
+        return true;
+      }
+      
+      console.error('❌ Mobile AuthContext: Both online and offline login failed');
+      setError((error as Error).message || 'Login failed - no network connection and no cached credentials');
       return false;
     } finally {
       setLoading(false);
@@ -234,9 +408,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
     setToken(null);
     setSessionExpired(false); // Clear session expired state on manual logout
     
-    // Clear staff sessions from offline storage
-    offlineStorage.clearStaffSessions().catch(error => {
-      console.error('Failed to clear staff sessions:', error);
+    // Stop room cache periodic refresh
+    roomCacheService.stopPeriodicRefresh();
+    
+    // Deactivate staff sessions (preserve for offline authentication)
+    offlineStorage.deactivateStaffSessions().catch(error => {
+      console.error('Failed to deactivate staff sessions:', error);
     });
     
     // Clear localStorage using TokenManager
@@ -254,6 +431,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
     setUser(null);
     setToken(null);
     setError('Your session has expired. Please log in again.');
+    
+    // Stop room cache periodic refresh
+    roomCacheService.stopPeriodicRefresh();
     
     // Clear localStorage using TokenManager
     TokenManager.clearAuth();

@@ -17,13 +17,6 @@ import {
 } from '@mui/material';
 import {
   Hotel,
-  Restaurant,
-  MusicNote,
-  Place,
-  Star,
-  TrendingUp,
-  FlightTakeoff,
-  LocalActivity,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
@@ -34,105 +27,35 @@ import { useNavigate } from 'react-router-dom';
 export const CustomerDashboard: React.FC = () => {
   const navigate = useNavigate();
 
-  // Featured destinations
-  const featuredDestinations = [
-    {
-      id: 1,
-      name: 'New York City',
-      image: 'https://images.unsplash.com/photo-1541336032412-2048a678540d?w=400&h=300&fit=crop&crop=center',
-      description: 'The city that never sleeps',
-      hotels: '1,200+ hotels',
-      rating: 4.5,
-      startingPrice: 'ETB 8,195'
-    },
-    {
-      id: 2,
-      name: 'Paris, France',
-      image: 'https://images.unsplash.com/photo-1502602898536-47ad22581b52?w=400&h=300&fit=crop&crop=center',
-      description: 'City of lights and romance',
-      hotels: '800+ hotels',
-      rating: 4.7,
-      startingPrice: 'ETB 4,895'
-    },
-    {
-      id: 3,
-      name: 'Tokyo, Japan',
-      image: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=400&h=300&fit=crop&crop=center',
-      description: 'Modern culture meets tradition',
-      hotels: '600+ hotels',
-      rating: 4.6,
-      startingPrice: 'ETB 6,160'
-    },
-    {
-      id: 4,
-      name: 'London, England',
-      image: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=400&h=300&fit=crop&crop=center',
-      description: 'Rich history and royal heritage',
-      hotels: '900+ hotels',
-      rating: 4.4,
-      startingPrice: 'ETB 5,225'
-    }
-  ];
+  // Featured destinations - dynamic data populated from API
+  const [featuredDestinations, setFeaturedDestinations] = React.useState<any[]>([]);
+  
+  // Load featured destinations from API or use empty array if not available
+  React.useEffect(() => {
+    // TODO: Replace with actual API call to get featured destinations
+    // For now, keep empty to avoid hardcoded data
+    setFeaturedDestinations([]);
+  }, []);
 
-  // Popular hotel types
-  const hotelTypes = [
-    {
-      type: 'Luxury Hotels',
-      icon: <Hotel sx={{ fontSize: 40, color: 'primary.main' }} />,
-      description: 'Premium accommodations with world-class amenities',
-      count: '2,500+ properties'
-    },
-    {
-      type: 'Business Hotels',
-      icon: <FlightTakeoff sx={{ fontSize: 40, color: 'info.main' }} />,
-      description: 'Perfect for business travelers and conferences',
-      count: '1,800+ properties'
-    },
-    {
-      type: 'Boutique Hotels',
-      icon: <Star sx={{ fontSize: 40, color: 'warning.main' }} />,
-      description: 'Unique character and personalized service',
-      count: '1,200+ properties'
-    },
-    {
-      type: 'Resort Hotels',
-      icon: <LocalActivity sx={{ fontSize: 40, color: 'success.main' }} />,
-      description: 'All-inclusive vacation experiences',
-      count: '900+ properties'
-    }
-  ];
+  // Popular hotel types - dynamic data
+  const [hotelTypes, setHotelTypes] = React.useState<any[]>([]);
+  
+  // Load hotel types from API or configuration
+  React.useEffect(() => {
+    // TODO: Replace with actual API call to get hotel types and their counts
+    // For now, keep empty to avoid hardcoded data
+    setHotelTypes([]);
+  }, []);
 
-  // Featured experiences
-  const featuredExperiences = [
-    {
-      category: 'Dining',
-      icon: <Restaurant />,
-      title: 'Michelin Star Restaurants',
-      description: 'Discover world-renowned dining experiences in your destination',
-      color: 'secondary'
-    },
-    {
-      category: 'Entertainment',
-      icon: <MusicNote />,
-      title: 'Concerts & Shows',
-      description: 'Book tickets to the hottest concerts, theaters, and live performances',
-      color: 'info'
-    },
-    {
-      category: 'Attractions',
-      icon: <Place />,
-      title: 'Tourist Attractions',
-      description: 'Explore must-see landmarks, museums, and cultural sites',
-      color: 'warning'
-    },
-    {
-      category: 'Activities',
-      icon: <TrendingUp />,
-      title: 'Local Experiences',
-      description: 'Unique activities and tours curated by local experts',
-      color: 'success'
-    }
-  ];
+  // Featured experiences - dynamic data
+  const [featuredExperiences, setFeaturedExperiences] = React.useState<any[]>([]);
+  
+  // Load featured experiences from API or configuration
+  React.useEffect(() => {
+    // TODO: Replace with actual API call to get featured experiences
+    // For now, keep empty to avoid hardcoded data
+    setFeaturedExperiences([]);
+  }, []);
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
@@ -334,7 +257,7 @@ export const CustomerDashboard: React.FC = () => {
               </ListItem>
               <ListItem>
                 <ListItemIcon>
-                  <Star color="warning" />
+                  <Hotel color="warning" />
                 </ListItemIcon>
                 <ListItemText
                   primary="Check Hotel Reviews"
@@ -343,7 +266,7 @@ export const CustomerDashboard: React.FC = () => {
               </ListItem>
               <ListItem>
                 <ListItemIcon>
-                  <Place color="info" />
+                  <Hotel color="info" />
                 </ListItemIcon>
                 <ListItemText
                   primary="Location Matters"
@@ -356,7 +279,7 @@ export const CustomerDashboard: React.FC = () => {
             <List>
               <ListItem>
                 <ListItemIcon>
-                  <Restaurant color="secondary" />
+                  <Hotel color="secondary" />
                 </ListItemIcon>
                 <ListItemText
                   primary="Try Local Cuisine"
@@ -365,7 +288,7 @@ export const CustomerDashboard: React.FC = () => {
               </ListItem>
               <ListItem>
                 <ListItemIcon>
-                  <MusicNote color="success" />
+                  <Hotel color="success" />
                 </ListItemIcon>
                 <ListItemText
                   primary="Book Entertainment Early"
@@ -374,7 +297,7 @@ export const CustomerDashboard: React.FC = () => {
               </ListItem>
               <ListItem>
                 <ListItemIcon>
-                  <FlightTakeoff color="primary" />
+                  <Hotel color="primary" />
                 </ListItemIcon>
                 <ListItemText
                   primary="Plan Your Activities"

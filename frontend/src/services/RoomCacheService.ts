@@ -1,5 +1,5 @@
 import { offlineStorage, CachedRoom } from './OfflineStorageService';
-import { buildApiUrl, getApiHeaders } from '../utils/apiConfig';
+import { buildApiUrl } from '../config/apiConfig';
 
 interface ApiRoom {
   id: number;
@@ -25,24 +25,51 @@ export class RoomCacheService {
       console.log(`🏨 RoomCacheService: Fetching rooms for hotel ${hotelId} from API...`);
       console.log(`🔍 RoomCacheService: Database initialized, checking authentication...`);
       
-      const token = localStorage.getItem('jwtToken');
-      const tenantId = localStorage.getItem('tenantId');
+      const token = localStorage.getItem('auth_token');
+      let tenantId = null;
+      let userHotelId = null;
       
-      // Check user role to determine which endpoint to use
-      const userStr = localStorage.getItem('user');
-      const user = userStr ? JSON.parse(userStr) : null;
-      const isHotelAdmin = user?.role === 'HOTEL_ADMIN' || user?.roles?.includes('HOTEL_ADMIN');
+      console.log(`🔑 RoomCacheService: Token exists: ${!!token}`);
       
-      const headers = getApiHeaders(token || undefined);
+      // Get tenant ID and hotel ID from user data stored by TokenManager
+      try {
+        const userData = localStorage.getItem('auth_user');
+        console.log(`👤 RoomCacheService: User data exists: ${!!userData}`);
+        if (userData) {
+          const user = JSON.parse(userData);
+          tenantId = user.tenantId;
+          userHotelId = user.hotelId ? parseInt(user.hotelId) : null;
+          console.log(`🏢 RoomCacheService: Extracted tenant ID: ${tenantId}`);
+          console.log(`🏨 RoomCacheService: User hotel ID: ${userHotelId}`);
+          
+          // Use user's hotel ID if no specific hotel ID provided
+          if (!hotelId && userHotelId) {
+            hotelId = userHotelId;
+            console.log(`🔧 RoomCacheService: Using user's hotel ID: ${hotelId}`);
+          }
+        }
+      } catch (error) {
+        console.warn('RoomCacheService: Failed to parse user data for tenant ID:', error);
+      }
+      
+      if (!token) {
+        console.error('❌ RoomCacheService: No authentication token found!');
+        throw new Error('No authentication token available');
+      }
+      
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      };
       
       if (tenantId) {
         headers['X-Tenant-ID'] = tenantId;
       }
       
-      // Use appropriate endpoint based on user role
-      const endpoint = isHotelAdmin 
-        ? buildApiUrl('hotel-admin/rooms?size=1000') // Get all rooms for hotel admin
-        : buildApiUrl('front-desk/rooms?size=1000'); // Get all rooms for front desk
+      console.log(`🔧 RoomCacheService: Headers prepared:`, Object.keys(headers));
+      
+      // Use bulk rooms endpoint specifically designed for offline caching
+      const endpoint = buildApiUrl('rooms/all'); // Get all rooms from bulk endpoint
       
       console.log(`🌐 RoomCacheService: Making API call to ${endpoint}`);
       console.log(`🔑 RoomCacheService: Using headers:`, headers);
@@ -58,7 +85,7 @@ export class RoomCacheService {
 
       const data = await response.json();
       console.log(`📊 RoomCacheService: Raw API response data:`, data);
-      const apiRooms: ApiRoom[] = data.content || data; // Handle paginated vs non-paginated response
+      const apiRooms: ApiRoom[] = Array.isArray(data) ? data : (data.content || []); // Handle list vs paginated response
       const cachedRooms: CachedRoom[] = apiRooms.map(room => ({
         id: room.id,
         roomNumber: room.roomNumber,

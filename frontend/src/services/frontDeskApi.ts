@@ -142,12 +142,20 @@ export interface BookingPage {
   empty: boolean;
 }
 
-const getAuthHeaders = (token: string, tenantId: string | null = 'default') => ({
-  'Content-Type': 'application/json',
-  'Authorization': `Bearer ${token}`,
-  'X-Tenant-ID': tenantId || 'default',
-  'Cache-Control': 'no-cache, no-store, must-revalidate'
-});
+const getAuthHeaders = (token: string, tenantId: string | null = null) => {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`,
+    'Cache-Control': 'no-cache, no-store, must-revalidate'
+  };
+  
+  // Only add X-Tenant-ID header if tenantId is not null
+  if (tenantId) {
+    headers['X-Tenant-ID'] = tenantId;
+  }
+  
+  return headers;
+};
 
 export const frontDeskApiService = {
   /**
@@ -158,7 +166,7 @@ export const frontDeskApiService = {
     page: number = 0, 
     size: number = 10, 
     search?: string,
-    tenantId: string | null = 'default'
+    tenantId: string | null = null
   ): Promise<{ success: boolean; data?: BookingPage; message?: string }> => {
     try {
       const params = new URLSearchParams({
@@ -194,7 +202,7 @@ export const frontDeskApiService = {
   /**
    * Get a single booking by reservation ID
    */
-  getBookingById: async (token: string, reservationId: number, tenantId: string | null = 'default'): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {
+  getBookingById: async (token: string, reservationId: number, tenantId: string | null = null): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {
     try {
       const response = await fetch(`${API_BASE_URL}/front-desk/bookings/${reservationId}?_t=${Date.now()}`, {
         method: 'GET',
@@ -224,7 +232,7 @@ export const frontDeskApiService = {
     token: string,
     reservationId: number, 
     status: string,
-    tenantId: string | null = 'default'
+    tenantId: string | null = null
   ): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {
     try {
       const response = await fetch(
@@ -259,7 +267,7 @@ export const frontDeskApiService = {
     reservationId: number,
     roomId: number,
     roomType?: string,
-    tenantId: string | null = 'default'
+    tenantId: string | null = null
   ): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {
     try {
       const params = new URLSearchParams({
@@ -312,7 +320,7 @@ export const frontDeskApiService = {
       guestEmail: string;
       guestPhone?: string;
     },
-    tenantId: string | null = 'default'
+    tenantId: string | null = null
   ): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {
     try {
       const response = await fetch(
@@ -346,7 +354,7 @@ export const frontDeskApiService = {
   deleteBooking: async (
     token: string,
     reservationId: number,
-    tenantId: string | null = 'default'
+    tenantId: string | null = null
   ): Promise<{ success: boolean; message?: string }> => {
     try {
       const response = await fetch(`${API_BASE_URL}/bookings/${reservationId}`, {
@@ -372,7 +380,7 @@ export const frontDeskApiService = {
   /**
    * Get today's arrivals
    */
-  getTodaysArrivals: async (token: string, tenantId: string | null = 'default'): Promise<{ success: boolean; data?: FrontDeskBooking[]; message?: string }> => {
+  getTodaysArrivals: async (token: string, tenantId: string | null = null): Promise<{ success: boolean; data?: FrontDeskBooking[]; message?: string }> => {
     try {
       const response = await fetch(`${API_BASE_URL}/front-desk/arrivals`, {
         method: 'GET',
@@ -398,7 +406,7 @@ export const frontDeskApiService = {
   /**
    * Get today's departures
    */
-  getTodaysDepartures: async (token: string, tenantId: string | null = 'default'): Promise<{ success: boolean; data?: FrontDeskBooking[]; message?: string }> => {
+  getTodaysDepartures: async (token: string, tenantId: string | null = null): Promise<{ success: boolean; data?: FrontDeskBooking[]; message?: string }> => {
     try {
       const response = await fetch(`${API_BASE_URL}/front-desk/departures`, {
         method: 'GET',
@@ -424,7 +432,7 @@ export const frontDeskApiService = {
   /**
    * Get current guests (checked in)
    */
-  getCurrentGuests: async (token: string, tenantId: string | null = 'default'): Promise<{ success: boolean; data?: FrontDeskBooking[]; message?: string }> => {
+  getCurrentGuests: async (token: string, tenantId: string | null = null): Promise<{ success: boolean; data?: FrontDeskBooking[]; message?: string }> => {
     try {
       const response = await fetch(`${API_BASE_URL}/front-desk/current-guests`, {
         method: 'GET',
@@ -450,7 +458,7 @@ export const frontDeskApiService = {
   /**
    * Check in a guest
    */
-  checkInGuest: async (token: string, reservationId: number, tenantId: string | null = 'default'): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {
+  checkInGuest: async (token: string, reservationId: number, tenantId: string | null = null): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {
     try {
       const response = await fetch(`${API_BASE_URL}/front-desk/checkin/${reservationId}`, {
         method: 'PUT',
@@ -476,7 +484,7 @@ export const frontDeskApiService = {
   /**
    * Check out a guest
    */
-  checkOutGuest: async (token: string, reservationId: number, tenantId: string | null = 'default'): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {
+  checkOutGuest: async (token: string, reservationId: number, tenantId: string | null = null): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {
     try {
       const response = await fetch(`${API_BASE_URL}/front-desk/checkout/${reservationId}`, {
         method: 'PUT',
@@ -502,7 +510,7 @@ export const frontDeskApiService = {
   /**
    * Check out a guest with final receipt generation
    */
-  checkOutGuestWithReceipt: async (token: string, reservationId: number, tenantId: string | null = 'default'): Promise<{ success: boolean; data?: CheckoutResponse; message?: string }> => {
+  checkOutGuestWithReceipt: async (token: string, reservationId: number, tenantId: string | null = null): Promise<{ success: boolean; data?: CheckoutResponse; message?: string }> => {
     try {
       const response = await fetch(`${API_BASE_URL}/front-desk/checkout-with-receipt/${reservationId}`, {
         method: 'PUT',
@@ -528,7 +536,7 @@ export const frontDeskApiService = {
   /**
    * Generate receipt preview for any booking (without changing status)
    */
-  generateReceiptPreview: async (token: string, reservationId: number, tenantId: string | null = 'default'): Promise<{ success: boolean; data?: ConsolidatedReceipt; message?: string }> => {
+  generateReceiptPreview: async (token: string, reservationId: number, tenantId: string | null = null): Promise<{ success: boolean; data?: ConsolidatedReceipt; message?: string }> => {
     try {
       const response = await fetch(`${API_BASE_URL}/checkout/receipt/${reservationId}/preview`, {
         method: 'GET',
@@ -554,7 +562,7 @@ export const frontDeskApiService = {
   /**
    * Mark guest as no-show
    */
-  markNoShow: async (token: string, reservationId: number, tenantId: string | null = 'default'): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {
+  markNoShow: async (token: string, reservationId: number, tenantId: string | null = null): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {
     try {
       const response = await fetch(`${API_BASE_URL}/front-desk/no-show/${reservationId}`, {
         method: 'PUT',
@@ -580,7 +588,7 @@ export const frontDeskApiService = {
   /**
    * Cancel booking
    */
-  cancelBooking: async (token: string, reservationId: number, reason?: string, tenantId: string | null = 'default'): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {
+  cancelBooking: async (token: string, reservationId: number, reason?: string, tenantId: string | null = null): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {
     try {
       const url = new URL(`${API_BASE_URL}/front-desk/cancel/${reservationId}`);
       if (reason) {
@@ -620,7 +628,7 @@ export const frontDeskApiService = {
       checkInDate?: string;
       status?: string;
     },
-    tenantId: string | null = 'default'
+    tenantId: string | null = null
   ): Promise<{ success: boolean; data?: FrontDeskBooking[]; message?: string }> => {
     try {
       const url = new URL(`${API_BASE_URL}/front-desk/search`);
@@ -655,7 +663,7 @@ export const frontDeskApiService = {
   /**
    * Get front desk statistics
    */
-  getFrontDeskStats: async (token: string, tenantId: string | null = 'default'): Promise<{ success: boolean; data?: FrontDeskStats; message?: string }> => {
+  getFrontDeskStats: async (token: string, tenantId: string | null = null): Promise<{ success: boolean; data?: FrontDeskStats; message?: string }> => {
     try {
       const response = await fetch(`${API_BASE_URL}/front-desk/stats`, {
         method: 'GET',
@@ -688,7 +696,7 @@ export const frontDeskApiService = {
     search?: string,
     roomType?: string,
     status?: string,
-    tenantId: string | null = 'default'
+    tenantId: string | null = null
   ): Promise<{ success: boolean; data?: RoomPage; message?: string }> => {
     try {
       const params = new URLSearchParams({
@@ -735,7 +743,7 @@ export const frontDeskApiService = {
     roomId: number,
     status: string,
     notes?: string,
-    tenantId: string | null = 'default'
+    tenantId: string | null = null
   ): Promise<{ success: boolean; data?: FrontDeskRoom; message?: string }> => {
     try {
       const params = new URLSearchParams({
@@ -782,7 +790,7 @@ export const frontDeskApiService = {
   getRoomById: async (
     token: string,
     roomId: number,
-    tenantId: string | null = 'default'
+    tenantId: string | null = null
   ): Promise<{ success: boolean; data?: FrontDeskRoom; message?: string }> => {
     try {
       const response = await fetch(`${API_BASE_URL}/front-desk/rooms/${roomId}`, {
@@ -814,7 +822,7 @@ export const frontDeskApiService = {
     page: number = 0, 
     size: number = 10, 
     status?: string,
-    tenantId: string | null = 'default'
+    tenantId: string | null = null
   ): Promise<{ success: boolean; data?: { content: Room[]; page: { size: number; number: number; totalElements: number; totalPages: number; }; first: boolean; last: boolean; numberOfElements: number; empty: boolean; }; message?: string }> => {
     try {
       const params = new URLSearchParams({
@@ -853,7 +861,7 @@ export const frontDeskApiService = {
   toggleRoomAvailability: async (
     token: string,
     roomId: number,
-    tenantId: string | null = 'default'
+    tenantId: string | null = null
   ): Promise<{ success: boolean; data?: Room; message?: string }> => {
     try {
       const response = await fetch(`${API_BASE_URL}/front-desk/rooms/${roomId}/toggle-availability`, {
@@ -883,7 +891,7 @@ export const frontDeskApiService = {
   getAvailableRoomsForCheckin: async (
     token: string,
     hotelId: number,
-    tenantId: string | null = 'default'
+    tenantId: string | null = null
   ): Promise<{ success: boolean; data?: any[]; message?: string }> => {
     try {
       const response = await fetch(
@@ -918,7 +926,7 @@ export const frontDeskApiService = {
     reservationId: number,
     roomId: number,
     roomType?: string,
-    tenantId: string | null = 'default'
+    tenantId: string | null = null
   ): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {
     try {
       const params = new URLSearchParams({
@@ -960,7 +968,7 @@ export const frontDeskApiService = {
   createWalkInBooking: async (
     token: string,
     bookingRequest: any,
-    tenantId: string | null = 'default'
+    tenantId: string | null = null
   ): Promise<{ success: boolean; data?: any; message?: string }> => {
     try {
       const response = await fetch(`${API_BASE_URL}/front-desk/walk-in-booking`, {

@@ -128,13 +128,16 @@ public class HotelRegistrationAdminController {
             Authentication authentication) {
 
         try {
-            // Temporarily handle null authentication for testing
-            UserDetails userDetails = null;
-            if (authentication != null) {
-                userDetails = (UserDetails) authentication.getPrincipal();
+            // Extract reviewer ID from authenticated user
+            if (authentication == null) {
+                throw new IllegalStateException("Authentication required for hotel registration approval");
             }
-            // In a real application, you would get the user ID from the authentication
-            Long reviewerId = 1L; // Placeholder - should be extracted from authenticated user
+            
+            String reviewerEmail = authentication.getName();
+            
+            // For now, use a placeholder until proper user lookup is implemented
+            // TODO: Implement proper user repository lookup
+            Long reviewerId = null; // This will force the service to handle the null case properly
 
             HotelRegistrationResponse response = registrationService.approveRegistration(id, request, reviewerId);
             return ResponseEntity.ok(response);
@@ -156,9 +159,14 @@ public class HotelRegistrationAdminController {
             Authentication authentication) {
 
         try {
-            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-            // In a real application, you would get the user ID from the authentication
-            Long reviewerId = 1L; // Placeholder - should be extracted from authenticated user
+            // Extract reviewer ID from authenticated user
+            if (authentication == null) {
+                throw new IllegalStateException("Authentication required for hotel registration rejection");
+            }
+            
+            String reviewerEmail = authentication.getName();
+            // TODO: Implement proper user repository lookup
+            Long reviewerId = null; // Force service to handle null case properly
 
             HotelRegistrationResponse response = registrationService.rejectRegistration(id, request, reviewerId);
             return ResponseEntity.ok(response);
@@ -176,9 +184,14 @@ public class HotelRegistrationAdminController {
             Authentication authentication) {
 
         try {
-            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-            // In a real application, you would get the user ID from the authentication
-            Long reviewerId = 1L; // Placeholder - should be extracted from authenticated user
+            // Extract reviewer ID from authenticated user
+            if (authentication == null) {
+                throw new IllegalStateException("Authentication required for marking hotel under review");
+            }
+            
+            String reviewerEmail = authentication.getName();
+            // TODO: Implement proper user repository lookup
+            Long reviewerId = null; // Force service to handle null case properly
 
             HotelRegistrationResponse response = registrationService.markUnderReview(id, reviewerId);
             return ResponseEntity.ok(response);

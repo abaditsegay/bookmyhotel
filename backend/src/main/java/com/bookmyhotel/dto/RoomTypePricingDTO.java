@@ -38,10 +38,11 @@ public class RoomTypePricingDTO {
         this.roomType = roomType;
         this.basePricePerNight = basePricePerNight;
         this.isActive = true;
-        this.currency = "USD";
-        this.weekendPrice = basePricePerNight.multiply(BigDecimal.valueOf(1.2));
-        this.holidayPrice = basePricePerNight.multiply(BigDecimal.valueOf(1.5));
-        this.peakSeasonPrice = basePricePerNight.multiply(BigDecimal.valueOf(1.3));
+        this.currency = "ETB"; // Default to Ethiopian Birr for Ethiopian hotels
+        // Initialize with base price - actual multipliers are applied during entity creation/update in service layer
+        this.weekendPrice = basePricePerNight; 
+        this.holidayPrice = basePricePerNight;  
+        this.peakSeasonPrice = basePricePerNight;
     }
 
     // Getters and Setters

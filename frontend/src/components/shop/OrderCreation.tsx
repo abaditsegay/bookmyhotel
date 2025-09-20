@@ -74,13 +74,18 @@ const OrderCreation: React.FC = () => {
   const [paymentReference, setPaymentReference] = useState<string | null>(null);
 
   // Get hotel ID from context (adjust based on your auth context)
-  const hotelId = user?.hotelId ? parseInt(user.hotelId) : 1; // Fallback to hotel 1
+  const hotelId = user?.hotelId ? parseInt(user.hotelId) : null; // No fallback - should be from user context
 
   useEffect(() => {
     loadProducts();
   }, [hotelId]);
 
   const loadProducts = async () => {
+    if (!hotelId) {
+      setError('Hotel ID not available. Please ensure you are logged in as a hotel user.');
+      return;
+    }
+    
     try {
       const data = await shopApiService.getProducts(hotelId);
       setProducts(data.content.filter(p => p.isActive && p.isAvailable && p.stockQuantity > 0));
@@ -125,6 +130,11 @@ const OrderCreation: React.FC = () => {
   const handleCreateOrder = async () => {
     if (orderItems.length === 0) {
       setError('Cart is empty');
+      return;
+    }
+    
+    if (!hotelId) {
+      setError('Hotel ID not available. Please ensure you are logged in as a hotel user.');
       return;
     }
 

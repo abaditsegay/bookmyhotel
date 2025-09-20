@@ -317,7 +317,8 @@ class ShopApiService {
 
   async getOrderStatuses(): Promise<string[]> {
     // This endpoint doesn't need hotelId since it just returns enum values
-    const response = await fetch(`${API_BASE_URL}/hotels/1/shop/orders/statuses`, {
+    // Use a generic endpoint that doesn't require hotel-specific routing
+    const response = await fetch(`${API_BASE_URL}/shop/orders/statuses`, {
       headers: this.getAuthHeaders(),
     });
     return this.handleResponse<string[]>(response);

@@ -75,7 +75,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const { tenant } = useTenant();
   
   const [booking, setBooking] = useState<BookingData | null>(null);
@@ -128,7 +128,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
         // Use the appropriate API based on mode
         const result = mode === 'hotel-admin' 
           ? await hotelAdminApi.getBookingById(token, reservationId)
-          : await frontDeskApiService.getBookingById(token, reservationId, tenant?.id || 'default');
+          : await frontDeskApiService.getBookingById(token, reservationId, tenant?.id || null);
         
         if (result.success && result.data) {
           // Map API response to unified format - handle different response structures
@@ -263,7 +263,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
             token,
             editedBooking.reservationId,
             editedBooking.status,
-            tenant?.id || 'default'
+            tenant?.id || null
           );
           
           if (result.success && result.data) {
@@ -306,7 +306,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
             editedBooking.reservationId,
             selectedRoomId,
             editedBooking.roomType,
-            tenant?.id || 'default'
+            tenant?.id || null
           );
           
           if (result.success && result.data) {
@@ -357,7 +357,12 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
         console.log('🗓️ Comprehensive booking update detected for room type/dates/guest info');
         try {
           // Get hotel ID from current booking data (we need it for the comprehensive update)
-          const hotelId = 1; // This should be derived from the booking, but for now use default
+          // Get hotel ID from user context
+          const hotelId = user?.hotelId ? parseInt(user.hotelId) : null;
+          if (!hotelId) {
+            setError('Hotel ID not available in user context. Please ensure you are properly logged in as a hotel user.');
+            return;
+          }
           
           const comprehensiveUpdateData = {
             hotelId: hotelId,
@@ -376,7 +381,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
             token,
             editedBooking.reservationId,
             comprehensiveUpdateData,
-            tenant?.id || 'default'
+            tenant?.id || null
           );
           
           if (result.success && result.data) {
@@ -491,7 +496,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
           '', 
           selectedRoomType, 
           'AVAILABLE',
-          tenant?.id || 'default'
+          tenant?.id || null
         );
         
         if (result.success && result.data) {
@@ -505,8 +510,8 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
             description: room.description || '',
             isAvailable: room.status === 'AVAILABLE',
             status: room.status,
-            hotelId: 0, // Use default value since FrontDeskRoom doesn't have this
-            hotelName: 'Current Hotel', // FrontDeskRoom doesn't include hotel name
+            hotelId: null as any, // Will be populated by hotel context - type mismatch will be handled
+            hotelName: null as any, // Will be populated by hotel context - type mismatch will be handled
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()
           }));
