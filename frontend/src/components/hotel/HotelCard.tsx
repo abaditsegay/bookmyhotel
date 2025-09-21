@@ -24,8 +24,14 @@ interface HotelCardProps {
   onBookRoom: (hotelId: number, roomId: number, asGuest?: boolean) => void;
 }
 
-// Professional hotel images based on hotel name/location
-const getHotelImage = (hotelName: string, city: string): string => {
+// Get hotel image - uses uploaded S3 images if available, otherwise fallback to city-based defaults
+const getHotelImage = (hotel: HotelSearchResult): string => {
+  // Use uploaded hotel hero image if available
+  if (hotel.heroImageUrl) {
+    return hotel.heroImageUrl;
+  }
+
+  // Fallback to city-based default images if no uploaded images are available
   const cityImages = {
     'New York': 'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=400&h=200&fit=crop&crop=center', // Luxury NYC hotel exterior
     'Miami': 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=400&h=200&fit=crop&crop=center', // Modern Miami beachfront hotel
@@ -37,8 +43,11 @@ const getHotelImage = (hotelName: string, city: string): string => {
     'San Diego': 'https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=400&h=200&fit=crop&crop=center', // San Diego resort hotel
     'Las Vegas': 'https://images.unsplash.com/photo-1540541338287-41700207dee6?w=400&h=200&fit=crop&crop=center', // Vegas luxury hotel
     'Boston': 'https://images.unsplash.com/photo-1445019980597-93fa8acb246c?w=400&h=200&fit=crop&crop=center', // Historic Boston hotel
+    // Default fallback for Addis Ababa and other cities
+    'Addis Ababa': 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=200&fit=crop&crop=center',
   };
-  return cityImages[city as keyof typeof cityImages] || cityImages['New York'];
+  
+  return cityImages[hotel.city as keyof typeof cityImages] || cityImages['New York'];
 };
 
 const HotelCard: React.FC<HotelCardProps> = ({ hotel, onViewDetails, onBookRoom }) => {
@@ -62,7 +71,7 @@ const HotelCard: React.FC<HotelCardProps> = ({ hotel, onViewDetails, onBookRoom 
       <CardMedia
         component="img"
         height="200"
-        image={getHotelImage(hotel.name, hotel.city)}
+        image={getHotelImage(hotel)}
         alt={hotel.name}
         sx={{
           objectFit: 'cover',

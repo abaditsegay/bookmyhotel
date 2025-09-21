@@ -130,4 +130,16 @@ public interface HotelImageRepository extends JpaRepository<HotelImage, Long> {
      * Delete all images for a room type (for cleanup)
      */
     void deleteByTenantIdAndHotelIdAndRoomTypeId(String tenantId, Long hotelId, Long roomTypeId);
+
+    // Public access methods (without tenant filtering)
+
+    /**
+     * Find all active hotel images (public access - searches across all tenants)
+     */
+    List<HotelImage> findByHotelIdAndRoomTypeIdIsNullAndIsActiveTrueOrderByDisplayOrderAsc(Long hotelId);
+
+    /**
+     * Find hero image for hotel (public access - searches across all tenants)
+     */
+    Optional<HotelImage> findByHotelIdAndImageCategoryAndIsActiveTrue(Long hotelId, ImageCategory imageCategory);
 }

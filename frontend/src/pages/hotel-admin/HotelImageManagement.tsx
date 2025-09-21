@@ -89,9 +89,11 @@ const HotelImageManagement: React.FC = () => {
       // Load hotel general images
       const hotelGeneralResponse = await hotelAdminApi.getHotelImages(token); // No room type = hotel general
       if (hotelGeneralResponse.success && hotelGeneralResponse.data) {
+        // Ensure data is an array
+        const images = Array.isArray(hotelGeneralResponse.data) ? hotelGeneralResponse.data : [];
         setHotelGeneralState(prev => ({
           ...prev,
-          existingImages: hotelGeneralResponse.data || [],
+          existingImages: images,
         }));
       }
 
@@ -99,11 +101,13 @@ const HotelImageManagement: React.FC = () => {
       for (const roomType of ROOM_TYPE_VALUES) {
         const response = await hotelAdminApi.getHotelImages(token, roomType);
         if (response.success && response.data) {
+          // Ensure data is an array
+          const images = Array.isArray(response.data) ? response.data : [];
           setRoomTypeStates(prev => ({
             ...prev,
             [roomType]: {
               ...prev[roomType],
-              existingImages: response.data || [],
+              existingImages: images,
             }
           }));
         }
@@ -306,9 +310,9 @@ const HotelImageManagement: React.FC = () => {
               Hotel General Images
             </Typography>
             <Chip 
-              label={`${hotelGeneralState.existingImages.length} images`} 
-              size="small" 
-              color={hotelGeneralState.existingImages.length > 0 ? 'primary' : 'default'}
+              label={`${Array.isArray(hotelGeneralState.existingImages) ? hotelGeneralState.existingImages.length : 0} images`} 
+              size="small"
+              color={Array.isArray(hotelGeneralState.existingImages) && hotelGeneralState.existingImages.length > 0 ? 'primary' : 'default'}
               sx={{ mr: 1 }}
             />
           </Box>
@@ -383,10 +387,10 @@ const HotelImageManagement: React.FC = () => {
               <Card>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
-                    Current Hotel Images ({hotelGeneralState.existingImages.length})
+                    Current Hotel Images ({Array.isArray(hotelGeneralState.existingImages) ? hotelGeneralState.existingImages.length : 0})
                   </Typography>
 
-                  {hotelGeneralState.existingImages.length === 0 ? (
+                  {!Array.isArray(hotelGeneralState.existingImages) || hotelGeneralState.existingImages.length === 0 ? (
                     <Box sx={{ textAlign: 'center', py: 4 }}>
                       <ImageIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
                       <Typography variant="body2" color="text.secondary">
@@ -395,7 +399,7 @@ const HotelImageManagement: React.FC = () => {
                     </Box>
                   ) : (
                     <ImageList cols={2} gap={8}>
-                      {hotelGeneralState.existingImages.map((image) => (
+                      {(hotelGeneralState.existingImages || []).map((image) => (
                         <ImageListItem key={image.id}>
                           <img
                             src={image.s3Url}
@@ -440,9 +444,9 @@ const HotelImageManagement: React.FC = () => {
                   {roomType} Rooms
                 </Typography>
                 <Chip 
-                  label={`${state.existingImages.length} images`} 
-                  size="small" 
-                  color={state.existingImages.length > 0 ? 'primary' : 'default'}
+                  label={`${Array.isArray(state.existingImages) ? state.existingImages.length : 0} images`} 
+                  size="small"
+                  color={Array.isArray(state.existingImages) && state.existingImages.length > 0 ? 'primary' : 'default'}
                   sx={{ mr: 1 }}
                 />
               </Box>
@@ -513,10 +517,10 @@ const HotelImageManagement: React.FC = () => {
                   <Card>
                     <CardContent>
                       <Typography variant="h6" gutterBottom>
-                        Current {roomType} Images ({state.existingImages.length})
+                        Current {roomType} Images ({Array.isArray(state.existingImages) ? state.existingImages.length : 0})
                       </Typography>
 
-                      {state.existingImages.length === 0 ? (
+                      {!Array.isArray(state.existingImages) || state.existingImages.length === 0 ? (
                         <Box sx={{ textAlign: 'center', py: 4 }}>
                           <ImageIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
                           <Typography variant="body2" color="text.secondary">
@@ -525,7 +529,7 @@ const HotelImageManagement: React.FC = () => {
                         </Box>
                       ) : (
                         <ImageList cols={2} gap={8}>
-                          {state.existingImages.map((image) => (
+                          {(state.existingImages || []).map((image) => (
                             <ImageListItem key={image.id}>
                               <img
                                 src={image.s3Url}

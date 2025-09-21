@@ -2,8 +2,11 @@ package com.bookmyhotel.service;
 
 import com.bookmyhotel.config.AwsS3Config;
 import com.bookmyhotel.entity.HotelImage;
+import com.bookmyhotel.entity.Room;
+import com.bookmyhotel.entity.RoomType;
 import com.bookmyhotel.enums.ImageCategory;
 import com.bookmyhotel.repository.HotelImageRepository;
+import com.bookmyhotel.repository.RoomRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +33,7 @@ public class HotelImageService {
     private final S3Client s3Client;
     private final AwsS3Config awsS3Config;
     private final HotelImageRepository hotelImageRepository;
+    private final RoomRepository roomRepository;
 
     // Supported image formats
     private static final String[] ALLOWED_EXTENSIONS = { "jpg", "jpeg", "png", "webp" };
@@ -44,10 +48,11 @@ public class HotelImageService {
 
     @Autowired
     public HotelImageService(S3Client s3Client, AwsS3Config awsS3Config,
-            HotelImageRepository hotelImageRepository) {
+            HotelImageRepository hotelImageRepository, RoomRepository roomRepository) {
         this.s3Client = s3Client;
         this.awsS3Config = awsS3Config;
         this.hotelImageRepository = hotelImageRepository;
+        this.roomRepository = roomRepository;
     }
 
     /**
@@ -116,7 +121,23 @@ public class HotelImageService {
             }
         }
 
-        String key = generateS3Key(tenantId, hotelId, roomTypeId, imageCategory, file.getOriginalFilename());
+        // Get the room type from the room type ID (which is roomType.ordinal() + 1)
+        RoomType roomType = null;
+        if (roomTypeId != null) {
+            System.out.println("🔍 HotelImageService.uploadRoomTypeImage DEBUG:");
+            System.out.println("  roomTypeId: " + roomTypeId);
+            int ordinal = (int) (roomTypeId - 1); // Convert back from ordinal + 1
+            System.out.println("  calculated ordinal: " + ordinal);
+            RoomType[] roomTypes = RoomType.values();
+            if (ordinal >= 0 && ordinal < roomTypes.length) {
+                roomType = roomTypes[ordinal];
+                System.out.println("  resolved roomType: " + roomType);
+            } else {
+                System.out.println("❌ Invalid ordinal for room type");
+            }
+        }
+
+        String key = generateS3Key(tenantId, hotelId, roomTypeId, imageCategory, file.getOriginalFilename(), roomType);
         String s3Url = uploadToS3(key, file);
 
         // Get image dimensions
@@ -241,6 +262,22 @@ public class HotelImageService {
         }
     }
 
+    /**
+     * Get all active images for a hotel (public access - searches across all tenants)
+     */
+    @Transactional(readOnly = true)
+    public List<HotelImage> getHotelImagesPublic(Long hotelId) {
+        return hotelImageRepository.findByHotelIdAndRoomTypeIdIsNullAndIsActiveTrueOrderByDisplayOrderAsc(hotelId);
+    }
+
+    /**
+     * Get hero image for hotel (public access - searches across all tenants)
+     */
+    @Transactional(readOnly = true)
+    public Optional<HotelImage> getHotelHeroImagePublic(Long hotelId) {
+        return hotelImageRepository.findByHotelIdAndImageCategoryAndIsActiveTrue(hotelId, ImageCategory.HOTEL_HERO);
+    }
+
     // Private helper methods
 
     private void validateImageCategory(ImageCategory category, boolean isHotelImage) {
@@ -317,6 +354,11 @@ public class HotelImageService {
 
     private String generateS3Key(String tenantId, Long hotelId, Long roomTypeId,
             ImageCategory category, String originalFilename) {
+        return generateS3Key(tenantId, hotelId, roomTypeId, category, originalFilename, null);
+    }
+
+    private String generateS3Key(String tenantId, Long hotelId, Long roomTypeId,
+            ImageCategory category, String originalFilename, RoomType roomType) {
         String prefix;
         if (roomTypeId == null) {
             prefix = awsS3Config.getHotelImagePrefix(tenantId, hotelId);
@@ -325,9 +367,25 @@ public class HotelImageService {
         }
 
         String extension = getFileExtension(originalFilename);
-        String filename = UUID.randomUUID().toString() + "." + extension;
+        String filename;
+        
+        System.out.println("🔍 generateS3Key DEBUG:");
+        System.out.println("  roomTypeId: " + roomTypeId);
+        System.out.println("  roomType: " + roomType);
+        System.out.println("  extension: " + extension);
+        
+        // For room type images, use the room type name instead of UUID
+        if (roomTypeId != null && roomType != null) {
+            filename = roomType.toString().toLowerCase() + "." + extension;
+            System.out.println("✅ Using room type filename: " + filename);
+        } else {
+            filename = UUID.randomUUID().toString() + "." + extension;
+            System.out.println("📦 Using UUID filename: " + filename);
+        }
 
-        return prefix + category.getCode() + "/" + filename;
+        String finalKey = prefix + category.getCode() + "/" + filename;
+        System.out.println("🗝️ Final S3 key: " + finalKey);
+        return finalKey;
     }
 
     private String uploadToS3(String key, MultipartFile file) throws IOException {

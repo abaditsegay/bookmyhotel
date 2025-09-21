@@ -43,6 +43,8 @@ export interface HotelSearchResult {
   roomTypeAvailability?: RoomTypeAvailability[]; // New room type approach
   minPrice: number;
   maxPrice: number;
+  heroImageUrl?: string; // URL of the main hotel image
+  galleryImageUrls?: string[]; // Array of gallery image URLs
 }
 
 export interface BookingRequest {

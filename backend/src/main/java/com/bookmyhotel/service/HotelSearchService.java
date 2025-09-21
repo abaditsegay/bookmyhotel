@@ -40,6 +40,9 @@ public class HotelSearchService {
     @Autowired
     private RoomTypePricingService roomTypePricingService;
 
+    @Autowired
+    private HotelImageService hotelImageService;
+
     /**
      * Search hotels based on criteria
      */
@@ -195,6 +198,27 @@ public class HotelSearchService {
         result.setCountry(hotel.getCountry());
         result.setPhone(hotel.getPhone());
         result.setEmail(hotel.getEmail());
+
+        // Get hotel images
+        try {
+            // Get hero image
+            var heroImage = hotelImageService.getHotelHeroImagePublic(hotel.getId());
+            if (heroImage.isPresent()) {
+                result.setHeroImageUrl(heroImage.get().getFilePath());
+            }
+
+            // Get all gallery images
+            var allImages = hotelImageService.getHotelImagesPublic(hotel.getId());
+            var galleryImages = allImages.stream()
+                    .filter(img -> !img.isHeroImage()) // Exclude hero image from gallery
+                    .map(img -> img.getFilePath())
+                    .collect(Collectors.toList());
+            result.setGalleryImageUrls(galleryImages);
+
+        } catch (Exception e) {
+            // Log the error but don't fail the hotel search
+            System.err.println("Failed to load hotel images for hotel " + hotel.getId() + ": " + e.getMessage());
+        }
 
         // Get room type availability instead of individual rooms
         List<RoomTypeAvailabilityDto> roomTypeAvailability = getRoomTypeAvailability(hotel.getId(), request);

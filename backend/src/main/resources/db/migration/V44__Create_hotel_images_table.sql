@@ -39,12 +39,6 @@ CREATE TABLE hotel_images (
     -- Note: room_type_id references a room type category, not a separate table
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Create unique constraint to ensure only one hero image per hotel
-CREATE UNIQUE INDEX idx_unique_hotel_hero 
-ON hotel_images (tenant_id, hotel_id, image_category) 
-WHERE image_category = 'hotel_hero' AND is_active = TRUE;
-
--- Create unique constraint to ensure only one hero image per room type
-CREATE UNIQUE INDEX idx_unique_room_type_hero 
-ON hotel_images (tenant_id, hotel_id, room_type_id, image_category) 
-WHERE image_category = 'room_type_hero' AND is_active = TRUE;
+-- Note: MySQL doesn't support filtered indexes with WHERE clauses
+-- Business logic will ensure only one hero image per hotel/room type
+-- through application-level constraints

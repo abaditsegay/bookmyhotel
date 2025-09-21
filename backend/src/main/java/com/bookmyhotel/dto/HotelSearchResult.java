@@ -20,6 +20,8 @@ public class HotelSearchResult {
     private List<RoomTypeAvailabilityDto> roomTypeAvailability; // New room type approach
     private BigDecimal minPrice;
     private BigDecimal maxPrice;
+    private String heroImageUrl; // Main hotel image
+    private List<String> galleryImageUrls; // Additional hotel images
     
     // Constructors
     public HotelSearchResult() {}
@@ -127,6 +129,22 @@ public class HotelSearchResult {
     
     public void setMaxPrice(BigDecimal maxPrice) {
         this.maxPrice = maxPrice;
+    }
+    
+    public String getHeroImageUrl() {
+        return heroImageUrl;
+    }
+    
+    public void setHeroImageUrl(String heroImageUrl) {
+        this.heroImageUrl = heroImageUrl;
+    }
+    
+    public List<String> getGalleryImageUrls() {
+        return galleryImageUrls;
+    }
+    
+    public void setGalleryImageUrls(List<String> galleryImageUrls) {
+        this.galleryImageUrls = galleryImageUrls;
     }
     
     /**
