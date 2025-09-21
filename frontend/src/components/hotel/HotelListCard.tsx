@@ -5,7 +5,6 @@ import {
   CardMedia,
   Typography,
   Button,
-  Chip,
   Box,
   Rating,
   useMediaQuery,
@@ -49,10 +48,6 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
 
   // Determine if we should use room types or individual rooms
   const useRoomTypes = hotel.roomTypeAvailability && hotel.roomTypeAvailability.length > 0;
-  
-  const totalAvailableCount = useRoomTypes ? 
-    hotel.roomTypeAvailability?.reduce((sum, rt) => sum + rt.availableCount, 0) || 0 :
-    hotel.availableRooms?.length || 0;
 
   // Mock rating (in a real app, this would come from the backend)
   const hotelRating = 4.2 + (hotel.id % 10) / 10; // Generates ratings between 4.2-5.1
@@ -121,7 +116,7 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
             </Box>
           </Box>
           
-          {/* Rating and Availability */}
+          {/* Rating */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <Rating value={hotelRating} precision={0.1} size="small" readOnly />
@@ -129,12 +124,6 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
                 {hotelRating.toFixed(1)}
               </Typography>
             </Box>
-            <Chip 
-              label={`${totalAvailableCount} rooms available`} 
-              color="success" 
-              variant="outlined"
-              size="small"
-            />
           </Box>
 
           {/* Location */}
