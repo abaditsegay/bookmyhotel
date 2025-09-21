@@ -11,7 +11,6 @@ import {
   IconButton,
   Grid,
   CardMedia,
-  Chip,
   Rating,
   useMediaQuery,
   useTheme,
@@ -237,10 +236,6 @@ const HotelDetailPage: React.FC = () => {
   const hasAvailableRooms = useRoomTypes ? 
     hotel.roomTypeAvailability?.some(rt => rt.availableCount > 0) || false : 
     hotel.availableRooms && hotel.availableRooms.length > 0;
-  
-  const totalAvailableCount = useRoomTypes ? 
-    hotel.roomTypeAvailability?.reduce((sum, rt) => sum + rt.availableCount, 0) || 0 :
-    hotel.availableRooms?.length || 0;
 
   // Mock rating (in a real app, this would come from the backend)
   const hotelRating = 4.2 + (hotel.id % 10) / 10;
@@ -345,15 +340,6 @@ const HotelDetailPage: React.FC = () => {
                 >
                   {hotelRating.toFixed(1)}
                 </Typography>
-                {searchRequest && (
-                  <Chip 
-                    label={`${totalAvailableCount} available`} 
-                    color="success" 
-                    variant="outlined"
-                    size="small"
-                    sx={{ fontSize: '0.75rem' }}
-                  />
-                )}
               </Stack>
               
               <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 1.5 }}>
@@ -406,15 +392,6 @@ const HotelDetailPage: React.FC = () => {
                 <Typography variant="body1" sx={{ ml: 1, fontWeight: 'medium' }}>
                   {hotelRating.toFixed(1)}
                 </Typography>
-                {searchRequest && (
-                  <Chip 
-                    label={`${totalAvailableCount} rooms available`} 
-                    color="success" 
-                    variant="outlined"
-                    size="small"
-                    sx={{ ml: 2 }}
-                  />
-                )}
               </Box>
               
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
