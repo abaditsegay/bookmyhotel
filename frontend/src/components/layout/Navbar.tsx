@@ -417,15 +417,18 @@ const Navbar: React.FC = () => {
           }}
           disableGutters={false}
         >
-          {/* Left Section: Logo + Mobile Menu */}
+          {/* Left Section: Theme Toggle + Mobile Menu + Logo */}
           <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+            {/* Theme Toggle - Leftmost position */}
+            <ThemeToggle variant="icon" size="small" />
+            
             {isMobile && (
               <IconButton
                 edge="start"
                 color="inherit"
                 aria-label="menu"
                 onClick={toggleMobileDrawer}
-                sx={{ mr: 1 }}
+                sx={{ ml: 1, mr: 1 }}
               >
                 <MenuIcon />
               </IconButton>
@@ -439,6 +442,7 @@ const Navbar: React.FC = () => {
                 cursor: 'pointer',
                 '&:hover': { opacity: 0.9 },
                 height: 'auto', // Let container size naturally
+                ml: isMobile ? 0 : 1, // Add margin when not mobile
               }}
               onClick={() => handleNavigation('/')}
             >
@@ -515,9 +519,6 @@ const Navbar: React.FC = () => {
                   }}
                 />
                 
-                {/* Theme Toggle */}
-                <ThemeToggle variant="icon" size="small" />
-                
                 {/* Network Status Indicator - Only for staff/admin roles */}
                 {user.roles && user.roles.some(role => ['HOTEL_ADMIN', 'ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'MAINTENANCE', 'OPERATIONS_SUPERVISOR', 'SYSTEM_ADMIN'].includes(role)) && (
                   <NetworkStatusIndicator 
@@ -535,9 +536,6 @@ const Navbar: React.FC = () => {
             ) : (
               /* Guest Actions */
               <>
-                {/* Theme Toggle for guests */}
-                <ThemeToggle variant="icon" size="small" />
-                
                 {!isMobile && (
                   <>
                     <Button

@@ -69,8 +69,11 @@ export const SystemWideNavbar: React.FC = () => {
   return (
     <AppBar position="static" sx={{ bgcolor: 'primary.main' }}>
       <Toolbar>
+        {/* Theme Toggle - Leftmost position */}
+        <ThemeToggle variant="icon" size="medium" />
+        
         {/* Logo and App Name */}
-        <AdminPanelSettings sx={{ mr: 2 }} />
+        <AdminPanelSettings sx={{ ml: 2, mr: 2 }} />
         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
           BookMyHotel - System Portal
         </Typography>
@@ -150,9 +153,6 @@ export const SystemWideNavbar: React.FC = () => {
             </Button>
           </Box>
         )}
-
-        {/* Theme Toggle */}
-        <ThemeToggle variant="icon" size="medium" />
 
         {/* User menu */}
         <div>
