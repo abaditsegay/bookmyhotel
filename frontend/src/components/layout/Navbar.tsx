@@ -461,9 +461,13 @@ const Navbar: React.FC = () => {
             </Box>
           </Box>
 
-          {/* Center Section: Hotel Name for Hotel Admin and Front Desk */}
+          {/* Center Section: Hotel Name for Hotel Admin and Front Desk - Hidden on Mobile */}
           {user && user.hotelName && shouldShowHotelName() && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', flex: 1 }}>
+            <Box sx={{ 
+              display: { xs: 'none', md: 'flex' }, // Hide on mobile (xs and sm), show on md and up
+              justifyContent: 'center', 
+              flex: 1 
+            }}>
               <Typography 
                 variant="h4" 
                 component="div" 
@@ -471,7 +475,7 @@ const Navbar: React.FC = () => {
                   fontWeight: 'bold',
                   color: themeConstants.brandGold,
                   textAlign: 'center',
-                  fontSize: { xs: '1.2rem', sm: '1.8rem', md: '2rem' },
+                  fontSize: { md: '1.8rem', lg: '2rem' }, // Start from md breakpoint
                   textShadow: themeConstants.shadows.textShadow,
                   // Allow text to wrap and display fully
                   whiteSpace: 'normal',
@@ -485,9 +489,9 @@ const Navbar: React.FC = () => {
             </Box>
           )}
 
-          {/* For users who shouldn't see hotel name, show navigation in center */}
-          {(!user || !user.hotelName || !shouldShowHotelName()) && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', flex: 1 }}>
+          {/* For users who shouldn't see hotel name, or on mobile, show navigation in center */}
+          {(!user || !user.hotelName || !shouldShowHotelName() || isMobile) && (
+            <Box sx={{ display: { xs: 'none', md: 'flex' }, justifyContent: 'center', flex: 1 }}>
               <DesktopNavigation />
             </Box>
           )}
