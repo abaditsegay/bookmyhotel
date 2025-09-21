@@ -389,13 +389,14 @@ public class HotelImageService {
         System.out.println("  roomType: " + roomType);
         System.out.println("  extension: " + extension);
         
-        // For room type images, use the room type name instead of UUID
+        // For room type images, use the room type name; for hotel images, use "hotelImage"
         if (roomTypeId != null && roomType != null) {
             filename = roomType.toString().toLowerCase() + "." + extension;
             System.out.println("✅ Using room type filename: " + filename);
         } else {
-            filename = UUID.randomUUID().toString() + "." + extension;
-            System.out.println("📦 Using UUID filename: " + filename);
+            // Hotel image - use consistent naming
+            filename = "hotelImage." + extension;
+            System.out.println("🏨 Using hotel filename: " + filename);
         }
 
         String finalKey = prefix + filename;
