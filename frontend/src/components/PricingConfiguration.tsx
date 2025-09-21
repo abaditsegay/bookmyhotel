@@ -129,8 +129,8 @@ const PricingConfigurationComponent: React.FC = () => {
       setSuccess(null);
 
       const endpoint = config.id
-        ? `${API_CONFIG.BASE_URL}/managemyhotel/api/hotel-admin/pricing-config/${config.id}`
-        : `${API_CONFIG.BASE_URL}/managemyhotel/api/hotel-admin/pricing-config/hotel/${user.hotelId}/replace-active`;
+        ? `${API_CONFIG.BASE_URL}/hotel-admin/pricing-config/${config.id}`
+        : `${API_CONFIG.BASE_URL}/hotel-admin/pricing-config/hotel/${user.hotelId}/replace-active`;
 
       const method = config.id ? 'PUT' : 'POST';
 

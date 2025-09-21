@@ -142,4 +142,10 @@ public interface HotelImageRepository extends JpaRepository<HotelImage, Long> {
      * Find hero image for hotel (public access - searches across all tenants)
      */
     Optional<HotelImage> findByHotelIdAndImageCategoryAndIsActiveTrue(Long hotelId, ImageCategory imageCategory);
+
+    /**
+     * Find all images for a room type ordered by creation date (newest first)
+     */
+    List<HotelImage> findByTenantIdAndHotelIdAndRoomTypeIdOrderByCreatedAtDesc(
+            String tenantId, Long hotelId, Long roomTypeId);
 }

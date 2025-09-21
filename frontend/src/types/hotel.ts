@@ -28,6 +28,7 @@ export interface RoomTypeAvailability {
   capacity: number;
   description?: string;
   displayMessage: string;
+  imageUrl?: string; // S3 URL for room type image
 }
 
 export interface HotelSearchResult {

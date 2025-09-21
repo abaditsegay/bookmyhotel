@@ -25,8 +25,8 @@ interface RoomTypeCardProps {
   onBookRoomType: (hotelId: number, roomType: string, asGuest?: boolean) => void;
 }
 
-// Professional room images based on room type
-const getRoomImage = (roomType: string): string => {
+// Professional room images based on room type (fallback images)
+const getFallbackRoomImage = (roomType: string): string => {
   const images = {
     SINGLE: 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=400&h=250&fit=crop&crop=center', // Modern single bedroom with workspace
     DOUBLE: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop&crop=center', // Modern hotel room with two beds and desk area
@@ -35,6 +35,16 @@ const getRoomImage = (roomType: string): string => {
     PRESIDENTIAL: 'https://images.unsplash.com/photo-1591088398332-8a7791972843?w=400&h=250&fit=crop&crop=center', // Presidential suite with panoramic views
   };
   return images[roomType as keyof typeof images] || images.DOUBLE;
+};
+
+// Get room image - use S3 image if available, otherwise fallback to hardcoded images
+const getRoomImage = (roomType: RoomTypeAvailability): string => {
+  // Use S3 image if available
+  if (roomType.imageUrl) {
+    return roomType.imageUrl;
+  }
+  // Fallback to hardcoded images
+  return getFallbackRoomImage(roomType.roomType);
 };
 
 // Mock amenities based on room type
@@ -80,7 +90,7 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
         <CardMedia
           component="img"
           height={isMobile ? "140" : "160"}
-          image={getRoomImage(roomType.roomType)}
+          image={getRoomImage(roomType)}
           alt={`${roomType.roomType} room`}
           sx={{ objectFit: 'cover' }}
         />

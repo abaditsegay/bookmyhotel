@@ -29,6 +29,9 @@ import com.bookmyhotel.dto.BookingRequest;
 import com.bookmyhotel.dto.BookingResponse;
 import com.bookmyhotel.dto.HotelDTO;
 import com.bookmyhotel.dto.RoomCreationRequest;
+import com.bookmyhotel.entity.HotelImage;
+import com.bookmyhotel.entity.RoomType;
+import com.bookmyhotel.enums.ImageCategory;
 import com.bookmyhotel.dto.RoomCreationResponse;
 import com.bookmyhotel.dto.RoomDTO;
 import com.bookmyhotel.dto.RoomTypePricingDTO;
@@ -481,28 +484,49 @@ public class HotelAdminController {
     public ResponseEntity<Map<String, Object>> getHotelImages(
             @RequestParam(required = false) String roomType,
             Authentication auth) {
-        
+
         try {
             String tenantId = TenantContext.getTenantId();
             HotelDTO hotel = hotelAdminService.getMyHotel(auth.getName());
-            
+
             List<HotelImage> images;
             if (roomType != null && !roomType.isEmpty()) {
-                // Get room type images - we need to find the room type ID
-                // For now, just get all hotel images and filter by category
-                images = hotelImageService.getHotelImages(tenantId, hotel.getId());
+                // Get room type images - convert room type string to ID
+                try {
+                    logger.info("🔍 DEBUG: Received room type request: {}", roomType);
+                    RoomType roomTypeEnum = RoomType.valueOf(roomType.toUpperCase());
+                    Long roomTypeId = (long) (roomTypeEnum.ordinal() + 1);
+                    logger.info("🔍 DEBUG: Converted room type {} to ID: {} (ordinal: {})", roomType, roomTypeId,
+                            roomTypeEnum.ordinal());
+                    logger.info("🔍 DEBUG: Retrieving images for hotel ID: {}, room type ID: {}", hotel.getId(),
+                            roomTypeId);
+
+                    // Clean up any duplicate inactive images first
+                    hotelImageService.cleanupDuplicateRoomTypeImages(tenantId, hotel.getId(), roomTypeId);
+
+                    images = hotelImageService.getRoomTypeImages(tenantId, hotel.getId(), roomTypeId);
+                    logger.info("🔍 DEBUG: Found {} images for room type {} after cleanup", images.size(), roomType);
+                } catch (IllegalArgumentException e) {
+                    logger.error("❌ Invalid room type: {}", roomType);
+                    Map<String, Object> response = new HashMap<>();
+                    response.put("success", false);
+                    response.put("error", "Invalid room type: " + roomType);
+                    return ResponseEntity.badRequest().body(response);
+                }
             } else {
-                // Get all hotel images
+                // Get all hotel images (not room type specific)
+                logger.info("🔍 DEBUG: Retrieving general hotel images (no room type specified)");
                 images = hotelImageService.getHotelImages(tenantId, hotel.getId());
+                logger.info("🔍 DEBUG: Found {} hotel images", images.size());
             }
-            
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("data", images.stream().map(this::createImageResponse).toArray());
             response.put("total", images.size());
-            
+
             return ResponseEntity.ok(response);
-            
+
         } catch (Exception e) {
             logger.error("Failed to get hotel images", e);
             Map<String, Object> response = new HashMap<>();
@@ -522,34 +546,35 @@ public class HotelAdminController {
             @RequestParam(required = false) MultipartFile heroImage,
             @RequestParam(required = false) String heroAltText,
             Authentication auth) {
-        
+
         try {
             // Debug logging
             System.out.println("🔍 ROOM TYPE UPLOAD DEBUG:");
             System.out.println("  roomType parameter: " + roomType);
             System.out.println("  isHotelGeneral parameter: " + isHotelGeneral);
-            System.out.println("  heroImage filename: " + (heroImage != null ? heroImage.getOriginalFilename() : "null"));
-            
+            System.out
+                    .println("  heroImage filename: " + (heroImage != null ? heroImage.getOriginalFilename() : "null"));
+
             String tenantId = TenantContext.getTenantId();
             HotelDTO hotel = hotelAdminService.getMyHotel(auth.getName());
-            
+
             if (heroImage == null || heroImage.isEmpty()) {
                 Map<String, Object> response = new HashMap<>();
                 response.put("success", false);
                 response.put("error", "No image file provided");
                 return ResponseEntity.badRequest().body(response);
             }
-            
+
             HotelImage uploadedImage;
-            
+
             // Check if this is a room type image upload
             if (roomType != null && !roomType.trim().isEmpty()) {
                 System.out.println("🎯 TAKING ROOM TYPE UPLOAD PATH");
                 System.out.println("  roomType: " + roomType);
-                
+
                 // This is a room type image upload
                 ImageCategory category = ImageCategory.ROOM_TYPE_HERO; // Room type images default to hero
-                
+
                 // Convert room type string to room type ID (ordinal + 1)
                 RoomType roomTypeEnum;
                 try {
@@ -562,16 +587,16 @@ public class HotelAdminController {
                     response.put("error", "Invalid room type: " + roomType);
                     return ResponseEntity.badRequest().body(response);
                 }
-                
+
                 Long roomTypeId = (long) (roomTypeEnum.ordinal() + 1);
                 System.out.println("  roomTypeId: " + roomTypeId);
-                
+
                 uploadedImage = hotelImageService.uploadRoomTypeImage(
-                    tenantId, hotel.getId(), roomTypeId, category, heroImage, heroAltText, null);
+                        tenantId, hotel.getId(), roomTypeId, category, heroImage, heroAltText, null);
                 System.out.println("✅ Room type image uploaded successfully");
             } else {
                 System.out.println("🏨 TAKING HOTEL GENERAL UPLOAD PATH");
-                
+
                 // This is a hotel general image upload
                 ImageCategory category;
                 if (Boolean.TRUE.equals(isHotelGeneral)) {
@@ -580,19 +605,19 @@ public class HotelAdminController {
                     category = ImageCategory.HOTEL_GALLERY; // Default to gallery
                 }
                 System.out.println("  category: " + category);
-                
+
                 uploadedImage = hotelImageService.uploadHotelImage(
-                    tenantId, hotel.getId(), category, heroImage, heroAltText, null);
+                        tenantId, hotel.getId(), category, heroImage, heroAltText, null);
                 System.out.println("✅ Hotel image uploaded successfully");
             }
-            
+
             List<Map<String, Object>> responseData = List.of(createImageResponse(uploadedImage));
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("data", responseData);
-            
+
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
-            
+
         } catch (IllegalArgumentException e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
@@ -614,19 +639,19 @@ public class HotelAdminController {
     public ResponseEntity<Map<String, Object>> deleteHotelImage(
             @PathVariable Long imageId,
             Authentication auth) {
-        
+
         try {
             String tenantId = TenantContext.getTenantId();
             HotelDTO hotel = hotelAdminService.getMyHotel(auth.getName());
-            
+
             hotelImageService.deleteImage(tenantId, imageId);
-            
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "Image deleted successfully");
-            
+
             return ResponseEntity.ok(response);
-            
+
         } catch (IllegalAccessError e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);

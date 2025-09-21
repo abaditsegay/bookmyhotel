@@ -72,8 +72,9 @@ public class HotelImageService {
 
         // Check if hotel already has a hero image - if so, deactivate the existing one
         if (imageCategory.isHeroImage()) {
-            Optional<HotelImage> existingHeroImage = hotelImageRepository.findByTenantIdAndHotelIdAndImageCategoryAndIsActiveTrue(
-                    tenantId, hotelId, imageCategory);
+            Optional<HotelImage> existingHeroImage = hotelImageRepository
+                    .findByTenantIdAndHotelIdAndImageCategoryAndIsActiveTrue(
+                            tenantId, hotelId, imageCategory);
             if (existingHeroImage.isPresent()) {
                 System.out.println("Found existing hero image for hotel " + hotelId + ", deactivating it");
                 // Deactivate existing hero image
@@ -123,12 +124,15 @@ public class HotelImageService {
         validateImageCategory(imageCategory, false);
         validateFile(file);
 
-        // Check if room type already has a hero image - if so, deactivate the existing one
+        // Check if room type already has a hero image - if so, deactivate the existing
+        // one
         if (imageCategory.isHeroImage()) {
-            Optional<HotelImage> existingHeroImage = hotelImageRepository.findByTenantIdAndHotelIdAndRoomTypeIdAndImageCategoryAndIsActiveTrue(
-                    tenantId, hotelId, roomTypeId, imageCategory);
+            Optional<HotelImage> existingHeroImage = hotelImageRepository
+                    .findByTenantIdAndHotelIdAndRoomTypeIdAndImageCategoryAndIsActiveTrue(
+                            tenantId, hotelId, roomTypeId, imageCategory);
             if (existingHeroImage.isPresent()) {
-                System.out.println("Found existing hero image for room type " + roomTypeId + " in hotel " + hotelId + ", deactivating it");
+                System.out.println("Found existing hero image for room type " + roomTypeId + " in hotel " + hotelId
+                        + ", deactivating it");
                 // Deactivate existing hero image
                 HotelImage heroImage = existingHeroImage.get();
                 heroImage.setIsActive(false);
@@ -223,21 +227,41 @@ public class HotelImageService {
      * Delete an image (soft delete)
      */
     public void deleteImage(String tenantId, Long imageId) {
-        Optional<HotelImage> imageOpt = hotelImageRepository.findById(imageId);
-        if (imageOpt.isPresent()) {
-            HotelImage image = imageOpt.get();
-
-            // Verify tenant access
+        Optional<HotelImage> imageOptional = hotelImageRepository.findById(imageId);
+        if (imageOptional.isPresent()) {
+            HotelImage image = imageOptional.get();
             if (!image.getTenantId().equals(tenantId)) {
-                throw new IllegalAccessError("Access denied to image");
+                throw new RuntimeException("Access denied: Image does not belong to this tenant");
             }
-
-            // Soft delete
             image.setIsActive(false);
             hotelImageRepository.save(image);
+        }
+    }
 
-            // Optionally delete from S3 (uncomment if you want hard delete)
-            // deleteFromS3(extractS3KeyFromUrl(image.getFilePath()));
+    /**
+     * Clean up duplicate inactive images for a room type
+     */
+    @Transactional
+    public void cleanupDuplicateRoomTypeImages(String tenantId, Long hotelId, Long roomTypeId) {
+        // Find all images for this room type (active and inactive)
+        List<HotelImage> allImages = hotelImageRepository.findByTenantIdAndHotelIdAndRoomTypeIdOrderByCreatedAtDesc(
+                tenantId, hotelId, roomTypeId);
+
+        if (allImages.size() <= 1) {
+            return; // No duplicates to clean up
+        }
+
+        // Keep the most recent active image, remove others
+        boolean foundActive = false;
+        for (HotelImage image : allImages) {
+            if (image.getIsActive() && !foundActive) {
+                foundActive = true;
+                System.out.println("🔧 Keeping active image: " + image.getFileName() + " (ID: " + image.getId() + ")");
+            } else {
+                System.out.println(
+                        "🗑️ Removing duplicate image: " + image.getFileName() + " (ID: " + image.getId() + ")");
+                hotelImageRepository.delete(image); // Hard delete old duplicates
+            }
         }
     }
 
@@ -278,7 +302,8 @@ public class HotelImageService {
     }
 
     /**
-     * Get all active images for a hotel (public access - searches across all tenants)
+     * Get all active images for a hotel (public access - searches across all
+     * tenants)
      */
     @Transactional(readOnly = true)
     public List<HotelImage> getHotelImagesPublic(Long hotelId) {
@@ -383,13 +408,14 @@ public class HotelImageService {
 
         String extension = getFileExtension(originalFilename);
         String filename;
-        
+
         System.out.println("🔍 generateS3Key DEBUG:");
         System.out.println("  roomTypeId: " + roomTypeId);
         System.out.println("  roomType: " + roomType);
         System.out.println("  extension: " + extension);
-        
-        // For room type images, use the room type name; for hotel images, use "hotelImage"
+
+        // For room type images, use the room type name; for hotel images, use
+        // "hotelImage"
         if (roomTypeId != null && roomType != null) {
             filename = roomType.toString().toLowerCase() + "." + extension;
             System.out.println("✅ Using room type filename: " + filename);

@@ -3,6 +3,7 @@ package com.bookmyhotel.service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -180,6 +181,28 @@ public class HotelSearchService {
         // Set description separately
         if (sampleRoom != null) {
             dto.setDescription(sampleRoom.getDescription());
+        }
+
+        // Get room type image URL from S3
+        try {
+            // Convert RoomType enum to roomTypeId (ordinal + 1)
+            Long roomTypeId = (long) (roomType.ordinal() + 1);
+            // Get tenant from TenantContext (assuming it's available)
+            String tenantId = "development"; // TODO: Get from TenantContext
+
+            Optional<com.bookmyhotel.entity.HotelImage> heroImage = hotelImageService.getRoomTypeHeroImage(tenantId,
+                    hotelId, roomTypeId);
+
+            if (heroImage.isPresent()) {
+                dto.setImageUrl(heroImage.get().getFilePath());
+            } else {
+                dto.setImageUrl(null); // Will allow frontend to use fallback
+            }
+        } catch (Exception e) {
+            // Log the error but don't fail the room type availability
+            System.err.println("Failed to load room type image for hotel " + hotelId + " and room type " + roomType
+                    + ": " + e.getMessage());
+            dto.setImageUrl(null); // Will allow frontend to use fallback
         }
 
         return dto;
