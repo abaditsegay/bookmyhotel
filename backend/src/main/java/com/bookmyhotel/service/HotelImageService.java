@@ -22,6 +22,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Service for managing hotel and room type images in AWS S3
  * Handles upload, deletion, and retrieval of images with multi-tenant support
@@ -29,6 +32,8 @@ import java.util.UUID;
 @Service
 @Transactional
 public class HotelImageService {
+
+    private static final Logger log = LoggerFactory.getLogger(HotelImageService.class);
 
     private final S3Client s3Client;
     private final AwsS3Config awsS3Config;
@@ -65,11 +70,16 @@ public class HotelImageService {
         validateImageCategory(imageCategory, true);
         validateFile(file);
 
-        // Check if hotel already has a hero image (only one allowed)
+        // Check if hotel already has a hero image - if so, deactivate the existing one
         if (imageCategory.isHeroImage()) {
-            if (hotelImageRepository.existsByTenantIdAndHotelIdAndRoomTypeIdIsNullAndImageCategoryAndIsActiveTrue(
-                    tenantId, hotelId, imageCategory)) {
-                throw new IllegalStateException("Hotel already has a hero image");
+            Optional<HotelImage> existingHeroImage = hotelImageRepository.findByTenantIdAndHotelIdAndImageCategoryAndIsActiveTrue(
+                    tenantId, hotelId, imageCategory);
+            if (existingHeroImage.isPresent()) {
+                System.out.println("Found existing hero image for hotel " + hotelId + ", deactivating it");
+                // Deactivate existing hero image
+                HotelImage heroImage = existingHeroImage.get();
+                heroImage.setIsActive(false);
+                hotelImageRepository.save(heroImage);
             }
         }
 
@@ -113,11 +123,16 @@ public class HotelImageService {
         validateImageCategory(imageCategory, false);
         validateFile(file);
 
-        // Check if room type already has a hero image (only one allowed)
+        // Check if room type already has a hero image - if so, deactivate the existing one
         if (imageCategory.isHeroImage()) {
-            if (hotelImageRepository.existsByTenantIdAndHotelIdAndRoomTypeIdAndImageCategoryAndIsActiveTrue(
-                    tenantId, hotelId, roomTypeId, imageCategory)) {
-                throw new IllegalStateException("Room type already has a hero image");
+            Optional<HotelImage> existingHeroImage = hotelImageRepository.findByTenantIdAndHotelIdAndRoomTypeIdAndImageCategoryAndIsActiveTrue(
+                    tenantId, hotelId, roomTypeId, imageCategory);
+            if (existingHeroImage.isPresent()) {
+                System.out.println("Found existing hero image for room type " + roomTypeId + " in hotel " + hotelId + ", deactivating it");
+                // Deactivate existing hero image
+                HotelImage heroImage = existingHeroImage.get();
+                heroImage.setIsActive(false);
+                hotelImageRepository.save(heroImage);
             }
         }
 
