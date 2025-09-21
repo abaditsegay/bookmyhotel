@@ -182,9 +182,10 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
                     textTransform: 'none',
                     width: { xs: '100%', sm: 'auto' }, // Full width on mobile
                     maxWidth: { xs: '300px', sm: 'none' }, // Limit max width on mobile
-                    background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+                    backgroundColor: 'primary.main',
+                    color: 'primary.contrastText',
                     '&:hover': {
-                      background: 'linear-gradient(45deg, #1976D2 30%, #1BA3D3 90%)',
+                      backgroundColor: 'primary.dark',
                     },
                   }}
                 >

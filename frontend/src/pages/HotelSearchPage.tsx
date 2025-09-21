@@ -56,7 +56,7 @@ const HotelSearchPage: React.FC = () => {
 
   return (
     <Box sx={{ 
-      backgroundColor: '#f8fafc',
+      backgroundColor: 'background.default',
       minHeight: 'calc(100vh - 64px)', // Account for navbar
       py: { xs: 2, sm: 3, md: 4 }, // Progressive padding for different screen sizes
       px: { xs: 1, sm: 2, md: 3 }, // Ensure proper side margins on all devices
@@ -139,11 +139,10 @@ const HotelSearchPage: React.FC = () => {
           <Card 
             elevation={1}
             sx={{ 
-              border: '1px solid rgba(224, 224, 224, 0.2)',
               borderRadius: 3,
               display: 'flex',
               flexDirection: 'column',
-              background: 'linear-gradient(135deg, #fafafa 0%, #ffffff 100%)',
+              backgroundColor: 'background.paper',
               width: '100%', // Ensure full width usage
               overflow: 'hidden', // Prevent content overflow
             }}
@@ -178,9 +177,8 @@ const HotelSearchPage: React.FC = () => {
                 sx={{ 
                   p: { xs: 3, sm: 4 }, // Responsive padding
                   textAlign: 'center',
-                  backgroundColor: '#e3f2fd',
-                  border: '1px solid #bbdefb',
-                  color: 'text.primary',
+                  backgroundColor: 'info.main',
+                  color: 'info.contrastText',
                   borderRadius: 3,
                   transition: 'all 0.3s ease',
                   width: '100%',
@@ -188,7 +186,7 @@ const HotelSearchPage: React.FC = () => {
                   '&:hover': {
                     transform: { xs: 'none', md: 'translateY(-2px)' }, // Disable transform on mobile
                     boxShadow: 2,
-                    backgroundColor: '#d1ecf1',
+                    backgroundColor: 'info.dark',
                   }
                 }}
               >
@@ -207,7 +205,6 @@ const HotelSearchPage: React.FC = () => {
                   variant="body1" 
                   sx={{ 
                     mb: 3, 
-                    color: 'text.secondary',
                     fontSize: { xs: '0.95rem', sm: '1rem', md: '1.1rem' }, // Responsive text
                     px: { xs: 1, sm: 2 } // Add padding on mobile for better readability
                   }}
@@ -226,12 +223,12 @@ const HotelSearchPage: React.FC = () => {
                     px: { xs: 3, sm: 4 }, // Responsive button padding
                     py: 1.5,
                     fontSize: { xs: '1rem', sm: '1.1rem' }, // Responsive font size
-                    backgroundColor: '#4caf50',
-                    color: 'white',
+                    backgroundColor: 'success.main',
+                    color: 'success.contrastText',
                     width: { xs: '100%', sm: 'auto' }, // Full width on mobile
                     maxWidth: { xs: '280px', sm: 'none' }, // Limit max width on mobile
                     '&:hover': {
-                      backgroundColor: '#45a049',
+                      backgroundColor: 'success.dark',
                       transform: { xs: 'none', md: 'scale(1.05)' }, // Disable scale on mobile
                     }
                   }}
