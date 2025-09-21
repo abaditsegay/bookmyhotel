@@ -383,7 +383,7 @@ public class HotelImageService {
             System.out.println("📦 Using UUID filename: " + filename);
         }
 
-        String finalKey = prefix + category.getCode() + "/" + filename;
+        String finalKey = prefix + filename;
         System.out.println("🗝️ Final S3 key: " + finalKey);
         return finalKey;
     }

@@ -62,14 +62,14 @@ public class AwsS3Config {
      * Generate S3 key prefix for hotel images
      */
     public String getHotelImagePrefix(String tenantId, Long hotelId) {
-        return String.format("hotels/%s/%d/", tenantId, hotelId);
+        return String.format("tenants/%s/hotels/%d/", tenantId, hotelId);
     }
 
     /**
      * Generate S3 key prefix for room type images
-     * Room type images are stored within the hotel directory but not in room-type-id subdirectories
+     * Room type images are stored within the hotel directory in room-types subfolder
      */
     public String getRoomTypeImagePrefix(String tenantId, Long hotelId, Long roomTypeId) {
-        return String.format("hotels/%s/%d/room-types/", tenantId, hotelId);
+        return String.format("tenants/%s/hotels/%d/room-types/", tenantId, hotelId);
     }
 }
