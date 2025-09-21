@@ -23,6 +23,7 @@ import {
   Person as PersonIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
+import ThemeToggle from '../components/common/ThemeToggle';
 
 const ProfilePage: React.FC = () => {
   const { user, updateProfile, changePassword } = useAuth();
@@ -381,6 +382,28 @@ const ProfilePage: React.FC = () => {
               <Typography variant="body1" color="success.main">
                 Active
               </Typography>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+
+      {/* Preferences Card */}
+      <Card sx={{ mt: 3 }}>
+        <CardContent sx={{ p: 3 }}>
+          <Typography variant="h6" gutterBottom>
+            Preferences
+          </Typography>
+          <Grid container spacing={3}>
+            <Grid item xs={12} sm={6}>
+              <Typography variant="body2" color="text.secondary" gutterBottom>
+                Theme Mode
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <ThemeToggle variant="menu" size="medium" />
+                <Typography variant="body2" color="text.secondary">
+                  Choose between light and dark themes
+                </Typography>
+              </Box>
             </Grid>
           </Grid>
         </CardContent>

@@ -118,6 +118,7 @@ public class SecurityConfig {
                 "Authorization",
                 "Content-Type",
                 "X-Tenant-ID",
+                "X-Hotel-ID",
                 "X-Requested-With",
                 "Accept",
                 "Origin",
@@ -125,7 +126,7 @@ public class SecurityConfig {
                 "Pragma",
                 "Expires"));
         configuration.setAllowCredentials(true);
-        configuration.setExposedHeaders(Arrays.asList("Authorization", "X-Tenant-ID", "Content-Type"));
+        configuration.setExposedHeaders(Arrays.asList("Authorization", "X-Tenant-ID", "X-Hotel-ID", "Content-Type"));
         configuration.setMaxAge(3600L); // Cache preflight for 1 hour
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

@@ -2,7 +2,7 @@
  * Synchronization Service for syncing offline bookings with the server when connectivity is restored
  */
 
-import { buildApiUrl } from '../config/apiConfig';
+import { buildApiUrl, API_ENDPOINTS } from '../config/apiConfig';
 import { offlineStorage } from './OfflineStorageService';
 
 interface SyncResult {
@@ -24,6 +24,7 @@ class SyncManager {
   private async syncSingleBooking(booking: any, token: string) {
     try {
       const walkInBookingRequest = {
+        hotelId: booking.hotelId,
         guestName: booking.guestName,
         guestEmail: booking.guestEmail,
         guestPhone: booking.guestPhone,
@@ -31,14 +32,12 @@ class SyncManager {
         roomId: booking.roomId,
         checkInDate: booking.checkInDate,
         checkOutDate: booking.checkOutDate,
-        numberOfGuests: booking.numberOfGuests,
-        totalAmount: booking.totalAmount,
-        pricePerNight: booking.pricePerNight,
-        paymentMethod: booking.paymentMethod,
+        guests: booking.numberOfGuests,
+        paymentMethodId: booking.paymentMethod === 'CASH' ? 'pay_at_frontdesk' : booking.paymentMethod,
         specialRequests: booking.specialRequests
       };
 
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/walk-in-bookings`, {
+      const response = await fetch(buildApiUrl(API_ENDPOINTS.BOOKINGS.WALK_IN), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -49,32 +48,17 @@ class SyncManager {
       });
 
       if (response.ok) {
-        const updatedBooking = {
-          ...booking,
-          status: 'SYNCED' as const
-        };
-        await offlineStorage.saveOfflineBooking(updatedBooking);
+        await offlineStorage.updateBookingStatus(booking.id, 'SYNCED');
         return { success: true };
       } else {
         const errorText = await response.text();
-        const failedBooking = {
-          ...booking,
-          status: 'SYNC_FAILED' as const,
-          syncAttempts: (booking.syncAttempts || 0) + 1,
-          errorMessage: `HTTP ${response.status}: ${errorText}`
-        };
-        await offlineStorage.saveOfflineBooking(failedBooking);
+        await offlineStorage.updateBookingStatus(booking.id, 'SYNC_FAILED', `HTTP ${response.status}: ${errorText}`);
         return { success: false, error: errorText };
       }
     } catch (error) {
-      const failedBooking = {
-        ...booking,
-        status: 'SYNC_FAILED' as const,
-        syncAttempts: (booking.syncAttempts || 0) + 1,
-        errorMessage: error instanceof Error ? error.message : 'Unknown error'
-      };
-      await offlineStorage.saveOfflineBooking(failedBooking);
-      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      await offlineStorage.updateBookingStatus(booking.id, 'SYNC_FAILED', errorMessage);
+      return { success: false, error: errorMessage };
     }
   }
 
@@ -164,6 +148,14 @@ class SyncManager {
     const syncedBookings = bookings.filter(b => b.status === 'SYNCED');
     const failedBookings = bookings.filter(b => b.status === 'SYNC_FAILED');
     
+    // Debug logging to understand the issue
+    console.debug(`📊 Sync Status Debug:
+- Total bookings: ${bookings.length}
+- Pending: ${pendingCount}
+- Synced: ${syncedBookings.length}  
+- Failed: ${failedBookings.length}
+- Failed booking IDs: [${failedBookings.map(b => b.id).join(', ')}]`);
+    
     return {
       isSyncing: this.issyncing,
       pendingCount,
@@ -183,6 +175,8 @@ class SyncManager {
     const failedBookings = await offlineStorage.getOfflineBookings();
     const toRetry = failedBookings.filter(b => b.status === 'SYNC_FAILED');
     
+    console.log(`🔄 Retrying ${toRetry.length} failed bookings`);
+    
     const results = {
       success: true,
       syncedCount: 0,
@@ -195,34 +189,39 @@ class SyncManager {
 
     for (const booking of toRetry) {
       try {
-        // Reset sync attempts and try again
-        const updatedBooking = {
-          ...booking,
-          status: 'PENDING_SYNC' as const,
-          syncAttempts: 0,
-          errorMessage: undefined
-        };
-        await offlineStorage.saveOfflineBooking(updatedBooking);
+        console.log(`🔄 Retrying booking ${booking.id}...`);
         
+        // First, reset the booking status to PENDING_SYNC
+        await offlineStorage.updateBookingStatus(booking.id, 'PENDING_SYNC');
+        
+        // Now attempt to sync (this will either mark as SYNCED or SYNC_FAILED)
         const response = await this.syncSingleBooking(booking, token);
         if (response.success) {
           results.syncedCount++;
+          console.log(`✅ Successfully synced booking ${booking.id} on retry`);
         } else {
           results.failedCount++;
           results.errors.push({
             bookingId: booking.id,
             error: response.error || 'Unknown error'
           });
+          console.log(`❌ Booking ${booking.id} failed again: ${response.error}`);
         }
       } catch (error) {
         results.failedCount++;
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         results.errors.push({
           bookingId: booking.id,
-          error: `Failed to sync booking ${booking.id}: ${error}`
+          error: `Failed to sync booking ${booking.id}: ${errorMessage}`
         });
+        console.error(`❌ Exception during retry of booking ${booking.id}:`, error);
+        
+        // Mark booking as failed with error details
+        await offlineStorage.updateBookingStatus(booking.id, 'SYNC_FAILED', errorMessage);
       }
     }
 
+    console.log(`🔄 Retry completed: ${results.syncedCount} synced, ${results.failedCount} still failed`);
     return results;
   }
 

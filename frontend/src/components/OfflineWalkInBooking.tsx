@@ -430,20 +430,23 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                             label={room.roomType} 
                             size="small" 
                             sx={{
-                              backgroundColor: selectedRoom?.id === room.id ? 'rgba(255,255,255,0.2)' : 'inherit',
-                              color: selectedRoom?.id === room.id ? 'white' : 'inherit'
+                              backgroundColor: selectedRoom?.id === room.id ? 'primary.contrastText' : 'inherit',
+                              color: selectedRoom?.id === room.id ? 'primary.main' : 'inherit',
+                              opacity: selectedRoom?.id === room.id ? 0.8 : 1
                             }}
                           />
                         </Box>
                         <Typography variant="body2" sx={{ 
-                          color: selectedRoom?.id === room.id ? 'rgba(255,255,255,0.9)' : 'text.secondary',
+                          color: selectedRoom?.id === room.id ? 'primary.contrastText' : 'text.secondary',
+                          opacity: selectedRoom?.id === room.id ? 0.9 : 1,
                           mb: 1
                         }}>
                           Capacity: {room.capacity} guest{room.capacity !== 1 ? 's' : ''}
                         </Typography>
                         {room.description && (
                           <Typography variant="body2" sx={{ 
-                            color: selectedRoom?.id === room.id ? 'rgba(255,255,255,0.8)' : 'text.secondary',
+                            color: selectedRoom?.id === room.id ? 'primary.contrastText' : 'text.secondary',
+                            opacity: selectedRoom?.id === room.id ? 0.8 : 1,
                             mb: 1
                           }}>
                             {room.description}
@@ -728,64 +731,86 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
             (room.isAvailable !== false)
           );
           rooms = filteredRooms;
-          console.log(`🔍 Filtered ${filteredRooms.length} available rooms from ${rooms.length} total rooms`);
-        } else {
-          // Fallback to enhanced cached room availability check
-          console.log('💾 Using enhanced cached room availability data');
-          try {
-            if (resolvedHotelId) {
-              const availableCachedRooms = await offlineStorage.getAvailableRoomsForDateRange(
-                resolvedHotelId,
-                format(checkInDate, 'yyyy-MM-dd'),
-                format(checkOutDate, 'yyyy-MM-dd'),
-                guests
-              );
-              
-              // Convert CachedRoom[] to AvailableRoom[]
-              rooms = availableCachedRooms.map(room => ({
-                id: room.id,
-                roomNumber: room.roomNumber,
-                roomType: room.roomType,
-                pricePerNight: room.pricePerNight,
-                capacity: room.capacity,
-                description: room.description,
-                isAvailable: room.isAvailable
-              }));
-              
-              dataSource = 'enhanced-cached';
-              console.log(`� Enhanced cached availability: ${rooms.length} rooms available considering offline bookings`);
-            } else {
-              // Basic fallback
-              rooms = cachedRooms.filter(room => room.capacity >= guests);
-              dataSource = 'cached';
-            }
-          } catch (cacheError) {
-            console.error('Enhanced cache availability check failed:', cacheError);
-            // Final fallback to basic cached rooms
-            rooms = cachedRooms.filter(room => room.capacity >= guests);
-            dataSource = 'cached';
+          console.log(`🔍 API rooms: Filtered ${filteredRooms.length} available rooms from ${rooms.length} total rooms for ${guests} guests`);
+        } 
+        
+        // Always check enhanced cached room availability for additional/fallback rooms
+        console.log('💾 Checking enhanced cached room availability data...');
+        let cachedAvailableRooms: AvailableRoom[] = [];
+        try {
+          if (resolvedHotelId) {
+            const availableCachedRooms = await offlineStorage.getAvailableRoomsForDateRange(
+              resolvedHotelId,
+              format(checkInDate, 'yyyy-MM-dd'),
+              format(checkOutDate, 'yyyy-MM-dd'),
+              guests
+            );
+            
+            // Convert CachedRoom[] to AvailableRoom[]
+            cachedAvailableRooms = availableCachedRooms.map(room => ({
+              id: room.id,
+              roomNumber: room.roomNumber,
+              roomType: room.roomType,
+              pricePerNight: room.pricePerNight,
+              capacity: room.capacity,
+              description: room.description,
+              isAvailable: room.isAvailable
+            }));
+            
+            console.log(`📊 Enhanced cached availability: ${cachedAvailableRooms.length} rooms available considering offline bookings`);
           }
-          
-          // If we still have no rooms, try to refresh the cache
-          if (rooms.length === 0 && resolvedHotelId && navigator.onLine) {
-            console.log('🔄 No cached rooms found, attempting to fetch and cache fresh data...');
-            try {
-              const freshRooms = await roomCacheService.fetchAndCacheRooms(resolvedHotelId);
-              const availableRooms = freshRooms.filter(room => room.capacity >= guests);
-              rooms = availableRooms.map(room => ({
-                id: room.id,
-                roomNumber: room.roomNumber,
-                roomType: room.roomType,
-                pricePerNight: room.pricePerNight,
-                capacity: room.capacity,
-                description: room.description,
-                isAvailable: room.isAvailable
-              }));
-              dataSource = 'fresh-cache';
-              console.log(`✨ Fresh cache: ${rooms.length} rooms available after refreshing cache`);
-            } catch (refreshError) {
-              console.error('Failed to refresh room cache:', refreshError);
-            }
+        } catch (cacheError) {
+          console.error('Enhanced cache availability check failed:', cacheError);
+          // Final fallback to basic cached rooms
+          cachedAvailableRooms = cachedRooms.filter(room => 
+            room.capacity >= guests && room.isAvailable
+          ).map(room => ({
+            id: room.id,
+            roomNumber: room.roomNumber,
+            roomType: room.roomType,
+            pricePerNight: room.pricePerNight,
+            capacity: room.capacity,
+            description: room.description,
+            isAvailable: room.isAvailable
+          }));
+          console.log(`📦 Basic cached fallback: ${cachedAvailableRooms.length} rooms`);
+        }
+
+        // If API returned no rooms, use cached rooms as primary source
+        if (rooms.length === 0 && cachedAvailableRooms.length > 0) {
+          rooms = cachedAvailableRooms;
+          dataSource = 'enhanced-cached';
+          console.log(`🔄 Using cached rooms as primary source: ${rooms.length} rooms`);
+        } else if (rooms.length > 0 && cachedAvailableRooms.length > 0) {
+          // Both API and cache have rooms - prefer API but log difference
+          const apiRoomIds = new Set(rooms.map(r => r.id));
+          const cachedOnlyRooms = cachedAvailableRooms.filter(r => !apiRoomIds.has(r.id));
+          if (cachedOnlyRooms.length > 0) {
+            console.log(`⚠️ Cache has ${cachedOnlyRooms.length} additional rooms not in API response`);
+          }
+        }
+        
+        // If we still have no rooms and we're online, try to refresh the cache
+        if (rooms.length === 0 && resolvedHotelId && navigator.onLine) {
+          console.log('🔄 No rooms found anywhere, attempting to fetch and cache fresh data...');
+          try {
+            const freshRooms = await roomCacheService.fetchAndCacheRooms(resolvedHotelId);
+            const availableRooms = freshRooms.filter(room => 
+              room.capacity >= guests && room.isAvailable
+            );
+            rooms = availableRooms.map(room => ({
+              id: room.id,
+              roomNumber: room.roomNumber,
+              roomType: room.roomType,
+              pricePerNight: room.pricePerNight,
+              capacity: room.capacity,
+              description: room.description,
+              isAvailable: room.isAvailable
+            }));
+            dataSource = 'fresh-cache';
+            console.log(`✨ Fresh cache: ${rooms.length} rooms available after refreshing cache`);
+          } catch (refreshError) {
+            console.error('Failed to refresh room cache:', refreshError);
           }
         }
         
@@ -796,11 +821,29 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
 - Data Source: ${dataSource.toUpperCase()}
 - Available Rooms: ${rooms.length}
 - Guest Capacity: >= ${guests} guests
-- Date Range: ${format(checkInDate, 'yyyy-MM-dd')} to ${format(checkOutDate, 'yyyy-MM-dd')}`);
+- Date Range: ${format(checkInDate, 'yyyy-MM-dd')} to ${format(checkOutDate, 'yyyy-MM-dd')}
+- Hotel ID: ${resolvedHotelId}
+- Online Status: ${navigator.onLine}
+- Cached Rooms Total: ${cachedRooms.length}`);
         
-        if (dataSource === 'api') {
-          setSuccess(`✅ Loaded ${rooms.length} rooms from live hotel data`);
-          setTimeout(() => setSuccess(null), 4000);
+        if (rooms.length === 0) {
+          console.error(`❌ No rooms available for booking:
+- Requested guests: ${guests}
+- Check-in: ${format(checkInDate, 'yyyy-MM-dd')}
+- Check-out: ${format(checkOutDate, 'yyyy-MM-dd')}
+- Hotel ID: ${resolvedHotelId}
+- Data source: ${dataSource}
+- Total cached rooms: ${cachedRooms.length}
+- Cached rooms with sufficient capacity: ${cachedRooms.filter(r => r.capacity >= guests).length}
+- Available cached rooms: ${cachedRooms.filter(r => r.isAvailable).length}`);
+          
+          setError(`No rooms available for ${guests} guest${guests > 1 ? 's' : ''} from ${format(checkInDate, 'MMM dd')} to ${format(checkOutDate, 'MMM dd')}. Please try different dates or reduce the number of guests.`);
+        } else {
+          setError(null);
+          if (dataSource === 'api') {
+            setSuccess(`✅ Loaded ${rooms.length} rooms from live hotel data`);
+            setTimeout(() => setSuccess(null), 4000);
+          }
         }
         
       } catch (error) {
@@ -1010,8 +1053,8 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
     <Paper sx={{ 
       p: 3, 
       minHeight: '70vh',
-      backgroundColor: '#f5f5f5', // Light gray background to indicate offline mode
-      border: '2px solid #e0e0e0' // Subtle border to enhance the offline visual distinction
+      backgroundColor: (theme) => theme.palette.mode === 'dark' ? theme.palette.grey[900] : '#f5f5f5', // Theme-aware background for offline mode
+      border: (theme) => `2px solid ${theme.palette.mode === 'dark' ? theme.palette.grey[700] : '#e0e0e0'}` // Theme-aware border
     }}>
       {/* Header with Status */}
       <Box sx={{ mb: 3 }}>
@@ -1020,10 +1063,10 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
           severity="warning" 
           sx={{ 
             mb: 2, 
-            backgroundColor: '#fff3e0',
-            border: '1px solid #ff9800',
+            backgroundColor: (theme) => theme.palette.mode === 'dark' ? theme.palette.warning.dark : '#fff3e0',
+            border: (theme) => `1px solid ${theme.palette.warning.main}`,
             '& .MuiAlert-icon': {
-              color: '#ff9800'
+              color: (theme) => theme.palette.warning.main
             }
           }}
           icon={<CloudOffIcon />}
@@ -1035,10 +1078,10 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
               size="small"
               sx={{ 
                 fontWeight: 'bold',
-                backgroundColor: '#ff9800',
-                color: 'white',
+                backgroundColor: (theme) => theme.palette.warning.main,
+                color: (theme) => theme.palette.warning.contrastText,
                 '& .MuiChip-icon': {
-                  color: 'white'
+                  color: (theme) => theme.palette.warning.contrastText
                 }
               }}
             />

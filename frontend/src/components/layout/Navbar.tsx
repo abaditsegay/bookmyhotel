@@ -34,6 +34,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { themeConstants } from '../../theme/theme';
 import { useNotifications } from '../../hooks/useNotifications';
 import NetworkStatusIndicator from '../NetworkStatusIndicator';
+import ThemeToggle from '../common/ThemeToggle';
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
@@ -512,6 +513,9 @@ const Navbar: React.FC = () => {
                   }}
                 />
                 
+                {/* Theme Toggle */}
+                <ThemeToggle variant="icon" size="small" />
+                
                 {/* Network Status Indicator - Only for staff/admin roles */}
                 {user.roles && user.roles.some(role => ['HOTEL_ADMIN', 'ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'MAINTENANCE', 'OPERATIONS_SUPERVISOR', 'SYSTEM_ADMIN'].includes(role)) && (
                   <NetworkStatusIndicator 
@@ -529,6 +533,9 @@ const Navbar: React.FC = () => {
             ) : (
               /* Guest Actions */
               <>
+                {/* Theme Toggle for guests */}
+                <ThemeToggle variant="icon" size="small" />
+                
                 {!isMobile && (
                   <>
                     <Button

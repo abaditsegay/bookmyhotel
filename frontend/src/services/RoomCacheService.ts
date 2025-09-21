@@ -206,6 +206,29 @@ export class RoomCacheService {
     console.log(`🗑️ Cleared room cache${hotelId ? ` for hotel ${hotelId}` : ''}`);
   }
 
+  /**
+   * Invalidate cache and force refresh for a specific hotel
+   * Use this when rooms are modified to ensure consistency
+   */
+  async invalidateAndRefresh(hotelId: number): Promise<CachedRoom[]> {
+    try {
+      console.log(`🔄 Invalidating and refreshing cache for hotel ${hotelId}`);
+      await this.clearCache(hotelId);
+      
+      if (navigator.onLine) {
+        const freshRooms = await this.fetchAndCacheRooms(hotelId);
+        console.log(`✅ Cache refreshed: ${freshRooms.length} rooms loaded`);
+        return freshRooms;
+      } else {
+        console.log('📶 Offline - cache cleared but cannot refresh');
+        return [];
+      }
+    } catch (error) {
+      console.error('Failed to invalidate and refresh cache:', error);
+      return [];
+    }
+  }
+
   // Utility method to get available room types for a hotel
   async getAvailableRoomTypes(hotelId: number): Promise<string[]> {
     // Ensure database is initialized first

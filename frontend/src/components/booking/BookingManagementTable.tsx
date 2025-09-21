@@ -116,6 +116,8 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
   const [checkoutReceipt, setCheckoutReceipt] = useState<CheckoutResponse | null>(null);
   const [checkInDialogOpen, setCheckInDialogOpen] = useState(false);
   const [bookingForCheckIn, setBookingForCheckIn] = useState<Booking | null>(null);
+  const [checkoutConfirmOpen, setCheckoutConfirmOpen] = useState(false);
+  const [bookingForCheckout, setBookingForCheckout] = useState<Booking | null>(null);
 
   // Debug dialog state
   useEffect(() => {
@@ -707,7 +709,8 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                                     size="small" 
                                     color="warning"
                                     onClick={() => {
-                                      handleBookingAction(booking, 'check-out');
+                                      setBookingForCheckout(booking);
+                                      setCheckoutConfirmOpen(true);
                                     }}
                                   >
                                     <CheckOutIcon />
@@ -817,6 +820,42 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
         onCheckInSuccess={handleCheckInSuccess}
         mode={mode} // Pass the current mode to CheckInDialog
       />
+
+      {/* Checkout Confirmation Dialog */}
+      <Dialog
+        open={checkoutConfirmOpen}
+        onClose={() => setCheckoutConfirmOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Confirm Guest Checkout</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to check out <strong>{bookingForCheckout?.guestName}</strong> from room <strong>{bookingForCheckout?.roomNumber}</strong>?
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            This will mark the guest as checked out and generate a final receipt.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCheckoutConfirmOpen(false)} color="inherit">
+            Cancel
+          </Button>
+          <Button 
+            onClick={() => {
+              if (bookingForCheckout) {
+                handleBookingAction(bookingForCheckout, 'check-out');
+              }
+              setCheckoutConfirmOpen(false);
+              setBookingForCheckout(null);
+            }}
+            color="warning"
+            variant="contained"
+          >
+            Check Out
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Debug button removed - was causing overlay issue in navbar */}
 

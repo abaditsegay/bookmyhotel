@@ -47,7 +47,8 @@ public class CheckoutReceiptController {
     public ResponseEntity<ConsolidatedReceiptResponse> generateReceiptPreview(
             @PathVariable Long reservationId) {
         try {
-            ConsolidatedReceiptResponse receipt = checkoutReceiptService.generateFinalReceipt(reservationId, "system");
+            ConsolidatedReceiptResponse receipt = checkoutReceiptService.generateCheckoutReceipt(reservationId,
+                    "system");
             return ResponseEntity.ok(receipt);
         } catch (Exception e) {
             return ResponseEntity.status(500).build();
@@ -59,7 +60,8 @@ public class CheckoutReceiptController {
             @PathVariable String tenantName,
             @PathVariable Long reservationId) {
         try {
-            ConsolidatedReceiptResponse receipt = checkoutReceiptService.generateFinalReceipt(reservationId, "system");
+            ConsolidatedReceiptResponse receipt = checkoutReceiptService.generateCheckoutReceipt(reservationId,
+                    "system");
             return ResponseEntity.ok(receipt);
         } catch (Exception e) {
             return ResponseEntity.status(500).build();

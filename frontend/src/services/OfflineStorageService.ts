@@ -977,11 +977,22 @@ export class OfflineStorageService {
       const roomStore = transaction.objectStore('cachedRooms');
       const bookingStore = transaction.objectStore('cachedBookings');
       
-      transaction.oncomplete = () => resolve(availableRooms);
-      transaction.onerror = () => reject(transaction.error);
-
       let availableRooms: CachedRoom[] = [];
+      let roomsProcessed = false;
+      let bookingsProcessed = false;
       const occupiedRoomIds = new Set<number>();
+
+      const checkComplete = () => {
+        if (roomsProcessed && bookingsProcessed) {
+          console.log(`🔍 OfflineStorage: Found ${availableRooms.length} available rooms for ${guestCount} guests from ${checkInDate} to ${checkOutDate}`);
+          resolve(availableRooms);
+        }
+      };
+
+      transaction.onerror = () => {
+        console.error('❌ OfflineStorage: Transaction error in getAvailableRoomsForDateRange:', transaction.error);
+        reject(transaction.error);
+      };
 
       // First, get all bookings that overlap with the requested date range
       const bookingIndex = bookingStore.index('hotelId');
@@ -989,39 +1000,68 @@ export class OfflineStorageService {
 
       bookingRequest.onsuccess = () => {
         const bookings = bookingRequest.result as CachedBooking[];
+        console.log(`📊 OfflineStorage: Checking ${bookings.length} cached bookings for conflicts`);
         
         // Find rooms occupied during the requested date range
         bookings.forEach(booking => {
           if (booking.status !== 'CANCELLED' && 
               this.datesOverlap(booking.checkInDate, booking.checkOutDate, checkInDate, checkOutDate)) {
             occupiedRoomIds.add(booking.roomId);
+            console.log(`🚫 OfflineStorage: Room ${booking.roomId} occupied by booking ${booking.id}`);
           }
         });
 
+        bookingsProcessed = true;
+        
         // Now get all rooms for the hotel
         const roomIndex = roomStore.index('hotelId');
         const roomRequest = roomIndex.getAll(hotelId);
 
         roomRequest.onsuccess = () => {
           const allRooms = roomRequest.result as CachedRoom[];
+          console.log(`🏨 OfflineStorage: Processing ${allRooms.length} total rooms for hotel ${hotelId}`);
           
           availableRooms = allRooms.filter(room => {
             // Room must have sufficient capacity
-            if (room.capacity < guestCount) return false;
+            if (room.capacity < guestCount) {
+              console.debug(`❌ Room ${room.roomNumber}: insufficient capacity (${room.capacity} < ${guestCount})`);
+              return false;
+            }
             
             // Room must not be occupied by cached bookings
-            if (occupiedRoomIds.has(room.id)) return false;
+            if (occupiedRoomIds.has(room.id)) {
+              console.log(`❌ Room ${room.roomNumber}: occupied by cached booking`);
+              return false;
+            }
             
             // Room must not be marked as offline occupied for overlapping dates
             if (room.offlineStatus === 'occupied' && room.occupiedFrom && room.occupiedTo) {
               if (this.datesOverlap(room.occupiedFrom, room.occupiedTo, checkInDate, checkOutDate)) {
+                console.log(`❌ Room ${room.roomNumber}: offline occupied from ${room.occupiedFrom} to ${room.occupiedTo}`);
                 return false;
               }
             }
             
-            return room.isAvailable;
+            if (!room.isAvailable) {
+              console.debug(`❌ Room ${room.roomNumber}: marked as unavailable`);
+              return false;
+            }
+            
+            console.debug(`✅ Room ${room.roomNumber}: available (capacity: ${room.capacity}, guests: ${guestCount})`);
+            return true;
           });
+
+          roomsProcessed = true;
+          checkComplete();
+        };        roomRequest.onerror = () => {
+          console.error('❌ OfflineStorage: Error loading rooms:', roomRequest.error);
+          reject(roomRequest.error);
         };
+      };
+
+      bookingRequest.onerror = () => {
+        console.error('❌ OfflineStorage: Error loading bookings:', bookingRequest.error);
+        reject(bookingRequest.error);
       };
     });
   }

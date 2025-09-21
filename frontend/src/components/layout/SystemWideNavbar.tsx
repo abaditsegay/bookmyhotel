@@ -22,6 +22,7 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import { useTenant } from '../../contexts/TenantContext';
 import { useNavigate } from 'react-router-dom';
+import ThemeToggle from '../common/ThemeToggle';
 
 /**
  * Navigation bar for system-wide users (CUSTOMER and ADMIN roles)
@@ -133,6 +134,9 @@ export const SystemWideNavbar: React.FC = () => {
             </Button>
           </Box>
         )}
+
+        {/* Theme Toggle */}
+        <ThemeToggle variant="icon" size="medium" />
 
         {/* User menu */}
         <div>
