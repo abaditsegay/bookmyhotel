@@ -196,8 +196,7 @@ const lightThemeBase = createTheme({
     MuiAppBar: {
       styleOverrides: {
         root: {
-          backgroundColor: '#ffffff',
-          color: '#000000',
+          // Don't override AppBar colors - let the component control its own colors
           boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
         },
       },

@@ -227,6 +227,7 @@ const Navbar: React.FC = () => {
             mx: 0.5,
             borderRadius: 2,
             fontSize: '0.8rem', // Smaller font size
+            color: 'white', // Force white text color
             backgroundColor: item.label === 'Shop' 
               ? 'red' 
               : item.path && isActivePath(item.path) 
@@ -236,6 +237,7 @@ const Navbar: React.FC = () => {
               backgroundColor: item.label === 'Shop' 
                 ? 'error.dark' 
                 : 'rgba(255, 255, 255, 0.1)',
+              color: 'white', // Maintain white color on hover
             },
             // Ensure proper stacking and boundaries
             position: 'relative',
