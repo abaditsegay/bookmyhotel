@@ -417,22 +417,23 @@ const Navbar: React.FC = () => {
           }}
           disableGutters={false}
         >
-          {/* Left Section: Theme Toggle + Mobile Menu + Logo */}
+          {/* Left Section: Mobile Menu + Theme Toggle + Logo */}
           <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
-            {/* Theme Toggle - Leftmost position */}
-            <ThemeToggle variant="icon" size="small" />
-            
+            {/* Mobile Menu - Leftmost position on mobile */}
             {isMobile && (
               <IconButton
                 edge="start"
                 color="inherit"
                 aria-label="menu"
                 onClick={toggleMobileDrawer}
-                sx={{ ml: 1, mr: 1 }}
+                sx={{ mr: 1 }}
               >
                 <MenuIcon />
               </IconButton>
             )}
+            
+            {/* Theme Toggle - After mobile menu */}
+            <ThemeToggle variant="icon" size="small" />
             
             {/* Logo */}
             <Box 
@@ -442,7 +443,7 @@ const Navbar: React.FC = () => {
                 cursor: 'pointer',
                 '&:hover': { opacity: 0.9 },
                 height: 'auto', // Let container size naturally
-                ml: isMobile ? 0 : 1, // Add margin when not mobile
+                ml: 1, // Add consistent margin
               }}
               onClick={() => handleNavigation('/')}
             >
