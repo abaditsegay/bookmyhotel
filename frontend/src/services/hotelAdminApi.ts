@@ -94,6 +94,31 @@ export interface RoomUpdateRequest {
   description?: string;
 }
 
+// Hotel Image Management Interfaces
+export interface HotelImageUploadRequest {
+  roomType?: string; // Optional for hotel general images
+  heroImage?: File;
+  heroAltText?: string;
+  isHotelGeneral?: boolean; // For hotel-wide images (lobby, exterior, etc.)
+}
+
+export interface HotelImageResponse {
+  id: number;
+  tenantId: string;
+  hotelId: number;
+  roomTypeId?: number;
+  roomTypeName?: string;
+  imageCategory: string;
+  s3Key: string;
+  s3Url: string;
+  fileName: string;
+  altText?: string;
+  displayOrder: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // Staff interfaces
 export interface StaffResponse {
   id: number;
@@ -1085,6 +1110,112 @@ export const hotelAdminApi = {
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to create walk-in booking' 
+      };
+    }
+  },
+
+  // Hotel Image Management API methods
+  // Fetch existing hotel images by room type
+  getHotelImages: async (
+    token: string,
+    roomType?: string
+  ): Promise<{ success: boolean; data?: HotelImageResponse[]; message?: string }> => {
+    try {
+      const queryParams = roomType ? `?roomType=${encodeURIComponent(roomType)}` : '';
+      const response = await fetch(`${API_BASE_URL}/hotel-admin/images${queryParams}`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to fetch hotel images');
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      console.error('Hotel images fetch error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to fetch hotel images' 
+      };
+    }
+  },
+
+  // Upload hotel images for a specific room type or hotel general
+  uploadHotelImages: async (
+    token: string,
+    imageData: HotelImageUploadRequest
+  ): Promise<{ success: boolean; data?: HotelImageResponse[]; message?: string }> => {
+    try {
+      const formData = new FormData();
+      
+      // Add room type (if not hotel general)
+      if (imageData.roomType) {
+        formData.append('roomType', imageData.roomType);
+      }
+      
+      // Add hotel general flag
+      if (imageData.isHotelGeneral) {
+        formData.append('isHotelGeneral', 'true');
+      }
+      
+      // Add hero image and alt text
+      if (imageData.heroImage) {
+        formData.append('heroImage', imageData.heroImage);
+        if (imageData.heroAltText) {
+          formData.append('heroAltText', imageData.heroAltText);
+        }
+      }
+
+      const response = await fetch(`${API_BASE_URL}/hotel-admin/images/upload`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          // Don't set Content-Type - let browser set it with boundary for multipart
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to upload hotel images');
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      console.error('Hotel images upload error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to upload hotel images' 
+      };
+    }
+  },
+
+  // Delete a hotel image
+  deleteHotelImage: async (
+    token: string,
+    imageId: number
+  ): Promise<{ success: boolean; message?: string }> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/hotel-admin/images/${imageId}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to delete hotel image');
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error('Hotel image deletion error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to delete hotel image' 
       };
     }
   },

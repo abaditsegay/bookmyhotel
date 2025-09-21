@@ -23,15 +23,20 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.bookmyhotel.config.CacheConfig;
 import com.bookmyhotel.dto.BookingModificationRequest;
 import com.bookmyhotel.dto.BookingModificationResponse;
 import com.bookmyhotel.dto.BookingResponse;
 import com.bookmyhotel.dto.HotelDTO;
+import com.bookmyhotel.dto.HotelImageDTO;
+import com.bookmyhotel.dto.RoomCreationRequest;
+import com.bookmyhotel.dto.RoomCreationResponse;
 import com.bookmyhotel.dto.RoomDTO;
 import com.bookmyhotel.dto.UserDTO;
 import com.bookmyhotel.entity.Hotel;
+import com.bookmyhotel.entity.HotelImage;
 import com.bookmyhotel.entity.Reservation;
 import com.bookmyhotel.entity.ReservationStatus;
 import com.bookmyhotel.entity.Room;
@@ -39,10 +44,12 @@ import com.bookmyhotel.entity.RoomStatus;
 import com.bookmyhotel.entity.RoomType;
 import com.bookmyhotel.entity.User;
 import com.bookmyhotel.entity.UserRole;
+import com.bookmyhotel.enums.ImageCategory;
 import com.bookmyhotel.repository.HotelRepository;
 import com.bookmyhotel.repository.ReservationRepository;
 import com.bookmyhotel.repository.RoomRepository;
 import com.bookmyhotel.repository.UserRepository;
+import com.bookmyhotel.tenant.TenantContext;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -84,6 +91,9 @@ public class HotelAdminService {
 
     @Autowired
     private BookingStatusUpdateService bookingStatusUpdateService;
+
+    @Autowired
+    private HotelImageService hotelImageService;
 
     /**
      * Get the hotel for the logged-in hotel admin
@@ -441,6 +451,83 @@ public class HotelAdminService {
 
         Room saved = roomRepository.save(newRoom);
         return convertToRoomDTO(saved);
+    }
+
+    /**
+     * Add a new room with image uploads
+     */
+    @Caching(evict = {
+            @CacheEvict(value = CacheConfig.ROOMS_BY_HOTEL_CACHE, allEntries = true),
+            @CacheEvict(value = CacheConfig.ROOM_TYPES_CACHE, allEntries = true),
+            @CacheEvict(value = CacheConfig.AVAILABLE_ROOMS_CACHE, allEntries = true)
+    })
+    public RoomCreationResponse addRoomWithImages(RoomCreationRequest request, String adminEmail) {
+        try {
+            // First create the room
+            RoomDTO roomDTO = addRoom(request.toRoomDTO(), adminEmail);
+
+            List<HotelImageDTO> uploadedImages = new ArrayList<>();
+
+            // Upload hero image if provided
+            if (request.hasHeroImage()) {
+                try {
+                    HotelImage heroImageEntity = hotelImageService.uploadRoomTypeImage(
+                            TenantContext.getTenantId(),
+                            roomDTO.getHotelId(),
+                            getRoomTypeId(request.getRoomType()),
+                            ImageCategory.ROOM_TYPE_HERO,
+                            request.getHeroImage(),
+                            request.getHeroImageAltText(),
+                            0 // Hero image always has display order 0
+                    );
+                    uploadedImages.add(convertToImageDTO(heroImageEntity));
+                } catch (Exception e) {
+                    // Log error but continue with room creation
+                    System.err.println("Failed to upload hero image: " + e.getMessage());
+                }
+            }
+
+            // Upload gallery images if provided
+            if (request.hasGalleryImages()) {
+                List<MultipartFile> galleryImages = request.getGalleryImages();
+                List<String> altTexts = request.getGalleryImageAltTexts();
+
+                for (int i = 0; i < galleryImages.size(); i++) {
+                    MultipartFile galleryImage = galleryImages.get(i);
+                    if (galleryImage != null && !galleryImage.isEmpty()) {
+                        try {
+                            String altText = (altTexts != null && i < altTexts.size())
+                                    ? altTexts.get(i)
+                                    : null;
+
+                            HotelImage galleryImageEntity = hotelImageService.uploadRoomTypeImage(
+                                    TenantContext.getTenantId(),
+                                    roomDTO.getHotelId(),
+                                    getRoomTypeId(request.getRoomType()),
+                                    ImageCategory.ROOM_TYPE_GALLERY,
+                                    galleryImage,
+                                    altText,
+                                    i + 1 // Gallery images start from display order 1
+                            );
+                            uploadedImages.add(convertToImageDTO(galleryImageEntity));
+                        } catch (Exception e) {
+                            // Log error but continue with other images
+                            System.err.println("Failed to upload gallery image " + (i + 1) + ": " + e.getMessage());
+                        }
+                    }
+                }
+            }
+
+            // Return success response
+            String message = uploadedImages.isEmpty()
+                    ? "Room created successfully (no images uploaded)"
+                    : String.format("Room created successfully with %d image(s) uploaded", uploadedImages.size());
+
+            return RoomCreationResponse.success(roomDTO, uploadedImages, message);
+
+        } catch (Exception e) {
+            return RoomCreationResponse.error("Failed to create room: " + e.getMessage());
+        }
     }
 
     /**
@@ -1199,5 +1286,45 @@ public class HotelAdminService {
                 .collect(Collectors.toList());
 
         return availableRooms;
+    }
+
+    /**
+     * Convert RoomType enum to a consistent Long ID for image storage
+     * Uses enum ordinal + 1 to avoid 0 and ensure consistency
+     */
+    private Long getRoomTypeId(RoomType roomType) {
+        if (roomType == null) {
+            return null;
+        }
+        return (long) (roomType.ordinal() + 1);
+    }
+
+    /**
+     * Convert HotelImage entity to HotelImageDTO
+     */
+    private HotelImageDTO convertToImageDTO(HotelImage image) {
+        if (image == null) {
+            return null;
+        }
+
+        HotelImageDTO dto = new HotelImageDTO();
+        dto.setId(image.getId());
+        dto.setTenantId(image.getTenantId());
+        dto.setHotelId(image.getHotelId());
+        dto.setRoomTypeId(image.getRoomTypeId());
+        dto.setImageCategory(image.getImageCategory());
+        dto.setFileName(image.getFileName());
+        dto.setFilePath(image.getFilePath());
+        dto.setDisplayOrder(image.getDisplayOrder());
+        dto.setAltText(image.getAltText());
+        dto.setFileSize(image.getFileSize());
+        dto.setMimeType(image.getMimeType());
+        dto.setWidth(image.getWidth());
+        dto.setHeight(image.getHeight());
+        dto.setIsActive(image.getIsActive());
+        dto.setCreatedAt(image.getCreatedAt());
+        dto.setUpdatedAt(image.getUpdatedAt());
+
+        return dto;
     }
 }

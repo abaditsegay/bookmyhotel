@@ -37,6 +37,7 @@ import BookingManagementTable from '../../components/booking/BookingManagementTa
 import OfflineWalkInBooking from '../../components/OfflineWalkInBooking';
 import { roomCacheService } from '../../services/RoomCacheService';
 import PricingConfiguration from '../../components/PricingConfiguration';
+import HotelImageManagement from './HotelImageManagement';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -73,10 +74,13 @@ const HotelAdminDashboard: React.FC = () => {
   const getInitialTab = () => {
     const tabParam = searchParams.get('tab');
     const tab = tabParam ? parseInt(tabParam, 10) : 0;
-    return isNaN(tab) || tab < 0 || tab > 7 ? 0 : tab;
+    return isNaN(tab) || tab < 0 || tab > 6 ? 0 : tab;
   };
   
   const [activeTab, setActiveTab] = useState(getInitialTab);
+
+  // Nested tabs state for Hotel Details tab
+  const [hotelDetailsTab, setHotelDetailsTab] = useState(0);
 
   // Walk-in booking modal state
   const [walkInModalOpen, setWalkInModalOpen] = useState(false);
@@ -209,8 +213,8 @@ const HotelAdminDashboard: React.FC = () => {
       // BookingManagementTable handles its own data loading
     }
     
-    // Load reports data when Reports tab (index 4) is selected
-    if (newValue === 4) {
+    // Load reports data when Reports tab (index 5) is selected
+    if (newValue === 5) {
       loadReportsData();
     }
   };
@@ -449,84 +453,119 @@ const HotelAdminDashboard: React.FC = () => {
         </Box>
 
         <TabPanel value={activeTab} index={0}>
-          {/* Hotel Details Tab */}
+          {/* Hotel Details Tab with nested tabs */}
           <Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Button
-                variant="contained"
-                onClick={handleEditHotel}
-                disabled={hotelLoading}
-                sx={{ ml: 'auto' }}
+            {/* Nested tabs for Hotel Details */}
+            <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
+              <Tabs 
+                value={hotelDetailsTab} 
+                onChange={(event, newValue) => setHotelDetailsTab(newValue)}
+                sx={{
+                  '& .MuiTab-root': {
+                    color: '#ff9800',
+                    '&:hover': {
+                      color: '#f57c00',
+                    },
+                    '&.Mui-selected': {
+                      color: '#e65100',
+                    },
+                  },
+                  '& .MuiTabs-indicator': {
+                    backgroundColor: '#ff9800',
+                  },
+                }}
               >
-                Edit Hotel Details
-              </Button>
+                <Tab label="Hotel Details" />
+                <Tab label="Hotel Images" />
+              </Tabs>
             </Box>
-            
-            {/* Show loading or error states */}
-            {hotelLoading && (
-              <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-                <CircularProgress />
+
+            {/* Hotel Details Sub-tab */}
+            <TabPanel value={hotelDetailsTab} index={0}>
+              <Box>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                  <Button
+                    variant="contained"
+                    onClick={handleEditHotel}
+                    disabled={hotelLoading}
+                    sx={{ ml: 'auto' }}
+                  >
+                    Edit Hotel Details
+                  </Button>
+                </Box>
+                
+                {/* Show loading or error states */}
+                {hotelLoading && (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+                    <CircularProgress />
+                  </Box>
+                )}
+                
+                {hotelError && (
+                  <Alert severity="error" sx={{ mb: 3 }}>
+                    {hotelError}
+                  </Alert>
+                )}
+                
+                {!hotelLoading && !hotelError && (
+                  <Grid container spacing={3}>
+                    <Grid item xs={12} md={6}>
+                      <Typography variant="h6" gutterBottom>Basic Information</Typography>
+                      <Box sx={{ mb: 2 }}>
+                        <Typography variant="body2" color="text.secondary">Hotel Name</Typography>
+                        <Typography variant="body1">{hotel?.name || hotelData.name}</Typography>
+                      </Box>
+                      <Box sx={{ mb: 2 }}>
+                        <Typography variant="body2" color="text.secondary">Description</Typography>
+                        <Typography variant="body1">{hotel?.description || 'No description available'}</Typography>
+                      </Box>
+                      <Box sx={{ mb: 2 }}>
+                        <Typography variant="body2" color="text.secondary">Address</Typography>
+                        <Typography variant="body1">
+                          {hotel?.address || 'Address not set'}
+                          {hotel?.city && `, ${hotel.city}`}
+                          {hotel?.country && `, ${hotel.country}`}
+                        </Typography>
+                      </Box>
+                      <Box sx={{ mb: 2 }}>
+                        <Typography variant="body2" color="text.secondary">Phone</Typography>
+                        <Typography variant="body1">{hotel?.phone || 'Phone not set'}</Typography>
+                      </Box>
+                      <Box sx={{ mb: 2 }}>
+                        <Typography variant="body2" color="text.secondary">Email</Typography>
+                        <Typography variant="body1">{hotel?.email || 'Email not set'}</Typography>
+                      </Box>
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <Typography variant="h6" gutterBottom>Statistics</Typography>
+                      <Box sx={{ mb: 2 }}>
+                        <Typography variant="body2" color="text.secondary">Total Rooms</Typography>
+                        <Typography variant="body1">{hotelData.totalRooms} rooms</Typography>
+                      </Box>
+                      <Box sx={{ mb: 2 }}>
+                        <Typography variant="body2" color="text.secondary">Staff Members</Typography>
+                        <Typography variant="body1">{hotelData.totalStaff} staff members</Typography>
+                      </Box>
+                      {hotel?.isActive !== undefined && (
+                        <Box sx={{ mb: 2 }}>
+                          <Typography variant="body2" color="text.secondary">Status</Typography>
+                          <Chip 
+                            label={hotel.isActive ? 'Active' : 'Inactive'} 
+                            color={hotel.isActive ? 'success' : 'error'} 
+                            size="small"
+                          />
+                        </Box>
+                      )}
+                    </Grid>
+                  </Grid>
+                )}
               </Box>
-            )}
-            
-            {hotelError && (
-              <Alert severity="error" sx={{ mb: 3 }}>
-                {hotelError}
-              </Alert>
-            )}
-            
-            {!hotelLoading && !hotelError && (
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
-                  <Typography variant="h6" gutterBottom>Basic Information</Typography>
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="body2" color="text.secondary">Hotel Name</Typography>
-                    <Typography variant="body1">{hotel?.name || hotelData.name}</Typography>
-                  </Box>
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="body2" color="text.secondary">Description</Typography>
-                    <Typography variant="body1">{hotel?.description || 'No description available'}</Typography>
-                  </Box>
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="body2" color="text.secondary">Address</Typography>
-                    <Typography variant="body1">
-                      {hotel?.address || 'Address not set'}
-                      {hotel?.city && `, ${hotel.city}`}
-                      {hotel?.country && `, ${hotel.country}`}
-                    </Typography>
-                  </Box>
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="body2" color="text.secondary">Phone</Typography>
-                    <Typography variant="body1">{hotel?.phone || 'Phone not set'}</Typography>
-                  </Box>
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="body2" color="text.secondary">Email</Typography>
-                    <Typography variant="body1">{hotel?.email || 'Email not set'}</Typography>
-                  </Box>
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <Typography variant="h6" gutterBottom>Statistics</Typography>
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="body2" color="text.secondary">Total Rooms</Typography>
-                    <Typography variant="body1">{hotelData.totalRooms} rooms</Typography>
-                  </Box>
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="body2" color="text.secondary">Staff Members</Typography>
-                    <Typography variant="body1">{hotelData.totalStaff} staff members</Typography>
-                  </Box>
-                  {hotel?.isActive !== undefined && (
-                    <Box sx={{ mb: 2 }}>
-                      <Typography variant="body2" color="text.secondary">Status</Typography>
-                      <Chip 
-                        label={hotel.isActive ? 'Active' : 'Inactive'} 
-                        color={hotel.isActive ? 'success' : 'error'} 
-                        size="small"
-                      />
-                    </Box>
-                  )}
-                </Grid>
-              </Grid>
-            )}
+            </TabPanel>
+
+            {/* Hotel Images Sub-tab */}
+            <TabPanel value={hotelDetailsTab} index={1}>
+              <HotelImageManagement />
+            </TabPanel>
           </Box>
         </TabPanel>
 

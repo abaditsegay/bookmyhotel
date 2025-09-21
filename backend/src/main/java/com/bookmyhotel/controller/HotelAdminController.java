@@ -1,5 +1,6 @@
 package com.bookmyhotel.controller;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -18,12 +19,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.bookmyhotel.dto.BookingModificationRequest;
 import com.bookmyhotel.dto.BookingModificationResponse;
 import com.bookmyhotel.dto.BookingRequest;
 import com.bookmyhotel.dto.BookingResponse;
 import com.bookmyhotel.dto.HotelDTO;
+import com.bookmyhotel.dto.RoomCreationRequest;
+import com.bookmyhotel.dto.RoomCreationResponse;
 import com.bookmyhotel.dto.RoomDTO;
 import com.bookmyhotel.dto.RoomTypePricingDTO;
 import com.bookmyhotel.dto.UserDTO;
@@ -138,6 +142,39 @@ public class HotelAdminController {
     public ResponseEntity<RoomDTO> addRoom(@Valid @RequestBody RoomDTO roomDTO, Authentication auth) {
         RoomDTO newRoom = hotelAdminService.addRoom(roomDTO, auth.getName());
         return ResponseEntity.ok(newRoom);
+    }
+
+    /**
+     * Add room with image uploads
+     */
+    @PostMapping(value = "/rooms/with-images", consumes = "multipart/form-data")
+    public ResponseEntity<RoomCreationResponse> addRoomWithImages(
+            @RequestParam("roomNumber") String roomNumber,
+            @RequestParam("roomType") RoomType roomType,
+            @RequestParam(value = "pricePerNight", required = false) BigDecimal pricePerNight,
+            @RequestParam("capacity") Integer capacity,
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam(value = "heroImage", required = false) MultipartFile heroImage,
+            @RequestParam(value = "galleryImages", required = false) List<MultipartFile> galleryImages,
+            @RequestParam(value = "heroImageAltText", required = false) String heroImageAltText,
+            @RequestParam(value = "galleryImageAltTexts", required = false) List<String> galleryImageAltTexts,
+            Authentication auth) {
+
+        // Create request object
+        RoomCreationRequest request = new RoomCreationRequest(roomNumber, roomType, pricePerNight, capacity,
+                description);
+        request.setHeroImage(heroImage);
+        request.setGalleryImages(galleryImages);
+        request.setHeroImageAltText(heroImageAltText);
+        request.setGalleryImageAltTexts(galleryImageAltTexts);
+
+        RoomCreationResponse response = hotelAdminService.addRoomWithImages(request, auth.getName());
+
+        if (response.isSuccess()) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.badRequest().body(response);
+        }
     }
 
     @GetMapping("/rooms/{roomId}")

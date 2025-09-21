@@ -20,6 +20,7 @@
         <java.version>21</java.version>
         <stripe.version>26.7.0</stripe.version>
         <testcontainers.version>1.20.1</testcontainers.version>
+        <aws.sdk.version>2.27.21</aws.sdk.version>
     </properties>
     
     <dependencies>
@@ -119,6 +120,18 @@
             <version>${stripe.version}</version>
         </dependency>
         
+        <!-- AWS SDK for S3 -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
+            <version>${aws.sdk.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>auth</artifactId>
+            <version>${aws.sdk.version}</version>
+        </dependency>
+        
         <!-- OAuth2 Email Configuration -->
         <!-- Note: Microsoft Graph SDK has compatibility issues with Spring Boot 3.x -->
         <!-- OAuth2 credentials are preserved in application.properties for future use -->
@@ -134,6 +147,13 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
             <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+        
+        <!-- Lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
         
