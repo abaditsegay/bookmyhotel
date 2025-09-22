@@ -24,7 +24,6 @@ import {
   Person as PersonIcon,
   Logout as LogoutIcon,
   Business as BusinessIcon,
-  AppRegistration as RegisterIcon,
   Search as SearchIcon,
   Store as StoreIcon,
   Notifications as NotificationsIcon,
@@ -125,18 +124,18 @@ const Navbar: React.FC = () => {
 
   // Navigation items based on user role
   const getNavigationItems = () => {
-    // Book MyStay should only be visible to CUSTOMER, GUEST roles, and non-authenticated users
+    // Reserve MyStay should only be visible to CUSTOMER, GUEST roles, and non-authenticated users
     const shouldShowBookMyStay = !user || user.role === 'CUSTOMER' || user.role === 'GUEST';
     
     const baseItems: { label: string; path?: string; icon: React.ReactNode; action?: () => void }[] = [];
     
-    // Add Book MyStay only for appropriate users
+    // Add Reserve MyStay only for appropriate users
     if (shouldShowBookMyStay) {
-      baseItems.push({ label: 'Book MyStay', path: '/hotels/search', icon: <SearchIcon /> });
+      baseItems.push({ label: 'Reserve MyStay', path: '/hotels/search', icon: <SearchIcon /> });
     }
 
     if (user) {
-      // For system admin and admin, show minimal navigation without Book MyStay
+      // For system admin and admin, show minimal navigation without Reserve MyStay
       if (user.role === 'SYSTEM_ADMIN' || user.role === 'ADMIN') {
         return [...baseItems];
       }
@@ -199,11 +198,11 @@ const Navbar: React.FC = () => {
         return [...baseItems, ...customerItems];
       }
 
-      // For other roles (like HOUSEKEEPING, HOTEL_MANAGER), show only base items (which won't include Book MyStay)
+      // For other roles (like HOUSEKEEPING, HOTEL_MANAGER), show only base items (which won't include Reserve MyStay)
       return [...baseItems];
     }
 
-    // For non-authenticated users, show Book MyStay
+    // For non-authenticated users, show Reserve MyStay
     return baseItems;
   };
 
@@ -328,13 +327,7 @@ const Navbar: React.FC = () => {
               <ListItemIcon>
                 <BusinessIcon />
               </ListItemIcon>
-              <ListItemText primary="Find Booking" />
-            </ListItem>
-            <ListItem onClick={() => handleNavigation('/register-hotel')} sx={{ cursor: 'pointer' }}>
-              <ListItemIcon>
-                <RegisterIcon />
-              </ListItemIcon>
-              <ListItemText primary="Register" />
+              <ListItemText primary="MyReservation" />
             </ListItem>
           </>
         )}
@@ -545,6 +538,17 @@ const Navbar: React.FC = () => {
                   <>
                     <Button
                       color="inherit"
+                      onClick={() => handleNavigation('/hotels/search')}
+                      sx={{
+                        borderRadius: 2,
+                        fontSize: '0.8rem', // Smaller font size
+                        '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
+                      }}
+                    >
+                      Reserve MyStay
+                    </Button>
+                    <Button
+                      color="inherit"
                       onClick={() => handleNavigation('/find-booking')}
                       sx={{
                         borderRadius: 2,
@@ -552,18 +556,7 @@ const Navbar: React.FC = () => {
                         '&:hover': { backgroundColor: 'action.hover' },
                       }}
                     >
-                      Find Booking
-                    </Button>
-                    <Button
-                      color="inherit"
-                      onClick={() => handleNavigation('/register-hotel')}
-                      sx={{
-                        borderRadius: 2,
-                        fontSize: '0.8rem', // Smaller font size
-                        '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
-                      }}
-                    >
-                      Register
+                      MyReservation
                     </Button>
                   </>
                 )}
