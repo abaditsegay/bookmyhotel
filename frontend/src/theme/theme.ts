@@ -25,6 +25,23 @@ export const themeConstants = {
     uploadArea: '400px'
   },
   
+  // Standard spacing values (theme.spacing() multipliers)
+  spacing: {
+    xs: 0.5, // 4px
+    sm: 1,   // 8px  
+    md: 2,   // 16px
+    lg: 3,   // 24px
+    xl: 4,   // 32px
+    xxl: 6,  // 48px
+  },
+  
+  // Standard button sizes
+  buttonSizes: {
+    small: { height: 32, padding: '6px 16px' },
+    medium: { height: 40, padding: '8px 22px' },
+    large: { height: 48, padding: '10px 28px' },
+  },
+  
   // Shadows and effects
   shadows: {
     textShadow: '2px 2px 4px rgba(0,0,0,0.7)',
