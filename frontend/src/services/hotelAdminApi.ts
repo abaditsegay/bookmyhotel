@@ -1132,8 +1132,16 @@ export const hotelAdminApi = {
         throw new Error(errorData.message || 'Failed to fetch hotel images');
       }
 
-      const data = await response.json();
-      return { success: true, data };
+      const responseData = await response.json();
+      // Transform backend response to match frontend interface
+      const transformedData = (responseData.data || []).map((image: any) => ({
+        ...image,
+        s3Url: image.filePath, // Backend uses 'filePath' for S3 URL
+        s3Key: image.filePath?.split('/').pop() || '', // Extract filename as key
+        imageCategory: image.category || image.imageCategory, // Handle both formats
+        roomTypeName: image.roomTypeId ? `ROOM_TYPE_${image.roomTypeId}` : undefined, // Generate room type name
+      }));
+      return { success: true, data: transformedData };
     } catch (error) {
       console.error('Hotel images fetch error:', error);
       return { 
@@ -1183,8 +1191,16 @@ export const hotelAdminApi = {
         throw new Error(errorData.message || 'Failed to upload hotel images');
       }
 
-      const data = await response.json();
-      return { success: true, data };
+      const responseData = await response.json();
+      // Transform backend response to match frontend interface
+      const transformedData = (responseData.data || []).map((image: any) => ({
+        ...image,
+        s3Url: image.filePath, // Backend uses 'filePath' for S3 URL
+        s3Key: image.filePath?.split('/').pop() || '', // Extract filename as key
+        imageCategory: image.category || image.imageCategory, // Handle both formats
+        roomTypeName: image.roomTypeId ? `ROOM_TYPE_${image.roomTypeId}` : undefined, // Generate room type name
+      }));
+      return { success: true, data: transformedData };
     } catch (error) {
       console.error('Hotel images upload error:', error);
       return { 

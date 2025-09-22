@@ -7,14 +7,12 @@ import {
   CardContent,
   CardActions,
   Button,
-  TextField,
   Alert,
   CircularProgress,
   ImageList,
   ImageListItem,
   ImageListItemBar,
   IconButton,
-  Chip,
   Accordion,
   AccordionSummary,
   AccordionDetails,
@@ -26,7 +24,6 @@ import {
 import {
   CloudUpload as UploadIcon,
   Delete as DeleteIcon,
-  PhotoLibrary as PhotoIcon,
   ExpandMore as ExpandMoreIcon,
   Image as ImageIcon,
 } from '@mui/icons-material';
@@ -37,14 +34,12 @@ import { ROOM_TYPE_VALUES } from '../../constants/roomTypes';
 interface RoomTypeImageState {
   roomType: string;
   heroImage?: File;
-  heroAltText: string;
   existingImages: HotelImageResponse[];
   uploading: boolean;
 }
 
 interface HotelGeneralImageState {
   heroImage?: File;
-  heroAltText: string;
   existingImages: HotelImageResponse[];
   uploading: boolean;
 }
@@ -64,7 +59,6 @@ const HotelImageManagement: React.FC = () => {
       initialStates[roomType] = {
         roomType,
         heroImage: undefined,
-        heroAltText: '',
         existingImages: [],
         uploading: false,
       };
@@ -75,7 +69,6 @@ const HotelImageManagement: React.FC = () => {
   // State for hotel general images
   const [hotelGeneralState, setHotelGeneralState] = useState<HotelGeneralImageState>({
     heroImage: undefined,
-    heroAltText: '',
     existingImages: [],
     uploading: false,
   });
@@ -157,7 +150,7 @@ const HotelImageManagement: React.FC = () => {
       const uploadData: HotelImageUploadRequest = {
         roomType,
         heroImage: state.heroImage,
-        heroAltText: state.heroAltText || undefined,
+        heroAltText: `${roomType} Room Image`,
       };
 
       const response = await hotelAdminApi.uploadHotelImages(token, uploadData);
@@ -166,7 +159,6 @@ const HotelImageManagement: React.FC = () => {
         // Reset the form for this room type
         updateRoomTypeState(roomType, {
           heroImage: undefined,
-          heroAltText: '',
           uploading: false,
         });
         
@@ -204,20 +196,19 @@ const HotelImageManagement: React.FC = () => {
     try {
       const uploadData: HotelImageUploadRequest = {
         heroImage: hotelGeneralState.heroImage,
-        heroAltText: hotelGeneralState.heroAltText || undefined,
+        heroAltText: "Hotel Main Image",
         isHotelGeneral: true,
       };
 
       const response = await hotelAdminApi.uploadHotelImages(token, uploadData);
       
       if (response.success) {
-        // Reset the form
-        setHotelGeneralState({
+        // Reset the form but keep existing images until they're reloaded
+        setHotelGeneralState(prev => ({
+          ...prev,
           heroImage: undefined,
-          heroAltText: '',
-          existingImages: [],
           uploading: false,
-        });
+        }));
         
         // Reload hotel general images
         const imagesResponse = await hotelAdminApi.getHotelImages(token); // No room type = hotel general
@@ -246,13 +237,22 @@ const HotelImageManagement: React.FC = () => {
       const response = await hotelAdminApi.deleteHotelImage(token, imageToDelete.id);
       if (response.success) {
         setSuccess('Image deleted successfully!');
-        // Reload images for the affected room type
+        // Reload images for the affected room type or hotel general
         if (imageToDelete.roomTypeName) {
           const imagesResponse = await hotelAdminApi.getHotelImages(token, imageToDelete.roomTypeName);
           if (imagesResponse.success) {
             updateRoomTypeState(imageToDelete.roomTypeName, {
               existingImages: imagesResponse.data || [],
             });
+          }
+        } else {
+          // This is a hotel general image
+          const imagesResponse = await hotelAdminApi.getHotelImages(token); // No room type = hotel general
+          if (imagesResponse.success) {
+            setHotelGeneralState(prev => ({
+              ...prev,
+              existingImages: imagesResponse.data || [],
+            }));
           }
         }
       } else {
@@ -281,15 +281,6 @@ const HotelImageManagement: React.FC = () => {
 
   return (
     <Box sx={{ p: 3 }}>
-      <Typography variant="h4" gutterBottom sx={{ mb: 3 }}>
-        <PhotoIcon sx={{ mr: 2, verticalAlign: 'middle' }} />
-        Hotel Image Management
-      </Typography>
-
-      <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-        Upload and manage images for each room type. Images will be automatically organized and optimized for display across your hotel booking system.
-      </Typography>
-
       {error && (
         <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
           {error}
@@ -305,17 +296,9 @@ const HotelImageManagement: React.FC = () => {
       {/* Hotel General Images Section */}
       <Accordion sx={{ mb: 2 }}>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-            <Typography variant="h6" sx={{ flexGrow: 1 }}>
-              Hotel General Images
-            </Typography>
-            <Chip 
-              label={`${Array.isArray(hotelGeneralState.existingImages) ? hotelGeneralState.existingImages.length : 0} images`} 
-              size="small"
-              color={Array.isArray(hotelGeneralState.existingImages) && hotelGeneralState.existingImages.length > 0 ? 'primary' : 'default'}
-              sx={{ mr: 1 }}
-            />
-          </Box>
+          <Typography variant="h6">
+            Hotel Main Image
+          </Typography>
         </AccordionSummary>
         <AccordionDetails>
           <Grid container spacing={3}>
@@ -323,18 +306,9 @@ const HotelImageManagement: React.FC = () => {
             <Grid item xs={12} md={6}>
               <Card>
                 <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    Upload Hotel Image
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                    Upload general hotel images (lobby, exterior, amenities, etc.)
-                  </Typography>
-
                   {/* Hotel Image Upload */}
                   <Box sx={{ mb: 3 }}>
-                    <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                      Hotel Image
-                    </Typography>
+
                     <input
                       type="file"
                       accept="image/*"
@@ -358,14 +332,6 @@ const HotelImageManagement: React.FC = () => {
                         />
                       </Box>
                     )}
-                    <TextField
-                      fullWidth
-                      label="Hotel Image Alt Text"
-                      value={hotelGeneralState.heroAltText}
-                      onChange={(e) => setHotelGeneralState(prev => ({ ...prev, heroAltText: e.target.value }))}
-                      helperText="Describe the hotel image for accessibility"
-                      size="small"
-                    />
                   </Box>
                 </CardContent>
                 <CardActions>
@@ -376,7 +342,7 @@ const HotelImageManagement: React.FC = () => {
                     disabled={hotelGeneralState.uploading || !hotelGeneralState.heroImage}
                     fullWidth
                   >
-                    {hotelGeneralState.uploading ? 'Uploading...' : 'Upload Hotel Image'}
+                    {hotelGeneralState.uploading ? 'Uploading...' : 'Upload'}
                   </Button>
                 </CardActions>
               </Card>
@@ -387,18 +353,18 @@ const HotelImageManagement: React.FC = () => {
               <Card>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
-                    Current Hotel Images ({Array.isArray(hotelGeneralState.existingImages) ? hotelGeneralState.existingImages.length : 0})
+                    Current Images
                   </Typography>
 
                   {!Array.isArray(hotelGeneralState.existingImages) || hotelGeneralState.existingImages.length === 0 ? (
                     <Box sx={{ textAlign: 'center', py: 4 }}>
                       <ImageIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
                       <Typography variant="body2" color="text.secondary">
-                        No hotel images uploaded yet
+                        No images uploaded
                       </Typography>
                     </Box>
                   ) : (
-                    <ImageList cols={2} gap={8}>
+                    <ImageList cols={1} gap={12}>
                       {(hotelGeneralState.existingImages || []).map((image) => (
                         <ImageListItem key={image.id}>
                           <img
@@ -406,14 +372,18 @@ const HotelImageManagement: React.FC = () => {
                             alt={image.altText || image.fileName}
                             loading="lazy"
                             style={{ 
-                              height: '120px', 
+                              height: '200px', 
                               objectFit: 'cover',
-                              borderRadius: '4px'
+                              borderRadius: '8px'
+                            }}
+                            onError={(e) => {
+                              // Set a fallback image or hide the broken image
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
                             }}
                           />
                           <ImageListItemBar
-                            title="Hotel Image"
-                            subtitle={image.altText || 'No alt text'}
+                            subtitle={image.altText || image.fileName}
                             actionIcon={
                               <IconButton
                                 sx={{ color: 'rgba(255, 255, 255, 0.8)' }}
@@ -439,17 +409,9 @@ const HotelImageManagement: React.FC = () => {
         return (
           <Accordion key={roomType} sx={{ mb: 2 }}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-                <Typography variant="h6" sx={{ flexGrow: 1 }}>
-                  {roomType} Rooms
-                </Typography>
-                <Chip 
-                  label={`${Array.isArray(state.existingImages) ? state.existingImages.length : 0} images`} 
-                  size="small"
-                  color={Array.isArray(state.existingImages) && state.existingImages.length > 0 ? 'primary' : 'default'}
-                  sx={{ mr: 1 }}
-                />
-              </Box>
+              <Typography variant="h6">
+                {roomType} Rooms
+              </Typography>
             </AccordionSummary>
             <AccordionDetails>
               <Grid container spacing={3}>
@@ -457,15 +419,8 @@ const HotelImageManagement: React.FC = () => {
                 <Grid item xs={12} md={6}>
                   <Card>
                     <CardContent>
-                      <Typography variant="h6" gutterBottom>
-                        Upload Room Image
-                      </Typography>
-
                       {/* Room Image Upload */}
                       <Box sx={{ mb: 3 }}>
-                        <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                          {roomType} Room Image
-                        </Typography>
                         <input
                           type="file"
                           accept="image/*"
@@ -486,14 +441,6 @@ const HotelImageManagement: React.FC = () => {
                             />
                           </Box>
                         )}
-                        <TextField
-                          fullWidth
-                          label="Room Image Alt Text"
-                          value={state.heroAltText}
-                          onChange={(e) => updateRoomTypeState(roomType, { heroAltText: e.target.value })}
-                          helperText="Describe the room image for accessibility"
-                          size="small"
-                        />
                       </Box>
 
 
@@ -517,18 +464,18 @@ const HotelImageManagement: React.FC = () => {
                   <Card>
                     <CardContent>
                       <Typography variant="h6" gutterBottom>
-                        Current {roomType} Images ({Array.isArray(state.existingImages) ? state.existingImages.length : 0})
+                        Current Images
                       </Typography>
 
                       {!Array.isArray(state.existingImages) || state.existingImages.length === 0 ? (
                         <Box sx={{ textAlign: 'center', py: 4 }}>
                           <ImageIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
                           <Typography variant="body2" color="text.secondary">
-                            No {roomType.toLowerCase()} room images uploaded yet
+                            No images uploaded
                           </Typography>
                         </Box>
                       ) : (
-                        <ImageList cols={2} gap={8}>
+                        <ImageList cols={1} gap={12}>
                           {(state.existingImages || []).map((image) => (
                             <ImageListItem key={image.id}>
                               <img
@@ -536,14 +483,18 @@ const HotelImageManagement: React.FC = () => {
                                 alt={image.altText || image.fileName}
                                 loading="lazy"
                                 style={{ 
-                                  height: '120px', 
+                                  height: '200px', 
                                   objectFit: 'cover',
-                                  borderRadius: '4px'
+                                  borderRadius: '8px'
+                                }}
+                                onError={(e) => {
+                                  // Set a fallback image or hide the broken image
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = 'none';
                                 }}
                               />
                               <ImageListItemBar
-                                title={image.imageCategory}
-                                subtitle={image.altText || 'No alt text'}
+                                subtitle={image.altText || image.fileName}
                                 actionIcon={
                                   <IconButton
                                     sx={{ color: 'rgba(255, 255, 255, 0.8)' }}
