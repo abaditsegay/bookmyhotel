@@ -321,7 +321,7 @@ const Navbar: React.FC = () => {
               <ListItemIcon>
                 <BusinessIcon />
               </ListItemIcon>
-              <ListItemText primary="MyReservation" />
+              <ListItemText primary="My Reservation" />
             </ListItem>
             <ListItem onClick={() => handleNavigation('/hotels/search')} sx={{ cursor: 'pointer' }}>
               <ListItemIcon>
@@ -545,7 +545,7 @@ const Navbar: React.FC = () => {
                         '&:hover': { backgroundColor: 'action.hover' },
                       }}
                     >
-                      MyReservation
+                      My Reservation
                     </Button>
                     <Button
                       color="inherit"
