@@ -220,6 +220,7 @@ const Navbar: React.FC = () => {
             mx: 0.5,
             borderRadius: 2,
             fontSize: '0.8rem', // Smaller font size
+            textTransform: 'none', // Disable all caps
             color: 'white', // Force white text color
             backgroundColor: item.label === 'Shop' 
               ? 'red' 
@@ -542,6 +543,7 @@ const Navbar: React.FC = () => {
                       sx={{
                         borderRadius: 2,
                         fontSize: '0.8rem', // Smaller font size
+                        textTransform: 'none', // Disable all caps
                         '&:hover': { backgroundColor: 'action.hover' },
                       }}
                     >
@@ -553,6 +555,7 @@ const Navbar: React.FC = () => {
                       sx={{
                         borderRadius: 2,
                         fontSize: '0.8rem', // Smaller font size
+                        textTransform: 'none', // Disable all caps
                         '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
                       }}
                     >
@@ -566,6 +569,7 @@ const Navbar: React.FC = () => {
                   sx={{
                     borderRadius: 2,
                     fontSize: '0.8rem', // Smaller font size
+                    textTransform: 'none', // Disable all caps
                     '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
                   }}
                 >
