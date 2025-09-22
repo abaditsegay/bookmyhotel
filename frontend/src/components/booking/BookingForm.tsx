@@ -98,11 +98,13 @@ const BookingForm: React.FC<BookingFormProps> = ({
     },
     guestPhone: {
       rules: {
+        required: true,
         phone: true,
         minLength: 10,
         maxLength: 15,
       },
       messages: {
+        required: 'Phone number is required',
         phone: 'Please enter a valid phone number',
         minLength: 'Phone number must be at least 10 digits',
         maxLength: 'Phone number must be less than 15 digits',
@@ -378,8 +380,9 @@ const BookingForm: React.FC<BookingFormProps> = ({
                   fullWidth
                   label="Phone Number"
                   {...formValidation.getFieldProps('guestPhone')}
-                  helperText={formValidation.getFieldProps('guestPhone').helperText || 'Optional'}
-                  placeholder="Optional"
+                  helperText={formValidation.getFieldProps('guestPhone').helperText || 'Enter your phone number'}
+                  placeholder="Enter your phone number"
+                  required
                   validationState={
                     formValidation.validation.guestPhone?.error ? 'error' : 
                     formValidation.validation.guestPhone?.touched && !formValidation.validation.guestPhone?.error ? 'success' : 
