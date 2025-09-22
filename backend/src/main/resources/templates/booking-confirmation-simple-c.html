@@ -183,11 +183,11 @@
             </tr>
             <tr>
                 <td class="label">Rate/Night:</td>
-                <td class="value" th:text="'ETB ' + ${booking.pricePerNight}"></td>
+                <td class="value" th:text="'ETB ' + ${#numbers.formatDecimal(booking.pricePerNight, 1, 2)}"></td>
             </tr>
             <tr class="total-row">
                 <td class="label">TOTAL:</td>
-                <td class="value" th:text="'ETB ' + ${booking.totalAmount}"></td>
+                <td class="value" th:text="'ETB ' + ${#numbers.formatDecimal(booking.totalAmount, 1, 2)}"></td>
             </tr>
         </table>
 

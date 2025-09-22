@@ -275,7 +275,7 @@
             </tr>
             <tr>
                 <td>Total Amount</td>
-                <td th:text="'ETB ' + ${booking.totalAmount}"></td>
+                <td th:text="'ETB ' + ${#numbers.formatDecimal(booking.totalAmount, 1, 2)}"></td>
             </tr>
         </table>
 
