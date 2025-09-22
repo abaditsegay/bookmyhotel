@@ -4,3 +4,5 @@ export { default as UserAvatar } from './UserAvatar';
 export { default as StandardCard } from './StandardCard';
 export { default as StandardButton } from './StandardButton';
 export { default as StandardTextField } from './StandardTextField';
+export { default as StandardLoading } from './StandardLoading';
+export { default as StandardError } from './StandardError';

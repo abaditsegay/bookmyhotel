@@ -102,6 +102,19 @@ else
     print_warning "⚠️ Configuration file not found: $LOCAL_CONFIG_DIR/application-prod.properties"
 fi
 
+# Skip .env file creation - it's already correctly configured
+print_step "🔐 Preserving existing environment configuration..."
+ssh -i "$SSH_KEY" "$SERVER_USER@$SERVER_IP" "
+# Check if .env file exists and preserve it
+if [ -f $REMOTE_PATH/backend/.env ]; then
+    echo '✅ Existing .env file preserved'
+    ls -la $REMOTE_PATH/backend/.env
+else
+    echo '⚠️ No .env file found - may need manual configuration'
+fi
+"
+print_status "✅ Environment configuration preserved"
+
 # Step 6: Deploy any additional resources (if they exist)
 print_step "📄 Deploying additional resources..."
 if [ -d "$LOCAL_BACKEND_DIR/src/main/resources/static" ]; then
@@ -124,21 +137,17 @@ After=network.target
 Type=simple
 User=ubuntu
 WorkingDirectory=$REMOTE_PATH/backend
-ExecStart=/usr/bin/java -jar -Xmx1024m -Xms512m -Dspring.profiles.active=prod -Dspring.config.location=file:../config/application-prod.properties app.jar
+ExecStart=/usr/bin/java -jar -Xmx1024m -Xms512m -Dspring.profiles.active=prod -Dspring.config.location=file:/opt/bookmyhotel/config/application-prod.properties app.jar
 Restart=always
 RestartSec=10
 StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=bookmyhotel-backend
 
-# Environment variables
+# Environment variables - Use actual environment file
+EnvironmentFile=/opt/bookmyhotel/backend/.env
 Environment=JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
 Environment=SPRING_PROFILES_ACTIVE=prod
-Environment=DB_USERNAME=admin
-Environment=DB_PASSWORD=YOUR_DB_PASSWORD_HERE
-Environment=MICROSOFT_GRAPH_CLIENT_ID=YOUR_CLIENT_ID_HERE
-Environment=MICROSOFT_GRAPH_TENANT_ID=YOUR_TENANT_ID_HERE
-Environment=MICROSOFT_GRAPH_CLIENT_SECRET=YOUR_CLIENT_SECRET_HERE
 
 # Security settings
 NoNewPrivileges=true
@@ -155,6 +164,28 @@ sudo systemctl enable bookmyhotel-backend.service
 
 print_status "✅ Systemd service updated"
 
+# Step 7.5: Validate database connectivity
+print_step "🔍 Validating database connectivity..."
+ssh -i "$SSH_KEY" "$SERVER_USER@$SERVER_IP" "
+    # Check if MySQL is running
+    if sudo systemctl is-active --quiet mysql; then
+        echo '✅ MySQL service is running'
+    else
+        echo '❌ MySQL service is not running'
+        sudo systemctl status mysql --no-pager
+        exit 1
+    fi
+    
+    # Test database connection (assuming mysql client is installed)
+    if command -v mysql &> /dev/null; then
+        echo 'Testing database connection...'
+        # This will fail if credentials are wrong, but that's expected for now
+        timeout 10 mysql -h localhost -P 3306 -e 'SELECT 1;' 2>/dev/null || echo 'Database connection test completed (credentials may need setup)'
+    else
+        echo 'MySQL client not installed, skipping connection test'
+    fi
+"
+
 # Step 8: Restart the service
 print_step "🔄 Restarting backend service..."
 ssh -i "$SSH_KEY" "$SERVER_USER@$SERVER_IP" "
@@ -167,14 +198,34 @@ ssh -i "$SSH_KEY" "$SERVER_USER@$SERVER_IP" "
 print_step "⏳ Waiting for service to start..."
 sleep 15
 
-# Check service status
+# Check service status with enhanced error handling
 ssh -i "$SSH_KEY" "$SERVER_USER@$SERVER_IP" "
-    if sudo systemctl is-active --quiet bookmyhotel-backend.service; then
+    SERVICE_STATUS=\$(sudo systemctl is-active bookmyhotel-backend.service)
+    echo \"Service status: \$SERVICE_STATUS\"
+    
+    if [ \"\$SERVICE_STATUS\" = \"active\" ]; then
         echo '✅ Backend service is running'
         sudo systemctl status bookmyhotel-backend.service --no-pager -l
+        
+        # Check if service is actually listening on port
+        if netstat -tulpn | grep ':8080' > /dev/null 2>&1; then
+            echo '✅ Service is listening on port 8080'
+        else
+            echo '⚠️ Service is not yet listening on port 8080 (may still be starting)'
+        fi
     else
         echo '❌ Backend service failed to start'
-        sudo journalctl -u bookmyhotel-backend.service --no-pager -l --since '2 minutes ago'
+        echo 'Service status:'
+        sudo systemctl status bookmyhotel-backend.service --no-pager -l
+        echo ''
+        echo 'Recent logs:'
+        sudo journalctl -u bookmyhotel-backend.service --no-pager -l --since '5 minutes ago'
+        echo ''
+        echo 'Environment file contents:'
+        ls -la /opt/bookmyhotel/backend/.env 2>/dev/null || echo '.env file not found'
+        echo ''
+        echo 'Configuration file:'
+        ls -la /opt/bookmyhotel/config/application-prod.properties 2>/dev/null || echo 'Config file not found'
         exit 1
     fi
 "

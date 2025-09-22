@@ -2,13 +2,11 @@ import React, { useState } from 'react';
 import {
   Typography,
   Box,
-  Alert,
-  CircularProgress,
   Paper,
   Button,
   Divider,
 } from '@mui/material';
-import { StandardCard } from '../components/common';
+import { StandardCard, StandardLoading, StandardError } from '../components/common';
 import {
   Search as SearchIcon,
 } from '@mui/icons-material';
@@ -156,16 +154,20 @@ const HotelSearchPage: React.FC = () => {
               </Box>
 
               {error && (
-                <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
-                  {error}
-                </Alert>
+                <StandardError
+                  error={true}
+                  message={error}
+                  severity="error"
+                  showRetry={false}
+                />
               )}
 
-              {loading && (
-                <Box display="flex" justifyContent="center" sx={{ my: 4 }}>
-                  <CircularProgress size={60} thickness={4} />
-                </Box>
-              )}
+              <StandardLoading
+                loading={loading}
+                message="Searching for hotels..."
+                size="large"
+                overlay={false}
+              />
 
               {/* Find My Booking Section - Mobile optimized */}
               <Divider sx={{ my: { xs: 3, md: 4 } }} />

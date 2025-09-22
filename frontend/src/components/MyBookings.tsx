@@ -44,6 +44,7 @@ import dayjs, { Dayjs } from 'dayjs';
 import { useAuth } from '../contexts/AuthContext';
 import { BookingService } from '../services/BookingService';
 import { BookingResponse, BookingModificationRequest } from '../types/booking';
+import { StandardLoading, StandardError } from './common';
 
 const MyBookings: React.FC = () => {
   const { user, token } = useAuth();
@@ -219,9 +220,12 @@ const MyBookings: React.FC = () => {
   if (loading) {
     return (
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-          <CircularProgress size={60} />
-        </Box>
+        <StandardLoading 
+          loading={true}
+          overlay={true} 
+          message="Loading your bookings..." 
+          size="large"
+        />
       </Container>
     );
   }
@@ -229,12 +233,14 @@ const MyBookings: React.FC = () => {
   if (error) {
     return (
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {error}
-        </Alert>
-        <Button variant="contained" onClick={fetchBookings}>
-          Try Again
-        </Button>
+        <StandardError
+          error={true}
+          message={error}
+          severity="error"
+          showRetry={true}
+          onRetry={fetchBookings}
+          retryText="Try Again"
+        />
       </Container>
     );
   }

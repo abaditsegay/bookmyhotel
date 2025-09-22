@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Authentication Issue</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .success { color: green; }
+        .error { color: red; }
+        .warning { color: orange; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 5px; }
+        .section { margin: 20px 0; border: 1px solid #ddd; padding: 15px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Authentication Debug Tool</h1>
+    
+    <div class="section">
+        <h2>1. Token Storage Check</h2>
+        <div id="tokenStatus"></div>
+    </div>
+    
+    <div class="section">
+        <h2>2. User Data Check</h2>
+        <div id="userStatus"></div>
+    </div>
+    
+    <div class="section">
+        <h2>3. Token Validation</h2>
+        <div id="validationStatus"></div>
+    </div>
+    
+    <div class="section">
+        <h2>4. API Test</h2>
+        <button onclick="testHotelRoomsAPI()">Test Hotel Rooms API</button>
+        <div id="apiStatus"></div>
+    </div>
+    
+    <div class="section">
+        <h2>5. Quick Login (if needed)</h2>
+        <input type="email" id="email" placeholder="Enter email" value="admin@hotel1.com">
+        <input type="password" id="password" placeholder="Enter password" value="admin123">
+        <button onclick="quickLogin()">Login</button>
+        <div id="loginStatus"></div>
+    </div>
+
+    <script>
+        // Check token storage
+        function checkTokenStorage() {
+            const statusDiv = document.getElementById('tokenStatus');
+            
+            const authToken = localStorage.getItem('auth_token');
+            const authUser = localStorage.getItem('auth_user');
+            const legacyToken = localStorage.getItem('token');
+            
+            let html = '<h3>Token Storage Status:</h3>';
+            html += `<p>✅ auth_token: ${authToken ? 'Present' : '❌ Missing'}</p>`;
+            html += `<p>✅ auth_user: ${authUser ? 'Present' : '❌ Missing'}</p>`;
+            html += `<p>🔧 legacy token: ${legacyToken ? 'Present (should be cleaned)' : 'Not found'}</p>`;
+            
+            if (authToken) {
+                html += `<p><strong>Token (first 50 chars):</strong> ${authToken.substring(0, 50)}...</p>`;
+            }
+            
+            statusDiv.innerHTML = html;
+        }
+        
+        // Check user data
+        function checkUserData() {
+            const statusDiv = document.getElementById('userStatus');
+            const authUser = localStorage.getItem('auth_user');
+            
+            let html = '<h3>User Data:</h3>';
+            if (authUser) {
+                try {
+                    const user = JSON.parse(authUser);
+                    html += '<pre>' + JSON.stringify(user, null, 2) + '</pre>';
+                } catch (e) {
+                    html += '<p class="error">❌ Failed to parse user data: ' + e.message + '</p>';
+                }
+            } else {
+                html += '<p class="error">❌ No user data found</p>';
+            }
+            
+            statusDiv.innerHTML = html;
+        }
+        
+        // Validate token
+        function validateToken() {
+            const statusDiv = document.getElementById('validationStatus');
+            const authToken = localStorage.getItem('auth_token');
+            
+            let html = '<h3>Token Validation:</h3>';
+            
+            if (!authToken) {
+                html += '<p class="error">❌ No token to validate</p>';
+                statusDiv.innerHTML = html;
+                return;
+            }
+            
+            try {
+                const parts = authToken.split('.');
+                if (parts.length !== 3) {
+                    throw new Error('Invalid JWT format');
+                }
+                
+                const payload = JSON.parse(atob(parts[1]));
+                const now = Math.floor(Date.now() / 1000);
+                const isExpired = payload.exp < now;
+                
+                html += `<p class="${isExpired ? 'error' : 'success'}">
+                    ${isExpired ? '❌ Token EXPIRED' : '✅ Token VALID'}
+                </p>`;
+                html += '<p><strong>Token Claims:</strong></p>';
+                html += '<pre>' + JSON.stringify(payload, null, 2) + '</pre>';
+                html += `<p><strong>Expires:</strong> ${new Date(payload.exp * 1000).toLocaleString()}</p>`;
+                html += `<p><strong>Current Time:</strong> ${new Date().toLocaleString()}</p>`;
+                
+            } catch (error) {
+                html += '<p class="error">❌ Token validation failed: ' + error.message + '</p>';
+            }
+            
+            statusDiv.innerHTML = html;
+        }
+        
+        // Test hotel rooms API
+        async function testHotelRoomsAPI() {
+            const statusDiv = document.getElementById('apiStatus');
+            const authToken = localStorage.getItem('auth_token');
+            
+            statusDiv.innerHTML = '<p>🔄 Testing API...</p>';
+            
+            if (!authToken) {
+                statusDiv.innerHTML = '<p class="error">❌ No token available for API test</p>';
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/hotel-admin/rooms?page=0&size=10', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const responseText = await response.text();
+                
+                let html = '<h3>API Test Results:</h3>';
+                html += `<p><strong>Status:</strong> ${response.status} ${response.statusText}</p>`;
+                html += '<p><strong>Response:</strong></p>';
+                html += '<pre>' + responseText + '</pre>';
+                
+                if (response.ok) {
+                    html = '<p class="success">✅ API call successful!</p>' + html;
+                } else {
+                    html = '<p class="error">❌ API call failed</p>' + html;
+                }
+                
+                statusDiv.innerHTML = html;
+            } catch (error) {
+                statusDiv.innerHTML = '<p class="error">❌ API test error: ' + error.message + '</p>';
+            }
+        }
+        
+        // Quick login function
+        async function quickLogin() {
+            const statusDiv = document.getElementById('loginStatus');
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            statusDiv.innerHTML = '<p>🔄 Logging in...</p>';
+            
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Store the authentication data
+                    localStorage.setItem('auth_token', data.token);
+                    
+                    const user = {
+                        id: data.userId.toString(),
+                        email: data.email,
+                        firstName: data.firstName,
+                        lastName: data.lastName,
+                        phone: '',
+                        role: Array.isArray(data.roles) ? data.roles[0] : data.roles,
+                        roles: Array.isArray(data.roles) ? data.roles : [data.roles],
+                        hotelId: data.hotelId,
+                        hotelName: data.hotelName,
+                        tenantId: data.tenantId,
+                        createdAt: new Date().toISOString(),
+                        lastLogin: new Date().toISOString(),
+                        isActive: true,
+                        isSystemWide: !data.tenantId,
+                        isTenantBound: !!data.tenantId
+                    };
+                    
+                    localStorage.setItem('auth_user', JSON.stringify(user));
+                    
+                    statusDiv.innerHTML = '<p class="success">✅ Login successful! Refresh the page to see updated status.</p>';
+                    
+                    // Refresh all status sections
+                    setTimeout(() => {
+                        checkTokenStorage();
+                        checkUserData();
+                        validateToken();
+                    }, 1000);
+                } else {
+                    const errorText = await response.text();
+                    statusDiv.innerHTML = '<p class="error">❌ Login failed: ' + errorText + '</p>';
+                }
+            } catch (error) {
+                statusDiv.innerHTML = '<p class="error">❌ Login error: ' + error.message + '</p>';
+            }
+        }
+        
+        // Initialize on page load
+        window.onload = function() {
+            checkTokenStorage();
+            checkUserData();
+            validateToken();
+        };
+    </script>
+</body>
+</html>

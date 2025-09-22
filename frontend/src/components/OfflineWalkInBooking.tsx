@@ -25,17 +25,12 @@ import {
   List,
   ListItem,
   ListItemText,
-  ListItemSecondaryAction,
   MenuItem,
-  IconButton,
-  Tooltip,
-  Stack,
-  Snackbar,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { format, addDays, parseISO } from 'date-fns';
+import { format, addDays } from 'date-fns';
 import {
   CloudOff as CloudOffIcon,
   Search as SearchIcon,
@@ -43,10 +38,7 @@ import {
   Phone as PhoneIcon,
   Email as EmailIcon,
   Sync as SyncIcon,
-  Hotel as HotelIcon,
   Save as SaveIcon,
-  CheckCircle as CheckCircleIcon,
-  Error as ErrorIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import { useTenant } from '../contexts/TenantContext';

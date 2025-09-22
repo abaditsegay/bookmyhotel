@@ -11,7 +11,6 @@ SSH_KEY="~/.ssh/bookmyhotel-aws"
 SERVER_USER="ubuntu"
 REMOTE_PATH="/opt/bookmyhotel"
 LOCAL_FRONTEND_DIR="/Users/samuel/Projects2/bookmyhotel/frontend"
-NGINX_CONFIG_DIR="/Users/samuel/Projects2/bookmyhotel/aws/lightsail/nginx"
 
 # Colors for output
 RED='\033[0;31m'
@@ -91,9 +90,7 @@ print_status "Build directory verified: $BUILD_DIR"
 print_step "📁 Creating remote directories..."
 ssh -i "$SSH_KEY" "$SERVER_USER@$SERVER_IP" "
     sudo mkdir -p $REMOTE_PATH/frontend
-    sudo mkdir -p /var/www/html
     sudo chown -R ubuntu:ubuntu $REMOTE_PATH/frontend
-    sudo chown -R www-data:www-data /var/www/html
 "
 
 # Step 5: Deploy frontend build using rsync
@@ -104,97 +101,6 @@ rsync -avz --delete -e "ssh -i $SSH_KEY" \
 
 print_status "✅ Frontend files deployed successfully"
 
-# Step 6: Copy frontend files to nginx web root
-print_step "📄 Copying files to nginx web root..."
-ssh -i "$SSH_KEY" "$SERVER_USER@$SERVER_IP" "
-    sudo rsync -av $REMOTE_PATH/frontend/ /var/www/html/
-    sudo chown -R www-data:www-data /var/www/html
-    sudo chmod -R 755 /var/www/html
-"
-
-print_status "✅ Files copied to nginx web root"
-
-# Step 7: Update nginx configuration (if config exists)
-print_step "⚙️ Updating nginx configuration..."
-if [ -f "$NGINX_CONFIG_DIR/bookmyhotel.conf" ]; then
-    rsync -avz -e "ssh -i $SSH_KEY" \
-        "$NGINX_CONFIG_DIR/bookmyhotel.conf" \
-        "$SERVER_USER@$SERVER_IP:/tmp/"
-    
-    ssh -i "$SSH_KEY" "$SERVER_USER@$SERVER_IP" "
-        sudo cp /tmp/bookmyhotel.conf /etc/nginx/sites-available/bookmyhotel
-        sudo ln -sf /etc/nginx/sites-available/bookmyhotel /etc/nginx/sites-enabled/
-        sudo rm -f /etc/nginx/sites-enabled/default
-    "
-    print_status "✅ Nginx configuration updated"
-else
-    print_warning "⚠️ Nginx config not found at: $NGINX_CONFIG_DIR/bookmyhotel.conf"
-    print_status "Using existing nginx configuration"
-fi
-
-# Step 8: Test and reload nginx
-print_step "🔧 Testing and reloading nginx..."
-ssh -i "$SSH_KEY" "$SERVER_USER@$SERVER_IP" "
-    # Test nginx configuration
-    if sudo nginx -t; then
-        echo '✅ Nginx configuration test passed'
-        # Reload nginx
-        sudo systemctl reload nginx
-        echo '✅ Nginx reloaded successfully'
-    else
-        echo '❌ Nginx configuration test failed'
-        exit 1
-    fi
-"
-
-# Step 9: Verify nginx is running
-print_step "🔍 Verifying nginx status..."
-ssh -i "$SSH_KEY" "$SERVER_USER@$SERVER_IP" "
-    if sudo systemctl is-active --quiet nginx; then
-        echo '✅ Nginx is running'
-        sudo systemctl status nginx --no-pager -l | head -10
-    else
-        echo '❌ Nginx is not running'
-        sudo systemctl status nginx --no-pager -l
-        exit 1
-    fi
-"
-
-# Step 10: Test the deployment
-print_step "🧪 Testing frontend deployment..."
-sleep 3
-
-# Test HTTP endpoint
-print_status "Testing HTTP endpoint..."
-HTTP_RESPONSE=$(curl -s -w '%{http_code}' -o /dev/null "http://$SERVER_IP/" 2>/dev/null || echo "000")
-
-if [ "$HTTP_RESPONSE" = "200" ]; then
-    print_status "✅ HTTP test passed (Status: $HTTP_RESPONSE)"
-elif [ "$HTTP_RESPONSE" = "301" ] || [ "$HTTP_RESPONSE" = "302" ]; then
-    print_status "✅ HTTP redirect working (Status: $HTTP_RESPONSE)"
-else
-    print_warning "⚠️ HTTP test returned status: $HTTP_RESPONSE"
-fi
-
-# Test HTTPS endpoint
-print_status "Testing HTTPS endpoint..."
-HTTPS_RESPONSE=$(curl -s -w '%{http_code}' -o /dev/null "https://www.shegeroom.com/" 2>/dev/null || echo "000")
-
-if [ "$HTTPS_RESPONSE" = "200" ]; then
-    print_status "✅ HTTPS test passed (Status: $HTTPS_RESPONSE)"
-else
-    print_warning "⚠️ HTTPS test returned status: $HTTPS_RESPONSE"
-fi
-
-# Step 11: Check if React app is properly served
-print_step "🔍 Verifying React app deployment..."
-REACT_CHECK=$(curl -s "https://www.shegeroom.com/" | grep -o "<title>.*</title>" | head -1 || echo "")
-if [ -n "$REACT_CHECK" ]; then
-    print_status "✅ React app is being served: $REACT_CHECK"
-else
-    print_warning "⚠️ Could not verify React app content"
-fi
-
 # Final summary
 print_step "📊 Frontend Deployment Summary"
 echo ""
@@ -204,24 +110,12 @@ echo "📋 Deployment Details:"
 echo "  • Build Type: Production (NODE_ENV=production)"
 echo "  • Server: $SERVER_IP"
 echo "  • Remote Path: $REMOTE_PATH/frontend/"
-echo "  • Web Root: /var/www/html/"
 echo "  • Build Tool: npm run build"
 echo ""
-echo "🌐 Access URLs:"
-echo "  • HTTP: http://$SERVER_IP/"
-echo "  • HTTPS: https://www.shegeroom.com/"
-echo "  • Direct IP: http://$SERVER_IP/"
-echo ""
 echo "🔧 Management Commands:"
-echo "  • Nginx Status: ssh -i $SSH_KEY $SERVER_USER@$SERVER_IP 'sudo systemctl status nginx'"
-echo "  • Nginx Reload: ssh -i $SSH_KEY $SERVER_USER@$SERVER_IP 'sudo systemctl reload nginx'"
-echo "  • View Logs: ssh -i $SSH_KEY $SERVER_USER@$SERVER_IP 'sudo tail -f /var/log/nginx/access.log'"
-echo "  • Check Files: ssh -i $SSH_KEY $SERVER_USER@$SERVER_IP 'ls -la /var/www/html/'"
+echo "  • Check Files: ssh -i $SSH_KEY $SERVER_USER@$SERVER_IP 'ls -la $REMOTE_PATH/frontend/'"
+echo "  • Connect to Server: ssh -i $SSH_KEY $SERVER_USER@$SERVER_IP"
 echo ""
 echo -e "${BLUE}📝 Note: Frontend deployed using rsync with --delete flag for clean updates${NC}"
-
-# Optional: Show nginx access logs
-print_step "📋 Recent Nginx Access Logs (last 5 lines):"
-ssh -i "$SSH_KEY" "$SERVER_USER@$SERVER_IP" "sudo tail -5 /var/log/nginx/access.log 2>/dev/null || echo 'No recent access logs found'"
 
 print_status "🏁 Frontend deployment process completed!"
