@@ -7,7 +7,6 @@ import {
   Button,
   Chip,
   Box,
-  Badge,
   useTheme,
   useMediaQuery,
 } from '@mui/material';
@@ -86,7 +85,7 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
         },
       }}
     >
-      <Box sx={{ position: 'relative' }}>
+      <Box sx={{ position: 'relative', overflow: 'visible' }}>
         <CardMedia
           component="img"
           height={isMobile ? "140" : "160"}
@@ -95,42 +94,39 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
           sx={{ objectFit: 'cover' }}
         />
         {isAvailable && (
-          <Badge
-            badgeContent={
-              <Box sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                px: isMobile ? 0.5 : 1,
-              }}>
-                <CheckCircleIcon sx={{ 
-                  fontSize: isMobile ? 12 : 16, 
-                  mr: isMobile ? 0.3 : 0.5,
-                }} />
-                <Typography 
-                  variant="caption" 
-                  sx={{ 
-                    fontWeight: 'bold',
-                    fontSize: isMobile ? '0.6rem' : '0.75rem',
-                  }}
-                >
-                  {roomType.availableCount} Available
-                </Typography>
-              </Box>
-            }
-            color="success"
+          <Box
             sx={{
               position: 'absolute',
-              top: isMobile ? 8 : 12,
-              right: isMobile ? 8 : 12,
-              '& .MuiBadge-badge': {
-                backgroundColor: 'success.main',
-                color: 'white',
-                borderRadius: 1,
-                height: 'auto',
-                padding: isMobile ? '2px 4px' : '4px 8px',
-              }
+              top: isMobile ? 6 : 8,
+              right: isMobile ? 6 : 8,
+              backgroundColor: 'success.main',
+              color: 'white',
+              borderRadius: 1,
+              padding: isMobile ? '4px 6px' : '6px 10px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: isMobile ? 0.3 : 0.5,
+              zIndex: 1,
+              fontSize: isMobile ? '0.65rem' : '0.75rem',
+              fontWeight: 'bold',
+              boxShadow: 1,
             }}
-          />
+          >
+            <CheckCircleIcon sx={{ 
+              fontSize: isMobile ? 12 : 14, 
+            }} />
+            <Typography 
+              variant="caption" 
+              sx={{ 
+                fontWeight: 'bold',
+                fontSize: isMobile ? '0.65rem' : '0.75rem',
+                color: 'inherit',
+                lineHeight: 1,
+              }}
+            >
+              {roomType.availableCount} Available
+            </Typography>
+          </Box>
         )}
         {!isAvailable && (
           <Chip
@@ -163,7 +159,7 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
           </Box>
           <Box sx={{ textAlign: 'right' }}>
             <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold' }}>
-              ${roomType.pricePerNight}
+              ETB {roomType.pricePerNight}
             </Typography>
             <Typography variant="caption" color="text.secondary">
               per night
