@@ -8,14 +8,35 @@ interface StandardButtonProps extends Omit<ButtonProps, 'size'> {
 }
 
 /**
- * StandardButton - A themed button component with consistent styling
+ * StandardButton - A themed button component with consistent styling and behavior
  * 
- * Features:
- * - Theme-aware sizing using buttonSizes from themeConstants
- * - Consistent elevation and transitions
- * - Customizable variants (text, outlined, contained)
- * - Full width option for mobile-friendly layouts
- * - Hover and focus states with smooth transitions
+ * @description
+ * Extends Material-UI Button with standardized sizing, elevation, and interaction states.
+ * Uses theme constants for consistent spacing and provides smooth transitions.
+ * 
+ * @example
+ * ```tsx
+ * // Primary action button
+ * <StandardButton buttonSize="large" variant="contained">
+ *   Book Now
+ * </StandardButton>
+ * 
+ * // Secondary action
+ * <StandardButton buttonSize="medium" variant="outlined">
+ *   Cancel
+ * </StandardButton>
+ * 
+ * // Mobile-friendly full width
+ * <StandardButton fullWidth variant="contained">
+ *   Continue
+ * </StandardButton>
+ * ```
+ * 
+ * @param buttonSize - Size variant: 'small' (32px), 'medium' (40px), 'large' (48px)
+ * @param fullWidth - Whether button should take full width of container
+ * @param variant - Material-UI button variant: 'text', 'outlined', 'contained'
+ * @param children - Button content (text, icons, etc.)
+ * @param sx - Additional Material-UI styling overrides
  */
 const StandardButton: React.FC<StandardButtonProps> = ({
   buttonSize = 'medium',

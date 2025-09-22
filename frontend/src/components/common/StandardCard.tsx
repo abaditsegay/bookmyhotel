@@ -6,8 +6,29 @@ interface StandardCardProps extends Omit<CardProps, 'variant'> {
 }
 
 /**
- * Standardized Card component with consistent styling
- * Extends Material-UI Card with theme-consistent shadows and spacing
+ * StandardCard - A themed card component with consistent styling across the application
+ * 
+ * @description
+ * Extends Material-UI Card with predefined variants that follow our design system.
+ * Provides consistent elevation, shadows, and border radius throughout the app.
+ * 
+ * @example
+ * ```tsx
+ * // Basic usage
+ * <StandardCard cardVariant="default">
+ *   <CardContent>Content here</CardContent>
+ * </StandardCard>
+ * 
+ * // Elevated card for emphasis
+ * <StandardCard cardVariant="elevated">
+ *   <CardContent>Important content</CardContent>
+ * </StandardCard>
+ * ```
+ * 
+ * @param cardVariant - Visual variant: 'default' (subtle shadow), 'outlined' (border only), 'elevated' (prominent shadow)
+ * @param children - Card content
+ * @param sx - Additional Material-UI styling overrides
+ * @param props - All other Material-UI Card props (except 'variant' which conflicts with cardVariant)
  */
 const StandardCard: React.FC<StandardCardProps> = ({ 
   children, 

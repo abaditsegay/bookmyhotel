@@ -7,15 +7,40 @@ interface StandardTextFieldProps extends Omit<TextFieldProps, 'size'> {
 }
 
 /**
- * StandardTextField - A themed text field component with consistent styling
+ * StandardTextField - A themed text input component with consistent styling and behavior
  * 
- * Features:
- * - Theme-aware sizing and spacing
- * - Consistent border radius and colors
- * - Enhanced focus states with smooth transitions
- * - Support for all Material-UI TextField variants (standard, outlined, filled)
- * - Responsive padding and spacing
- * - Error state styling integration
+ * @description
+ * Extends Material-UI TextField with standardized sizing, border radius, and focus states.
+ * Provides smooth transitions and consistent helper text positioning.
+ * 
+ * @example
+ * ```tsx
+ * // Basic input
+ * <StandardTextField
+ *   label="Email"
+ *   fieldSize="medium"
+ *   variant="outlined"
+ *   fullWidth
+ * />
+ * 
+ * // Compact form input
+ * <StandardTextField
+ *   label="Search"
+ *   fieldSize="small"
+ *   placeholder="Search hotels..."
+ * />
+ * 
+ * // With validation
+ * <StandardTextField
+ *   label="Required Field"
+ *   error={hasError}
+ *   helperText={errorMessage || "Please enter a value"}
+ * />
+ * ```
+ * 
+ * @param fieldSize - Size variant: 'small' (40px), 'medium' (48px) 
+ * @param variant - Material-UI variant: 'standard', 'outlined', 'filled'
+ * @param sx - Additional Material-UI styling overrides
  */
 const StandardTextField: React.FC<StandardTextFieldProps> = ({
   fieldSize = 'medium',
