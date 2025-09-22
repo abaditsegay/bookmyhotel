@@ -124,18 +124,12 @@ const Navbar: React.FC = () => {
 
   // Navigation items based on user role
   const getNavigationItems = () => {
-    // Reserve MyStay should only be visible to CUSTOMER, GUEST roles, and non-authenticated users
-    const shouldShowBookMyStay = !user || user.role === 'CUSTOMER' || user.role === 'GUEST';
-    
     const baseItems: { label: string; path?: string; icon: React.ReactNode; action?: () => void }[] = [];
     
-    // Add Reserve MyStay only for appropriate users
-    if (shouldShowBookMyStay) {
-      baseItems.push({ label: 'Reserve MyStay', path: '/hotels/search', icon: <SearchIcon /> });
-    }
+    // No base navigation items for guests - they will use guest action buttons instead
 
     if (user) {
-      // For system admin and admin, show minimal navigation without Reserve MyStay
+      // For system admin and admin, show minimal navigation
       if (user.role === 'SYSTEM_ADMIN' || user.role === 'ADMIN') {
         return [...baseItems];
       }
@@ -198,11 +192,11 @@ const Navbar: React.FC = () => {
         return [...baseItems, ...customerItems];
       }
 
-      // For other roles (like HOUSEKEEPING, HOTEL_MANAGER), show only base items (which won't include Reserve MyStay)
+      // For other roles (like HOUSEKEEPING, HOTEL_MANAGER), show only base items
       return [...baseItems];
     }
 
-    // For non-authenticated users, show Reserve MyStay
+    // For non-authenticated users, show base items (none)
     return baseItems;
   };
 
@@ -328,6 +322,12 @@ const Navbar: React.FC = () => {
                 <BusinessIcon />
               </ListItemIcon>
               <ListItemText primary="MyReservation" />
+            </ListItem>
+            <ListItem onClick={() => handleNavigation('/hotels/search')} sx={{ cursor: 'pointer' }}>
+              <ListItemIcon>
+                <SearchIcon />
+              </ListItemIcon>
+              <ListItemText primary="Reserve MyStay" />
             </ListItem>
           </>
         )}
@@ -538,17 +538,6 @@ const Navbar: React.FC = () => {
                   <>
                     <Button
                       color="inherit"
-                      onClick={() => handleNavigation('/hotels/search')}
-                      sx={{
-                        borderRadius: 2,
-                        fontSize: '0.8rem', // Smaller font size
-                        '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
-                      }}
-                    >
-                      Reserve MyStay
-                    </Button>
-                    <Button
-                      color="inherit"
                       onClick={() => handleNavigation('/find-booking')}
                       sx={{
                         borderRadius: 2,
@@ -557,6 +546,17 @@ const Navbar: React.FC = () => {
                       }}
                     >
                       MyReservation
+                    </Button>
+                    <Button
+                      color="inherit"
+                      onClick={() => handleNavigation('/hotels/search')}
+                      sx={{
+                        borderRadius: 2,
+                        fontSize: '0.8rem', // Smaller font size
+                        '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
+                      }}
+                    >
+                      Reserve MyStay
                     </Button>
                   </>
                 )}
