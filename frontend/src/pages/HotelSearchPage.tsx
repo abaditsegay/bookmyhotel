@@ -7,8 +7,8 @@ import {
   Paper,
   Button,
   Divider,
-  Card,
 } from '@mui/material';
+import { StandardCard } from '../components/common';
 import {
   Search as SearchIcon,
 } from '@mui/icons-material';
@@ -136,13 +136,11 @@ const HotelSearchPage: React.FC = () => {
 
         {/* Main Search Content - Mobile-friendly single column layout */}
         <Box sx={{ width: '100%' }}>
-          <Card 
-            elevation={1}
+          <StandardCard 
+            cardVariant="default"
             sx={{ 
-              borderRadius: 3,
               display: 'flex',
               flexDirection: 'column',
-              backgroundColor: 'background.paper',
               width: '100%', // Ensure full width usage
               overflow: 'hidden', // Prevent content overflow
             }}
@@ -237,7 +235,7 @@ const HotelSearchPage: React.FC = () => {
                 </Button>
               </Paper>
             </Box>
-          </Card>
+          </StandardCard>
         </Box>
       </Box>
     </Box>
