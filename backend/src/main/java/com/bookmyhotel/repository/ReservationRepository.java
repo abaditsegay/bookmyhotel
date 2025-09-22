@@ -199,4 +199,15 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
                      "WHERE r.status = com.bookmyhotel.entity.ReservationStatus.CHECKED_IN " +
                      "AND r.checkOutDate < :currentDate")
        List<Reservation> findExpiredCheckedInReservations(@Param("currentDate") LocalDate currentDate);
+
+       /**
+        * Find reservations by hotel ID and date range for financial audit
+        */
+       @Query("SELECT r FROM Reservation r " +
+                     "WHERE r.hotel.id = :hotelId " +
+                     "AND ((r.checkInDate <= :endDate AND r.checkOutDate >= :startDate) " +
+                     "OR (r.createdAt >= :startDate AND r.createdAt <= :endDate))")
+       List<Reservation> findByHotelIdAndDateRange(@Param("hotelId") Long hotelId,
+                     @Param("startDate") java.time.LocalDateTime startDate,
+                     @Param("endDate") java.time.LocalDateTime endDate);
 }

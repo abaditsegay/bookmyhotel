@@ -106,4 +106,16 @@ public interface RoomChargeRepository extends JpaRepository<RoomCharge, Long> {
                      "ORDER BY rc.chargeDate DESC")
        Page<RoomCharge> searchRoomCharges(@Param("hotelId") Long hotelId,
                      @Param("searchTerm") String searchTerm, Pageable pageable);
+
+       /**
+        * Get total unpaid charges for a hotel (for financial audit)
+        */
+       @Query("SELECT COALESCE(SUM(rc.amount), 0) FROM RoomCharge rc WHERE rc.hotel.id = :hotelId AND rc.isPaid = false")
+       BigDecimal getTotalUnpaidChargesByHotel(@Param("hotelId") Long hotelId);
+
+       /**
+        * Count reservations with unpaid charges for a hotel (for financial audit)
+        */
+       @Query("SELECT COUNT(DISTINCT rc.reservation.id) FROM RoomCharge rc WHERE rc.hotel.id = :hotelId AND rc.isPaid = false")
+       long countReservationsWithUnpaidCharges(@Param("hotelId") Long hotelId);
 }

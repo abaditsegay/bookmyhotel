@@ -605,15 +605,17 @@ const HotelAdminDashboard: React.FC = () => {
         </TabPanel>
 
         <TabPanel value={activeTab} index={5}>
-          {/* Reports Tab */}
+          {/* Reports Tab - Enhanced with More Data */}
           <Box>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+              <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                Hotel Reports & Analytics
+              </Typography>
               <Button
                 variant="outlined"
                 startIcon={<Refresh />}
                 onClick={loadReportsData}
                 disabled={reportsData.loading}
-                sx={{ ml: 'auto' }}
               >
                 Refresh Data
               </Button>
@@ -636,79 +638,191 @@ const HotelAdminDashboard: React.FC = () => {
 
             {!reportsData.loading && !reportsData.error && (
               <>
-                {/* Key Statistics Cards */}
-                <Grid container spacing={1.5} sx={{ mb: 2 }}>
-                  <Grid item xs={12} md={3}>
+                {/* Key Statistics Cards - Enhanced Data */}
+                <Grid container spacing={2} sx={{ mb: 3 }}>
+                  <Grid item xs={12} sm={6} md={3}>
                     <Card>
-                      <CardContent sx={{ textAlign: 'center', py: 1, px: 1.5 }}>
-                        <MeetingRoom sx={{ fontSize: 24, color: 'primary.main', mb: 0.25 }} />
-                        <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'primary.main', lineHeight: 1.2 }}>
+                      <CardContent sx={{ textAlign: 'center', py: 2 }}>
+                        <MeetingRoom sx={{ fontSize: 24, color: 'primary.main', mb: 1 }} />
+                        <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
                           {reportsData.hotelStats?.totalRooms || 0}
                         </Typography>
-                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
                           Total Rooms
                         </Typography>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                  
-                  <Grid item xs={12} md={3}>
-                    <Card>
-                      <CardContent sx={{ textAlign: 'center', py: 1, px: 1.5 }}>
-                        <TrendingUp sx={{ fontSize: 24, color: 'success.main', mb: 0.25 }} />
-                        <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'success.main', lineHeight: 1.2 }}>
-                          {reportsData.hotelStats?.availableRooms || 0}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                          Available Rooms
+                        <Typography variant="caption" color="text.secondary">
+                          {reportsData.hotelStats?.availableRooms || 0} Available • {reportsData.hotelStats?.bookedRooms || 0} Occupied
                         </Typography>
                       </CardContent>
                     </Card>
                   </Grid>
                   
-                  <Grid item xs={12} md={3}>
+                  <Grid item xs={12} sm={6} md={3}>
                     <Card>
-                      <CardContent sx={{ textAlign: 'center', py: 1, px: 1.5 }}>
-                        <HotelIcon sx={{ fontSize: 24, color: 'warning.main', mb: 0.25 }} />
-                        <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'warning.main', lineHeight: 1.2 }}>
-                          {reportsData.hotelStats?.bookedRooms || 0}
+                      <CardContent sx={{ textAlign: 'center', py: 2 }}>
+                        <TrendingUp sx={{ fontSize: 24, color: 'success.main', mb: 1 }} />
+                        <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'success.main' }}>
+                          ${reportsData.bookingStats?.currentYearRevenue?.toLocaleString() || '0'}
                         </Typography>
-                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                          Occupied Rooms
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                          Year Revenue
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          This Month: {reportsData.bookingStats?.thisMonthBookings || 0} bookings
                         </Typography>
                       </CardContent>
                     </Card>
                   </Grid>
                   
-                  <Grid item xs={12} md={3}>
+                  <Grid item xs={12} sm={6} md={3}>
                     <Card>
-                      <CardContent sx={{ textAlign: 'center', py: 1, px: 1.5 }}>
-                        <People sx={{ fontSize: 24, color: 'info.main', mb: 0.25 }} />
-                        <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'info.main', lineHeight: 1.2 }}>
+                      <CardContent sx={{ textAlign: 'center', py: 2 }}>
+                        <HotelIcon sx={{ fontSize: 24, color: 'warning.main', mb: 1 }} />
+                        <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'warning.main' }}>
+                          {reportsData.bookingStats?.totalBookings || 0}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                          Total Bookings
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Check-ins today: {reportsData.bookingStats?.upcomingCheckIns || 0} • Check-outs: {reportsData.bookingStats?.upcomingCheckOuts || 0}
+                        </Typography>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                  
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Card>
+                      <CardContent sx={{ textAlign: 'center', py: 2 }}>
+                        <People sx={{ fontSize: 24, color: 'info.main', mb: 1 }} />
+                        <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'info.main' }}>
                           {reportsData.hotelStats?.activeStaff || 0}
                         </Typography>
-                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
                           Active Staff
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Total Staff: {reportsData.hotelStats?.totalStaff || 0}
                         </Typography>
                       </CardContent>
                     </Card>
                   </Grid>
                 </Grid>
 
-                {/* Occupancy and Revenue Reports */}
-                <Grid container spacing={3} sx={{ mb: 4 }}>
+                {/* Enhanced Analytics Sections */}
+                <Grid container spacing={3} sx={{ mb: 3 }}>
+                  {/* Booking Status Breakdown */}
+                  <Grid item xs={12} md={6}>
+                    <Card>
+                      <CardContent>
+                        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
+                          Booking Status Overview
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                          Current booking status distribution
+                        </Typography>
+                        {reportsData.bookingStats?.statusBreakdown && Object.entries(reportsData.bookingStats.statusBreakdown).map(([status, count]) => (
+                          <Box key={status} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1, borderBottom: '1px solid #f0f0f0' }}>
+                            <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>
+                              {status.replace('_', ' ')}
+                            </Typography>
+                            <Chip label={count} size="small" color="primary" variant="outlined" />
+                          </Box>
+                        ))}
+                      </CardContent>
+                    </Card>
+                  </Grid>
+
+                  {/* Staff Distribution */}
+                  <Grid item xs={12} md={6}>
+                    <Card>
+                      <CardContent>
+                        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
+                          Staff by Role
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                          Current staff distribution by role
+                        </Typography>
+                        {reportsData.hotelStats?.staffByRole && Object.entries(reportsData.hotelStats.staffByRole).map(([role, count]) => (
+                          <Box key={role} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1, borderBottom: '1px solid #f0f0f0' }}>
+                            <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>
+                              {role.replace('_', ' ')}
+                            </Typography>
+                            <Chip label={count} size="small" color="info" variant="outlined" />
+                          </Box>
+                        ))}
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                </Grid>
+
+                {/* Daily Operations Summary */}
+                <Grid container spacing={3} sx={{ mb: 3 }}>
+                  <Grid item xs={12}>
+                    <Card>
+                      <CardContent>
+                        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
+                          Today's Operations Summary
+                        </Typography>
+                        <Grid container spacing={3}>
+                          <Grid item xs={12} sm={4}>
+                            <Box sx={{ textAlign: 'center', p: 2, backgroundColor: 'grey.50', borderRadius: 1 }}>
+                              <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+                                {Math.round(((reportsData.hotelStats?.bookedRooms || 0) / (reportsData.hotelStats?.totalRooms || 1)) * 100)}%
+                              </Typography>
+                              <Typography variant="body2" color="text.secondary">
+                                Occupancy Rate
+                              </Typography>
+                            </Box>
+                          </Grid>
+                          <Grid item xs={12} sm={4}>
+                            <Box sx={{ textAlign: 'center', p: 2, backgroundColor: 'grey.50', borderRadius: 1 }}>
+                              <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'success.main' }}>
+                                {reportsData.bookingStats?.upcomingCheckIns || 0}
+                              </Typography>
+                              <Typography variant="body2" color="text.secondary">
+                                Expected Check-ins
+                              </Typography>
+                            </Box>
+                          </Grid>
+                          <Grid item xs={12} sm={4}>
+                            <Box sx={{ textAlign: 'center', p: 2, backgroundColor: 'grey.50', borderRadius: 1 }}>
+                              <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'warning.main' }}>
+                                {reportsData.bookingStats?.upcomingCheckOuts || 0}
+                              </Typography>
+                              <Typography variant="body2" color="text.secondary">
+                                Expected Check-outs
+                              </Typography>
+                            </Box>
+                          </Grid>
+                        </Grid>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                </Grid>
+
+                {/* Historical Performance Analysis */}
+                <Grid container spacing={3} sx={{ mb: 3 }}>
                   <Grid item xs={12} md={4}>
                     <Card>
                       <CardContent>
                         <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
-                          Current Occupancy
+                          Current Month Performance
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                          Real-time room occupancy status
+                          Month-to-date metrics
                         </Typography>
                         <Box sx={{ mb: 2 }}>
                           <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
-                            {reportsData.hotelStats && reportsData.hotelStats.totalRooms > 0
+                            {reportsData.bookingStats?.thisMonthBookings || 0}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Bookings this month
+                          </Typography>
+                        </Box>
+                        <Box sx={{ mb: 1 }}>
+                          <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                            Occupancy Rate: {reportsData.hotelStats && reportsData.hotelStats.totalRooms > 0
                               ? Math.round((reportsData.hotelStats.bookedRooms / reportsData.hotelStats.totalRooms) * 100)
                               : 0}%
                           </Typography>
@@ -737,6 +851,11 @@ const HotelAdminDashboard: React.FC = () => {
                             Generated from bookings
                           </Typography>
                         </Box>
+                        <Box>
+                          <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                            Monthly Average: ${Math.round((reportsData.bookingStats?.currentYearRevenue || 0) / 12).toLocaleString()}
+                          </Typography>
+                        </Box>
                       </CardContent>
                     </Card>
                   </Grid>
@@ -745,14 +864,25 @@ const HotelAdminDashboard: React.FC = () => {
                     <Card>
                       <CardContent>
                         <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
-                          Total Bookings
+                          Booking Analytics
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                          All-time booking count
+                          Comprehensive booking metrics
                         </Typography>
                         <Box sx={{ mb: 2 }}>
                           <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'info.main' }}>
                             {reportsData.bookingStats?.totalBookings || 0}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Total bookings
+                          </Typography>
+                        </Box>
+                        <Box>
+                          <Typography variant="body2" sx={{ fontWeight: 'medium', mb: 0.5 }}>
+                            This Month: {reportsData.bookingStats?.thisMonthBookings || 0}
+                          </Typography>
+                          <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                            Pending Check-ins: {reportsData.bookingStats?.upcomingCheckIns || 0}
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
                             This month: {reportsData.bookingStats?.thisMonthBookings || 0}
@@ -897,9 +1027,94 @@ const HotelAdminDashboard: React.FC = () => {
                     <Card>
                       <CardContent>
                         <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3 }}>
-                          Quick Actions
+                          Daily Operations Summary
                         </Typography>
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        <Box sx={{ mb: 2 }}>
+                          <Typography variant="body2" color="text.secondary">Today's Check-ins</Typography>
+                          <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+                            {Math.round((reportsData.bookingStats?.upcomingCheckIns || 0) / 7)} expected
+                          </Typography>
+                        </Box>
+                        <Box sx={{ mb: 2 }}>
+                          <Typography variant="body2" color="text.secondary">Today's Check-outs</Typography>
+                          <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'info.main' }}>
+                            {Math.round((reportsData.bookingStats?.upcomingCheckOuts || 0) / 7)} expected
+                          </Typography>
+                        </Box>
+                        <Box>
+                          <Typography variant="body2" color="text.secondary">Current Occupancy Rate</Typography>
+                          <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'success.main' }}>
+                            {reportsData.hotelStats && reportsData.hotelStats.totalRooms > 0 
+                              ? Math.round((reportsData.hotelStats.bookedRooms / reportsData.hotelStats.totalRooms) * 100)
+                              : 0}%
+                          </Typography>
+                        </Box>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                </Grid>
+
+                {/* Comprehensive Activity Breakdown */}
+                <Grid container spacing={3} sx={{ mt: 2 }}>
+                  <Grid item xs={12}>
+                    <Card>
+                      <CardContent>
+                        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3 }}>
+                          Weekly Activity Trends
+                        </Typography>
+                        <Grid container spacing={2}>
+                          <Grid item xs={12} md={3}>
+                            <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'primary.light', borderRadius: 1 }}>
+                              <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+                                {reportsData.bookingStats?.upcomingCheckIns || 0}
+                              </Typography>
+                              <Typography variant="body2" color="text.secondary">
+                                Check-ins (Next 7 days)
+                              </Typography>
+                            </Box>
+                          </Grid>
+                          <Grid item xs={12} md={3}>
+                            <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'info.light', borderRadius: 1 }}>
+                              <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'info.main' }}>
+                                {reportsData.bookingStats?.upcomingCheckOuts || 0}
+                              </Typography>
+                              <Typography variant="body2" color="text.secondary">
+                                Check-outs (Next 7 days)
+                              </Typography>
+                            </Box>
+                          </Grid>
+                          <Grid item xs={12} md={3}>
+                            <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'success.light', borderRadius: 1 }}>
+                              <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'success.main' }}>
+                                {reportsData.hotelStats?.availableRooms || 0}
+                              </Typography>
+                              <Typography variant="body2" color="text.secondary">
+                                Available Rooms
+                              </Typography>
+                            </Box>
+                          </Grid>
+                          <Grid item xs={12} md={3}>
+                            <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'warning.light', borderRadius: 1 }}>
+                              <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'warning.main' }}>
+                                {reportsData.hotelStats?.activeStaff || 0}
+                              </Typography>
+                              <Typography variant="body2" color="text.secondary">
+                                Active Staff
+                              </Typography>
+                            </Box>
+                          </Grid>
+                        </Grid>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    <Card>
+                      <CardContent>
+                        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3 }}>
+                          Quick Actions & Navigation
+                        </Typography>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
                           <Button 
                             variant="outlined" 
                             size="small"
