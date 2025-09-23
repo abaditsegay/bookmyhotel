@@ -20,7 +20,9 @@ import {
   TextField,
   FormControlLabel,
   Checkbox,
-  Snackbar
+  Snackbar,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import {
   CheckCircle as CheckCircleIcon,
@@ -57,6 +59,11 @@ const BookingConfirmationPage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { hotelApiService } = useAuthenticatedApi();
+  
+  // Mobile responsiveness
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   
   const [booking, setBooking] = useState<BookingData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -236,14 +243,51 @@ const BookingConfirmationPage: React.FC = () => {
 
   if (loading) {
     return (
-      <Container maxWidth="md" sx={{ py: 8 }}>
-        <Paper elevation={2} sx={{ p: 6, borderRadius: 3 }}>
-          <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" minHeight="400px">
-            <CircularProgress size={80} thickness={4} sx={{ color: '#1976d2', mb: 4 }} />
-            <Typography variant="h5" component="div" sx={{ fontWeight: 'bold', mb: 2 }}>
+      <Container 
+        maxWidth="md" 
+        sx={{ 
+          py: isMobile ? 4 : 8,
+          px: isMobile ? 1 : 3,
+        }}
+      >
+        <Paper 
+          elevation={2} 
+          sx={{ 
+            p: isMobile ? 3 : 6, 
+            borderRadius: 3,
+          }}
+        >
+          <Box 
+            display="flex" 
+            flexDirection="column" 
+            alignItems="center" 
+            justifyContent="center" 
+            minHeight={isMobile ? "300px" : "400px"}
+          >
+            <CircularProgress 
+              size={isMobile ? 60 : 80} 
+              thickness={4} 
+              sx={{ color: '#1976d2', mb: isMobile ? 3 : 4 }} 
+            />
+            <Typography 
+              variant={isMobile ? 'h6' : 'h5'} 
+              component="div" 
+              sx={{ 
+                fontWeight: 'bold', 
+                mb: 2,
+                textAlign: 'center',
+              }}
+            >
               Loading booking confirmation...
             </Typography>
-            <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'center' }}>
+            <Typography 
+              variant="body1" 
+              color="text.secondary" 
+              sx={{ 
+                textAlign: 'center',
+                px: isMobile ? 2 : 0,
+              }}
+            >
               Please wait while we retrieve your booking details
             </Typography>
           </Box>
@@ -254,10 +298,25 @@ const BookingConfirmationPage: React.FC = () => {
 
   if (error || !booking) {
     return (
-      <Container maxWidth="md" sx={{ py: 8 }}>
-        <Paper elevation={2} sx={{ p: 6, borderRadius: 3 }}>
-          <Alert severity="error" sx={{ mb: 4, borderRadius: 2 }}>
-            <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
+      <Container 
+        maxWidth="md" 
+        sx={{ 
+          py: isMobile ? 4 : 8,
+          px: isMobile ? 1 : 3,
+        }}
+      >
+        <Paper 
+          elevation={2} 
+          sx={{ 
+            p: isMobile ? 3 : 6, 
+            borderRadius: 3,
+          }}
+        >
+          <Alert severity="error" sx={{ mb: isMobile ? 3 : 4, borderRadius: 2 }}>
+            <Typography 
+              variant={isMobile ? 'subtitle1' : 'h6'} 
+              sx={{ fontWeight: 'bold', mb: 1 }}
+            >
               {error || 'Booking not found'}
             </Typography>
             <Typography variant="body2">
@@ -271,8 +330,9 @@ const BookingConfirmationPage: React.FC = () => {
               startIcon={<HomeIcon />}
               size="large"
               sx={{ 
-                px: 4, 
+                px: isMobile ? 3 : 4, 
                 py: 1.5,
+                minHeight: 48,
                 background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
               }}
             >
@@ -287,27 +347,60 @@ const BookingConfirmationPage: React.FC = () => {
   const nights = calculateNights(booking.checkInDate, booking.checkOutDate);
 
   return (
-    <Container maxWidth="lg" sx={{ py: 6 }}>
+    <Container 
+      maxWidth="lg" 
+      sx={{ 
+        py: isMobile ? 3 : 6,
+        px: isMobile ? 1 : 3,
+      }}
+    >
       {/* Success Header */}
       <Paper 
         elevation={0}
         sx={{ 
-          p: 4, 
-          mb: 4, 
+          p: isMobile ? 3 : 4, 
+          mb: isMobile ? 3 : 4, 
           textAlign: 'center', 
           background: 'linear-gradient(135deg, #4caf50 0%, #2e7d32 100%)',
           color: 'white',
           borderRadius: 3
         }}
       >
-        <CheckCircleIcon sx={{ fontSize: 60, mb: 2, filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))' }} />
-        <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold', mb: 1.5 }}>
+        <CheckCircleIcon 
+          sx={{ 
+            fontSize: isMobile ? 48 : 60, 
+            mb: isMobile ? 1.5 : 2, 
+            filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))',
+          }} 
+        />
+        <Typography 
+          variant={isMobile ? 'h5' : 'h4'} 
+          gutterBottom 
+          sx={{ 
+            fontWeight: 'bold', 
+            mb: 1.5,
+          }}
+        >
           Booking Confirmed!
         </Typography>
-        <Typography variant="body1" sx={{ mb: 3, opacity: 0.9 }}>
+        <Typography 
+          variant="body1" 
+          sx={{ 
+            mb: isMobile ? 2 : 3, 
+            opacity: 0.9,
+            fontSize: isMobile ? '0.95rem' : '1rem',
+          }}
+        >
           Your reservation has been successfully created
         </Typography>
-        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap' }}>
+        <Box 
+          sx={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            gap: 2, 
+            flexWrap: 'wrap',
+          }}
+        >
           <Chip
             label={`Confirmation: ${booking.confirmationNumber}`}
             variant="filled"
@@ -315,16 +408,16 @@ const BookingConfirmationPage: React.FC = () => {
               bgcolor: 'rgba(255,255,255,0.2)', 
               color: 'white', 
               fontWeight: 'bold', 
-              fontSize: '1.3rem',
-              px: 3,
-              py: 2,
+              fontSize: isMobile ? '1rem' : '1.3rem',
+              px: isMobile ? 2 : 3,
+              py: isMobile ? 1.5 : 2,
               height: 'auto',
               backdropFilter: 'blur(10px)',
               border: '1px solid rgba(255,255,255,0.3)',
               '& .MuiChip-label': {
-                fontSize: '1.3rem',
+                fontSize: isMobile ? '1rem' : '1.3rem',
                 fontWeight: 'bold',
-                padding: '8px 12px'
+                padding: isMobile ? '6px 10px' : '8px 12px',
               }
             }}
           />
@@ -332,29 +425,43 @@ const BookingConfirmationPage: React.FC = () => {
       </Paper>
 
       {/* Action Buttons */}
-      <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mb: 4, flexWrap: 'wrap' }}>
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          gap: isMobile ? 1.5 : 2, 
+          mb: isMobile ? 3 : 4, 
+          flexWrap: 'wrap',
+          flexDirection: isMobile ? 'column' : 'row',
+          alignItems: 'stretch',
+        }}
+      >
         <Button
           variant="contained"
           startIcon={<EmailIcon />}
           onClick={() => setEmailDialogOpen(true)}
           sx={{ 
-            px: 3, 
+            px: isMobile ? 2 : 3, 
             py: 1.5,
+            minHeight: 48,
+            flex: isMobile ? '1' : '0 0 auto',
             background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
             '&:hover': {
               background: 'linear-gradient(135deg, #1565c0 0%, #0d47a1 100%)',
             }
           }}
         >
-          EMAIL CONFIRMATION
+          {isMobile ? 'EMAIL' : 'EMAIL CONFIRMATION'}
         </Button>
         <Button
           variant="outlined"
           startIcon={<PrintIcon />}
           onClick={handlePrint}
           sx={{ 
-            px: 3, 
+            px: isMobile ? 2 : 3, 
             py: 1.5,
+            minHeight: 48,
+            flex: isMobile ? '1' : '0 0 auto',
             borderColor: '#1976d2',
             color: '#1976d2',
             '&:hover': {
@@ -371,8 +478,10 @@ const BookingConfirmationPage: React.FC = () => {
           onClick={handleDownloadPDF}
           disabled={downloadingPDF}
           sx={{ 
-            px: 3, 
+            px: isMobile ? 2 : 3, 
             py: 1.5,
+            minHeight: 48,
+            flex: isMobile ? '1' : '0 0 auto',
             borderColor: '#1976d2',
             color: '#1976d2',
             '&:hover': {
@@ -385,39 +494,82 @@ const BookingConfirmationPage: React.FC = () => {
             }
           }}
         >
-          {downloadingPDF ? 'DOWNLOADING...' : 'DOWNLOAD PDF'}
+          {downloadingPDF 
+            ? (isMobile ? 'DOWNLOADING...' : 'DOWNLOADING...') 
+            : (isMobile ? 'PDF' : 'DOWNLOAD PDF')
+          }
         </Button>
       </Box>
 
       {/* Booking Details */}
-      <Paper elevation={2} sx={{ p: 4, mb: 4, borderRadius: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 4 }}>
-          <Box>
-            <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold', color: '#1976d2' }}>
+      <Paper 
+        elevation={2} 
+        sx={{ 
+          p: isMobile ? 3 : 4, 
+          mb: isMobile ? 3 : 4, 
+          borderRadius: 3,
+        }}
+      >
+        <Box 
+          sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: isMobile ? 'center' : 'flex-start', 
+            mb: isMobile ? 3 : 4,
+            flexDirection: isMobile ? 'column' : 'row',
+            gap: isMobile ? 2 : 0,
+            textAlign: isMobile ? 'center' : 'left',
+          }}
+        >
+          <Box sx={{ order: isMobile ? 2 : 1 }}>
+            <Typography 
+              variant={isMobile ? 'h5' : 'h4'} 
+              gutterBottom 
+              sx={{ 
+                fontWeight: 'bold', 
+                color: '#1976d2',
+                mb: isMobile ? 1 : 'initial',
+              }}
+            >
               Booking Details
             </Typography>
           </Box>
-          <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column', alignItems: 'flex-end' }}>
+          <Box 
+            sx={{ 
+              display: 'flex', 
+              gap: isMobile ? 1 : 2, 
+              flexDirection: isMobile ? 'row' : 'column', 
+              alignItems: isMobile ? 'center' : 'flex-end',
+              order: isMobile ? 1 : 2,
+              justifyContent: 'center',
+            }}
+          >
             <Chip
               label={booking.status.toUpperCase()}
               color={getStatusColor(booking.status) as any}
               variant="filled"
-              sx={{ fontWeight: 'bold', fontSize: '0.9rem' }}
+              sx={{ 
+                fontWeight: 'bold', 
+                fontSize: isMobile ? '0.8rem' : '0.9rem',
+              }}
             />
             <Chip
               label={formatPaymentStatus(booking.paymentStatus)}
               color={getPaymentStatusColor(booking.paymentStatus) as any}
               variant="outlined"
-              sx={{ fontWeight: '500' }}
+              sx={{ 
+                fontWeight: '500',
+                fontSize: isMobile ? '0.8rem' : '0.9rem',
+              }}
             />
           </Box>
         </Box>
 
-        <Divider sx={{ my: 3 }} />
+        <Divider sx={{ my: isMobile ? 2 : 3 }} />
 
         {/* Quick Info Grid */}
-        <Grid container spacing={3} sx={{ mb: 4 }}>
-          <Grid item xs={12} sm={6} md={3}>
+        <Grid container spacing={isMobile ? 2 : 3} sx={{ mb: isMobile ? 3 : 4 }}>
+          <Grid item xs={6} sm={6} md={3}>
             <Card 
               elevation={0}
               sx={{ 
@@ -426,22 +578,43 @@ const BookingConfirmationPage: React.FC = () => {
                 transition: 'all 0.3s ease',
                 '&:hover': {
                   borderColor: '#1976d2',
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 8px 16px rgba(25, 118, 210, 0.1)'
+                  transform: isMobile ? 'none' : 'translateY(-2px)',
+                  boxShadow: isMobile ? 'none' : '0 8px 16px rgba(25, 118, 210, 0.1)'
                 }
               }}
             >
-              <CardContent sx={{ textAlign: 'center', py: 3 }}>
-                <Typography variant="subtitle2" color="text.secondary" sx={{ fontSize: '0.9rem', fontWeight: '600', mb: 1 }}>
+              <CardContent 
+                sx={{ 
+                  textAlign: 'center', 
+                  py: isMobile ? 2 : 3,
+                  px: isMobile ? 1 : 3,
+                }}
+              >
+                <Typography 
+                  variant="subtitle2" 
+                  color="text.secondary" 
+                  sx={{ 
+                    fontSize: isMobile ? '0.75rem' : '0.9rem', 
+                    fontWeight: '600', 
+                    mb: 1,
+                  }}
+                >
                   Check-in
                 </Typography>
-                <Typography variant="h6" sx={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
+                <Typography 
+                  variant={isMobile ? 'body2' : 'h6'} 
+                  sx={{ 
+                    fontWeight: 'bold', 
+                    fontSize: isMobile ? '0.85rem' : '1.1rem',
+                    lineHeight: 1.2,
+                  }}
+                >
                   {formatDate(booking.checkInDate)}
                 </Typography>
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={6} sm={6} md={3}>
             <Card 
               elevation={0}
               sx={{ 
@@ -450,22 +623,43 @@ const BookingConfirmationPage: React.FC = () => {
                 transition: 'all 0.3s ease',
                 '&:hover': {
                   borderColor: '#1976d2',
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 8px 16px rgba(25, 118, 210, 0.1)'
+                  transform: isMobile ? 'none' : 'translateY(-2px)',
+                  boxShadow: isMobile ? 'none' : '0 8px 16px rgba(25, 118, 210, 0.1)'
                 }
               }}
             >
-              <CardContent sx={{ textAlign: 'center', py: 3 }}>
-                <Typography variant="subtitle2" color="text.secondary" sx={{ fontSize: '0.9rem', fontWeight: '600', mb: 1 }}>
+              <CardContent 
+                sx={{ 
+                  textAlign: 'center', 
+                  py: isMobile ? 2 : 3,
+                  px: isMobile ? 1 : 3,
+                }}
+              >
+                <Typography 
+                  variant="subtitle2" 
+                  color="text.secondary" 
+                  sx={{ 
+                    fontSize: isMobile ? '0.75rem' : '0.9rem', 
+                    fontWeight: '600', 
+                    mb: 1,
+                  }}
+                >
                   Check-out
                 </Typography>
-                <Typography variant="h6" sx={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
+                <Typography 
+                  variant={isMobile ? 'body2' : 'h6'} 
+                  sx={{ 
+                    fontWeight: 'bold', 
+                    fontSize: isMobile ? '0.85rem' : '1.1rem',
+                    lineHeight: 1.2,
+                  }}
+                >
                   {formatDate(booking.checkOutDate)}
                 </Typography>
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={6} sm={6} md={3}>
             <Card 
               elevation={0}
               sx={{ 
@@ -474,22 +668,42 @@ const BookingConfirmationPage: React.FC = () => {
                 transition: 'all 0.3s ease',
                 '&:hover': {
                   borderColor: '#1976d2',
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 8px 16px rgba(25, 118, 210, 0.1)'
+                  transform: isMobile ? 'none' : 'translateY(-2px)',
+                  boxShadow: isMobile ? 'none' : '0 8px 16px rgba(25, 118, 210, 0.1)'
                 }
               }}
             >
-              <CardContent sx={{ textAlign: 'center', py: 3 }}>
-                <Typography variant="subtitle2" color="text.secondary" sx={{ fontSize: '0.9rem', fontWeight: '600', mb: 1 }}>
+              <CardContent 
+                sx={{ 
+                  textAlign: 'center', 
+                  py: isMobile ? 2 : 3,
+                  px: isMobile ? 1 : 3,
+                }}
+              >
+                <Typography 
+                  variant="subtitle2" 
+                  color="text.secondary" 
+                  sx={{ 
+                    fontSize: isMobile ? '0.75rem' : '0.9rem', 
+                    fontWeight: '600', 
+                    mb: 1,
+                  }}
+                >
                   Nights
                 </Typography>
-                <Typography variant="h6" sx={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
+                <Typography 
+                  variant={isMobile ? 'body2' : 'h6'} 
+                  sx={{ 
+                    fontWeight: 'bold', 
+                    fontSize: isMobile ? '0.85rem' : '1.1rem',
+                  }}
+                >
                   {nights}
                 </Typography>
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={6} sm={6} md={3}>
             <Card 
               elevation={0}
               sx={{ 
@@ -498,16 +712,38 @@ const BookingConfirmationPage: React.FC = () => {
                 transition: 'all 0.3s ease',
                 background: 'linear-gradient(135deg, #f1f8e9 0%, #e8f5e8 100%)',
                 '&:hover': {
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 8px 16px rgba(76, 175, 80, 0.2)'
+                  transform: isMobile ? 'none' : 'translateY(-2px)',
+                  boxShadow: isMobile ? 'none' : '0 8px 16px rgba(76, 175, 80, 0.2)'
                 }
               }}
             >
-              <CardContent sx={{ textAlign: 'center', py: 3 }}>
-                <Typography variant="subtitle2" color="text.secondary" sx={{ fontSize: '0.9rem', fontWeight: '600', mb: 1 }}>
+              <CardContent 
+                sx={{ 
+                  textAlign: 'center', 
+                  py: isMobile ? 2 : 3,
+                  px: isMobile ? 1 : 3,
+                }}
+              >
+                <Typography 
+                  variant="subtitle2" 
+                  color="text.secondary" 
+                  sx={{ 
+                    fontSize: isMobile ? '0.75rem' : '0.9rem', 
+                    fontWeight: '600', 
+                    mb: 1,
+                  }}
+                >
                   Total Amount
                 </Typography>
-                <Typography variant="h5" component="div" sx={{ fontWeight: 'bold', color: '#2e7d32' }}>
+                <Typography 
+                  variant={isMobile ? 'subtitle1' : 'h5'} 
+                  component="div" 
+                  sx={{ 
+                    fontWeight: 'bold', 
+                    color: '#2e7d32',
+                    fontSize: isMobile ? '1rem' : '1.25rem',
+                  }}
+                >
                   ETB {booking.totalAmount?.toFixed(0)}
                 </Typography>
               </CardContent>
@@ -516,18 +752,47 @@ const BookingConfirmationPage: React.FC = () => {
         </Grid>
 
         {/* Detailed Information */}
-        <Grid container spacing={4}>
+        <Grid container spacing={isMobile ? 2 : 4}>
           {/* Hotel Information */}
           <Grid item xs={12} md={6}>
-            <Box sx={{ p: 3, border: '1px solid #e0e0e0', borderRadius: 2, height: '100%' }}>
-              <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', color: '#1976d2', mb: 2 }}>
+            <Box 
+              sx={{ 
+                p: isMobile ? 2 : 3, 
+                border: '1px solid #e0e0e0', 
+                borderRadius: 2, 
+                height: '100%',
+              }}
+            >
+              <Typography 
+                variant={isMobile ? 'subtitle1' : 'h6'} 
+                gutterBottom 
+                sx={{ 
+                  fontWeight: 'bold', 
+                  color: '#1976d2', 
+                  mb: isMobile ? 1.5 : 2,
+                }}
+              >
                 Hotel Information
               </Typography>
               <Box sx={{ mb: 2 }}>
-                <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
+                <Typography 
+                  variant={isMobile ? 'body1' : 'h6'} 
+                  sx={{ 
+                    fontWeight: 'bold', 
+                    mb: 1,
+                    fontSize: isMobile ? '1rem' : '1.25rem',
+                  }}
+                >
                   {booking.hotelName}
                 </Typography>
-                <Typography variant="body1" color="text.secondary" sx={{ lineHeight: 1.6 }}>
+                <Typography 
+                  variant="body1" 
+                  color="text.secondary" 
+                  sx={{ 
+                    lineHeight: 1.6,
+                    fontSize: isMobile ? '0.9rem' : '1rem',
+                  }}
+                >
                   {booking.hotelAddress}
                 </Typography>
               </Box>
@@ -536,18 +801,52 @@ const BookingConfirmationPage: React.FC = () => {
 
           {/* Room Information */}
           <Grid item xs={12} md={6}>
-            <Box sx={{ p: 3, border: '1px solid #e0e0e0', borderRadius: 2, height: '100%' }}>
-              <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', color: '#1976d2', mb: 2 }}>
+            <Box 
+              sx={{ 
+                p: isMobile ? 2 : 3, 
+                border: '1px solid #e0e0e0', 
+                borderRadius: 2, 
+                height: '100%',
+              }}
+            >
+              <Typography 
+                variant={isMobile ? 'subtitle1' : 'h6'} 
+                gutterBottom 
+                sx={{ 
+                  fontWeight: 'bold', 
+                  color: '#1976d2', 
+                  mb: isMobile ? 1.5 : 2,
+                }}
+              >
                 Room Information
               </Typography>
               <Box sx={{ mb: 2 }}>
-                <Typography variant="body1" sx={{ mb: 1 }}>
+                <Typography 
+                  variant="body1" 
+                  sx={{ 
+                    mb: 1,
+                    fontSize: isMobile ? '0.9rem' : '1rem',
+                  }}
+                >
                   <strong>Room Type:</strong> {booking.roomType}
                 </Typography>
-                <Typography variant="body1" sx={{ mb: 1 }}>
+                <Typography 
+                  variant="body1" 
+                  sx={{ 
+                    mb: 1,
+                    fontSize: isMobile ? '0.9rem' : '1rem',
+                  }}
+                >
                   <strong>Rate:</strong> ETB {booking.pricePerNight?.toFixed(0)}/night
                 </Typography>
-                <Typography variant="body1" sx={{ color: '#2e7d32', fontWeight: 'bold' }}>
+                <Typography 
+                  variant="body1" 
+                  sx={{ 
+                    color: '#2e7d32', 
+                    fontWeight: 'bold',
+                    fontSize: isMobile ? '0.9rem' : '1rem',
+                  }}
+                >
                   <strong>Room Assignment:</strong> Room will be assigned at check-in
                 </Typography>
               </Box>
@@ -556,18 +855,49 @@ const BookingConfirmationPage: React.FC = () => {
 
           {/* Guest Information */}
           <Grid item xs={12} md={6}>
-            <Box sx={{ p: 3, border: '1px solid #e0e0e0', borderRadius: 2, height: '100%' }}>
-              <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', color: '#1976d2', mb: 2 }}>
+            <Box 
+              sx={{ 
+                p: isMobile ? 2 : 3, 
+                border: '1px solid #e0e0e0', 
+                borderRadius: 2, 
+                height: '100%',
+              }}
+            >
+              <Typography 
+                variant={isMobile ? 'subtitle1' : 'h6'} 
+                gutterBottom 
+                sx={{ 
+                  fontWeight: 'bold', 
+                  color: '#1976d2', 
+                  mb: isMobile ? 1.5 : 2,
+                }}
+              >
                 Guest Information
               </Typography>
               <Box sx={{ mb: 2 }}>
-                <Typography variant="body1" sx={{ mb: 1 }}>
+                <Typography 
+                  variant="body1" 
+                  sx={{ 
+                    mb: 1,
+                    fontSize: isMobile ? '0.9rem' : '1rem',
+                  }}
+                >
                   <strong>Name:</strong> {booking.guestName}
                 </Typography>
-                <Typography variant="body1" sx={{ mb: 1 }}>
+                <Typography 
+                  variant="body1" 
+                  sx={{ 
+                    mb: 1,
+                    fontSize: isMobile ? '0.9rem' : '1rem',
+                    wordBreak: 'break-word',
+                  }}
+                >
                   <strong>Email:</strong> {booking.guestEmail}
                 </Typography>
-                <Typography variant="body1">
+                <Typography 
+                  variant="body1"
+                  sx={{ fontSize: isMobile ? '0.9rem' : '1rem' }}
+                >
                   <strong>Number of Guests:</strong> {booking.numberOfGuests || 1}
                 </Typography>
               </Box>
@@ -576,18 +906,48 @@ const BookingConfirmationPage: React.FC = () => {
 
           {/* Booking Summary */}
           <Grid item xs={12} md={6}>
-            <Box sx={{ p: 3, border: '1px solid #e0e0e0', borderRadius: 2, height: '100%' }}>
-              <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', color: '#1976d2', mb: 2 }}>
+            <Box 
+              sx={{ 
+                p: isMobile ? 2 : 3, 
+                border: '1px solid #e0e0e0', 
+                borderRadius: 2, 
+                height: '100%',
+              }}
+            >
+              <Typography 
+                variant={isMobile ? 'subtitle1' : 'h6'} 
+                gutterBottom 
+                sx={{ 
+                  fontWeight: 'bold', 
+                  color: '#1976d2', 
+                  mb: isMobile ? 1.5 : 2,
+                }}
+              >
                 Booking Summary
               </Typography>
               <Box sx={{ mb: 2 }}>
-                <Typography variant="body1" sx={{ mb: 1 }}>
+                <Typography 
+                  variant="body1" 
+                  sx={{ 
+                    mb: 1,
+                    fontSize: isMobile ? '0.9rem' : '1rem',
+                  }}
+                >
                   <strong>Booked on:</strong> {formatDateLong(booking.createdAt)}
                 </Typography>
-                <Typography variant="body1" sx={{ mb: 1 }}>
+                <Typography 
+                  variant="body1" 
+                  sx={{ 
+                    mb: 1,
+                    fontSize: isMobile ? '0.9rem' : '1rem',
+                  }}
+                >
                   <strong>Duration:</strong> {nights} night{nights !== 1 ? 's' : ''}
                 </Typography>
-                <Typography variant="body1">
+                <Typography 
+                  variant="body1"
+                  sx={{ fontSize: isMobile ? '0.9rem' : '1rem' }}
+                >
                   <strong>Payment:</strong> {formatPaymentStatus(booking.paymentStatus)}
                 </Typography>
               </Box>
@@ -636,15 +996,26 @@ const BookingConfirmationPage: React.FC = () => {
       </Alert>
 
       {/* Navigation Buttons */}
-      <Box sx={{ display: 'flex', justifyContent: 'center', gap: 3, flexWrap: 'wrap' }}>
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          gap: isMobile ? 2 : 3, 
+          flexWrap: 'wrap',
+          flexDirection: isMobile ? 'column' : 'row',
+          alignItems: 'stretch',
+        }}
+      >
         <Button
           variant="contained"
           onClick={() => navigate('/')}
           startIcon={<HomeIcon />}
           size="large"
           sx={{ 
-            px: 4, 
+            px: isMobile ? 3 : 4, 
             py: 1.5,
+            minHeight: 48,
+            flex: isMobile ? '1' : '0 0 auto',
             background: 'linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)',
             '&:hover': {
               background: 'linear-gradient(135deg, #1b5e20 0%, #0d4f14 100%)',
@@ -659,8 +1030,10 @@ const BookingConfirmationPage: React.FC = () => {
           startIcon={<SearchIcon />}
           size="large"
           sx={{ 
-            px: 4, 
+            px: isMobile ? 3 : 4, 
             py: 1.5,
+            minHeight: 48,
+            flex: isMobile ? '1' : '0 0 auto',
             borderColor: '#1976d2',
             color: '#1976d2',
             '&:hover': {
@@ -669,7 +1042,7 @@ const BookingConfirmationPage: React.FC = () => {
             }
           }}
         >
-          Search More Hotels
+          {isMobile ? 'Search Hotels' : 'Search More Hotels'}
         </Button>
       </Box>
 
@@ -679,21 +1052,30 @@ const BookingConfirmationPage: React.FC = () => {
         onClose={() => setEmailDialogOpen(false)} 
         maxWidth="sm" 
         fullWidth
+        fullScreen={isMobile}
         PaperProps={{
           sx: {
-            borderRadius: 3,
-            p: 2
+            borderRadius: isMobile ? 0 : 3,
+            p: isMobile ? 1 : 2,
+            m: isMobile ? 0 : 2,
           }
         }}
       >
         <DialogTitle sx={{ pb: 2 }}>
-          <Typography variant="h5" component="div" sx={{ fontWeight: 'bold', color: '#1976d2' }}>
+          <Typography 
+            variant={isMobile ? 'h6' : 'h5'} 
+            component="div" 
+            sx={{ 
+              fontWeight: 'bold', 
+              color: '#1976d2',
+            }}
+          >
             Email Booking Confirmation
           </Typography>
         </DialogTitle>
         <DialogContent sx={{ pb: 2 }}>
           <TextField
-            autoFocus
+            autoFocus={!isMobile}
             margin="dense"
             label="Email Address"
             type="email"
@@ -704,7 +1086,8 @@ const BookingConfirmationPage: React.FC = () => {
             sx={{ 
               mb: 3,
               '& .MuiOutlinedInput-root': {
-                borderRadius: 2
+                borderRadius: 2,
+                minHeight: isMobile ? 56 : 'auto',
               }
             }}
           />
@@ -713,17 +1096,38 @@ const BookingConfirmationPage: React.FC = () => {
               <Checkbox
                 checked={includeItinerary}
                 onChange={(e) => setIncludeItinerary(e.target.checked)}
-                sx={{ color: '#1976d2' }}
+                sx={{ 
+                  color: '#1976d2',
+                  '& .MuiSvgIcon-root': {
+                    fontSize: isMobile ? '1.5rem' : '1.25rem',
+                  }
+                }}
               />
             }
             label="Include detailed itinerary"
-            sx={{ mb: 1 }}
+            sx={{ 
+              mb: 1,
+              '& .MuiFormControlLabel-label': {
+                fontSize: isMobile ? '1rem' : '0.875rem',
+              }
+            }}
           />
         </DialogContent>
-        <DialogActions sx={{ p: 3, pt: 1 }}>
+        <DialogActions 
+          sx={{ 
+            p: isMobile ? 2 : 3, 
+            pt: 1,
+            flexDirection: isMobile ? 'column' : 'row',
+            gap: isMobile ? 1 : 0,
+          }}
+        >
           <Button 
             onClick={() => setEmailDialogOpen(false)}
-            sx={{ px: 3 }}
+            sx={{ 
+              px: 3,
+              minHeight: 48,
+              width: isMobile ? '100%' : 'auto',
+            }}
           >
             Cancel
           </Button>
@@ -734,6 +1138,8 @@ const BookingConfirmationPage: React.FC = () => {
             startIcon={sendingEmail ? <CircularProgress size={20} /> : <EmailIcon />}
             sx={{ 
               px: 4,
+              minHeight: 48,
+              width: isMobile ? '100%' : 'auto',
               background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
               '&:hover': {
                 background: 'linear-gradient(135deg, #1565c0 0%, #0d47a1 100%)',

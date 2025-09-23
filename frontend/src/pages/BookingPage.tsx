@@ -21,6 +21,8 @@ import {
   InputAdornment,
   Chip,
   CircularProgress,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -52,6 +54,11 @@ const BookingPage: React.FC = () => {
   const location = useLocation();
   const { user, isAuthenticated } = useAuth();
   const { hotelApiService } = useAuthenticatedApi();
+  
+  // Mobile responsiveness
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   
   // Get data from navigation state
   const bookingData = location.state as BookingPageState;
@@ -316,19 +323,34 @@ const BookingPage: React.FC = () => {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <Container maxWidth="md" sx={{ py: 4 }}>
+      <Container 
+        maxWidth="md" 
+        sx={{ 
+          py: isMobile ? 2 : 4,
+          px: isMobile ? 1 : 3,
+        }}
+      >
         {/* Header Section */}
-        <Box sx={{ mb: 4 }}>
+        <Box sx={{ mb: isMobile ? 2 : 4 }}>
           {/* Back Navigation */}
-          <Box sx={{ mb: 2 }}>
+          <Box sx={{ mb: isMobile ? 1 : 2 }}>
             <IconButton 
               onClick={handleBackToResults}
-              sx={{ mr: 1 }}
+              sx={{ 
+                mr: 1,
+                minHeight: 48,
+                minWidth: 48,
+              }}
               aria-label="back to search results"
             >
               <ArrowBackIcon />
             </IconButton>
-            <Breadcrumbs aria-label="breadcrumb">
+            <Breadcrumbs 
+              aria-label="breadcrumb"
+              sx={{ 
+                display: isMobile ? 'none' : 'flex',
+              }}
+            >
               <Link 
                 component="button" 
                 variant="body2" 
@@ -349,27 +371,70 @@ const BookingPage: React.FC = () => {
                 Book Your Stay
               </Typography>
             </Breadcrumbs>
+            
+            {/* Mobile navigation text */}
+            {isMobile && (
+              <Typography 
+                variant="body2" 
+                color="text.secondary"
+                sx={{ mt: 1 }}
+              >
+                ← Back to search results
+              </Typography>
+            )}
           </Box>
 
           {/* Page Title */}
-          <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
+          <Typography 
+            variant={isMobile ? 'h5' : 'h4'} 
+            component="h1" 
+            gutterBottom 
+            sx={{ 
+              fontWeight: 'bold',
+              mb: isMobile ? 1 : 2,
+            }}
+          >
             Book Your Stay
-            {isGuestBookingFlow && (
+          </Typography>
+          
+          {/* Guest booking chip - stacked on mobile */}
+          {isGuestBookingFlow && (
+            <Box sx={{ mb: isMobile ? 1 : 0 }}>
               <Chip 
                 label="Guest Booking" 
                 color="info" 
-                size="small" 
-                sx={{ ml: 2, fontWeight: 'bold' }}
+                size={isMobile ? 'medium' : 'small'}
+                sx={{ 
+                  fontWeight: 'bold',
+                  display: isMobile ? 'block' : 'inline-block',
+                  width: isMobile ? 'fit-content' : 'auto',
+                }}
               />
-            )}
-          </Typography>
+            </Box>
+          )}
+          
           {hotelName && (
-            <Typography variant="h6" color="text.secondary" gutterBottom>
+            <Typography 
+              variant={isMobile ? 'body1' : 'h6'} 
+              color="text.secondary" 
+              gutterBottom
+              sx={{ fontWeight: isMobile ? 'bold' : 'normal' }}
+            >
               {hotelName}
             </Typography>
           )}
+          
           {isGuestBookingFlow && (
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            <Typography 
+              variant="body2" 
+              color="text.secondary" 
+              sx={{ 
+                mb: 2,
+                display: 'flex',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+              }}
+            >
               ✨ You're booking as a guest - no account required!
             </Typography>
           )}
@@ -383,37 +448,61 @@ const BookingPage: React.FC = () => {
         )}
 
         {/* Room Details Card */}
-        <Paper elevation={1} sx={{ p: 3, mb: 4, bgcolor: 'grey.50' }}>
-          <Typography variant="h6" component="div" gutterBottom>
+        <Paper 
+          elevation={1} 
+          sx={{ 
+            p: isMobile ? 2 : 3, 
+            mb: isMobile ? 2 : 4, 
+            bgcolor: 'grey.50',
+          }}
+        >
+          <Typography 
+            variant={isMobile ? 'subtitle1' : 'h6'} 
+            component="div" 
+            gutterBottom
+            sx={{ fontWeight: 'bold' }}
+          >
             Room Details
           </Typography>
-          <Grid container spacing={2}>
+          <Grid container spacing={isMobile ? 1 : 2}>
             <Grid item xs={12} sm={6}>
-              <Typography variant="body2">
+              <Typography variant="body2" sx={{ mb: 1 }}>
                 <strong>Room Type:</strong> {roomData.roomType}
               </Typography>
-              <Typography variant="body2">
+              <Typography variant="body2" sx={{ mb: 1 }}>
                 <strong>Capacity:</strong> Up to {roomData.capacity} guests
               </Typography>
             </Grid>
             <Grid item xs={12} sm={6}>
-              <Typography variant="body2">
+              <Typography variant="body2" sx={{ mb: 1 }}>
                 <strong>Price per night:</strong> ETB {roomData.pricePerNight?.toFixed(0)}
               </Typography>
               {nights > 0 && (
                 <>
-                  <Typography variant="body2">
+                  <Typography variant="body2" sx={{ mb: 1 }}>
                     <strong>Nights:</strong> {nights}
                   </Typography>
-                  <Typography variant="h6" component="div" color="primary.main">
-                    <strong>Total: ETB {totalAmount?.toFixed(0)}</strong>
+                  <Typography 
+                    variant={isMobile ? 'subtitle1' : 'h6'} 
+                    component="div" 
+                    color="primary.main"
+                    sx={{ fontWeight: 'bold' }}
+                  >
+                    Total: ETB {totalAmount?.toFixed(0)}
                   </Typography>
                 </>
               )}
             </Grid>
           </Grid>
           {roomData.description && (
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+            <Typography 
+              variant="body2" 
+              color="text.secondary" 
+              sx={{ 
+                mt: isMobile ? 1 : 2,
+                fontStyle: 'italic',
+              }}
+            >
               {roomData.description}
             </Typography>
           )}
@@ -421,7 +510,13 @@ const BookingPage: React.FC = () => {
 
         {/* Booking Form */}
         <form onSubmit={handleSubmit}>
-          <Card elevation={1} sx={{ p: 3, position: 'relative' }}>
+          <Card 
+            elevation={1} 
+            sx={{ 
+              p: isMobile ? 2 : 3, 
+              position: 'relative',
+            }}
+          >
             {/* Loading overlay for booking form */}
             {loading && (
               <Box
@@ -447,8 +542,8 @@ const BookingPage: React.FC = () => {
                 </Box>
               </Box>
             )}
-            <Grid container spacing={3}>
-              {/* Dates and Guests */}
+            <Grid container spacing={isMobile ? 2 : 3}>
+              {/* Dates and Guests - stacked on mobile */}
               <Grid item xs={12} sm={4}>
                 <DatePicker
                   label="Check-in Date"
@@ -459,6 +554,14 @@ const BookingPage: React.FC = () => {
                     textField: {
                       fullWidth: true,
                       required: true,
+                      sx: {
+                        '& .MuiInputBase-root': {
+                          minHeight: isMobile ? 56 : 'auto',
+                        },
+                      },
+                    },
+                    popper: {
+                      placement: isMobile ? 'bottom-start' : undefined,
                     },
                   }}
                 />
@@ -474,6 +577,14 @@ const BookingPage: React.FC = () => {
                     textField: {
                       fullWidth: true,
                       required: true,
+                      sx: {
+                        '& .MuiInputBase-root': {
+                          minHeight: isMobile ? 56 : 'auto',
+                        },
+                      },
+                    },
+                    popper: {
+                      placement: isMobile ? 'bottom-start' : undefined,
                     },
                   }}
                 />
@@ -488,12 +599,22 @@ const BookingPage: React.FC = () => {
                   inputProps={{ min: 1, max: roomData.capacity }}
                   fullWidth
                   required
+                  sx={{
+                    '& .MuiInputBase-root': {
+                      minHeight: isMobile ? 56 : 'auto',
+                    },
+                  }}
                 />
               </Grid>
 
               <Grid item xs={12}>
-                <Divider sx={{ my: 1 }} />
-                <Typography variant="h6" component="div" gutterBottom>
+                <Divider sx={{ my: isMobile ? 1 : 2 }} />
+                <Typography 
+                  variant={isMobile ? 'subtitle1' : 'h6'} 
+                  component="div" 
+                  gutterBottom
+                  sx={{ fontWeight: 'bold' }}
+                >
                   Guest Information
                 </Typography>
               </Grid>
@@ -501,7 +622,13 @@ const BookingPage: React.FC = () => {
               {isAuthenticated && !isGuestBookingFlow ? (
                 // Display authenticated user information (only if not doing guest booking)
                 <Grid item xs={12}>
-                  <Card variant="outlined" sx={{ p: 2, backgroundColor: 'grey.50' }}>
+                  <Card 
+                    variant="outlined" 
+                    sx={{ 
+                      p: isMobile ? 2 : 3, 
+                      backgroundColor: 'grey.50',
+                    }}
+                  >
                     <Typography variant="body1" gutterBottom>
                       <strong>Name:</strong> {user?.firstName || 'N/A'} {user?.lastName || 'N/A'}
                     </Typography>
@@ -525,6 +652,11 @@ const BookingPage: React.FC = () => {
                       onChange={handleGuestNameChange}
                       fullWidth
                       required
+                      sx={{
+                        '& .MuiInputBase-root': {
+                          minHeight: isMobile ? 56 : 'auto',
+                        },
+                      }}
                     />
                   </Grid>
 
@@ -536,15 +668,25 @@ const BookingPage: React.FC = () => {
                       onChange={handleGuestEmailChange}
                       fullWidth
                       required
+                      sx={{
+                        '& .MuiInputBase-root': {
+                          minHeight: isMobile ? 56 : 'auto',
+                        },
+                      }}
                     />
                   </Grid>
 
-                  <Grid item xs={12} sm={6}>
+                  <Grid item xs={12} sm={isMobile ? 12 : 6}>
                     <TextField
                       label="Phone Number"
                       value={guestPhone}
                       onChange={handleGuestPhoneChange}
                       fullWidth
+                      sx={{
+                        '& .MuiInputBase-root': {
+                          minHeight: isMobile ? 56 : 'auto',
+                        },
+                      }}
                     />
                   </Grid>
                 </>
@@ -556,18 +698,34 @@ const BookingPage: React.FC = () => {
                   value={specialRequests}
                   onChange={handleSpecialRequestsChange}
                   multiline
-                  rows={3}
+                  rows={isMobile ? 2 : 3}
                   fullWidth
                   placeholder="Any special requests or preferences..."
+                  sx={{
+                    '& .MuiInputBase-root': {
+                      minHeight: isMobile ? 88 : 'auto',
+                    },
+                  }}
                 />
               </Grid>
 
               {/* Payment Section */}
               <Grid item xs={12}>
-                <Divider sx={{ my: 2 }} />
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <Divider sx={{ my: isMobile ? 1 : 2 }} />
+                <Box 
+                  sx={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    mb: isMobile ? 1 : 2,
+                    flexWrap: 'wrap',
+                  }}
+                >
                   <LockIcon sx={{ mr: 1, color: 'success.main' }} />
-                  <Typography variant="h6" component="div">
+                  <Typography 
+                    variant={isMobile ? 'subtitle1' : 'h6'} 
+                    component="div"
+                    sx={{ fontWeight: 'bold' }}
+                  >
                     Secure Payment Information
                   </Typography>
                 </Box>
@@ -576,64 +734,133 @@ const BookingPage: React.FC = () => {
               {/* Payment Method Selection */}
               <Grid item xs={12}>
                 <FormControl component="fieldset">
-                  <FormLabel component="legend" sx={{ fontWeight: 'bold', color: 'text.primary' }}>
+                  <FormLabel 
+                    component="legend" 
+                    sx={{ 
+                      fontWeight: 'bold', 
+                      color: 'text.primary',
+                      fontSize: isMobile ? '0.875rem' : '1rem',
+                    }}
+                  >
                     Payment Method
                   </FormLabel>
                   <RadioGroup
-                    row
+                    row={!isMobile}
                     value={paymentMethod}
                     onChange={handlePaymentMethodChange}
-                    sx={{ mt: 1 }}
+                    sx={{ 
+                      mt: 1,
+                      flexDirection: isMobile ? 'column' : 'row',
+                      gap: isMobile ? 0.5 : 1,
+                    }}
                   >
                     <FormControlLabel
                       value="credit_card"
                       control={<Radio />}
                       label={
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Box 
+                          sx={{ 
+                            display: 'flex', 
+                            alignItems: 'center',
+                            minHeight: isMobile ? 48 : 'auto',
+                            py: isMobile ? 1 : 0,
+                          }}
+                        >
                           <CreditCardIcon sx={{ mr: 1 }} />
                           Credit Card
                         </Box>
                       }
+                      sx={{
+                        mr: isMobile ? 0 : 2,
+                        mb: isMobile ? 0.5 : 0,
+                        '& .MuiFormControlLabel-root': {
+                          alignItems: 'flex-start',
+                        },
+                      }}
                     />
                     <FormControlLabel
                       value="mobile_money"
                       control={<Radio />}
                       label={
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Box 
+                          sx={{ 
+                            display: 'flex', 
+                            alignItems: 'center',
+                            minHeight: isMobile ? 48 : 'auto',
+                            py: isMobile ? 1 : 0,
+                          }}
+                        >
                           <PhoneIcon sx={{ mr: 1 }} />
                           Mobile Money Transfer
                         </Box>
                       }
+                      sx={{
+                        mr: isMobile ? 0 : 2,
+                        mb: isMobile ? 0.5 : 0,
+                      }}
                     />
                     <FormControlLabel
                       value="pay_at_frontdesk"
                       control={<Radio />}
                       label={
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Box 
+                          sx={{ 
+                            display: 'flex', 
+                            alignItems: 'center',
+                            minHeight: isMobile ? 48 : 'auto',
+                            py: isMobile ? 1 : 0,
+                          }}
+                        >
                           <HotelIcon sx={{ mr: 1 }} />
                           Pay at Front Desk
                         </Box>
                       }
+                      sx={{
+                        mr: isMobile ? 0 : 2,
+                        mb: isMobile ? 0.5 : 0,
+                      }}
                     />
                     <FormControlLabel
                       value="mbirr"
                       control={<Radio />}
                       label={
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Box 
+                          sx={{ 
+                            display: 'flex', 
+                            alignItems: 'center',
+                            minHeight: isMobile ? 48 : 'auto',
+                            py: isMobile ? 1 : 0,
+                          }}
+                        >
                           <PhoneIcon sx={{ mr: 1, color: 'warning.main' }} />
                           🇪🇹 M-birr
                         </Box>
                       }
+                      sx={{
+                        mr: isMobile ? 0 : 2,
+                        mb: isMobile ? 0.5 : 0,
+                      }}
                     />
                     <FormControlLabel
                       value="telebirr"
                       control={<Radio />}
                       label={
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Box 
+                          sx={{ 
+                            display: 'flex', 
+                            alignItems: 'center',
+                            minHeight: isMobile ? 48 : 'auto',
+                            py: isMobile ? 1 : 0,
+                          }}
+                        >
                           <PhoneIcon sx={{ mr: 1, color: 'success.main' }} />
                           🇪🇹 Telebirr
                         </Box>
                       }
+                      sx={{
+                        mr: isMobile ? 0 : 2,
+                        mb: isMobile ? 0.5 : 0,
+                      }}
                     />
                   </RadioGroup>
                 </FormControl>
@@ -643,12 +870,27 @@ const BookingPage: React.FC = () => {
               {paymentMethod === 'credit_card' && (
                 <>
                   <Grid item xs={12}>
-                    <Paper sx={{ p: 2, bgcolor: 'grey.50', border: '1px solid', borderColor: 'grey.200' }}>
-                      <Typography variant="subtitle2" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
+                    <Paper 
+                      sx={{ 
+                        p: isMobile ? 2 : 3, 
+                        bgcolor: 'grey.50', 
+                        border: '1px solid', 
+                        borderColor: 'grey.200',
+                      }}
+                    >
+                      <Typography 
+                        variant="subtitle2" 
+                        gutterBottom 
+                        sx={{ 
+                          display: 'flex', 
+                          alignItems: 'center',
+                          fontWeight: 'bold',
+                        }}
+                      >
                         <CreditCardIcon sx={{ mr: 1 }} />
                         Credit Card Details
                       </Typography>
-                      <Grid container spacing={2}>
+                      <Grid container spacing={isMobile ? 2 : 3}>
                         <Grid item xs={12}>
                           <TextField
                             label="Cardholder Name"
@@ -657,6 +899,11 @@ const BookingPage: React.FC = () => {
                             fullWidth
                             required
                             placeholder="John Doe"
+                            sx={{
+                              '& .MuiInputBase-root': {
+                                minHeight: isMobile ? 56 : 'auto',
+                              },
+                            }}
                           />
                         </Grid>
                         <Grid item xs={12}>
@@ -673,6 +920,14 @@ const BookingPage: React.FC = () => {
                             fullWidth
                             required
                             placeholder="1234 5678 9012 3456"
+                            inputProps={{
+                              inputMode: 'numeric',
+                            }}
+                            sx={{
+                              '& .MuiInputBase-root': {
+                                minHeight: isMobile ? 56 : 'auto',
+                              },
+                            }}
                             InputProps={{
                               startAdornment: (
                                 <InputAdornment position="start">
@@ -682,7 +937,7 @@ const BookingPage: React.FC = () => {
                             }}
                           />
                         </Grid>
-                        <Grid item xs={6}>
+                        <Grid item xs={isMobile ? 12 : 6} sm={6}>
                           <TextField
                             label="Expiry Date"
                             value={expiryDate}
@@ -697,10 +952,18 @@ const BookingPage: React.FC = () => {
                             fullWidth
                             required
                             placeholder="MM/YY"
-                            inputProps={{ maxLength: 5 }}
+                            inputProps={{ 
+                              maxLength: 5,
+                              inputMode: 'numeric',
+                            }}
+                            sx={{
+                              '& .MuiInputBase-root': {
+                                minHeight: isMobile ? 56 : 'auto',
+                              },
+                            }}
                           />
                         </Grid>
-                        <Grid item xs={6}>
+                        <Grid item xs={isMobile ? 12 : 6} sm={6}>
                           <TextField
                             label="CVV"
                             value={cvv}
@@ -714,7 +977,15 @@ const BookingPage: React.FC = () => {
                             required
                             placeholder="123"
                             type="password"
-                            inputProps={{ maxLength: 4 }}
+                            inputProps={{ 
+                              maxLength: 4,
+                              inputMode: 'numeric',
+                            }}
+                            sx={{
+                              '& .MuiInputBase-root': {
+                                minHeight: isMobile ? 56 : 'auto',
+                              },
+                            }}
                           />
                         </Grid>
                       </Grid>
@@ -957,16 +1228,48 @@ const BookingPage: React.FC = () => {
           </Card>
 
           {/* Actions */}
-          <Box sx={{ mt: 4, display: 'flex', justifyContent: 'flex-end' }}>
+          <Box 
+            sx={{ 
+              mt: isMobile ? 3 : 4, 
+              display: 'flex', 
+              justifyContent: isMobile ? 'stretch' : 'flex-end',
+              gap: isMobile ? 2 : 0,
+            }}
+          >
+            {isMobile && (
+              <Button
+                variant="outlined"
+                onClick={handleBackToResults}
+                size="large"
+                sx={{ 
+                  flex: '0 0 auto',
+                  minWidth: 120,
+                  minHeight: 56,
+                }}
+              >
+                Back
+              </Button>
+            )}
             <Button
               type="submit"
               variant="contained"
               disabled={loading}
               size="large"
-              sx={{ minWidth: 150 }}
+              sx={{ 
+                minWidth: isMobile ? 'auto' : 150,
+                flex: isMobile ? 1 : '0 0 auto',
+                minHeight: 56,
+                fontWeight: 'bold',
+                fontSize: isMobile ? '1rem' : '0.875rem',
+              }}
               startIcon={loading ? <CircularProgress size={16} /> : undefined}
             >
-              {loading ? 'Booking...' : `Book Now - ETB ${totalAmount?.toFixed(0)}`}
+              {loading 
+                ? 'Booking...' 
+                : isMobile 
+                  ? `Book - ETB ${totalAmount?.toFixed(0)}`
+                  : `Book Now - ETB ${totalAmount?.toFixed(0)}`
+              }
             </Button>
           </Box>
         </form>

@@ -3,6 +3,7 @@ import { Typography, Box, Dialog, DialogTitle, DialogContent, DialogActions, But
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import './i18n'; // Initialize i18n
 import EnhancedLayout from './components/layout/EnhancedLayout';
+import { ErrorBoundary } from './components/common';
 // PWA install functionality disabled
 // import PWAInstallPrompt from './components/common/PWAInstallPrompt';
 // import { usePWAInstall } from './hooks/usePWAInstall';
@@ -29,6 +30,8 @@ import UserRegistrationForm from './pages/admin/UserRegistrationForm';
 import HotelViewEdit from './pages/admin/HotelViewEdit';
 import UserViewEdit from './pages/admin/UserViewEdit';
 import HotelAdminDashboard from './pages/hotel-admin/HotelAdminDashboard';
+import { ErrorBoundaryDemo } from './components/demo';
+import NotFoundPage from './pages/NotFoundPage';
 import RoomManagement from './pages/hotel-admin/RoomManagement';
 import RoomViewEdit from './pages/hotel-admin/RoomViewEdit';
 import StaffManagement from './pages/hotel-admin/StaffManagement';
@@ -200,8 +203,16 @@ function App() {
       </Dialog>
       
       {/* Main App Content */}
-    <EnhancedLayout hideSidebar={!isAuthenticated} maxWidth={isFullWidthRoute ? false : 'xl'}>
-      <Routes>
+      <ErrorBoundary 
+        level="critical"
+        showDetails={process.env.NODE_ENV === 'development'}
+        onError={(error, errorInfo) => {
+          console.error('Critical App Error:', error, errorInfo);
+          // In production, send to error tracking service
+        }}
+      >
+        <EnhancedLayout hideSidebar={!isAuthenticated} maxWidth={isFullWidthRoute ? false : 'xl'}>
+          <Routes>
         <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />} />
         <Route path="/dashboard" element={<RoleBasedRouter />} />
         <Route path="/home" element={<HotelSearchPage />} />
@@ -229,6 +240,10 @@ function App() {
         } />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/guest-auth" element={<GuestAuthPage />} />
+        {/* Development Demo Routes */}
+        {process.env.NODE_ENV === 'development' && (
+          <Route path="/demo/error-boundary" element={<ErrorBoundaryDemo />} />
+        )}
         <Route path="/register-hotel" element={<PublicHotelRegistration />} />
         <Route path="/register-hotel-admin" element={
           <PlaceholderPage 
@@ -501,6 +516,9 @@ function App() {
             <StaffScheduleDashboard />
           </ProtectedRoute>
         } />
+        
+        {/* Catch-all route for 404 Not Found */}
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
       
       {/* PWA Install Prompt functionality disabled */}
@@ -520,7 +538,8 @@ function App() {
         onInstall={installApp}
       />
       */}
-    </EnhancedLayout>
+        </EnhancedLayout>
+      </ErrorBoundary>
     </>
   );
 }

@@ -538,7 +538,14 @@ const HotelDetailPage: React.FC = () => {
                 '& .MuiGrid-item': {
                   paddingTop: isMobile ? '12px !important' : undefined,
                   paddingLeft: isMobile ? '12px !important' : undefined,
-                }
+                },
+                // Mobile-specific grid improvements
+                ...(isMobile && {
+                  '& .MuiGrid-root': {
+                    width: '100%',
+                    margin: 0,
+                  }
+                })
               }}
             >
               {useRoomTypes ? (

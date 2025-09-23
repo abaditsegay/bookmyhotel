@@ -1,40 +1,63 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
-import { Box, CircularProgress, Typography } from '@mui/material';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { StandardLoading, ErrorBoundary } from './common';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requiredRole?: 'ADMIN' | 'HOTEL_ADMIN' | 'HOTEL_MANAGER' | 'FRONTDESK' | 'HOUSEKEEPING' | 'OPERATIONS_SUPERVISOR' | 'MAINTENANCE' | 'GUEST';
   requiredRoles?: string[]; // Allow multiple roles
+  /**
+   * Custom redirect path when access is denied
+   */
+  redirectTo?: string;
+  /**
+   * Whether to show loading state during navigation
+   */
+  showLoading?: boolean;
+  /**
+   * Custom loading message
+   */
+  loadingMessage?: string;
+  /**
+   * Whether to track this route for navigation history
+   */
+  trackNavigation?: boolean;
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole, requiredRoles }) => {
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
+  children, 
+  requiredRole, 
+  requiredRoles,
+  redirectTo,
+  showLoading = true,
+  loadingMessage = "Checking authentication...",
+  trackNavigation = true
+}) => {
   const { isAuthenticated, user, isInitializing } = useAuth();
+  const location = useLocation();
 
   // Show loading state while checking authentication from localStorage
-  if (isInitializing) {
+  if (isInitializing && showLoading) {
     return (
-      <Box 
-        sx={{ 
-          display: 'flex', 
-          flexDirection: 'column',
-          justifyContent: 'center', 
-          alignItems: 'center', 
-          height: '100vh',
-          gap: 2 
-        }}
-      >
-        <CircularProgress />
-        <Typography variant="body2" color="text.secondary">
-          Loading...
-        </Typography>
-      </Box>
+      <StandardLoading 
+        loading={true}
+        message={loadingMessage}
+        overlay={true}
+        size="large"
+      />
     );
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    // Store current location for redirect after login
+    const redirectPath = redirectTo || "/login";
+    const currentPath = location.pathname + location.search;
+    
+    return <Navigate 
+      to={`${redirectPath}${redirectPath === "/login" && currentPath !== "/" ? `?redirect=${encodeURIComponent(currentPath)}` : ""}`} 
+      replace 
+    />;
   }
 
   // If no requiredRole or requiredRoles is specified, just check authentication
@@ -87,11 +110,17 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole,
   };
 
   if ((requiredRole || requiredRoles) && !hasRequiredRole()) {
-    // Instead of redirecting to login, redirect to appropriate dashboard
-    return <Navigate to="/dashboard" replace />;
+    // Instead of redirecting to login, redirect to appropriate dashboard or custom path
+    const fallbackPath = redirectTo || "/dashboard";
+    return <Navigate to={fallbackPath} replace />;
   }
 
-  return <>{children}</>;
+  // Wrap children with ErrorBoundary for route-level error protection
+  return (
+    <ErrorBoundary level="page" showDetails={process.env.NODE_ENV === 'development'}>
+      {children}
+    </ErrorBoundary>
+  );
 };
 
 export default ProtectedRoute;

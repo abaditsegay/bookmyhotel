@@ -6,7 +6,7 @@ import {
   Button,
   Divider,
 } from '@mui/material';
-import { StandardCard, StandardLoading, StandardError } from '../components/common';
+import { StandardCard, StandardLoading, StandardError, ErrorBoundary } from '../components/common';
 import {
   Search as SearchIcon,
 } from '@mui/icons-material';
@@ -150,7 +150,9 @@ const HotelSearchPage: React.FC = () => {
               boxSizing: 'border-box', // Ensure padding is included in width calculations
             }}>
               <Box sx={{ mb: 4 }}>
-                <HotelSearchForm onSearch={handleSearch} loading={loading} />
+                <ErrorBoundary level="component">
+                  <HotelSearchForm onSearch={handleSearch} loading={loading} />
+                </ErrorBoundary>
               </Box>
 
               {error && (

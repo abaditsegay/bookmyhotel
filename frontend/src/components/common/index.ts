@@ -6,3 +6,6 @@ export { default as StandardButton } from './StandardButton';
 export { default as StandardTextField } from './StandardTextField';
 export { default as StandardLoading } from './StandardLoading';
 export { default as StandardError } from './StandardError';
+export { default as ErrorBoundary } from './ErrorBoundary';
+export { default as NavigationBreadcrumbs } from './NavigationBreadcrumbs';
+export type { ErrorFallbackProps } from './ErrorBoundary';

@@ -143,45 +143,126 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
         )}
       </Box>
       
-      <CardContent sx={{ p: 1.5 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}>
-          <Box>
-            <Typography variant="subtitle1" component="h3" gutterBottom>
+      <CardContent sx={{ p: isMobile ? 1.2 : 1.5 }}>
+        {/* Mobile: Stack name and price, Desktop: Side by side */}
+        {isMobile ? (
+          <Box sx={{ mb: 1.5 }}>
+            <Typography 
+              variant="body1" 
+              component="h3" 
+              gutterBottom
+              sx={{ 
+                fontWeight: 'bold',
+                fontSize: '1rem',
+                lineHeight: 1.2,
+              }}
+            >
               {formatRoomTypeName(roomType.roomType)}
             </Typography>
-            <Chip 
-              label={roomType.roomType} 
-              color="primary" 
-              variant="outlined" 
-              size="small"
-              sx={{ mb: 1, fontSize: '0.7rem' }}
-            />
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              mb: 1,
+            }}>
+              <Chip 
+                label={roomType.roomType} 
+                color="primary" 
+                variant="outlined" 
+                size="small"
+                sx={{ fontSize: '0.65rem', height: '20px' }}
+              />
+              <Box sx={{ textAlign: 'right' }}>
+                <Typography 
+                  variant="h6" 
+                  color="primary.main" 
+                  sx={{ 
+                    fontWeight: 'bold',
+                    fontSize: '1.1rem',
+                    lineHeight: 1.2,
+                  }}
+                >
+                  ETB {roomType.pricePerNight}
+                </Typography>
+                <Typography 
+                  variant="caption" 
+                  color="text.secondary"
+                  sx={{ fontSize: '0.7rem' }}
+                >
+                  per night
+                </Typography>
+              </Box>
+            </Box>
           </Box>
-          <Box sx={{ textAlign: 'right' }}>
-            <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold' }}>
-              ETB {roomType.pricePerNight}
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              per night
-            </Typography>
+        ) : (
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}>
+            <Box>
+              <Typography variant="subtitle1" component="h3" gutterBottom>
+                {formatRoomTypeName(roomType.roomType)}
+              </Typography>
+              <Chip 
+                label={roomType.roomType} 
+                color="primary" 
+                variant="outlined" 
+                size="small"
+                sx={{ mb: 1, fontSize: '0.7rem' }}
+              />
+            </Box>
+            <Box sx={{ textAlign: 'right' }}>
+              <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold' }}>
+                ETB {roomType.pricePerNight}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                per night
+              </Typography>
+            </Box>
           </Box>
-        </Box>
+        )}
 
-        {/* Room Details */}
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-          <PeopleIcon sx={{ fontSize: 16, mr: 1, color: 'text.secondary' }} />
-          <Typography variant="caption" color="text.secondary">
-            Up to {roomType.capacity} guests
-          </Typography>
-          <BedIcon sx={{ fontSize: 16, ml: 2, mr: 1, color: 'text.secondary' }} />
-          <Typography variant="caption" color="text.secondary">
-            {roomType.roomType === 'SINGLE' ? '1 bed' : 
-             roomType.roomType === 'DOUBLE' ? '2 beds' :
-             roomType.roomType === 'SUITE' ? 'Multiple rooms' :
-             roomType.roomType === 'DELUXE' ? 'King bed' :
-             'Luxury suite'}
-          </Typography>
-        </Box>
+        {/* Room Details - Mobile Responsive */}
+        {isMobile ? (
+          <Box sx={{ mb: 1.2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+              <PeopleIcon sx={{ fontSize: 14, mr: 0.8, color: 'text.secondary' }} />
+              <Typography 
+                variant="caption" 
+                color="text.secondary"
+                sx={{ fontSize: '0.75rem' }}
+              >
+                Up to {roomType.capacity} guests
+              </Typography>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <BedIcon sx={{ fontSize: 14, mr: 0.8, color: 'text.secondary' }} />
+              <Typography 
+                variant="caption" 
+                color="text.secondary"
+                sx={{ fontSize: '0.75rem' }}
+              >
+                {roomType.roomType === 'SINGLE' ? '1 bed' : 
+                 roomType.roomType === 'DOUBLE' ? '2 beds' :
+                 roomType.roomType === 'SUITE' ? 'Multiple rooms' :
+                 roomType.roomType === 'DELUXE' ? 'King bed' :
+                 'Luxury suite'}
+              </Typography>
+            </Box>
+          </Box>
+        ) : (
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+            <PeopleIcon sx={{ fontSize: 16, mr: 1, color: 'text.secondary' }} />
+            <Typography variant="caption" color="text.secondary">
+              Up to {roomType.capacity} guests
+            </Typography>
+            <BedIcon sx={{ fontSize: 16, ml: 2, mr: 1, color: 'text.secondary' }} />
+            <Typography variant="caption" color="text.secondary">
+              {roomType.roomType === 'SINGLE' ? '1 bed' : 
+               roomType.roomType === 'DOUBLE' ? '2 beds' :
+               roomType.roomType === 'SUITE' ? 'Multiple rooms' :
+               roomType.roomType === 'DELUXE' ? 'King bed' :
+               'Luxury suite'}
+            </Typography>
+          </Box>
+        )}
 
         {/* Availability Message */}
         <Box sx={{ mb: 1 }}>
@@ -201,25 +282,51 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
           </Typography>
         )}
 
-        {/* Amenities */}
-        <Box sx={{ mb: 1.5 }}>
-          <Typography variant="caption" gutterBottom sx={{ fontWeight: 'bold', fontSize: '0.75rem' }}>
+        {/* Amenities - Mobile Responsive */}
+        <Box sx={{ mb: isMobile ? 1.2 : 1.5 }}>
+          <Typography 
+            variant="caption" 
+            gutterBottom 
+            sx={{ 
+              fontWeight: 'bold', 
+              fontSize: isMobile ? '0.7rem' : '0.75rem',
+            }}
+          >
             Room Amenities
           </Typography>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.25 }}>
-            {amenities.map((amenity, index) => (
+          <Box sx={{ 
+            display: 'flex', 
+            flexWrap: 'wrap', 
+            gap: isMobile ? 0.2 : 0.25,
+          }}>
+            {(isMobile ? amenities.slice(0, 3) : amenities).map((amenity, index) => (
               <Chip 
                 key={index} 
                 label={amenity} 
                 size="small" 
                 variant="outlined"
-                sx={{ fontSize: '0.65rem', height: 20 }}
+                sx={{ 
+                  fontSize: isMobile ? '0.6rem' : '0.65rem', 
+                  height: isMobile ? 18 : 20,
+                }}
               />
             ))}
+            {isMobile && amenities.length > 3 && (
+              <Chip 
+                label={`+${amenities.length - 3} more`} 
+                size="small" 
+                variant="outlined"
+                sx={{ 
+                  fontSize: '0.6rem', 
+                  height: 18,
+                  color: 'primary.main',
+                }}
+              />
+            )}
           </Box>
         </Box>
 
-        {/* Book Buttons */}
+        {/* Book Buttons - Mobile Enhanced */}
         <Box sx={{ mt: 'auto' }}>
           {isAvailable ? (
             isAuthenticated ? (
@@ -230,27 +337,32 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
                 color="primary"
                 onClick={() => onBookRoomType(hotelId, roomType.roomType)}
                 sx={{ 
-                  borderRadius: 2,
+                  borderRadius: isMobile ? 1.5 : 2,
                   textTransform: 'none',
                   fontWeight: 'bold',
-                  mb: 1,
+                  mb: isMobile ? 0.5 : 1,
+                  fontSize: isMobile ? '0.8rem' : '0.875rem',
+                  py: isMobile ? 0.8 : 1,
+                  minHeight: isMobile ? '40px' : '42px', // Better touch target
                 }}
               >
                 Book Now
               </Button>
             ) : (
               // For non-authenticated users - show both options
-              <>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: isMobile ? 0.8 : 1 }}>
                 <Button
                   fullWidth
                   variant="contained"
                   color="primary"
                   onClick={() => onBookRoomType(hotelId, roomType.roomType)}
                   sx={{ 
-                    borderRadius: 2,
+                    borderRadius: isMobile ? 1.5 : 2,
                     textTransform: 'none',
                     fontWeight: 'bold',
-                    mb: 1,
+                    fontSize: isMobile ? '0.8rem' : '0.875rem',
+                    py: isMobile ? 0.8 : 1,
+                    minHeight: isMobile ? '40px' : '42px',
                   }}
                 >
                   Sign in to Book
@@ -261,14 +373,17 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
                   color="primary"
                   onClick={() => onBookRoomType(hotelId, roomType.roomType, true)} // true indicates guest booking
                   sx={{ 
-                    borderRadius: 2,
+                    borderRadius: isMobile ? 1.5 : 2,
                     textTransform: 'none',
                     fontWeight: 'bold',
+                    fontSize: isMobile ? '0.75rem' : '0.8rem',
+                    py: isMobile ? 0.6 : 0.8,
+                    minHeight: isMobile ? '36px' : '38px',
                   }}
                 >
                   Book as Guest
                 </Button>
-              </>
+              </Box>
             )
           ) : (
             <Button
@@ -276,9 +391,12 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
               variant="outlined"
               disabled
               sx={{ 
-                borderRadius: 2,
+                borderRadius: isMobile ? 1.5 : 2,
                 textTransform: 'none',
                 fontWeight: 'bold',
+                fontSize: isMobile ? '0.8rem' : '0.875rem',
+                py: isMobile ? 0.8 : 1,
+                minHeight: isMobile ? '40px' : '42px',
               }}
             >
               Not Available

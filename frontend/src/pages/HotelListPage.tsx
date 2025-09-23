@@ -11,6 +11,8 @@ import {
   Link,
   IconButton,
   Grid,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -118,51 +120,147 @@ const HotelListPage: React.FC = () => {
 
   if (loading) {
     return (
-      <Container maxWidth="xl" sx={{ py: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
-          <CircularProgress size={48} />
+      <Container 
+        maxWidth="xl" 
+        sx={{ 
+          py: { xs: 2, md: 4 },
+          px: { xs: 1, md: 3 },
+        }}
+      >
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: 'column',
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          minHeight: { xs: '50vh', md: '60vh' },
+          textAlign: 'center',
+        }}>
+          <CircularProgress 
+            size={48}
+            sx={{ 
+              mb: 2,
+              width: { xs: '40px !important', md: '48px !important' },
+              height: { xs: '40px !important', md: '48px !important' },
+            }}
+          />
+          <Typography 
+            variant="body1" 
+            color="text.secondary"
+            sx={{ fontSize: { xs: '0.9rem', md: '1rem' } }}
+          >
+            Searching for hotels...
+          </Typography>
         </Box>
       </Container>
     );
   }
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
-      {/* Header Section */}
-      <Box sx={{ mb: 4 }}>
-        {/* Back Navigation */}
-        <Box sx={{ mb: 2 }}>
+    <Container 
+      maxWidth="xl" 
+      sx={{ 
+        py: { xs: 2, sm: 3, md: 4 }, // Mobile-first padding
+        px: { xs: 1, sm: 2, md: 3 }, // Tighter mobile margins
+      }}
+    >
+      {/* Header Section - Mobile Optimized */}
+      <Box sx={{ mb: { xs: 2, md: 4 } }}>
+        {/* Back Navigation - Mobile Enhanced */}
+        <Box sx={{ mb: { xs: 1.5, md: 2 } }}>
           <IconButton 
             onClick={handleBackToSearch}
-            sx={{ mr: 1 }}
+            sx={{ 
+              mr: 1,
+              p: { xs: 1.5, md: 1 }, // Larger touch target on mobile
+              '&:hover': {
+                backgroundColor: 'action.hover',
+              },
+            }}
             aria-label="back to search"
           >
-            <ArrowBackIcon />
+            <ArrowBackIcon sx={{ fontSize: { xs: 24, md: 20 } }} />
           </IconButton>
-          <Breadcrumbs aria-label="breadcrumb">
-            <Link 
-              component="button" 
+          
+          {/* Hide breadcrumbs on small mobile to save space */}
+          <Box sx={{ display: { xs: 'none', sm: 'inline-block' } }}>
+            <Breadcrumbs aria-label="breadcrumb">
+              <Link 
+                component="button" 
+                variant="body2" 
+                onClick={handleBackToSearch}
+                sx={{ textDecoration: 'none' }}
+              >
+                Hotel Search
+              </Link>
+              <Typography variant="body2" color="text.primary">
+                Search Results
+              </Typography>
+            </Breadcrumbs>
+          </Box>
+          
+          {/* Mobile-only back text */}
+          <Box sx={{ display: { xs: 'inline-block', sm: 'none' }, ml: 1 }}>
+            <Typography 
               variant="body2" 
-              onClick={handleBackToSearch}
-              sx={{ textDecoration: 'none' }}
+              color="text.secondary"
+              sx={{ fontSize: '0.9rem' }}
             >
-              Hotel Search
-            </Link>
-            <Typography variant="body2" color="text.primary">
-              Search Results
+              Back to Search
             </Typography>
-          </Breadcrumbs>
+          </Box>
         </Box>
 
-        {/* Search Summary */}
-        <Paper elevation={1} sx={{ p: 3, mb: 3, backgroundColor: 'primary.50' }}>
-          <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
+        {/* Search Summary - Mobile Optimized */}
+        <Paper 
+          elevation={1} 
+          sx={{ 
+            p: { xs: 2.5, sm: 3, md: 3 }, 
+            mb: { xs: 2, md: 3 }, 
+            backgroundColor: 'primary.50',
+            borderRadius: { xs: 2, md: 1 },
+          }}
+        >
+          <Typography 
+            variant="h4" 
+            component="h1" 
+            gutterBottom 
+            sx={{ 
+              fontWeight: 'bold',
+              fontSize: { 
+                xs: '1.5rem',   // Mobile: 24px
+                sm: '1.75rem',  // Small tablet: 28px
+                md: '2rem'      // Desktop: 32px
+              },
+              lineHeight: 1.2,
+              mb: 1,
+            }}
+          >
             Hotels Found
           </Typography>
-          <Typography variant="h6" color="text.secondary" gutterBottom>
+          <Typography 
+            variant="h6" 
+            color="text.secondary" 
+            gutterBottom
+            sx={{
+              fontSize: { 
+                xs: '1rem',     // Mobile: 16px
+                sm: '1.1rem',   // Small tablet: 17.6px
+                md: '1.25rem'   // Desktop: 20px
+              },
+              lineHeight: 1.3,
+              mb: 1,
+            }}
+          >
             Hotels {formatSearchSummary()}
           </Typography>
-          <Typography variant="body1" color="success.main" sx={{ fontWeight: 'medium' }}>
+          <Typography 
+            variant="body1" 
+            color="success.main" 
+            sx={{ 
+              fontWeight: 'medium',
+              fontSize: { xs: '0.95rem', md: '1rem' },
+            }}
+          >
             {hotels.length} hotel{hotels.length === 1 ? '' : 's'} available
           </Typography>
         </Paper>
@@ -175,10 +273,20 @@ const HotelListPage: React.FC = () => {
         </Alert>
       )}
 
-      {/* Results Section */}
+      {/* Results Section - Mobile Optimized */}
       {hotels.length > 0 ? (
         <Box>
-          <Grid container spacing={3}>
+          <Grid 
+            container 
+            spacing={{ xs: 2, sm: 2, md: 3 }} // Tighter spacing on mobile
+            sx={{
+              // Ensure proper mobile spacing
+              '& .MuiGrid-item': {
+                paddingTop: { xs: '16px !important', md: '24px !important' },
+                paddingLeft: { xs: '16px !important', md: '24px !important' },
+              }
+            }}
+          >
             {hotels.map((hotel) => (
               <Grid item xs={12} key={hotel.id}>
                 <HotelListCard
@@ -190,14 +298,43 @@ const HotelListPage: React.FC = () => {
           </Grid>
         </Box>
       ) : (
-        <Paper elevation={1} sx={{ p: 6, textAlign: 'center' }}>
-          <Typography variant="h5" color="text.secondary" gutterBottom>
+        <Paper 
+          elevation={1} 
+          sx={{ 
+            p: { xs: 4, sm: 5, md: 6 }, // Responsive padding
+            textAlign: 'center',
+            borderRadius: { xs: 2, md: 1 },
+          }}
+        >
+          <Typography 
+            variant="h5" 
+            color="text.secondary" 
+            gutterBottom
+            sx={{
+              fontSize: { xs: '1.25rem', md: '1.5rem' }, // Mobile-friendly size
+            }}
+          >
             No hotels found
           </Typography>
-          <Typography variant="body1" color="text.secondary" paragraph>
+          <Typography 
+            variant="body1" 
+            color="text.secondary" 
+            paragraph
+            sx={{
+              fontSize: { xs: '0.95rem', md: '1rem' },
+              px: { xs: 1, md: 0 }, // Add horizontal padding on mobile
+            }}
+          >
             We couldn't find any hotels matching your search criteria.
           </Typography>
-          <Typography variant="body2" color="text.secondary">
+          <Typography 
+            variant="body2" 
+            color="text.secondary"
+            sx={{
+              fontSize: { xs: '0.875rem', md: '0.875rem' },
+              px: { xs: 1, md: 0 },
+            }}
+          >
             Try adjusting your search dates, location, or filters.
           </Typography>
         </Paper>

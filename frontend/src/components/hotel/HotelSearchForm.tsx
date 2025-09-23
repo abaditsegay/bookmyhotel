@@ -7,6 +7,8 @@ import {
   Typography,
   Box,
   InputAdornment,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -15,7 +17,8 @@ import dayjs, { Dayjs } from 'dayjs';
 import { 
   Search as SearchIcon, 
   LocationOn as LocationIcon, 
-  People as PeopleIcon 
+  People as PeopleIcon,
+  CalendarToday as CalendarIcon,
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { HotelSearchRequest } from '../../types/hotel';
@@ -27,6 +30,10 @@ interface HotelSearchFormProps {
 
 const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = false }) => {
   const { t } = useTranslation();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  
   const [location, setLocation] = useState('');
   const [checkInDate, setCheckInDate] = useState<Dayjs | null>(dayjs().add(7, 'day'));
   const [checkOutDate, setCheckOutDate] = useState<Dayjs | null>(dayjs().add(9, 'day'));
@@ -70,48 +77,95 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Paper 
-        elevation={3} 
+        elevation={isMobile ? 1 : 3} 
         sx={{ 
-          p: { xs: 2, sm: 3 }, // Responsive padding
-          mb: 3,
+          p: { xs: 3, sm: 4, md: 3 }, // Enhanced mobile padding
+          mb: { xs: 2, sm: 3 },
           width: '100%',
-          boxSizing: 'border-box', // Ensure padding doesn't cause overflow
+          maxWidth: '100%',
+          boxSizing: 'border-box',
+          borderRadius: { xs: 2, md: 3 },
+          background: isMobile ? 
+            'linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%)' : 
+            undefined,
         }}
       >
-        <Typography 
-          variant="h5" 
-          gutterBottom 
-          sx={{ 
-            mb: 3, 
-            fontWeight: 'bold',
-            fontSize: { xs: '1.25rem', sm: '1.5rem' }, // Responsive font size
-            textAlign: { xs: 'center', sm: 'left' } // Center on mobile
-          }}
-        >
-          Find Your Perfect Stay
-        </Typography>
+        {/* Mobile-Optimized Header */}
+        <Box sx={{ 
+          textAlign: 'center', 
+          mb: { xs: 3, md: 4 },
+          px: { xs: 1, sm: 0 },
+        }}>
+          <Typography 
+            variant={isMobile ? "h5" : "h4"} 
+            component="h2"
+            gutterBottom 
+            sx={{ 
+              fontWeight: 'bold',
+              fontSize: { 
+                xs: '1.5rem',   // 24px - Mobile friendly
+                sm: '1.75rem',  // 28px - Small tablet
+                md: '2rem'      // 32px - Desktop
+              },
+              color: 'primary.main',
+              lineHeight: 1.2,
+              mb: 1,
+            }}
+          >
+            Find Your Perfect Stay
+          </Typography>
+          {isMobile && (
+            <Typography 
+              variant="body2" 
+              color="text.secondary"
+              sx={{ 
+                fontSize: '0.9rem',
+                px: 2,
+              }}
+            >
+              Search and book your ideal hotel room
+            </Typography>
+          )}
+        </Box>
         
         <form onSubmit={handleSubmit}>
-          <Grid container spacing={3}>
-            {/* Location Field */}
+          <Grid container spacing={{ xs: 3, md: 3 }}>
+            {/* Location Field - Mobile-First */}
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
                 label={t('hotelSearch.form.destination')}
-                placeholder={t('hotelSearch.form.destinationPlaceholder')}
+                placeholder={isMobile ? "Where are you going?" : t('hotelSearch.form.destinationPlaceholder')}
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
+                variant="outlined"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    minHeight: { xs: '56px', md: '56px' }, // Larger touch targets
+                    fontSize: { xs: '1rem', md: '1rem' },
+                    '&:hover fieldset': {
+                      borderColor: 'primary.main',
+                    },
+                  },
+                  '& .MuiInputLabel-root': {
+                    fontSize: { xs: '1rem', md: '1rem' },
+                    fontWeight: isMobile ? 500 : 400,
+                  },
+                }}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <LocationIcon color="action" />
+                      <LocationIcon 
+                        color="primary" 
+                        sx={{ fontSize: { xs: 22, md: 20 } }}
+                      />
                     </InputAdornment>
                   ),
                 }}
               />
             </Grid>
 
-            {/* Guests Field */}
+            {/* Guests Field - Mobile-First */}
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
@@ -119,73 +173,213 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
                 label={t('hotelSearch.form.guests')}
                 value={guests}
                 onChange={(e) => setGuests(Number(e.target.value))}
-                inputProps={{ min: 1, max: 10 }}
+                inputProps={{ 
+                  min: 1, 
+                  max: 10,
+                  style: { fontSize: isMobile ? '1rem' : '1rem' }
+                }}
+                variant="outlined"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    minHeight: { xs: '56px', md: '56px' },
+                    fontSize: { xs: '1rem', md: '1rem' },
+                    '&:hover fieldset': {
+                      borderColor: 'primary.main',
+                    },
+                  },
+                  '& .MuiInputLabel-root': {
+                    fontSize: { xs: '1rem', md: '1rem' },
+                    fontWeight: isMobile ? 500 : 400,
+                  },
+                }}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <PeopleIcon color="action" />
+                      <PeopleIcon 
+                        color="primary" 
+                        sx={{ fontSize: { xs: 22, md: 20 } }}
+                      />
                     </InputAdornment>
                   ),
                 }}
               />
             </Grid>
 
-            {/* Check-in Date */}
-            <Grid item xs={12} md={6}>
+            {/* Date Fields - Stack on mobile for better UX */}
+            <Grid item xs={12} sm={6} md={6}>
               <DatePicker
                 label={t('hotelSearch.form.checkin')}
                 value={checkInDate}
                 onChange={handleCheckInDateChange}
                 minDate={dayjs()}
                 format="MM/DD/YYYY"
+                sx={{
+                  width: '100%',
+                  '& .MuiOutlinedInput-root': {
+                    minHeight: { xs: '56px', md: '56px' },
+                    fontSize: { xs: '1rem', md: '1rem' },
+                    '&:hover fieldset': {
+                      borderColor: 'primary.main',
+                    },
+                  },
+                  '& .MuiInputLabel-root': {
+                    fontSize: { xs: '1rem', md: '1rem' },
+                    fontWeight: isMobile ? 500 : 400,
+                  },
+                }}
                 slotProps={{
                   textField: {
                     fullWidth: true,
                     required: true,
+                    variant: 'outlined',
+                    InputProps: {
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <CalendarIcon 
+                            color="primary" 
+                            sx={{ fontSize: { xs: 22, md: 20 } }}
+                          />
+                        </InputAdornment>
+                      ),
+                    },
+                  },
+                  // Mobile-optimized date picker
+                  desktopPaper: {
+                    sx: {
+                      '& .MuiPickersDay-root': {
+                        fontSize: isMobile ? '0.9rem' : '0.875rem',
+                        minHeight: isMobile ? '40px' : '36px',
+                        minWidth: isMobile ? '40px' : '36px',
+                      },
+                    },
+                  },
+                  mobilePaper: {
+                    sx: {
+                      '& .MuiPickersDay-root': {
+                        fontSize: '1rem',
+                        minHeight: '44px',
+                        minWidth: '44px',
+                      },
+                    },
                   },
                 }}
               />
             </Grid>
 
-            {/* Check-out Date */}
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12} sm={6} md={6}>
               <DatePicker
                 label={t('hotelSearch.form.checkout')}
                 value={checkOutDate}
                 onChange={handleCheckOutDateChange}
                 minDate={checkInDate || dayjs().add(1, 'day')}
                 format="MM/DD/YYYY"
+                sx={{
+                  width: '100%',
+                  '& .MuiOutlinedInput-root': {
+                    minHeight: { xs: '56px', md: '56px' },
+                    fontSize: { xs: '1rem', md: '1rem' },
+                    '&:hover fieldset': {
+                      borderColor: 'primary.main',
+                    },
+                  },
+                  '& .MuiInputLabel-root': {
+                    fontSize: { xs: '1rem', md: '1rem' },
+                    fontWeight: isMobile ? 500 : 400,
+                  },
+                }}
                 slotProps={{
                   textField: {
                     fullWidth: true,
                     required: true,
+                    variant: 'outlined',
+                    InputProps: {
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <CalendarIcon 
+                            color="primary" 
+                            sx={{ fontSize: { xs: 22, md: 20 } }}
+                          />
+                        </InputAdornment>
+                      ),
+                    },
+                  },
+                  // Mobile-optimized date picker
+                  desktopPaper: {
+                    sx: {
+                      '& .MuiPickersDay-root': {
+                        fontSize: isMobile ? '0.9rem' : '0.875rem',
+                        minHeight: isMobile ? '40px' : '36px',
+                        minWidth: isMobile ? '40px' : '36px',
+                      },
+                    },
+                  },
+                  mobilePaper: {
+                    sx: {
+                      '& .MuiPickersDay-root': {
+                        fontSize: '1rem',
+                        minHeight: '44px',
+                        minWidth: '44px',
+                      },
+                    },
                   },
                 }}
               />
             </Grid>
 
-            {/* Search Button - Mobile optimized */}
+            {/* Search Button - Mobile-Optimized */}
             <Grid item xs={12}>
-              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+              <Box sx={{ 
+                display: 'flex', 
+                justifyContent: 'center', 
+                mt: { xs: 2, md: 3 },
+                px: { xs: 1, sm: 0 },
+              }}>
                 <Button
                   type="submit"
                   variant="contained"
                   size="large"
                   disabled={loading}
-                  startIcon={<SearchIcon />}
+                  startIcon={<SearchIcon sx={{ fontSize: { xs: 22, md: 20 } }} />}
                   sx={{
-                    px: { xs: 3, sm: 4 }, // Responsive padding
-                    py: 1.5,
-                    borderRadius: 3,
-                    fontSize: { xs: '1rem', sm: '1.1rem' }, // Responsive font size
+                    // Mobile-first sizing
+                    minHeight: { xs: '52px', md: '48px' }, // Larger touch target on mobile
+                    px: { xs: 4, sm: 6, md: 4 },
+                    py: { xs: 1.5, md: 1.25 },
+                    borderRadius: { xs: 3, md: 2 },
+                    fontSize: { 
+                      xs: '1.1rem',   // Larger on mobile for readability
+                      sm: '1.15rem', 
+                      md: '1rem' 
+                    },
                     fontWeight: 'bold',
                     textTransform: 'none',
-                    width: { xs: '100%', sm: 'auto' }, // Full width on mobile
-                    maxWidth: { xs: '300px', sm: 'none' }, // Limit max width on mobile
+                    width: { 
+                      xs: '100%',     // Full width on mobile
+                      sm: 'auto',     // Auto width on tablet+
+                    },
+                    maxWidth: { 
+                      xs: 'none',     // No max width constraint on mobile
+                      sm: '400px',    // Reasonable max on tablet
+                    },
                     backgroundColor: 'primary.main',
                     color: 'primary.contrastText',
+                    boxShadow: { 
+                      xs: 3,          // Enhanced shadow on mobile
+                      md: 2 
+                    },
+                    transition: 'all 0.2s ease-in-out',
                     '&:hover': {
                       backgroundColor: 'primary.dark',
+                      boxShadow: { xs: 4, md: 3 },
+                      transform: isMobile ? 'none' : 'translateY(-1px)',
+                    },
+                    '&:active': {
+                      transform: 'translateY(0)',
+                      boxShadow: { xs: 2, md: 1 },
+                    },
+                    '&:disabled': {
+                      backgroundColor: 'action.disabled',
+                      color: 'action.disabled',
                     },
                   }}
                 >
