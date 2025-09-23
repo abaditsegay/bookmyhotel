@@ -517,21 +517,6 @@ const BookingPage: React.FC = () => {
               <Box sx={{ flex: 1 }}>
                 {/* Page Title */}
                 <Box sx={{ mb: 1 }}>
-                  <Typography 
-                    variant={isMobile ? 'h4' : 'h3'} 
-                    component="h1"
-                    sx={{ 
-                      fontWeight: 'bold',
-                      background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-                      backgroundClip: 'text',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                      mb: 0.5,
-                    }}
-                  >
-                    Book Your Stay
-                  </Typography>
-                  
                   {hotelName && (
                     <Typography 
                       variant={isMobile ? 'h6' : 'h5'} 
@@ -594,52 +579,33 @@ const BookingPage: React.FC = () => {
 
         {/* Enhanced Room Details Card */}
         <Card 
-          elevation={3} 
+          elevation={0} 
           sx={{ 
             mb: isMobile ? 3 : 4,
-            background: `linear-gradient(135deg, ${theme.palette.success.main}08 0%, ${theme.palette.info.main}08 100%)`,
-            border: `1px solid ${theme.palette.success.main}30`,
-            borderRadius: 3,
-            overflow: 'hidden',
+            backgroundColor: 'white',
+            border: '1px solid #e0e0e0',
+            borderRadius: 2,
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
           }}
         >
           <CardContent sx={{ p: isMobile ? 2.5 : 3.5 }}>
             {/* Room Details Header */}
             <Box sx={{ 
-              display: 'flex',
-              alignItems: 'center',
               mb: 3,
             }}>
-              <Box sx={{
-                width: 48,
-                height: 48,
-                borderRadius: 3,
-                bgcolor: 'success.main',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                mr: 2,
-                boxShadow: 2,
-              }}>
-                <Typography variant="h6" sx={{ color: 'white' }}>
-                  🏠
-                </Typography>
-              </Box>
-              <Box>
-                <Typography 
-                  variant={isMobile ? 'h6' : 'h5'} 
-                  sx={{ 
-                    fontWeight: 'bold',
-                    color: 'text.primary',
-                    mb: 0.5,
-                  }}
-                >
-                  Room Details
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Your selected accommodation
-                </Typography>
-              </Box>
+              <Typography 
+                variant={isMobile ? 'h6' : 'h5'} 
+                sx={{ 
+                  fontWeight: 700,
+                  color: 'text.primary',
+                  mb: 0.5,
+                }}
+              >
+                Room Details
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                Your selected accommodation
+              </Typography>
             </Box>
             
             {/* Room Information Grid */}
@@ -647,16 +613,15 @@ const BookingPage: React.FC = () => {
               <Grid item xs={12} sm={6}>
                 <Box sx={{ 
                   p: 2.5,
-                  bgcolor: 'background.paper',
+                  backgroundColor: 'white',
                   borderRadius: 2,
-                  border: '1px solid',
-                  borderColor: 'divider',
+                  border: '1px solid #e0e0e0',
                   height: '100%',
                 }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold' }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>
                     ROOM TYPE
                   </Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 'bold', mt: 0.5, mb: 2, color: 'primary.main' }}>
+                  <Typography variant="h6" sx={{ fontWeight: 700, mt: 0.5, mb: 2, color: '#2e7d32' }}>
                     {roomData.roomType}
                   </Typography>
                   
@@ -664,7 +629,7 @@ const BookingPage: React.FC = () => {
                     <Typography variant="body2" sx={{ color: 'text.secondary', mr: 1 }}>
                       👥
                     </Typography>
-                    <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
                       Up to {roomData.capacity} guests
                     </Typography>
                   </Box>
@@ -674,13 +639,12 @@ const BookingPage: React.FC = () => {
               <Grid item xs={12} sm={6}>
                 <Box sx={{ 
                   p: 2.5,
-                  bgcolor: 'background.paper',
+                  backgroundColor: 'white',
                   borderRadius: 2,
-                  border: '1px solid',
-                  borderColor: 'divider',
+                  border: '1px solid #e0e0e0',
                   height: '100%',
                 }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold' }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>
                     PRICING
                   </Typography>
                   
@@ -689,7 +653,7 @@ const BookingPage: React.FC = () => {
                       <Typography variant="body2" sx={{ color: 'text.secondary', mr: 1 }}>
                         💰
                       </Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
                         ETB {roomData.pricePerNight?.toFixed(0)} per night
                       </Typography>
                     </Box>
@@ -700,24 +664,25 @@ const BookingPage: React.FC = () => {
                           <Typography variant="body2" sx={{ color: 'text.secondary', mr: 1 }}>
                             📅
                           </Typography>
-                          <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
                             {nights} night{nights !== 1 ? 's' : ''}
                           </Typography>
                         </Box>
                         
-                        <Divider sx={{ my: 1.5 }} />
+                        <Divider sx={{ my: 1.5, borderColor: '#f0f0f0' }} />
                         
                         <Box sx={{ 
                           p: 1.5,
-                          bgcolor: 'success.main',
-                          borderRadius: 1.5,
+                          backgroundColor: '#e8f5e8',
+                          border: '1px solid #c8e6c9',
+                          borderRadius: 2,
                           textAlign: 'center',
                         }}>
                           <Typography 
                             variant={isMobile ? 'h6' : 'h5'} 
                             sx={{ 
-                              fontWeight: 'bold',
-                              color: 'success.contrastText',
+                              fontWeight: 700,
+                              color: '#2e7d32',
                             }}
                           >
                             Total: ETB {totalAmount?.toFixed(0)}
@@ -837,7 +802,7 @@ const BookingPage: React.FC = () => {
                     left: 0,
                     right: 0,
                     height: 1,
-                    bgcolor: 'divider',
+                    bgcolor: '#e0e0e0',
                     transform: 'translateY(-50%)',
                   }
                 }}>
@@ -846,7 +811,7 @@ const BookingPage: React.FC = () => {
                     alignItems: 'center',
                     justifyContent: 'center',
                     position: 'relative',
-                    bgcolor: 'background.paper',
+                    bgcolor: 'white',
                     px: 2,
                     mx: 'auto',
                     width: 'fit-content',
@@ -855,14 +820,14 @@ const BookingPage: React.FC = () => {
                       variant={isMobile ? 'h6' : 'h5'} 
                       component="h2"
                       sx={{ 
-                        fontWeight: 'bold',
-                        color: 'primary.main',
+                        fontWeight: 700,
+                        color: '#333',
                         display: 'flex',
                         alignItems: 'center',
                         gap: 1,
                       }}
                     >
-                      👤 Guest Information
+                      Guest Information
                     </Typography>
                   </Box>
                 </Box>
@@ -872,12 +837,12 @@ const BookingPage: React.FC = () => {
                 // Display authenticated user information with enhanced styling
                 <Grid item xs={12}>
                   <Card 
-                    elevation={2}
                     sx={{ 
-                      background: `linear-gradient(135deg, ${theme.palette.primary.main}08 0%, ${theme.palette.primary.main}15 100%)`,
-                      border: `1px solid ${theme.palette.primary.main}30`,
-                      borderRadius: 3,
+                      background: 'white',
+                      border: '1px solid #e0e0e0',
+                      borderRadius: 2,
                       overflow: 'hidden',
+                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
                     }}
                   >
                     <CardContent sx={{ p: isMobile ? 2.5 : 3.5 }}>
@@ -890,25 +855,25 @@ const BookingPage: React.FC = () => {
                           width: 48,
                           height: 48,
                           borderRadius: '50%',
-                          bgcolor: 'primary.main',
+                          bgcolor: '#2e7d32',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
                           mr: 2,
                         }}>
-                          <Typography variant="h6" sx={{ color: 'white', fontWeight: 'bold' }}>
+                          <Typography variant="h6" sx={{ color: 'white', fontWeight: 700 }}>
                             {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
                           </Typography>
                         </Box>
                         <Box>
                           <Typography variant="h6" sx={{ 
-                            fontWeight: 'bold',
-                            color: 'text.primary',
+                            fontWeight: 700,
+                            color: '#333',
                             mb: 0.5,
                           }}>
                             Registered Guest
                           </Typography>
-                          <Typography variant="body2" color="text.secondary">
+                          <Typography variant="body2" sx={{ color: '#666', fontWeight: 500 }}>
                             Using your account information
                           </Typography>
                         </Box>
@@ -918,15 +883,14 @@ const BookingPage: React.FC = () => {
                         <Grid item xs={12} sm={6}>
                           <Box sx={{ 
                             p: 2,
-                            bgcolor: 'background.paper',
+                            bgcolor: '#f8f9fa',
                             borderRadius: 2,
-                            border: '1px solid',
-                            borderColor: 'divider',
+                            border: '1px solid #e0e0e0',
                           }}>
-                            <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold' }}>
+                            <Typography variant="caption" sx={{ fontWeight: 700, color: '#666' }}>
                               FULL NAME
                             </Typography>
-                            <Typography variant="body1" sx={{ fontWeight: 'medium', mt: 0.5 }}>
+                            <Typography variant="body1" sx={{ fontWeight: 600, mt: 0.5, color: '#333' }}>
                               {user?.firstName || 'N/A'} {user?.lastName || 'N/A'}
                             </Typography>
                           </Box>
@@ -934,15 +898,14 @@ const BookingPage: React.FC = () => {
                         <Grid item xs={12} sm={6}>
                           <Box sx={{ 
                             p: 2,
-                            bgcolor: 'background.paper',
+                            bgcolor: '#f8f9fa',
                             borderRadius: 2,
-                            border: '1px solid',
-                            borderColor: 'divider',
+                            border: '1px solid #e0e0e0',
                           }}>
-                            <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold' }}>
+                            <Typography variant="caption" sx={{ fontWeight: 700, color: '#666' }}>
                               EMAIL ADDRESS
                             </Typography>
-                            <Typography variant="body1" sx={{ fontWeight: 'medium', mt: 0.5 }}>
+                            <Typography variant="body1" sx={{ fontWeight: 600, mt: 0.5, color: '#333' }}>
                               {user?.email}
                             </Typography>
                           </Box>
@@ -951,15 +914,14 @@ const BookingPage: React.FC = () => {
                           <Grid item xs={12} sm={6}>
                             <Box sx={{ 
                               p: 2,
-                              bgcolor: 'background.paper',
+                              bgcolor: '#f8f9fa',
                               borderRadius: 2,
-                              border: '1px solid',
-                              borderColor: 'divider',
+                              border: '1px solid #e0e0e0',
                             }}>
-                              <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold' }}>
+                              <Typography variant="caption" sx={{ fontWeight: 700, color: '#666' }}>
                                 PHONE NUMBER
                               </Typography>
-                              <Typography variant="body1" sx={{ fontWeight: 'medium', mt: 0.5 }}>
+                              <Typography variant="body1" sx={{ fontWeight: 600, mt: 0.5, color: '#333' }}>
                                 {user.phone}
                               </Typography>
                             </Box>
@@ -973,12 +935,12 @@ const BookingPage: React.FC = () => {
                 // Enhanced guest input fields with professional styling
                 <Grid item xs={12}>
                   <Card 
-                    elevation={2}
                     sx={{ 
-                      background: `linear-gradient(135deg, ${theme.palette.secondary.main}08 0%, ${theme.palette.secondary.main}15 100%)`,
-                      border: `1px solid ${theme.palette.secondary.main}30`,
-                      borderRadius: 3,
+                      background: 'white',
+                      border: '1px solid #e0e0e0',
+                      borderRadius: 2,
                       overflow: 'hidden',
+                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
                     }}
                   >
                     <CardContent sx={{ p: isMobile ? 2.5 : 3.5 }}>
@@ -991,25 +953,25 @@ const BookingPage: React.FC = () => {
                           width: 48,
                           height: 48,
                           borderRadius: '50%',
-                          bgcolor: 'secondary.main',
+                          bgcolor: '#2e7d32',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
                           mr: 2,
                         }}>
-                          <Typography variant="h6" sx={{ color: 'white' }}>
-                            ✋
+                          <Typography variant="h6" sx={{ color: 'white', fontWeight: 700 }}>
+                            G
                           </Typography>
                         </Box>
                         <Box>
                           <Typography variant="h6" sx={{ 
-                            fontWeight: 'bold',
-                            color: 'text.primary',
+                            fontWeight: 700,
+                            color: '#333',
                             mb: 0.5,
                           }}>
                             Guest Details
                           </Typography>
-                          <Typography variant="body2" color="text.secondary">
+                          <Typography variant="body2" sx={{ color: '#666', fontWeight: 500 }}>
                             Please provide your information for the booking
                           </Typography>
                         </Box>
@@ -1028,19 +990,19 @@ const BookingPage: React.FC = () => {
                             sx={{
                               '& .MuiInputBase-root': {
                                 minHeight: isMobile ? 56 : 'auto',
-                                bgcolor: 'background.paper',
+                                bgcolor: 'white',
                                 borderRadius: 2,
                               },
                               '& .MuiOutlinedInput-root': {
                                 '&:hover fieldset': {
-                                  borderColor: 'secondary.main',
+                                  borderColor: '#2e7d32',
                                 },
                                 '&.Mui-focused fieldset': {
-                                  borderColor: 'secondary.main',
+                                  borderColor: '#2e7d32',
                                 },
                               },
                               '& .MuiInputLabel-root.Mui-focused': {
-                                color: 'secondary.main',
+                                color: '#2e7d32',
                               },
                             }}
                           />
@@ -1059,19 +1021,19 @@ const BookingPage: React.FC = () => {
                             sx={{
                               '& .MuiInputBase-root': {
                                 minHeight: isMobile ? 56 : 'auto',
-                                bgcolor: 'background.paper',
+                                bgcolor: 'white',
                                 borderRadius: 2,
                               },
                               '& .MuiOutlinedInput-root': {
                                 '&:hover fieldset': {
-                                  borderColor: 'secondary.main',
+                                  borderColor: '#2e7d32',
                                 },
                                 '&.Mui-focused fieldset': {
-                                  borderColor: 'secondary.main',
+                                  borderColor: '#2e7d32',
                                 },
                               },
                               '& .MuiInputLabel-root.Mui-focused': {
-                                color: 'secondary.main',
+                                color: '#2e7d32',
                               },
                             }}
                           />
@@ -1088,19 +1050,19 @@ const BookingPage: React.FC = () => {
                             sx={{
                               '& .MuiInputBase-root': {
                                 minHeight: isMobile ? 56 : 'auto',
-                                bgcolor: 'background.paper',
+                                bgcolor: 'white',
                                 borderRadius: 2,
                               },
                               '& .MuiOutlinedInput-root': {
                                 '&:hover fieldset': {
-                                  borderColor: 'secondary.main',
+                                  borderColor: '#2e7d32',
                                 },
                                 '&.Mui-focused fieldset': {
-                                  borderColor: 'secondary.main',
+                                  borderColor: '#2e7d32',
                                 },
                               },
                               '& .MuiInputLabel-root.Mui-focused': {
-                                color: 'secondary.main',
+                                color: '#2e7d32',
                               },
                             }}
                           />
@@ -1110,17 +1072,18 @@ const BookingPage: React.FC = () => {
                       <Box sx={{ 
                         mt: 2,
                         p: 2,
-                        bgcolor: 'info.main',
-                        color: 'info.contrastText',
+                        bgcolor: '#e8f5e8',
+                        color: '#2e7d32',
                         borderRadius: 2,
+                        border: '1px solid #c8e6c9',
                         display: 'flex',
                         alignItems: 'center',
                         gap: 1,
                       }}>
                         <Typography variant="body2" sx={{ fontSize: '1.2em' }}>
-                          ℹ️
+                          🔒
                         </Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
                           Your information is secure and will only be used for this booking
                         </Typography>
                       </Box>
@@ -1132,11 +1095,11 @@ const BookingPage: React.FC = () => {
               {/* Special Requests Section */}
               <Grid item xs={12}>
                 <Card 
-                  elevation={1}
                   sx={{ 
-                    background: `linear-gradient(135deg, ${theme.palette.info.main}05 0%, ${theme.palette.info.main}10 100%)`,
-                    border: `1px solid ${theme.palette.info.main}20`,
-                    borderRadius: 3,
+                    background: 'white',
+                    border: '1px solid #e0e0e0',
+                    borderRadius: 2,
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
                   }}
                 >
                   <CardContent sx={{ p: isMobile ? 2.5 : 3 }}>
@@ -1149,25 +1112,25 @@ const BookingPage: React.FC = () => {
                         width: 40,
                         height: 40,
                         borderRadius: '50%',
-                        bgcolor: 'info.main',
+                        bgcolor: '#2e7d32',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         mr: 2,
                       }}>
-                        <Typography variant="body1" sx={{ color: 'white' }}>
-                          💬
+                        <Typography variant="body1" sx={{ color: 'white', fontWeight: 700 }}>
+                          R
                         </Typography>
                       </Box>
                       <Box>
                         <Typography variant="h6" sx={{ 
-                          fontWeight: 'bold',
-                          color: 'text.primary',
+                          fontWeight: 700,
+                          color: '#333',
                           mb: 0.5,
                         }}>
                           Special Requests
                         </Typography>
-                        <Typography variant="body2" color="text.secondary">
+                        <Typography variant="body2" sx={{ color: '#666', fontWeight: 500 }}>
                           Let us know if you have any special preferences
                         </Typography>
                       </Box>
@@ -1185,19 +1148,19 @@ const BookingPage: React.FC = () => {
                       sx={{
                         '& .MuiInputBase-root': {
                           minHeight: isMobile ? 88 : 'auto',
-                          bgcolor: 'background.paper',
+                          bgcolor: 'white',
                           borderRadius: 2,
                         },
                         '& .MuiOutlinedInput-root': {
                           '&:hover fieldset': {
-                            borderColor: 'info.main',
+                            borderColor: '#2e7d32',
                           },
                           '&.Mui-focused fieldset': {
-                            borderColor: 'info.main',
+                            borderColor: '#2e7d32',
                           },
                         },
                         '& .MuiInputLabel-root.Mui-focused': {
-                          color: 'info.main',
+                          color: '#2e7d32',
                         },
                       }}
                     />
@@ -1223,10 +1186,12 @@ const BookingPage: React.FC = () => {
                           }}
                           sx={{
                             cursor: 'pointer',
+                            borderColor: '#e0e0e0',
+                            color: '#666',
                             '&:hover': {
-                              bgcolor: 'info.main',
-                              color: 'info.contrastText',
-                              borderColor: 'info.main',
+                              bgcolor: '#2e7d32',
+                              color: 'white',
+                              borderColor: '#2e7d32',
                             },
                           }}
                         />
@@ -1238,7 +1203,7 @@ const BookingPage: React.FC = () => {
 
               {/* Payment Section */}
               <Grid item xs={12}>
-                <Divider sx={{ my: isMobile ? 1 : 2 }} />
+                <Divider sx={{ my: isMobile ? 1 : 2, bgcolor: '#e0e0e0' }} />
                 <Box 
                   sx={{ 
                     display: 'flex', 
@@ -1247,11 +1212,11 @@ const BookingPage: React.FC = () => {
                     flexWrap: 'wrap',
                   }}
                 >
-                  <LockIcon sx={{ mr: 1, color: 'success.main' }} />
+                  <LockIcon sx={{ mr: 1, color: '#2e7d32' }} />
                   <Typography 
                     variant={isMobile ? 'subtitle1' : 'h6'} 
                     component="div"
-                    sx={{ fontWeight: 'bold' }}
+                    sx={{ fontWeight: 700, color: '#333' }}
                   >
                     Secure Payment Information
                   </Typography>
@@ -1264,8 +1229,8 @@ const BookingPage: React.FC = () => {
                   <FormLabel 
                     component="legend" 
                     sx={{ 
-                      fontWeight: 'bold', 
-                      color: 'text.primary',
+                      fontWeight: 700, 
+                      color: '#333',
                       fontSize: isMobile ? '0.875rem' : '1rem',
                     }}
                   >
@@ -1293,7 +1258,7 @@ const BookingPage: React.FC = () => {
                             py: isMobile ? 1 : 0,
                           }}
                         >
-                          <CreditCardIcon sx={{ mr: 1, color: theme.palette.primary.main }} />
+                          <CreditCardIcon sx={{ mr: 1, color: '#2e7d32' }} />
                           Credit Card
                         </Box>
                       }
@@ -1317,7 +1282,7 @@ const BookingPage: React.FC = () => {
                             py: isMobile ? 1 : 0,
                           }}
                         >
-                          <PhoneIcon sx={{ mr: 1, color: theme.palette.info.main }} />
+                          <PhoneIcon sx={{ mr: 1, color: '#2e7d32' }} />
                           Mobile Money Transfer
                         </Box>
                       }
@@ -1338,7 +1303,7 @@ const BookingPage: React.FC = () => {
                             py: isMobile ? 1 : 0,
                           }}
                         >
-                          <HotelIcon sx={{ mr: 1, color: theme.palette.secondary.main }} />
+                          <HotelIcon sx={{ mr: 1, color: '#2e7d32' }} />
                           Pay at Front Desk
                         </Box>
                       }
@@ -1361,7 +1326,7 @@ const BookingPage: React.FC = () => {
                         >
                           <PhoneIcon sx={{ 
                             mr: 1, 
-                            color: theme.palette.mode === 'dark' ? themeConstants.darkTheme.mbirrOrange : themeConstants.mbirrOrange 
+                            color: '#2e7d32'
                           }} />
                           🇪🇹 M-birr
                         </Box>
@@ -1385,7 +1350,7 @@ const BookingPage: React.FC = () => {
                         >
                           <PhoneIcon sx={{ 
                             mr: 1, 
-                            color: theme.palette.mode === 'dark' ? themeConstants.darkTheme.telebirrGreen : themeConstants.telebirrGreen 
+                            color: '#2e7d32'
                           }} />
                           🇪🇹 Telebirr
                         </Box>
@@ -1405,14 +1370,13 @@ const BookingPage: React.FC = () => {
                   <Grid item xs={12}>
                     <Card 
                       sx={{ 
-                        border: `2px solid ${theme.palette.primary.main}`,
-                        backgroundColor: theme.palette.mode === 'dark' 
-                          ? themeConstants.darkTheme.cardBackground
-                          : '#f8faff',
+                        border: '2px solid #2e7d32',
+                        backgroundColor: 'white',
                         borderRadius: 2,
                         minHeight: 520, // Consistent height to accommodate all payment methods
                         display: 'flex',
-                        flexDirection: 'column'
+                        flexDirection: 'column',
+                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
                       }}
                     >
                       <CardContent sx={{ 
@@ -1424,25 +1388,26 @@ const BookingPage: React.FC = () => {
                         <Box sx={{ textAlign: 'center', mb: 2 }}>
                           <CreditCardIcon sx={{ 
                             fontSize: 40, 
-                            color: theme.palette.primary.main,
+                            color: '#2e7d32',
                             mb: 1 
                           }} />
                           <Typography variant="h6" sx={{ 
-                            color: theme.palette.primary.main,
-                            fontWeight: 'bold',
+                            color: '#333',
+                            fontWeight: 700,
                             mb: 0.5
                           }}>
                             Credit/Debit Card Payment
                           </Typography>
                           <Typography variant="body2" sx={{ 
-                            color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'text.secondary',
-                            mb: 1
+                            color: '#666',
+                            mb: 1,
+                            fontWeight: 500
                           }}>
                             Secure card payment processing
                           </Typography>
                           <Typography variant="h6" sx={{ 
-                            color: theme.palette.primary.main,
-                            fontWeight: 'bold'
+                            color: '#2e7d32',
+                            fontWeight: 700
                           }}>
                             Amount: ETB {totalAmount?.toFixed(0)}
                           </Typography>
@@ -1461,6 +1426,19 @@ const BookingPage: React.FC = () => {
                             sx={{
                               '& .MuiInputBase-root': {
                                 minHeight: isMobile ? 56 : 'auto',
+                                bgcolor: 'white',
+                                borderRadius: 2,
+                              },
+                              '& .MuiOutlinedInput-root': {
+                                '&:hover fieldset': {
+                                  borderColor: '#2e7d32',
+                                },
+                                '&.Mui-focused fieldset': {
+                                  borderColor: '#2e7d32',
+                                },
+                              },
+                              '& .MuiInputLabel-root.Mui-focused': {
+                                color: '#2e7d32',
                               },
                             }}
                           />
@@ -1485,12 +1463,25 @@ const BookingPage: React.FC = () => {
                             sx={{
                               '& .MuiInputBase-root': {
                                 minHeight: isMobile ? 56 : 'auto',
+                                bgcolor: 'white',
+                                borderRadius: 2,
+                              },
+                              '& .MuiOutlinedInput-root': {
+                                '&:hover fieldset': {
+                                  borderColor: '#2e7d32',
+                                },
+                                '&.Mui-focused fieldset': {
+                                  borderColor: '#2e7d32',
+                                },
+                              },
+                              '& .MuiInputLabel-root.Mui-focused': {
+                                color: '#2e7d32',
                               },
                             }}
                             InputProps={{
                               startAdornment: (
                                 <InputAdornment position="start">
-                                  <CreditCardIcon color="action" />
+                                  <CreditCardIcon sx={{ color: '#2e7d32' }} />
                                 </InputAdornment>
                               ),
                             }}
@@ -1518,6 +1509,19 @@ const BookingPage: React.FC = () => {
                             sx={{
                               '& .MuiInputBase-root': {
                                 minHeight: isMobile ? 56 : 'auto',
+                                bgcolor: 'white',
+                                borderRadius: 2,
+                              },
+                              '& .MuiOutlinedInput-root': {
+                                '&:hover fieldset': {
+                                  borderColor: '#2e7d32',
+                                },
+                                '&.Mui-focused fieldset': {
+                                  borderColor: '#2e7d32',
+                                },
+                              },
+                              '& .MuiInputLabel-root.Mui-focused': {
+                                color: '#2e7d32',
                               },
                             }}
                           />
@@ -1543,6 +1547,19 @@ const BookingPage: React.FC = () => {
                             sx={{
                               '& .MuiInputBase-root': {
                                 minHeight: isMobile ? 56 : 'auto',
+                                bgcolor: 'white',
+                                borderRadius: 2,
+                              },
+                              '& .MuiOutlinedInput-root': {
+                                '&:hover fieldset': {
+                                  borderColor: '#2e7d32',
+                                },
+                                '&.Mui-focused fieldset': {
+                                  borderColor: '#2e7d32',
+                                },
+                              },
+                              '& .MuiInputLabel-root.Mui-focused': {
+                                color: '#2e7d32',
                               },
                             }}
                           />
@@ -1560,14 +1577,13 @@ const BookingPage: React.FC = () => {
                 <>
                   <Grid item xs={12}>
                     <Card sx={{ 
-                      border: `2px solid ${theme.palette.info.main}`,
-                      backgroundColor: theme.palette.mode === 'dark' 
-                        ? themeConstants.darkTheme.cardBackground
-                        : '#f0f8ff',
+                      border: '2px solid #2e7d32',
+                      backgroundColor: 'white',
                       borderRadius: 2,
                       minHeight: 520, // Consistent height to accommodate all payment methods
                       display: 'flex',
-                      flexDirection: 'column'
+                      flexDirection: 'column',
+                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
                     }}>
                       <CardContent sx={{ 
                         py: 3,
@@ -1578,32 +1594,43 @@ const BookingPage: React.FC = () => {
                         <Box sx={{ textAlign: 'center', mb: 2 }}>
                           <PhoneIcon sx={{ 
                             fontSize: 40, 
-                            color: theme.palette.info.main,
+                            color: '#2e7d32',
                             mb: 1 
                           }} />
                           <Typography variant="h6" sx={{ 
-                            color: theme.palette.info.main,
-                            fontWeight: 'bold',
+                            color: '#333',
+                            fontWeight: 700,
                             mb: 0.5
                           }}>
                             Mobile Money Transfer
                           </Typography>
                           <Typography variant="body2" sx={{ 
-                            color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'text.secondary',
-                            mb: 1
+                            color: '#666',
+                            mb: 1,
+                            fontWeight: 500
                           }}>
                             Complete mobile money transfer and provide details
                           </Typography>
                           <Typography variant="h6" sx={{ 
-                            color: theme.palette.info.main,
-                            fontWeight: 'bold'
+                            color: '#2e7d32',
+                            fontWeight: 700
                           }}>
                             Amount: ETB {totalAmount?.toFixed(0)}
                           </Typography>
                         </Box>
                         
                         <Box sx={{ flexGrow: 1 }}>
-                          <Alert severity="info" sx={{ mb: 2 }}>
+                          <Alert 
+                            severity="info" 
+                            sx={{ 
+                              mb: 2,
+                              bgcolor: '#e8f5e8',
+                              color: '#2e7d32',
+                              '& .MuiAlert-icon': {
+                                color: '#2e7d32'
+                              }
+                            }}
+                          >
                             Please complete the mobile money transfer to our account and provide the details below.
                           </Alert>
                           <Grid container spacing={2}>
@@ -1615,10 +1642,27 @@ const BookingPage: React.FC = () => {
                                 fullWidth
                                 required
                                 placeholder="+1234567890"
+                                sx={{
+                                  '& .MuiInputBase-root': {
+                                    bgcolor: 'white',
+                                    borderRadius: 2,
+                                  },
+                                  '& .MuiOutlinedInput-root': {
+                                    '&:hover fieldset': {
+                                      borderColor: '#2e7d32',
+                                    },
+                                    '&.Mui-focused fieldset': {
+                                      borderColor: '#2e7d32',
+                                    },
+                                  },
+                                  '& .MuiInputLabel-root.Mui-focused': {
+                                    color: '#2e7d32',
+                                  },
+                                }}
                                 InputProps={{
                                   startAdornment: (
                                     <InputAdornment position="start">
-                                      <PhoneIcon color="action" />
+                                      <PhoneIcon sx={{ color: '#2e7d32' }} />
                                     </InputAdornment>
                                   ),
                                 }}
@@ -1632,10 +1676,27 @@ const BookingPage: React.FC = () => {
                                 fullWidth
                                 required
                                 placeholder="Receipt/Transaction ID"
+                                sx={{
+                                  '& .MuiInputBase-root': {
+                                    bgcolor: 'white',
+                                    borderRadius: 2,
+                                  },
+                                  '& .MuiOutlinedInput-root': {
+                                    '&:hover fieldset': {
+                                      borderColor: '#2e7d32',
+                                    },
+                                    '&.Mui-focused fieldset': {
+                                      borderColor: '#2e7d32',
+                                    },
+                                  },
+                                  '& .MuiInputLabel-root.Mui-focused': {
+                                    color: '#2e7d32',
+                                  },
+                                }}
                               />
                             </Grid>
                             <Grid item xs={12}>
-                              <Typography variant="body2" color="text.secondary">
+                              <Typography variant="body2" sx={{ color: '#666', fontWeight: 600 }}>
                                 <strong>Amount to Transfer:</strong> ETB {totalAmount?.toFixed(0)}
                               </Typography>
                             </Grid>
@@ -1652,14 +1713,13 @@ const BookingPage: React.FC = () => {
                 <>
                   <Grid item xs={12}>
                     <Card sx={{ 
-                      border: `2px solid ${theme.palette.mode === 'dark' ? themeConstants.darkTheme.telebirrGreen : '#4CAF50'}`,
-                      backgroundColor: theme.palette.mode === 'dark' 
-                        ? themeConstants.darkTheme.cardBackground
-                        : '#f1f8e9',
+                      border: '2px solid #2e7d32',
+                      backgroundColor: 'white',
                       borderRadius: 2,
                       minHeight: 520, // Consistent height to accommodate all payment methods
                       display: 'flex',
-                      flexDirection: 'column'
+                      flexDirection: 'column',
+                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
                     }}>
                       <CardContent sx={{ 
                         textAlign: 'center', 
@@ -1672,34 +1732,35 @@ const BookingPage: React.FC = () => {
                       }}>
                         <HotelIcon sx={{ 
                           fontSize: 48, 
-                          color: theme.palette.mode === 'dark' ? themeConstants.darkTheme.telebirrGreen : '#4CAF50',
+                          color: '#2e7d32',
                           mb: 2 
                         }} />
                         <Typography variant="h6" sx={{ 
-                          color: theme.palette.mode === 'dark' ? themeConstants.darkTheme.telebirrGreen : '#4CAF50',
-                          fontWeight: 'bold',
+                          color: '#333',
+                          fontWeight: 700,
                           mb: 1
                         }}>
                           Pay at Front Desk
                         </Typography>
                         <Typography variant="body1" sx={{ 
-                          color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.87)' : 'text.primary',
-                          mb: 2
+                          color: '#666',
+                          mb: 2,
+                          fontWeight: 500
                         }}>
                           Your reservation will be confirmed and you can pay when you arrive at the hotel.
                         </Typography>
                         <Typography variant="h5" sx={{ 
-                          color: theme.palette.mode === 'dark' ? themeConstants.darkTheme.telebirrGreen : '#4CAF50',
-                          fontWeight: 'bold',
+                          color: '#2e7d32',
+                          fontWeight: 700,
                           mb: 2
                         }}>
                           Amount due at check-in: ETB {totalAmount?.toFixed(0)}
                         </Typography>
                         <Box sx={{ mt: 2, textAlign: 'left' }}>
-                          <Typography variant="body2" sx={{ mb: 1, fontWeight: 'bold' }}>
+                          <Typography variant="body2" sx={{ mb: 1, fontWeight: 700, color: '#333' }}>
                             Important Information:
                           </Typography>
-                          <Typography variant="body2" component="ul" sx={{ pl: 2, mb: 0 }}>
+                          <Typography variant="body2" component="ul" sx={{ pl: 2, mb: 0, color: '#666', fontWeight: 500 }}>
                             <li>Payment is due upon check-in at the front desk</li>
                             <li>Accepted payment methods: Cash, Credit Card, Debit Card</li>
                             <li>Please bring a valid ID for check-in</li>
@@ -1716,14 +1777,13 @@ const BookingPage: React.FC = () => {
                 <>
                   <Grid item xs={12}>
                     <Card sx={{ 
-                      border: `2px solid ${theme.palette.mode === 'dark' ? themeConstants.darkTheme.mbirrOrange : themeConstants.mbirrOrange}`,
-                      backgroundColor: theme.palette.mode === 'dark' 
-                        ? themeConstants.darkTheme.cardBackground
-                        : `${themeConstants.mbirrOrange}15`,
+                      border: '2px solid #2e7d32',
+                      backgroundColor: 'white',
                       borderRadius: 2,
                       minHeight: 520, // Consistent height to accommodate all payment methods
                       display: 'flex',
-                      flexDirection: 'column'
+                      flexDirection: 'column',
+                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
                     }}>
                       <CardContent sx={{ 
                         py: 3,
@@ -1734,32 +1794,43 @@ const BookingPage: React.FC = () => {
                         <Box sx={{ textAlign: 'center', mb: 2 }}>
                           <PhoneIcon sx={{ 
                             fontSize: 40, 
-                            color: theme.palette.mode === 'dark' ? themeConstants.darkTheme.mbirrOrange : themeConstants.mbirrOrange,
+                            color: '#2e7d32',
                             mb: 1 
                           }} />
                           <Typography variant="h6" sx={{ 
-                            color: theme.palette.mode === 'dark' ? themeConstants.darkTheme.mbirrOrange : themeConstants.mbirrOrange,
-                            fontWeight: 'bold',
+                            color: '#333',
+                            fontWeight: 700,
                             mb: 0.5
                           }}>
                             🇪🇹 M-birr Mobile Payment
                           </Typography>
                           <Typography variant="body2" sx={{ 
-                            color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'text.secondary',
-                            mb: 1
+                            color: '#666',
+                            mb: 1,
+                            fontWeight: 500
                           }}>
                             Pay securely using your M-birr mobile wallet
                           </Typography>
                           <Typography variant="h6" sx={{ 
-                            color: theme.palette.mode === 'dark' ? themeConstants.darkTheme.mbirrOrange : themeConstants.mbirrOrange,
-                            fontWeight: 'bold'
+                            color: '#2e7d32',
+                            fontWeight: 700
                           }}>
                             Amount: ETB {totalAmount?.toFixed(0)}
                           </Typography>
                         </Box>
                         
                         <Box sx={{ flexGrow: 1 }}>
-                      <Alert severity="info" sx={{ mb: 2 }}>
+                      <Alert 
+                        severity="info" 
+                        sx={{ 
+                          mb: 2,
+                          bgcolor: '#e8f5e8',
+                          color: '#2e7d32',
+                          '& .MuiAlert-icon': {
+                            color: '#2e7d32'
+                          }
+                        }}
+                      >
                         Pay securely using your M-birr mobile wallet. You'll receive SMS instructions to complete the payment.
                       </Alert>
                       <Grid container spacing={2}>
@@ -1783,11 +1854,28 @@ const BookingPage: React.FC = () => {
                             required
                             placeholder="09 12 34 56 78"
                             helperText="Enter your Ethiopian mobile number"
+                            sx={{
+                              '& .MuiInputBase-root': {
+                                bgcolor: 'white',
+                                borderRadius: 2,
+                              },
+                              '& .MuiOutlinedInput-root': {
+                                '&:hover fieldset': {
+                                  borderColor: '#2e7d32',
+                                },
+                                '&.Mui-focused fieldset': {
+                                  borderColor: '#2e7d32',
+                                },
+                              },
+                              '& .MuiInputLabel-root.Mui-focused': {
+                                color: '#2e7d32',
+                              },
+                            }}
                             InputProps={{
                               startAdornment: (
                                 <InputAdornment position="start">
                                   <PhoneIcon sx={{ 
-                                    color: theme.palette.mode === 'dark' ? themeConstants.darkTheme.mbirrOrange : themeConstants.mbirrOrange 
+                                    color: '#2e7d32'
                                   }} />
                                 </InputAdornment>
                               ),
@@ -1797,27 +1885,37 @@ const BookingPage: React.FC = () => {
                         <Grid item xs={12} sm={6}>
                           <Box sx={{ 
                             p: 2, 
-                            bgcolor: theme.palette.mode === 'dark' ? themeConstants.darkTheme.mbirrOrange : themeConstants.mbirrOrange, 
-                            color: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.87)' : 'white', 
-                            borderRadius: 1 
+                            bgcolor: '#e8f5e8', 
+                            color: '#2e7d32', 
+                            borderRadius: 2,
+                            border: '1px solid #c8e6c9'
                           }}>
-                            <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>
+                            <Typography variant="body2" sx={{ fontWeight: 700, mb: 1 }}>
                               M-birr Information
                             </Typography>
-                            <Typography variant="caption" display="block">
+                            <Typography variant="caption" display="block" sx={{ fontWeight: 500 }}>
                               • USSD Code: *847#
                             </Typography>
-                            <Typography variant="caption" display="block">
+                            <Typography variant="caption" display="block" sx={{ fontWeight: 500 }}>
                               • Limits: 10 - 100,000 ETB
                             </Typography>
-                            <Typography variant="caption" display="block">
+                            <Typography variant="caption" display="block" sx={{ fontWeight: 500 }}>
                               • Amount: ETB {totalAmount?.toFixed(0)}
                             </Typography>
                           </Box>
                             </Grid>
                             <Grid item xs={12}>
-                              <Alert severity="warning">
-                                <Typography variant="body2">
+                              <Alert 
+                                severity="warning"
+                                sx={{
+                                  bgcolor: '#fff3cd',
+                                  color: '#856404',
+                                  '& .MuiAlert-icon': {
+                                    color: '#856404'
+                                  }
+                                }}
+                              >
+                                <Typography variant="body2" sx={{ fontWeight: 500 }}>
                                   <strong>Payment Instructions:</strong><br />
                                   1. You'll receive an SMS with payment instructions<br />
                                   2. Open your M-birr app or dial *847#<br />
@@ -1839,14 +1937,13 @@ const BookingPage: React.FC = () => {
                 <>
                   <Grid item xs={12}>
                     <Card sx={{ 
-                      border: `2px solid ${theme.palette.mode === 'dark' ? themeConstants.darkTheme.telebirrGreen : themeConstants.telebirrGreen}`,
-                      backgroundColor: theme.palette.mode === 'dark' 
-                        ? themeConstants.darkTheme.cardBackground
-                        : `${themeConstants.telebirrGreen}15`,
+                      border: '2px solid #2e7d32',
+                      backgroundColor: 'white',
                       borderRadius: 2,
                       minHeight: 520, // Consistent height to accommodate all payment methods
                       display: 'flex',
-                      flexDirection: 'column'
+                      flexDirection: 'column',
+                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
                     }}>
                       <CardContent sx={{ 
                         py: 3,
@@ -1857,32 +1954,43 @@ const BookingPage: React.FC = () => {
                         <Box sx={{ textAlign: 'center', mb: 2 }}>
                           <PhoneIcon sx={{ 
                             fontSize: 40, 
-                            color: theme.palette.mode === 'dark' ? themeConstants.darkTheme.telebirrGreen : themeConstants.telebirrGreen,
+                            color: '#2e7d32',
                             mb: 1 
                           }} />
                           <Typography variant="h6" sx={{ 
-                            color: theme.palette.mode === 'dark' ? themeConstants.darkTheme.telebirrGreen : themeConstants.telebirrGreen,
-                            fontWeight: 'bold',
+                            color: '#333',
+                            fontWeight: 700,
                             mb: 0.5
                           }}>
                             🇪🇹 Telebirr Mobile Payment
                           </Typography>
                           <Typography variant="body2" sx={{ 
-                            color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'text.secondary',
-                            mb: 1
+                            color: '#666',
+                            mb: 1,
+                            fontWeight: 500
                           }}>
                             Pay securely using your Telebirr mobile wallet
                           </Typography>
                           <Typography variant="h6" sx={{ 
-                            color: theme.palette.mode === 'dark' ? themeConstants.darkTheme.telebirrGreen : themeConstants.telebirrGreen,
-                            fontWeight: 'bold'
+                            color: '#2e7d32',
+                            fontWeight: 700
                           }}>
                             Amount: ETB {totalAmount?.toFixed(0)}
                           </Typography>
                         </Box>
                         
                         <Box sx={{ flexGrow: 1 }}>
-                          <Alert severity="info" sx={{ mb: 2 }}>
+                          <Alert 
+                            severity="info" 
+                            sx={{ 
+                              mb: 2,
+                              bgcolor: '#e8f5e8',
+                              color: '#2e7d32',
+                              '& .MuiAlert-icon': {
+                                color: '#2e7d32'
+                              }
+                            }}
+                          >
                             Pay securely using your Telebirr mobile wallet. You'll receive SMS instructions to complete the payment.
                           </Alert>
                       <Grid container spacing={2}>
@@ -1906,11 +2014,28 @@ const BookingPage: React.FC = () => {
                             required
                             placeholder="09 12 34 56 78"
                             helperText="Enter your Ethiopian mobile number"
+                            sx={{
+                              '& .MuiInputBase-root': {
+                                bgcolor: 'white',
+                                borderRadius: 2,
+                              },
+                              '& .MuiOutlinedInput-root': {
+                                '&:hover fieldset': {
+                                  borderColor: '#2e7d32',
+                                },
+                                '&.Mui-focused fieldset': {
+                                  borderColor: '#2e7d32',
+                                },
+                              },
+                              '& .MuiInputLabel-root.Mui-focused': {
+                                color: '#2e7d32',
+                              },
+                            }}
                             InputProps={{
                               startAdornment: (
                                 <InputAdornment position="start">
                                   <PhoneIcon sx={{ 
-                                    color: theme.palette.mode === 'dark' ? themeConstants.darkTheme.telebirrGreen : themeConstants.telebirrGreen 
+                                    color: '#2e7d32'
                                   }} />
                                 </InputAdornment>
                               ),
@@ -1920,27 +2045,37 @@ const BookingPage: React.FC = () => {
                         <Grid item xs={12} sm={6}>
                           <Box sx={{ 
                             p: 2, 
-                            bgcolor: theme.palette.mode === 'dark' ? themeConstants.darkTheme.telebirrGreen : themeConstants.telebirrGreen, 
-                            color: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.87)' : 'white', 
-                            borderRadius: 1 
+                            bgcolor: '#e8f5e8', 
+                            color: '#2e7d32', 
+                            borderRadius: 2,
+                            border: '1px solid #c8e6c9'
                           }}>
-                            <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>
+                            <Typography variant="body2" sx={{ fontWeight: 700, mb: 1 }}>
                               Telebirr Information
                             </Typography>
-                            <Typography variant="caption" display="block">
+                            <Typography variant="caption" display="block" sx={{ fontWeight: 500 }}>
                               • USSD Code: *127#
                             </Typography>
-                            <Typography variant="caption" display="block">
+                            <Typography variant="caption" display="block" sx={{ fontWeight: 500 }}>
                               • Limits: 5 - 50,000 ETB
                             </Typography>
-                            <Typography variant="caption" display="block">
+                            <Typography variant="caption" display="block" sx={{ fontWeight: 500 }}>
                               • Amount: ETB {totalAmount?.toFixed(0)}
                             </Typography>
                           </Box>
                             </Grid>
                             <Grid item xs={12}>
-                              <Alert severity="warning">
-                                <Typography variant="body2">
+                              <Alert 
+                                severity="warning"
+                                sx={{
+                                  bgcolor: '#fff3cd',
+                                  color: '#856404',
+                                  '& .MuiAlert-icon': {
+                                    color: '#856404'
+                                  }
+                                }}
+                              >
+                                <Typography variant="body2" sx={{ fontWeight: 500 }}>
                                   <strong>Payment Instructions:</strong><br />
                                   1. You'll receive an SMS with payment instructions<br />
                                   2. Open your Telebirr app or dial *127#<br />

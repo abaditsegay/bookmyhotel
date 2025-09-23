@@ -184,9 +184,6 @@ const BookingForm: React.FC<BookingFormProps> = ({
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
         <DialogTitle>
-          <Typography variant="h5" component="h2">
-            Book Your Stay
-          </Typography>
           {hotelName && (
             <Typography variant="subtitle1" color="text.secondary">
               {hotelName}
@@ -248,40 +245,86 @@ const BookingForm: React.FC<BookingFormProps> = ({
           )}
 
           {room && (
-            <Paper elevation={1} sx={{ p: 2, mb: 3, bgcolor: 'grey.50' }}>
-              <Typography variant="h6" component="div" gutterBottom>
+            <Paper 
+              elevation={0} 
+              sx={{ 
+                p: 3, 
+                mb: 3, 
+                backgroundColor: 'white',
+                border: '1px solid #e0e0e0',
+                borderRadius: 2,
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+              }}
+            >
+              <Typography 
+                variant="h6" 
+                component="div" 
+                gutterBottom
+                sx={{ 
+                  fontWeight: 700,
+                  color: 'text.primary',
+                  mb: 2,
+                }}
+              >
                 Room Details
               </Typography>
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={6}>
-                  <Typography variant="body2">
+                  <Typography variant="body2" sx={{ mb: 0.5, fontWeight: 500 }}>
                     <strong>Room:</strong> {room.roomNumber}
                   </Typography>
-                  <Typography variant="body2">
+                  <Typography variant="body2" sx={{ mb: 0.5, fontWeight: 500 }}>
                     <strong>Type:</strong> {room.roomType}
                   </Typography>
-                  <Typography variant="body2">
+                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
                     <strong>Capacity:</strong> Up to {room.capacity} guests
                   </Typography>
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <Typography variant="body2">
+                  <Typography variant="body2" sx={{ mb: 0.5, fontWeight: 500 }}>
                     <strong>Price per night:</strong> ${room.pricePerNight}
                   </Typography>
                   {nights > 0 && (
                     <>
-                      <Typography variant="body2">
+                      <Typography variant="body2" sx={{ mb: 0.5, fontWeight: 500 }}>
                         <strong>Nights:</strong> {nights}
                       </Typography>
-                      <Typography variant="h6" component="div" color="primary.main">
-                        <strong>Total: ${totalAmount}</strong>
-                      </Typography>
+                      <Box 
+                        sx={{ 
+                          backgroundColor: '#e8f5e8',
+                          border: '1px solid #c8e6c9',
+                          borderRadius: 2,
+                          padding: 1.5,
+                          mt: 1,
+                        }}
+                      >
+                        <Typography 
+                          variant="h6" 
+                          component="div" 
+                          sx={{ 
+                            color: '#2e7d32',
+                            fontWeight: 700,
+                            textAlign: 'center',
+                          }}
+                        >
+                          <strong>Total: ${totalAmount}</strong>
+                        </Typography>
+                      </Box>
                     </>
                   )}
                 </Grid>
               </Grid>
               {room.description && (
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                <Typography 
+                  variant="body2" 
+                  color="text.secondary" 
+                  sx={{ 
+                    mt: 2, 
+                    pt: 2,
+                    borderTop: '1px solid #f0f0f0',
+                    fontStyle: 'italic',
+                  }}
+                >
                   {room.description}
                 </Typography>
               )}
