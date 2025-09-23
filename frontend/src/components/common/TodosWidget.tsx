@@ -9,19 +9,21 @@ import {
   IconButton,
   TextField,
   Button,
-  Checkbox,
   FormControl,
   Select,
   MenuItem,
   InputLabel,
   SelectChangeEvent,
+  useTheme,
 } from '@mui/material';
 import {
   Add as AddIcon,
   Delete as DeleteIcon,
+  Circle as CircleIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { Todo, useTodoApi } from '../../services/todoApi';
+import { themeConstants } from '../../theme/theme';
 
 interface TodosWidgetProps {
   width?: string | number;
@@ -34,12 +36,13 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
 }) => {
   const { user } = useAuth();
   const todoApi = useTodoApi();
+  const theme = useTheme();
   
   const [todos, setTodos] = useState<Todo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [newTodoTitle, setNewTodoTitle] = useState('');
-  const [priority, setPriority] = useState<'HIGH' | 'MEDIUM' | 'LOW'>('MEDIUM');
+  const [severity, setSeverity] = useState<'HIGH' | 'MEDIUM' | 'LOW'>('MEDIUM');
 
   // Check if user has access to TODO functionality
   // CUSTOMER and GUEST roles should not have access to TODOs
@@ -81,8 +84,9 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
     try {
       const todoToCreate = {
         title: newTodoTitle.trim(),
-        priority: priority,
-        completed: false,
+        severity: severity,
+        // Note: completed field is temporarily removed from backend
+        // completed: false,
       };
 
       const createdTodo = await todoApi.createTodo(todoToCreate);
@@ -90,7 +94,7 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
       
       // Reset form
       setNewTodoTitle('');
-      setPriority('MEDIUM');
+      setSeverity('MEDIUM');
     } catch (err) {
       setError('Failed to create todo');
       console.error('Error creating todo:', err);
@@ -119,17 +123,24 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
     }
   };
 
-  const getPriorityIcon = (priority: string) => {
-    switch (priority) {
-      case 'HIGH': return '🔴';
-      case 'MEDIUM': return '🟡';
-      case 'LOW': return '🟢';
-      default: return '⚪';
+  const getSeverityBalloon = (severity: string) => {
+    // Normalize severity to uppercase to handle case variations
+    const normalizedSeverity = severity?.toUpperCase();
+    
+    switch (normalizedSeverity) {
+      case 'HIGH': 
+        return <CircleIcon sx={{ fontSize: '16px', color: theme.palette.error.main }} />;
+      case 'MEDIUM': 
+        return <CircleIcon sx={{ fontSize: '16px', color: '#FFC107' }} />; // Yellow
+      case 'LOW': 
+        return <CircleIcon sx={{ fontSize: '16px', color: theme.palette.success.main }} />;
+      default: 
+        return <CircleIcon sx={{ fontSize: '16px', color: theme.palette.info.main }} />;
     }
   };
 
-  const handlePriorityChange = (event: SelectChangeEvent<string>) => {
-    setPriority(event.target.value as 'HIGH' | 'MEDIUM' | 'LOW');
+  const handleSeverityChange = (event: SelectChangeEvent<string>) => {
+    setSeverity(event.target.value as 'HIGH' | 'MEDIUM' | 'LOW');
   };
 
   if (loading) {
@@ -170,13 +181,28 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
           <FormControl size="small" sx={{ minWidth: 100 }}>
             <InputLabel>Priority</InputLabel>
             <Select
-              value={priority}
+              value={severity}
               label="Priority"
-              onChange={handlePriorityChange}
+              onChange={handleSeverityChange}
             >
-              <MenuItem value="HIGH">🔴 High</MenuItem>
-              <MenuItem value="MEDIUM">🟡 Medium</MenuItem>
-              <MenuItem value="LOW">🟢 Low</MenuItem>
+              <MenuItem value="HIGH">
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <CircleIcon sx={{ fontSize: '14px', color: theme.palette.error.main }} />
+                  High
+                </Box>
+              </MenuItem>
+              <MenuItem value="MEDIUM">
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <CircleIcon sx={{ fontSize: '14px', color: '#FFC107' }} />
+                  Medium
+                </Box>
+              </MenuItem>
+              <MenuItem value="LOW">
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <CircleIcon sx={{ fontSize: '14px', color: theme.palette.success.main }} />
+                  Low
+                </Box>
+              </MenuItem>
             </Select>
           </FormControl>
           <Button
@@ -203,39 +229,55 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
               <ListItem
                 key={todo.id}
                 sx={{
-                  border: '1px solid #e0e0e0',
+                  border: '1px solid',
+                  borderColor: theme.palette.mode === 'dark' 
+                    ? themeConstants.darkTheme.borderColor 
+                    : 'divider',
                   borderRadius: 1,
                   mb: 1,
-                  backgroundColor: todo.completed ? '#f5f5f5' : 'white',
+                  backgroundColor: todo.completed 
+                    ? theme.palette.mode === 'dark' 
+                      ? 'rgba(255, 255, 255, 0.03)' 
+                      : 'grey.50'
+                    : theme.palette.mode === 'dark'
+                      ? themeConstants.darkTheme.cardBackground
+                      : 'background.paper',
+                  transition: 'all 0.2s ease',
+                  '&:hover': {
+                    backgroundColor: todo.completed
+                      ? theme.palette.mode === 'dark'
+                        ? 'rgba(255, 255, 255, 0.05)'
+                        : 'grey.100'
+                      : theme.palette.mode === 'dark'
+                        ? 'rgba(255, 255, 255, 0.08)'
+                        : 'grey.50',
+                  },
+                  cursor: 'pointer'
                 }}
+                onClick={() => todo.id && handleToggleComplete(todo.id)}
               >
                 <ListItemIcon>
-                  <Checkbox
-                    checked={todo.completed}
-                    onChange={() => todo.id && handleToggleComplete(todo.id)}
-                  />
+                  {getSeverityBalloon(todo.severity)}
                 </ListItemIcon>
                 <ListItemText
                   primary={
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Typography variant="body2" sx={{ mr: 1 }}>
-                        {getPriorityIcon(todo.priority)}
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          textDecoration: todo.completed ? 'line-through' : 'none',
-                          color: todo.completed ? 'text.secondary' : 'text.primary',
-                        }}
-                      >
-                        {todo.title}
-                      </Typography>
-                    </Box>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        textDecoration: todo.completed ? 'line-through' : 'none',
+                        color: todo.completed ? 'text.secondary' : 'text.primary',
+                      }}
+                    >
+                      {todo.title}
+                    </Typography>
                   }
                 />
                 <IconButton
                   size="small"
-                  onClick={() => todo.id && handleDeleteTodo(todo.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    todo.id && handleDeleteTodo(todo.id);
+                  }}
                   color="error"
                 >
                   <DeleteIcon fontSize="small" />
