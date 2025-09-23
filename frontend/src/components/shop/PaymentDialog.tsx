@@ -32,6 +32,7 @@ import {
 import { PaymentMethod } from '../../types/shop';
 import { themeConstants } from '../../theme/theme';
 import { StandardButton, StandardCard, StandardTextField, StandardLoading, StandardError } from '../common';
+import { useMockPayment, MockPaymentRequest } from '../../services/mockPaymentGateway';
 
 interface PaymentDialogProps {
   open: boolean;
@@ -58,6 +59,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const mockPayment = useMockPayment();
   
   const [currentPaymentMethod, setCurrentPaymentMethod] = useState<PaymentMethod>(
     selectedPaymentMethod || PaymentMethod.CASH
@@ -67,15 +69,15 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
   const [paymentReference, setPaymentReference] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  // Card payment fields
-  const [cardNumber, setCardNumber] = useState('');
-  const [cardExpiry, setCardExpiry] = useState('');
-  const [cardCvv, setCardCvv] = useState('');
-  const [cardName, setCardName] = useState('');
+  // Card payment fields with pre-filled test data
+  const [cardNumber, setCardNumber] = useState('4532-1234-5678-9012');
+  const [cardExpiry, setCardExpiry] = useState('12/27');
+  const [cardCvv, setCardCvv] = useState('123');
+  const [cardName, setCardName] = useState('John Doe');
 
-  // Mobile money fields
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [mobileProvider, setMobileProvider] = useState('');
+  // Mobile money fields with pre-filled test data
+  const [phoneNumber, setPhoneNumber] = useState('+251911123456');
+  const [mobileProvider, setMobileProvider] = useState('M-Pesa');
 
   const paymentMethods: PaymentMethodOption[] = [
     {
@@ -116,6 +118,15 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
     setCurrentPaymentMethod(method);
     setError(null);
     setPaymentSuccess(false);
+    
+    // Pre-fill with test data for the selected payment method
+    const testData = mockPayment.fillTestData(method);
+    if (testData.cardNumber) setCardNumber(testData.cardNumber);
+    if (testData.cardExpiry) setCardExpiry(testData.cardExpiry);
+    if (testData.cardCvv) setCardCvv(testData.cardCvv);
+    if (testData.cardName) setCardName(testData.cardName);
+    if (testData.phoneNumber) setPhoneNumber(testData.phoneNumber);
+    if (testData.provider) setMobileProvider(testData.provider);
   };
 
   const validatePaymentDetails = (): boolean => {
@@ -149,20 +160,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
     return true;
   };
 
-  const simulatePaymentProcessing = async (): Promise<string> => {
-    // Simulate payment processing delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
 
-    // Simulate payment success/failure (90% success rate)
-    if (Math.random() < 0.9) {
-      // Generate mock payment reference
-      const timestamp = Date.now().toString().slice(-6);
-      const randomSuffix = Math.random().toString(36).substring(2, 5).toUpperCase();
-      return `PAY-${timestamp}-${randomSuffix}`;
-    } else {
-      throw new Error('Payment failed. Please try again.');
-    }
-  };
 
   const handleProcessPayment = async () => {
     if (!validatePaymentDetails()) {
@@ -180,8 +178,28 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
         reference = `${currentPaymentMethod}-${Date.now()}`;
         setPaymentSuccess(true);
       } else {
-        // For card and mobile money, simulate processing
-        reference = await simulatePaymentProcessing();
+        // Process payment through mock gateway
+        const mockPaymentRequest: MockPaymentRequest = {
+          amount: totalAmount,
+          currency: 'ETB',
+          paymentMethod: currentPaymentMethod,
+          customerInfo: {
+            name: cardName || 'Shop Customer',
+            phone: phoneNumber,
+          },
+          paymentDetails: {
+            cardNumber: cardNumber,
+            expiryDate: cardExpiry,
+            cvv: cardCvv,
+            cardHolderName: cardName,
+            phoneNumber: phoneNumber,
+            provider: mobileProvider,
+            description: `Shop purchase - Amount: ETB ${totalAmount}`,
+          },
+        };
+
+        const paymentResult = await mockPayment.processPayment(mockPaymentRequest);
+        reference = paymentResult.paymentReference;
         setPaymentSuccess(true);
       }
 

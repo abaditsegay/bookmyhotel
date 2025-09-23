@@ -39,6 +39,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useAuthenticatedApi } from '../hooks/useAuthenticatedApi';
 import { AvailableRoom, HotelSearchRequest } from '../types/hotel';
+import { useMockPayment, MockPaymentRequest } from '../services/mockPaymentGateway';
+import { PaymentMethod } from '../types/shop';
 import { themeConstants } from '../theme/theme';
 
 interface BookingPageState {
@@ -77,14 +79,15 @@ const BookingPage: React.FC = () => {
   const [guestPhone, setGuestPhone] = useState(user?.phone || '');
   const [specialRequests, setSpecialRequests] = useState('');
   
-  // Payment state
+  // Payment state with mock test data pre-filled
+  const mockPayment = useMockPayment();
   const [paymentMethod, setPaymentMethod] = useState<'credit_card' | 'mobile_money' | 'pay_at_frontdesk' | 'mbirr' | 'telebirr'>('credit_card');
-  const [creditCardNumber, setCreditCardNumber] = useState('');
-  const [expiryDate, setExpiryDate] = useState('');
-  const [cvv, setCvv] = useState('');
-  const [cardholderName, setCardholderName] = useState('');
-  const [mobileNumber, setMobileNumber] = useState('');
-  const [transferReceiptNumber, setTransferReceiptNumber] = useState('');
+  const [creditCardNumber, setCreditCardNumber] = useState('4532-1234-5678-9012');
+  const [expiryDate, setExpiryDate] = useState('12/27');
+  const [cvv, setCvv] = useState('123');
+  const [cardholderName, setCardholderName] = useState('John Doe');
+  const [mobileNumber, setMobileNumber] = useState('+251911123456');
+  const [transferReceiptNumber, setTransferReceiptNumber] = useState('TXN123456789');
   
   // Ethiopian payment state
   const [ethiopianPhoneNumber, setEthiopianPhoneNumber] = useState('');
@@ -132,7 +135,23 @@ const BookingPage: React.FC = () => {
   }, []);
 
   const handlePaymentMethodChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setPaymentMethod(e.target.value as 'credit_card' | 'mobile_money' | 'pay_at_frontdesk' | 'mbirr' | 'telebirr');
+    const newMethod = e.target.value as 'credit_card' | 'mobile_money' | 'pay_at_frontdesk' | 'mbirr' | 'telebirr';
+    setPaymentMethod(newMethod);
+    
+    // Pre-fill with test data for the selected payment method
+    if (newMethod === 'credit_card') {
+      setCreditCardNumber('4532-1234-5678-9012');
+      setExpiryDate('12/27');
+      setCvv('123');
+      setCardholderName('John Doe');
+    } else if (newMethod === 'mobile_money') {
+      setMobileNumber('+251911123456');
+      setTransferReceiptNumber('TXN123456789');
+    } else if (newMethod === 'mbirr') {
+      setEthiopianPhoneNumber('0911123456');
+    } else if (newMethod === 'telebirr') {
+      setEthiopianPhoneNumber('0987654321');
+    }
   }, []);
 
   // Update guest information when user data loads
@@ -261,6 +280,39 @@ const BookingPage: React.FC = () => {
     setLoading(true);
 
     try {
+      // Process payment through mock gateway first
+      let paymentResult = null;
+      
+      if (paymentMethod !== 'pay_at_frontdesk') {
+        const mockPaymentRequest: MockPaymentRequest = {
+          amount: totalAmount,
+          currency: 'ETB',
+          paymentMethod: paymentMethod === 'credit_card' ? PaymentMethod.CREDIT_CARD :
+                        paymentMethod === 'mobile_money' ? PaymentMethod.MOBILE_MONEY :
+                        paymentMethod === 'mbirr' ? PaymentMethod.MOBILE_MONEY :
+                        paymentMethod === 'telebirr' ? PaymentMethod.MOBILE_MONEY :
+                        PaymentMethod.CASH,
+          customerInfo: {
+            name: guestName.trim() || cardholderName || 'Guest',
+            email: guestEmail.trim(),
+            phone: guestPhone.trim() || mobileNumber || ethiopianPhoneNumber,
+          },
+          paymentDetails: {
+            cardNumber: creditCardNumber,
+            expiryDate: expiryDate,
+            cvv: cvv,
+            cardHolderName: cardholderName,
+            phoneNumber: mobileNumber || ethiopianPhoneNumber,
+            provider: paymentMethod === 'mbirr' ? 'M-Birr' : 
+                     paymentMethod === 'telebirr' ? 'TeleBirr' : 'Mobile Money',
+            description: `Hotel booking for ${nights} nights`,
+          },
+        };
+
+        // Process payment through mock gateway (always succeeds)
+        paymentResult = await mockPayment.processPayment(mockPaymentRequest);
+      }
+
       const bookingRequest = {
         hotelId: bookingData.hotelId,
         roomId: roomData.id || undefined, // For individual room bookings
@@ -273,6 +325,9 @@ const BookingPage: React.FC = () => {
                         paymentMethod === 'pay_at_frontdesk' ? 'pay_at_frontdesk' :
                         paymentMethod === 'mbirr' ? 'mbirr' :
                         paymentMethod === 'telebirr' ? 'telebirr' : undefined,
+        // Include payment reference from mock gateway
+        paymentReference: paymentResult?.paymentReference,
+        transactionId: paymentResult?.transactionId,
         // Include guest information - always send if provided, regardless of auth status
         guestName: guestName.trim() || undefined,
         guestEmail: guestEmail.trim() || undefined,
