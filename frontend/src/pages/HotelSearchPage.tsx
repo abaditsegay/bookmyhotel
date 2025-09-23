@@ -10,10 +10,6 @@ import {
   useMediaQuery,
 } from '@mui/material';
 import { StandardLoading, StandardError, ErrorBoundary } from '../components/common';
-import {
-  Search as SearchIcon,
-  Hotel as HotelIcon,
-} from '@mui/icons-material';
 
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -59,66 +55,54 @@ const HotelSearchPage: React.FC = () => {
   };
 
   return (
+    <Box
+      sx={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+        py: 4,
+      }}
+    >
     <Container 
       maxWidth="lg" 
       sx={{ 
         py: isMobile ? 2 : 4,
         px: isMobile ? 1 : 3,
-        minHeight: 'calc(100vh - 64px)',
       }}
     >
       {/* Enhanced Header Section */}
       <Card 
-        elevation={2}
         sx={{ 
           mb: isMobile ? 3 : 4,
-          background: `linear-gradient(135deg, ${theme.palette.primary.main}08 0%, ${theme.palette.secondary.main}08 100%)`,
-          border: `1px solid ${theme.palette.primary.main}20`,
-          borderRadius: 3,
-          overflow: 'hidden',
+          backgroundColor: 'white',
+          border: '1px solid #e0e0e0',
+          borderRadius: 2,
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
         }}
       >
         <CardContent sx={{ p: isMobile ? 2.5 : 4 }}>
           {/* Professional Header */}
           <Box sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: 2, 
+            textAlign: 'center',
             mb: isMobile ? 2 : 3,
-            p: 2,
-            background: `linear-gradient(135deg, ${theme.palette.primary.main}10 0%, ${theme.palette.secondary.main}10 100%)`,
+            p: 3,
+            background: '#f8f9fa',
             borderRadius: 2,
+            border: '1px solid #e9ecef',
           }}>
-            <Box sx={{
-              width: 56,
-              height: 56,
-              borderRadius: 3,
-              bgcolor: 'primary.main',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: 2,
-            }}>
-              <HotelIcon sx={{ fontSize: 28, color: 'white' }} />
-            </Box>
-            <Box>
-              <Typography 
-                variant={isMobile ? "h5" : "h4"} 
-                sx={{ 
-                  fontWeight: 'bold',
-                  background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-                  backgroundClip: 'text',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  mb: 0.5,
-                }}
-              >
-                Find Your Perfect Stay
-              </Typography>
-              <Typography variant="body1" color="text.secondary">
-                Search and book from thousands of hotels worldwide
-              </Typography>
-            </Box>
+            <Typography 
+              variant={isMobile ? "h4" : "h3"} 
+              component="h1" 
+              sx={{ 
+                fontWeight: 'bold',
+                color: 'text.primary',
+                mb: 1,
+              }}
+            >
+              Find Your Perfect Stay
+            </Typography>
+            <Typography variant="h6" color="text.secondary">
+              Search and book from thousands of hotels worldwide
+            </Typography>
           </Box>
         </CardContent>
       </Card>
@@ -187,44 +171,30 @@ const HotelSearchPage: React.FC = () => {
 
       {/* Main Search Form Section */}
       <Card 
-        elevation={2}
+        elevation={8}
         sx={{ 
           mb: isMobile ? 3 : 4,
-          background: 'linear-gradient(135deg, rgba(33, 150, 243, 0.05) 0%, rgba(21, 101, 192, 0.05) 100%)',
-          border: '1px solid rgba(33, 150, 243, 0.2)',
+          background: 'white',
+          border: '1px solid #e0e0e0',
           borderRadius: 3,
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
         }}
       >
         <CardContent sx={{ p: isMobile ? 2.5 : 4 }}>
           <Box sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: 2, 
+            textAlign: 'center',
             mb: isMobile ? 2 : 3,
-            p: 2,
-            background: 'linear-gradient(135deg, rgba(33, 150, 243, 0.1) 0%, rgba(21, 101, 192, 0.1) 100%)',
+            p: 3,
+            background: '#f8f9fa',
             borderRadius: 2,
+            border: '1px solid #e9ecef',
           }}>
-            <Box sx={{
-              width: 48,
-              height: 48,
-              borderRadius: 2,
-              bgcolor: 'primary.main',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: 2,
-            }}>
-              <SearchIcon sx={{ fontSize: 24, color: 'white' }} />
-            </Box>
-            <Box>
-              <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5 }}>
-                Search Hotels
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Enter your travel details to find available hotels
-              </Typography>
-            </Box>
+            <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>
+              Search Hotels
+            </Typography>
+            <Typography variant="body1" color="text.secondary">
+              Enter your travel details to find available hotels
+            </Typography>
           </Box>
 
           <ErrorBoundary level="component">
@@ -253,65 +223,53 @@ const HotelSearchPage: React.FC = () => {
 
       {/* Find My Booking Section */}
       <Card 
-        elevation={2}
         sx={{ 
-          background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.05) 0%, rgba(56, 142, 60, 0.05) 100%)',
-          border: '1px solid rgba(76, 175, 80, 0.2)',
-          borderRadius: 3,
+          backgroundColor: 'white',
+          border: '1px solid #e0e0e0',
+          borderRadius: 2,
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
         }}
       >
         <CardContent sx={{ p: isMobile ? 2.5 : 4 }}>
           <Box sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: 2, 
+            textAlign: 'center',
             mb: isMobile ? 2 : 3,
-            p: 2,
-            background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(56, 142, 60, 0.1) 100%)',
+            p: 3,
+            backgroundColor: '#f8f9fa',
             borderRadius: 2,
+            border: '1px solid #e0e0e0',
           }}>
-            <Box sx={{
-              width: 48,
-              height: 48,
-              borderRadius: 2,
-              bgcolor: 'success.main',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: 2,
-            }}>
-              <SearchIcon sx={{ fontSize: 24, color: 'white' }} />
-            </Box>
-            <Box>
-              <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5 }}>
-                {t('hotelSearch.alreadyHaveBooking.title')}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {t('hotelSearch.alreadyHaveBooking.subtitle')}
-              </Typography>
-            </Box>
+            <Typography variant="h5" sx={{ fontWeight: 600, mb: 1, color: 'text.primary' }}>
+              {t('hotelSearch.alreadyHaveBooking.title')}
+            </Typography>
+            <Typography variant="body1" color="text.secondary">
+              {t('hotelSearch.alreadyHaveBooking.subtitle')}
+            </Typography>
           </Box>
 
           <Box sx={{ textAlign: 'center', pt: 2 }}>
             <Button
-              variant="contained"
+              variant="outlined"
               size="large"
-              startIcon={<SearchIcon />}
               onClick={() => navigate('/find-booking')}
               sx={{ 
-                borderRadius: 3,
+                borderRadius: 2,
                 textTransform: 'none',
-                fontWeight: 'bold',
+                fontWeight: 600,
                 px: isMobile ? 3 : 4,
                 py: 1.5,
                 fontSize: isMobile ? '1rem' : '1.1rem',
-                backgroundColor: 'success.main',
-                color: 'success.contrastText',
                 width: isMobile ? '100%' : 'auto',
                 maxWidth: isMobile ? '280px' : 'none',
+                borderColor: '#e0e0e0',
+                color: 'text.primary',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                 '&:hover': {
-                  backgroundColor: 'success.dark',
-                  transform: isMobile ? 'none' : 'scale(1.05)',
+                  borderColor: 'primary.main',
+                  backgroundColor: 'primary.main',
+                  color: 'primary.contrastText',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                  transform: 'translateY(-1px)',
                 },
                 transition: 'all 0.2s ease-in-out',
               }}
@@ -322,6 +280,7 @@ const HotelSearchPage: React.FC = () => {
         </CardContent>
       </Card>
     </Container>
+    </Box>
   );
 };
 

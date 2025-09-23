@@ -6,9 +6,8 @@ import {
   Alert,
   CircularProgress,
   Snackbar,
-  Breadcrumbs,
-  Link,
-  IconButton,
+
+
   useMediaQuery,
   useTheme,
   Stack,
@@ -16,13 +15,7 @@ import {
   Card,
   CardContent,
 } from '@mui/material';
-import {
-  ArrowBack as ArrowBackIcon,
-  FilterList as FilterIcon,
-  Sort as SortIcon,
-  Hotel as HotelIcon,
-  Search as SearchIcon,
-} from '@mui/icons-material';
+
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { hotelApiService } from '../services/hotelApi';
@@ -33,6 +26,7 @@ import {
 } from '../types/hotel';
 
 const SearchResultsPage: React.FC = () => {
+  // Updated to neutral design matching LoginPage
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated } = useAuth();
@@ -216,258 +210,148 @@ const SearchResultsPage: React.FC = () => {
 
   if (loading) {
     return (
-      <Container maxWidth="xl" sx={{ py: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
-          <CircularProgress size={48} />
-        </Box>
-      </Container>
+      <Box
+        sx={{
+          minHeight: '100vh',
+          background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Card 
+          sx={{ 
+            p: 4,
+            backgroundColor: 'white',
+            border: '1px solid #e0e0e0',
+            borderRadius: 2,
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+          }}
+        >
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+            <CircularProgress size={40} />
+            <Typography variant="body1" color="text.secondary">
+              Searching for hotels...
+            </Typography>
+          </Box>
+        </Card>
+      </Box>
     );
   }
 
   return (
-    <Container 
-      maxWidth="lg" 
-      sx={{ 
-        py: isMobile ? 2 : 4,
-        px: isMobile ? 1 : 3,
+    <Box
+      sx={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
       }}
     >
-      {/* Enhanced Header Section */}
-      <Card 
-        elevation={2}
+      <Container 
+        maxWidth="lg" 
         sx={{ 
-          mb: isMobile ? 3 : 4,
-          background: `linear-gradient(135deg, ${theme.palette.primary.main}08 0%, ${theme.palette.secondary.main}08 100%)`,
-          border: `1px solid ${theme.palette.primary.main}20`,
-          borderRadius: 3,
-          overflow: 'hidden',
+          py: isMobile ? 2 : 4,
+          px: isMobile ? 1 : 3,
         }}
       >
-        <CardContent sx={{ p: isMobile ? 2.5 : 4 }}>
-          {/* Back Navigation */}
-          <Box sx={{ mb: isMobile ? 2 : 3 }}>
-            <Box sx={{ 
-              display: 'flex',
-              alignItems: 'center',
-              mb: isMobile ? 1.5 : 2,
-            }}>
-              <IconButton 
-                onClick={handleBackToSearch}
-                sx={{ 
-                  mr: 2,
-                  bgcolor: 'background.paper',
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  '&:hover': {
-                    bgcolor: 'primary.main',
-                    color: 'primary.contrastText',
-                    borderColor: 'primary.main',
-                  },
-                  transition: 'all 0.2s ease-in-out',
-                }}
-                aria-label="back to search"
-              >
-                <ArrowBackIcon />
-              </IconButton>
-              
-              {!isMobile && (
-                <Breadcrumbs 
-                  aria-label="breadcrumb"
-                  sx={{
-                    '& .MuiBreadcrumbs-separator': {
-                      color: 'primary.main',
-                      fontWeight: 'bold',
-                    },
-                  }}
-                >
-                  <Link 
-                    component="button" 
-                    variant="body2" 
-                    onClick={handleBackToSearch}
-                    sx={{ 
-                      textDecoration: 'none',
-                      color: 'primary.main',
-                      fontWeight: 'medium',
-                      '&:hover': {
-                        color: 'primary.dark',
-                        textDecoration: 'underline',
-                      },
-                    }}
-                  >
-                    Hotel Search
-                  </Link>
-                  <Typography variant="body2" color="text.primary" sx={{ fontWeight: 'medium' }}>
-                    Search Results
-                  </Typography>
-                </Breadcrumbs>
-              )}
-            </Box>
-          </Box>
-
-          {/* Professional Header */}
-          <Box sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: 2, 
-            mb: isMobile ? 2 : 3,
-            p: 2,
-            background: `linear-gradient(135deg, ${theme.palette.primary.main}10 0%, ${theme.palette.secondary.main}10 100%)`,
+      {/* Simple Header with Back Navigation */}
+      <Box sx={{ mb: 3 }}>
+        <Button 
+          onClick={handleBackToSearch}
+          variant="outlined"
+          sx={{ 
             borderRadius: 2,
-          }}>
-            <Box sx={{
-              width: 56,
-              height: 56,
-              borderRadius: 3,
-              bgcolor: 'primary.main',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: 2,
-            }}>
-              <HotelIcon sx={{ fontSize: 28, color: 'white' }} />
-            </Box>
-            <Box sx={{ flex: 1 }}>
-              <Typography 
-                variant={isMobile ? "h5" : "h4"} 
-                sx={{ 
-                  fontWeight: 'bold',
-                  background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-                  backgroundClip: 'text',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  mb: 0.5,
-                }}
-              >
-                Search Results
-              </Typography>
-              <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
-                Hotels {formatSearchSummary()}
-              </Typography>
-              <Box sx={{ 
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 1,
-                bgcolor: 'success.main',
-                color: 'success.contrastText',
-                px: 2,
-                py: 0.5,
-                borderRadius: 2,
-                fontSize: '0.875rem',
-                fontWeight: 'bold',
-              }}>
-                <SearchIcon sx={{ fontSize: 16 }} />
-                {hotels.length} hotel{hotels.length === 1 ? '' : 's'} found
-              </Box>
-            </Box>
-          </Box>
-        </CardContent>
-      </Card>
+            textTransform: 'none',
+            fontWeight: 600,
+            borderColor: '#e0e0e0',
+            color: 'text.primary',
+            backgroundColor: 'white',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+            '&:hover': {
+              borderColor: 'primary.main',
+              backgroundColor: 'primary.main',
+              color: 'primary.contrastText',
+              transform: 'translateY(-1px)',
+            },
+          }}
+        >
+          ← Back to Search
+        </Button>
+      </Box>
 
-      {/* Action Buttons Section */}
+      {/* Search Summary and Actions */}
       <Card 
-        elevation={2}
         sx={{ 
-          mb: isMobile ? 3 : 4,
-          background: 'linear-gradient(135deg, rgba(156, 39, 176, 0.05) 0%, rgba(233, 30, 99, 0.05) 100%)',
-          border: '1px solid rgba(156, 39, 176, 0.2)',
-          borderRadius: 3,
+          mb: 3,
+          backgroundColor: 'white',
+          border: '1px solid #e0e0e0',
+          borderRadius: 2,
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
         }}
       >
-        <CardContent sx={{ p: isMobile ? 2.5 : 3 }}>
-          <Box sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: 2, 
-            mb: isMobile ? 2 : 2.5,
-            p: 2,
-            background: 'linear-gradient(135deg, rgba(156, 39, 176, 0.1) 0%, rgba(233, 30, 99, 0.1) 100%)',
-            borderRadius: 2,
-          }}>
-            <Box sx={{
-              width: 48,
-              height: 48,
-              borderRadius: 2,
-              bgcolor: 'secondary.main',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: 2,
+        <CardContent sx={{ p: 3 }}>
+          <Box sx={{ mb: 3 }}>
+            <Typography 
+              variant="h5" 
+              sx={{ 
+                fontWeight: 600,
+                color: 'text.primary',
+                mb: 1,
+              }}
+            >
+              Search Results
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              {searchRequest ? `Hotels ${formatSearchSummary()}` : 'Loading search results...'}
+            </Typography>
+            <Typography variant="body2" sx={{ 
+              color: 'text.primary',
+              fontWeight: 600,
             }}>
-              <FilterIcon sx={{ fontSize: 24, color: 'white' }} />
-            </Box>
-            <Box>
-              <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5 }}>
-                Refine Your Search
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Filter and sort to find your perfect hotel
-              </Typography>
-            </Box>
+              {hotels.length} hotel{hotels.length === 1 ? '' : 's'} found
+            </Typography>
           </Box>
 
           <Stack 
             direction={isMobile ? "column" : "row"} 
-            spacing={isMobile ? 2 : 3}
-            justifyContent="center"
+            spacing={2}
+            justifyContent="flex-start"
           >
             <Button 
-              variant={isMobile ? "contained" : "outlined"}
-              startIcon={<FilterIcon />}
+              variant="outlined"
               onClick={() => console.log('Open filters')}
-              size="large"
               sx={{ 
-                py: 1.5,
-                px: 3,
-                borderRadius: 3,
-                fontWeight: 'bold',
+                borderRadius: 2,
                 textTransform: 'none',
-                minWidth: isMobile ? 'auto' : 160,
-                ...(isMobile ? {
-                  bgcolor: 'secondary.main',
-                  color: 'secondary.contrastText',
-                  '&:hover': {
-                    bgcolor: 'secondary.dark',
-                  },
-                } : {
-                  borderColor: 'secondary.main',
-                  color: 'secondary.main',
-                  '&:hover': {
-                    bgcolor: 'secondary.main',
-                    color: 'secondary.contrastText',
-                    borderColor: 'secondary.main',
-                  },
-                }),
+                fontWeight: 600,
+                borderColor: '#e0e0e0',
+                color: 'text.primary',
+                backgroundColor: '#f8f9fa',
+                '&:hover': {
+                  borderColor: 'primary.main',
+                  backgroundColor: 'primary.main',
+                  color: 'primary.contrastText',
+                  transform: 'translateY(-1px)',
+                },
               }}
             >
               Filter Results
             </Button>
             <Button 
-              variant={isMobile ? "outlined" : "contained"}
-              startIcon={<SortIcon />}
+              variant="outlined"
               onClick={() => console.log('Open sort options')}
-              size="large"
               sx={{ 
-                py: 1.5,
-                px: 3,
-                borderRadius: 3,
-                fontWeight: 'bold',
+                borderRadius: 2,
                 textTransform: 'none',
-                minWidth: isMobile ? 'auto' : 160,
-                ...(isMobile ? {
-                  borderColor: 'secondary.main',
-                  color: 'secondary.main',
-                  '&:hover': {
-                    bgcolor: 'secondary.main',
-                    color: 'secondary.contrastText',
-                    borderColor: 'secondary.main',
-                  },
-                } : {
-                  bgcolor: 'secondary.main',
-                  color: 'secondary.contrastText',
-                  '&:hover': {
-                    bgcolor: 'secondary.dark',
-                  },
-                }),
+                fontWeight: 600,
+                borderColor: '#e0e0e0',
+                color: 'text.primary',
+                backgroundColor: '#f8f9fa',
+                '&:hover': {
+                  borderColor: 'primary.main',
+                  backgroundColor: 'primary.main',
+                  color: 'primary.contrastText',
+                  transform: 'translateY(-1px)',
+                },
               }}
             >
               Sort By Price
@@ -500,11 +384,11 @@ const SearchResultsPage: React.FC = () => {
         </Box>
       ) : (
         <Card 
-          elevation={2}
           sx={{ 
-            background: 'linear-gradient(135deg, rgba(255, 193, 7, 0.05) 0%, rgba(255, 152, 0, 0.05) 100%)',
-            border: '1px solid rgba(255, 193, 7, 0.2)',
-            borderRadius: 3,
+            backgroundColor: 'white',
+            border: '1px solid #e0e0e0',
+            borderRadius: 2,
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
           }}
         >
           <CardContent sx={{ p: isMobile ? 4 : 6, textAlign: 'center' }}>
@@ -515,26 +399,12 @@ const SearchResultsPage: React.FC = () => {
               gap: 2,
               mb: 3,
             }}>
-              <Box sx={{
-                width: 80,
-                height: 80,
-                borderRadius: 4,
-                bgcolor: 'warning.main',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: 3,
-              }}>
-                <SearchIcon sx={{ fontSize: 40, color: 'white' }} />
-              </Box>
               <Typography 
                 variant={isMobile ? "h5" : "h4"} 
                 sx={{ 
-                  fontWeight: 'bold',
-                  background: 'linear-gradient(45deg, #ff9800, #ffc107)',
-                  backgroundClip: 'text',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
+                  fontWeight: 600,
+                  color: 'text.primary',
+                  mb: 1,
                 }}
               >
                 No Hotels Found
@@ -551,15 +421,15 @@ const SearchResultsPage: React.FC = () => {
               size="large"
               onClick={handleBackToSearch}
               sx={{
-                borderRadius: 3,
+                borderRadius: 2,
                 textTransform: 'none',
-                fontWeight: 'bold',
+                fontWeight: 600,
                 px: 4,
                 py: 1.5,
-                bgcolor: 'warning.main',
-                color: 'warning.contrastText',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                 '&:hover': {
-                  bgcolor: 'warning.dark',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                  transform: 'translateY(-1px)',
                 },
               }}
             >
@@ -580,7 +450,8 @@ const SearchResultsPage: React.FC = () => {
           {successMessage}
         </Alert>
       </Snackbar>
-    </Container>
+      </Container>
+    </Box>
   );
 };
 

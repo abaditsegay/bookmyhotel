@@ -1,10 +1,32 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button, Card, CardContent, Container, TextField, Typography, Alert, Divider, Chip } from '@mui/material';
+import { 
+  Box, 
+  Button, 
+  Card, 
+  CardContent, 
+  Container, 
+  TextField, 
+  Typography, 
+  Alert, 
+  Divider, 
+  Chip,
+  useTheme,
+  useMediaQuery,
+  Stack,
+} from '@mui/material';
+import {
+  Login as LoginIcon,
+  PersonAdd as PersonAddIcon,
+  Hotel as HotelIcon,
+} from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { API_CONFIG } from '../config/apiConfig';
 
 const LoginPage: React.FC = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -182,24 +204,81 @@ const LoginPage: React.FC = () => {
   }
 
   return (
-    <Container maxWidth="lg">
-      <Box
-        sx={{
-          minHeight: '100vh',
-          display: 'flex',
-          flexDirection: { xs: 'column', md: 'row' },
-          alignItems: 'center',
-          justifyContent: 'center',
-          py: 4,
-          gap: 4,
-        }}
-      >
+    <Box
+      sx={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        py: 4,
+      }}
+    >
+      <Container maxWidth="lg">
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: { xs: 'column', md: 'row' },
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: isMobile ? 3 : 6,
+            minHeight: '90vh',
+          }}
+        >
         {/* Main Login Form */}
-        <Card sx={{ maxWidth: 500, width: '100%', height: 'fit-content' }}>
-          <CardContent sx={{ p: 4 }}>
-            <Typography variant="h4" component="h1" gutterBottom align="center">
-              Manage My Hotel
-            </Typography>
+        <Card 
+          elevation={8}
+          sx={{ 
+            maxWidth: 500, 
+            width: '100%', 
+            height: 'fit-content',
+            background: 'white',
+            border: '1px solid #e0e0e0',
+            borderRadius: 4,
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
+          }}
+        >
+          <CardContent sx={{ p: isMobile ? 3 : 5 }}>
+            {/* Professional Header */}
+            <Box 
+              sx={{ 
+                mb: 4,
+                textAlign: 'center',
+                p: 2,
+                background: '#f8f9fa',
+                borderRadius: 3,
+                border: '1px solid #e9ecef',
+              }}
+            >
+              <Box sx={{
+                width: 64,
+                height: 64,
+                borderRadius: 3,
+                bgcolor: 'primary.main',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                mx: 'auto',
+                mb: 2,
+                boxShadow: 2,
+              }}>
+                <HotelIcon sx={{ fontSize: 32, color: 'white' }} />
+              </Box>
+              <Typography 
+                variant="h4" 
+                component="h1" 
+                gutterBottom 
+                sx={{ 
+                  fontWeight: 'bold',
+                  color: 'text.primary',
+                }}
+              >
+                BookMyHotel
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Professional Hotel Management System
+              </Typography>
+            </Box>
             
             {bookingData && (
               <Alert severity="info" sx={{ mb: 3 }}>
@@ -209,9 +288,32 @@ const LoginPage: React.FC = () => {
               </Alert>
             )}
 
-            <Typography variant="h5" component="h2" gutterBottom align="center">
-              {!showSignUp ? 'Sign In' : 'Create Account'}{bookingData ? ' to Book' : ''}
-            </Typography>
+            {/* Sign In/Up Header */}
+            <Box sx={{ mb: 3, textAlign: 'center' }}>
+              <Stack direction="row" alignItems="center" justifyContent="center" spacing={1} sx={{ mb: 1 }}>
+                {!showSignUp ? (
+                  <LoginIcon sx={{ color: 'primary.main', fontSize: 28 }} />
+                ) : (
+                  <PersonAddIcon sx={{ color: 'primary.main', fontSize: 28 }} />
+                )}
+                <Typography 
+                  variant="h5" 
+                  component="h2" 
+                  sx={{ 
+                    fontWeight: 'bold',
+                    color: 'primary.main',
+                  }}
+                >
+                  {!showSignUp ? 'Sign In' : 'Create Account'}{bookingData ? ' to Book' : ''}
+                </Typography>
+              </Stack>
+              <Typography variant="body2" color="text.secondary">
+                {!showSignUp 
+                  ? 'Welcome back! Please sign in to your account' 
+                  : 'Join us today! Create your account to get started'
+                }
+              </Typography>
+            </Box>
 
             {displayError && (
               <Alert severity="error" sx={{ mb: 2 }}>
@@ -230,7 +332,7 @@ const LoginPage: React.FC = () => {
               <Box component="form" onSubmit={handleSubmit} data-testid="login-form">
                 <TextField
                   fullWidth
-                  label="Email"
+                  label="Email Address"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -239,6 +341,18 @@ const LoginPage: React.FC = () => {
                   autoComplete="email"
                   autoFocus
                   inputProps={{ 'data-testid': 'email-input' }}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      backgroundColor: '#f8f9fa',
+                      borderRadius: 2,
+                      '&:hover .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'primary.main',
+                      },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                        borderWidth: 2,
+                      },
+                    },
+                  }}
                 />
                 <TextField
                   fullWidth
@@ -250,14 +364,44 @@ const LoginPage: React.FC = () => {
                   required
                   autoComplete="current-password"
                   inputProps={{ 'data-testid': 'password-input' }}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      backgroundColor: '#f8f9fa',
+                      borderRadius: 2,
+                      '&:hover .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'primary.main',
+                      },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                        borderWidth: 2,
+                      },
+                    },
+                  }}
                 />
                 <Button
                   type="submit"
                   fullWidth
                   variant="contained"
-                  sx={{ mt: 3, mb: 2 }}
                   disabled={loading}
                   data-testid="login-button"
+                  startIcon={!loading ? <LoginIcon /> : undefined}
+                  sx={{ 
+                    mt: 4, 
+                    mb: 2,
+                    py: 1.5,
+                    borderRadius: 3,
+                    fontSize: '1.1rem',
+                    fontWeight: 'bold',
+                    background: 'primary.main',
+                    boxShadow: '0 4px 15px rgba(25, 118, 210, 0.3)',
+                    '&:hover': {
+                      background: 'primary.dark',
+                      boxShadow: '0 6px 20px rgba(25, 118, 210, 0.4)',
+                      transform: 'translateY(-1px)',
+                    },
+                    '&:active': {
+                      transform: 'translateY(0)',
+                    },
+                  }}
                 >
                   {loading ? 'Signing In...' : 'Sign In'}
                 </Button>
@@ -265,38 +409,88 @@ const LoginPage: React.FC = () => {
             ) : (
               // Sign Up Form
               <Box component="form" onSubmit={handleRegister}>
+                <Stack direction="row" spacing={2}>
+                  <TextField
+                    fullWidth
+                    label="First Name"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    margin="normal"
+                    required
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        backgroundColor: '#f8f9fa',
+                        borderRadius: 2,
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                          borderColor: 'primary.main',
+                        },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                          borderWidth: 2,
+                        },
+                      },
+                    }}
+                  />
+                  <TextField
+                    fullWidth
+                    label="Last Name"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    margin="normal"
+                    required
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        backgroundColor: '#f8f9fa',
+                        borderRadius: 2,
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                          borderColor: 'primary.main',
+                        },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                          borderWidth: 2,
+                        },
+                      },
+                    }}
+                  />
+                </Stack>
                 <TextField
                   fullWidth
-                  label="First Name"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  margin="normal"
-                  required
-                />
-                <TextField
-                  fullWidth
-                  label="Last Name"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  margin="normal"
-                  required
-                />
-                <TextField
-                  fullWidth
-                  label="Email"
+                  label="Email Address"
                   type="email"
                   value={registerEmail}
                   onChange={(e) => setRegisterEmail(e.target.value)}
                   margin="normal"
                   required
                   autoComplete="email"
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      backgroundColor: '#f8f9fa',
+                      borderRadius: 2,
+                      '&:hover .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'primary.main',
+                      },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                        borderWidth: 2,
+                      },
+                    },
+                  }}
                 />
                 <TextField
                   fullWidth
-                  label="Phone (optional)"
+                  label="Phone Number (optional)"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   margin="normal"
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      backgroundColor: '#f8f9fa',
+                      borderRadius: 2,
+                      '&:hover .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'primary.main',
+                      },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                        borderWidth: 2,
+                      },
+                    },
+                  }}
                 />
                 <TextField
                   fullWidth
@@ -307,6 +501,18 @@ const LoginPage: React.FC = () => {
                   margin="normal"
                   required
                   autoComplete="new-password"
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      backgroundColor: '#f8f9fa',
+                      borderRadius: 2,
+                      '&:hover .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'primary.main',
+                      },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                        borderWidth: 2,
+                      },
+                    },
+                  }}
                 />
                 <TextField
                   fullWidth
@@ -317,13 +523,43 @@ const LoginPage: React.FC = () => {
                   margin="normal"
                   required
                   autoComplete="new-password"
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      backgroundColor: '#f8f9fa',
+                      borderRadius: 2,
+                      '&:hover .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'primary.main',
+                      },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                        borderWidth: 2,
+                      },
+                    },
+                  }}
                 />
                 <Button
                   type="submit"
                   fullWidth
                   variant="contained"
-                  sx={{ mt: 3, mb: 2 }}
                   disabled={loading}
+                  startIcon={!loading ? <PersonAddIcon /> : undefined}
+                  sx={{ 
+                    mt: 4, 
+                    mb: 2,
+                    py: 1.5,
+                    borderRadius: 3,
+                    fontSize: '1.1rem',
+                    fontWeight: 'bold',
+                    background: 'secondary.main',
+                    boxShadow: '0 4px 15px rgba(156, 39, 176, 0.3)',
+                    '&:hover': {
+                      background: 'secondary.dark',
+                      boxShadow: '0 6px 20px rgba(156, 39, 176, 0.4)',
+                      transform: 'translateY(-1px)',
+                    },
+                    '&:active': {
+                      transform: 'translateY(0)',
+                    },
+                  }}
                 >
                   {loading ? 'Creating Account...' : 'Create Account'}
                 </Button>
@@ -367,21 +603,70 @@ const LoginPage: React.FC = () => {
 
         {/* Test Credentials Panel - Only show on Sign In */}
         {!showSignUp && (
-          <Card sx={{ maxWidth: 400, width: '100%', height: 'fit-content' }}>
-            <CardContent sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom align="center" color="primary">
-                Quick Login - Test Credentials
-              </Typography>
-              <Typography variant="body2" color="textSecondary" align="center" sx={{ mb: 2 }}>
-                Click any button below to auto-fill credentials for testing:
-              </Typography>
+          <Card 
+            elevation={8}
+            sx={{ 
+              maxWidth: 420, 
+              width: '100%', 
+              height: 'fit-content',
+              background: 'white',
+              border: '1px solid #e0e0e0',
+              borderRadius: 4,
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
+            }}
+          >
+            <CardContent sx={{ p: isMobile ? 3 : 4 }}>
+              {/* Professional Header for Test Credentials */}
+              <Box 
+                sx={{ 
+                  mb: 3,
+                  textAlign: 'center',
+                  p: 2,
+                  background: '#f8f9fa',
+                  borderRadius: 3,
+                  border: '1px solid #e9ecef',
+                }}
+              >
+                <Typography 
+                  variant="h6" 
+                  gutterBottom 
+                  sx={{ 
+                    fontWeight: 'bold',
+                    color: 'success.main',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 1,
+                  }}
+                >
+                  🚀 Quick Login
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Click any button below to auto-fill test credentials
+                </Typography>
+              </Box>
               
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Stack spacing={2}>
                 <Button
                   variant="outlined"
                   fullWidth
                   onClick={() => fillSampleUser('admin.grandplaza@bookmyhotel.com', 'admin123')}
-                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
+                  sx={{ 
+                    textTransform: 'none', 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    py: 2,
+                    borderRadius: 3,
+                    borderWidth: 2,
+                    borderColor: 'primary.main',
+                    backgroundColor: '#f8f9fa',
+                    '&:hover': {
+                      borderColor: 'primary.dark',
+                      backgroundColor: '#e9ecef',
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
+                    },
+                  }}
                 >
                   <Typography variant="body2" fontWeight="bold">🏨 Hotel Admin - Grand Plaza</Typography>
                   <Typography variant="caption" color="textSecondary" sx={{ mt: 0.5 }}>
@@ -450,12 +735,13 @@ const LoginPage: React.FC = () => {
                   </Typography>
                 </Button>
 
-              </Box>
+              </Stack>
             </CardContent>
           </Card>
         )}
-      </Box>
-    </Container>
+        </Box>
+      </Container>
+    </Box>
   );
 };
 

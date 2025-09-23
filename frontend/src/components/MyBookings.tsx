@@ -23,6 +23,9 @@ import {
   InputLabel,
   Select,
   Tooltip,
+  Stack,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import {
   Hotel,
@@ -48,6 +51,8 @@ import { StandardLoading, StandardError } from './common';
 
 const MyBookings: React.FC = () => {
   const { user, token } = useAuth();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [bookings, setBookings] = useState<BookingResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -246,38 +251,113 @@ const MyBookings: React.FC = () => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Typography variant="h4" component="h1" gutterBottom sx={{ mb: 4 }}>
-        My Bookings
-      </Typography>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+        pt: 4,
+        pb: 8,
+      }}
+    >
+      <Container maxWidth="lg">
+        <Box sx={{ textAlign: 'center', mb: 4 }}>
+          <Typography 
+            variant="h3" 
+            component="h1" 
+            sx={{
+              fontWeight: 'bold',
+              color: 'text.primary',
+              mb: 1,
+            }}
+          >
+            📋 My Bookings
+          </Typography>
+          <Typography variant="h6" color="text.secondary">
+            Manage and track your hotel reservations
+          </Typography>
+        </Box>
 
       {bookings.length === 0 ? (
-        <Paper sx={{ p: 4, textAlign: 'center' }}>
-          <Hotel sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
-          <Typography variant="h6" color="text.secondary" gutterBottom>
+        <Card 
+          elevation={8}
+          sx={{ 
+            p: 6, 
+            textAlign: 'center',
+            background: 'white',
+            borderRadius: 4,
+            border: '1px solid #e0e0e0',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
+          }}
+        >
+          <Hotel sx={{ fontSize: 80, color: 'primary.main', mb: 3, opacity: 0.7 }} />
+          <Typography 
+            variant="h4" 
+            sx={{
+              fontWeight: 'bold',
+              color: 'text.primary',
+              mb: 2,
+            }}
+          >
             No Bookings Yet
           </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 4, fontSize: '1.1rem' }}>
             You haven't made any bookings yet. Start exploring our hotels and make your first reservation!
           </Typography>
-          <Button variant="contained" href="/hotels">
-            Browse Hotels
+          <Button 
+            variant="contained" 
+            size="large"
+            href="/hotels"
+            sx={{
+              borderRadius: 2,
+              px: 4,
+              py: 1.5,
+              fontWeight: 600,
+              textTransform: 'none',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              '&:hover': {
+                transform: 'translateY(-1px)',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+              },
+            }}
+          >
+            🏨 Browse Hotels
           </Button>
-        </Paper>
+        </Card>
       ) : (
         <Grid container spacing={3}>
           {bookings.map((booking) => (
             <Grid item xs={12} key={booking.reservationId}>
-              <Card sx={{ mb: 2 }}>
-                <CardContent>
-                  <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
-                    <Box>
-                      <Typography variant="h6" component="h2" gutterBottom>
-                        {booking.hotelName}
+              <Card 
+                elevation={8}
+                sx={{ 
+                  background: 'white',
+                  borderRadius: 4,
+                  border: '1px solid #e0e0e0',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
+                  transition: 'all 0.3s ease-in-out',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    boxShadow: '0 12px 40px rgba(0, 0, 0, 0.12)',
+                  },
+                }}
+              >
+                <CardContent sx={{ p: 3 }}>
+                  <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={3}>
+                    <Box flex={1}>
+                      <Typography 
+                        variant="h5" 
+                        component="h2" 
+                        sx={{
+                          fontWeight: 'bold',
+                          color: 'primary.main',
+                          mb: 1,
+                        }}
+                      >
+                        🏨 {booking.hotelName}
                       </Typography>
                       <Box display="flex" alignItems="center" gap={1} mb={1}>
-                        <LocationOn fontSize="small" color="action" />
-                        <Typography variant="body2" color="text.secondary">
+                        <LocationOn fontSize="small" sx={{ color: 'primary.main' }} />
+                        <Typography variant="body1" color="text.secondary" sx={{ fontSize: '1rem' }}>
                           {booking.hotelAddress}
                         </Typography>
                       </Box>
@@ -288,25 +368,51 @@ const MyBookings: React.FC = () => {
                         <Chip 
                           label={booking.status}
                           color={BookingService.getStatusColor(booking.status)}
-                          size="small"
+                          size="medium"
+                          sx={{
+                            fontWeight: 'bold',
+                            px: 2,
+                            py: 0.5,
+                            borderRadius: 2,
+                          }}
                         />
                       </Box>
                       <Chip 
                         label={booking.paymentStatus}
                         color={BookingService.getPaymentStatusColor(booking.paymentStatus)}
-                        size="small"
+                        size="medium"
                         variant="outlined"
+                        sx={{
+                          fontWeight: 'bold',
+                          borderWidth: 2,
+                          borderRadius: 2,
+                        }}
                       />
                     </Box>
                   </Box>
 
-                  <Divider sx={{ my: 2 }} />
+                  <Divider 
+                    sx={{ 
+                      my: 3,
+                      borderColor: '#e9ecef',
+                    }} 
+                  />
 
                   <Grid container spacing={3}>
                     <Grid item xs={12} md={6}>
                       <Box mb={2}>
-                        <Typography variant="subtitle2" color="primary" gutterBottom>
-                          Booking Details
+                        <Typography 
+                          variant="h6" 
+                          sx={{
+                            fontWeight: 'bold',
+                            color: 'primary.main',
+                            mb: 2,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
+                          }}
+                        >
+                          📋 Booking Details
                         </Typography>
                         <Box display="flex" alignItems="center" gap={1} mb={1}>
                           <Receipt fontSize="small" />
@@ -381,34 +487,78 @@ const MyBookings: React.FC = () => {
                   </Box>
                 </CardContent>
                 
-                <CardActions sx={{ px: 2, pb: 2 }}>
+                <CardActions 
+                  sx={{ 
+                    px: 3, 
+                    pb: 3,
+                    pt: 2,
+                    gap: 2,
+                    flexWrap: 'wrap',
+                  }}
+                >
                   <Button 
-                    size="small" 
+                    variant="outlined"
+                    size="medium" 
                     startIcon={<Email />}
                     href={`mailto:support@bookmyhotel.com?subject=Booking Inquiry - ${booking.confirmationNumber}`}
+                    sx={{
+                      borderRadius: 2,
+                      borderWidth: 1.5,
+                      px: 3,
+                      py: 1.5,
+                      fontWeight: 600,
+                      textTransform: 'none',
+                      backgroundColor: 'white',
+                      '&:hover': {
+                        borderWidth: 1.5,
+                        transform: 'translateY(-1px)',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                      },
+                    }}
                   >
-                    Contact Support
+                    💬 Contact Support
                   </Button>
                   {canModifyBooking(booking) ? (
                     <Button 
-                      size="small" 
+                      variant="contained"
+                      size="medium" 
                       color="primary" 
                       startIcon={<Edit />}
                       onClick={() => openModifyDialog(booking)}
+                      sx={{
+                        borderRadius: 2,
+                        px: 3,
+                        py: 1.5,
+                        fontWeight: 600,
+                        textTransform: 'none',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                        '&:hover': {
+                          transform: 'translateY(-1px)',
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                        },
+                      }}
                     >
-                      Modify Booking
+                      ✏️ Modify Booking
                     </Button>
                   ) : (
                     booking.status !== 'CANCELLED' && (
                       <Tooltip title="Modifications must be made at least 24 hours before check-in">
                         <span>
                           <Button 
-                            size="small" 
+                            variant="outlined"
+                            size="medium" 
                             color="primary" 
                             disabled
                             startIcon={<Edit />}
+                            sx={{
+                              borderRadius: 2,
+                              px: 3,
+                              py: 1.5,
+                              fontWeight: 600,
+                              textTransform: 'none',
+                            }}
                           >
-                            Modify Booking
+                            ✏️ Modify Booking
                           </Button>
                         </span>
                       </Tooltip>
@@ -416,12 +566,28 @@ const MyBookings: React.FC = () => {
                   )}
                   {canCancelBooking(booking) && (
                     <Button 
-                      size="small" 
+                      variant="outlined"
+                      size="medium" 
                       color="error" 
                       startIcon={<Cancel />}
                       onClick={() => openCancelDialog(booking)}
+                      sx={{
+                        borderRadius: 2,
+                        borderWidth: 1.5,
+                        px: 3,
+                        py: 1.5,
+                        fontWeight: 600,
+                        textTransform: 'none',
+                        backgroundColor: 'white',
+                        '&:hover': {
+                          borderWidth: 1.5,
+                          backgroundColor: 'rgba(244, 67, 54, 0.04)',
+                          transform: 'translateY(-1px)',
+                          boxShadow: '0 4px 12px rgba(244, 67, 54, 0.15)',
+                        },
+                      }}
                     >
-                      Cancel Booking
+                      ❌ Cancel Booking
                     </Button>
                   )}
                 </CardActions>
@@ -574,7 +740,8 @@ const MyBookings: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
-    </Container>
+      </Container>
+    </Box>
   );
 };
 

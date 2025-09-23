@@ -6,7 +6,6 @@ import {
   Button,
   Typography,
   Box,
-  InputAdornment,
   useTheme,
   useMediaQuery,
 } from '@mui/material';
@@ -14,12 +13,6 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs, { Dayjs } from 'dayjs';
-import { 
-  Search as SearchIcon, 
-  LocationOn as LocationIcon, 
-  People as PeopleIcon,
-  CalendarToday as CalendarIcon,
-} from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { HotelSearchRequest } from '../../types/hotel';
 
@@ -77,17 +70,17 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Paper 
-        elevation={isMobile ? 1 : 3} 
+        elevation={8}
         sx={{ 
-          p: { xs: 3, sm: 4, md: 3 }, // Enhanced mobile padding
+          p: { xs: 3, sm: 4, md: 3 },
           mb: { xs: 2, sm: 3 },
           width: '100%',
           maxWidth: '100%',
           boxSizing: 'border-box',
-          borderRadius: { xs: 2, md: 3 },
-          background: isMobile ? 
-            'linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%)' : 
-            undefined,
+          borderRadius: 2,
+          background: 'white',
+          border: '1px solid #e0e0e0',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
         }}
       >
         {/* Mobile-Optimized Header */}
@@ -141,26 +134,18 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
                 variant="outlined"
                 sx={{
                   '& .MuiOutlinedInput-root': {
-                    minHeight: { xs: '56px', md: '56px' }, // Larger touch targets
+                    minHeight: { xs: '56px', md: '56px' },
                     fontSize: { xs: '1rem', md: '1rem' },
+                    backgroundColor: 'white',
+                    borderRadius: 2,
                     '&:hover fieldset': {
                       borderColor: 'primary.main',
                     },
                   },
                   '& .MuiInputLabel-root': {
                     fontSize: { xs: '1rem', md: '1rem' },
-                    fontWeight: isMobile ? 500 : 400,
+                    fontWeight: 600,
                   },
-                }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <LocationIcon 
-                        color="primary" 
-                        sx={{ fontSize: { xs: 22, md: 20 } }}
-                      />
-                    </InputAdornment>
-                  ),
                 }}
               />
             </Grid>
@@ -183,24 +168,16 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
                   '& .MuiOutlinedInput-root': {
                     minHeight: { xs: '56px', md: '56px' },
                     fontSize: { xs: '1rem', md: '1rem' },
+                    backgroundColor: 'white',
+                    borderRadius: 2,
                     '&:hover fieldset': {
                       borderColor: 'primary.main',
                     },
                   },
                   '& .MuiInputLabel-root': {
                     fontSize: { xs: '1rem', md: '1rem' },
-                    fontWeight: isMobile ? 500 : 400,
+                    fontWeight: 600,
                   },
-                }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <PeopleIcon 
-                        color="primary" 
-                        sx={{ fontSize: { xs: 22, md: 20 } }}
-                      />
-                    </InputAdornment>
-                  ),
                 }}
               />
             </Grid>
@@ -218,13 +195,15 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
                   '& .MuiOutlinedInput-root': {
                     minHeight: { xs: '56px', md: '56px' },
                     fontSize: { xs: '1rem', md: '1rem' },
+                    backgroundColor: 'white',
+                    borderRadius: 2,
                     '&:hover fieldset': {
                       borderColor: 'primary.main',
                     },
                   },
                   '& .MuiInputLabel-root': {
                     fontSize: { xs: '1rem', md: '1rem' },
-                    fontWeight: isMobile ? 500 : 400,
+                    fontWeight: 600,
                   },
                 }}
                 slotProps={{
@@ -232,18 +211,7 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
                     fullWidth: true,
                     required: true,
                     variant: 'outlined',
-                    InputProps: {
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <CalendarIcon 
-                            color="primary" 
-                            sx={{ fontSize: { xs: 22, md: 20 } }}
-                          />
-                        </InputAdornment>
-                      ),
-                    },
                   },
-                  // Mobile-optimized date picker
                   desktopPaper: {
                     sx: {
                       '& .MuiPickersDay-root': {
@@ -278,13 +246,15 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
                   '& .MuiOutlinedInput-root': {
                     minHeight: { xs: '56px', md: '56px' },
                     fontSize: { xs: '1rem', md: '1rem' },
+                    backgroundColor: 'white',
+                    borderRadius: 2,
                     '&:hover fieldset': {
                       borderColor: 'primary.main',
                     },
                   },
                   '& .MuiInputLabel-root': {
                     fontSize: { xs: '1rem', md: '1rem' },
-                    fontWeight: isMobile ? 500 : 400,
+                    fontWeight: 600,
                   },
                 }}
                 slotProps={{
@@ -292,18 +262,7 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
                     fullWidth: true,
                     required: true,
                     variant: 'outlined',
-                    InputProps: {
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <CalendarIcon 
-                            color="primary" 
-                            sx={{ fontSize: { xs: 22, md: 20 } }}
-                          />
-                        </InputAdornment>
-                      ),
-                    },
                   },
-                  // Mobile-optimized date picker
                   desktopPaper: {
                     sx: {
                       '& .MuiPickersDay-root': {
@@ -339,43 +298,34 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
                   variant="contained"
                   size="large"
                   disabled={loading}
-                  startIcon={<SearchIcon sx={{ fontSize: { xs: 22, md: 20 } }} />}
                   sx={{
-                    // Mobile-first sizing
-                    minHeight: { xs: '52px', md: '48px' }, // Larger touch target on mobile
+                    minHeight: { xs: '52px', md: '48px' },
                     px: { xs: 4, sm: 6, md: 4 },
                     py: { xs: 1.5, md: 1.25 },
-                    borderRadius: { xs: 3, md: 2 },
+                    borderRadius: 2,
                     fontSize: { 
-                      xs: '1.1rem',   // Larger on mobile for readability
+                      xs: '1.1rem',
                       sm: '1.15rem', 
                       md: '1rem' 
                     },
-                    fontWeight: 'bold',
+                    fontWeight: 600,
                     textTransform: 'none',
                     width: { 
-                      xs: '100%',     // Full width on mobile
-                      sm: 'auto',     // Auto width on tablet+
+                      xs: '100%',
+                      sm: 'auto',
                     },
                     maxWidth: { 
-                      xs: 'none',     // No max width constraint on mobile
-                      sm: '400px',    // Reasonable max on tablet
+                      xs: 'none',
+                      sm: '400px',
                     },
-                    backgroundColor: 'primary.main',
-                    color: 'primary.contrastText',
-                    boxShadow: { 
-                      xs: 3,          // Enhanced shadow on mobile
-                      md: 2 
-                    },
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                     transition: 'all 0.2s ease-in-out',
                     '&:hover': {
-                      backgroundColor: 'primary.dark',
-                      boxShadow: { xs: 4, md: 3 },
-                      transform: isMobile ? 'none' : 'translateY(-1px)',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                      transform: 'translateY(-1px)',
                     },
                     '&:active': {
                       transform: 'translateY(0)',
-                      boxShadow: { xs: 2, md: 1 },
                     },
                     '&:disabled': {
                       backgroundColor: 'action.disabled',
