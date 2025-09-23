@@ -66,12 +66,13 @@ const NumberStepper: React.FC<NumberStepperProps> = ({
         max,
         style: {
           textAlign: 'center',
-          MozAppearance: 'textfield' // Firefox: hide spinner
+          MozAppearance: 'textfield', // Firefox: hide spinner
+          paddingRight: '80px', // Make space for buttons
         }
       }}
       sx={{
         '& .MuiInputBase-root': {
-          minHeight: 56, // Match the date picker height
+          position: 'relative',
           paddingRight: 0,
         },
         '& input[type=number]': {
@@ -87,10 +88,14 @@ const NumberStepper: React.FC<NumberStepperProps> = ({
         endAdornment: (
           <Box
             sx={{
+              position: 'absolute',
+              right: 0,
+              top: 0,
+              bottom: 0,
               display: 'flex',
               alignItems: 'center',
-              height: '100%',
-              marginRight: '-14px',
+              backgroundColor: 'background.paper',
+              borderLeft: `1px solid ${theme.palette.divider}`,
             }}
           >
             <IconButton
@@ -98,12 +103,14 @@ const NumberStepper: React.FC<NumberStepperProps> = ({
               disabled={disabled || value <= min}
               size="small"
               sx={{
-                height: 40,
-                width: 32,
+                height: '100%',
+                width: 36,
                 borderRadius: 0,
-                color: theme.palette.primary.main,
+                color: theme.palette.text.secondary,
+                borderRight: `1px solid ${theme.palette.divider}`,
                 '&:hover': {
                   backgroundColor: theme.palette.action.hover,
+                  color: theme.palette.primary.main,
                 },
                 '&.Mui-disabled': {
                   backgroundColor: 'transparent',
@@ -118,12 +125,13 @@ const NumberStepper: React.FC<NumberStepperProps> = ({
               disabled={disabled || value >= max}
               size="small"
               sx={{
-                height: 40,
-                width: 32,
+                height: '100%',
+                width: 36,
                 borderRadius: 0,
-                color: theme.palette.primary.main,
+                color: theme.palette.text.secondary,
                 '&:hover': {
                   backgroundColor: theme.palette.action.hover,
+                  color: theme.palette.primary.main,
                 },
                 '&.Mui-disabled': {
                   backgroundColor: 'transparent',

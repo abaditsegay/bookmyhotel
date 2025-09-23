@@ -438,88 +438,287 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
     switch (activeStep) {
       case 0:
         return (
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <Typography variant="h6" gutterBottom>
-                Guest Information
-              </Typography>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="First Name"
-                value={guestInfo.firstName}
-                onChange={handleGuestInfoChange('firstName')}
-                required
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Last Name"
-                value={guestInfo.lastName}
-                onChange={handleGuestInfoChange('lastName')}
-                required
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Email"
-                type="email"
-                value={guestInfo.email}
-                onChange={handleGuestInfoChange('email')}
-                required
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Phone"
-                value={guestInfo.phone}
-                onChange={handleGuestInfoChange('phone')}
-                required
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <Divider sx={{ my: 2 }} />
-              <Typography variant="h6" gutterBottom>
-                Stay Details
-              </Typography>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <LocalizationProvider dateAdapter={AdapterDateFns}>
-                <DatePicker
-                  label="Check-in Date"
-                  value={checkInDate}
-                  onChange={(newValue) => newValue && setCheckInDate(newValue)}
-                  minDate={new Date()}
-                  slotProps={{ textField: { fullWidth: true } }}
-                />
-              </LocalizationProvider>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <LocalizationProvider dateAdapter={AdapterDateFns}>
-                <DatePicker
-                  label="Check-out Date"
-                  value={checkOutDate}
-                  onChange={(newValue) => newValue && setCheckOutDate(newValue)}
-                  minDate={addDays(checkInDate, 1)}
-                  slotProps={{ textField: { fullWidth: true } }}
-                />
-              </LocalizationProvider>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <NumberStepper
-                value={guests}
-                onChange={handleGuestsChange}
-                min={1}
-                max={10}
-                label="Number of Guests"
-                fullWidth
-              />
-            </Grid>
-          </Grid>
+          <Box>
+            {/* Guest Information Section */}
+            <Card 
+              elevation={2}
+              sx={{ 
+                mb: 3,
+                background: 'linear-gradient(135deg, rgba(156, 39, 176, 0.08) 0%, rgba(156, 39, 176, 0.15) 100%)',
+                border: '1px solid rgba(156, 39, 176, 0.3)',
+                borderRadius: 3,
+              }}
+            >
+              <CardContent sx={{ p: 3 }}>
+                <Box sx={{ 
+                  display: 'flex',
+                  alignItems: 'center',
+                  mb: 3,
+                }}>
+                  <Box sx={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: '50%',
+                    bgcolor: 'secondary.main',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    mr: 2,
+                  }}>
+                    <Typography variant="h6" sx={{ color: 'white' }}>
+                      👤
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="h6" sx={{ 
+                      fontWeight: 'bold',
+                      color: 'text.primary',
+                      mb: 0.5,
+                    }}>
+                      Guest Information
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Please provide the guest's contact details
+                    </Typography>
+                  </Box>
+                </Box>
+                
+                <Grid container spacing={3}>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="First Name"
+                      value={guestInfo.firstName}
+                      onChange={handleGuestInfoChange('firstName')}
+                      required
+                      variant="outlined"
+                      sx={{
+                        '& .MuiInputBase-root': {
+                          bgcolor: 'background.paper',
+                          borderRadius: 2,
+                        },
+                        '& .MuiOutlinedInput-root': {
+                          '&:hover fieldset': {
+                            borderColor: 'secondary.main',
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: 'secondary.main',
+                          },
+                        },
+                        '& .MuiInputLabel-root.Mui-focused': {
+                          color: 'secondary.main',
+                        },
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Last Name"
+                      value={guestInfo.lastName}
+                      onChange={handleGuestInfoChange('lastName')}
+                      required
+                      variant="outlined"
+                      sx={{
+                        '& .MuiInputBase-root': {
+                          bgcolor: 'background.paper',
+                          borderRadius: 2,
+                        },
+                        '& .MuiOutlinedInput-root': {
+                          '&:hover fieldset': {
+                            borderColor: 'secondary.main',
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: 'secondary.main',
+                          },
+                        },
+                        '& .MuiInputLabel-root.Mui-focused': {
+                          color: 'secondary.main',
+                        },
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Email Address"
+                      type="email"
+                      value={guestInfo.email}
+                      onChange={handleGuestInfoChange('email')}
+                      required
+                      variant="outlined"
+                      sx={{
+                        '& .MuiInputBase-root': {
+                          bgcolor: 'background.paper',
+                          borderRadius: 2,
+                        },
+                        '& .MuiOutlinedInput-root': {
+                          '&:hover fieldset': {
+                            borderColor: 'secondary.main',
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: 'secondary.main',
+                          },
+                        },
+                        '& .MuiInputLabel-root.Mui-focused': {
+                          color: 'secondary.main',
+                        },
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Phone Number"
+                      value={guestInfo.phone}
+                      onChange={handleGuestInfoChange('phone')}
+                      required
+                      variant="outlined"
+                      sx={{
+                        '& .MuiInputBase-root': {
+                          bgcolor: 'background.paper',
+                          borderRadius: 2,
+                        },
+                        '& .MuiOutlinedInput-root': {
+                          '&:hover fieldset': {
+                            borderColor: 'secondary.main',
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: 'secondary.main',
+                          },
+                        },
+                        '& .MuiInputLabel-root.Mui-focused': {
+                          color: 'secondary.main',
+                        },
+                      }}
+                    />
+                  </Grid>
+                </Grid>
+              </CardContent>
+            </Card>
+
+            {/* Stay Details Section */}
+            <Card 
+              elevation={2}
+              sx={{ 
+                background: 'linear-gradient(135deg, rgba(25, 118, 210, 0.08) 0%, rgba(25, 118, 210, 0.15) 100%)',
+                border: '1px solid rgba(25, 118, 210, 0.3)',
+                borderRadius: 3,
+              }}
+            >
+              <CardContent sx={{ p: 3 }}>
+                <Box sx={{ 
+                  display: 'flex',
+                  alignItems: 'center',
+                  mb: 3,
+                }}>
+                  <Box sx={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: '50%',
+                    bgcolor: 'primary.main',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    mr: 2,
+                  }}>
+                    <Typography variant="h6" sx={{ color: 'white' }}>
+                      📅
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="h6" sx={{ 
+                      fontWeight: 'bold',
+                      color: 'text.primary',
+                      mb: 0.5,
+                    }}>
+                      Stay Details
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Select dates and number of guests
+                    </Typography>
+                  </Box>
+                </Box>
+                
+                <Grid container spacing={3}>
+                  <Grid item xs={12} sm={4}>
+                    <LocalizationProvider dateAdapter={AdapterDateFns}>
+                      <DatePicker
+                        label="Check-in Date"
+                        value={checkInDate}
+                        onChange={(newValue) => newValue && setCheckInDate(newValue)}
+                        minDate={new Date()}
+                        slotProps={{ 
+                          textField: { 
+                            fullWidth: true,
+                            sx: {
+                              '& .MuiInputBase-root': {
+                                bgcolor: 'background.paper',
+                                borderRadius: 2,
+                              },
+                              '& .MuiOutlinedInput-root': {
+                                '&:hover fieldset': {
+                                  borderColor: 'primary.main',
+                                },
+                                '&.Mui-focused fieldset': {
+                                  borderColor: 'primary.main',
+                                },
+                              },
+                              '& .MuiInputLabel-root.Mui-focused': {
+                                color: 'primary.main',
+                              },
+                            }
+                          } 
+                        }}
+                      />
+                    </LocalizationProvider>
+                  </Grid>
+                  <Grid item xs={12} sm={4}>
+                    <LocalizationProvider dateAdapter={AdapterDateFns}>
+                      <DatePicker
+                        label="Check-out Date"
+                        value={checkOutDate}
+                        onChange={(newValue) => newValue && setCheckOutDate(newValue)}
+                        minDate={addDays(checkInDate, 1)}
+                        slotProps={{ 
+                          textField: { 
+                            fullWidth: true,
+                            sx: {
+                              '& .MuiInputBase-root': {
+                                bgcolor: 'background.paper',
+                                borderRadius: 2,
+                              },
+                              '& .MuiOutlinedInput-root': {
+                                '&:hover fieldset': {
+                                  borderColor: 'primary.main',
+                                },
+                                '&.Mui-focused fieldset': {
+                                  borderColor: 'primary.main',
+                                },
+                              },
+                              '& .MuiInputLabel-root.Mui-focused': {
+                                color: 'primary.main',
+                              },
+                            }
+                          } 
+                        }}
+                      />
+                    </LocalizationProvider>
+                  </Grid>
+                  <Grid item xs={12} sm={4}>
+                    <NumberStepper
+                      value={guests}
+                      onChange={handleGuestsChange}
+                      min={1}
+                      max={10}
+                      label="Number of Guests"
+                      fullWidth
+                    />
+                  </Grid>
+                </Grid>
+              </CardContent>
+            </Card>
+          </Box>
         );
         
       case 1:
@@ -653,83 +852,255 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
       case 2:
         return (
           <Box>
-            <Typography variant="h6" gutterBottom>
-              Booking Confirmation
-            </Typography>
+            {/* Confirmation Header */}
+            <Box sx={{ 
+              textAlign: 'center',
+              mb: 4,
+              p: 3,
+              background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(139, 195, 74, 0.1) 100%)',
+              borderRadius: 3,
+              border: '1px solid rgba(76, 175, 80, 0.3)',
+            }}>
+              <Box sx={{
+                width: 60,
+                height: 60,
+                borderRadius: '50%',
+                bgcolor: 'success.main',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                mx: 'auto',
+                mb: 2,
+              }}>
+                <Typography variant="h4" sx={{ color: 'white' }}>
+                  ✓
+                </Typography>
+              </Box>
+              <Typography variant="h5" sx={{ 
+                fontWeight: 'bold',
+                color: 'success.main',
+                mb: 1,
+              }}>
+                Booking Confirmation
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Please review the details before creating the booking
+              </Typography>
+            </Box>
             
-            <Grid container spacing={2}>
+            <Grid container spacing={3}>
+              {/* Guest Information */}
               <Grid item xs={12} sm={6}>
-                <Card>
-                  <CardContent>
-                    <Typography variant="subtitle1" gutterBottom>
-                      Guest Information
-                    </Typography>
-                    <Typography variant="body2">
-                      <strong>Name:</strong> {guestInfo.firstName} {guestInfo.lastName}
-                    </Typography>
-                    <Typography variant="body2">
-                      <strong>Email:</strong> {guestInfo.email}
-                    </Typography>
-                    <Typography variant="body2">
-                      <strong>Phone:</strong> {guestInfo.phone}
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-              
-              <Grid item xs={12} sm={6}>
-                <Card>
-                  <CardContent>
-                    <Typography variant="subtitle1" gutterBottom>
-                      Stay Details
-                    </Typography>
-                    <Typography variant="body2">
-                      <strong>Room:</strong> {selectedRoom?.roomNumber} ({selectedRoom?.roomType})
-                    </Typography>
-                    <Typography variant="body2">
-                      <strong>Check-in:</strong> {format(checkInDate, 'MMM dd, yyyy')}
-                    </Typography>
-                    <Typography variant="body2">
-                      <strong>Check-out:</strong> {format(checkOutDate, 'MMM dd, yyyy')}
-                    </Typography>
-                    <Typography variant="body2">
-                      <strong>Guests:</strong> {guests}
-                    </Typography>
-                    {specialRequests && (
-                      <Typography variant="body2">
-                        <strong>Special Requests:</strong> {specialRequests}
+                <Card elevation={2} sx={{ 
+                  background: 'linear-gradient(135deg, rgba(156, 39, 176, 0.05) 0%, rgba(156, 39, 176, 0.1) 100%)',
+                  border: '1px solid rgba(156, 39, 176, 0.2)',
+                  borderRadius: 3,
+                }}>
+                  <CardContent sx={{ p: 3 }}>
+                    <Box sx={{ 
+                      display: 'flex',
+                      alignItems: 'center',
+                      mb: 2,
+                    }}>
+                      <Box sx={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: '50%',
+                        bgcolor: 'secondary.main',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        mr: 2,
+                      }}>
+                        <Typography variant="body1" sx={{ color: 'white' }}>
+                          👤
+                        </Typography>
+                      </Box>
+                      <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                        Guest Information
                       </Typography>
-                    )}
+                    </Box>
+                    
+                    <Box sx={{ space: 1.5 }}>
+                      <Box sx={{ mb: 1.5 }}>
+                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold' }}>
+                          FULL NAME
+                        </Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 'medium' }}>
+                          {guestInfo.firstName} {guestInfo.lastName}
+                        </Typography>
+                      </Box>
+                      <Box sx={{ mb: 1.5 }}>
+                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold' }}>
+                          EMAIL ADDRESS
+                        </Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 'medium' }}>
+                          {guestInfo.email}
+                        </Typography>
+                      </Box>
+                      <Box>
+                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold' }}>
+                          PHONE NUMBER
+                        </Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 'medium' }}>
+                          {guestInfo.phone}
+                        </Typography>
+                      </Box>
+                    </Box>
                   </CardContent>
                 </Card>
               </Grid>
               
+              {/* Stay Details */}
+              <Grid item xs={12} sm={6}>
+                <Card elevation={2} sx={{ 
+                  background: 'linear-gradient(135deg, rgba(25, 118, 210, 0.05) 0%, rgba(25, 118, 210, 0.1) 100%)',
+                  border: '1px solid rgba(25, 118, 210, 0.2)',
+                  borderRadius: 3,
+                }}>
+                  <CardContent sx={{ p: 3 }}>
+                    <Box sx={{ 
+                      display: 'flex',
+                      alignItems: 'center',
+                      mb: 2,
+                    }}>
+                      <Box sx={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: '50%',
+                        bgcolor: 'primary.main',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        mr: 2,
+                      }}>
+                        <Typography variant="body1" sx={{ color: 'white' }}>
+                          🏠
+                        </Typography>
+                      </Box>
+                      <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                        Stay Details
+                      </Typography>
+                    </Box>
+                    
+                    <Box sx={{ space: 1.5 }}>
+                      <Box sx={{ mb: 1.5 }}>
+                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold' }}>
+                          ROOM
+                        </Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 'medium' }}>
+                          {selectedRoom?.roomNumber} ({selectedRoom?.roomType})
+                        </Typography>
+                      </Box>
+                      <Box sx={{ mb: 1.5 }}>
+                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold' }}>
+                          CHECK-IN / CHECK-OUT
+                        </Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 'medium' }}>
+                          {format(checkInDate, 'MMM dd, yyyy')} - {format(checkOutDate, 'MMM dd, yyyy')}
+                        </Typography>
+                      </Box>
+                      <Box sx={{ mb: 1.5 }}>
+                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold' }}>
+                          GUESTS
+                        </Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 'medium' }}>
+                          {guests} guest{guests !== 1 ? 's' : ''}
+                        </Typography>
+                      </Box>
+                      {specialRequests && (
+                        <Box>
+                          <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold' }}>
+                            SPECIAL REQUESTS
+                          </Typography>
+                          <Typography variant="body2" sx={{ fontWeight: 'medium', fontStyle: 'italic' }}>
+                            {specialRequests}
+                          </Typography>
+                        </Box>
+                      )}
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+              
+              {/* Pricing Summary */}
               <Grid item xs={12}>
-                <Card>
-                  <CardContent>
-                    <Typography variant="subtitle1" gutterBottom>
-                      Pricing Summary
-                    </Typography>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                      <Typography variant="body2">
-                        ETB {(selectedRoom?.pricePerNight || 0)?.toFixed(0)}/night × {Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24))} night{Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)) !== 1 ? 's' : ''}
+                <Card elevation={3} sx={{ 
+                  background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.05) 0%, rgba(139, 195, 74, 0.05) 100%)',
+                  border: '2px solid rgba(76, 175, 80, 0.3)',
+                  borderRadius: 3,
+                }}>
+                  <CardContent sx={{ p: 3 }}>
+                    <Box sx={{ 
+                      display: 'flex',
+                      alignItems: 'center',
+                      mb: 3,
+                    }}>
+                      <Box sx={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: '50%',
+                        bgcolor: 'success.main',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        mr: 2,
+                      }}>
+                        <Typography variant="h6" sx={{ color: 'white' }}>
+                          💰
+                        </Typography>
+                      </Box>
+                      <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                        Pricing Summary
                       </Typography>
-                      <Typography variant="body2">
+                    </Box>
+                    
+                    <Box sx={{ 
+                      p: 2,
+                      bgcolor: 'background.paper',
+                      borderRadius: 2,
+                      mb: 2,
+                    }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                        <Typography variant="body1">
+                          ETB {(selectedRoom?.pricePerNight || 0)?.toFixed(0)}/night × {Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24))} night{Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)) !== 1 ? 's' : ''}
+                        </Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 'medium' }}>
+                          ETB {calculateTotalAmount()?.toFixed(0)}
+                        </Typography>
+                      </Box>
+                    </Box>
+                    
+                    <Divider sx={{ my: 2 }} />
+                    
+                    <Box sx={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center',
+                      p: 2,
+                      bgcolor: 'success.main',
+                      borderRadius: 2,
+                      mb: 2,
+                    }}>
+                      <Typography variant="h5" sx={{ color: 'white', fontWeight: 'bold' }}>
+                        Total Amount
+                      </Typography>
+                      <Typography variant="h4" sx={{ color: 'white', fontWeight: 'bold' }}>
                         ETB {calculateTotalAmount()?.toFixed(0)}
                       </Typography>
                     </Box>
-                    <Divider />
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
-                      <Typography variant="h6">
-                        Total Amount
-                      </Typography>
-                      <Typography variant="h6" color="primary.main">
-                        ${calculateTotalAmount()}
+                    
+                    <Box sx={{ 
+                      p: 2,
+                      bgcolor: 'info.main',
+                      color: 'info.contrastText',
+                      borderRadius: 2,
+                      textAlign: 'center',
+                    }}>
+                      <Typography variant="body1" sx={{ fontWeight: 'medium' }}>
+                        Payment will be processed at the front desk
                       </Typography>
                     </Box>
-                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                      Payment will be processed at the front desk
-                    </Typography>
                   </CardContent>
                 </Card>
               </Grid>
@@ -749,20 +1120,84 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
       maxWidth="md" 
       fullWidth
       PaperProps={{
-        sx: { minHeight: '70vh' }
+        sx: { 
+          minHeight: '70vh',
+          borderRadius: 3,
+          background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%)',
+          backdropFilter: 'blur(10px)',
+          boxShadow: '0 20px 40px rgba(0, 0, 0, 0.15)',
+        }
+      }}
+      BackdropProps={{
+        sx: {
+          backgroundColor: 'rgba(0, 0, 0, 0.6)',
+          backdropFilter: 'blur(5px)',
+        }
       }}
     >
-      <DialogTitle>
-        Walk-in Guest Booking
-        <Box sx={{ mt: 2 }}>
-          <Stepper activeStep={activeStep} alternativeLabel>
-            {steps.map((label) => (
-              <Step key={label}>
-                <StepLabel>{label}</StepLabel>
-              </Step>
-            ))}
-          </Stepper>
+      <DialogTitle sx={{ 
+        background: 'linear-gradient(135deg, rgba(25, 118, 210, 0.1) 0%, rgba(156, 39, 176, 0.1) 100%)',
+        borderBottom: '1px solid',
+        borderColor: 'divider',
+        pb: 2,
+      }}>
+        <Box sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 2,
+          mb: 2,
+        }}>
+          <Box sx={{
+            width: 48,
+            height: 48,
+            borderRadius: 3,
+            bgcolor: 'primary.main',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: 2,
+          }}>
+            <Typography variant="h6" sx={{ color: 'white' }}>
+              👤
+            </Typography>
+          </Box>
+          <Box>
+            <Typography 
+              variant="h5" 
+              sx={{ 
+                fontWeight: 'bold',
+                background: 'linear-gradient(45deg, #1976d2, #9c27b0)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}
+            >
+              Walk-in Guest Booking
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Complete the guest booking process step by step
+            </Typography>
+          </Box>
         </Box>
+        
+        <Stepper 
+          activeStep={activeStep} 
+          alternativeLabel
+          sx={{
+            '& .MuiStepLabel-root .Mui-completed': {
+              color: 'success.main',
+            },
+            '& .MuiStepLabel-root .Mui-active': {
+              color: 'primary.main',
+            },
+          }}
+        >
+          {steps.map((label) => (
+            <Step key={label}>
+              <StepLabel>{label}</StepLabel>
+            </Step>
+          ))}
+        </Stepper>
       </DialogTitle>
       
       <DialogContent sx={{ position: 'relative', minHeight: '400px' }}>

@@ -237,88 +237,219 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
     switch (activeStep) {
       case 0:
         return (
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <Typography variant="h6" gutterBottom>
-                Guest Information
-              </Typography>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="First Name"
-                value={guestInfo.firstName}
-                onChange={handleGuestInfoChange('firstName')}
-                required
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Last Name"
-                value={guestInfo.lastName}
-                onChange={handleGuestInfoChange('lastName')}
-                required
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Email"
-                type="email"
-                value={guestInfo.email}
-                onChange={handleGuestInfoChange('email')}
-                required
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Phone"
-                value={guestInfo.phone}
-                onChange={handleGuestInfoChange('phone')}
-                required
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <Divider sx={{ my: 2 }} />
-              <Typography variant="h6" gutterBottom>
-                Stay Details
-              </Typography>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <LocalizationProvider dateAdapter={AdapterDateFns}>
-                <DatePicker
-                  label="Check-in Date"
-                  value={checkInDate}
-                  onChange={(newValue) => newValue && setCheckInDate(newValue)}
-                  minDate={new Date()}
-                  slotProps={{ textField: { fullWidth: true } }}
-                />
-              </LocalizationProvider>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <LocalizationProvider dateAdapter={AdapterDateFns}>
-                <DatePicker
-                  label="Check-out Date"
-                  value={checkOutDate}
-                  onChange={(newValue) => newValue && setCheckOutDate(newValue)}
-                  minDate={addDays(checkInDate, 1)}
-                  slotProps={{ textField: { fullWidth: true } }}
-                />
-              </LocalizationProvider>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <NumberStepper
-                value={guests}
-                onChange={handleGuestsChange}
-                min={1}
-                max={10}
-                label="Number of Guests"
-                fullWidth
-              />
-            </Grid>
-          </Grid>
+          <Card sx={{ 
+            background: 'linear-gradient(135deg, rgba(33, 150, 243, 0.05) 0%, rgba(21, 101, 192, 0.05) 100%)',
+            border: '1px solid rgba(33, 150, 243, 0.2)',
+            borderRadius: 3,
+          }}>
+            <CardContent sx={{ p: 4 }}>
+              {/* Guest Information Section */}
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 2, 
+                mb: 4,
+                p: 2,
+                background: 'linear-gradient(135deg, rgba(33, 150, 243, 0.1) 0%, rgba(21, 101, 192, 0.1) 100%)',
+                borderRadius: 2,
+              }}>
+                <Box sx={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: 2,
+                  bgcolor: 'primary.main',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: 2,
+                }}>
+                  <Typography variant="h6" color="white" sx={{ fontWeight: 'bold' }}>
+                    1
+                  </Typography>
+                </Box>
+                <Box>
+                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+                    Guest Information
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Please provide the guest details for this booking
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Grid container spacing={3}>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="First Name"
+                    value={guestInfo.firstName}
+                    onChange={handleGuestInfoChange('firstName')}
+                    required
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        backgroundColor: 'background.paper',
+                        borderRadius: 2,
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                          borderColor: 'primary.main',
+                        },
+                      },
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Last Name"
+                    value={guestInfo.lastName}
+                    onChange={handleGuestInfoChange('lastName')}
+                    required
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        backgroundColor: 'background.paper',
+                        borderRadius: 2,
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                          borderColor: 'primary.main',
+                        },
+                      },
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Email"
+                    type="email"
+                    value={guestInfo.email}
+                    onChange={handleGuestInfoChange('email')}
+                    required
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        backgroundColor: 'background.paper',
+                        borderRadius: 2,
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                          borderColor: 'primary.main',
+                        },
+                      },
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Phone"
+                    value={guestInfo.phone}
+                    onChange={handleGuestInfoChange('phone')}
+                    required
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        backgroundColor: 'background.paper',
+                        borderRadius: 2,
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                          borderColor: 'primary.main',
+                        },
+                      },
+                    }}
+                  />
+                </Grid>
+              </Grid>
+
+              {/* Stay Details Section */}
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 2, 
+                mb: 3,
+                mt: 4,
+                p: 2,
+                background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(56, 142, 60, 0.1) 100%)',
+                borderRadius: 2,
+              }}>
+                <Box sx={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: 2,
+                  bgcolor: 'success.main',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: 2,
+                }}>
+                  <Typography variant="h6" color="white" sx={{ fontWeight: 'bold' }}>
+                    📅
+                  </Typography>
+                </Box>
+                <Box>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+                    Stay Details
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Select dates and number of guests
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Grid container spacing={3}>
+                <Grid item xs={12} sm={4}>
+                  <LocalizationProvider dateAdapter={AdapterDateFns}>
+                    <DatePicker
+                      label="Check-in Date"
+                      value={checkInDate}
+                      onChange={(newValue) => newValue && setCheckInDate(newValue)}
+                      minDate={new Date()}
+                      slotProps={{ 
+                        textField: { 
+                          fullWidth: true,
+                          sx: {
+                            '& .MuiOutlinedInput-root': {
+                              backgroundColor: 'background.paper',
+                              borderRadius: 2,
+                              '&:hover .MuiOutlinedInput-notchedOutline': {
+                                borderColor: 'success.main',
+                              },
+                            },
+                          }
+                        } 
+                      }}
+                    />
+                  </LocalizationProvider>
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <LocalizationProvider dateAdapter={AdapterDateFns}>
+                    <DatePicker
+                      label="Check-out Date"
+                      value={checkOutDate}
+                      onChange={(newValue) => newValue && setCheckOutDate(newValue)}
+                      minDate={addDays(checkInDate, 1)}
+                      slotProps={{ 
+                        textField: { 
+                          fullWidth: true,
+                          sx: {
+                            '& .MuiOutlinedInput-root': {
+                              backgroundColor: 'background.paper',
+                              borderRadius: 2,
+                              '&:hover .MuiOutlinedInput-notchedOutline': {
+                                borderColor: 'success.main',
+                              },
+                            },
+                          }
+                        } 
+                      }}
+                    />
+                  </LocalizationProvider>
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <NumberStepper
+                    value={guests}
+                    onChange={handleGuestsChange}
+                    min={1}
+                    max={10}
+                    label="Number of Guests"
+                    fullWidth
+                  />
+                </Grid>
+              </Grid>
+            </CardContent>
+          </Card>
         );
         
       case 1:
@@ -1021,61 +1152,115 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
 
 
   return (
-    <Paper sx={{ 
-      p: 3, 
+    <Card sx={{ 
       minHeight: '70vh',
-      backgroundColor: (theme) => theme.palette.mode === 'dark' ? theme.palette.grey[900] : '#f5f5f5', // Theme-aware background for offline mode
-      border: (theme) => `2px solid ${theme.palette.mode === 'dark' ? theme.palette.grey[700] : '#e0e0e0'}` // Theme-aware border
+      background: 'linear-gradient(135deg, rgba(255, 152, 0, 0.05) 0%, rgba(255, 193, 7, 0.05) 100%)',
+      border: '2px solid rgba(255, 152, 0, 0.3)',
+      borderRadius: 3,
     }}>
-      {/* Header with Status */}
-      <Box sx={{ mb: 3 }}>
-        {/* Offline Mode Banner */}
-        <Alert 
-          severity="warning" 
-          sx={{ 
-            mb: 2, 
-            backgroundColor: (theme) => theme.palette.mode === 'dark' ? theme.palette.warning.dark : '#fff3e0',
-            border: (theme) => `1px solid ${theme.palette.warning.main}`,
-            '& .MuiAlert-icon': {
-              color: (theme) => theme.palette.warning.main
-            }
-          }}
-          icon={<CloudOffIcon />}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Chip
-              icon={<CloudOffIcon />}
-              label="Offline Mode"
-              size="small"
-              sx={{ 
-                fontWeight: 'bold',
-                backgroundColor: (theme) => theme.palette.warning.main,
-                color: (theme) => theme.palette.warning.contrastText,
-                '& .MuiChip-icon': {
-                  color: (theme) => theme.palette.warning.contrastText
-                }
-              }}
-            />
-            <Typography variant="body1">
-              You are working offline. All bookings will be saved locally and automatically synced when internet connection is restored.
-            </Typography>
+      <CardContent sx={{ p: 3 }}>
+        {/* Enhanced Header with Offline Status */}
+        <Box sx={{ mb: 4 }}>
+          {/* Professional Header */}
+          <Box sx={{ 
+            mb: 3,
+            p: 3,
+            background: 'linear-gradient(135deg, rgba(255, 152, 0, 0.1) 0%, rgba(255, 193, 7, 0.1) 100%)',
+            borderRadius: 3,
+            border: '1px solid rgba(255, 152, 0, 0.3)',
+          }}>
+            <Box sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              mb: 2,
+            }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box sx={{
+                  width: 56,
+                  height: 56,
+                  borderRadius: 3,
+                  bgcolor: 'warning.main',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: 2,
+                }}>
+                  <CloudOffIcon sx={{ fontSize: 28, color: 'white' }} />
+                </Box>
+                <Box>
+                  <Typography 
+                    variant="h5" 
+                    sx={{ 
+                      fontWeight: 'bold',
+                      background: 'linear-gradient(45deg, #ff9800, #ffc107)',
+                      backgroundClip: 'text',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      mb: 0.5,
+                    }}
+                  >
+                    Offline Walk-in Booking
+                  </Typography>
+                  <Typography variant="body1" color="text.secondary">
+                    Working offline - bookings will sync automatically when connection is restored
+                  </Typography>
+                </Box>
+              </Box>
+              
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <Chip
+                  icon={<CloudOffIcon />}
+                  label="Offline Mode"
+                  sx={{ 
+                    fontWeight: 'bold',
+                    bgcolor: 'warning.main',
+                    color: 'warning.contrastText',
+                  }}
+                />
+                {pendingSyncCount > 0 && (
+                  <Chip
+                    icon={<SyncIcon />}
+                    label={`${pendingSyncCount} pending sync`}
+                    color="info"
+                    variant="outlined"
+                  />
+                )}
+              </Box>
+            </Box>
+            
+            <Box sx={{ 
+              p: 2,
+              bgcolor: 'info.main',
+              color: 'info.contrastText',
+              borderRadius: 2,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1.5,
+            }}>
+              <Typography variant="h6">ℹ️</Typography>
+              <Typography variant="body1" sx={{ fontWeight: 'medium' }}>
+                All bookings are saved locally and will automatically sync when internet connection is restored
+              </Typography>
+            </Box>
           </Box>
-        </Alert>
 
-        {pendingSyncCount > 0 && (
-          <Box display="flex" alignItems="center" justifyContent="flex-end" mb={2}>
-            <Chip
-              icon={<SyncIcon />}
-              label={`${pendingSyncCount} pending sync`}
-              color="info"
-              variant="outlined"
-            />
-          </Box>
-        )}
-
-        {/* Stepper (matching online component exactly) */}
-        <Box sx={{ mt: 2 }}>
-          <Stepper activeStep={activeStep} alternativeLabel>
+          {/* Enhanced Stepper */}
+          <Stepper 
+            activeStep={activeStep} 
+            alternativeLabel
+            sx={{
+              '& .MuiStepLabel-root .Mui-completed': {
+                color: 'success.main',
+              },
+              '& .MuiStepLabel-root .Mui-active': {
+                color: 'warning.main',
+              },
+              '& .MuiStepConnector-line': {
+                borderColor: 'rgba(255, 152, 0, 0.3)',
+              },
+            }}
+          >
             {steps.map((label) => (
               <Step key={label}>
                 <StepLabel>{label}</StepLabel>
@@ -1083,7 +1268,6 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
             ))}
           </Stepper>
         </Box>
-      </Box>
 
       {/* Content Area */}
       <Box sx={{ position: 'relative', minHeight: '400px' }}>
@@ -1254,7 +1438,8 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
           </Button>
         </DialogActions>
       </Dialog>
-    </Paper>
+      </CardContent>
+    </Card>
   );
 };
 

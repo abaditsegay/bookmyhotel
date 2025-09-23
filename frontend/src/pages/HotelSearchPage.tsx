@@ -2,13 +2,17 @@ import React, { useState } from 'react';
 import {
   Typography,
   Box,
-  Paper,
   Button,
-  Divider,
+  Container,
+  Card,
+  CardContent,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
-import { StandardCard, StandardLoading, StandardError, ErrorBoundary } from '../components/common';
+import { StandardLoading, StandardError, ErrorBoundary } from '../components/common';
 import {
   Search as SearchIcon,
+  Hotel as HotelIcon,
 } from '@mui/icons-material';
 
 import { useNavigate } from 'react-router-dom';
@@ -25,6 +29,8 @@ const HotelSearchPage: React.FC = () => {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const handleSearch = async (searchRequest: HotelSearchRequest) => {
     setLoading(true);
@@ -53,22 +59,69 @@ const HotelSearchPage: React.FC = () => {
   };
 
   return (
-    <Box sx={{ 
-      backgroundColor: 'background.default',
-      minHeight: 'calc(100vh - 64px)', // Account for navbar
-      py: { xs: 2, sm: 3, md: 4 }, // Progressive padding for different screen sizes
-      px: { xs: 1, sm: 2, md: 3 }, // Ensure proper side margins on all devices
-    }}>
-      {/* Mobile-first responsive container */}
-      <Box
-        sx={{
-          maxWidth: '1400px', // Maximum width for very large screens
-          mx: 'auto', // Center the container
-          display: 'flex',
-          flexDirection: 'column',
-          gap: { xs: 2, md: 3 },
+    <Container 
+      maxWidth="lg" 
+      sx={{ 
+        py: isMobile ? 2 : 4,
+        px: isMobile ? 1 : 3,
+        minHeight: 'calc(100vh - 64px)',
+      }}
+    >
+      {/* Enhanced Header Section */}
+      <Card 
+        elevation={2}
+        sx={{ 
+          mb: isMobile ? 3 : 4,
+          background: `linear-gradient(135deg, ${theme.palette.primary.main}08 0%, ${theme.palette.secondary.main}08 100%)`,
+          border: `1px solid ${theme.palette.primary.main}20`,
+          borderRadius: 3,
+          overflow: 'hidden',
         }}
       >
+        <CardContent sx={{ p: isMobile ? 2.5 : 4 }}>
+          {/* Professional Header */}
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 2, 
+            mb: isMobile ? 2 : 3,
+            p: 2,
+            background: `linear-gradient(135deg, ${theme.palette.primary.main}10 0%, ${theme.palette.secondary.main}10 100%)`,
+            borderRadius: 2,
+          }}>
+            <Box sx={{
+              width: 56,
+              height: 56,
+              borderRadius: 3,
+              bgcolor: 'primary.main',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: 2,
+            }}>
+              <HotelIcon sx={{ fontSize: 28, color: 'white' }} />
+            </Box>
+            <Box>
+              <Typography 
+                variant={isMobile ? "h5" : "h4"} 
+                sx={{ 
+                  fontWeight: 'bold',
+                  background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  mb: 0.5,
+                }}
+              >
+                Find Your Perfect Stay
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Search and book from thousands of hotels worldwide
+              </Typography>
+            </Box>
+          </Box>
+        </CardContent>
+      </Card>
         {/* Left Advertisement Pane - Responsive: side pane on desktop, bottom section on mobile */}
         {/* 
         {!isOperationsUser && (
@@ -132,117 +185,143 @@ const HotelSearchPage: React.FC = () => {
         )}
         */}
 
-        {/* Main Search Content - Mobile-friendly single column layout */}
-        <Box sx={{ width: '100%' }}>
-          <StandardCard 
-            cardVariant="default"
-            sx={{ 
+      {/* Main Search Form Section */}
+      <Card 
+        elevation={2}
+        sx={{ 
+          mb: isMobile ? 3 : 4,
+          background: 'linear-gradient(135deg, rgba(33, 150, 243, 0.05) 0%, rgba(21, 101, 192, 0.05) 100%)',
+          border: '1px solid rgba(33, 150, 243, 0.2)',
+          borderRadius: 3,
+        }}
+      >
+        <CardContent sx={{ p: isMobile ? 2.5 : 4 }}>
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 2, 
+            mb: isMobile ? 2 : 3,
+            p: 2,
+            background: 'linear-gradient(135deg, rgba(33, 150, 243, 0.1) 0%, rgba(21, 101, 192, 0.1) 100%)',
+            borderRadius: 2,
+          }}>
+            <Box sx={{
+              width: 48,
+              height: 48,
+              borderRadius: 2,
+              bgcolor: 'primary.main',
               display: 'flex',
-              flexDirection: 'column',
-              width: '100%', // Ensure full width usage
-              overflow: 'hidden', // Prevent content overflow
-            }}
-          >
-            {/* Search Form Section - Mobile optimized */}
-            <Box sx={{ 
-              p: { xs: 2, sm: 3, md: 4 }, // Progressive padding for better mobile experience
-              width: '100%',
-              boxSizing: 'border-box', // Ensure padding is included in width calculations
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: 2,
             }}>
-              <Box sx={{ mb: 4 }}>
-                <ErrorBoundary level="component">
-                  <HotelSearchForm onSearch={handleSearch} loading={loading} />
-                </ErrorBoundary>
-              </Box>
-
-              {error && (
-                <StandardError
-                  error={true}
-                  message={error}
-                  severity="error"
-                  showRetry={false}
-                />
-              )}
-
-              <StandardLoading
-                loading={loading}
-                message="Searching for hotels..."
-                size="large"
-                overlay={false}
-              />
-
-              {/* Find My Booking Section - Mobile optimized */}
-              <Divider sx={{ my: { xs: 3, md: 4 } }} />
-              
-              <Paper 
-                elevation={1} 
-                sx={{ 
-                  p: { xs: 3, sm: 4 }, // Responsive padding
-                  textAlign: 'center',
-                  backgroundColor: 'info.main',
-                  color: 'info.contrastText',
-                  borderRadius: 3,
-                  transition: 'all 0.3s ease',
-                  width: '100%',
-                  boxSizing: 'border-box',
-                  '&:hover': {
-                    transform: { xs: 'none', md: 'translateY(-2px)' }, // Disable transform on mobile
-                    boxShadow: 2,
-                    backgroundColor: 'info.dark',
-                  }
-                }}
-              >
-                <Typography 
-                  variant="h5" 
-                  component="h3" 
-                  gutterBottom 
-                  sx={{ 
-                    fontWeight: 'bold',
-                    fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.5rem' } // Responsive heading
-                  }}
-                >
-                  {t('hotelSearch.alreadyHaveBooking.title')}
-                </Typography>
-                <Typography 
-                  variant="body1" 
-                  sx={{ 
-                    mb: 3, 
-                    fontSize: { xs: '0.95rem', sm: '1rem', md: '1.1rem' }, // Responsive text
-                    px: { xs: 1, sm: 2 } // Add padding on mobile for better readability
-                  }}
-                >
-                  {t('hotelSearch.alreadyHaveBooking.subtitle')}
-                </Typography>
-                <Button
-                  variant="contained"
-                  size="large"
-                  startIcon={<SearchIcon />}
-                  onClick={() => navigate('/find-booking')}
-                  sx={{ 
-                    borderRadius: 3,
-                    textTransform: 'none',
-                    fontWeight: 'bold',
-                    px: { xs: 3, sm: 4 }, // Responsive button padding
-                    py: 1.5,
-                    fontSize: { xs: '1rem', sm: '1.1rem' }, // Responsive font size
-                    backgroundColor: 'success.main',
-                    color: 'success.contrastText',
-                    width: { xs: '100%', sm: 'auto' }, // Full width on mobile
-                    maxWidth: { xs: '280px', sm: 'none' }, // Limit max width on mobile
-                    '&:hover': {
-                      backgroundColor: 'success.dark',
-                      transform: { xs: 'none', md: 'scale(1.05)' }, // Disable scale on mobile
-                    }
-                  }}
-                >
-                  {t('hotelSearch.alreadyHaveBooking.button')}
-                </Button>
-              </Paper>
+              <SearchIcon sx={{ fontSize: 24, color: 'white' }} />
             </Box>
-          </StandardCard>
-        </Box>
-      </Box>
-    </Box>
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+                Search Hotels
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Enter your travel details to find available hotels
+              </Typography>
+            </Box>
+          </Box>
+
+          <ErrorBoundary level="component">
+            <HotelSearchForm onSearch={handleSearch} loading={loading} />
+          </ErrorBoundary>
+
+          {error && (
+            <Box sx={{ mt: 2 }}>
+              <StandardError
+                error={true}
+                message={error}
+                severity="error"
+                showRetry={false}
+              />
+            </Box>
+          )}
+
+          <StandardLoading
+            loading={loading}
+            message="Searching for hotels..."
+            size="large"
+            overlay={false}
+          />
+        </CardContent>
+      </Card>
+
+      {/* Find My Booking Section */}
+      <Card 
+        elevation={2}
+        sx={{ 
+          background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.05) 0%, rgba(56, 142, 60, 0.05) 100%)',
+          border: '1px solid rgba(76, 175, 80, 0.2)',
+          borderRadius: 3,
+        }}
+      >
+        <CardContent sx={{ p: isMobile ? 2.5 : 4 }}>
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 2, 
+            mb: isMobile ? 2 : 3,
+            p: 2,
+            background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(56, 142, 60, 0.1) 100%)',
+            borderRadius: 2,
+          }}>
+            <Box sx={{
+              width: 48,
+              height: 48,
+              borderRadius: 2,
+              bgcolor: 'success.main',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: 2,
+            }}>
+              <SearchIcon sx={{ fontSize: 24, color: 'white' }} />
+            </Box>
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+                {t('hotelSearch.alreadyHaveBooking.title')}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {t('hotelSearch.alreadyHaveBooking.subtitle')}
+              </Typography>
+            </Box>
+          </Box>
+
+          <Box sx={{ textAlign: 'center', pt: 2 }}>
+            <Button
+              variant="contained"
+              size="large"
+              startIcon={<SearchIcon />}
+              onClick={() => navigate('/find-booking')}
+              sx={{ 
+                borderRadius: 3,
+                textTransform: 'none',
+                fontWeight: 'bold',
+                px: isMobile ? 3 : 4,
+                py: 1.5,
+                fontSize: isMobile ? '1rem' : '1.1rem',
+                backgroundColor: 'success.main',
+                color: 'success.contrastText',
+                width: isMobile ? '100%' : 'auto',
+                maxWidth: isMobile ? '280px' : 'none',
+                '&:hover': {
+                  backgroundColor: 'success.dark',
+                  transform: isMobile ? 'none' : 'scale(1.05)',
+                },
+                transition: 'all 0.2s ease-in-out',
+              }}
+            >
+              {t('hotelSearch.alreadyHaveBooking.button')}
+            </Button>
+          </Box>
+        </CardContent>
+      </Card>
+    </Container>
   );
 };
 

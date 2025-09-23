@@ -8,7 +8,6 @@ import {
   Grid,
   Alert,
   Divider,
-  Paper,
   Breadcrumbs,
   Link,
   IconButton,
@@ -400,115 +399,191 @@ const BookingPage: React.FC = () => {
           px: isMobile ? 1 : 3,
         }}
       >
-        {/* Header Section */}
-        <Box sx={{ mb: isMobile ? 2 : 4 }}>
-          {/* Back Navigation */}
-          <Box sx={{ mb: isMobile ? 1 : 2 }}>
-            <IconButton 
-              onClick={handleBackToResults}
-              sx={{ 
-                mr: 1,
-                minHeight: 48,
-                minWidth: 48,
-              }}
-              aria-label="back to search results"
-            >
-              <ArrowBackIcon />
-            </IconButton>
-            <Breadcrumbs 
-              aria-label="breadcrumb"
-              sx={{ 
-                display: isMobile ? 'none' : 'flex',
-              }}
-            >
-              <Link 
-                component="button" 
-                variant="body2" 
-                onClick={() => navigate('/')}
-                sx={{ textDecoration: 'none' }}
-              >
-                Hotel Search
-              </Link>
-              <Link 
-                component="button" 
-                variant="body2" 
-                onClick={handleBackToResults}
-                sx={{ textDecoration: 'none' }}
-              >
-                Search Results
-              </Link>
-              <Typography variant="body2" color="text.primary">
-                Book Your Stay
-              </Typography>
-            </Breadcrumbs>
-            
-            {/* Mobile navigation text */}
-            {isMobile && (
-              <Typography 
-                variant="body2" 
-                color="text.secondary"
-                sx={{ mt: 1 }}
-              >
-                ← Back to search results
-              </Typography>
-            )}
-          </Box>
-
-          {/* Page Title */}
-          <Typography 
-            variant={isMobile ? 'h5' : 'h4'} 
-            component="h1" 
-            gutterBottom 
-            sx={{ 
-              fontWeight: 'bold',
-              mb: isMobile ? 1 : 2,
-            }}
-          >
-            Book Your Stay
-          </Typography>
-          
-          {/* Guest booking chip - stacked on mobile */}
-          {isGuestBookingFlow && (
-            <Box sx={{ mb: isMobile ? 1 : 0 }}>
-              <Chip 
-                label="Guest Booking" 
-                color="info" 
-                size={isMobile ? 'medium' : 'small'}
-                sx={{ 
-                  fontWeight: 'bold',
-                  display: isMobile ? 'block' : 'inline-block',
-                  width: isMobile ? 'fit-content' : 'auto',
-                }}
-              />
-            </Box>
-          )}
-          
-          {hotelName && (
-            <Typography 
-              variant={isMobile ? 'body1' : 'h6'} 
-              color="text.secondary" 
-              gutterBottom
-              sx={{ fontWeight: isMobile ? 'bold' : 'normal' }}
-            >
-              {hotelName}
-            </Typography>
-          )}
-          
-          {isGuestBookingFlow && (
-            <Typography 
-              variant="body2" 
-              color="text.secondary" 
-              sx={{ 
-                mb: 2,
+        {/* Enhanced Header Section */}
+        <Card 
+          elevation={2}
+          sx={{ 
+            mb: isMobile ? 3 : 4,
+            background: `linear-gradient(135deg, ${theme.palette.primary.main}08 0%, ${theme.palette.secondary.main}08 100%)`,
+            border: `1px solid ${theme.palette.primary.main}20`,
+            borderRadius: 3,
+            overflow: 'hidden',
+          }}
+        >
+          <CardContent sx={{ p: isMobile ? 2.5 : 4 }}>
+            {/* Back Navigation */}
+            <Box sx={{ mb: isMobile ? 2 : 3 }}>
+              <Box sx={{ 
                 display: 'flex',
                 alignItems: 'center',
-                flexWrap: 'wrap',
-              }}
-            >
-              ✨ You're booking as a guest - no account required!
-            </Typography>
-          )}
-        </Box>
+                mb: isMobile ? 1.5 : 2,
+              }}>
+                <IconButton 
+                  onClick={handleBackToResults}
+                  sx={{ 
+                    mr: 2,
+                    bgcolor: 'background.paper',
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    '&:hover': {
+                      bgcolor: 'primary.main',
+                      color: 'primary.contrastText',
+                      borderColor: 'primary.main',
+                    },
+                    transition: 'all 0.2s ease-in-out',
+                  }}
+                  aria-label="back to search results"
+                >
+                  <ArrowBackIcon />
+                </IconButton>
+                
+                {!isMobile && (
+                  <Breadcrumbs 
+                    aria-label="breadcrumb"
+                    sx={{
+                      '& .MuiBreadcrumbs-separator': {
+                        color: 'primary.main',
+                        fontWeight: 'bold',
+                      },
+                    }}
+                  >
+                    <Link 
+                      component="button" 
+                      variant="body2" 
+                      onClick={() => navigate('/')}
+                      sx={{ 
+                        textDecoration: 'none',
+                        color: 'primary.main',
+                        fontWeight: 'medium',
+                        '&:hover': {
+                          color: 'primary.dark',
+                          textDecoration: 'underline',
+                        },
+                      }}
+                    >
+                      Hotel Search
+                    </Link>
+                    <Link 
+                      component="button" 
+                      variant="body2" 
+                      onClick={handleBackToResults}
+                      sx={{ 
+                        textDecoration: 'none',
+                        color: 'primary.main',
+                        fontWeight: 'medium',
+                        '&:hover': {
+                          color: 'primary.dark',
+                          textDecoration: 'underline',
+                        },
+                      }}
+                    >
+                      Search Results
+                    </Link>
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        color: 'text.primary',
+                        fontWeight: 'bold',
+                      }}
+                    >
+                      Book Your Stay
+                    </Typography>
+                  </Breadcrumbs>
+                )}
+                
+                {/* Mobile navigation hint */}
+                {isMobile && (
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      color: 'text.secondary',
+                      fontWeight: 'medium',
+                    }}
+                  >
+                    ← Back to search results
+                  </Typography>
+                )}
+              </Box>
+            </Box>
+
+            {/* Main Header Content */}
+            <Box sx={{ 
+              display: 'flex',
+              flexDirection: isMobile ? 'column' : 'row',
+              alignItems: isMobile ? 'flex-start' : 'center',
+              justifyContent: 'space-between',
+              gap: isMobile ? 2 : 3,
+            }}>
+              <Box sx={{ flex: 1 }}>
+                {/* Page Title */}
+                <Box sx={{ mb: 1 }}>
+                  <Typography 
+                    variant={isMobile ? 'h4' : 'h3'} 
+                    component="h1"
+                    sx={{ 
+                      fontWeight: 'bold',
+                      background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                      backgroundClip: 'text',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      mb: 0.5,
+                    }}
+                  >
+                    Book Your Stay
+                  </Typography>
+                  
+                  {hotelName && (
+                    <Typography 
+                      variant={isMobile ? 'h6' : 'h5'} 
+                      sx={{ 
+                        color: 'text.primary',
+                        fontWeight: 'medium',
+                      }}
+                    >
+                      {hotelName}
+                    </Typography>
+                  )}
+                </Box>
+              </Box>
+              
+              {/* Guest Booking Status */}
+              {isGuestBookingFlow && (
+                <Box sx={{ 
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: isMobile ? 'flex-start' : 'flex-end',
+                  gap: 1,
+                }}>
+                  <Chip 
+                    label="Guest Booking" 
+                    sx={{ 
+                      bgcolor: 'info.main',
+                      color: 'info.contrastText',
+                      fontWeight: 'bold',
+                      fontSize: isMobile ? '0.75rem' : '0.875rem',
+                      height: isMobile ? 32 : 36,
+                      px: 1,
+                      '& .MuiChip-label': {
+                        px: 2,
+                      },
+                    }}
+                  />
+                  
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      color: 'text.secondary',
+                      fontWeight: 'medium',
+                      textAlign: isMobile ? 'left' : 'right',
+                    }}
+                  >
+                    No account required!
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+          </CardContent>
+        </Card>
 
         {/* Error Alert */}
         {error && (
@@ -517,68 +592,145 @@ const BookingPage: React.FC = () => {
           </Alert>
         )}
 
-        {/* Room Details Card */}
-        <Paper 
-          elevation={1} 
+        {/* Enhanced Room Details Card */}
+        <Card 
+          elevation={3} 
           sx={{ 
-            p: isMobile ? 2 : 3, 
-            mb: isMobile ? 2 : 4, 
-            bgcolor: theme.palette.mode === 'dark' 
-              ? themeConstants.darkTheme.cardBackground 
-              : 'grey.50',
+            mb: isMobile ? 3 : 4,
+            background: `linear-gradient(135deg, ${theme.palette.success.main}08 0%, ${theme.palette.info.main}08 100%)`,
+            border: `1px solid ${theme.palette.success.main}30`,
+            borderRadius: 3,
+            overflow: 'hidden',
           }}
         >
-          <Typography 
-            variant={isMobile ? 'subtitle1' : 'h6'} 
-            component="div" 
-            gutterBottom
-            sx={{ fontWeight: 'bold' }}
-          >
-            Room Details
-          </Typography>
-          <Grid container spacing={isMobile ? 1 : 2}>
-            <Grid item xs={12} sm={6}>
-              <Typography variant="body2" sx={{ mb: 1 }}>
-                <strong>Room Type:</strong> {roomData.roomType}
-              </Typography>
-              <Typography variant="body2" sx={{ mb: 1 }}>
-                <strong>Capacity:</strong> Up to {roomData.capacity} guests
-              </Typography>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <Typography variant="body2" sx={{ mb: 1 }}>
-                <strong>Price per night:</strong> ETB {roomData.pricePerNight?.toFixed(0)}
-              </Typography>
-              {nights > 0 && (
-                <>
-                  <Typography variant="body2" sx={{ mb: 1 }}>
-                    <strong>Nights:</strong> {nights}
+          <CardContent sx={{ p: isMobile ? 2.5 : 3.5 }}>
+            {/* Room Details Header */}
+            <Box sx={{ 
+              display: 'flex',
+              alignItems: 'center',
+              mb: 3,
+            }}>
+              <Box sx={{
+                width: 48,
+                height: 48,
+                borderRadius: 3,
+                bgcolor: 'success.main',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                mr: 2,
+                boxShadow: 2,
+              }}>
+                <Typography variant="h6" sx={{ color: 'white' }}>
+                  🏠
+                </Typography>
+              </Box>
+              <Box>
+                <Typography 
+                  variant={isMobile ? 'h6' : 'h5'} 
+                  sx={{ 
+                    fontWeight: 'bold',
+                    color: 'text.primary',
+                    mb: 0.5,
+                  }}
+                >
+                  Room Details
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Your selected accommodation
+                </Typography>
+              </Box>
+            </Box>
+            
+            {/* Room Information Grid */}
+            <Grid container spacing={isMobile ? 2 : 3}>
+              <Grid item xs={12} sm={6}>
+                <Box sx={{ 
+                  p: 2.5,
+                  bgcolor: 'background.paper',
+                  borderRadius: 2,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  height: '100%',
+                }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold' }}>
+                    ROOM TYPE
                   </Typography>
-                  <Typography 
-                    variant={isMobile ? 'subtitle1' : 'h6'} 
-                    component="div" 
-                    color="primary.main"
-                    sx={{ fontWeight: 'bold' }}
-                  >
-                    Total: ETB {totalAmount?.toFixed(0)}
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', mt: 0.5, mb: 2, color: 'primary.main' }}>
+                    {roomData.roomType}
                   </Typography>
-                </>
-              )}
+                  
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                    <Typography variant="body2" sx={{ color: 'text.secondary', mr: 1 }}>
+                      👥
+                    </Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                      Up to {roomData.capacity} guests
+                    </Typography>
+                  </Box>
+                </Box>
+              </Grid>
+              
+              <Grid item xs={12} sm={6}>
+                <Box sx={{ 
+                  p: 2.5,
+                  bgcolor: 'background.paper',
+                  borderRadius: 2,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  height: '100%',
+                }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold' }}>
+                    PRICING
+                  </Typography>
+                  
+                  <Box sx={{ mt: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                      <Typography variant="body2" sx={{ color: 'text.secondary', mr: 1 }}>
+                        💰
+                      </Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                        ETB {roomData.pricePerNight?.toFixed(0)} per night
+                      </Typography>
+                    </Box>
+                    
+                    {nights > 0 && (
+                      <>
+                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                          <Typography variant="body2" sx={{ color: 'text.secondary', mr: 1 }}>
+                            📅
+                          </Typography>
+                          <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                            {nights} night{nights !== 1 ? 's' : ''}
+                          </Typography>
+                        </Box>
+                        
+                        <Divider sx={{ my: 1.5 }} />
+                        
+                        <Box sx={{ 
+                          p: 1.5,
+                          bgcolor: 'success.main',
+                          borderRadius: 1.5,
+                          textAlign: 'center',
+                        }}>
+                          <Typography 
+                            variant={isMobile ? 'h6' : 'h5'} 
+                            sx={{ 
+                              fontWeight: 'bold',
+                              color: 'success.contrastText',
+                            }}
+                          >
+                            Total: ETB {totalAmount?.toFixed(0)}
+                          </Typography>
+                        </Box>
+                      </>
+                    )}
+                  </Box>
+                </Box>
+              </Grid>
             </Grid>
-          </Grid>
-          {roomData.description && (
-            <Typography 
-              variant="body2" 
-              color="text.secondary" 
-              sx={{ 
-                mt: isMobile ? 1 : 2,
-                fontStyle: 'italic',
-              }}
-            >
-              {roomData.description}
-            </Typography>
-          )}
-        </Paper>
+          </CardContent>
+        </Card>
 
         {/* Booking Form */}
         <form onSubmit={handleSubmit}>
@@ -673,106 +825,415 @@ const BookingPage: React.FC = () => {
                 />
               </Grid>
 
+              {/* Guest Information Section */}
               <Grid item xs={12}>
-                <Divider sx={{ my: isMobile ? 1 : 2 }} />
-                <Typography 
-                  variant={isMobile ? 'subtitle1' : 'h6'} 
-                  component="div" 
-                  gutterBottom
-                  sx={{ fontWeight: 'bold' }}
-                >
-                  Guest Information
-                </Typography>
+                <Box sx={{ 
+                  my: isMobile ? 2 : 3,
+                  position: 'relative',
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: '50%',
+                    left: 0,
+                    right: 0,
+                    height: 1,
+                    bgcolor: 'divider',
+                    transform: 'translateY(-50%)',
+                  }
+                }}>
+                  <Box sx={{ 
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    position: 'relative',
+                    bgcolor: 'background.paper',
+                    px: 2,
+                    mx: 'auto',
+                    width: 'fit-content',
+                  }}>
+                    <Typography 
+                      variant={isMobile ? 'h6' : 'h5'} 
+                      component="h2"
+                      sx={{ 
+                        fontWeight: 'bold',
+                        color: 'primary.main',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                      }}
+                    >
+                      👤 Guest Information
+                    </Typography>
+                  </Box>
+                </Box>
               </Grid>
 
               {isAuthenticated && !isGuestBookingFlow ? (
-                // Display authenticated user information (only if not doing guest booking)
+                // Display authenticated user information with enhanced styling
                 <Grid item xs={12}>
                   <Card 
-                    variant="outlined" 
+                    elevation={2}
                     sx={{ 
-                      p: isMobile ? 2 : 3, 
-                      backgroundColor: 'grey.50',
+                      background: `linear-gradient(135deg, ${theme.palette.primary.main}08 0%, ${theme.palette.primary.main}15 100%)`,
+                      border: `1px solid ${theme.palette.primary.main}30`,
+                      borderRadius: 3,
+                      overflow: 'hidden',
                     }}
                   >
-                    <Typography variant="body1" gutterBottom>
-                      <strong>Name:</strong> {user?.firstName || 'N/A'} {user?.lastName || 'N/A'}
-                    </Typography>
-                    <Typography variant="body1" gutterBottom>
-                      <strong>Email:</strong> {user?.email}
-                    </Typography>
-                    {user?.phone && (
-                      <Typography variant="body1">
-                        <strong>Phone:</strong> {user.phone}
-                      </Typography>
-                    )}
+                    <CardContent sx={{ p: isMobile ? 2.5 : 3.5 }}>
+                      <Box sx={{ 
+                        display: 'flex',
+                        alignItems: 'center',
+                        mb: 2,
+                      }}>
+                        <Box sx={{
+                          width: 48,
+                          height: 48,
+                          borderRadius: '50%',
+                          bgcolor: 'primary.main',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          mr: 2,
+                        }}>
+                          <Typography variant="h6" sx={{ color: 'white', fontWeight: 'bold' }}>
+                            {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
+                          </Typography>
+                        </Box>
+                        <Box>
+                          <Typography variant="h6" sx={{ 
+                            fontWeight: 'bold',
+                            color: 'text.primary',
+                            mb: 0.5,
+                          }}>
+                            Registered Guest
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Using your account information
+                          </Typography>
+                        </Box>
+                      </Box>
+                      
+                      <Grid container spacing={2}>
+                        <Grid item xs={12} sm={6}>
+                          <Box sx={{ 
+                            p: 2,
+                            bgcolor: 'background.paper',
+                            borderRadius: 2,
+                            border: '1px solid',
+                            borderColor: 'divider',
+                          }}>
+                            <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold' }}>
+                              FULL NAME
+                            </Typography>
+                            <Typography variant="body1" sx={{ fontWeight: 'medium', mt: 0.5 }}>
+                              {user?.firstName || 'N/A'} {user?.lastName || 'N/A'}
+                            </Typography>
+                          </Box>
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <Box sx={{ 
+                            p: 2,
+                            bgcolor: 'background.paper',
+                            borderRadius: 2,
+                            border: '1px solid',
+                            borderColor: 'divider',
+                          }}>
+                            <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold' }}>
+                              EMAIL ADDRESS
+                            </Typography>
+                            <Typography variant="body1" sx={{ fontWeight: 'medium', mt: 0.5 }}>
+                              {user?.email}
+                            </Typography>
+                          </Box>
+                        </Grid>
+                        {user?.phone && (
+                          <Grid item xs={12} sm={6}>
+                            <Box sx={{ 
+                              p: 2,
+                              bgcolor: 'background.paper',
+                              borderRadius: 2,
+                              border: '1px solid',
+                              borderColor: 'divider',
+                            }}>
+                              <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold' }}>
+                                PHONE NUMBER
+                              </Typography>
+                              <Typography variant="body1" sx={{ fontWeight: 'medium', mt: 0.5 }}>
+                                {user.phone}
+                              </Typography>
+                            </Box>
+                          </Grid>
+                        )}
+                      </Grid>
+                    </CardContent>
                   </Card>
                 </Grid>
               ) : (
-                // Guest input fields for guest booking flow or non-authenticated users
-                <>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      label="Full Name"
-                      value={guestName}
-                      onChange={handleGuestNameChange}
-                      fullWidth
-                      required
-                      sx={{
-                        '& .MuiInputBase-root': {
-                          minHeight: isMobile ? 56 : 'auto',
-                        },
-                      }}
-                    />
-                  </Grid>
+                // Enhanced guest input fields with professional styling
+                <Grid item xs={12}>
+                  <Card 
+                    elevation={2}
+                    sx={{ 
+                      background: `linear-gradient(135deg, ${theme.palette.secondary.main}08 0%, ${theme.palette.secondary.main}15 100%)`,
+                      border: `1px solid ${theme.palette.secondary.main}30`,
+                      borderRadius: 3,
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <CardContent sx={{ p: isMobile ? 2.5 : 3.5 }}>
+                      <Box sx={{ 
+                        display: 'flex',
+                        alignItems: 'center',
+                        mb: 3,
+                      }}>
+                        <Box sx={{
+                          width: 48,
+                          height: 48,
+                          borderRadius: '50%',
+                          bgcolor: 'secondary.main',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          mr: 2,
+                        }}>
+                          <Typography variant="h6" sx={{ color: 'white' }}>
+                            ✋
+                          </Typography>
+                        </Box>
+                        <Box>
+                          <Typography variant="h6" sx={{ 
+                            fontWeight: 'bold',
+                            color: 'text.primary',
+                            mb: 0.5,
+                          }}>
+                            Guest Details
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Please provide your information for the booking
+                          </Typography>
+                        </Box>
+                      </Box>
+                      
+                      <Grid container spacing={isMobile ? 2.5 : 3}>
+                        <Grid item xs={12} sm={6}>
+                          <TextField
+                            label="Full Name"
+                            value={guestName}
+                            onChange={handleGuestNameChange}
+                            fullWidth
+                            required
+                            variant="outlined"
+                            placeholder="Enter your full name"
+                            sx={{
+                              '& .MuiInputBase-root': {
+                                minHeight: isMobile ? 56 : 'auto',
+                                bgcolor: 'background.paper',
+                                borderRadius: 2,
+                              },
+                              '& .MuiOutlinedInput-root': {
+                                '&:hover fieldset': {
+                                  borderColor: 'secondary.main',
+                                },
+                                '&.Mui-focused fieldset': {
+                                  borderColor: 'secondary.main',
+                                },
+                              },
+                              '& .MuiInputLabel-root.Mui-focused': {
+                                color: 'secondary.main',
+                              },
+                            }}
+                          />
+                        </Grid>
 
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      label="Email Address"
-                      type="email"
-                      value={guestEmail}
-                      onChange={handleGuestEmailChange}
-                      fullWidth
-                      required
-                      sx={{
-                        '& .MuiInputBase-root': {
-                          minHeight: isMobile ? 56 : 'auto',
-                        },
-                      }}
-                    />
-                  </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <TextField
+                            label="Email Address"
+                            type="email"
+                            value={guestEmail}
+                            onChange={handleGuestEmailChange}
+                            fullWidth
+                            required
+                            variant="outlined"
+                            placeholder="Enter your email address"
+                            sx={{
+                              '& .MuiInputBase-root': {
+                                minHeight: isMobile ? 56 : 'auto',
+                                bgcolor: 'background.paper',
+                                borderRadius: 2,
+                              },
+                              '& .MuiOutlinedInput-root': {
+                                '&:hover fieldset': {
+                                  borderColor: 'secondary.main',
+                                },
+                                '&.Mui-focused fieldset': {
+                                  borderColor: 'secondary.main',
+                                },
+                              },
+                              '& .MuiInputLabel-root.Mui-focused': {
+                                color: 'secondary.main',
+                              },
+                            }}
+                          />
+                        </Grid>
 
-                  <Grid item xs={12} sm={isMobile ? 12 : 6}>
-                    <TextField
-                      label="Phone Number"
-                      value={guestPhone}
-                      onChange={handleGuestPhoneChange}
-                      fullWidth
-                      sx={{
-                        '& .MuiInputBase-root': {
-                          minHeight: isMobile ? 56 : 'auto',
-                        },
-                      }}
-                    />
-                  </Grid>
-                </>
+                        <Grid item xs={12} sm={6}>
+                          <TextField
+                            label="Phone Number"
+                            value={guestPhone}
+                            onChange={handleGuestPhoneChange}
+                            fullWidth
+                            variant="outlined"
+                            placeholder="Enter your phone number (optional)"
+                            sx={{
+                              '& .MuiInputBase-root': {
+                                minHeight: isMobile ? 56 : 'auto',
+                                bgcolor: 'background.paper',
+                                borderRadius: 2,
+                              },
+                              '& .MuiOutlinedInput-root': {
+                                '&:hover fieldset': {
+                                  borderColor: 'secondary.main',
+                                },
+                                '&.Mui-focused fieldset': {
+                                  borderColor: 'secondary.main',
+                                },
+                              },
+                              '& .MuiInputLabel-root.Mui-focused': {
+                                color: 'secondary.main',
+                              },
+                            }}
+                          />
+                        </Grid>
+                      </Grid>
+                      
+                      <Box sx={{ 
+                        mt: 2,
+                        p: 2,
+                        bgcolor: 'info.main',
+                        color: 'info.contrastText',
+                        borderRadius: 2,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                      }}>
+                        <Typography variant="body2" sx={{ fontSize: '1.2em' }}>
+                          ℹ️
+                        </Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                          Your information is secure and will only be used for this booking
+                        </Typography>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Grid>
               )}
 
+              {/* Special Requests Section */}
               <Grid item xs={12}>
-                <TextField
-                  label="Special Requests"
-                  value={specialRequests}
-                  onChange={handleSpecialRequestsChange}
-                  multiline
-                  rows={isMobile ? 2 : 3}
-                  fullWidth
-                  placeholder="Any special requests or preferences..."
-                  sx={{
-                    '& .MuiInputBase-root': {
-                      minHeight: isMobile ? 88 : 'auto',
-                    },
+                <Card 
+                  elevation={1}
+                  sx={{ 
+                    background: `linear-gradient(135deg, ${theme.palette.info.main}05 0%, ${theme.palette.info.main}10 100%)`,
+                    border: `1px solid ${theme.palette.info.main}20`,
+                    borderRadius: 3,
                   }}
-                />
+                >
+                  <CardContent sx={{ p: isMobile ? 2.5 : 3 }}>
+                    <Box sx={{ 
+                      display: 'flex',
+                      alignItems: 'center',
+                      mb: 2,
+                    }}>
+                      <Box sx={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: '50%',
+                        bgcolor: 'info.main',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        mr: 2,
+                      }}>
+                        <Typography variant="body1" sx={{ color: 'white' }}>
+                          💬
+                        </Typography>
+                      </Box>
+                      <Box>
+                        <Typography variant="h6" sx={{ 
+                          fontWeight: 'bold',
+                          color: 'text.primary',
+                          mb: 0.5,
+                        }}>
+                          Special Requests
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Let us know if you have any special preferences
+                        </Typography>
+                      </Box>
+                    </Box>
+                    
+                    <TextField
+                      label="Special Requests (Optional)"
+                      value={specialRequests}
+                      onChange={handleSpecialRequestsChange}
+                      multiline
+                      rows={isMobile ? 3 : 4}
+                      fullWidth
+                      variant="outlined"
+                      placeholder="e.g., Late check-in, room preferences, dietary requirements, accessibility needs..."
+                      sx={{
+                        '& .MuiInputBase-root': {
+                          minHeight: isMobile ? 88 : 'auto',
+                          bgcolor: 'background.paper',
+                          borderRadius: 2,
+                        },
+                        '& .MuiOutlinedInput-root': {
+                          '&:hover fieldset': {
+                            borderColor: 'info.main',
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: 'info.main',
+                          },
+                        },
+                        '& .MuiInputLabel-root.Mui-focused': {
+                          color: 'info.main',
+                        },
+                      }}
+                    />
+                    
+                    <Box sx={{ 
+                      mt: 2,
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: 1,
+                    }}>
+                      {['Early check-in', 'Late check-out', 'Airport pickup', 'High floor', 'Quiet room'].map((suggestion) => (
+                        <Chip
+                          key={suggestion}
+                          label={suggestion}
+                          size="small"
+                          variant="outlined"
+                          onClick={() => {
+                            if (!specialRequests.includes(suggestion)) {
+                              setSpecialRequests(prev => 
+                                prev ? `${prev}, ${suggestion}` : suggestion
+                              );
+                            }
+                          }}
+                          sx={{
+                            cursor: 'pointer',
+                            '&:hover': {
+                              bgcolor: 'info.main',
+                              color: 'info.contrastText',
+                              borderColor: 'info.main',
+                            },
+                          }}
+                        />
+                      ))}
+                    </Box>
+                  </CardContent>
+                </Card>
               </Grid>
 
               {/* Payment Section */}
