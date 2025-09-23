@@ -53,6 +53,14 @@ const FrontDeskDashboard: React.FC = () => {
   // Get initial tab from URL parameter, default to 0
   const initialTab = parseInt(searchParams.get('tab') || '0', 10);
   const [activeTab, setActiveTab] = useState(Math.max(0, Math.min(initialTab, 3))); // Ensure tab is 0, 1, 2, or 3
+
+  // Sync tab state with URL parameters when they change externally
+  useEffect(() => {
+    const urlTab = parseInt(searchParams.get('tab') || '0', 10);
+    const validTab = Math.max(0, Math.min(urlTab, 3));
+    console.log(`🔗 FrontDesk: URL tab changed to ${urlTab}, setting valid tab to ${validTab}`);
+    setActiveTab(validTab);
+  }, [searchParams]); // Remove activeTab from dependencies to prevent circular updates
   const [stats, setStats] = useState<FrontDeskStats | null>(null);
   const [walkInModalOpen, setWalkInModalOpen] = useState(false);
   
@@ -79,8 +87,26 @@ const FrontDeskDashboard: React.FC = () => {
 
   // Update URL when tab changes
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    // Prevent unnecessary updates if already on the same tab
+    if (newValue === activeTab) {
+      console.log(`🔄 FrontDesk: Already on tab ${newValue}, skipping...`);
+      return;
+    }
+    
+    console.log(`🔄 FrontDesk: Switching from tab ${activeTab} to tab ${newValue}`);
+    console.log(`🔄 FrontDesk: Tab ${newValue} corresponds to:`, 
+      newValue === 0 ? 'Bookings' :
+      newValue === 1 ? 'Rooms' :
+      newValue === 2 ? 'Housekeeping' :
+      newValue === 3 ? 'Offline Bookings' : 'Unknown');
     setActiveTab(newValue);
-    setSearchParams({ tab: newValue.toString() });
+    
+    // Update URL parameters without triggering navigation
+    setSearchParams(prev => {
+      const newParams = new URLSearchParams(prev);
+      newParams.set('tab', newValue.toString());
+      return newParams;
+    });
     
     // If switching to Rooms tab (index 1), ensure room cache is loaded
     if (newValue === 1 && user?.hotelId) {

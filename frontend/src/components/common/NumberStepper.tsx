@@ -72,7 +72,7 @@ const NumberStepper: React.FC<NumberStepperProps> = ({
       sx={{
         '& .MuiInputBase-root': {
           minHeight: 56, // Match the date picker height
-          paddingRight: 0, // Remove default padding for our custom buttons
+          paddingRight: 0,
         },
         '& input[type=number]': {
           '&::-webkit-outer-spin-button': {
@@ -88,47 +88,50 @@ const NumberStepper: React.FC<NumberStepperProps> = ({
           <Box
             sx={{
               display: 'flex',
-              flexDirection: 'column',
+              alignItems: 'center',
               height: '100%',
-              minHeight: 56,
-              marginRight: '-14px', // Align with field border
+              marginRight: '-14px',
             }}
           >
-            <IconButton
-              onClick={handleIncrement}
-              disabled={disabled || value >= max}
-              size="small"
-              sx={{
-                height: 28,
-                width: 32,
-                borderRadius: 0,
-                '&:hover': {
-                  backgroundColor: theme.palette.action.hover,
-                },
-                '&.Mui-disabled': {
-                  backgroundColor: 'transparent',
-                },
-              }}
-            >
-              <AddIcon fontSize="small" />
-            </IconButton>
             <IconButton
               onClick={handleDecrement}
               disabled={disabled || value <= min}
               size="small"
               sx={{
-                height: 28,
+                height: 40,
                 width: 32,
                 borderRadius: 0,
+                color: theme.palette.primary.main,
                 '&:hover': {
                   backgroundColor: theme.palette.action.hover,
                 },
                 '&.Mui-disabled': {
                   backgroundColor: 'transparent',
+                  color: theme.palette.action.disabled,
                 },
               }}
             >
               <RemoveIcon fontSize="small" />
+            </IconButton>
+            <IconButton
+              onClick={handleIncrement}
+              disabled={disabled || value >= max}
+              size="small"
+              sx={{
+                height: 40,
+                width: 32,
+                borderRadius: 0,
+                color: theme.palette.primary.main,
+                '&:hover': {
+                  backgroundColor: theme.palette.action.hover,
+                },
+                '&.Mui-disabled': {
+                  backgroundColor: 'transparent',
+                  color: theme.palette.action.disabled,
+                },
+              }}
+            >
+              <AddIcon fontSize="small" />
             </IconButton>
           </Box>
         ),

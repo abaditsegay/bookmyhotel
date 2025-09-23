@@ -74,10 +74,19 @@ const HotelAdminDashboard: React.FC = () => {
   const getInitialTab = () => {
     const tabParam = searchParams.get('tab');
     const tab = tabParam ? parseInt(tabParam, 10) : 0;
-    return isNaN(tab) || tab < 0 || tab > 6 ? 0 : tab;
+    return isNaN(tab) || tab < 0 || tab > 7 ? 0 : tab; // Fixed: Allow up to tab 7 (Offline Bookings)
   };
   
   const [activeTab, setActiveTab] = useState(getInitialTab);
+
+  // Sync tab state with URL parameters when they change externally
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    const urlTab = tabParam ? parseInt(tabParam, 10) : 0;
+    const validTab = isNaN(urlTab) || urlTab < 0 || urlTab > 7 ? 0 : urlTab; // Fixed: Allow up to tab 7 (Offline Bookings)
+    console.log(`🔗 HotelAdmin: URL tab changed to ${urlTab}, setting valid tab to ${validTab}`);
+    setActiveTab(validTab);
+  }, [searchParams]); // Remove activeTab from dependencies to prevent circular updates
 
   // Nested tabs state for Hotel Details tab
   const [hotelDetailsTab, setHotelDetailsTab] = useState(0);
@@ -199,6 +208,22 @@ const HotelAdminDashboard: React.FC = () => {
 
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    // Prevent unnecessary updates if already on the same tab
+    if (newValue === activeTab) {
+      console.log(`🔄 HotelAdmin: Already on tab ${newValue}, skipping...`);
+      return;
+    }
+    
+    console.log(`🔄 HotelAdmin: Switching from tab ${activeTab} to tab ${newValue}`);
+    console.log(`🔄 HotelAdmin: Tab ${newValue} corresponds to:`, 
+      newValue === 0 ? 'Hotel Detail' :
+      newValue === 1 ? 'Staff' :
+      newValue === 2 ? 'Rooms' :
+      newValue === 3 ? 'Bookings' :
+      newValue === 4 ? 'Staff Schedules' :
+      newValue === 5 ? 'Reports' :
+      newValue === 6 ? 'Pricing & Tax' :
+      newValue === 7 ? 'Offline Bookings' : 'Unknown');
     setActiveTab(newValue);
     
     // Update URL parameter to persist tab state
