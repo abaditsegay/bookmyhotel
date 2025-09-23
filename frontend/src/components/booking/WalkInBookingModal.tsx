@@ -8,7 +8,6 @@ import {
   TextField,
   Grid,
   Typography,
-  MenuItem,
   Box,
   Stepper,
   Step,
@@ -18,9 +17,6 @@ import {
   CardContent,
   Chip,
   Divider,
-  FormControl,
-  InputLabel,
-  Select,
   CircularProgress,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -33,6 +29,7 @@ import { hotelApiService } from '../../services/hotelApi';
 import { hotelAdminApi } from '../../services/hotelAdminApi';
 import { frontDeskApiService } from '../../services/frontDeskApi';
 import { API_CONFIG } from '../../config/apiConfig';
+import NumberStepper from '../common/NumberStepper';
 
 // API base URL for backend calls
 const API_BASE_URL = API_CONFIG.SERVER_URL;
@@ -106,8 +103,8 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
     setGuestInfo(prev => ({ ...prev, [field]: e.target.value }));
   }, []);
 
-  const handleGuestsChange = React.useCallback((e: any) => {
-    setGuests(Number(e.target.value));
+  const handleGuestsChange = React.useCallback((newValue: number) => {
+    setGuests(newValue);
   }, []);
 
   const handleSpecialRequestsChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -513,20 +510,14 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
               </LocalizationProvider>
             </Grid>
             <Grid item xs={12} sm={4}>
-              <FormControl fullWidth>
-                <InputLabel>Number of Guests</InputLabel>
-                <Select
-                  value={guests}
-                  label="Number of Guests"
-                  onChange={handleGuestsChange}
-                >
-                  {[1, 2, 3, 4, 5, 6].map((num) => (
-                    <MenuItem key={num} value={num}>
-                      {num} Guest{num !== 1 ? 's' : ''}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+              <NumberStepper
+                value={guests}
+                onChange={handleGuestsChange}
+                min={1}
+                max={10}
+                label="Number of Guests"
+                fullWidth
+              />
             </Grid>
           </Grid>
         );

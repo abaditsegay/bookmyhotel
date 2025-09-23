@@ -43,6 +43,7 @@ import { AvailableRoom, HotelSearchRequest } from '../types/hotel';
 import { useMockPayment, MockPaymentRequest } from '../services/mockPaymentGateway';
 import { PaymentMethod } from '../types/shop';
 import { themeConstants } from '../theme/theme';
+import NumberStepper from '../components/common/NumberStepper';
 
 interface BookingPageState {
   room?: AvailableRoom;
@@ -131,8 +132,8 @@ const BookingPage: React.FC = () => {
     setEthiopianPhoneNumber(e.target.value);
   }, []);
 
-  const handleGuestsChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setGuests(Math.max(1, parseInt(e.target.value) || 1));
+  const handleGuestsChange = React.useCallback((newValue: number) => {
+    setGuests(newValue);
   }, []);
 
   const handlePaymentMethodChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -662,19 +663,13 @@ const BookingPage: React.FC = () => {
               </Grid>
 
               <Grid item xs={12} sm={4}>
-                <TextField
-                  label="Number of Guests"
-                  type="number"
+                <NumberStepper
                   value={guests}
                   onChange={handleGuestsChange}
-                  inputProps={{ min: 1, max: roomData.capacity }}
+                  min={1}
+                  max={roomData.capacity || 10}
+                  label="Number of Guests"
                   fullWidth
-                  required
-                  sx={{
-                    '& .MuiInputBase-root': {
-                      minHeight: isMobile ? 56 : 'auto',
-                    },
-                  }}
                 />
               </Grid>
 

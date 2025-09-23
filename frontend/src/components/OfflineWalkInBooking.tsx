@@ -9,9 +9,6 @@ import {
   Card,
   Alert,
   Chip,
-  FormControl,
-  InputLabel,
-  Select,
   CircularProgress,
   Divider,
   Stepper,
@@ -25,7 +22,6 @@ import {
   List,
   ListItem,
   ListItemText,
-  MenuItem,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -46,6 +42,7 @@ import { API_CONFIG } from '../config/apiConfig';
 import { offlineStorage, OfflineBooking, GuestInfo, CachedRoom } from '../services/OfflineStorageService';
 import { syncManager } from '../services/SyncManager';
 import { roomCacheService } from '../services/RoomCacheService';
+import NumberStepper from './common/NumberStepper';
 
 // Define interfaces for offline walk-in booking (matching online version EXACTLY)
 interface WalkInGuestInfo {
@@ -72,19 +69,7 @@ interface OfflineWalkInBookingProps {
 
 const steps = ['Guest Information', 'Room Selection', 'Confirmation'];
 
-// Room types and payment methods for dropdowns
-const roomTypes = [
-  { value: 'SINGLE', label: 'Single Room' },
-  { value: 'DOUBLE', label: 'Double Room' },
-  { value: 'SUITE', label: 'Suite' },
-  { value: 'FAMILY', label: 'Family Room' },
-];
-
-const paymentMethods = [
-  { value: 'CASH', label: 'Cash' },
-  { value: 'CARD', label: 'Card' },
-  { value: 'PENDING', label: 'Pay Later' },
-];
+// Room types and payment methods for dropdowns (can be added back if needed for future features)
 
 const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
   hotelId,
@@ -128,7 +113,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
   const [foundGuests, setFoundGuests] = useState<GuestInfo[]>([]);
   
   // Offline booking data for display
-  const [offlineBookings, setOfflineBookings] = useState<OfflineBooking[]>([]);
+  const [, setOfflineBookings] = useState<OfflineBooking[]>([]);
   const [pendingSyncCount, setPendingSyncCount] = useState(0);
   const [cachedRooms, setCachedRooms] = useState<CachedRoom[]>([]);
   const [roomsLoaded, setRoomsLoaded] = useState(false);
@@ -202,8 +187,8 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
     setGuestInfo(prev => ({ ...prev, [field]: e.target.value }));
   }, []);
 
-  const handleGuestsChange = React.useCallback((e: any) => {
-    setGuests(Number(e.target.value));
+  const handleGuestsChange = React.useCallback((newValue: number) => {
+    setGuests(newValue);
   }, []);
 
   const handleSpecialRequestsChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -324,20 +309,14 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
               </LocalizationProvider>
             </Grid>
             <Grid item xs={12} sm={4}>
-              <FormControl fullWidth>
-                <InputLabel>Number of Guests</InputLabel>
-                <Select
-                  value={guests}
-                  label="Number of Guests"
-                  onChange={handleGuestsChange}
-                >
-                  {[1, 2, 3, 4, 5, 6].map((num) => (
-                    <MenuItem key={num} value={num}>
-                      {num} Guest{num !== 1 ? 's' : ''}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+              <NumberStepper
+                value={guests}
+                onChange={handleGuestsChange}
+                min={1}
+                max={10}
+                label="Number of Guests"
+                fullWidth
+              />
             </Grid>
           </Grid>
         );

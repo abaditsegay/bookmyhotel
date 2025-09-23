@@ -22,6 +22,7 @@ import { LoadingSpinner } from '../common/LoadingComponents';
 import { ValidatedInput, ValidationSummary, ValidationStatus } from '../common/ValidationComponents';
 import { useAsyncOperation } from '../../hooks/useLoading';
 import { useFormValidation } from '../../hooks/useFormValidation';
+import NumberStepper from '../common/NumberStepper';
 
 interface BookingFormProps {
   open: boolean;
@@ -321,19 +322,19 @@ const BookingForm: React.FC<BookingFormProps> = ({
               </Grid>
 
               <Grid item xs={12} sm={4}>
-                <ValidatedInput
-                  fullWidth
+                <NumberStepper
+                  value={formValidation.values.guests || 1}
+                  onChange={(newValue) => formValidation.setFieldValue('guests', newValue)}
+                  min={1}
+                  max={room?.capacity || 10}
                   label="Number of Guests"
-                  type="number"
-                  {...formValidation.getFieldProps('guests')}
-                  InputProps={{ inputProps: { min: 1, max: room?.capacity || 10 } }}
-                  required
-                  validationState={
-                    formValidation.validation.guests?.error ? 'error' : 
-                    formValidation.validation.guests?.touched && !formValidation.validation.guests?.error ? 'success' : 
-                    undefined
-                  }
+                  fullWidth
                 />
+                {formValidation.validation.guests?.error && (
+                  <Typography variant="caption" color="error" sx={{ mt: 0.5, display: 'block' }}>
+                    {formValidation.validation.guests.error}
+                  </Typography>
+                )}
               </Grid>
 
               <Grid item xs={12}>
