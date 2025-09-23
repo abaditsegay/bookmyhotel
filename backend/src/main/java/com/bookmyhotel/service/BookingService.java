@@ -182,8 +182,8 @@ public class BookingService {
                     if (request.getTransactionId() != null) {
                         reservation.setPaymentIntentId(request.getTransactionId());
                     }
-                    logger.info("Mock payment processed for reservation: {} with transaction ID: {}", 
-                               reservation.getId(), request.getTransactionId());
+                    logger.info("Mock payment processed for reservation: {} with transaction ID: {}",
+                            reservation.getId(), request.getTransactionId());
                 } else if ("mbirr".equals(request.getPaymentMethodId())
                         || "telebirr".equals(request.getPaymentMethodId())) {
                     // Handle Ethiopian mobile payments
@@ -319,8 +319,8 @@ public class BookingService {
                     if (request.getTransactionId() != null) {
                         reservation.setPaymentIntentId(request.getTransactionId());
                     }
-                    logger.info("Mock payment processed for reservation: {} with transaction ID: {}", 
-                               reservation.getId(), request.getTransactionId());
+                    logger.info("Mock payment processed for reservation: {} with transaction ID: {}",
+                            reservation.getId(), request.getTransactionId());
                 } else {
                     // Handle other payment methods (e.g., credit card via Stripe)
                     try {
