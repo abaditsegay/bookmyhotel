@@ -31,7 +31,7 @@ import {
 } from '@mui/icons-material';
 import { PaymentMethod } from '../../types/shop';
 import { themeConstants } from '../../theme/theme';
-import { StandardButton, StandardCard, StandardTextField, StandardLoading, StandardError } from '../common';
+import { StandardButton } from '../common';
 import { useMockPayment, MockPaymentRequest } from '../../services/mockPaymentGateway';
 
 interface PaymentDialogProps {
@@ -106,7 +106,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
       label: 'Pay at Front Desk',
       icon: <BankIcon />,
       description: 'Complete payment at hotel front desk',
-      color: theme.palette.secondary.main,
+      color: theme.palette.mode === 'dark' ? themeConstants.darkTheme.telebirrGreen : '#4CAF50',
     },
   ];
 
@@ -222,135 +222,302 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
       case PaymentMethod.CARD:
         return (
           <Box sx={{ mt: 2 }}>
-            <Typography variant="subtitle2" gutterBottom>Card Details</Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Cardholder Name"
-                  value={cardName}
-                  onChange={(e) => setCardName(e.target.value)}
-                  placeholder="John Doe"
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Card Number"
-                  value={cardNumber}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/\D/g, '');
-                    const formatted = value.replace(/(\d{4})(?=\d)/g, '$1 ');
-                    setCardNumber(formatted);
-                  }}
-                  placeholder="1234 5678 9012 3456"
-                  inputProps={{ maxLength: 19 }}
-                />
-              </Grid>
-              <Grid item xs={6}>
-                <TextField
-                  fullWidth
-                  label="Expiry Date"
-                  value={cardExpiry}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/\D/g, '');
-                    const formatted = value.replace(/(\d{2})(\d{2})/, '$1/$2');
-                    setCardExpiry(formatted);
-                  }}
-                  placeholder="MM/YY"
-                  inputProps={{ maxLength: 5 }}
-                />
-              </Grid>
-              <Grid item xs={6}>
-                <TextField
-                  fullWidth
-                  label="CVV"
-                  value={cardCvv}
-                  onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, ''))}
-                  placeholder="123"
-                  inputProps={{ maxLength: 4 }}
-                />
-              </Grid>
-            </Grid>
+            <Card sx={{ 
+              border: `2px solid ${theme.palette.primary.main}`,
+              backgroundColor: theme.palette.mode === 'dark' 
+                ? themeConstants.darkTheme.cardBackground
+                : '#f8faff',
+              borderRadius: 2,
+              minHeight: 420, // Consistent height across all payment methods
+              display: 'flex',
+              flexDirection: 'column'
+            }}>
+              <CardContent sx={{ 
+                py: 3, 
+                flexGrow: 1,
+                display: 'flex',
+                flexDirection: 'column'
+              }}>
+                <Box sx={{ textAlign: 'center', mb: 2 }}>
+                  <CreditCardIcon sx={{ 
+                    fontSize: 40, 
+                    color: theme.palette.primary.main,
+                    mb: 1 
+                  }} />
+                  <Typography variant="h6" sx={{ 
+                    color: theme.palette.primary.main,
+                    fontWeight: 'bold',
+                    mb: 0.5
+                  }}>
+                    Credit/Debit Card Payment
+                  </Typography>
+                  <Typography variant="body2" sx={{ 
+                    color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'text.secondary',
+                    mb: 1
+                  }}>
+                    Secure card payment processing
+                  </Typography>
+                  <Typography variant="h6" sx={{ 
+                    color: theme.palette.primary.main,
+                    fontWeight: 'bold'
+                  }}>
+                    Amount: {formatCurrency(totalAmount)}
+                  </Typography>
+                </Box>
+                
+                <Box sx={{ flexGrow: 1 }}>
+                  <Grid container spacing={2}>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      label="Cardholder Name"
+                      value={cardName}
+                      onChange={(e) => setCardName(e.target.value)}
+                      placeholder="John Doe"
+                      variant="outlined"
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      label="Card Number"
+                      value={cardNumber}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, '');
+                        const formatted = value.replace(/(\d{4})(?=\d)/g, '$1 ');
+                        setCardNumber(formatted);
+                      }}
+                      placeholder="1234 5678 9012 3456"
+                      inputProps={{ maxLength: 19 }}
+                      variant="outlined"
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      fullWidth
+                      label="Expiry Date"
+                      value={cardExpiry}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, '');
+                        const formatted = value.replace(/(\d{2})(\d{2})/, '$1/$2');
+                        setCardExpiry(formatted);
+                      }}
+                      placeholder="MM/YY"
+                      inputProps={{ maxLength: 5 }}
+                      variant="outlined"
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      fullWidth
+                      label="CVV"
+                      value={cardCvv}
+                      onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, ''))}
+                      placeholder="123"
+                      inputProps={{ maxLength: 4 }}
+                      variant="outlined"
+                    />
+                  </Grid>
+                  </Grid>
+                </Box>
+              </CardContent>
+            </Card>
           </Box>
         );
 
       case PaymentMethod.MOBILE_MONEY:
         return (
           <Box sx={{ mt: 2 }}>
-            <Typography variant="subtitle2" gutterBottom>Mobile Money Details</Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
-                <FormControl fullWidth>
-                  <InputLabel>Mobile Money Provider</InputLabel>
-                  <Select
-                    value={mobileProvider}
-                    label="Mobile Money Provider"
-                    onChange={(e) => setMobileProvider(e.target.value)}
-                    sx={{
-                      '& .MuiSelect-select': {
-                        minHeight: isMobile ? themeConstants.touchTargets.minimum : 'auto'
-                      }
-                    }}
-                  >
-                    <MenuItem value="M-birr" sx={{ 
-                      color: theme.palette.mode === 'dark' ? themeConstants.darkTheme.mbirrOrange : themeConstants.mbirrOrange 
-                    }}>
-                      🇪🇹 M-birr
-                    </MenuItem>
-                    <MenuItem value="Telebirr" sx={{ 
-                      color: theme.palette.mode === 'dark' ? themeConstants.darkTheme.telebirrGreen : themeConstants.telebirrGreen 
-                    }}>
-                      🇪🇹 Telebirr
-                    </MenuItem>
-                    <MenuItem value="CBE Birr">CBE Birr</MenuItem>
-                    <MenuItem value="HelloCash">HelloCash</MenuItem>
-                    <MenuItem value="M-Pesa">M-Pesa</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Phone Number"
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                  placeholder="+251 9XX XXX XXX"
-                />
-              </Grid>
-            </Grid>
+            <Card sx={{ 
+              border: `2px solid ${theme.palette.mode === 'dark' ? themeConstants.darkTheme.mbirrOrange : themeConstants.mbirrOrange}`,
+              backgroundColor: theme.palette.mode === 'dark' 
+                ? themeConstants.darkTheme.cardBackground
+                : '#fff8f0',
+              borderRadius: 2,
+              minHeight: 420, // Consistent height across all payment methods
+              display: 'flex',
+              flexDirection: 'column'
+            }}>
+              <CardContent sx={{ 
+                py: 3, 
+                flexGrow: 1,
+                display: 'flex',
+                flexDirection: 'column'
+              }}>
+                <Box sx={{ textAlign: 'center', mb: 2 }}>
+                  <MobileIcon sx={{ 
+                    fontSize: 40, 
+                    color: theme.palette.mode === 'dark' ? themeConstants.darkTheme.mbirrOrange : themeConstants.mbirrOrange,
+                    mb: 1 
+                  }} />
+                  <Typography variant="h6" sx={{ 
+                    color: theme.palette.mode === 'dark' ? themeConstants.darkTheme.mbirrOrange : '#E65100',
+                    fontWeight: 'bold',
+                    mb: 0.5
+                  }}>
+                    Mobile Money Payment
+                  </Typography>
+                  <Typography variant="body2" sx={{ 
+                    color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'text.secondary',
+                    mb: 1
+                  }}>
+                    Pay securely with your mobile money account
+                  </Typography>
+                  <Typography variant="h6" sx={{ 
+                    color: theme.palette.mode === 'dark' ? themeConstants.darkTheme.mbirrOrange : '#E65100',
+                    fontWeight: 'bold'
+                  }}>
+                    Amount: {formatCurrency(totalAmount)}
+                  </Typography>
+                </Box>
+                
+                <Box sx={{ flexGrow: 1 }}>
+                  <Grid container spacing={2}>
+                  <Grid item xs={12}>
+                    <FormControl fullWidth variant="outlined">
+                      <InputLabel>Mobile Money Provider</InputLabel>
+                      <Select
+                        value={mobileProvider}
+                        label="Mobile Money Provider"
+                        onChange={(e) => setMobileProvider(e.target.value)}
+                        sx={{
+                          '& .MuiSelect-select': {
+                            minHeight: isMobile ? themeConstants.touchTargets.minimum : 'auto'
+                          }
+                        }}
+                      >
+                        <MenuItem value="M-birr" sx={{ 
+                          color: theme.palette.mode === 'dark' ? themeConstants.darkTheme.mbirrOrange : themeConstants.mbirrOrange 
+                        }}>
+                          🇪🇹 M-birr
+                        </MenuItem>
+                        <MenuItem value="Telebirr" sx={{ 
+                          color: theme.palette.mode === 'dark' ? themeConstants.darkTheme.telebirrGreen : themeConstants.telebirrGreen 
+                        }}>
+                          🇪🇹 Telebirr
+                        </MenuItem>
+                        <MenuItem value="CBE Birr">CBE Birr</MenuItem>
+                        <MenuItem value="HelloCash">HelloCash</MenuItem>
+                        <MenuItem value="M-Pesa">M-Pesa</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      label="Phone Number"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      placeholder="+251 9XX XXX XXX"
+                      variant="outlined"
+                    />
+                  </Grid>
+                  </Grid>
+                </Box>
+              </CardContent>
+            </Card>
           </Box>
         );
 
       case PaymentMethod.CASH:
         return (
-          <Box sx={{ mt: 2, textAlign: 'center' }}>
-            <Typography variant="body1" color="text.secondary">
-              Please collect cash payment from customer at the counter.
-            </Typography>
-            <Typography variant="h6" sx={{ 
-              mt: 2, 
-              color: theme.palette.success.main,
-              fontWeight: 'bold'
+          <Box sx={{ mt: 2 }}>
+            <Card sx={{ 
+              border: `2px solid ${theme.palette.success.main}`,
+              backgroundColor: theme.palette.mode === 'dark' 
+                ? themeConstants.darkTheme.cardBackground
+                : '#f1f8e9',
+              borderRadius: 2,
+              minHeight: 420, // Same height as credit card
+              display: 'flex',
+              flexDirection: 'column'
             }}>
-              Amount to collect: {formatCurrency(totalAmount)}
-            </Typography>
+              <CardContent sx={{ 
+                textAlign: 'center', 
+                py: 3,
+                flexGrow: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}>
+                <CashIcon sx={{ 
+                  fontSize: 48, 
+                  color: theme.palette.success.main,
+                  mb: 2 
+                }} />
+                <Typography variant="h6" sx={{ 
+                  color: theme.palette.success.main,
+                  fontWeight: 'bold',
+                  mb: 1
+                }}>
+                  Cash Payment
+                </Typography>
+                <Typography variant="body1" sx={{ 
+                  color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.87)' : 'text.primary',
+                  mb: 2
+                }}>
+                  Please collect cash payment from customer at the counter.
+                </Typography>
+                <Typography variant="h5" sx={{ 
+                  color: theme.palette.success.main,
+                  fontWeight: 'bold'
+                }}>
+                  Amount to collect: {formatCurrency(totalAmount)}
+                </Typography>
+              </CardContent>
+            </Card>
           </Box>
         );
 
       case PaymentMethod.PAY_AT_FRONTDESK:
         return (
-          <Box sx={{ mt: 2, textAlign: 'center' }}>
-            <Typography variant="body1" color="text.secondary">
-              Customer will complete payment at the front desk.
-            </Typography>
-            <Typography variant="h6" sx={{ 
-              mt: 2, 
-              color: theme.palette.info.main,
-              fontWeight: 'bold'
+          <Box sx={{ mt: 2 }}>
+            <Card sx={{ 
+              border: `2px solid ${theme.palette.mode === 'dark' ? themeConstants.darkTheme.telebirrGreen : '#4CAF50'}`,
+              backgroundColor: theme.palette.mode === 'dark' 
+                ? themeConstants.darkTheme.cardBackground
+                : '#f1f8e9',
+              borderRadius: 2,
+              minHeight: 420, // Same height as credit card
+              display: 'flex',
+              flexDirection: 'column'
             }}>
-              Amount: {formatCurrency(totalAmount)}
-            </Typography>
+              <CardContent sx={{ 
+                textAlign: 'center', 
+                py: 3,
+                flexGrow: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}>
+                <BankIcon sx={{ 
+                  fontSize: 48, 
+                  color: theme.palette.mode === 'dark' ? themeConstants.darkTheme.telebirrGreen : '#4CAF50',
+                  mb: 2 
+                }} />
+                <Typography variant="h6" sx={{ 
+                  color: theme.palette.mode === 'dark' ? themeConstants.darkTheme.telebirrGreen : '#2E7D32',
+                  fontWeight: 'bold',
+                  mb: 1
+                }}>
+                  Pay at Front Desk
+                </Typography>
+                <Typography variant="body1" sx={{ 
+                  color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.87)' : 'text.primary',
+                  mb: 2
+                }}>
+                  Customer will complete payment at the front desk.
+                </Typography>
+                <Typography variant="h5" sx={{ 
+                  color: theme.palette.mode === 'dark' ? themeConstants.darkTheme.telebirrGreen : '#2E7D32',
+                  fontWeight: 'bold'
+                }}>
+                  Amount: {formatCurrency(totalAmount)}
+                </Typography>
+              </CardContent>
+            </Card>
           </Box>
         );
 
@@ -493,7 +660,14 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
         <Divider sx={{ my: 2 }} />
 
         {/* Payment Details */}
-        {renderPaymentDetails()}
+        <Box sx={{ 
+          minHeight: 520, // Fixed height to prevent jumping
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'flex-start'
+        }}>
+          {renderPaymentDetails()}
+        </Box>
       </DialogContent>
 
       <DialogActions sx={{ 

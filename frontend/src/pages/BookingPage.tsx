@@ -13,6 +13,7 @@ import {
   Link,
   IconButton,
   Card,
+  CardContent,
   FormControl,
   FormLabel,
   RadioGroup,
@@ -934,31 +935,53 @@ const BookingPage: React.FC = () => {
               {paymentMethod === 'credit_card' && (
                 <>
                   <Grid item xs={12}>
-                    <Paper 
+                    <Card 
                       sx={{ 
-                        p: isMobile ? 2 : 3, 
-                        bgcolor: theme.palette.mode === 'dark' 
-                          ? themeConstants.darkTheme.cardBackground 
-                          : 'grey.50', 
-                        border: '1px solid', 
-                        borderColor: theme.palette.mode === 'dark' 
-                          ? themeConstants.darkTheme.borderColor 
-                          : 'grey.200',
+                        border: `2px solid ${theme.palette.primary.main}`,
+                        backgroundColor: theme.palette.mode === 'dark' 
+                          ? themeConstants.darkTheme.cardBackground
+                          : '#f8faff',
+                        borderRadius: 2,
+                        minHeight: 520, // Consistent height to accommodate all payment methods
+                        display: 'flex',
+                        flexDirection: 'column'
                       }}
                     >
-                      <Typography 
-                        variant="subtitle2" 
-                        gutterBottom 
-                        sx={{ 
-                          display: 'flex', 
-                          alignItems: 'center',
-                          fontWeight: 'bold',
-                        }}
-                      >
-                        <CreditCardIcon sx={{ mr: 1 }} />
-                        Credit Card Details
-                      </Typography>
-                      <Grid container spacing={isMobile ? 2 : 3}>
+                      <CardContent sx={{ 
+                        py: 3,
+                        flexGrow: 1,
+                        display: 'flex',
+                        flexDirection: 'column'
+                      }}>
+                        <Box sx={{ textAlign: 'center', mb: 2 }}>
+                          <CreditCardIcon sx={{ 
+                            fontSize: 40, 
+                            color: theme.palette.primary.main,
+                            mb: 1 
+                          }} />
+                          <Typography variant="h6" sx={{ 
+                            color: theme.palette.primary.main,
+                            fontWeight: 'bold',
+                            mb: 0.5
+                          }}>
+                            Credit/Debit Card Payment
+                          </Typography>
+                          <Typography variant="body2" sx={{ 
+                            color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'text.secondary',
+                            mb: 1
+                          }}>
+                            Secure card payment processing
+                          </Typography>
+                          <Typography variant="h6" sx={{ 
+                            color: theme.palette.primary.main,
+                            fontWeight: 'bold'
+                          }}>
+                            Amount: ETB {totalAmount?.toFixed(0)}
+                          </Typography>
+                        </Box>
+                        
+                        <Box sx={{ flexGrow: 1 }}>
+                          <Grid container spacing={isMobile ? 2 : 3}>
                         <Grid item xs={12}>
                           <TextField
                             label="Cardholder Name"
@@ -1056,8 +1079,10 @@ const BookingPage: React.FC = () => {
                             }}
                           />
                         </Grid>
-                      </Grid>
-                    </Paper>
+                          </Grid>
+                        </Box>
+                      </CardContent>
+                    </Card>
                   </Grid>
                 </>
               )}
@@ -1066,60 +1091,90 @@ const BookingPage: React.FC = () => {
               {paymentMethod === 'mobile_money' && (
                 <>
                   <Grid item xs={12}>
-                    <Paper sx={{ 
-                      p: 2, 
-                      bgcolor: theme.palette.mode === 'dark' 
-                        ? themeConstants.darkTheme.cardBackground 
-                        : 'grey.50', 
-                      border: '1px solid', 
-                      borderColor: theme.palette.mode === 'dark' 
-                        ? themeConstants.darkTheme.borderColor 
-                        : 'grey.200' 
+                    <Card sx={{ 
+                      border: `2px solid ${theme.palette.info.main}`,
+                      backgroundColor: theme.palette.mode === 'dark' 
+                        ? themeConstants.darkTheme.cardBackground
+                        : '#f0f8ff',
+                      borderRadius: 2,
+                      minHeight: 520, // Consistent height to accommodate all payment methods
+                      display: 'flex',
+                      flexDirection: 'column'
                     }}>
-                      <Typography variant="subtitle2" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
-                        <PhoneIcon sx={{ mr: 1 }} />
-                        Mobile Money Transfer Details
-                      </Typography>
-                      <Grid container spacing={2}>
-                        <Grid item xs={12}>
+                      <CardContent sx={{ 
+                        py: 3,
+                        flexGrow: 1,
+                        display: 'flex',
+                        flexDirection: 'column'
+                      }}>
+                        <Box sx={{ textAlign: 'center', mb: 2 }}>
+                          <PhoneIcon sx={{ 
+                            fontSize: 40, 
+                            color: theme.palette.info.main,
+                            mb: 1 
+                          }} />
+                          <Typography variant="h6" sx={{ 
+                            color: theme.palette.info.main,
+                            fontWeight: 'bold',
+                            mb: 0.5
+                          }}>
+                            Mobile Money Transfer
+                          </Typography>
+                          <Typography variant="body2" sx={{ 
+                            color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'text.secondary',
+                            mb: 1
+                          }}>
+                            Complete mobile money transfer and provide details
+                          </Typography>
+                          <Typography variant="h6" sx={{ 
+                            color: theme.palette.info.main,
+                            fontWeight: 'bold'
+                          }}>
+                            Amount: ETB {totalAmount?.toFixed(0)}
+                          </Typography>
+                        </Box>
+                        
+                        <Box sx={{ flexGrow: 1 }}>
                           <Alert severity="info" sx={{ mb: 2 }}>
                             Please complete the mobile money transfer to our account and provide the details below.
                           </Alert>
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                          <TextField
-                            label="Mobile Number"
-                            value={mobileNumber}
-                            onChange={handleMobileNumberChange}
-                            fullWidth
-                            required
-                            placeholder="+1234567890"
-                            InputProps={{
-                              startAdornment: (
-                                <InputAdornment position="start">
-                                  <PhoneIcon color="action" />
-                                </InputAdornment>
-                              ),
-                            }}
-                          />
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                          <TextField
-                            label="Transfer Receipt Number"
-                            value={transferReceiptNumber}
-                            onChange={handleTransferReceiptNumberChange}
-                            fullWidth
-                            required
-                            placeholder="Receipt/Transaction ID"
-                          />
-                        </Grid>
-                        <Grid item xs={12}>
-                          <Typography variant="body2" color="text.secondary">
-                            <strong>Amount to Transfer:</strong> ETB {totalAmount?.toFixed(0)}
-                          </Typography>
-                        </Grid>
-                      </Grid>
-                    </Paper>
+                          <Grid container spacing={2}>
+                            <Grid item xs={12} sm={6}>
+                              <TextField
+                                label="Mobile Number"
+                                value={mobileNumber}
+                                onChange={handleMobileNumberChange}
+                                fullWidth
+                                required
+                                placeholder="+1234567890"
+                                InputProps={{
+                                  startAdornment: (
+                                    <InputAdornment position="start">
+                                      <PhoneIcon color="action" />
+                                    </InputAdornment>
+                                  ),
+                                }}
+                              />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                              <TextField
+                                label="Transfer Receipt Number"
+                                value={transferReceiptNumber}
+                                onChange={handleTransferReceiptNumberChange}
+                                fullWidth
+                                required
+                                placeholder="Receipt/Transaction ID"
+                              />
+                            </Grid>
+                            <Grid item xs={12}>
+                              <Typography variant="body2" color="text.secondary">
+                                <strong>Amount to Transfer:</strong> ETB {totalAmount?.toFixed(0)}
+                              </Typography>
+                            </Grid>
+                          </Grid>
+                        </Box>
+                      </CardContent>
+                    </Card>
                   </Grid>
                 </>
               )}
@@ -1128,41 +1183,62 @@ const BookingPage: React.FC = () => {
               {paymentMethod === 'pay_at_frontdesk' && (
                 <>
                   <Grid item xs={12}>
-                    <Paper sx={{ 
-                      p: 2, 
-                      bgcolor: theme.palette.mode === 'dark' 
-                        ? `${theme.palette.info.main}15` 
-                        : 'info.light', 
-                      border: '1px solid', 
-                      borderColor: theme.palette.info.main,
-                      color: theme.palette.mode === 'dark' 
-                        ? theme.palette.info.light 
-                        : 'info.contrastText'
+                    <Card sx={{ 
+                      border: `2px solid ${theme.palette.mode === 'dark' ? themeConstants.darkTheme.telebirrGreen : '#4CAF50'}`,
+                      backgroundColor: theme.palette.mode === 'dark' 
+                        ? themeConstants.darkTheme.cardBackground
+                        : '#f1f8e9',
+                      borderRadius: 2,
+                      minHeight: 520, // Consistent height to accommodate all payment methods
+                      display: 'flex',
+                      flexDirection: 'column'
                     }}>
-                      <Typography variant="subtitle2" gutterBottom sx={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        fontWeight: 'bold',
-                        color: theme.palette.info.main
+                      <CardContent sx={{ 
+                        textAlign: 'center', 
+                        py: 3,
+                        flexGrow: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                        alignItems: 'center'
                       }}>
-                        <HotelIcon sx={{ mr: 1, color: theme.palette.info.main }} />
-                        Pay at Front Desk
-                      </Typography>
-                      <Alert severity="info" sx={{ mb: 2 }}>
-                        Your reservation will be confirmed and you can pay when you arrive at the hotel.
-                      </Alert>
-                      <Box sx={{ mt: 2 }}>
-                        <Typography variant="body2" sx={{ mb: 1 }}>
-                          <strong>Important Information:</strong>
+                        <HotelIcon sx={{ 
+                          fontSize: 48, 
+                          color: theme.palette.mode === 'dark' ? themeConstants.darkTheme.telebirrGreen : '#4CAF50',
+                          mb: 2 
+                        }} />
+                        <Typography variant="h6" sx={{ 
+                          color: theme.palette.mode === 'dark' ? themeConstants.darkTheme.telebirrGreen : '#4CAF50',
+                          fontWeight: 'bold',
+                          mb: 1
+                        }}>
+                          Pay at Front Desk
                         </Typography>
-                        <Typography variant="body2" component="ul" sx={{ pl: 2, mb: 2 }}>
-                          <li>Payment is due upon check-in at the front desk</li>
-                          <li>Accepted payment methods: Cash, Credit Card, Debit Card</li>
-                          <li>Please bring a valid ID for check-in</li>
-                          <li>Total amount due: <strong>ETB {totalAmount?.toFixed(0)}</strong></li>
+                        <Typography variant="body1" sx={{ 
+                          color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.87)' : 'text.primary',
+                          mb: 2
+                        }}>
+                          Your reservation will be confirmed and you can pay when you arrive at the hotel.
                         </Typography>
-                      </Box>
-                    </Paper>
+                        <Typography variant="h5" sx={{ 
+                          color: theme.palette.mode === 'dark' ? themeConstants.darkTheme.telebirrGreen : '#4CAF50',
+                          fontWeight: 'bold',
+                          mb: 2
+                        }}>
+                          Amount due at check-in: ETB {totalAmount?.toFixed(0)}
+                        </Typography>
+                        <Box sx={{ mt: 2, textAlign: 'left' }}>
+                          <Typography variant="body2" sx={{ mb: 1, fontWeight: 'bold' }}>
+                            Important Information:
+                          </Typography>
+                          <Typography variant="body2" component="ul" sx={{ pl: 2, mb: 0 }}>
+                            <li>Payment is due upon check-in at the front desk</li>
+                            <li>Accepted payment methods: Cash, Credit Card, Debit Card</li>
+                            <li>Please bring a valid ID for check-in</li>
+                          </Typography>
+                        </Box>
+                      </CardContent>
+                    </Card>
                   </Grid>
                 </>
               )}
@@ -1171,23 +1247,50 @@ const BookingPage: React.FC = () => {
               {paymentMethod === 'mbirr' && (
                 <>
                   <Grid item xs={12}>
-                    <Paper sx={{ 
-                      p: 2, 
-                      bgcolor: theme.palette.mode === 'dark' 
-                        ? `${themeConstants.darkTheme.mbirrOrange}15` 
-                        : `${themeConstants.mbirrOrange}20`, 
-                      border: '2px solid', 
-                      borderColor: theme.palette.mode === 'dark' ? themeConstants.darkTheme.mbirrOrange : themeConstants.mbirrOrange 
+                    <Card sx={{ 
+                      border: `2px solid ${theme.palette.mode === 'dark' ? themeConstants.darkTheme.mbirrOrange : themeConstants.mbirrOrange}`,
+                      backgroundColor: theme.palette.mode === 'dark' 
+                        ? themeConstants.darkTheme.cardBackground
+                        : `${themeConstants.mbirrOrange}15`,
+                      borderRadius: 2,
+                      minHeight: 520, // Consistent height to accommodate all payment methods
+                      display: 'flex',
+                      flexDirection: 'column'
                     }}>
-                      <Typography variant="subtitle2" gutterBottom sx={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        fontWeight: 'bold', 
-                        color: theme.palette.mode === 'dark' ? themeConstants.darkTheme.mbirrOrange : themeConstants.mbirrOrange 
+                      <CardContent sx={{ 
+                        py: 3,
+                        flexGrow: 1,
+                        display: 'flex',
+                        flexDirection: 'column'
                       }}>
-                        <PhoneIcon sx={{ mr: 1 }} />
-                        🇪🇹 M-birr Mobile Payment
-                      </Typography>
+                        <Box sx={{ textAlign: 'center', mb: 2 }}>
+                          <PhoneIcon sx={{ 
+                            fontSize: 40, 
+                            color: theme.palette.mode === 'dark' ? themeConstants.darkTheme.mbirrOrange : themeConstants.mbirrOrange,
+                            mb: 1 
+                          }} />
+                          <Typography variant="h6" sx={{ 
+                            color: theme.palette.mode === 'dark' ? themeConstants.darkTheme.mbirrOrange : themeConstants.mbirrOrange,
+                            fontWeight: 'bold',
+                            mb: 0.5
+                          }}>
+                            🇪🇹 M-birr Mobile Payment
+                          </Typography>
+                          <Typography variant="body2" sx={{ 
+                            color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'text.secondary',
+                            mb: 1
+                          }}>
+                            Pay securely using your M-birr mobile wallet
+                          </Typography>
+                          <Typography variant="h6" sx={{ 
+                            color: theme.palette.mode === 'dark' ? themeConstants.darkTheme.mbirrOrange : themeConstants.mbirrOrange,
+                            fontWeight: 'bold'
+                          }}>
+                            Amount: ETB {totalAmount?.toFixed(0)}
+                          </Typography>
+                        </Box>
+                        
+                        <Box sx={{ flexGrow: 1 }}>
                       <Alert severity="info" sx={{ mb: 2 }}>
                         Pay securely using your M-birr mobile wallet. You'll receive SMS instructions to complete the payment.
                       </Alert>
@@ -1243,20 +1346,22 @@ const BookingPage: React.FC = () => {
                               • Amount: ETB {totalAmount?.toFixed(0)}
                             </Typography>
                           </Box>
-                        </Grid>
-                        <Grid item xs={12}>
-                          <Alert severity="warning">
-                            <Typography variant="body2">
-                              <strong>Payment Instructions:</strong><br />
-                              1. You'll receive an SMS with payment instructions<br />
-                              2. Open your M-birr app or dial *847#<br />
-                              3. Follow the prompts to complete payment<br />
-                              4. Your booking will be confirmed automatically
-                            </Typography>
-                          </Alert>
-                        </Grid>
-                      </Grid>
-                    </Paper>
+                            </Grid>
+                            <Grid item xs={12}>
+                              <Alert severity="warning">
+                                <Typography variant="body2">
+                                  <strong>Payment Instructions:</strong><br />
+                                  1. You'll receive an SMS with payment instructions<br />
+                                  2. Open your M-birr app or dial *847#<br />
+                                  3. Follow the prompts to complete payment<br />
+                                  4. Your booking will be confirmed automatically
+                                </Typography>
+                              </Alert>
+                            </Grid>
+                          </Grid>
+                        </Box>
+                      </CardContent>
+                    </Card>
                   </Grid>
                 </>
               )}
@@ -1265,26 +1370,53 @@ const BookingPage: React.FC = () => {
               {paymentMethod === 'telebirr' && (
                 <>
                   <Grid item xs={12}>
-                    <Paper sx={{ 
-                      p: 2, 
-                      bgcolor: theme.palette.mode === 'dark' 
-                        ? `${themeConstants.darkTheme.telebirrGreen}15` 
-                        : `${themeConstants.telebirrGreen}20`, 
-                      border: 2, 
-                      borderColor: theme.palette.mode === 'dark' ? themeConstants.darkTheme.telebirrGreen : themeConstants.telebirrGreen 
+                    <Card sx={{ 
+                      border: `2px solid ${theme.palette.mode === 'dark' ? themeConstants.darkTheme.telebirrGreen : themeConstants.telebirrGreen}`,
+                      backgroundColor: theme.palette.mode === 'dark' 
+                        ? themeConstants.darkTheme.cardBackground
+                        : `${themeConstants.telebirrGreen}15`,
+                      borderRadius: 2,
+                      minHeight: 520, // Consistent height to accommodate all payment methods
+                      display: 'flex',
+                      flexDirection: 'column'
                     }}>
-                      <Typography variant="subtitle2" gutterBottom sx={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        fontWeight: 'bold', 
-                        color: theme.palette.mode === 'dark' ? themeConstants.darkTheme.telebirrGreen : themeConstants.telebirrGreen 
+                      <CardContent sx={{ 
+                        py: 3,
+                        flexGrow: 1,
+                        display: 'flex',
+                        flexDirection: 'column'
                       }}>
-                        <PhoneIcon sx={{ mr: 1 }} />
-                        🇪🇹 Telebirr Mobile Payment
-                      </Typography>
-                      <Alert severity="info" sx={{ mb: 2 }}>
-                        Pay securely using your Telebirr mobile wallet. You'll receive SMS instructions to complete the payment.
-                      </Alert>
+                        <Box sx={{ textAlign: 'center', mb: 2 }}>
+                          <PhoneIcon sx={{ 
+                            fontSize: 40, 
+                            color: theme.palette.mode === 'dark' ? themeConstants.darkTheme.telebirrGreen : themeConstants.telebirrGreen,
+                            mb: 1 
+                          }} />
+                          <Typography variant="h6" sx={{ 
+                            color: theme.palette.mode === 'dark' ? themeConstants.darkTheme.telebirrGreen : themeConstants.telebirrGreen,
+                            fontWeight: 'bold',
+                            mb: 0.5
+                          }}>
+                            🇪🇹 Telebirr Mobile Payment
+                          </Typography>
+                          <Typography variant="body2" sx={{ 
+                            color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'text.secondary',
+                            mb: 1
+                          }}>
+                            Pay securely using your Telebirr mobile wallet
+                          </Typography>
+                          <Typography variant="h6" sx={{ 
+                            color: theme.palette.mode === 'dark' ? themeConstants.darkTheme.telebirrGreen : themeConstants.telebirrGreen,
+                            fontWeight: 'bold'
+                          }}>
+                            Amount: ETB {totalAmount?.toFixed(0)}
+                          </Typography>
+                        </Box>
+                        
+                        <Box sx={{ flexGrow: 1 }}>
+                          <Alert severity="info" sx={{ mb: 2 }}>
+                            Pay securely using your Telebirr mobile wallet. You'll receive SMS instructions to complete the payment.
+                          </Alert>
                       <Grid container spacing={2}>
                         <Grid item xs={12} sm={6}>
                           <TextField
@@ -1337,20 +1469,22 @@ const BookingPage: React.FC = () => {
                               • Amount: ETB {totalAmount?.toFixed(0)}
                             </Typography>
                           </Box>
-                        </Grid>
-                        <Grid item xs={12}>
-                          <Alert severity="warning">
-                            <Typography variant="body2">
-                              <strong>Payment Instructions:</strong><br />
-                              1. You'll receive an SMS with payment instructions<br />
-                              2. Open your Telebirr app or dial *127#<br />
-                              3. Follow the prompts to complete payment<br />
-                              4. Your booking will be confirmed automatically
-                            </Typography>
-                          </Alert>
-                        </Grid>
-                      </Grid>
-                    </Paper>
+                            </Grid>
+                            <Grid item xs={12}>
+                              <Alert severity="warning">
+                                <Typography variant="body2">
+                                  <strong>Payment Instructions:</strong><br />
+                                  1. You'll receive an SMS with payment instructions<br />
+                                  2. Open your Telebirr app or dial *127#<br />
+                                  3. Follow the prompts to complete payment<br />
+                                  4. Your booking will be confirmed automatically
+                                </Typography>
+                              </Alert>
+                            </Grid>
+                          </Grid>
+                        </Box>
+                      </CardContent>
+                    </Card>
                   </Grid>
                 </>
               )}
