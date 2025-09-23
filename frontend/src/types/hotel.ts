@@ -66,6 +66,11 @@ export interface BookingRequest {
   
   // Payment information (optional for backward compatibility)
   paymentMethod?: 'credit_card' | 'mobile_money' | 'mbirr' | 'telebirr';
+  paymentMethodId?: string;
+  
+  // Payment gateway fields
+  paymentReference?: string;
+  transactionId?: string;
   
   // Credit card fields
   creditCardNumber?: string;

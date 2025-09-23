@@ -46,13 +46,13 @@ export interface MockPaymentResponse {
 // Mock test data for different payment methods
 export const MOCK_PAYMENT_TEST_DATA = {
   CARD: {
-    cardNumber: '4532-1234-5678-9012',
+    cardNumber: '4111 1111 1111 1111', // Valid Visa test card
     expiryDate: '12/27',
     cvv: '123',
     cardHolderName: 'John Doe',
   },
   CREDIT_CARD: {
-    cardNumber: '5555-4444-3333-2222',
+    cardNumber: '5555 5555 5555 4444', // Valid MasterCard test card
     expiryDate: '06/28',
     cvv: '456',
     cardHolderName: 'Jane Smith',
@@ -104,9 +104,11 @@ class MockPaymentGateway {
 
   /**
    * Process payment through mock gateway
-   * Always returns success for testing purposes
    */
   public async processPayment(request: MockPaymentRequest): Promise<MockPaymentResponse> {
+    // Validate payment data
+    const isValid = this.validatePaymentData(request.paymentMethod, request.paymentDetails);
+    
     // Simulate processing delay
     await new Promise(resolve => setTimeout(resolve, this.processingDelay));
 
@@ -114,18 +116,32 @@ class MockPaymentGateway {
     const transactionId = this.generateTransactionId();
     const paymentReference = this.generatePaymentReference(request.paymentMethod);
 
-    // Always return success for testing
-    return {
-      success: true,
-      transactionId,
-      paymentReference,
-      status: 'SUCCESS',
-      message: this.getSuccessMessage(request.paymentMethod),
-      timestamp: new Date().toISOString(),
-      amount: request.amount,
-      currency: request.currency,
-      paymentMethod: request.paymentMethod,
-    };
+    // Return success if validation passes, otherwise return failure
+    if (isValid) {
+      return {
+        success: true,
+        transactionId,
+        paymentReference,
+        status: 'SUCCESS',
+        message: this.getSuccessMessage(request.paymentMethod),
+        timestamp: new Date().toISOString(),
+        amount: request.amount,
+        currency: request.currency,
+        paymentMethod: request.paymentMethod,
+      };
+    } else {
+      return {
+        success: false,
+        transactionId,
+        paymentReference: '',
+        status: 'FAILED',
+        message: 'Payment validation failed. Please check your payment details.',
+        timestamp: new Date().toISOString(),
+        amount: request.amount,
+        currency: request.currency,
+        paymentMethod: request.paymentMethod,
+      };
+    }
   }
 
   /**
@@ -238,12 +254,64 @@ class MockPaymentGateway {
   }
 
   /**
-   * Validate payment data (always returns true for mock)
+   * Validate payment data
    */
   public validatePaymentData(paymentMethod: PaymentMethod, paymentDetails: any): boolean {
-    // In a real implementation, this would validate the payment data
-    // For mock purposes, always return true
+    // Basic validation for credit card payments
+    if (paymentMethod === PaymentMethod.CARD || paymentMethod === PaymentMethod.CREDIT_CARD) {
+      const cardNumber = paymentDetails.cardNumber?.replace(/[\s-]/g, '') || '';
+      
+      // Check if card number has 16 digits
+      if (!/^\d{16}$/.test(cardNumber)) {
+        console.warn('Invalid card number: must be 16 digits');
+        return false;
+      }
+      
+      // Basic Luhn algorithm check for credit cards
+      if (!this.isValidCreditCard(cardNumber)) {
+        console.warn('Invalid credit card number: failed Luhn check');
+        return false;
+      }
+      
+      // Check expiry date format
+      if (paymentDetails.expiryDate && !/^\d{2}\/\d{2}$/.test(paymentDetails.expiryDate)) {
+        console.warn('Invalid expiry date format: must be MM/YY');
+        return false;
+      }
+      
+      // Check CVV format
+      if (paymentDetails.cvv && !/^\d{3,4}$/.test(paymentDetails.cvv)) {
+        console.warn('Invalid CVV: must be 3-4 digits');
+        return false;
+      }
+    }
+    
     return true;
+  }
+  
+  /**
+   * Basic Luhn algorithm validation for credit card numbers
+   */
+  private isValidCreditCard(cardNumber: string): boolean {
+    let sum = 0;
+    let alternate = false;
+    
+    // Loop through digits from right to left
+    for (let i = cardNumber.length - 1; i >= 0; i--) {
+      let digit = parseInt(cardNumber.charAt(i), 10);
+      
+      if (alternate) {
+        digit *= 2;
+        if (digit > 9) {
+          digit = (digit % 10) + 1;
+        }
+      }
+      
+      sum += digit;
+      alternate = !alternate;
+    }
+    
+    return (sum % 10) === 0;
   }
 }
 

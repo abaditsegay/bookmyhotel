@@ -70,7 +70,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
   const [error, setError] = useState<string | null>(null);
 
   // Card payment fields with pre-filled test data
-  const [cardNumber, setCardNumber] = useState('4532-1234-5678-9012');
+  const [cardNumber, setCardNumber] = useState('4111 1111 1111 1111');
   const [cardExpiry, setCardExpiry] = useState('12/27');
   const [cardCvv, setCardCvv] = useState('123');
   const [cardName, setCardName] = useState('John Doe');
@@ -138,7 +138,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
           setError('Please fill in all card details');
           return false;
         }
-        if (cardNumber.replace(/\s/g, '').length < 16) {
+        if (cardNumber.replace(/[\s-]/g, '').length < 16) {
           setError('Please enter a valid card number');
           return false;
         }
@@ -188,7 +188,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
             phone: phoneNumber,
           },
           paymentDetails: {
-            cardNumber: cardNumber,
+            cardNumber: cardNumber.replace(/[\s-]/g, ''), // Send clean card number (digits only)
             expiryDate: cardExpiry,
             cvv: cardCvv,
             cardHolderName: cardName,
@@ -199,6 +199,12 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
         };
 
         const paymentResult = await mockPayment.processPayment(mockPaymentRequest);
+        
+        // Check if payment failed
+        if (!paymentResult.success) {
+          throw new Error(paymentResult.message || 'Payment processing failed');
+        }
+        
         reference = paymentResult.paymentReference;
         setPaymentSuccess(true);
       }

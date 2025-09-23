@@ -83,7 +83,7 @@ const BookingPage: React.FC = () => {
   // Payment state with mock test data pre-filled
   const mockPayment = useMockPayment();
   const [paymentMethod, setPaymentMethod] = useState<'credit_card' | 'mobile_money' | 'pay_at_frontdesk' | 'mbirr' | 'telebirr'>('credit_card');
-  const [creditCardNumber, setCreditCardNumber] = useState('4532-1234-5678-9012');
+  const [creditCardNumber, setCreditCardNumber] = useState('4111 1111 1111 1111');
   const [expiryDate, setExpiryDate] = useState('12/27');
   const [cvv, setCvv] = useState('123');
   const [cardholderName, setCardholderName] = useState('John Doe');
@@ -141,7 +141,7 @@ const BookingPage: React.FC = () => {
     
     // Pre-fill with test data for the selected payment method
     if (newMethod === 'credit_card') {
-      setCreditCardNumber('4532-1234-5678-9012');
+      setCreditCardNumber('4111 1111 1111 1111');
       setExpiryDate('12/27');
       setCvv('123');
       setCardholderName('John Doe');
@@ -236,7 +236,7 @@ const BookingPage: React.FC = () => {
         return;
       }
       // Basic credit card number validation (16 digits)
-      const cardNumberOnly = creditCardNumber.replace(/\s/g, '');
+      const cardNumberOnly = creditCardNumber.replace(/[\s-]/g, '');
       if (!/^\d{16}$/.test(cardNumberOnly)) {
         setError('Please enter a valid 16-digit credit card number');
         return;
@@ -299,7 +299,7 @@ const BookingPage: React.FC = () => {
             phone: guestPhone.trim() || mobileNumber || ethiopianPhoneNumber,
           },
           paymentDetails: {
-            cardNumber: creditCardNumber,
+            cardNumber: creditCardNumber.replace(/[\s-]/g, ''), // Send clean card number (digits only)
             expiryDate: expiryDate,
             cvv: cvv,
             cardHolderName: cardholderName,
@@ -310,14 +310,21 @@ const BookingPage: React.FC = () => {
           },
         };
 
-        // Process payment through mock gateway (always succeeds)
+        // Process payment through mock gateway
         paymentResult = await mockPayment.processPayment(mockPaymentRequest);
+        
+        // Check if payment failed
+        if (!paymentResult.success) {
+          setError(paymentResult.message || 'Payment processing failed');
+          return;
+        }
       }
 
+      // Determine if this is a specific room booking or room type booking
+      const hasSpecificRoom = roomData.id !== undefined && roomData.id !== null;
+      
       const bookingRequest = {
         hotelId: bookingData.hotelId,
-        roomId: roomData.id || undefined, // For individual room bookings
-        roomType: roomData.roomType || roomType?.roomType, // For room type bookings
         checkInDate: checkInDate.format('YYYY-MM-DD'),
         checkOutDate: checkOutDate.format('YYYY-MM-DD'),
         guests: guests,
@@ -337,12 +344,20 @@ const BookingPage: React.FC = () => {
         mobileNumber: (paymentMethod === 'mbirr' || paymentMethod === 'telebirr') ? 
                      ethiopianPhoneNumber.replace(/\s/g, '') : 
                      (paymentMethod === 'mobile_money' ? mobileNumber : undefined),
+        // Add room-specific fields based on booking type
+        ...(hasSpecificRoom 
+          ? { roomId: roomData.id } // For specific room bookings
+          : { roomType: roomData.roomType || roomType?.roomType } // For room type bookings
+        ),
       };
-
-      // Remove undefined roomId for room type bookings to avoid sending null to backend
-      if (!bookingRequest.roomId) {
-        delete (bookingRequest as any).roomId;
-      }      const result = await hotelApiService.createBooking(bookingRequest);
+      
+      // Debug logging
+      console.log('Room data:', roomData);
+      console.log('Has specific room:', hasSpecificRoom);
+      console.log('Booking request:', bookingRequest);
+      console.log('Expected endpoint:', hasSpecificRoom ? '/bookings' : '/bookings/room-type');
+      
+      const result = await hotelApiService.createBooking(bookingRequest);
       
       // Navigate to confirmation page with booking details
       navigate(`/booking-confirmation/${result.reservationId}`, { 
