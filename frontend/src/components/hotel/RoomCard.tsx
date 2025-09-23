@@ -58,13 +58,16 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
 
   return (
     <Card 
-      elevation={1} 
       sx={{ 
         height: '100%',
+        background: 'white',
+        border: '1px solid #e0e0e0',
+        borderRadius: 2,
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
         transition: 'transform 0.2s, box-shadow 0.2s',
         '&:hover': {
           transform: 'translateY(-2px)',
-          boxShadow: 3,
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.12)',
         },
       }}
     >
@@ -94,27 +97,30 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
               </Typography>
               <Chip 
                 label={room.roomType} 
-                color="primary" 
                 variant="outlined" 
                 size="small"
                 sx={{ 
                   mb: 1, 
                   fontSize: isSmallMobile ? '0.65rem' : '0.7rem',
                   height: isSmallMobile ? '20px' : '24px',
+                  borderColor: '#e0e0e0',
+                  color: 'text.primary',
+                  fontWeight: 600,
                 }}
               />
             </Box>
             <Box sx={{ 
               textAlign: 'center',
               p: 1.5,
-              backgroundColor: 'primary.light',
+              backgroundColor: '#e8f5e8',
+              border: '1px solid #c8e6c9',
               borderRadius: 1,
             }}>
               <Typography 
                 variant="h6" 
-                color="primary.main" 
                 sx={{ 
-                  fontWeight: 'bold',
+                  color: '#2e7d32',
+                  fontWeight: 700,
                   fontSize: isSmallMobile ? '1rem' : '1.25rem',
                 }}
               >
@@ -123,7 +129,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
               <Typography 
                 variant="caption" 
                 color="text.secondary"
-                sx={{ fontSize: isSmallMobile ? '0.7rem' : undefined }}
+                sx={{ fontSize: isSmallMobile ? '0.7rem' : undefined, fontWeight: 500 }}
               >
                 per night
               </Typography>
@@ -138,17 +144,22 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
               </Typography>
               <Chip 
                 label={room.roomType} 
-                color="primary" 
                 variant="outlined" 
                 size="small"
-                sx={{ mb: 1, fontSize: '0.7rem' }}
+                sx={{ 
+                  mb: 1, 
+                  fontSize: '0.7rem',
+                  borderColor: '#e0e0e0',
+                  color: 'text.primary',
+                  fontWeight: 600,
+                }}
               />
             </Box>
             <Box sx={{ textAlign: 'right' }}>
-              <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold' }}>
+              <Typography variant="h6" sx={{ color: '#2e7d32', fontWeight: 700 }}>
                 ETB {room.pricePerNight?.toFixed(0)}
               </Typography>
-              <Typography variant="caption" color="text.secondary">
+              <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
                 per night
               </Typography>
             </Box>
@@ -221,7 +232,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
             variant="caption" 
             gutterBottom 
             sx={{ 
-              fontWeight: 'bold', 
+              fontWeight: 700, 
               fontSize: isMobile ? '0.7rem' : '0.75rem',
             }}
           >
@@ -252,7 +263,8 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
                 sx={{ 
                   fontSize: '0.6rem', 
                   height: 18,
-                  color: 'primary.main',
+                  color: 'text.primary',
+                  borderColor: '#e0e0e0',
                 }}
               />
             )}
@@ -266,15 +278,22 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
             <Button
               fullWidth
               variant="contained"
-              color="primary"
               onClick={() => onBookRoom(hotelId, room.id)}
               sx={{ 
                 borderRadius: isMobile ? 1.5 : 2,
                 textTransform: 'none',
-                fontWeight: 'bold',
+                fontWeight: 700,
                 mb: isMobile ? 0.5 : 1,
                 fontSize: isMobile ? '0.8rem' : '0.875rem',
                 py: isMobile ? 0.8 : 1,
+                bgcolor: 'white',
+                color: 'text.primary',
+                border: '1px solid #e0e0e0',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                '&:hover': {
+                  bgcolor: '#f5f5f5',
+                  borderColor: '#d0d0d0',
+                },
               }}
             >
               Book Now
@@ -285,14 +304,21 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
               <Button
                 fullWidth
                 variant="contained"
-                color="primary"
                 onClick={() => onBookRoom(hotelId, room.id)}
                 sx={{ 
                   borderRadius: isMobile ? 1.5 : 2,
                   textTransform: 'none',
-                  fontWeight: 'bold',
+                  fontWeight: 700,
                   fontSize: isMobile ? '0.8rem' : '0.875rem',
                   py: isMobile ? 0.8 : 1,
+                  bgcolor: 'white',
+                  color: 'text.primary',
+                  border: '1px solid #e0e0e0',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                  '&:hover': {
+                    bgcolor: '#f5f5f5',
+                    borderColor: '#d0d0d0',
+                  },
                 }}
               >
                 Sign in to Book
@@ -300,14 +326,19 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
               <Button
                 fullWidth
                 variant="outlined"
-                color="primary"
                 onClick={() => onBookRoom(hotelId, room.id, true)} // true indicates guest booking
                 sx={{ 
                   borderRadius: isMobile ? 1.5 : 2,
                   textTransform: 'none',
-                  fontWeight: 'bold',
+                  fontWeight: 700,
                   fontSize: isMobile ? '0.75rem' : '0.8rem',
                   py: isMobile ? 0.6 : 0.8,
+                  borderColor: '#e0e0e0',
+                  color: 'text.primary',
+                  '&:hover': {
+                    bgcolor: '#f5f5f5',
+                    borderColor: '#d0d0d0',
+                  },
                 }}
               >
                 Book as Guest

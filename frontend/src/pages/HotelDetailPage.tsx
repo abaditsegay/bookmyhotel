@@ -22,7 +22,6 @@ import {
   LocationOn as LocationIcon,
   Phone as PhoneIcon,
   Email as EmailIcon,
-  Hotel as HotelIcon,
 } from '@mui/icons-material';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -264,126 +263,73 @@ const HotelDetailPage: React.FC = () => {
         px: isMobile ? 1 : 3,
       }}
     >
-      {/* Professional Header Section */}
-      <Card 
-        elevation={2}
-        sx={{
-          background: `linear-gradient(135deg, ${theme.palette.primary.main}08 0%, ${theme.palette.secondary.main}08 100%)`,
-          border: `1px solid ${theme.palette.primary.main}20`,
-          borderRadius: 3,
-          mb: isMobile ? 2 : 3,
-          overflow: 'hidden',
-        }}
-      >
-        <CardContent sx={{ p: isMobile ? 2 : 3 }}>
-          {/* Back Navigation with Professional Styling */}
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-            <IconButton 
+      {/* Back Navigation */}
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: isMobile ? 2 : 3 }}>
+        <IconButton 
+          onClick={handleBackToResults}
+          sx={{ 
+            mr: 2,
+            bgcolor: 'white',
+            border: '1px solid #e0e0e0',
+            borderRadius: 2,
+            '&:hover': {
+              bgcolor: '#f5f5f5',
+              borderColor: '#d0d0d0',
+            },
+            transition: 'all 0.2s ease-in-out',
+          }}
+          aria-label="back to search results"
+        >
+          <ArrowBackIcon />
+        </IconButton>
+        
+        {!isSmallMobile && (
+          <Breadcrumbs 
+            aria-label="breadcrumb"
+            sx={{
+              '& .MuiBreadcrumbs-separator': {
+                color: 'text.secondary',
+              },
+            }}
+          >
+            <Link 
+              component="button" 
+              variant="body2" 
+              onClick={() => navigate('/hotels/search')}
+              sx={{ 
+                textDecoration: 'none',
+                color: 'text.secondary',
+                fontWeight: 500,
+                '&:hover': {
+                  color: 'text.primary',
+                  textDecoration: 'underline',
+                },
+              }}
+            >
+              Hotel Search
+            </Link>
+            <Link 
+              component="button" 
+              variant="body2" 
               onClick={handleBackToResults}
               sx={{ 
-                mr: 2,
-                bgcolor: 'background.paper',
-                border: '1px solid',
-                borderColor: 'divider',
+                textDecoration: 'none',
+                color: 'text.secondary',
+                fontWeight: 500,
                 '&:hover': {
-                  bgcolor: 'primary.main',
-                  color: 'primary.contrastText',
-                  borderColor: 'primary.main',
+                  color: 'text.primary',
+                  textDecoration: 'underline',
                 },
-                transition: 'all 0.2s ease-in-out',
               }}
-              aria-label="back to search results"
             >
-              <ArrowBackIcon />
-            </IconButton>
-            
-            <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
-              <HotelIcon 
-                sx={{ 
-                  fontSize: isMobile ? 24 : 28, 
-                  mr: 1.5,
-                  color: 'primary.main',
-                }} 
-              />
-              <Box>
-                <Typography 
-                  variant={isMobile ? "h6" : "h5"} 
-                  sx={{ 
-                    fontWeight: 'bold',
-                    background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-                    backgroundClip: 'text',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    lineHeight: 1.2,
-                  }}
-                >
-                  Hotel Details
-                </Typography>
-                {!isSmallMobile && searchRequest && (
-                  <Typography 
-                    variant="body2" 
-                    color="text.secondary"
-                    sx={{ fontSize: '0.875rem' }}
-                  >
-                    {formatSearchSummary()}
-                  </Typography>
-                )}
-              </Box>
-            </Box>
-          </Box>
-
-          {/* Enhanced Breadcrumbs */}
-          {!isSmallMobile && (
-            <Box sx={{ pl: 8 }}>
-              <Breadcrumbs 
-                aria-label="breadcrumb"
-                sx={{
-                  '& .MuiBreadcrumbs-separator': {
-                    color: 'primary.main',
-                    fontWeight: 'bold',
-                  },
-                }}
-              >
-                <Link 
-                  component="button" 
-                  variant="body2" 
-                  onClick={() => navigate('/hotels/search')}
-                  sx={{ 
-                    textDecoration: 'none',
-                    color: 'primary.main',
-                    fontWeight: 'medium',
-                    '&:hover': {
-                      color: 'primary.dark',
-                      textDecoration: 'underline',
-                    },
-                  }}
-                >
-                  Hotel Search
-                </Link>
-                <Link 
-                  component="button" 
-                  variant="body2" 
-                  onClick={handleBackToResults}
-                  sx={{ 
-                    textDecoration: 'none',
-                    color: 'primary.main',
-                    fontWeight: 'medium',
-                    '&:hover': {
-                      color: 'primary.dark',
-                      textDecoration: 'underline',
-                    },
-                  }}
-                >
-                  Search Results
-                </Link>
-                <Typography variant="body2" color="text.primary" sx={{ fontWeight: 'medium' }}>
-                  {hotel?.name || 'Hotel Details'}
-                </Typography>
-              </Breadcrumbs>
-            </Box>
-          )}
-        </CardContent>
-      </Card>
+              Search Results
+            </Link>
+            <Typography variant="body2" color="text.primary" sx={{ fontWeight: 600 }}>
+              {hotel?.name || 'Hotel Details'}
+            </Typography>
+          </Breadcrumbs>
+        )}
+      </Box>
 
       {/* Error State */}
       {error && (
@@ -407,11 +353,11 @@ const HotelDetailPage: React.FC = () => {
 
       {/* Hotel Information - Mobile Responsive */}
       <Card 
-        elevation={2}
         sx={{
-          background: `linear-gradient(135deg, ${theme.palette.primary.main}08 0%, ${theme.palette.secondary.main}08 100%)`,
-          border: `1px solid ${theme.palette.primary.main}20`,
-          borderRadius: 3,
+          background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+          border: '1px solid #e0e0e0',
+          borderRadius: 2,
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
           mb: isMobile ? 2 : 3,
         }}
       >
@@ -425,8 +371,8 @@ const HotelDetailPage: React.FC = () => {
                 component="h1" 
                 gutterBottom 
                 sx={{ 
-                  fontWeight: 'bold', 
-                  color: 'primary.main',
+                  fontWeight: 700, 
+                  color: 'text.primary',
                   lineHeight: 1.2,
                 }}
               >
@@ -442,7 +388,7 @@ const HotelDetailPage: React.FC = () => {
                 />
                 <Typography 
                   variant="body2" 
-                  sx={{ fontWeight: 'medium' }}
+                  sx={{ fontWeight: 600 }}
                 >
                   {hotelRating.toFixed(1)}
                 </Typography>
@@ -469,17 +415,18 @@ const HotelDetailPage: React.FC = () => {
                 sx={{ 
                   textAlign: 'center',
                   p: 2,
-                  backgroundColor: 'success.light',
+                  backgroundColor: '#e8f5e8',
                   borderRadius: 1,
+                  border: '1px solid #c8e6c9',
                 }}
               >
-                <Typography variant="h5" color="success.main" sx={{ fontWeight: 'bold' }}>
+                <Typography variant="h5" sx={{ color: '#2e7d32', fontWeight: 700 }}>
                   From ETB {hotel.minPrice?.toFixed(0)}
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
                   per night
                 </Typography>
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
                   Up to ETB {hotel.maxPrice?.toFixed(0)}
                 </Typography>
               </Box>
@@ -489,13 +436,13 @@ const HotelDetailPage: React.FC = () => {
           /* Desktop Layout - Side by Side */
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
             <Box sx={{ flexGrow: 1 }}>
-              <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+              <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 700, color: 'text.primary' }}>
                 {hotel.name}
               </Typography>
               
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
                 <Rating value={hotelRating} precision={0.1} size="medium" readOnly />
-                <Typography variant="body1" sx={{ ml: 1, fontWeight: 'medium' }}>
+                <Typography variant="body1" sx={{ ml: 1, fontWeight: 600 }}>
                   {hotelRating.toFixed(1)}
                 </Typography>
               </Box>
@@ -510,13 +457,13 @@ const HotelDetailPage: React.FC = () => {
             
             {searchRequest && (
               <Box sx={{ textAlign: 'right', ml: 3 }}>
-                <Typography variant="h5" color="success.main" sx={{ fontWeight: 'bold' }}>
+                <Typography variant="h5" sx={{ color: '#2e7d32', fontWeight: 700 }}>
                   From ETB {hotel.minPrice?.toFixed(0)}
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
                   per night
                 </Typography>
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
                   Up to ETB {hotel.maxPrice?.toFixed(0)}
                 </Typography>
               </Box>
@@ -596,8 +543,8 @@ const HotelDetailPage: React.FC = () => {
 
         {/* Search Summary */}
         {searchRequest && (
-          <Box sx={{ mt: 2, p: 1.5, backgroundColor: 'primary.50', borderRadius: 1 }}>
-            <Typography variant="body2" color="primary.main" sx={{ fontWeight: 'medium' }}>
+          <Box sx={{ mt: 2, p: 1.5, backgroundColor: 'white', border: '1px solid #e0e0e0', borderRadius: 1 }}>
+            <Typography variant="body2" sx={{ color: 'text.primary', fontWeight: 600 }}>
               Showing availability {formatSearchSummary()}
             </Typography>
           </Box>
@@ -608,18 +555,18 @@ const HotelDetailPage: React.FC = () => {
       {/* Professional Rooms Section */}
       {searchRequest && (
         <Card 
-          elevation={2}
           sx={{
-            background: `linear-gradient(135deg, ${theme.palette.secondary.main}08 0%, ${theme.palette.primary.main}08 100%)`,
-            border: `1px solid ${theme.palette.secondary.main}20`,
-            borderRadius: 3,
+            background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+            border: '1px solid #e0e0e0',
+            borderRadius: 2,
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
           }}
         >
           <CardContent sx={{ p: isMobile ? 2 : 3 }}>
             <Typography 
               variant={isMobile ? "h6" : "h5"} 
               sx={{ 
-                fontWeight: 'bold', 
+                fontWeight: 700, 
                 mb: isMobile ? 1.5 : 2,
                 fontSize: isMobile ? '1.1rem' : undefined,
                 color: 'text.primary',
@@ -651,14 +598,14 @@ const HotelDetailPage: React.FC = () => {
               }}
             >
               {useRoomTypes ? (
-                // Display room types - Mobile responsive grid
+                // Display room types - 3 columns horizontally
                 hotel.roomTypeAvailability?.map((roomType) => (
                   <Grid 
                     item 
                     xs={12} 
-                    sm={isMobile ? 12 : 6} 
+                    sm={4} 
                     md={4} 
-                    lg={3} 
+                    lg={4} 
                     key={roomType.roomType}
                   >
                     <RoomTypeCard
@@ -731,25 +678,34 @@ const HotelDetailPage: React.FC = () => {
       {/* No Search Request - Hotel Info Only - Mobile Responsive */}
       {!searchRequest && (
         <Card 
-          elevation={2}
           sx={{
-            background: `linear-gradient(135deg, ${theme.palette.primary.main}08 0%, ${theme.palette.secondary.main}08 100%)`,
-            border: `1px solid ${theme.palette.primary.main}20`,
-            borderRadius: 3,
+            background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+            border: '1px solid #e0e0e0',
+            borderRadius: 2,
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
             textAlign: 'center',
           }}
         >
           <CardContent sx={{ p: isMobile ? 3 : 4 }}>
-          <Typography variant="h5" color="text.secondary" gutterBottom>
+          <Typography variant="h5" color="text.primary" gutterBottom sx={{ fontWeight: 700 }}>
             Search for availability
           </Typography>
-          <Typography variant="body1" color="text.secondary" paragraph>
+          <Typography variant="body1" color="text.secondary" paragraph sx={{ fontWeight: 500 }}>
             To see available rooms and make a booking, please use our hotel search.
           </Typography>
           <Box sx={{ mt: 3 }}>
             <IconButton 
               onClick={() => navigate('/hotels/search')}
-              color="primary"
+              sx={{ 
+                bgcolor: 'white',
+                border: '1px solid #e0e0e0',
+                borderRadius: 2,
+                color: 'text.primary',
+                '&:hover': {
+                  bgcolor: '#f5f5f5',
+                  borderColor: '#d0d0d0',
+                },
+              }}
               size="large"
             >
               Search Hotels
