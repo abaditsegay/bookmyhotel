@@ -4,7 +4,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button,
   Typography,
   Box,
   Grid,
@@ -19,6 +18,8 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import {
   CreditCard as CreditCardIcon,
@@ -29,6 +30,8 @@ import {
   CheckCircle as CheckIcon,
 } from '@mui/icons-material';
 import { PaymentMethod } from '../../types/shop';
+import { themeConstants } from '../../theme/theme';
+import { StandardButton, StandardCard, StandardTextField, StandardLoading, StandardError } from '../common';
 
 interface PaymentDialogProps {
   open: boolean;
@@ -53,6 +56,9 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
   totalAmount,
   selectedPaymentMethod,
 }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  
   const [currentPaymentMethod, setCurrentPaymentMethod] = useState<PaymentMethod>(
     selectedPaymentMethod || PaymentMethod.CASH
   );
@@ -77,28 +83,28 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
       label: 'Cash Payment',
       icon: <CashIcon />,
       description: 'Pay with cash at the counter',
-      color: '#4caf50',
+      color: theme.palette.success.main,
     },
     {
       value: PaymentMethod.CARD,
       label: 'Credit/Debit Card',
       icon: <CreditCardIcon />,
       description: 'Pay with credit or debit card',
-      color: '#2196f3',
+      color: theme.palette.primary.main,
     },
     {
       value: PaymentMethod.MOBILE_MONEY,
       label: 'Mobile Money',
       icon: <MobileIcon />,
       description: 'Pay with mobile money services',
-      color: '#ff9800',
+      color: theme.palette.mode === 'dark' ? themeConstants.darkTheme.mbirrOrange : themeConstants.mbirrOrange,
     },
     {
       value: PaymentMethod.PAY_AT_FRONTDESK,
       label: 'Pay at Front Desk',
       icon: <BankIcon />,
       description: 'Complete payment at hotel front desk',
-      color: '#9c27b0',
+      color: theme.palette.secondary.main,
     },
   ];
 
@@ -263,11 +269,25 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                     value={mobileProvider}
                     label="Mobile Money Provider"
                     onChange={(e) => setMobileProvider(e.target.value)}
+                    sx={{
+                      '& .MuiSelect-select': {
+                        minHeight: isMobile ? themeConstants.touchTargets.minimum : 'auto'
+                      }
+                    }}
                   >
-                    <MenuItem value="M-Pesa">M-Pesa</MenuItem>
-                    <MenuItem value="Telebirr">Telebirr</MenuItem>
+                    <MenuItem value="M-birr" sx={{ 
+                      color: theme.palette.mode === 'dark' ? themeConstants.darkTheme.mbirrOrange : themeConstants.mbirrOrange 
+                    }}>
+                      🇪🇹 M-birr
+                    </MenuItem>
+                    <MenuItem value="Telebirr" sx={{ 
+                      color: theme.palette.mode === 'dark' ? themeConstants.darkTheme.telebirrGreen : themeConstants.telebirrGreen 
+                    }}>
+                      🇪🇹 Telebirr
+                    </MenuItem>
                     <MenuItem value="CBE Birr">CBE Birr</MenuItem>
                     <MenuItem value="HelloCash">HelloCash</MenuItem>
+                    <MenuItem value="M-Pesa">M-Pesa</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>
@@ -290,7 +310,11 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
             <Typography variant="body1" color="text.secondary">
               Please collect cash payment from customer at the counter.
             </Typography>
-            <Typography variant="h6" sx={{ mt: 2, color: 'success.main' }}>
+            <Typography variant="h6" sx={{ 
+              mt: 2, 
+              color: theme.palette.success.main,
+              fontWeight: 'bold'
+            }}>
               Amount to collect: {formatCurrency(totalAmount)}
             </Typography>
           </Box>
@@ -302,7 +326,11 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
             <Typography variant="body1" color="text.secondary">
               Customer will complete payment at the front desk.
             </Typography>
-            <Typography variant="h6" sx={{ mt: 2, color: 'info.main' }}>
+            <Typography variant="h6" sx={{ 
+              mt: 2, 
+              color: theme.palette.info.main,
+              fontWeight: 'bold'
+            }}>
               Amount: {formatCurrency(totalAmount)}
             </Typography>
           </Box>
@@ -315,7 +343,19 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
 
   if (paymentSuccess) {
     return (
-      <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <Dialog 
+        open={open} 
+        onClose={onClose} 
+        maxWidth="sm" 
+        fullWidth
+        fullScreen={isMobile}
+        sx={{
+          '& .MuiDialog-paper': {
+            margin: isMobile ? 0 : theme.spacing(2),
+            borderRadius: isMobile ? 0 : theme.shape.borderRadius,
+          }
+        }}
+      >
         <DialogContent sx={{ textAlign: 'center', py: 4 }}>
           <CheckIcon sx={{ fontSize: 64, color: 'success.main', mb: 2 }} />
           <Typography variant="h5" gutterBottom>
@@ -341,7 +381,19 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
   }
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+    <Dialog 
+      open={open} 
+      onClose={onClose} 
+      maxWidth="md" 
+      fullWidth
+      fullScreen={isMobile}
+      sx={{
+        '& .MuiDialog-paper': {
+          margin: isMobile ? 0 : theme.spacing(2),
+          borderRadius: isMobile ? 0 : theme.shape.borderRadius,
+        }
+      }}
+    >
       <DialogTitle>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <PaymentIcon color="primary" />
@@ -363,18 +415,47 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
           Select Payment Method
         </Typography>
         
-        <Grid container spacing={2} sx={{ mb: 3 }}>
+        <Grid container spacing={{ xs: 1.5, md: 2 }} sx={{ mb: { xs: 2, md: 3 } }}>
           {paymentMethods.map((method) => (
             <Grid item xs={12} sm={6} key={method.value}>
               <Card 
                 sx={{ 
                   border: currentPaymentMethod === method.value ? 2 : 1,
                   borderColor: currentPaymentMethod === method.value ? method.color : 'divider',
-                  backgroundColor: currentPaymentMethod === method.value ? `${method.color}10` : 'background.paper'
+                  backgroundColor: currentPaymentMethod === method.value 
+                    ? theme.palette.mode === 'dark' 
+                      ? themeConstants.darkTheme.selectedCardBackground
+                      : `${method.color}10`
+                    : theme.palette.mode === 'dark'
+                      ? themeConstants.darkTheme.cardBackground
+                      : 'background.paper',
+                  minHeight: isMobile ? themeConstants.touchTargets.large : 'auto',
+                  transition: 'all 0.2s ease',
+                  '&:hover': {
+                    backgroundColor: currentPaymentMethod === method.value 
+                      ? theme.palette.mode === 'dark' 
+                        ? themeConstants.darkTheme.selectedCardBackground
+                        : `${method.color}15`
+                      : theme.palette.mode === 'dark'
+                        ? 'rgba(255, 255, 255, 0.08)'
+                        : 'rgba(0, 0, 0, 0.02)',
+                  }
                 }}
               >
-                <CardActionArea onClick={() => handlePaymentMethodSelect(method.value)}>
-                  <CardContent sx={{ textAlign: 'center', py: 2 }}>
+                <CardActionArea 
+                  onClick={() => handlePaymentMethodSelect(method.value)}
+                  sx={{
+                    minHeight: isMobile ? themeConstants.touchTargets.large : 'auto',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  <CardContent sx={{ 
+                    textAlign: 'center', 
+                    py: { xs: 2.5, md: 2 },
+                    px: { xs: 2, md: 2 }
+                  }}>
                     <Box sx={{ color: method.color, mb: 1 }}>
                       {method.icon}
                     </Box>
@@ -397,18 +478,36 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
         {renderPaymentDetails()}
       </DialogContent>
 
-      <DialogActions sx={{ p: 3 }}>
-        <Button onClick={onClose} disabled={processing}>
+      <DialogActions sx={{ 
+        p: { xs: 2, md: 3 },
+        gap: { xs: 1, md: 2 },
+        flexDirection: isMobile ? 'column-reverse' : 'row'
+      }}>
+        <StandardButton 
+          onClick={onClose} 
+          disabled={processing}
+          variant="outlined"
+          fullWidth={isMobile}
+          sx={{ 
+            minHeight: themeConstants.touchTargets.minimum,
+            order: isMobile ? 2 : 1
+          }}
+        >
           Cancel
-        </Button>
-        <Button
+        </StandardButton>
+        <StandardButton
           onClick={handleProcessPayment}
           variant="contained"
           disabled={processing}
           startIcon={processing ? <CircularProgress size={20} /> : null}
+          fullWidth={isMobile}
+          sx={{ 
+            minHeight: themeConstants.touchTargets.minimum,
+            order: isMobile ? 1 : 2
+          }}
         >
           {processing ? 'Processing...' : `Pay ${formatCurrency(totalAmount)}`}
-        </Button>
+        </StandardButton>
       </DialogActions>
     </Dialog>
   );

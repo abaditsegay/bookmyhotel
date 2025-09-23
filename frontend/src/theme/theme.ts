@@ -10,6 +10,15 @@ export const themeConstants = {
   mbirrOrange: '#FF6B35',
   telebirrGreen: '#00A651',
   
+  // Dark theme payment method colors (for better contrast)
+  darkTheme: {
+    mbirrOrange: '#FF8A5C', // Lighter orange for dark backgrounds
+    telebirrGreen: '#2ECC71', // Lighter green for dark backgrounds
+    cardBackground: 'rgba(255, 255, 255, 0.05)', // Subtle card background
+    selectedCardBackground: 'rgba(255, 255, 255, 0.1)', // Selected card background
+    borderColor: 'rgba(255, 255, 255, 0.12)', // Border color for dark theme
+  },
+  
   // Layout constants
   logoHeight: 32, // 32px - compact navbar logo
   headerMaxWidths: {

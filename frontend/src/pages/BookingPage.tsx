@@ -39,6 +39,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useAuthenticatedApi } from '../hooks/useAuthenticatedApi';
 import { AvailableRoom, HotelSearchRequest } from '../types/hotel';
+import { themeConstants } from '../theme/theme';
 
 interface BookingPageState {
   room?: AvailableRoom;
@@ -453,7 +454,9 @@ const BookingPage: React.FC = () => {
           sx={{ 
             p: isMobile ? 2 : 3, 
             mb: isMobile ? 2 : 4, 
-            bgcolor: 'grey.50',
+            bgcolor: theme.palette.mode === 'dark' 
+              ? themeConstants.darkTheme.cardBackground 
+              : 'grey.50',
           }}
         >
           <Typography 
@@ -766,7 +769,7 @@ const BookingPage: React.FC = () => {
                             py: isMobile ? 1 : 0,
                           }}
                         >
-                          <CreditCardIcon sx={{ mr: 1 }} />
+                          <CreditCardIcon sx={{ mr: 1, color: theme.palette.primary.main }} />
                           Credit Card
                         </Box>
                       }
@@ -790,7 +793,7 @@ const BookingPage: React.FC = () => {
                             py: isMobile ? 1 : 0,
                           }}
                         >
-                          <PhoneIcon sx={{ mr: 1 }} />
+                          <PhoneIcon sx={{ mr: 1, color: theme.palette.info.main }} />
                           Mobile Money Transfer
                         </Box>
                       }
@@ -811,7 +814,7 @@ const BookingPage: React.FC = () => {
                             py: isMobile ? 1 : 0,
                           }}
                         >
-                          <HotelIcon sx={{ mr: 1 }} />
+                          <HotelIcon sx={{ mr: 1, color: theme.palette.secondary.main }} />
                           Pay at Front Desk
                         </Box>
                       }
@@ -832,7 +835,10 @@ const BookingPage: React.FC = () => {
                             py: isMobile ? 1 : 0,
                           }}
                         >
-                          <PhoneIcon sx={{ mr: 1, color: 'warning.main' }} />
+                          <PhoneIcon sx={{ 
+                            mr: 1, 
+                            color: theme.palette.mode === 'dark' ? themeConstants.darkTheme.mbirrOrange : themeConstants.mbirrOrange 
+                          }} />
                           🇪🇹 M-birr
                         </Box>
                       }
@@ -853,7 +859,10 @@ const BookingPage: React.FC = () => {
                             py: isMobile ? 1 : 0,
                           }}
                         >
-                          <PhoneIcon sx={{ mr: 1, color: 'success.main' }} />
+                          <PhoneIcon sx={{ 
+                            mr: 1, 
+                            color: theme.palette.mode === 'dark' ? themeConstants.darkTheme.telebirrGreen : themeConstants.telebirrGreen 
+                          }} />
                           🇪🇹 Telebirr
                         </Box>
                       }
@@ -873,9 +882,13 @@ const BookingPage: React.FC = () => {
                     <Paper 
                       sx={{ 
                         p: isMobile ? 2 : 3, 
-                        bgcolor: 'grey.50', 
+                        bgcolor: theme.palette.mode === 'dark' 
+                          ? themeConstants.darkTheme.cardBackground 
+                          : 'grey.50', 
                         border: '1px solid', 
-                        borderColor: 'grey.200',
+                        borderColor: theme.palette.mode === 'dark' 
+                          ? themeConstants.darkTheme.borderColor 
+                          : 'grey.200',
                       }}
                     >
                       <Typography 
@@ -998,7 +1011,16 @@ const BookingPage: React.FC = () => {
               {paymentMethod === 'mobile_money' && (
                 <>
                   <Grid item xs={12}>
-                    <Paper sx={{ p: 2, bgcolor: 'grey.50', border: '1px solid', borderColor: 'grey.200' }}>
+                    <Paper sx={{ 
+                      p: 2, 
+                      bgcolor: theme.palette.mode === 'dark' 
+                        ? themeConstants.darkTheme.cardBackground 
+                        : 'grey.50', 
+                      border: '1px solid', 
+                      borderColor: theme.palette.mode === 'dark' 
+                        ? themeConstants.darkTheme.borderColor 
+                        : 'grey.200' 
+                    }}>
                       <Typography variant="subtitle2" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
                         <PhoneIcon sx={{ mr: 1 }} />
                         Mobile Money Transfer Details
@@ -1051,9 +1073,24 @@ const BookingPage: React.FC = () => {
               {paymentMethod === 'pay_at_frontdesk' && (
                 <>
                   <Grid item xs={12}>
-                    <Paper sx={{ p: 2, bgcolor: 'info.light', border: '1px solid', borderColor: 'info.main', color: 'info.contrastText' }}>
-                      <Typography variant="subtitle2" gutterBottom sx={{ display: 'flex', alignItems: 'center', fontWeight: 'bold' }}>
-                        <HotelIcon sx={{ mr: 1 }} />
+                    <Paper sx={{ 
+                      p: 2, 
+                      bgcolor: theme.palette.mode === 'dark' 
+                        ? `${theme.palette.info.main}15` 
+                        : 'info.light', 
+                      border: '1px solid', 
+                      borderColor: theme.palette.info.main,
+                      color: theme.palette.mode === 'dark' 
+                        ? theme.palette.info.light 
+                        : 'info.contrastText'
+                    }}>
+                      <Typography variant="subtitle2" gutterBottom sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        fontWeight: 'bold',
+                        color: theme.palette.info.main
+                      }}>
+                        <HotelIcon sx={{ mr: 1, color: theme.palette.info.main }} />
                         Pay at Front Desk
                       </Typography>
                       <Alert severity="info" sx={{ mb: 2 }}>
@@ -1079,8 +1116,20 @@ const BookingPage: React.FC = () => {
               {paymentMethod === 'mbirr' && (
                 <>
                   <Grid item xs={12}>
-                    <Paper sx={{ p: 2, bgcolor: 'warning.light', border: '2px solid', borderColor: 'warning.main' }}>
-                      <Typography variant="subtitle2" gutterBottom sx={{ display: 'flex', alignItems: 'center', fontWeight: 'bold', color: 'warning.main' }}>
+                    <Paper sx={{ 
+                      p: 2, 
+                      bgcolor: theme.palette.mode === 'dark' 
+                        ? `${themeConstants.darkTheme.mbirrOrange}15` 
+                        : `${themeConstants.mbirrOrange}20`, 
+                      border: '2px solid', 
+                      borderColor: theme.palette.mode === 'dark' ? themeConstants.darkTheme.mbirrOrange : themeConstants.mbirrOrange 
+                    }}>
+                      <Typography variant="subtitle2" gutterBottom sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        fontWeight: 'bold', 
+                        color: theme.palette.mode === 'dark' ? themeConstants.darkTheme.mbirrOrange : themeConstants.mbirrOrange 
+                      }}>
                         <PhoneIcon sx={{ mr: 1 }} />
                         🇪🇹 M-birr Mobile Payment
                       </Typography>
@@ -1111,14 +1160,21 @@ const BookingPage: React.FC = () => {
                             InputProps={{
                               startAdornment: (
                                 <InputAdornment position="start">
-                                  <PhoneIcon sx={{ color: (theme) => theme.custom.constants.mbirrOrange }} />
+                                  <PhoneIcon sx={{ 
+                                    color: theme.palette.mode === 'dark' ? themeConstants.darkTheme.mbirrOrange : themeConstants.mbirrOrange 
+                                  }} />
                                 </InputAdornment>
                               ),
                             }}
                           />
                         </Grid>
                         <Grid item xs={12} sm={6}>
-                          <Box sx={{ p: 2, bgcolor: (theme) => theme.custom.constants.mbirrOrange, color: 'white', borderRadius: 1 }}>
+                          <Box sx={{ 
+                            p: 2, 
+                            bgcolor: theme.palette.mode === 'dark' ? themeConstants.darkTheme.mbirrOrange : themeConstants.mbirrOrange, 
+                            color: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.87)' : 'white', 
+                            borderRadius: 1 
+                          }}>
                             <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>
                               M-birr Information
                             </Typography>
@@ -1154,8 +1210,20 @@ const BookingPage: React.FC = () => {
               {paymentMethod === 'telebirr' && (
                 <>
                   <Grid item xs={12}>
-                    <Paper sx={{ p: 2, bgcolor: (theme) => theme.custom.constants.telebirrGreen + '20', border: 2, borderColor: (theme) => theme.custom.constants.telebirrGreen }}>
-                      <Typography variant="subtitle2" gutterBottom sx={{ display: 'flex', alignItems: 'center', fontWeight: 'bold', color: (theme) => theme.custom.constants.telebirrGreen }}>
+                    <Paper sx={{ 
+                      p: 2, 
+                      bgcolor: theme.palette.mode === 'dark' 
+                        ? `${themeConstants.darkTheme.telebirrGreen}15` 
+                        : `${themeConstants.telebirrGreen}20`, 
+                      border: 2, 
+                      borderColor: theme.palette.mode === 'dark' ? themeConstants.darkTheme.telebirrGreen : themeConstants.telebirrGreen 
+                    }}>
+                      <Typography variant="subtitle2" gutterBottom sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        fontWeight: 'bold', 
+                        color: theme.palette.mode === 'dark' ? themeConstants.darkTheme.telebirrGreen : themeConstants.telebirrGreen 
+                      }}>
                         <PhoneIcon sx={{ mr: 1 }} />
                         🇪🇹 Telebirr Mobile Payment
                       </Typography>
@@ -1186,14 +1254,21 @@ const BookingPage: React.FC = () => {
                             InputProps={{
                               startAdornment: (
                                 <InputAdornment position="start">
-                                  <PhoneIcon sx={{ color: (theme) => theme.custom.constants.telebirrGreen }} />
+                                  <PhoneIcon sx={{ 
+                                    color: theme.palette.mode === 'dark' ? themeConstants.darkTheme.telebirrGreen : themeConstants.telebirrGreen 
+                                  }} />
                                 </InputAdornment>
                               ),
                             }}
                           />
                         </Grid>
                         <Grid item xs={12} sm={6}>
-                          <Box sx={{ p: 2, bgcolor: (theme) => theme.custom.constants.telebirrGreen, color: 'white', borderRadius: 1 }}>
+                          <Box sx={{ 
+                            p: 2, 
+                            bgcolor: theme.palette.mode === 'dark' ? themeConstants.darkTheme.telebirrGreen : themeConstants.telebirrGreen, 
+                            color: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.87)' : 'white', 
+                            borderRadius: 1 
+                          }}>
                             <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>
                               Telebirr Information
                             </Typography>
