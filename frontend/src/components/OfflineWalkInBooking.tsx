@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  Paper,
   Typography,
   Box,
   Button,
@@ -454,132 +453,210 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
         
       case 1:
         return (
-          <Box>
-            <Typography variant="h6" gutterBottom>
-              Available Rooms
-            </Typography>
-            <Typography variant="body2" color="text.secondary" gutterBottom>
-              {format(checkInDate, 'MMM dd, yyyy')} - {format(checkOutDate, 'MMM dd, yyyy')} • {guests} Guest{guests !== 1 ? 's' : ''}
-            </Typography>
-            
-            {roomsLoading ? (
-              <Box sx={{ textAlign: 'center', py: 4 }}>
-                <CircularProgress size={40} />
-                <Typography variant="body2" sx={{ mt: 2 }}>
-                  Loading available rooms...
-                </Typography>
-              </Box>
-            ) : availableRooms.length === 0 ? (
-              <Alert severity="warning">
-                No rooms available for {guests} guest{guests !== 1 ? 's' : ''} from {format(checkInDate, 'MMM dd')} to {format(checkOutDate, 'MMM dd')}. 
-                Please try different dates or reduce the number of guests.
-              </Alert>
-            ) : (
-              <Grid container spacing={2} sx={{ mt: 1 }}>
-                {availableRooms.map((room) => (
-                  <Grid item xs={12} sm={6} md={4} key={room.id}>
-                    <Card 
-                      sx={{ 
-                        cursor: 'pointer',
-                        border: selectedRoom?.id === room.id ? '3px solid' : '1px solid',
-                        borderColor: selectedRoom?.id === room.id ? 'primary.main' : 'divider',
-                        backgroundColor: selectedRoom?.id === room.id ? 'primary.light' : 'background.paper',
-                        transform: selectedRoom?.id === room.id ? 'scale(1.02)' : 'scale(1)',
-                        boxShadow: selectedRoom?.id === room.id ? '0 8px 25px rgba(25, 118, 210, 0.15)' : '0 2px 8px rgba(0,0,0,0.1)',
-                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                        position: 'relative',
-                        '&:hover': {
-                          transform: 'scale(1.02)',
-                          boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
-                        }
-                      }}
-                      onClick={() => setSelectedRoom(room)}
-                    >
-                      {selectedRoom?.id === room.id && (
-                        <Box
-                          sx={{
-                            position: 'absolute',
-                            top: 8,
-                            right: 8,
-                            backgroundColor: 'primary.main',
-                            color: 'white',
-                            borderRadius: '50%',
-                            width: 24,
-                            height: 24,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            zIndex: 1,
+          <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '500px' }}>
+            {/* Room Selection Header */}
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="h6" gutterBottom>
+                Available Rooms
+              </Typography>
+              <Typography variant="body2" color="text.secondary" gutterBottom>
+                {format(checkInDate, 'MMM dd, yyyy')} - {format(checkOutDate, 'MMM dd, yyyy')} • {guests} Guest{guests !== 1 ? 's' : ''}
+              </Typography>
+            </Box>
+
+            {/* Scrollable Room Content */}
+            <Box 
+              sx={{ 
+                flex: 1,
+                maxHeight: '400px',
+                overflowY: 'auto',
+                pr: 1,
+                '&::-webkit-scrollbar': {
+                  width: '8px',
+                },
+                '&::-webkit-scrollbar-track': {
+                  background: '#f1f1f1',
+                  borderRadius: '10px',
+                },
+                '&::-webkit-scrollbar-thumb': {
+                  background: '#c1c1c1',
+                  borderRadius: '10px',
+                  '&:hover': {
+                    background: '#a8a8a8',
+                  },
+                },
+              }}
+            >
+              {roomsLoading ? (
+                <Box sx={{ textAlign: 'center', py: 4 }}>
+                  <CircularProgress size={40} />
+                  <Typography variant="body2" sx={{ mt: 2 }}>
+                    Loading available rooms...
+                  </Typography>
+                </Box>
+              ) : availableRooms.length === 0 ? (
+                <Alert severity="warning">
+                  No rooms available for {guests} guest{guests !== 1 ? 's' : ''} from {format(checkInDate, 'MMM dd')} to {format(checkOutDate, 'MMM dd')}. 
+                  Please try different dates or reduce the number of guests.
+                </Alert>
+              ) : (
+                <>
+                  <Grid container spacing={2}>
+                    {availableRooms.map((room) => (
+                      <Grid item xs={12} sm={6} md={4} key={room.id}>
+                        <Card 
+                          sx={{ 
+                            cursor: 'pointer',
+                            border: selectedRoom?.id === room.id ? '3px solid' : '1px solid',
+                            borderColor: selectedRoom?.id === room.id ? 'primary.main' : 'divider',
+                            backgroundColor: selectedRoom?.id === room.id ? 'primary.light' : 'background.paper',
+                            transform: selectedRoom?.id === room.id ? 'scale(1.02)' : 'scale(1)',
+                            boxShadow: selectedRoom?.id === room.id ? '0 8px 25px rgba(25, 118, 210, 0.15)' : '0 2px 8px rgba(0,0,0,0.1)',
+                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                            position: 'relative',
+                            '&:hover': {
+                              transform: 'scale(1.02)',
+                              boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                            }
                           }}
+                          onClick={() => setSelectedRoom(room)}
                         >
-                          ✓
-                        </Box>
-                      )}
-                      <CardContent sx={{ 
-                        color: selectedRoom?.id === room.id ? 'primary.contrastText' : 'inherit',
-                        '& .MuiTypography-root': {
-                          color: selectedRoom?.id === room.id ? 'white' : 'inherit'
-                        }
-                      }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-                          <Typography variant="h6" sx={{ 
-                            fontWeight: selectedRoom?.id === room.id ? 600 : 500,
-                            color: selectedRoom?.id === room.id ? 'white' : 'inherit'
+                          {selectedRoom?.id === room.id && (
+                            <Box
+                              sx={{
+                                position: 'absolute',
+                                top: 8,
+                                right: 8,
+                                backgroundColor: 'primary.main',
+                                color: 'white',
+                                borderRadius: '50%',
+                                width: 24,
+                                height: 24,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                zIndex: 1,
+                              }}
+                            >
+                              ✓
+                            </Box>
+                          )}
+                          <CardContent sx={{ 
+                            color: selectedRoom?.id === room.id ? 'primary.contrastText' : 'inherit',
+                            '& .MuiTypography-root': {
+                              color: selectedRoom?.id === room.id ? 'white' : 'inherit'
+                            }
                           }}>
-                            Room {room.roomNumber}
-                          </Typography>
-                          <Chip 
-                            label={room.roomType} 
-                            size="small" 
-                            sx={{
-                              backgroundColor: selectedRoom?.id === room.id ? 'primary.contrastText' : 'inherit',
-                              color: selectedRoom?.id === room.id ? 'primary.main' : 'inherit',
-                              opacity: selectedRoom?.id === room.id ? 0.8 : 1
-                            }}
-                          />
-                        </Box>
-                        <Typography variant="body2" sx={{ 
-                          color: selectedRoom?.id === room.id ? 'primary.contrastText' : 'text.secondary',
-                          opacity: selectedRoom?.id === room.id ? 0.9 : 1,
-                          mb: 1
-                        }}>
-                          Capacity: {room.capacity} guest{room.capacity !== 1 ? 's' : ''}
-                        </Typography>
-                        {room.description && (
-                          <Typography variant="body2" sx={{ 
-                            color: selectedRoom?.id === room.id ? 'primary.contrastText' : 'text.secondary',
-                            opacity: selectedRoom?.id === room.id ? 0.8 : 1,
-                            mb: 1
-                          }}>
-                            {room.description}
-                          </Typography>
-                        )}
-                        <Typography variant="h6" sx={{
-                          color: selectedRoom?.id === room.id ? 'white' : 'primary.main',
-                          fontWeight: 600
-                        }}>
-                          ETB {room.pricePerNight?.toFixed(0)}/night
-                        </Typography>
-                      </CardContent>
-                    </Card>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                              <Typography variant="h6" sx={{ 
+                                fontWeight: selectedRoom?.id === room.id ? 600 : 500,
+                                color: selectedRoom?.id === room.id ? 'white' : 'inherit'
+                              }}>
+                                Room {room.roomNumber}
+                              </Typography>
+                              <Chip 
+                                label={room.roomType} 
+                                size="small" 
+                                sx={{
+                                  backgroundColor: selectedRoom?.id === room.id ? 'primary.contrastText' : 'inherit',
+                                  color: selectedRoom?.id === room.id ? 'primary.main' : 'inherit',
+                                  opacity: selectedRoom?.id === room.id ? 0.8 : 1
+                                }}
+                              />
+                            </Box>
+                            <Typography variant="body2" sx={{ 
+                              color: selectedRoom?.id === room.id ? 'primary.contrastText' : 'text.secondary',
+                              opacity: selectedRoom?.id === room.id ? 0.9 : 1,
+                              mb: 1
+                            }}>
+                              Capacity: {room.capacity} guest{room.capacity !== 1 ? 's' : ''}
+                            </Typography>
+                            {room.description && (
+                              <Typography variant="body2" sx={{ 
+                                color: selectedRoom?.id === room.id ? 'primary.contrastText' : 'text.secondary',
+                                opacity: selectedRoom?.id === room.id ? 0.8 : 1,
+                                mb: 1
+                              }}>
+                                {room.description}
+                              </Typography>
+                            )}
+                            <Typography variant="h6" sx={{
+                              color: selectedRoom?.id === room.id ? 'white' : 'primary.main',
+                              fontWeight: 600
+                            }}>
+                              ETB {room.pricePerNight?.toFixed(0)}/night
+                            </Typography>
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                    ))}
                   </Grid>
-                ))}
-              </Grid>
-            )}
-            
-            {selectedRoom && (
-              <Box sx={{ mt: 2 }}>
-                <TextField
-                  fullWidth
-                  label="Special Requests (Optional)"
-                  multiline
-                  rows={3}
-                  value={specialRequests}
-                  onChange={handleSpecialRequestsChange}
-                  placeholder="Any special requests or notes for the guest stay..."
-                />
+
+                  {selectedRoom && (
+                    <Box sx={{ mt: 3, mb: 2 }}>
+                      <TextField
+                        fullWidth
+                        label="Special Requests (Optional)"
+                        multiline
+                        rows={3}
+                        value={specialRequests}
+                        onChange={handleSpecialRequestsChange}
+                        placeholder="Any special requests or notes for the guest stay..."
+                      />
+                    </Box>
+                  )}
+                </>
+              )}
+            </Box>
+
+            {/* Always Visible Action Buttons for Room Selection */}
+            <Box 
+              sx={{ 
+                mt: 2,
+                pt: 2,
+                borderTop: '1px solid',
+                borderColor: 'divider',
+                backgroundColor: 'background.paper',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <Box>
+                {selectedRoom && (
+                  <Typography variant="body2" color="success.main" sx={{ fontWeight: 'medium' }}>
+                    ✓ Room {selectedRoom.roomNumber} selected
+                  </Typography>
+                )}
               </Box>
-            )}
+              
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                <Button 
+                  onClick={handleBack} 
+                  disabled={loading}
+                  sx={{ minWidth: 100 }}
+                >
+                  Back
+                </Button>
+                <Button 
+                  variant="contained" 
+                  onClick={handleNext}
+                  disabled={loading || !selectedRoom || roomsLoading}
+                  startIcon={roomsLoading ? <CircularProgress size={16} /> : undefined}
+                  sx={{ 
+                    minWidth: 120,
+                    background: selectedRoom 
+                      ? 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)'
+                      : undefined,
+                    '&:hover': selectedRoom ? {
+                      background: 'linear-gradient(135deg, #1565c0 0%, #0d47a1 100%)',
+                    } : undefined,
+                  }}
+                >
+                  {roomsLoading ? 'Loading...' : 'Next'}
+                </Button>
+              </Box>
+            </Box>
           </Box>
         );
         
@@ -1334,34 +1411,35 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
         {renderStepContent()}
       </Box>
       
-      {/* Action Buttons (matching online component exactly) */}
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3, gap: 2 }}>
-        {activeStep > 0 && (
-          <Button onClick={handleBack} disabled={loading}>
-            Back
-          </Button>
-        )}
-        
-        {activeStep < steps.length - 1 ? (
-          <Button 
-            variant="contained" 
-            onClick={handleNext}
-            disabled={loading || (activeStep === 1 && (!selectedRoom || roomsLoading))}
-            startIcon={roomsLoading && activeStep === 1 ? <CircularProgress size={16} /> : undefined}
-          >
-            {roomsLoading && activeStep === 1 ? 'Loading Rooms...' : 'Next'}
-          </Button>
-        ) : (
-          <Button 
-            variant="contained" 
-            onClick={handleCreateBooking}
-            disabled={loading || !selectedRoom}
-            startIcon={loading ? <CircularProgress size={16} /> : <SaveIcon />}
-          >
-            {loading ? 'Creating Booking...' : 'Create Booking'}
-          </Button>
-        )}
-      </Box>
+      {/* Action Buttons - Skip step 1 as it has its own action buttons */}
+      {activeStep !== 1 && (
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3, gap: 2 }}>
+          {activeStep > 0 && (
+            <Button onClick={handleBack} disabled={loading}>
+              Back
+            </Button>
+          )}
+          
+          {activeStep < steps.length - 1 ? (
+            <Button 
+              variant="contained" 
+              onClick={handleNext}
+              disabled={loading}
+            >
+              Next
+            </Button>
+          ) : (
+            <Button 
+              variant="contained" 
+              onClick={handleCreateBooking}
+              disabled={loading || !selectedRoom}
+              startIcon={loading ? <CircularProgress size={16} /> : <SaveIcon />}
+            >
+              {loading ? 'Creating Booking...' : 'Create Booking'}
+            </Button>
+          )}
+        </Box>
+      )}
 
 
 

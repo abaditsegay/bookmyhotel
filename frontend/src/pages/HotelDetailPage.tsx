@@ -258,7 +258,7 @@ const HotelDetailPage: React.FC = () => {
 
   return (
     <Container 
-      maxWidth={isMobile ? "lg" : "xl"} 
+      maxWidth="lg" 
       sx={{ 
         py: isMobile ? 2 : 4,
         px: isMobile ? 1 : 3,
