@@ -329,10 +329,7 @@ const BookingPage: React.FC = () => {
         checkOutDate: checkOutDate.format('YYYY-MM-DD'),
         guests: guests,
         specialRequests: specialRequests.trim() || undefined,
-        paymentMethodId: paymentMethod === 'credit_card' ? 'card_payment' : 
-                        paymentMethod === 'pay_at_frontdesk' ? 'pay_at_frontdesk' :
-                        paymentMethod === 'mbirr' ? 'mbirr' :
-                        paymentMethod === 'telebirr' ? 'telebirr' : undefined,
+        paymentMethodId: paymentMethod === 'pay_at_frontdesk' ? 'pay_at_frontdesk' : 'mock_payment_processed',
         // Include payment reference from mock gateway
         paymentReference: paymentResult?.paymentReference,
         transactionId: paymentResult?.transactionId,
