@@ -175,6 +175,15 @@ public class BookingService {
                     // For pay at front desk, mark reservation as confirmed with payment pending
                     reservation.setStatus(ReservationStatus.CONFIRMED);
                     // No payment intent ID set, so payment status will be "PENDING"
+                } else if ("mock_payment_processed".equals(request.getPaymentMethodId())) {
+                    // For mock payments already processed by frontend
+                    reservation.setStatus(ReservationStatus.CONFIRMED);
+                    // Use the transaction ID from the mock payment gateway
+                    if (request.getTransactionId() != null) {
+                        reservation.setPaymentIntentId(request.getTransactionId());
+                    }
+                    logger.info("Mock payment processed for reservation: {} with transaction ID: {}", 
+                               reservation.getId(), request.getTransactionId());
                 } else if ("mbirr".equals(request.getPaymentMethodId())
                         || "telebirr".equals(request.getPaymentMethodId())) {
                     // Handle Ethiopian mobile payments
@@ -303,6 +312,15 @@ public class BookingService {
                     // For pay at front desk, mark reservation as confirmed with payment pending
                     reservation.setStatus(ReservationStatus.CONFIRMED);
                     // No payment intent ID set, so payment status will be "PENDING"
+                } else if ("mock_payment_processed".equals(request.getPaymentMethodId())) {
+                    // For mock payments already processed by frontend
+                    reservation.setStatus(ReservationStatus.CONFIRMED);
+                    // Use the transaction ID from the mock payment gateway
+                    if (request.getTransactionId() != null) {
+                        reservation.setPaymentIntentId(request.getTransactionId());
+                    }
+                    logger.info("Mock payment processed for reservation: {} with transaction ID: {}", 
+                               reservation.getId(), request.getTransactionId());
                 } else {
                     // Handle other payment methods (e.g., credit card via Stripe)
                     try {

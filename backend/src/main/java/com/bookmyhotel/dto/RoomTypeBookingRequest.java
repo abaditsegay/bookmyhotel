@@ -31,6 +31,8 @@ public class RoomTypeBookingRequest {
     
     // Payment information
     private String paymentMethodId; // Stripe payment method ID
+    private String transactionId; // Transaction ID from payment gateway
+    private String paymentReference; // Payment reference from payment gateway
     
     // Guest information (required for anonymous bookings, optional for authenticated users)
     private String guestName;
@@ -130,5 +132,21 @@ public class RoomTypeBookingRequest {
     
     public void setGuestPhone(String guestPhone) {
         this.guestPhone = guestPhone;
+    }
+    
+    public String getTransactionId() {
+        return transactionId;
+    }
+    
+    public void setTransactionId(String transactionId) {
+        this.transactionId = transactionId;
+    }
+    
+    public String getPaymentReference() {
+        return paymentReference;
+    }
+    
+    public void setPaymentReference(String paymentReference) {
+        this.paymentReference = paymentReference;
     }
 }
