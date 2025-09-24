@@ -394,11 +394,12 @@ const Navbar: React.FC = () => {
     <>
       <AppBar 
         position="sticky" 
-        elevation={2}
+        elevation={0} // Remove elevation for better performance
         sx={{
           backgroundColor: theme.palette.primary.main,
-          backgroundImage: (theme) => theme.custom.constants.gradients.primaryButton,
+          backgroundImage: theme.custom?.constants?.gradients?.primaryButton || `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
           height: 'auto', // Allow AppBar to grow with content
+          borderBottom: `1px solid ${theme.palette.divider}`, // Add subtle border for structure
         }}
       >
         <Toolbar 

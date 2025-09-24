@@ -117,12 +117,14 @@ export const themeConstants = {
   // Gradient styles - different for light and dark themes
   gradients: {
     light: {
-      primaryButton: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
+      primaryButton: 'linear-gradient(135deg, #4caf50 0%, #43a047 100%)',  // Green gradient to match primary color
+      secondaryButton: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)', // Blue gradient for secondary actions
       successButton: 'linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)',
-      heroBackground: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
+      heroBackground: 'linear-gradient(135deg, #4caf50 0%, #43a047 100%)', // Green hero to match brand
     },
     dark: {
-      primaryButton: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
+      primaryButton: 'linear-gradient(135deg, #66bb6a 0%, #4caf50 100%)',  // Lighter green for dark mode
+      secondaryButton: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)', // Blue for secondary
       successButton: 'linear-gradient(135deg, #4caf50 0%, #2e7d32 100%)',
       heroBackground: 'linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%)',
     }

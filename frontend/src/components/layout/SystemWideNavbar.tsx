@@ -88,7 +88,15 @@ export const SystemWideNavbar: React.FC = () => {
   const isSystemCustomer = user.roles.includes('CUSTOMER');
 
   return (
-    <AppBar position="static" sx={{ bgcolor: 'primary.main' }}>
+    <AppBar 
+      position="static" 
+      elevation={0} // Remove elevation for better performance
+      sx={{ 
+        backgroundColor: theme.palette.primary.main,
+        backgroundImage: theme.custom?.constants?.gradients?.primaryButton || `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+        borderBottom: `1px solid ${theme.palette.divider}`, // Add subtle border for structure
+      }}
+    >
       <Toolbar>
         {/* Left Section: Mobile Menu + Theme Toggle + Logo */}
         <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
