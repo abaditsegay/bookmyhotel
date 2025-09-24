@@ -1072,10 +1072,12 @@ const BookingPage: React.FC = () => {
                       <Box sx={{ 
                         mt: 2,
                         p: 2,
-                        bgcolor: theme.palette.success.light,
-                        color: theme.palette.success.contrastText,
+                        bgcolor: theme.palette.mode === 'dark' 
+                          ? 'rgba(76, 175, 80, 0.15)' 
+                          : 'rgba(76, 175, 80, 0.08)',
+                        color: theme.palette.success.main,
                         borderRadius: 2,
-                        border: `1px solid ${theme.palette.success.main}`,
+                        border: `1px solid ${theme.palette.success.main}20`,
                         display: 'flex',
                         alignItems: 'center',
                         gap: 1,
@@ -1083,7 +1085,7 @@ const BookingPage: React.FC = () => {
                         <Typography variant="body2" sx={{ fontSize: '1.2em' }}>
                           🔒
                         </Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 600, color: theme.palette.success.main }}>
                           Your information is secure and will only be used for this booking
                         </Typography>
                       </Box>
