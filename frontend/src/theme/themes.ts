@@ -2,7 +2,57 @@ import { createTheme } from '@mui/material/styles';
 
 // Custom theme constants (shared between light and dark themes)
 export const themeConstants = {
-  // Brand colors
+  // Brand colors - Green Theme System
+  brandPrimary: '#4caf50',     // Main green color from your design
+  brandPrimaryLight: '#81c784',
+  brandPrimaryDark: '#388e3c',
+  brandSecondary: '#66bb6a',   // Complementary green
+  brandAccent: '#a5d6a7',      // Light green accent
+  
+  // Green Color Palette for consistent theming
+  greenPalette: {
+    50: '#e8f5e8',
+    100: '#c8e6c8',
+    200: '#a5d6a7',
+    300: '#81c784',
+    400: '#66bb6a',
+    500: '#4caf50',   // Main brand green
+    600: '#43a047',
+    700: '#388e3c',
+    800: '#2e7d32',
+    900: '#1b5e20',
+  },
+  
+  // UI Element specific colors derived from green palette
+  uiColors: {
+    // Form elements
+    inputFocus: '#4caf50',
+    inputHover: '#66bb6a',
+    inputBorder: '#a5d6a7',
+    
+    // Buttons
+    primaryButton: '#4caf50',
+    primaryButtonHover: '#43a047',
+    primaryButtonPressed: '#388e3c',
+    
+    // Status indicators
+    success: '#4caf50',
+    confirmed: '#1976d2',  // Blue for confirmed status as per your system
+    pending: '#ff9800',
+    error: '#f44336',
+    
+    // Steppers and progress
+    stepperActive: '#4caf50',
+    stepperCompleted: '#388e3c',
+    stepperInactive: '#e0e0e0',
+    
+    // Cards and surfaces
+    cardBorder: '#e8f5e8',
+    cardHover: '#f1f8e9',
+    surfaceElevated: '#ffffff',
+  },
+  
+  // Legacy brand colors (keeping for backward compatibility)
   brandGold: '#FFD700',
   hotelShopRed: '#cc0000',
   
@@ -25,18 +75,18 @@ export const themeConstants = {
     uploadArea: '400px'
   },
   
-  // Shadows and effects
+  // Shadows and effects - DISABLED (no shadows required)
   shadows: {
-    textShadow: '2px 2px 4px rgba(0,0,0,0.7)',
-    cardShadow: '0 8px 32px rgba(0,0,0,0.3)',
-    buttonShadow: '0 4px 20px rgba(0,0,0,0.5)'
+    textShadow: 'none',
+    cardShadow: 'none',
+    buttonShadow: 'none'
   },
   
-  // Border styles
+  // Border styles - 25% reduced opacity/thickness
   borders: {
-    light: '1px solid',
-    medium: '2px solid',
-    dashed: '2px dashed'
+    light: '1px solid',        // Keep thickness, opacity will be reduced in palette
+    medium: '1px solid',       // Reduced from 2px to 1px
+    dashed: '1px dashed'       // Reduced from 2px to 1px
   },
   
   // Scrollbar styles - different for light and dark themes
@@ -86,17 +136,17 @@ export const themeConstants = {
     none: 'none',
   },
   
-  // Lightweight shadow alternatives - different for light and dark themes
+  // Lightweight shadow alternatives - DISABLED (no shadows required)
   lightShadows: {
     light: {
-      minimal: '0 1px 3px rgba(0,0,0,0.1)',
-      light: '0 2px 4px rgba(0,0,0,0.1)', 
-      medium: '0 4px 8px rgba(0,0,0,0.1)',
+      minimal: 'none',
+      light: 'none', 
+      medium: 'none',
     },
     dark: {
-      minimal: '0 1px 3px rgba(0,0,0,0.3)',
-      light: '0 2px 4px rgba(0,0,0,0.3)', 
-      medium: '0 4px 8px rgba(0,0,0,0.3)',
+      minimal: 'none',
+      light: 'none', 
+      medium: 'none',
     }
   },
 };
@@ -138,14 +188,16 @@ const lightThemeBase = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: '#1976d2',
-      light: '#42a5f5',
-      dark: '#1565c0',
+      main: themeConstants.brandPrimary,      // Green as primary
+      light: themeConstants.brandPrimaryLight,
+      dark: themeConstants.brandPrimaryDark,
+      contrastText: '#ffffff',
     },
     secondary: {
-      main: '#f50057',
-      light: '#ff5983',
-      dark: '#c51162',
+      main: '#1976d2',  // Blue as secondary (for confirmed status, etc.)
+      light: '#42a5f5',
+      dark: '#1565c0',
+      contrastText: '#ffffff',
     },
     background: {
       default: '#f5f5f5',
@@ -156,20 +208,34 @@ const lightThemeBase = createTheme({
       secondary: '#666666',
     },
     success: {
-      main: themeConstants.telebirrGreen,
-      light: '#F0FFF4',
+      main: themeConstants.uiColors.success,
+      light: themeConstants.greenPalette[100],
+      dark: themeConstants.greenPalette[800],
+      contrastText: '#ffffff',
     },
     warning: {
-      main: themeConstants.mbirrOrange,
+      main: themeConstants.uiColors.pending,
       light: '#FFF5F0',
+      dark: '#e65100',
+      contrastText: '#ffffff',
     },
     info: {
       main: '#2196f3',
       light: '#e3f2fd',
+      dark: '#1976d2',
+      contrastText: '#ffffff',
     },
     error: {
-      main: '#f44336',
+      main: themeConstants.uiColors.error,
       light: '#ffebee',
+      dark: '#d32f2f',
+      contrastText: '#ffffff',
+    },
+    // Custom palette extensions - 25% reduced border opacity
+    divider: 'rgba(232, 245, 232, 0.75)', // 25% reduction from themeConstants.greenPalette[200]
+    action: {
+      hover: 'rgba(232, 245, 232, 0.38)',   // 25% reduction from greenPalette[50]
+      selected: 'rgba(200, 230, 200, 0.75)', // 25% reduction from greenPalette[100]
     },
   },
   components: {
@@ -193,18 +259,79 @@ const lightThemeBase = createTheme({
         },
       },
     },
+    MuiButton: {
+      styleOverrides: {
+        contained: {
+          boxShadow: 'none', // Remove shadow
+          '&:hover': {
+            boxShadow: 'none', // Remove hover shadow
+          },
+        },
+        containedPrimary: {
+          background: `linear-gradient(135deg, ${themeConstants.uiColors.primaryButton} 0%, ${themeConstants.uiColors.primaryButtonHover} 100%)`,
+          '&:hover': {
+            background: `linear-gradient(135deg, ${themeConstants.uiColors.primaryButtonHover} 0%, ${themeConstants.uiColors.primaryButtonPressed} 100%)`,
+          },
+        },
+      },
+    },
+    MuiTextField: {
+      styleOverrides: {
+        root: {
+          '& .MuiOutlinedInput-root': {
+            '&:hover fieldset': {
+              borderColor: themeConstants.uiColors.inputHover,
+            },
+            '&.Mui-focused fieldset': {
+              borderColor: themeConstants.uiColors.inputFocus,
+            },
+          },
+          '& .MuiInputLabel-root.Mui-focused': {
+            color: themeConstants.uiColors.inputFocus,
+          },
+        },
+      },
+    },
+    MuiStepper: {
+      styleOverrides: {
+        root: {
+          '& .MuiStepIcon-root.Mui-active': {
+            color: themeConstants.uiColors.stepperActive,
+          },
+          '& .MuiStepIcon-root.Mui-completed': {
+            color: themeConstants.uiColors.stepperCompleted,
+          },
+        },
+      },
+    },
     MuiAppBar: {
       styleOverrides: {
         root: {
-          // Don't override AppBar colors - let the component control its own colors
-          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+          boxShadow: 'none', // Remove shadow
         },
       },
     },
     MuiCard: {
       styleOverrides: {
         root: {
-          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+          boxShadow: 'none', // Remove shadow
+          border: '1px solid rgba(232, 245, 232, 0.75)', // Add reduced border instead
+          '&:hover': {
+            boxShadow: 'none', // Remove hover shadow
+            borderColor: 'rgba(165, 214, 167, 0.75)', // 25% reduced border on hover
+          },
+        },
+      },
+    },
+    MuiChip: {
+      styleOverrides: {
+        colorPrimary: {
+          backgroundColor: themeConstants.brandPrimary,
+          color: '#ffffff',
+        },
+        colorSuccess: {
+          backgroundColor: themeConstants.uiColors.success,
+          color: '#ffffff',
         },
       },
     },
@@ -229,14 +356,16 @@ const darkThemeBase = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      main: '#2196f3',
-      light: '#64b5f6',
-      dark: '#1976d2',
+      main: themeConstants.brandPrimaryLight,  // Lighter green for dark mode
+      light: themeConstants.greenPalette[300],
+      dark: themeConstants.brandPrimary,
+      contrastText: '#000000',
     },
     secondary: {
-      main: '#f48fb1',
-      light: '#f8bbd9',
-      dark: '#f06292',
+      main: '#64b5f6',  // Lighter blue for dark mode
+      light: '#90caf9',
+      dark: '#42a5f5',
+      contrastText: '#000000',
     },
     background: {
       default: '#121212',
@@ -247,22 +376,34 @@ const darkThemeBase = createTheme({
       secondary: '#b3b3b3',
     },
     success: {
-      main: '#4caf50',
-      light: '#c8e6c9',
+      main: themeConstants.greenPalette[400], // Lighter green for dark mode
+      light: themeConstants.greenPalette[200],
+      dark: themeConstants.greenPalette[600],
+      contrastText: '#000000',
     },
     warning: {
-      main: '#ff9800',
-      light: '#ffe0b2',
+      main: '#ffb74d',
+      light: '#ffcc80',
+      dark: '#ff9800',
+      contrastText: '#000000',
     },
     info: {
-      main: '#2196f3',
-      light: '#bbdefb',
+      main: '#64b5f6',
+      light: '#90caf9',
+      dark: '#42a5f5',
+      contrastText: '#000000',
     },
     error: {
-      main: '#f44336',
+      main: '#ef5350',
       light: '#ffcdd2',
+      dark: '#d32f2f',
+      contrastText: '#ffffff',
     },
-    divider: '#333333',
+    divider: 'rgba(51, 51, 51, 0.75)', // 25% reduced opacity
+    action: {
+      hover: 'rgba(76, 175, 80, 0.06)', // 25% reduction from 0.08
+      selected: 'rgba(76, 175, 80, 0.09)', // 25% reduction from 0.12
+    },
   },
   components: {
     ...baseThemeConfig.components,
@@ -286,12 +427,60 @@ const darkThemeBase = createTheme({
         },
       },
     },
+    MuiButton: {
+      styleOverrides: {
+        contained: {
+          boxShadow: 'none', // Remove shadow
+          '&:hover': {
+            boxShadow: 'none', // Remove hover shadow
+          },
+        },
+        containedPrimary: {
+          background: `linear-gradient(135deg, ${themeConstants.greenPalette[400]} 0%, ${themeConstants.greenPalette[500]} 100%)`,
+          '&:hover': {
+            background: `linear-gradient(135deg, ${themeConstants.greenPalette[500]} 0%, ${themeConstants.greenPalette[600]} 100%)`,
+          },
+        },
+      },
+    },
+    MuiTextField: {
+      styleOverrides: {
+        root: {
+          '& .MuiOutlinedInput-root': {
+            '& fieldset': {
+              borderColor: 'rgba(85, 85, 85, 0.75)', // 25% reduced from #555555
+            },
+            '&:hover fieldset': {
+              borderColor: `rgba(102, 187, 106, 0.75)`, // 25% reduced opacity
+            },
+            '&.Mui-focused fieldset': {
+              borderColor: `rgba(129, 199, 132, 0.75)`, // 25% reduced opacity
+            },
+          },
+          '& .MuiInputLabel-root.Mui-focused': {
+            color: themeConstants.greenPalette[300],
+          },
+        },
+      },
+    },
+    MuiStepper: {
+      styleOverrides: {
+        root: {
+          '& .MuiStepIcon-root.Mui-active': {
+            color: themeConstants.greenPalette[400],
+          },
+          '& .MuiStepIcon-root.Mui-completed': {
+            color: themeConstants.greenPalette[500],
+          },
+        },
+      },
+    },
     MuiAppBar: {
       styleOverrides: {
         root: {
           backgroundColor: '#1e1e1e',
           color: '#ffffff',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+          boxShadow: 'none', // Remove shadow
         },
       },
     },
@@ -299,7 +488,12 @@ const darkThemeBase = createTheme({
       styleOverrides: {
         root: {
           backgroundColor: '#1e1e1e',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+          boxShadow: 'none', // Remove shadow
+          border: '1px solid rgba(51, 51, 51, 0.75)', // Add reduced border instead
+          '&:hover': {
+            boxShadow: 'none', // Remove hover shadow
+            borderColor: 'rgba(76, 175, 80, 0.15)', // Subtle green border on hover
+          },
         },
       },
     },
@@ -318,27 +512,15 @@ const darkThemeBase = createTheme({
         },
       },
     },
-    MuiTextField: {
+    MuiChip: {
       styleOverrides: {
-        root: {
-          '& .MuiOutlinedInput-root': {
-            '& fieldset': {
-              borderColor: '#555555',
-            },
-            '&:hover fieldset': {
-              borderColor: '#777777',
-            },
-          },
+        colorPrimary: {
+          backgroundColor: themeConstants.greenPalette[500],
+          color: '#ffffff',
         },
-      },
-    },
-    MuiButton: {
-      styleOverrides: {
-        contained: {
-          boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
-          '&:hover': {
-            boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
-          },
+        colorSuccess: {
+          backgroundColor: themeConstants.greenPalette[400],
+          color: '#000000',
         },
       },
     },

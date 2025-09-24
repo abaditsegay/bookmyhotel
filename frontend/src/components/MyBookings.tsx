@@ -254,7 +254,9 @@ const MyBookings: React.FC = () => {
     <Box
       sx={{
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+        background: theme.palette.mode === 'light' 
+          ? `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.action.hover} 100%)`
+          : theme.palette.background.default,
         pt: 4,
         pb: 8,
       }}
@@ -283,10 +285,10 @@ const MyBookings: React.FC = () => {
           sx={{ 
             p: 6, 
             textAlign: 'center',
-            background: 'white',
+            background: theme.palette.background.paper,
             borderRadius: 4,
-            border: '1px solid #e0e0e0',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
+            border: `1px solid ${theme.palette.divider}`,
+            boxShadow: theme.shadows[4],
           }}
         >
           <Hotel sx={{ fontSize: 80, color: 'primary.main', mb: 3, opacity: 0.7 }} />
@@ -330,14 +332,14 @@ const MyBookings: React.FC = () => {
               <Card 
                 elevation={8}
                 sx={{ 
-                  background: 'white',
+                  background: theme.palette.background.paper,
                   borderRadius: 4,
-                  border: '1px solid #e0e0e0',
-                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
+                  border: `1px solid ${theme.palette.divider}`,
+                  boxShadow: theme.shadows[4],
                   transition: 'all 0.3s ease-in-out',
                   '&:hover': {
                     transform: 'translateY(-4px)',
-                    boxShadow: '0 12px 40px rgba(0, 0, 0, 0.12)',
+                    boxShadow: theme.shadows[8],
                   },
                 }}
               >
@@ -394,7 +396,7 @@ const MyBookings: React.FC = () => {
                   <Divider 
                     sx={{ 
                       my: 3,
-                      borderColor: '#e9ecef',
+                      borderColor: theme.palette.divider,
                     }} 
                   />
 

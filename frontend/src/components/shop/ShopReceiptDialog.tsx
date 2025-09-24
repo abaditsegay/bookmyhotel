@@ -18,6 +18,7 @@ import {
   TableRow,
   IconButton,
   Tooltip,
+  useTheme,
 } from '@mui/material';
 import {
   Print as PrintIcon,
@@ -51,6 +52,8 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
   onPaymentRequired,
   requiresPayment = false,
 }) => {
+  const theme = useTheme();
+  
   if (!order) return null;
 
   // Use order.hotelName if available, otherwise fall back to prop or default
@@ -101,7 +104,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
               .header { 
                 text-align: center; 
                 margin-bottom: 30px; 
-                border-bottom: 2px solid #ccc;
+                border-bottom: 2px solid ${theme.palette.divider};
                 padding-bottom: 20px;
               }
               .hotel-info { margin-bottom: 20px; }
@@ -112,25 +115,25 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                 margin-bottom: 20px; 
               }
               .items-table th, .items-table td { 
-                border: 1px solid #ddd; 
+                border: 1px solid ${theme.palette.divider}; 
                 padding: 10px; 
                 text-align: left; 
               }
               .items-table th { 
-                background-color: #f2f2f2; 
+                background-color: ${theme.palette.action.hover}; 
                 font-weight: bold;
               }
               .total-row { 
                 font-weight: bold; 
-                background-color: #f8f9fa; 
+                background-color: ${theme.palette.action.selected}; 
                 font-size: 1.1em;
               }
               .footer { 
                 margin-top: 30px; 
                 text-align: center; 
                 font-size: 12px; 
-                color: #666; 
-                border-top: 1px solid #ccc;
+                color: ${theme.palette.text.secondary}; 
+                border-top: 1px solid ${theme.palette.divider};
                 padding-top: 20px;
               }
               .info-grid {
@@ -140,7 +143,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                 margin-bottom: 20px;
               }
               .info-section {
-                border: 1px solid #ddd;
+                border: 1px solid ${theme.palette.divider};
                 padding: 15px;
                 border-radius: 5px;
               }
@@ -152,15 +155,15 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                 font-weight: bold;
                 text-transform: uppercase;
               }
-              .status.completed { background-color: #d4edda; color: #155724; }
-              .status.paid { background-color: #d4edda; color: #155724; }
-              .status.pending { background-color: #fff3cd; color: #856404; }
-              .status.processing { background-color: #fff3cd; color: #856404; }
-              .status.chargedtoroom { background-color: #cce5ff; color: #004085; }
-              .status.confirmed { background-color: #cce5ff; color: #004085; }
-              .status.preparing { background-color: #e2f3ff; color: #0056b3; }
-              .status.ready { background-color: #d1ecf1; color: #0c5460; }
-              .status.cancelled { background-color: #f8d7da; color: #721c24; }
+              .status.completed { background-color: ${theme.palette.success.light}; color: ${theme.palette.success.dark}; }
+              .status.paid { background-color: ${theme.palette.success.light}; color: ${theme.palette.success.dark}; }
+              .status.pending { background-color: ${theme.palette.warning.light}; color: ${theme.palette.warning.dark}; }
+              .status.processing { background-color: ${theme.palette.warning.light}; color: ${theme.palette.warning.dark}; }
+              .status.chargedtoroom { background-color: ${theme.palette.info.light}; color: ${theme.palette.info.dark}; }
+              .status.confirmed { background-color: ${theme.palette.info.light}; color: ${theme.palette.info.dark}; }
+              .status.preparing { background-color: ${theme.palette.primary.light}; color: ${theme.palette.primary.dark}; }
+              .status.ready { background-color: ${theme.palette.info.light}; color: ${theme.palette.info.dark}; }
+              .status.cancelled { background-color: ${theme.palette.error.light}; color: ${theme.palette.error.dark}; }
               @media print {
                 body { margin: 0; }
                 .no-print { display: none; }

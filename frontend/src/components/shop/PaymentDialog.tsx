@@ -84,33 +84,45 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
       value: PaymentMethod.CASH,
       label: 'Cash Payment',
       icon: <CashIcon />,
-      description: 'Pay with cash at the counter',
-      color: '#2e7d32',
+      color: theme.palette.primary.main,
+      description: 'Pay with cash at the hotel reception'
     },
     {
       value: PaymentMethod.CARD,
       label: 'Credit/Debit Card',
       icon: <CreditCardIcon />,
-      description: 'Pay with credit or debit card',
-      color: '#2e7d32',
+      color: theme.palette.info.main,
+      description: 'Pay securely with your card'
     },
     {
       value: PaymentMethod.MOBILE_MONEY,
       label: 'Mobile Money',
       icon: <MobileIcon />,
-      description: 'Pay with mobile money services',
-      color: '#2e7d32',
+      color: theme.palette.primary.dark,
+      description: 'Mobile money payment'
     },
     {
-      value: PaymentMethod.PAY_AT_FRONTDESK,
-      label: 'Pay at Front Desk',
-      icon: <BankIcon />,
-      description: 'Complete payment at hotel front desk',
-      color: '#2e7d32',
+      value: PaymentMethod.MOBILE,
+      label: 'Mobile Payment',
+      icon: <PaymentIcon />,
+      color: theme.palette.primary.dark,
+      description: 'Mobile payment service'
     },
-  ];
-
-  const formatCurrency = (amount: number) => {
+    {
+      value: PaymentMethod.CREDIT_CARD,
+      label: 'Credit Card',
+      icon: <CreditCardIcon />,
+      color: theme.palette.secondary.main,
+      description: 'Credit card payment'
+    },
+    {
+      value: PaymentMethod.ROOM_CHARGE,
+      label: 'Room Charge',
+      icon: <BankIcon />,
+      color: theme.palette.warning.main,
+      description: 'Charge to room account'
+    }
+  ];  const formatCurrency = (amount: number) => {
     return `ETB ${amount?.toFixed(0)}`;
   };
 

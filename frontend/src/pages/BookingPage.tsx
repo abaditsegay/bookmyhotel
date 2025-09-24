@@ -1073,11 +1073,11 @@ const BookingPage: React.FC = () => {
                         mt: 2,
                         p: 2,
                         bgcolor: theme.palette.mode === 'dark' 
-                          ? 'rgba(76, 175, 80, 0.15)' 
-                          : 'rgba(76, 175, 80, 0.08)',
+                          ? theme.palette.action.selected 
+                          : theme.palette.action.hover,
                         color: theme.palette.success.main,
                         borderRadius: 2,
-                        border: `1px solid ${theme.palette.success.main}20`,
+                        border: `1px solid ${theme.palette.success.main}`,
                         display: 'flex',
                         alignItems: 'center',
                         gap: 1,

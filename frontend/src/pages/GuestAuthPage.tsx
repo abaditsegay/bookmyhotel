@@ -15,6 +15,7 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { API_CONFIG } from '../config/apiConfig';
+import { useTheme, alpha } from '@mui/material/styles';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -39,6 +40,7 @@ function TabPanel(props: TabPanelProps) {
 }
 
 const GuestAuthPage: React.FC = () => {
+  const theme = useTheme();
   const [tabValue, setTabValue] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -241,19 +243,102 @@ const GuestAuthPage: React.FC = () => {
           alignItems: 'center',
           justifyContent: 'center',
           py: 4,
+          background: theme.palette.mode === 'light' 
+            ? `linear-gradient(135deg, ${alpha(theme.palette.primary.light, 0.08)} 0%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`
+            : `linear-gradient(135deg, ${alpha(theme.palette.primary.dark, 0.1)} 0%, transparent 100%)`,
         }}
       >
-        <Card sx={{ width: '100%', maxWidth: 500 }}>
+        <Card 
+          elevation={theme.palette.mode === 'light' ? 8 : 4}
+          sx={{ 
+            width: '100%', 
+            maxWidth: 500,
+            boxShadow: theme.palette.mode === 'light' 
+              ? `0 12px 40px -4px ${alpha(theme.palette.primary.main, 0.15)}, 0 8px 16px -8px ${alpha(theme.palette.primary.main, 0.2)}`
+              : `0 8px 32px -4px ${alpha(theme.palette.primary.main, 0.25)}`,
+            border: theme.palette.mode === 'dark' 
+              ? `1px solid ${alpha(theme.palette.primary.main, 0.3)}`
+              : undefined,
+            borderRadius: 3,
+            overflow: 'hidden',
+            position: 'relative',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: 4,
+              background: `linear-gradient(90deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.light} 100%)`,
+              zIndex: 1,
+            },
+          }}
+        >
           <CardContent sx={{ p: 4 }}>
-            <Typography variant="h4" component="h1" gutterBottom align="center">
+            <Typography 
+              variant="h4" 
+              component="h1" 
+              gutterBottom 
+              align="center"
+              sx={{
+                fontWeight: 'bold',
+                background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                mb: 1,
+              }}
+            >
               BookMyHotel
             </Typography>
-            <Typography variant="h6" component="h2" gutterBottom align="center" color="textSecondary">
+            <Typography 
+              variant="h6" 
+              component="h2" 
+              gutterBottom 
+              align="center" 
+              color="textSecondary"
+              sx={{ 
+                mb: 3,
+                color: theme.palette.text.secondary,
+              }}
+            >
               Sign in to complete your booking
             </Typography>
 
-            <Box sx={{ borderBottom: 1, borderColor: 'divider', mt: 3 }}>
-              <Tabs value={tabValue} onChange={handleTabChange} aria-label="auth tabs">
+            <Box 
+              sx={{ 
+                borderBottom: 1, 
+                borderColor: 'divider', 
+                mt: 3,
+                '& .MuiTabs-indicator': {
+                  background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+                  height: 3,
+                  borderRadius: '2px 2px 0 0',
+                },
+              }}
+            >
+              <Tabs 
+                value={tabValue} 
+                onChange={handleTabChange} 
+                aria-label="auth tabs"
+                variant="fullWidth"
+                sx={{
+                  '& .MuiTab-root': {
+                    fontWeight: 600,
+                    textTransform: 'none',
+                    fontSize: '1rem',
+                    color: theme.palette.text.secondary,
+                    '&:hover': {
+                      color: theme.palette.primary.main,
+                      backgroundColor: alpha(theme.palette.primary.main, 0.04),
+                    },
+                  },
+                  '& .Mui-selected': {
+                    color: theme.palette.primary.main,
+                    fontWeight: 700,
+                  },
+                }}
+              >
                 <Tab label="Sign In" />
                 <Tab label="Create Account" />
               </Tabs>
@@ -298,7 +383,32 @@ const GuestAuthPage: React.FC = () => {
                   type="submit"
                   fullWidth
                   variant="contained"
-                  sx={{ mt: 3, mb: 1 }}
+                  sx={{ 
+                    mt: 3, 
+                    mb: 1,
+                    py: 1.5,
+                    fontSize: '1.1rem',
+                    fontWeight: 600,
+                    textTransform: 'none',
+                    borderRadius: 2,
+                    background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+                    boxShadow: `0 4px 16px ${alpha(theme.palette.primary.main, 0.35)}`,
+                    '&:hover': {
+                      background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
+                      boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
+                      transform: 'translateY(-1px)',
+                    },
+                    '&:active': {
+                      transform: 'translateY(0)',
+                      transition: 'transform 0.1s ease',
+                    },
+                    '&:disabled': {
+                      background: theme.palette.action.disabledBackground,
+                      color: theme.palette.action.disabled,
+                      boxShadow: 'none',
+                    },
+                    transition: 'all 0.2s ease',
+                  }}
                   disabled={loading}
                 >
                   {loading ? 'Signing In...' : 'Sign In'}
@@ -308,7 +418,32 @@ const GuestAuthPage: React.FC = () => {
                 <Button
                   fullWidth
                   variant="outlined"
-                  sx={{ mb: 2 }}
+                  sx={{ 
+                    mb: 2,
+                    py: 1.5,
+                    fontSize: '1rem',
+                    fontWeight: 500,
+                    textTransform: 'none',
+                    borderRadius: 2,
+                    borderWidth: 2,
+                    borderColor: theme.palette.primary.main,
+                    color: theme.palette.primary.main,
+                    '&:hover': {
+                      borderColor: theme.palette.primary.dark,
+                      backgroundColor: alpha(theme.palette.primary.main, 0.08),
+                      borderWidth: 2,
+                      transform: 'translateY(-1px)',
+                    },
+                    '&:active': {
+                      transform: 'translateY(0)',
+                      transition: 'transform 0.1s ease',
+                    },
+                    '&:disabled': {
+                      borderColor: theme.palette.action.disabled,
+                      color: theme.palette.action.disabled,
+                    },
+                    transition: 'all 0.2s ease',
+                  }}
                   disabled={loading}
                   onClick={handleMobileLogin}
                 >
@@ -377,7 +512,32 @@ const GuestAuthPage: React.FC = () => {
                   type="submit"
                   fullWidth
                   variant="contained"
-                  sx={{ mt: 3, mb: 2 }}
+                  sx={{ 
+                    mt: 3, 
+                    mb: 2,
+                    py: 1.5,
+                    fontSize: '1.1rem',
+                    fontWeight: 600,
+                    textTransform: 'none',
+                    borderRadius: 2,
+                    background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+                    boxShadow: `0 4px 16px ${alpha(theme.palette.primary.main, 0.35)}`,
+                    '&:hover': {
+                      background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
+                      boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
+                      transform: 'translateY(-1px)',
+                    },
+                    '&:active': {
+                      transform: 'translateY(0)',
+                      transition: 'transform 0.1s ease',
+                    },
+                    '&:disabled': {
+                      background: theme.palette.action.disabledBackground,
+                      color: theme.palette.action.disabled,
+                      boxShadow: 'none',
+                    },
+                    transition: 'all 0.2s ease',
+                  }}
                   disabled={loading}
                 >
                   {loading ? 'Creating Account...' : 'Create Account'}
@@ -388,11 +548,41 @@ const GuestAuthPage: React.FC = () => {
             <Typography variant="body2" color="textSecondary" align="center" sx={{ mt: 2 }}>
               Need to make a booking? You'll need to{' '}
               {tabValue === 0 ? (
-                <Link component="button" onClick={() => setTabValue(1)}>
+                <Link 
+                  component="button" 
+                  onClick={() => setTabValue(1)}
+                  sx={{
+                    color: theme.palette.primary.main,
+                    fontWeight: 600,
+                    textDecoration: 'underline',
+                    textDecorationColor: alpha(theme.palette.primary.main, 0.6),
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      textDecorationColor: theme.palette.primary.main,
+                      color: theme.palette.primary.dark,
+                      textDecorationThickness: '2px',
+                    },
+                  }}
+                >
                   create an account
                 </Link>
               ) : (
-                <Link component="button" onClick={() => setTabValue(0)}>
+                <Link 
+                  component="button" 
+                  onClick={() => setTabValue(0)}
+                  sx={{
+                    color: theme.palette.primary.main,
+                    fontWeight: 600,
+                    textDecoration: 'underline',
+                    textDecorationColor: alpha(theme.palette.primary.main, 0.6),
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      textDecorationColor: theme.palette.primary.main,
+                      color: theme.palette.primary.dark,
+                      textDecorationThickness: '2px',
+                    },
+                  }}
+                >
                   sign in
                 </Link>
               )}{' '}

@@ -267,7 +267,7 @@ const BookingConfirmationPage: React.FC = () => {
             <CircularProgress 
               size={isMobile ? 60 : 80} 
               thickness={4} 
-              sx={{ color: '#1976d2', mb: isMobile ? 3 : 4 }} 
+              sx={{ color: theme.palette.primary.main, mb: isMobile ? 3 : 4 }} 
             />
             <Typography 
               variant={isMobile ? 'h6' : 'h5'} 
@@ -333,7 +333,7 @@ const BookingConfirmationPage: React.FC = () => {
                 px: isMobile ? 3 : 4, 
                 py: 1.5,
                 minHeight: 48,
-                background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
+                background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
               }}
             >
               Return Home
@@ -445,9 +445,9 @@ const BookingConfirmationPage: React.FC = () => {
             py: 1.5,
             minHeight: 48,
             flex: isMobile ? '1' : '0 0 auto',
-            background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
+            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
             '&:hover': {
-              background: 'linear-gradient(135deg, #1565c0 0%, #0d47a1 100%)',
+              background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
             }
           }}
         >
@@ -462,11 +462,11 @@ const BookingConfirmationPage: React.FC = () => {
             py: 1.5,
             minHeight: 48,
             flex: isMobile ? '1' : '0 0 auto',
-            borderColor: '#1976d2',
-            color: '#1976d2',
+            borderColor: theme.palette.primary.main,
+            color: theme.palette.primary.main,
             '&:hover': {
-              borderColor: '#1565c0',
-              backgroundColor: 'rgba(25, 118, 210, 0.04)',
+              borderColor: theme.palette.primary.dark,
+              backgroundColor: theme.palette.action.hover,
             }
           }}
         >
@@ -482,15 +482,15 @@ const BookingConfirmationPage: React.FC = () => {
             py: 1.5,
             minHeight: 48,
             flex: isMobile ? '1' : '0 0 auto',
-            borderColor: '#1976d2',
-            color: '#1976d2',
+            borderColor: theme.palette.primary.main,
+            color: theme.palette.primary.main,
             '&:hover': {
-              borderColor: '#1565c0',
-              backgroundColor: 'rgba(25, 118, 210, 0.04)',
+              borderColor: theme.palette.primary.dark,
+              backgroundColor: theme.palette.action.hover,
             },
             '&:disabled': {
-              borderColor: '#ccc',
-              color: '#ccc',
+              borderColor: theme.palette.action.disabled,
+              color: theme.palette.action.disabled,
             }
           }}
         >
@@ -527,7 +527,7 @@ const BookingConfirmationPage: React.FC = () => {
               gutterBottom 
               sx={{ 
                 fontWeight: 'bold', 
-                color: '#1976d2',
+                color: theme.palette.primary.main,
                 mb: isMobile ? 1 : 'initial',
               }}
             >

@@ -223,15 +223,15 @@ const HomePage = () => {
                       <Grid item xs={6}>
                         <Box
                           sx={{
-                            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                            backgroundColor: (theme) => `rgba(255, 255, 255, ${theme.custom.constants.alpha.low})`,
                             borderRadius: 1,
                             p: 2,
-                            border: '1px solid rgba(255, 255, 255, 0.3)',
+                            border: (theme) => `1px solid rgba(255, 255, 255, ${theme.custom.constants.alpha.high})`,
                             cursor: 'pointer',
                             ...performanceUtils.getAnimationStyles(enableAnimations),
                             ...(enableAnimations && !performanceUtils.isSlowConnection() ? {
                               '&:hover': {
-                                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                                backgroundColor: (theme) => `rgba(255, 255, 255, ${theme.custom.constants.alpha.medium})`,
                               }
                             } : {})
                           }}
@@ -248,15 +248,15 @@ const HomePage = () => {
                       <Grid item xs={6}>
                         <Box
                           sx={{
-                            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                            backgroundColor: (theme) => `rgba(255, 255, 255, ${theme.custom.constants.alpha.low})`,
                             borderRadius: 1,
                             p: 2,
-                            border: '1px solid rgba(255, 255, 255, 0.3)',
+                            border: (theme) => `1px solid rgba(255, 255, 255, ${theme.custom.constants.alpha.high})`,
                             cursor: 'pointer',
                             ...performanceUtils.getAnimationStyles(enableAnimations),
                             ...(enableAnimations && !performanceUtils.isSlowConnection() ? {
                               '&:hover': {
-                                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                                backgroundColor: (theme) => `rgba(255, 255, 255, ${theme.custom.constants.alpha.medium})`,
                               }
                             } : {})
                           }}
@@ -274,7 +274,7 @@ const HomePage = () => {
                     
                     <Box
                       sx={{
-                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                        backgroundColor: (theme) => `rgba(255, 255, 255, 0.9)`, // Using 0.9 as it's meant to be more opaque
                         color: 'primary.main',
                         borderRadius: 2,
                         p: 2,

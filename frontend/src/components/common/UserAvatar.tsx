@@ -1,5 +1,5 @@
 import React from 'react';
-import { Avatar, Box } from '@mui/material';
+import { Avatar, Box, useTheme } from '@mui/material';
 import { Person as PersonIcon } from '@mui/icons-material';
 
 interface UserAvatarProps {
@@ -26,6 +26,8 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
   customColor,
   onClick 
 }) => {
+  const theme = useTheme();
+  
   const getSizeProps = () => {
     switch (size) {
       case 'small':
@@ -89,13 +91,13 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
           background: user.profilePicture 
             ? 'transparent' 
             : getBackgroundGradient(),
-          border: showBorder ? '2px solid rgba(255, 255, 255, 0.2)' : 'none',
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+          border: showBorder ? `2px solid ${theme.palette.background.paper}` : 'none',
+          boxShadow: theme.shadows[2],
           transition: 'all 0.2s ease',
           cursor: onClick ? 'pointer' : 'default',
           '&:hover': onClick ? {
             transform: 'scale(1.05)',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+            boxShadow: theme.shadows[4],
           } : {},
         }}
       >
@@ -111,9 +113,9 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
             right: variant === 'square' ? 2 : 0,
             width: width * 0.25,
             height: width * 0.25,
-            backgroundColor: '#4caf50',
+            backgroundColor: theme.palette.success.main,
             borderRadius: '50%',
-            border: '2px solid white',
+            border: `2px solid ${theme.palette.background.paper}`,
             zIndex: 1,
           }}
         />
