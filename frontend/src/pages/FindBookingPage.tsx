@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
   Container,
-  Paper,
   Typography,
   TextField,
   Button,
@@ -11,17 +10,11 @@ import {
   Card,
   CardContent,
   Divider,
-  IconButton,
   useTheme,
   useMediaQuery,
   Stack,
 } from '@mui/material';
-import {
-  Search as SearchIcon,
-  Hotel as HotelIcon,
-  ArrowBack as ArrowBackIcon,
-  ContactSupport as ContactSupportIcon,
-} from '@mui/icons-material';
+// Icons removed for neutral design
 import { useNavigate } from 'react-router-dom';
 import { hotelApiService } from '../services/hotelApi';
 import { BookingResponse } from '../types/hotel';
@@ -106,8 +99,6 @@ const FindBookingPage: React.FC = () => {
         {/* Professional Header */}
         <Box 
           sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
             mb: 4,
             p: 3,
             background: 'white',
@@ -116,23 +107,7 @@ const FindBookingPage: React.FC = () => {
             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
           }}
         >
-          <IconButton 
-            onClick={() => navigate('/')} 
-            sx={{ 
-              mr: 2,
-              backgroundColor: 'primary.main',
-              color: 'white',
-              borderRadius: 2,
-              '&:hover': {
-                backgroundColor: 'primary.dark',
-                transform: 'translateY(-1px)',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-              },
-            }}
-          >
-            <ArrowBackIcon />
-          </IconButton>
-          <Box sx={{ flexGrow: 1 }}>
+          <Box>
             <Typography 
               variant="h3" 
               component="h1" 
@@ -142,23 +117,11 @@ const FindBookingPage: React.FC = () => {
                 mb: 1,
               }}
             >
-              🔍 Find Your Booking
+              Find Your Booking
             </Typography>
             <Typography variant="h6" color="text.secondary">
               Enter your reference number and email address to find your booking
             </Typography>
-          </Box>
-          <Box sx={{
-            width: 64,
-            height: 64,
-            borderRadius: 2,
-            bgcolor: 'primary.main',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-          }}>
-            <SearchIcon sx={{ fontSize: 32, color: 'white' }} />
           </Box>
         </Box>
 
@@ -190,13 +153,10 @@ const FindBookingPage: React.FC = () => {
                 fontWeight: 'bold',
                 color: 'primary.main',
                 mb: 1,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 1,
+                textAlign: 'center',
               }}
             >
-              📋 Enter Your Booking Details
+              Enter Your Booking Details
             </Typography>
             <Typography variant="body1" color="text.secondary">
               Both fields are required to find your booking
@@ -267,7 +227,7 @@ const FindBookingPage: React.FC = () => {
                 variant="contained"
                 size="large"
                 disabled={loading}
-                startIcon={loading ? <CircularProgress size={20} /> : <SearchIcon />}
+                startIcon={loading ? <CircularProgress size={20} /> : undefined}
                 sx={{
                   px: 6,
                   py: 2,
@@ -289,7 +249,7 @@ const FindBookingPage: React.FC = () => {
                   }
                 }}
               >
-                {loading ? 'Searching...' : '🔍 Find Booking'}
+                {loading ? 'Searching...' : 'Find Booking'}
               </Button>
             </Box>
           </form>
@@ -320,24 +280,11 @@ const FindBookingPage: React.FC = () => {
                 alignItems: 'center', 
                 mb: 4,
                 p: 3,
-                background: '#f8f9fa',
+                background: theme.palette.grey[50],
                 borderRadius: 2,
-                border: '1px solid #e9ecef',
+                border: `1px solid ${theme.palette.grey[200]}`,
               }}
             >
-              <Box sx={{
-                width: 56,
-                height: 56,
-                borderRadius: 2,
-                bgcolor: 'success.main',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                mr: 3,
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-              }}>
-                <HotelIcon sx={{ fontSize: 28, color: 'white' }} />
-              </Box>
               <Box>
                 <Typography 
                   variant="h4" 
@@ -347,7 +294,7 @@ const FindBookingPage: React.FC = () => {
                     mb: 1,
                   }}
                 >
-                  ✅ Booking Found!
+                  Booking Found
                 </Typography>
                 <Typography variant="h6" color="text.secondary">
                   Confirmation #{booking.confirmationNumber}
@@ -371,10 +318,10 @@ const FindBookingPage: React.FC = () => {
                   mb: 1,
                 }}
               >
-                🏨 {booking.hotelName}
+                {booking.hotelName}
               </Typography>
               <Typography variant="body1" color="text.secondary" sx={{ fontSize: '1.1rem' }}>
-                📍 {booking.hotelAddress}
+                {booking.hotelAddress}
               </Typography>
               
               <Box sx={{ mt: 3, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 3 }}>
@@ -388,7 +335,7 @@ const FindBookingPage: React.FC = () => {
                   }}
                 >
                   <Typography variant="subtitle1" color="primary.main" sx={{ fontWeight: 'bold', mb: 1 }}>
-                    👤 Guest Name
+                    Guest Name
                   </Typography>
                   <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
                     {booking.guestName}
@@ -405,7 +352,7 @@ const FindBookingPage: React.FC = () => {
                   }}
                 >
                   <Typography variant="subtitle1" color="primary.main" sx={{ fontWeight: 'bold', mb: 1 }}>
-                    🛏️ Room Type
+                    Room Type
                   </Typography>
                   <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
                     {booking.roomType}
@@ -422,7 +369,7 @@ const FindBookingPage: React.FC = () => {
                   }}
                 >
                   <Typography variant="subtitle1" color="primary.main" sx={{ fontWeight: 'bold', mb: 1 }}>
-                    📅 Check-in
+                    Check-in
                   </Typography>
                   <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
                     {formatDate(booking.checkInDate)}
@@ -439,7 +386,7 @@ const FindBookingPage: React.FC = () => {
                   }}
                 >
                   <Typography variant="subtitle1" color="primary.main" sx={{ fontWeight: 'bold', mb: 1 }}>
-                    📅 Check-out
+                    Check-out
                   </Typography>
                   <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
                     {formatDate(booking.checkOutDate)}
@@ -455,7 +402,7 @@ const FindBookingPage: React.FC = () => {
                   }}
                 >
                   <Typography variant="subtitle1" color="success.main" sx={{ fontWeight: 'bold', mb: 1 }}>
-                    💰 Total Amount
+                    Total Amount
                   </Typography>
                   <Typography 
                     variant="h5" 
@@ -478,7 +425,7 @@ const FindBookingPage: React.FC = () => {
                   }}
                 >
                   <Typography variant="subtitle1" color="primary.main" sx={{ fontWeight: 'bold', mb: 1 }}>
-                    📊 Status
+                    Status
                   </Typography>
                   <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
                     {booking.status}
@@ -510,7 +457,7 @@ const FindBookingPage: React.FC = () => {
                   },
                 }}
               >
-                🎯 Manage Booking
+                Manage Booking
               </Button>
             </Box>
           </CardContent>
@@ -534,12 +481,11 @@ const FindBookingPage: React.FC = () => {
               alignItems: 'center',
               mb: 3,
               p: 2,
-              background: '#f8f9fa',
+              background: theme.palette.grey[50],
               borderRadius: 2,
-              border: '1px solid #e9ecef',
+              border: `1px solid ${theme.palette.grey[200]}`,
             }}
           >
-            <ContactSupportIcon sx={{ fontSize: 32, color: 'info.main', mr: 2 }} />
             <Typography 
               variant="h5" 
               sx={{
@@ -547,7 +493,7 @@ const FindBookingPage: React.FC = () => {
                 color: 'info.main',
               }}
             >
-              💡 Need Help?
+              Need Help?
             </Typography>
           </Box>
           <Typography variant="body1" color="text.secondary" sx={{ fontSize: '1.1rem', lineHeight: 1.6 }}>

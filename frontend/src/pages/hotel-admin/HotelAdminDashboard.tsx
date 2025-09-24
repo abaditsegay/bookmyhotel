@@ -439,25 +439,34 @@ const HotelAdminDashboard: React.FC = () => {
                 '&.Mui-disabled': { opacity: 0.3 },
               },
               '& .MuiTab-root:nth-of-type(7)': { // Target the 7th tab (Pricing)
-                backgroundColor: '#4caf50', // Green background
-                color: '#fff',
+                backgroundColor: theme.palette.background.paper,
+                color: theme.palette.text.secondary,
+                border: `1px solid ${theme.palette.divider}`,
+                borderRadius: '8px 8px 0 0',
+                marginRight: '4px',
                 '&:hover': {
-                  backgroundColor: '#388e3c', // Darker green on hover
+                  backgroundColor: theme.palette.action.hover,
+                  color: theme.palette.text.primary,
                 },
                 '&.Mui-selected': {
-                  backgroundColor: '#2e7d32', // Even darker green when selected
-                  color: '#fff',
+                  backgroundColor: theme.palette.action.selected,
+                  color: theme.palette.text.primary,
+                  borderColor: theme.palette.text.primary,
                 },
               },
               '& .MuiTab-root:nth-of-type(8)': { // Target the 8th tab (Offline Bookings)
-                backgroundColor: '#ff9800', // Orange background
-                color: '#fff',
+                backgroundColor: theme.palette.background.paper,
+                color: theme.palette.text.secondary,
+                border: `1px solid ${theme.palette.divider}`,
+                borderRadius: '8px 8px 0 0',
                 '&:hover': {
-                  backgroundColor: '#f57c00', // Darker orange on hover
+                  backgroundColor: theme.palette.action.hover,
+                  color: theme.palette.text.primary,
                 },
                 '&.Mui-selected': {
-                  backgroundColor: '#e65100', // Even darker orange when selected
-                  color: '#fff',
+                  backgroundColor: theme.palette.action.selected,
+                  color: theme.palette.text.primary,
+                  borderColor: theme.palette.text.primary,
                 },
               },
             }}

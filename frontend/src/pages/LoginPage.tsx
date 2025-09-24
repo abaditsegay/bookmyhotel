@@ -15,9 +15,6 @@ import {
   Stack,
 } from '@mui/material';
 import {
-  Login as LoginIcon,
-  PersonAdd as PersonAddIcon,
-  Hotel as HotelIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -250,20 +247,6 @@ const LoginPage: React.FC = () => {
                 border: '1px solid #e9ecef',
               }}
             >
-              <Box sx={{
-                width: 64,
-                height: 64,
-                borderRadius: 3,
-                bgcolor: 'primary.main',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                mx: 'auto',
-                mb: 2,
-                boxShadow: 2,
-              }}>
-                <HotelIcon sx={{ fontSize: 32, color: 'white' }} />
-              </Box>
               <Typography 
                 variant="h4" 
                 component="h1" 
@@ -290,23 +273,17 @@ const LoginPage: React.FC = () => {
 
             {/* Sign In/Up Header */}
             <Box sx={{ mb: 3, textAlign: 'center' }}>
-              <Stack direction="row" alignItems="center" justifyContent="center" spacing={1} sx={{ mb: 1 }}>
-                {!showSignUp ? (
-                  <LoginIcon sx={{ color: 'primary.main', fontSize: 28 }} />
-                ) : (
-                  <PersonAddIcon sx={{ color: 'primary.main', fontSize: 28 }} />
-                )}
-                <Typography 
-                  variant="h5" 
-                  component="h2" 
-                  sx={{ 
-                    fontWeight: 'bold',
-                    color: 'primary.main',
-                  }}
-                >
-                  {!showSignUp ? 'Sign In' : 'Create Account'}{bookingData ? ' to Book' : ''}
-                </Typography>
-              </Stack>
+              <Typography 
+                variant="h5" 
+                component="h2" 
+                sx={{ 
+                  fontWeight: 'bold',
+                  color: 'primary.main',
+                  mb: 1,
+                }}
+              >
+                {!showSignUp ? 'Sign In' : 'Create Account'}{bookingData ? ' to Book' : ''}
+              </Typography>
               <Typography variant="body2" color="text.secondary">
                 {!showSignUp 
                   ? 'Welcome back! Please sign in to your account' 
@@ -383,7 +360,6 @@ const LoginPage: React.FC = () => {
                   variant="contained"
                   disabled={loading}
                   data-testid="login-button"
-                  startIcon={!loading ? <LoginIcon /> : undefined}
                   sx={{ 
                     mt: 4, 
                     mb: 2,
@@ -541,7 +517,6 @@ const LoginPage: React.FC = () => {
                   fullWidth
                   variant="contained"
                   disabled={loading}
-                  startIcon={!loading ? <PersonAddIcon /> : undefined}
                   sx={{ 
                     mt: 4, 
                     mb: 2,

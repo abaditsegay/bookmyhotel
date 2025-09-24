@@ -476,62 +476,53 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                         <Card 
                           sx={{ 
                             cursor: 'pointer',
-                            border: selectedRoom?.id === room.id ? '3px solid' : '1px solid',
+                            border: selectedRoom?.id === room.id ? '2px solid' : '1px solid',
                             borderColor: selectedRoom?.id === room.id ? 'text.primary' : 'divider',
-                            backgroundColor: selectedRoom?.id === room.id ? 'action.selected' : 'background.paper',
-                            transform: selectedRoom?.id === room.id ? 'scale(1.02)' : 'scale(1)',
-                            boxShadow: selectedRoom?.id === room.id ? '0 4px 12px rgba(0,0,0,0.15)' : '0 2px 8px rgba(0,0,0,0.1)',
-                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                            position: 'relative',
+                            backgroundColor: selectedRoom?.id === room.id ? 'action.hover' : 'background.paper',
+                            elevation: 0,
+                            borderRadius: 2,
+                            transition: 'all 0.2s ease-in-out',
                             '&:hover': {
-                              transform: 'scale(1.02)',
-                              boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                              borderColor: 'text.primary',
+                              backgroundColor: 'action.hover',
                             }
                           }}
                           onClick={() => setSelectedRoom(room)}
                         >
-
-                          <CardContent sx={{ 
-                            color: selectedRoom?.id === room.id ? 'primary.contrastText' : 'inherit',
-                            '& .MuiTypography-root': {
-                              color: selectedRoom?.id === room.id ? 'white' : 'inherit'
-                            }
-                          }}>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                          <CardContent sx={{ p: 3 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
                               <Typography variant="h6" sx={{ 
-                                fontWeight: selectedRoom?.id === room.id ? 600 : 500,
-                                color: selectedRoom?.id === room.id ? 'white' : 'inherit'
+                                fontWeight: 600,
+                                color: 'text.primary'
                               }}>
                                 Room {room.roomNumber}
                               </Typography>
                               <Chip 
                                 label={room.roomType} 
                                 size="small" 
+                                variant="outlined"
                                 sx={{
-                                  backgroundColor: selectedRoom?.id === room.id ? 'primary.contrastText' : 'inherit',
-                                  color: selectedRoom?.id === room.id ? 'primary.main' : 'inherit',
-                                  opacity: selectedRoom?.id === room.id ? 0.8 : 1
+                                  borderColor: 'divider',
+                                  color: 'text.secondary'
                                 }}
                               />
                             </Box>
                             <Typography variant="body2" sx={{ 
-                              color: selectedRoom?.id === room.id ? 'primary.contrastText' : 'text.secondary',
-                              opacity: selectedRoom?.id === room.id ? 0.9 : 1,
+                              color: 'text.secondary',
                               mb: 1
                             }}>
                               Capacity: {room.capacity} guest{room.capacity !== 1 ? 's' : ''}
                             </Typography>
                             {room.description && (
                               <Typography variant="body2" sx={{ 
-                                color: selectedRoom?.id === room.id ? 'primary.contrastText' : 'text.secondary',
-                                opacity: selectedRoom?.id === room.id ? 0.8 : 1,
-                                mb: 1
+                                color: 'text.secondary',
+                                mb: 2
                               }}>
                                 {room.description}
                               </Typography>
                             )}
                             <Typography variant="h6" sx={{
-                              color: selectedRoom?.id === room.id ? 'white' : 'primary.main',
+                              color: 'text.primary',
                               fontWeight: 600
                             }}>
                               ETB {room.pricePerNight?.toFixed(0)}/night
@@ -552,6 +543,21 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                         value={specialRequests}
                         onChange={handleSpecialRequestsChange}
                         placeholder="Any special requests or notes for the guest stay..."
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            backgroundColor: 'background.paper',
+                            borderRadius: 2,
+                            '&:hover .MuiOutlinedInput-notchedOutline': {
+                              borderColor: 'text.primary',
+                            },
+                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                              borderColor: 'text.primary',
+                            },
+                          },
+                          '& .MuiInputLabel-root.Mui-focused': {
+                            color: 'text.primary',
+                          },
+                        }}
                       />
                     </Box>
                   )}
