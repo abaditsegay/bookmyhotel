@@ -444,9 +444,10 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
               elevation={2}
               sx={{ 
                 mb: 3,
-                background: 'linear-gradient(135deg, rgba(156, 39, 176, 0.08) 0%, rgba(156, 39, 176, 0.15) 100%)',
-                border: '1px solid rgba(156, 39, 176, 0.3)',
-                borderRadius: 3,
+                backgroundColor: '#ffffff',
+                border: '2px solid #e0e0e0',
+                borderRadius: 2,
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
               }}
             >
               <CardContent sx={{ p: 3 }}>
@@ -455,29 +456,15 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                   alignItems: 'center',
                   mb: 3,
                 }}>
-                  <Box sx={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: '50%',
-                    bgcolor: 'secondary.main',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    mr: 2,
-                  }}>
-                    <Typography variant="h6" sx={{ color: 'white' }}>
-                      👤
-                    </Typography>
-                  </Box>
                   <Box>
                     <Typography variant="h6" sx={{ 
-                      fontWeight: 'bold',
-                      color: 'text.primary',
+                      fontWeight: 700,
+                      color: '#2e7d32',
                       mb: 0.5,
                     }}>
                       Guest Information
                     </Typography>
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography variant="body2" sx={{ color: '#666666' }}>
                       Please provide the guest's contact details
                     </Typography>
                   </Box>
@@ -494,19 +481,19 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                       variant="outlined"
                       sx={{
                         '& .MuiInputBase-root': {
-                          bgcolor: 'background.paper',
+                          backgroundColor: '#ffffff',
                           borderRadius: 2,
                         },
                         '& .MuiOutlinedInput-root': {
                           '&:hover fieldset': {
-                            borderColor: 'secondary.main',
+                            borderColor: '#2e7d32',
                           },
                           '&.Mui-focused fieldset': {
-                            borderColor: 'secondary.main',
+                            borderColor: '#2e7d32',
                           },
                         },
                         '& .MuiInputLabel-root.Mui-focused': {
-                          color: 'secondary.main',
+                          color: '#2e7d32',
                         },
                       }}
                     />
@@ -521,19 +508,19 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                       variant="outlined"
                       sx={{
                         '& .MuiInputBase-root': {
-                          bgcolor: 'background.paper',
+                          backgroundColor: '#ffffff',
                           borderRadius: 2,
                         },
                         '& .MuiOutlinedInput-root': {
                           '&:hover fieldset': {
-                            borderColor: 'secondary.main',
+                            borderColor: '#2e7d32',
                           },
                           '&.Mui-focused fieldset': {
-                            borderColor: 'secondary.main',
+                            borderColor: '#2e7d32',
                           },
                         },
                         '& .MuiInputLabel-root.Mui-focused': {
-                          color: 'secondary.main',
+                          color: '#2e7d32',
                         },
                       }}
                     />
@@ -549,19 +536,19 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                       variant="outlined"
                       sx={{
                         '& .MuiInputBase-root': {
-                          bgcolor: 'background.paper',
+                          backgroundColor: '#ffffff',
                           borderRadius: 2,
                         },
                         '& .MuiOutlinedInput-root': {
                           '&:hover fieldset': {
-                            borderColor: 'secondary.main',
+                            borderColor: '#2e7d32',
                           },
                           '&.Mui-focused fieldset': {
-                            borderColor: 'secondary.main',
+                            borderColor: '#2e7d32',
                           },
                         },
                         '& .MuiInputLabel-root.Mui-focused': {
-                          color: 'secondary.main',
+                          color: '#2e7d32',
                         },
                       }}
                     />
@@ -576,19 +563,19 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                       variant="outlined"
                       sx={{
                         '& .MuiInputBase-root': {
-                          bgcolor: 'background.paper',
+                          backgroundColor: '#ffffff',
                           borderRadius: 2,
                         },
                         '& .MuiOutlinedInput-root': {
                           '&:hover fieldset': {
-                            borderColor: 'secondary.main',
+                            borderColor: '#2e7d32',
                           },
                           '&.Mui-focused fieldset': {
-                            borderColor: 'secondary.main',
+                            borderColor: '#2e7d32',
                           },
                         },
                         '& .MuiInputLabel-root.Mui-focused': {
-                          color: 'secondary.main',
+                          color: '#2e7d32',
                         },
                       }}
                     />
@@ -601,9 +588,10 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
             <Card 
               elevation={2}
               sx={{ 
-                background: 'linear-gradient(135deg, rgba(25, 118, 210, 0.08) 0%, rgba(25, 118, 210, 0.15) 100%)',
-                border: '1px solid rgba(25, 118, 210, 0.3)',
-                borderRadius: 3,
+                backgroundColor: '#ffffff',
+                border: '2px solid #e0e0e0',
+                borderRadius: 2,
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
               }}
             >
               <CardContent sx={{ p: 3 }}>
@@ -612,29 +600,15 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                   alignItems: 'center',
                   mb: 3,
                 }}>
-                  <Box sx={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: '50%',
-                    bgcolor: 'primary.main',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    mr: 2,
-                  }}>
-                    <Typography variant="h6" sx={{ color: 'white' }}>
-                      📅
-                    </Typography>
-                  </Box>
                   <Box>
                     <Typography variant="h6" sx={{ 
-                      fontWeight: 'bold',
-                      color: 'text.primary',
+                      fontWeight: 700,
+                      color: '#2e7d32',
                       mb: 0.5,
                     }}>
                       Stay Details
                     </Typography>
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography variant="body2" sx={{ color: '#666666' }}>
                       Select dates and number of guests
                     </Typography>
                   </Box>
@@ -653,19 +627,19 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                             fullWidth: true,
                             sx: {
                               '& .MuiInputBase-root': {
-                                bgcolor: 'background.paper',
+                                backgroundColor: '#ffffff',
                                 borderRadius: 2,
                               },
                               '& .MuiOutlinedInput-root': {
                                 '&:hover fieldset': {
-                                  borderColor: 'primary.main',
+                                  borderColor: '#2e7d32',
                                 },
                                 '&.Mui-focused fieldset': {
-                                  borderColor: 'primary.main',
+                                  borderColor: '#2e7d32',
                                 },
                               },
                               '& .MuiInputLabel-root.Mui-focused': {
-                                color: 'primary.main',
+                                color: '#2e7d32',
                               },
                             }
                           } 
@@ -685,19 +659,19 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                             fullWidth: true,
                             sx: {
                               '& .MuiInputBase-root': {
-                                bgcolor: 'background.paper',
+                                backgroundColor: '#ffffff',
                                 borderRadius: 2,
                               },
                               '& .MuiOutlinedInput-root': {
                                 '&:hover fieldset': {
-                                  borderColor: 'primary.main',
+                                  borderColor: '#2e7d32',
                                 },
                                 '&.Mui-focused fieldset': {
-                                  borderColor: 'primary.main',
+                                  borderColor: '#2e7d32',
                                 },
                               },
                               '& .MuiInputLabel-root.Mui-focused': {
-                                color: 'primary.main',
+                                color: '#2e7d32',
                               },
                             }
                           } 
@@ -724,10 +698,10 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
       case 1:
         return (
           <Box>
-            <Typography variant="h6" gutterBottom>
+            <Typography variant="h6" gutterBottom sx={{ fontWeight: 700, color: '#2e7d32' }}>
               Available Rooms
             </Typography>
-            <Typography variant="body2" color="text.secondary" gutterBottom>
+            <Typography variant="body2" sx={{ color: '#666666' }} gutterBottom>
               {format(checkInDate, 'MMM dd, yyyy')} - {format(checkOutDate, 'MMM dd, yyyy')} • {guests} Guest{guests !== 1 ? 's' : ''}
             </Typography>
             
@@ -750,16 +724,17 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                     <Card 
                       sx={{ 
                         cursor: 'pointer',
-                        border: selectedRoom?.id === room.id ? '3px solid' : '1px solid',
-                        borderColor: selectedRoom?.id === room.id ? 'primary.main' : 'divider',
-                        backgroundColor: selectedRoom?.id === room.id ? 'primary.light' : 'background.paper',
+                        border: selectedRoom?.id === room.id ? '2px solid' : '1px solid',
+                        borderColor: selectedRoom?.id === room.id ? '#2e7d32' : '#e0e0e0',
+                        backgroundColor: '#ffffff',
                         transform: selectedRoom?.id === room.id ? 'scale(1.02)' : 'scale(1)',
-                        boxShadow: selectedRoom?.id === room.id ? '0 8px 25px rgba(25, 118, 210, 0.15)' : '0 2px 8px rgba(0,0,0,0.1)',
+                        boxShadow: selectedRoom?.id === room.id ? '0 4px 12px rgba(46, 125, 50, 0.15)' : '0 2px 8px rgba(0, 0, 0, 0.08)',
                         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                         position: 'relative',
                         '&:hover': {
                           transform: 'scale(1.02)',
-                          boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                          borderColor: '#2e7d32',
+                          boxShadow: '0 4px 12px rgba(46, 125, 50, 0.15)',
                         }
                       }}
                       onClick={() => setSelectedRoom(room)}
@@ -770,7 +745,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                             position: 'absolute',
                             top: 8,
                             right: 8,
-                            backgroundColor: 'primary.main',
+                            backgroundColor: '#2e7d32',
                             color: 'white',
                             borderRadius: '50%',
                             width: 24,
@@ -785,15 +760,12 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                         </Box>
                       )}
                       <CardContent sx={{ 
-                        color: selectedRoom?.id === room.id ? 'primary.contrastText' : 'inherit',
-                        '& .MuiTypography-root': {
-                          color: selectedRoom?.id === room.id ? 'white' : 'inherit'
-                        }
+                        color: 'inherit',
                       }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
                           <Typography variant="h6" sx={{ 
-                            fontWeight: selectedRoom?.id === room.id ? 600 : 500,
-                            color: selectedRoom?.id === room.id ? 'white' : 'inherit'
+                            fontWeight: 600,
+                            color: selectedRoom?.id === room.id ? '#2e7d32' : 'inherit'
                           }}>
                             Room {room.roomNumber}
                           </Typography>
@@ -801,28 +773,29 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                             label={room.roomType} 
                             size="small" 
                             sx={{
-                              backgroundColor: selectedRoom?.id === room.id ? 'rgba(255,255,255,0.2)' : 'inherit',
-                              color: selectedRoom?.id === room.id ? 'white' : 'inherit'
+                              backgroundColor: selectedRoom?.id === room.id ? 'rgba(46, 125, 50, 0.1)' : '#f5f5f5',
+                              color: selectedRoom?.id === room.id ? '#2e7d32' : 'inherit',
+                              border: selectedRoom?.id === room.id ? '1px solid #2e7d32' : 'none'
                             }}
                           />
                         </Box>
                         <Typography variant="body2" sx={{ 
-                          color: selectedRoom?.id === room.id ? 'rgba(255,255,255,0.9)' : 'text.secondary',
+                          color: '#666666',
                           mb: 1
                         }}>
                           Capacity: {room.capacity} guest{room.capacity !== 1 ? 's' : ''}
                         </Typography>
                         {room.description && (
                           <Typography variant="body2" sx={{ 
-                            color: selectedRoom?.id === room.id ? 'rgba(255,255,255,0.8)' : 'text.secondary',
+                            color: '#666666',
                             mb: 1
                           }}>
                             {room.description}
                           </Typography>
                         )}
                         <Typography variant="h6" sx={{
-                          color: selectedRoom?.id === room.id ? 'white' : 'primary.main',
-                          fontWeight: 600
+                          color: '#2e7d32',
+                          fontWeight: 700
                         }}>
                           ETB {room.pricePerNight?.toFixed(0)}/night
                         </Typography>
@@ -843,6 +816,23 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                   value={specialRequests}
                   onChange={handleSpecialRequestsChange}
                   placeholder="Any special requests or notes for the guest stay..."
+                  sx={{
+                    '& .MuiInputBase-root': {
+                      backgroundColor: '#ffffff',
+                      borderRadius: 2,
+                    },
+                    '& .MuiOutlinedInput-root': {
+                      '&:hover fieldset': {
+                        borderColor: '#2e7d32',
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: '#2e7d32',
+                      },
+                    },
+                    '& .MuiInputLabel-root.Mui-focused': {
+                      color: '#2e7d32',
+                    },
+                  }}
                 />
               </Box>
             )}
@@ -857,15 +847,16 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
               textAlign: 'center',
               mb: 4,
               p: 3,
-              background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(139, 195, 74, 0.1) 100%)',
-              borderRadius: 3,
-              border: '1px solid rgba(76, 175, 80, 0.3)',
+              backgroundColor: '#ffffff',
+              borderRadius: 2,
+              border: '2px solid #e0e0e0',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
             }}>
               <Box sx={{
                 width: 60,
                 height: 60,
                 borderRadius: '50%',
-                bgcolor: 'success.main',
+                bgcolor: '#2e7d32',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -877,13 +868,13 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                 </Typography>
               </Box>
               <Typography variant="h5" sx={{ 
-                fontWeight: 'bold',
-                color: 'success.main',
+                fontWeight: 700,
+                color: '#2e7d32',
                 mb: 1,
               }}>
                 Booking Confirmation
               </Typography>
-              <Typography variant="body1" color="text.secondary">
+              <Typography variant="body1" sx={{ color: '#666666' }}>
                 Please review the details before creating the booking
               </Typography>
             </Box>
@@ -892,9 +883,10 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
               {/* Guest Information */}
               <Grid item xs={12} sm={6}>
                 <Card elevation={2} sx={{ 
-                  background: 'linear-gradient(135deg, rgba(156, 39, 176, 0.05) 0%, rgba(156, 39, 176, 0.1) 100%)',
-                  border: '1px solid rgba(156, 39, 176, 0.2)',
-                  borderRadius: 3,
+                  backgroundColor: '#ffffff',
+                  border: '2px solid #e0e0e0',
+                  borderRadius: 2,
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
                 }}>
                   <CardContent sx={{ p: 3 }}>
                     <Box sx={{ 
@@ -902,47 +894,33 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                       alignItems: 'center',
                       mb: 2,
                     }}>
-                      <Box sx={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: '50%',
-                        bgcolor: 'secondary.main',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        mr: 2,
-                      }}>
-                        <Typography variant="body1" sx={{ color: 'white' }}>
-                          👤
-                        </Typography>
-                      </Box>
-                      <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                      <Typography variant="h6" sx={{ fontWeight: 700, color: '#2e7d32' }}>
                         Guest Information
                       </Typography>
                     </Box>
                     
                     <Box sx={{ space: 1.5 }}>
                       <Box sx={{ mb: 1.5 }}>
-                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold' }}>
+                        <Typography variant="caption" sx={{ color: '#666666', fontWeight: 700 }}>
                           FULL NAME
                         </Typography>
-                        <Typography variant="body1" sx={{ fontWeight: 'medium' }}>
+                        <Typography variant="body1" sx={{ fontWeight: 600 }}>
                           {guestInfo.firstName} {guestInfo.lastName}
                         </Typography>
                       </Box>
                       <Box sx={{ mb: 1.5 }}>
-                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold' }}>
+                        <Typography variant="caption" sx={{ color: '#666666', fontWeight: 700 }}>
                           EMAIL ADDRESS
                         </Typography>
-                        <Typography variant="body1" sx={{ fontWeight: 'medium' }}>
+                        <Typography variant="body1" sx={{ fontWeight: 600 }}>
                           {guestInfo.email}
                         </Typography>
                       </Box>
                       <Box>
-                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold' }}>
+                        <Typography variant="caption" sx={{ color: '#666666', fontWeight: 700 }}>
                           PHONE NUMBER
                         </Typography>
-                        <Typography variant="body1" sx={{ fontWeight: 'medium' }}>
+                        <Typography variant="body1" sx={{ fontWeight: 600 }}>
                           {guestInfo.phone}
                         </Typography>
                       </Box>
@@ -954,9 +932,10 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
               {/* Stay Details */}
               <Grid item xs={12} sm={6}>
                 <Card elevation={2} sx={{ 
-                  background: 'linear-gradient(135deg, rgba(25, 118, 210, 0.05) 0%, rgba(25, 118, 210, 0.1) 100%)',
-                  border: '1px solid rgba(25, 118, 210, 0.2)',
-                  borderRadius: 3,
+                  backgroundColor: '#ffffff',
+                  border: '2px solid #e0e0e0',
+                  borderRadius: 2,
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
                 }}>
                   <CardContent sx={{ p: 3 }}>
                     <Box sx={{ 
@@ -964,56 +943,42 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                       alignItems: 'center',
                       mb: 2,
                     }}>
-                      <Box sx={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: '50%',
-                        bgcolor: 'primary.main',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        mr: 2,
-                      }}>
-                        <Typography variant="body1" sx={{ color: 'white' }}>
-                          🏠
-                        </Typography>
-                      </Box>
-                      <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                      <Typography variant="h6" sx={{ fontWeight: 700, color: '#2e7d32' }}>
                         Stay Details
                       </Typography>
                     </Box>
                     
                     <Box sx={{ space: 1.5 }}>
                       <Box sx={{ mb: 1.5 }}>
-                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold' }}>
+                        <Typography variant="caption" sx={{ color: '#666666', fontWeight: 700 }}>
                           ROOM
                         </Typography>
-                        <Typography variant="body1" sx={{ fontWeight: 'medium' }}>
+                        <Typography variant="body1" sx={{ fontWeight: 600 }}>
                           {selectedRoom?.roomNumber} ({selectedRoom?.roomType})
                         </Typography>
                       </Box>
                       <Box sx={{ mb: 1.5 }}>
-                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold' }}>
+                        <Typography variant="caption" sx={{ color: '#666666', fontWeight: 700 }}>
                           CHECK-IN / CHECK-OUT
                         </Typography>
-                        <Typography variant="body1" sx={{ fontWeight: 'medium' }}>
+                        <Typography variant="body1" sx={{ fontWeight: 600 }}>
                           {format(checkInDate, 'MMM dd, yyyy')} - {format(checkOutDate, 'MMM dd, yyyy')}
                         </Typography>
                       </Box>
                       <Box sx={{ mb: 1.5 }}>
-                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold' }}>
+                        <Typography variant="caption" sx={{ color: '#666666', fontWeight: 700 }}>
                           GUESTS
                         </Typography>
-                        <Typography variant="body1" sx={{ fontWeight: 'medium' }}>
+                        <Typography variant="body1" sx={{ fontWeight: 600 }}>
                           {guests} guest{guests !== 1 ? 's' : ''}
                         </Typography>
                       </Box>
                       {specialRequests && (
                         <Box>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold' }}>
+                          <Typography variant="caption" sx={{ color: '#666666', fontWeight: 700 }}>
                             SPECIAL REQUESTS
                           </Typography>
-                          <Typography variant="body2" sx={{ fontWeight: 'medium', fontStyle: 'italic' }}>
+                          <Typography variant="body2" sx={{ fontWeight: 600, fontStyle: 'italic' }}>
                             {specialRequests}
                           </Typography>
                         </Box>
@@ -1026,9 +991,10 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
               {/* Pricing Summary */}
               <Grid item xs={12}>
                 <Card elevation={3} sx={{ 
-                  background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.05) 0%, rgba(139, 195, 74, 0.05) 100%)',
-                  border: '2px solid rgba(76, 175, 80, 0.3)',
-                  borderRadius: 3,
+                  backgroundColor: '#ffffff',
+                  border: '2px solid #e0e0e0',
+                  borderRadius: 2,
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
                 }}>
                   <CardContent sx={{ p: 3 }}>
                     <Box sx={{ 
@@ -1036,36 +1002,23 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                       alignItems: 'center',
                       mb: 3,
                     }}>
-                      <Box sx={{
-                        width: 48,
-                        height: 48,
-                        borderRadius: '50%',
-                        bgcolor: 'success.main',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        mr: 2,
-                      }}>
-                        <Typography variant="h6" sx={{ color: 'white' }}>
-                          💰
-                        </Typography>
-                      </Box>
-                      <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                      <Typography variant="h6" sx={{ fontWeight: 700, color: '#2e7d32' }}>
                         Pricing Summary
                       </Typography>
                     </Box>
                     
                     <Box sx={{ 
                       p: 2,
-                      bgcolor: 'background.paper',
+                      bgcolor: '#f8f9fa',
                       borderRadius: 2,
                       mb: 2,
+                      border: '1px solid #e0e0e0',
                     }}>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                         <Typography variant="body1">
                           ETB {(selectedRoom?.pricePerNight || 0)?.toFixed(0)}/night × {Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24))} night{Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)) !== 1 ? 's' : ''}
                         </Typography>
-                        <Typography variant="body1" sx={{ fontWeight: 'medium' }}>
+                        <Typography variant="body1" sx={{ fontWeight: 600 }}>
                           ETB {calculateTotalAmount()?.toFixed(0)}
                         </Typography>
                       </Box>
@@ -1078,26 +1031,27 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                       justifyContent: 'space-between', 
                       alignItems: 'center',
                       p: 2,
-                      bgcolor: 'success.main',
+                      bgcolor: '#2e7d32',
                       borderRadius: 2,
                       mb: 2,
                     }}>
-                      <Typography variant="h5" sx={{ color: 'white', fontWeight: 'bold' }}>
+                      <Typography variant="h5" sx={{ color: 'white', fontWeight: 700 }}>
                         Total Amount
                       </Typography>
-                      <Typography variant="h4" sx={{ color: 'white', fontWeight: 'bold' }}>
+                      <Typography variant="h4" sx={{ color: 'white', fontWeight: 700 }}>
                         ETB {calculateTotalAmount()?.toFixed(0)}
                       </Typography>
                     </Box>
                     
                     <Box sx={{ 
                       p: 2,
-                      bgcolor: 'info.main',
-                      color: 'info.contrastText',
+                      bgcolor: '#f0f9ff',
+                      color: '#2e7d32',
                       borderRadius: 2,
                       textAlign: 'center',
+                      border: '1px solid #e0e0e0',
                     }}>
-                      <Typography variant="body1" sx={{ fontWeight: 'medium' }}>
+                      <Typography variant="body1" sx={{ fontWeight: 600 }}>
                         Payment will be processed at the front desk
                       </Typography>
                     </Box>
@@ -1122,23 +1076,15 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
       PaperProps={{
         sx: { 
           minHeight: '70vh',
-          borderRadius: 3,
-          background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%)',
-          backdropFilter: 'blur(10px)',
-          boxShadow: '0 20px 40px rgba(0, 0, 0, 0.15)',
-        }
-      }}
-      BackdropProps={{
-        sx: {
-          backgroundColor: 'rgba(0, 0, 0, 0.6)',
-          backdropFilter: 'blur(5px)',
+          borderRadius: 2,
+          backgroundColor: '#ffffff',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
         }
       }}
     >
       <DialogTitle sx={{ 
-        background: 'linear-gradient(135deg, rgba(25, 118, 210, 0.1) 0%, rgba(156, 39, 176, 0.1) 100%)',
-        borderBottom: '1px solid',
-        borderColor: 'divider',
+        backgroundColor: '#ffffff',
+        borderBottom: '2px solid #e0e0e0',
         pb: 2,
       }}>
         <Box sx={{
@@ -1147,34 +1093,17 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
           gap: 2,
           mb: 2,
         }}>
-          <Box sx={{
-            width: 48,
-            height: 48,
-            borderRadius: 3,
-            bgcolor: 'primary.main',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: 2,
-          }}>
-            <Typography variant="h6" sx={{ color: 'white' }}>
-              👤
-            </Typography>
-          </Box>
           <Box>
             <Typography 
               variant="h5" 
               sx={{ 
-                fontWeight: 'bold',
-                background: 'linear-gradient(45deg, #1976d2, #9c27b0)',
-                backgroundClip: 'text',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
+                fontWeight: 700,
+                color: '#2e7d32',
               }}
             >
               Walk-in Guest Booking
             </Typography>
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" sx={{ color: '#666666' }}>
               Complete the guest booking process step by step
             </Typography>
           </Box>
@@ -1185,10 +1114,10 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
           alternativeLabel
           sx={{
             '& .MuiStepLabel-root .Mui-completed': {
-              color: 'success.main',
+              color: '#2e7d32',
             },
             '& .MuiStepLabel-root .Mui-active': {
-              color: 'primary.main',
+              color: '#2e7d32',
             },
           }}
         >
@@ -1235,13 +1164,35 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
         {renderStepContent()}
       </DialogContent>
       
-      <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button onClick={onClose} disabled={loading}>
+      <DialogActions sx={{ px: 3, pb: 2, backgroundColor: '#ffffff', borderTop: '2px solid #e0e0e0' }}>
+        <Button 
+          onClick={onClose} 
+          disabled={loading}
+          sx={{
+            color: '#666666',
+            borderColor: '#e0e0e0',
+            '&:hover': {
+              backgroundColor: '#f5f5f5',
+              borderColor: '#2e7d32',
+            },
+          }}
+        >
           Cancel
         </Button>
         
         {activeStep > 0 && (
-          <Button onClick={handleBack} disabled={loading}>
+          <Button 
+            onClick={handleBack} 
+            disabled={loading}
+            sx={{
+              color: '#666666',
+              borderColor: '#e0e0e0',
+              '&:hover': {
+                backgroundColor: '#f5f5f5',
+                borderColor: '#2e7d32',
+              },
+            }}
+          >
             Back
           </Button>
         )}
@@ -1251,7 +1202,19 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
             variant="contained" 
             onClick={handleNext}
             disabled={loading || (activeStep === 1 && (!selectedRoom || roomsLoading))}
-            startIcon={roomsLoading && activeStep === 1 ? <CircularProgress size={16} /> : undefined}
+            startIcon={roomsLoading && activeStep === 1 ? <CircularProgress size={16} sx={{ color: 'white' }} /> : undefined}
+            sx={{
+              backgroundColor: '#2e7d32',
+              color: 'white',
+              fontWeight: 600,
+              '&:hover': {
+                backgroundColor: '#1b5e20',
+              },
+              '&:disabled': {
+                backgroundColor: '#e0e0e0',
+                color: '#999999',
+              },
+            }}
           >
             {roomsLoading && activeStep === 1 ? 'Loading Rooms...' : 'Next'}
           </Button>
@@ -1260,7 +1223,19 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
             variant="contained" 
             onClick={handleCreateBooking}
             disabled={loading || !selectedRoom}
-            startIcon={loading ? <CircularProgress size={16} /> : undefined}
+            startIcon={loading ? <CircularProgress size={16} sx={{ color: 'white' }} /> : undefined}
+            sx={{
+              backgroundColor: '#2e7d32',
+              color: 'white',
+              fontWeight: 600,
+              '&:hover': {
+                backgroundColor: '#1b5e20',
+              },
+              '&:disabled': {
+                backgroundColor: '#e0e0e0',
+                color: '#999999',
+              },
+            }}
           >
             {loading ? 'Creating Booking...' : 'Create Booking'}
           </Button>
