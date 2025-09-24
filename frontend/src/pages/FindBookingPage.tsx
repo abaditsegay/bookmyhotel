@@ -67,15 +67,6 @@ const FindBookingPage: React.FC = () => {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
-
   const handleViewBooking = () => {
     if (booking) {
       // Navigate to guest booking management page with booking data
@@ -101,13 +92,13 @@ const FindBookingPage: React.FC = () => {
       <Container maxWidth="lg">
       {/* Professional Search Form */}
       <Card 
-        elevation={8}
+        elevation={0}
         sx={{ 
           mb: 4,
           background: theme.palette.background.paper,
-          borderRadius: 3,
-          border: `1px solid ${theme.palette.divider}`,
-          boxShadow: theme.shadows[8],
+          borderRadius: 1,
+          border: `1px solid rgba(224, 224, 224, 0.3)`,
+          boxShadow: 'none',
         }}
       >
         <CardContent sx={{ p: isMobile ? 3 : 5 }}>
@@ -115,10 +106,10 @@ const FindBookingPage: React.FC = () => {
             sx={{ 
               mb: 4,
               textAlign: 'center',
-              p: 3,
+              p: 2,
               background: theme.palette.background.default,
-              borderRadius: 2,
-              border: `1px solid ${theme.palette.divider}`,
+              borderRadius: 1,
+              border: `1px solid rgba(224, 224, 224, 0.3)`,
             }}
           >
             <Typography 
@@ -149,7 +140,7 @@ const FindBookingPage: React.FC = () => {
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     backgroundColor: theme.palette.background.paper,
-                    borderRadius: 2,
+                    borderRadius: 1,
                     '&:hover .MuiOutlinedInput-notchedOutline': {
                       borderColor: 'primary.main',
                     },
@@ -170,7 +161,7 @@ const FindBookingPage: React.FC = () => {
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     backgroundColor: theme.palette.background.paper,
-                    borderRadius: 2,
+                    borderRadius: 1,
                     '&:hover .MuiOutlinedInput-notchedOutline': {
                       borderColor: 'primary.main',
                     },
@@ -187,7 +178,7 @@ const FindBookingPage: React.FC = () => {
                 severity="error" 
                 sx={{ 
                   mt: 3,
-                  borderRadius: 2,
+                  borderRadius: 1,
                   backgroundColor: theme.palette.mode === 'dark' 
                     ? 'rgba(244, 67, 54, 0.1)' 
                     : 'rgba(244, 67, 54, 0.04)',
@@ -206,18 +197,19 @@ const FindBookingPage: React.FC = () => {
                 startIcon={loading ? <CircularProgress size={20} /> : undefined}
                 sx={{
                   px: 6,
-                  py: 2,
-                  borderRadius: 2,
-                  fontSize: '1.1rem',
-                  fontWeight: 600,
+                  py: 1.5,
+                  borderRadius: 1,
+                  fontSize: '1.05rem',
+                  fontWeight: 500,
                   textTransform: 'none',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                  boxShadow: 'none',
                   '&:hover': {
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                    transform: 'translateY(-1px)',
+                    boxShadow: 'none',
+                    transform: 'none',
+                    opacity: 0.9,
                   },
                   '&:active': {
-                    transform: 'translateY(0)',
+                    transform: 'none',
                   },
                   '&.Mui-disabled': {
                     background: theme.palette.grey[300],
@@ -235,18 +227,14 @@ const FindBookingPage: React.FC = () => {
       {/* Professional Booking Results */}
       {booking && (
         <Card 
-          elevation={8}
+          elevation={0}
           sx={{
             mb: 4,
             background: theme.palette.background.paper,
-            borderRadius: 3,
-            border: `1px solid ${theme.palette.divider}`,
-            boxShadow: theme.shadows[8],
-            transition: 'all 0.3s ease-in-out',
-            '&:hover': {
-              transform: 'translateY(-4px)',
-              boxShadow: theme.shadows[12],
-            },
+            borderRadius: 1,
+            border: `1px solid rgba(224, 224, 224, 0.3)`,
+            boxShadow: 'none',
+            transition: 'none',
           }}
         >
           <CardContent sx={{ p: isMobile ? 3 : 5 }}>
@@ -255,10 +243,10 @@ const FindBookingPage: React.FC = () => {
                 display: 'flex', 
                 alignItems: 'center', 
                 mb: 4,
-                p: 3,
+                p: 2,
                 background: theme.palette.background.default,
-                borderRadius: 2,
-                border: `1px solid ${theme.palette.divider}`,
+                borderRadius: 1,
+                border: `1px solid rgba(224, 224, 224, 0.3)`,
               }}
             >
               <Box>
@@ -303,11 +291,11 @@ const FindBookingPage: React.FC = () => {
               <Box sx={{ mt: 3, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 3 }}>
                 <Box 
                   sx={{
-                    p: 3,
-                    borderRadius: 2,
+                    p: 2,
+                    borderRadius: 1,
                     background: theme.palette.background.paper,
-                    border: `1px solid ${theme.palette.divider}`,
-                    boxShadow: theme.shadows[2],
+                    border: `1px solid rgba(224, 224, 224, 0.3)`,
+                    boxShadow: 'none',
                   }}
                 >
                   <Typography variant="subtitle1" color="primary.main" sx={{ fontWeight: 'bold', mb: 1 }}>
@@ -320,11 +308,11 @@ const FindBookingPage: React.FC = () => {
                 
                 <Box 
                   sx={{
-                    p: 3,
-                    borderRadius: 2,
+                    p: 2,
+                    borderRadius: 1,
                     background: theme.palette.background.paper,
-                    border: `1px solid ${theme.palette.divider}`,
-                    boxShadow: theme.shadows[2],
+                    border: `1px solid rgba(224, 224, 224, 0.3)`,
+                    boxShadow: 'none',
                   }}
                 >
                   <Typography variant="subtitle1" color="primary.main" sx={{ fontWeight: 'bold', mb: 1 }}>
@@ -337,11 +325,11 @@ const FindBookingPage: React.FC = () => {
                 
                 <Box 
                   sx={{
-                    p: 3,
-                    borderRadius: 2,
+                    p: 2,
+                    borderRadius: 1,
                     background: theme.palette.background.paper,
-                    border: `1px solid ${theme.palette.divider}`,
-                    boxShadow: theme.shadows[2],
+                    border: `1px solid rgba(224, 224, 224, 0.3)`,
+                    boxShadow: 'none',
                   }}
                 >
                   <Typography variant="body2" color="primary.main" sx={{ fontWeight: 'bold', mb: 0.5 }}>
@@ -360,10 +348,10 @@ const FindBookingPage: React.FC = () => {
                 
                 <Box 
                   sx={{
-                    p: 3,
-                    borderRadius: 2,
+                    p: 2,
+                    borderRadius: 1,
                     background: theme.palette.background.default,
-                    border: `1px solid ${theme.palette.divider}`,
+                    border: `1px solid rgba(224, 224, 224, 0.3)`,
                   }}
                 >
                   <Typography variant="subtitle1" color="success.main" sx={{ fontWeight: 'bold', mb: 1 }}>
@@ -382,11 +370,11 @@ const FindBookingPage: React.FC = () => {
                 
                 <Box 
                   sx={{
-                    p: 3,
-                    borderRadius: 2,
+                    p: 2,
+                    borderRadius: 1,
                     background: theme.palette.background.paper,
-                    border: `1px solid ${theme.palette.divider}`,
-                    boxShadow: theme.shadows[2],
+                    border: `1px solid rgba(224, 224, 224, 0.3)`,
+                    boxShadow: 'none',
                   }}
                 >
                   <Typography variant="subtitle1" color="primary.main" sx={{ fontWeight: 'bold', mb: 1 }}>
@@ -407,18 +395,19 @@ const FindBookingPage: React.FC = () => {
                 color="primary"
                 sx={{
                   px: 6,
-                  py: 2,
-                  borderRadius: 2,
-                  fontSize: '1.2rem',
-                  fontWeight: 600,
+                  py: 1.5,
+                  borderRadius: 1,
+                  fontSize: '1.1rem',
+                  fontWeight: 500,
                   textTransform: 'none',
-                  boxShadow: theme.shadows[2],
+                  boxShadow: 'none',
                   '&:hover': {
-                    boxShadow: theme.shadows[4],
-                    transform: 'translateY(-1px)',
+                    boxShadow: 'none',
+                    transform: 'none',
+                    opacity: 0.9,
                   },
                   '&:active': {
-                    transform: 'translateY(0)',
+                    transform: 'none',
                   },
                 }}
               >
@@ -431,12 +420,12 @@ const FindBookingPage: React.FC = () => {
 
       {/* Professional Help Section */}
       <Card 
-        elevation={4}
+        elevation={0}
         sx={{ 
           background: theme.palette.background.paper,
-          border: `1px solid ${theme.palette.divider}`,
-          borderRadius: 3,
-          boxShadow: theme.shadows[8],
+          border: `1px solid rgba(224, 224, 224, 0.3)`,
+          borderRadius: 1,
+          boxShadow: 'none',
         }}
       >
         <CardContent sx={{ p: 4 }}>
@@ -447,8 +436,8 @@ const FindBookingPage: React.FC = () => {
               mb: 3,
               p: 2,
               background: theme.palette.background.default,
-              borderRadius: 2,
-              border: `1px solid ${theme.palette.divider}`,
+              borderRadius: 1,
+              border: `1px solid rgba(224, 224, 224, 0.3)`,
             }}
           >
             <Typography 
