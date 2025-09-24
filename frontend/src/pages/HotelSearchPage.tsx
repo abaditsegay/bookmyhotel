@@ -58,7 +58,9 @@ const HotelSearchPage: React.FC = () => {
     <Box
       sx={{
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+        background: theme.palette.mode === 'dark' 
+          ? 'linear-gradient(135deg, #121212 0%, #1e1e1e 100%)'
+          : 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
         py: 4,
       }}
     >
@@ -69,43 +71,6 @@ const HotelSearchPage: React.FC = () => {
         px: isMobile ? 1 : 3,
       }}
     >
-      {/* Enhanced Header Section */}
-      <Card 
-        sx={{ 
-          mb: isMobile ? 3 : 4,
-          backgroundColor: 'white',
-          border: '1px solid #e0e0e0',
-          borderRadius: 2,
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
-        }}
-      >
-        <CardContent sx={{ p: isMobile ? 2.5 : 4 }}>
-          {/* Professional Header */}
-          <Box sx={{ 
-            textAlign: 'center',
-            mb: isMobile ? 2 : 3,
-            p: 3,
-            background: '#f8f9fa',
-            borderRadius: 2,
-            border: '1px solid #e9ecef',
-          }}>
-            <Typography 
-              variant={isMobile ? "h4" : "h3"} 
-              component="h1" 
-              sx={{ 
-                fontWeight: 'bold',
-                color: 'text.primary',
-                mb: 1,
-              }}
-            >
-              Find Your Perfect Stay
-            </Typography>
-            <Typography variant="h6" color="text.secondary">
-              Search and book from thousands of hotels worldwide
-            </Typography>
-          </Box>
-        </CardContent>
-      </Card>
         {/* Left Advertisement Pane - Responsive: side pane on desktop, bottom section on mobile */}
         {/* 
         {!isOperationsUser && (
@@ -174,10 +139,10 @@ const HotelSearchPage: React.FC = () => {
         elevation={8}
         sx={{ 
           mb: isMobile ? 3 : 4,
-          background: 'white',
-          border: '1px solid #e0e0e0',
+          backgroundColor: theme.palette.background.paper,
+          border: `1px solid ${theme.palette.divider}`,
           borderRadius: 3,
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
+          boxShadow: theme.shadows[8],
         }}
       >
         <CardContent sx={{ p: isMobile ? 2.5 : 4 }}>
@@ -185,9 +150,9 @@ const HotelSearchPage: React.FC = () => {
             textAlign: 'center',
             mb: isMobile ? 2 : 3,
             p: 3,
-            background: '#f8f9fa',
+            backgroundColor: theme.palette.background.default,
             borderRadius: 2,
-            border: '1px solid #e9ecef',
+            border: `1px solid ${theme.palette.divider}`,
           }}>
             <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>
               Search Hotels
@@ -224,10 +189,10 @@ const HotelSearchPage: React.FC = () => {
       {/* Find My Booking Section */}
       <Card 
         sx={{ 
-          backgroundColor: 'white',
-          border: '1px solid #e0e0e0',
+          backgroundColor: theme.palette.background.paper,
+          border: `1px solid ${theme.palette.divider}`,
           borderRadius: 2,
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
+          boxShadow: theme.shadows[8],
         }}
       >
         <CardContent sx={{ p: isMobile ? 2.5 : 4 }}>
@@ -235,9 +200,9 @@ const HotelSearchPage: React.FC = () => {
             textAlign: 'center',
             mb: isMobile ? 2 : 3,
             p: 3,
-            backgroundColor: '#f8f9fa',
+            backgroundColor: theme.palette.background.default,
             borderRadius: 2,
-            border: '1px solid #e0e0e0',
+            border: `1px solid ${theme.palette.divider}`,
           }}>
             <Typography variant="h5" sx={{ fontWeight: 600, mb: 1, color: 'text.primary' }}>
               {t('hotelSearch.alreadyHaveBooking.title')}
@@ -261,14 +226,14 @@ const HotelSearchPage: React.FC = () => {
                 fontSize: isMobile ? '1rem' : '1.1rem',
                 width: isMobile ? '100%' : 'auto',
                 maxWidth: isMobile ? '280px' : 'none',
-                borderColor: '#e0e0e0',
+                borderColor: theme.palette.divider,
                 color: 'text.primary',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                boxShadow: theme.shadows[2],
                 '&:hover': {
                   borderColor: 'primary.main',
                   backgroundColor: 'primary.main',
                   color: 'primary.contrastText',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                  boxShadow: theme.shadows[4],
                   transform: 'translateY(-1px)',
                 },
                 transition: 'all 0.2s ease-in-out',

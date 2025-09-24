@@ -71,16 +71,16 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Paper 
         elevation={8}
-        sx={{ 
+        sx={{
           p: { xs: 3, sm: 4, md: 3 },
           mb: { xs: 2, sm: 3 },
           width: '100%',
           maxWidth: '100%',
           boxSizing: 'border-box',
           borderRadius: 2,
-          background: 'white',
-          border: '1px solid #e0e0e0',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
+          background: theme.palette.background.paper,
+          border: `1px solid ${theme.palette.divider}`,
+          boxShadow: theme.shadows[8],
         }}
       >
         {/* Mobile-Optimized Header */}
@@ -136,7 +136,7 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
                   '& .MuiOutlinedInput-root': {
                     minHeight: { xs: '56px', md: '56px' },
                     fontSize: { xs: '1rem', md: '1rem' },
-                    backgroundColor: 'white',
+                    backgroundColor: theme.palette.background.paper,
                     borderRadius: 2,
                     '&:hover fieldset': {
                       borderColor: 'primary.main',
@@ -168,7 +168,7 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
                   '& .MuiOutlinedInput-root': {
                     minHeight: { xs: '56px', md: '56px' },
                     fontSize: { xs: '1rem', md: '1rem' },
-                    backgroundColor: 'white',
+                    backgroundColor: theme.palette.background.paper,
                     borderRadius: 2,
                     '&:hover fieldset': {
                       borderColor: 'primary.main',
@@ -195,7 +195,7 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
                   '& .MuiOutlinedInput-root': {
                     minHeight: { xs: '56px', md: '56px' },
                     fontSize: { xs: '1rem', md: '1rem' },
-                    backgroundColor: 'white',
+                    backgroundColor: theme.palette.background.paper,
                     borderRadius: 2,
                     '&:hover fieldset': {
                       borderColor: 'primary.main',
@@ -246,7 +246,7 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
                   '& .MuiOutlinedInput-root': {
                     minHeight: { xs: '56px', md: '56px' },
                     fontSize: { xs: '1rem', md: '1rem' },
-                    backgroundColor: 'white',
+                    backgroundColor: theme.palette.background.paper,
                     borderRadius: 2,
                     '&:hover fieldset': {
                       borderColor: 'primary.main',
@@ -318,10 +318,10 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
                       xs: 'none',
                       sm: '400px',
                     },
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                    boxShadow: theme.shadows[2],
                     transition: 'all 0.2s ease-in-out',
                     '&:hover': {
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                      boxShadow: theme.shadows[4],
                       transform: 'translateY(-1px)',
                     },
                     '&:active': {

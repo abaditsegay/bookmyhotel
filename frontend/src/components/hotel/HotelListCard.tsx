@@ -99,8 +99,8 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
         cursor: 'pointer',
         // Mobile-specific styling
         ...(isMobile && {
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-          background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+          boxShadow: theme.shadows[2],
+          background: theme.palette.background.paper,
         }),
       }}
       onClick={() => onViewHotel(hotel.id)}

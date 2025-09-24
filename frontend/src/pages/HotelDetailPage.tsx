@@ -269,12 +269,12 @@ const HotelDetailPage: React.FC = () => {
           onClick={handleBackToResults}
           sx={{ 
             mr: 2,
-            bgcolor: 'white',
-            border: '1px solid #e0e0e0',
+            bgcolor: theme.palette.background.paper,
+            border: `1px solid ${theme.palette.divider}`,
             borderRadius: 2,
             '&:hover': {
-              bgcolor: '#f5f5f5',
-              borderColor: '#d0d0d0',
+              bgcolor: theme.palette.action.hover,
+              borderColor: theme.palette.action.disabled,
             },
             transition: 'all 0.2s ease-in-out',
           }}
@@ -354,10 +354,10 @@ const HotelDetailPage: React.FC = () => {
       {/* Hotel Information - Mobile Responsive */}
       <Card 
         sx={{
-          background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
-          border: '1px solid #e0e0e0',
+          backgroundColor: theme.palette.background.paper,
+          border: `1px solid ${theme.palette.divider}`,
           borderRadius: 2,
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+          boxShadow: theme.shadows[2],
           mb: isMobile ? 2 : 3,
         }}
       >
@@ -415,12 +415,15 @@ const HotelDetailPage: React.FC = () => {
                 sx={{ 
                   textAlign: 'center',
                   p: 2,
-                  backgroundColor: '#e8f5e8',
+                  backgroundColor: theme.palette.action.selected,
                   borderRadius: 1,
-                  border: '1px solid #c8e6c9',
+                  border: `1px solid ${theme.palette.success.main}`,
                 }}
               >
-                <Typography variant="h5" sx={{ color: '#2e7d32', fontWeight: 700 }}>
+                <Typography variant="h5" sx={{ 
+                  color: theme.palette.success.dark,
+                  fontWeight: 700 
+                }}>
                   From ETB {hotel.minPrice?.toFixed(0)}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
@@ -457,7 +460,10 @@ const HotelDetailPage: React.FC = () => {
             
             {searchRequest && (
               <Box sx={{ textAlign: 'right', ml: 3 }}>
-                <Typography variant="h5" sx={{ color: '#2e7d32', fontWeight: 700 }}>
+                <Typography variant="h5" sx={{ 
+                  color: theme.palette.success.dark,
+                  fontWeight: 700 
+                }}>
                   From ETB {hotel.minPrice?.toFixed(0)}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
@@ -543,7 +549,13 @@ const HotelDetailPage: React.FC = () => {
 
         {/* Search Summary */}
         {searchRequest && (
-          <Box sx={{ mt: 2, p: 1.5, backgroundColor: 'white', border: '1px solid #e0e0e0', borderRadius: 1 }}>
+          <Box sx={{ 
+            mt: 2, 
+            p: 1.5, 
+            backgroundColor: theme.palette.background.paper, 
+            border: `1px solid ${theme.palette.divider}`, 
+            borderRadius: 1 
+          }}>
             <Typography variant="body2" sx={{ color: 'text.primary', fontWeight: 600 }}>
               Showing availability {formatSearchSummary()}
             </Typography>
@@ -556,10 +568,10 @@ const HotelDetailPage: React.FC = () => {
       {searchRequest && (
         <Card 
           sx={{
-            background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
-            border: '1px solid #e0e0e0',
+            backgroundColor: theme.palette.background.paper,
+            border: `1px solid ${theme.palette.divider}`,
             borderRadius: 2,
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+            boxShadow: theme.shadows[2],
           }}
         >
           <CardContent sx={{ p: isMobile ? 2 : 3 }}>
@@ -679,10 +691,10 @@ const HotelDetailPage: React.FC = () => {
       {!searchRequest && (
         <Card 
           sx={{
-            background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
-            border: '1px solid #e0e0e0',
+            backgroundColor: theme.palette.background.paper,
+            border: `1px solid ${theme.palette.divider}`,
             borderRadius: 2,
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+            boxShadow: theme.shadows[2],
             textAlign: 'center',
           }}
         >
@@ -697,13 +709,13 @@ const HotelDetailPage: React.FC = () => {
             <IconButton 
               onClick={() => navigate('/hotels/search')}
               sx={{ 
-                bgcolor: 'white',
-                border: '1px solid #e0e0e0',
+                bgcolor: theme.palette.background.paper,
+                border: `1px solid ${theme.palette.divider}`,
                 borderRadius: 2,
                 color: 'text.primary',
                 '&:hover': {
-                  bgcolor: '#f5f5f5',
-                  borderColor: '#d0d0d0',
+                  bgcolor: theme.palette.action.hover,
+                  borderColor: theme.palette.action.disabled,
                 },
               }}
               size="large"

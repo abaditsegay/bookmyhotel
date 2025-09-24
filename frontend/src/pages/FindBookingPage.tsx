@@ -18,6 +18,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { hotelApiService } from '../services/hotelApi';
 import { BookingResponse } from '../types/hotel';
+import { formatDateForDisplay } from '../utils/dateUtils';
 
 const FindBookingPage: React.FC = () => {
   const navigate = useNavigate();
@@ -347,21 +348,13 @@ const FindBookingPage: React.FC = () => {
                     Check-in
                   </Typography>
                   <Typography variant="body1" sx={{ fontWeight: 'bold', mb: 1.5 }}>
-                    {new Date(booking.checkInDate).toLocaleDateString('en-US', { 
-                      month: 'short', 
-                      day: 'numeric', 
-                      year: 'numeric' 
-                    })}
+                    {formatDateForDisplay(booking.checkInDate)}
                   </Typography>
                   <Typography variant="body2" color="primary.main" sx={{ fontWeight: 'bold', mb: 0.5 }}>
                     Check-out
                   </Typography>
                   <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
-                    {new Date(booking.checkOutDate).toLocaleDateString('en-US', { 
-                      month: 'short', 
-                      day: 'numeric', 
-                      year: 'numeric' 
-                    })}
+                    {formatDateForDisplay(booking.checkOutDate)}
                   </Typography>
                 </Box>
                 

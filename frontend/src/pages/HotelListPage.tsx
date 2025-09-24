@@ -6,8 +6,6 @@ import {
   Alert,
   CircularProgress,
   Snackbar,
-  Breadcrumbs,
-  Link,
   Grid,
   useTheme,
   useMediaQuery,
@@ -16,7 +14,6 @@ import {
   Button,
 } from '@mui/material';
 import {
-  ArrowBack as ArrowBackIcon,
   Search as SearchIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -171,83 +168,20 @@ const HotelListPage: React.FC = () => {
       <Card 
         sx={{ 
           mb: isMobile ? 3 : 4,
-          background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
-          border: '1px solid #e0e0e0',
+          backgroundColor: theme.palette.background.paper,
+          border: `1px solid ${theme.palette.divider}`,
           borderRadius: 2,
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+          boxShadow: theme.shadows[2],
           overflow: 'hidden',
         }}
       >
         <CardContent sx={{ p: isMobile ? 3 : 4 }}>
-          {/* Back Navigation */}
-          <Box sx={{ mb: isMobile ? 3 : 4 }}>
-            <Box sx={{ 
-              display: 'flex',
-              alignItems: 'center',
-              mb: isMobile ? 2 : 2.5,
-            }}>
-              <Button
-                onClick={handleBackToSearch}
-                sx={{ 
-                  mr: 2,
-                  minWidth: 'auto',
-                  px: 2,
-                  py: 1,
-                  bgcolor: 'white',
-                  border: '1px solid #e0e0e0',
-                  color: 'text.primary',
-                  borderRadius: 2,
-                  fontWeight: 600,
-                  '&:hover': {
-                    bgcolor: '#f5f5f5',
-                    borderColor: '#d0d0d0',
-                  },
-                  transition: 'all 0.2s ease-in-out',
-                }}
-                startIcon={<ArrowBackIcon />}
-              >
-                Back
-              </Button>
-              
-              {!isMobile && (
-                <Breadcrumbs 
-                  aria-label="breadcrumb"
-                  sx={{
-                    '& .MuiBreadcrumbs-separator': {
-                      color: 'text.secondary',
-                    },
-                  }}
-                >
-                  <Link 
-                    component="button" 
-                    variant="body2" 
-                    onClick={handleBackToSearch}
-                    sx={{ 
-                      textDecoration: 'none',
-                      color: 'text.secondary',
-                      fontWeight: 500,
-                      '&:hover': {
-                        color: 'text.primary',
-                        textDecoration: 'underline',
-                      },
-                    }}
-                  >
-                    Hotel Search
-                  </Link>
-                  <Typography variant="body2" color="text.primary" sx={{ fontWeight: 600 }}>
-                    Search Results
-                  </Typography>
-                </Breadcrumbs>
-              )}
-            </Box>
-          </Box>
-
           {/* Combined Header Section */}
           <Box sx={{ 
             p: 3,
-            bgcolor: 'white',
+            bgcolor: theme.palette.background.paper,
             borderRadius: 2,
-            border: '1px solid #e0e0e0',
+            border: `1px solid ${theme.palette.divider}`,
           }}>
             <Typography 
               variant={isMobile ? "h5" : "h4"} 
@@ -275,14 +209,14 @@ const HotelListPage: React.FC = () => {
                 variant="body2" 
                 sx={{ 
                   display: 'inline-block',
-                  bgcolor: '#e8f5e8',
-                  color: '#2e7d32',
+                  bgcolor: theme.palette.mode === 'dark' ? 'success.dark' : 'success.light',
+                  color: theme.palette.mode === 'dark' ? 'success.contrastText' : 'success.main',
                   px: 2,
                   py: 0.75,
                   borderRadius: 1,
                   fontSize: '0.875rem',
                   fontWeight: 600,
-                  border: '1px solid #c8e6c9',
+                  border: `1px solid ${theme.palette.success.main}`,
                 }}
               >
                 {hotels.length} hotel{hotels.length === 1 ? '' : 's'} found
@@ -293,17 +227,17 @@ const HotelListPage: React.FC = () => {
                 sx={{ 
                   py: 1,
                   px: 2.5,
-                  bgcolor: 'white',
+                  bgcolor: theme.palette.background.paper,
                   color: 'text.primary',
-                  border: '1px solid #e0e0e0',
+                  border: `1px solid ${theme.palette.divider}`,
                   borderRadius: 2,
                   fontWeight: 600,
                   textTransform: 'none',
                   fontSize: '0.875rem',
                   minWidth: 'auto',
                   '&:hover': {
-                    bgcolor: '#f5f5f5',
-                    borderColor: '#d0d0d0',
+                    bgcolor: theme.palette.action.hover,
+                    borderColor: theme.palette.action.disabled,
                   },
                 }}
               >
@@ -341,10 +275,10 @@ const HotelListPage: React.FC = () => {
       ) : (
         <Card 
           sx={{ 
-            background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
-            border: '1px solid #e0e0e0',
+            backgroundColor: theme.palette.background.paper,
+            border: `1px solid ${theme.palette.divider}`,
             borderRadius: 2,
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+            boxShadow: theme.shadows[2],
           }}
         >
           <CardContent sx={{ p: isMobile ? 4 : 6, textAlign: 'center' }}>
@@ -359,12 +293,12 @@ const HotelListPage: React.FC = () => {
                 width: 80,
                 height: 80,
                 borderRadius: 2,
-                bgcolor: 'white',
-                border: '1px solid #e0e0e0',
+                bgcolor: theme.palette.background.paper,
+                border: `1px solid ${theme.palette.divider}`,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                boxShadow: theme.shadows[2],
               }}>
                 <SearchIcon sx={{ fontSize: 40, color: 'text.secondary' }} />
               </Box>
@@ -394,13 +328,13 @@ const HotelListPage: React.FC = () => {
                 fontWeight: 600,
                 px: 4,
                 py: 1.5,
-                bgcolor: 'white',
+                bgcolor: theme.palette.background.paper,
                 color: 'text.primary',
-                border: '1px solid #e0e0e0',
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                border: `1px solid ${theme.palette.divider}`,
+                boxShadow: theme.shadows[2],
                 '&:hover': {
-                  bgcolor: '#f5f5f5',
-                  borderColor: '#d0d0d0',
+                  bgcolor: theme.palette.action.hover,
+                  borderColor: theme.palette.action.disabled,
                 },
               }}
             >

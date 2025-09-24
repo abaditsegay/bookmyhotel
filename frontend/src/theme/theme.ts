@@ -155,34 +155,61 @@ export const themeConstants = {
   },
 };
 
-const theme = createTheme({
+// Create theme with mode support
+const createAppTheme = (mode: 'light' | 'dark' = 'light') => createTheme({
   palette: {
+    mode,
     primary: {
-      main: '#1976d2',
-      light: '#42a5f5',
-      dark: '#1565c0',
+      main: mode === 'light' ? '#1976d2' : '#90caf9',
+      light: mode === 'light' ? '#42a5f5' : '#e3f2fd',
+      dark: mode === 'light' ? '#1565c0' : '#42a5f5',
+      contrastText: mode === 'light' ? '#ffffff' : '#000000',
     },
     secondary: {
-      main: '#f50057',
-      light: '#ff5983',
-      dark: '#c51162',
+      main: mode === 'light' ? '#f50057' : '#f48fb1',
+      light: mode === 'light' ? '#ff5983' : '#fce4ec',
+      dark: mode === 'light' ? '#c51162' : '#f50057',
+      contrastText: '#ffffff',
     },
     background: {
-      default: '#f5f5f5',
-      paper: '#ffffff',
+      default: mode === 'light' ? '#f5f5f5' : '#121212',
+      paper: mode === 'light' ? '#ffffff' : '#1e1e1e',
     },
-    // Add custom colors
+    text: {
+      primary: mode === 'light' ? 'rgba(0, 0, 0, 0.87)' : 'rgba(255, 255, 255, 0.87)',
+      secondary: mode === 'light' ? 'rgba(0, 0, 0, 0.6)' : 'rgba(255, 255, 255, 0.6)',
+    },
+    divider: mode === 'light' ? 'rgba(0, 0, 0, 0.12)' : 'rgba(255, 255, 255, 0.12)',
+    action: {
+      hover: mode === 'light' ? 'rgba(0, 0, 0, 0.04)' : 'rgba(255, 255, 255, 0.08)',
+      selected: mode === 'light' ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.16)',
+      disabled: mode === 'light' ? 'rgba(0, 0, 0, 0.26)' : 'rgba(255, 255, 255, 0.3)',
+      disabledBackground: mode === 'light' ? 'rgba(0, 0, 0, 0.12)' : 'rgba(255, 255, 255, 0.12)',
+    },
+    // Add custom colors with dark mode support
     success: {
-      main: themeConstants.telebirrGreen,
-      light: '#F0FFF4',
+      main: mode === 'light' ? themeConstants.telebirrGreen : themeConstants.darkTheme.telebirrGreen,
+      light: mode === 'light' ? '#F0FFF4' : 'rgba(46, 204, 113, 0.16)',
+      dark: mode === 'light' ? '#1B5E20' : '#27AE60',
+      contrastText: '#ffffff',
     },
     warning: {
-      main: themeConstants.mbirrOrange,
-      light: '#FFF5F0',
+      main: mode === 'light' ? themeConstants.mbirrOrange : themeConstants.darkTheme.mbirrOrange,
+      light: mode === 'light' ? '#FFF5F0' : 'rgba(255, 138, 92, 0.16)',
+      dark: mode === 'light' ? '#E65100' : '#FF6B35',
+      contrastText: '#ffffff',
     },
     info: {
-      main: '#2196f3',
-      light: '#e3f2fd',
+      main: mode === 'light' ? '#2196f3' : '#64b5f6',
+      light: mode === 'light' ? '#e3f2fd' : 'rgba(100, 181, 246, 0.16)',
+      dark: mode === 'light' ? '#0D47A1' : '#2196f3',
+      contrastText: '#ffffff',
+    },
+    error: {
+      main: mode === 'light' ? '#d32f2f' : '#f44336',
+      light: mode === 'light' ? '#ffebee' : 'rgba(244, 67, 54, 0.16)',
+      dark: mode === 'light' ? '#c62828' : '#d32f2f',
+      contrastText: '#ffffff',
     },
   },
   typography: {
@@ -257,10 +284,18 @@ declare module '@mui/material/styles' {
   }
 }
 
-const extendedTheme = createTheme(theme, {
-  custom: {
-    constants: themeConstants,
-  },
-});
+// Create the extended theme with custom properties
+const createExtendedTheme = (mode: 'light' | 'dark' = 'light') => {
+  const baseTheme = createAppTheme(mode);
+  return createTheme(baseTheme, {
+    custom: {
+      constants: themeConstants,
+    },
+  });
+};
 
+const extendedTheme = createExtendedTheme('light'); // Default to light mode
+
+// Export both the theme creation functions and default theme
+export { createAppTheme, createExtendedTheme };
 export default extendedTheme;
