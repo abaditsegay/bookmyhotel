@@ -25,7 +25,6 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
   const { t } = useTranslation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
   
   const [location, setLocation] = useState('');
   const [checkInDate, setCheckInDate] = useState<Dayjs | null>(dayjs().add(7, 'day'));
@@ -70,17 +69,17 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Paper 
-        elevation={8}
+        elevation={0}
         sx={{
           p: { xs: 3, sm: 4, md: 3 },
           mb: { xs: 2, sm: 3 },
           width: '100%',
           maxWidth: '100%',
           boxSizing: 'border-box',
-          borderRadius: 2,
+          borderRadius: 1,
           background: theme.palette.background.paper,
-          border: `1px solid ${theme.palette.divider}`,
-          boxShadow: theme.shadows[8],
+          border: `1px solid rgba(224, 224, 224, 0.3)`,
+          boxShadow: 'none',
         }}
       >
         {/* Mobile-Optimized Header */}
@@ -134,17 +133,17 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
                 variant="outlined"
                 sx={{
                   '& .MuiOutlinedInput-root': {
-                    minHeight: { xs: '56px', md: '56px' },
+                    minHeight: { xs: '48px', md: '52px' },
                     fontSize: { xs: '1rem', md: '1rem' },
                     backgroundColor: theme.palette.background.paper,
-                    borderRadius: 2,
+                    borderRadius: 1,
                     '&:hover fieldset': {
                       borderColor: 'primary.main',
                     },
                   },
                   '& .MuiInputLabel-root': {
-                    fontSize: { xs: '1rem', md: '1rem' },
-                    fontWeight: 600,
+                    fontSize: { xs: '0.95rem', md: '1rem' },
+                    fontWeight: 500,
                   },
                 }}
               />
@@ -166,17 +165,17 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
                 variant="outlined"
                 sx={{
                   '& .MuiOutlinedInput-root': {
-                    minHeight: { xs: '56px', md: '56px' },
+                    minHeight: { xs: '48px', md: '52px' },
                     fontSize: { xs: '1rem', md: '1rem' },
                     backgroundColor: theme.palette.background.paper,
-                    borderRadius: 2,
+                    borderRadius: 1,
                     '&:hover fieldset': {
                       borderColor: 'primary.main',
                     },
                   },
                   '& .MuiInputLabel-root': {
-                    fontSize: { xs: '1rem', md: '1rem' },
-                    fontWeight: 600,
+                    fontSize: { xs: '0.95rem', md: '1rem' },
+                    fontWeight: 500,
                   },
                 }}
               />
@@ -193,17 +192,17 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
                 sx={{
                   width: '100%',
                   '& .MuiOutlinedInput-root': {
-                    minHeight: { xs: '56px', md: '56px' },
+                    minHeight: { xs: '48px', md: '52px' },
                     fontSize: { xs: '1rem', md: '1rem' },
                     backgroundColor: theme.palette.background.paper,
-                    borderRadius: 2,
+                    borderRadius: 1,
                     '&:hover fieldset': {
                       borderColor: 'primary.main',
                     },
                   },
                   '& .MuiInputLabel-root': {
-                    fontSize: { xs: '1rem', md: '1rem' },
-                    fontWeight: 600,
+                    fontSize: { xs: '0.95rem', md: '1rem' },
+                    fontWeight: 500,
                   },
                 }}
                 slotProps={{
@@ -244,17 +243,17 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
                 sx={{
                   width: '100%',
                   '& .MuiOutlinedInput-root': {
-                    minHeight: { xs: '56px', md: '56px' },
+                    minHeight: { xs: '48px', md: '52px' },
                     fontSize: { xs: '1rem', md: '1rem' },
                     backgroundColor: theme.palette.background.paper,
-                    borderRadius: 2,
+                    borderRadius: 1,
                     '&:hover fieldset': {
                       borderColor: 'primary.main',
                     },
                   },
                   '& .MuiInputLabel-root': {
-                    fontSize: { xs: '1rem', md: '1rem' },
-                    fontWeight: 600,
+                    fontSize: { xs: '0.95rem', md: '1rem' },
+                    fontWeight: 500,
                   },
                 }}
                 slotProps={{
@@ -299,16 +298,16 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
                   size="large"
                   disabled={loading}
                   sx={{
-                    minHeight: { xs: '52px', md: '48px' },
+                    minHeight: { xs: '50px', md: '48px' },
                     px: { xs: 4, sm: 6, md: 4 },
-                    py: { xs: 1.5, md: 1.25 },
-                    borderRadius: 2,
+                    py: { xs: 1.2, md: 1.1 },
+                    borderRadius: 1,
                     fontSize: { 
-                      xs: '1.1rem',
-                      sm: '1.15rem', 
+                      xs: '1.05rem',
+                      sm: '1.1rem', 
                       md: '1rem' 
                     },
-                    fontWeight: 600,
+                    fontWeight: 500,
                     textTransform: 'none',
                     width: { 
                       xs: '100%',
@@ -318,14 +317,15 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
                       xs: 'none',
                       sm: '400px',
                     },
-                    boxShadow: theme.shadows[2],
+                    boxShadow: 'none',
                     transition: 'all 0.2s ease-in-out',
                     '&:hover': {
-                      boxShadow: theme.shadows[4],
-                      transform: 'translateY(-1px)',
+                      boxShadow: 'none',
+                      transform: 'none',
+                      opacity: 0.9,
                     },
                     '&:active': {
-                      transform: 'translateY(0)',
+                      transform: 'none',
                     },
                     '&:disabled': {
                       backgroundColor: 'action.disabled',

@@ -223,9 +223,9 @@ const SearchResultsPage: React.FC = () => {
           sx={{ 
             p: 4,
             backgroundColor: 'white',
-            border: '1px solid #e0e0e0',
-            borderRadius: 2,
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+            border: '1px solid rgba(224, 224, 224, 0.3)',
+            borderRadius: 1,
+            boxShadow: 'none',
           }}
         >
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
@@ -259,13 +259,13 @@ const SearchResultsPage: React.FC = () => {
           onClick={handleBackToSearch}
           variant="outlined"
           sx={{ 
-            borderRadius: 2,
+            borderRadius: 1,
             textTransform: 'none',
-            fontWeight: 600,
-            borderColor: '#e0e0e0',
+            fontWeight: 500,
+            borderColor: 'rgba(224, 224, 224, 0.5)',
             color: 'text.primary',
             backgroundColor: 'white',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+            boxShadow: 'none',
             '&:hover': {
               borderColor: 'primary.main',
               backgroundColor: 'primary.main',
@@ -283,9 +283,9 @@ const SearchResultsPage: React.FC = () => {
         sx={{ 
           mb: 3,
           backgroundColor: 'white',
-          border: '1px solid #e0e0e0',
-          borderRadius: 2,
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+          border: '1px solid rgba(224, 224, 224, 0.3)',
+          borderRadius: 1,
+          boxShadow: 'none',
         }}
       >
         <CardContent sx={{ p: 3 }}>
@@ -386,9 +386,9 @@ const SearchResultsPage: React.FC = () => {
         <Card 
           sx={{ 
             backgroundColor: 'white',
-            border: '1px solid #e0e0e0',
-            borderRadius: 2,
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
+            border: '1px solid rgba(224, 224, 224, 0.3)',
+            borderRadius: 1,
+            boxShadow: 'none',
           }}
         >
           <CardContent sx={{ p: isMobile ? 4 : 6, textAlign: 'center' }}>
@@ -423,13 +423,14 @@ const SearchResultsPage: React.FC = () => {
               sx={{
                 borderRadius: 2,
                 textTransform: 'none',
-                fontWeight: 600,
+                fontWeight: 500,
                 px: 4,
-                py: 1.5,
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                py: 1.2,
+                boxShadow: 'none',
                 '&:hover': {
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                  transform: 'translateY(-1px)',
+                  boxShadow: 'none',
+                  transform: 'none',
+                  opacity: 0.9,
                 },
               }}
             >

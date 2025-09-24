@@ -136,23 +136,23 @@ const HotelSearchPage: React.FC = () => {
 
       {/* Main Search Form Section */}
       <Card 
-        elevation={8}
+        elevation={0}
         sx={{ 
           mb: isMobile ? 3 : 4,
           backgroundColor: theme.palette.background.paper,
           border: `1px solid ${theme.palette.divider}`,
-          borderRadius: 3,
-          boxShadow: theme.shadows[8],
+          borderRadius: 2,
+          boxShadow: 'none',
         }}
       >
         <CardContent sx={{ p: isMobile ? 2.5 : 4 }}>
           <Box sx={{ 
             textAlign: 'center',
             mb: isMobile ? 2 : 3,
-            p: 3,
+            p: 2,
             backgroundColor: theme.palette.background.default,
-            borderRadius: 2,
-            border: `1px solid ${theme.palette.divider}`,
+            borderRadius: 1,
+            border: `1px solid rgba(224, 224, 224, 0.3)`,
           }}>
             <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>
               Search Hotels
@@ -188,21 +188,22 @@ const HotelSearchPage: React.FC = () => {
 
       {/* Find My Booking Section */}
       <Card 
+        elevation={0}
         sx={{ 
           backgroundColor: theme.palette.background.paper,
-          border: `1px solid ${theme.palette.divider}`,
+          border: `1px solid rgba(224, 224, 224, 0.3)`,
           borderRadius: 2,
-          boxShadow: theme.shadows[8],
+          boxShadow: 'none',
         }}
       >
         <CardContent sx={{ p: isMobile ? 2.5 : 4 }}>
           <Box sx={{ 
             textAlign: 'center',
             mb: isMobile ? 2 : 3,
-            p: 3,
+            p: 2,
             backgroundColor: theme.palette.background.default,
-            borderRadius: 2,
-            border: `1px solid ${theme.palette.divider}`,
+            borderRadius: 1,
+            border: `1px solid rgba(224, 224, 224, 0.3)`,
           }}>
             <Typography variant="h5" sx={{ fontWeight: 600, mb: 1, color: 'text.primary' }}>
               {t('hotelSearch.alreadyHaveBooking.title')}
@@ -218,23 +219,23 @@ const HotelSearchPage: React.FC = () => {
               size="large"
               onClick={() => navigate('/find-booking')}
               sx={{ 
-                borderRadius: 2,
+                borderRadius: 1,
                 textTransform: 'none',
-                fontWeight: 600,
+                fontWeight: 500,
                 px: isMobile ? 3 : 4,
-                py: 1.5,
+                py: 1.2,
                 fontSize: isMobile ? '1rem' : '1.1rem',
                 width: isMobile ? '100%' : 'auto',
                 maxWidth: isMobile ? '280px' : 'none',
-                borderColor: theme.palette.divider,
+                borderColor: 'rgba(224, 224, 224, 0.5)',
                 color: 'text.primary',
-                boxShadow: theme.shadows[2],
+                boxShadow: 'none',
                 '&:hover': {
                   borderColor: 'primary.main',
                   backgroundColor: 'primary.main',
                   color: 'primary.contrastText',
-                  boxShadow: theme.shadows[4],
-                  transform: 'translateY(-1px)',
+                  boxShadow: 'none',
+                  transform: 'none',
                 },
                 transition: 'all 0.2s ease-in-out',
               }}

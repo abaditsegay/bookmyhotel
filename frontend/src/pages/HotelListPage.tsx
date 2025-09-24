@@ -169,9 +169,9 @@ const HotelListPage: React.FC = () => {
         sx={{ 
           mb: isMobile ? 3 : 4,
           backgroundColor: theme.palette.background.paper,
-          border: `1px solid ${theme.palette.divider}`,
-          borderRadius: 2,
-          boxShadow: theme.shadows[2],
+          border: `1px solid rgba(224, 224, 224, 0.3)`,
+          borderRadius: 1,
+          boxShadow: 'none',
           overflow: 'hidden',
         }}
       >
@@ -276,9 +276,9 @@ const HotelListPage: React.FC = () => {
         <Card 
           sx={{ 
             backgroundColor: theme.palette.background.paper,
-            border: `1px solid ${theme.palette.divider}`,
-            borderRadius: 2,
-            boxShadow: theme.shadows[2],
+            border: `1px solid rgba(224, 224, 224, 0.3)`,
+            borderRadius: 1,
+            boxShadow: 'none',
           }}
         >
           <CardContent sx={{ p: isMobile ? 4 : 6, textAlign: 'center' }}>
@@ -292,13 +292,13 @@ const HotelListPage: React.FC = () => {
               <Box sx={{
                 width: 80,
                 height: 80,
-                borderRadius: 2,
+                borderRadius: 1,
                 bgcolor: theme.palette.background.paper,
-                border: `1px solid ${theme.palette.divider}`,
+                border: `1px solid rgba(224, 224, 224, 0.3)`,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: theme.shadows[2],
+                boxShadow: 'none',
               }}>
                 <SearchIcon sx={{ fontSize: 40, color: 'text.secondary' }} />
               </Box>
@@ -327,11 +327,11 @@ const HotelListPage: React.FC = () => {
                 textTransform: 'none',
                 fontWeight: 600,
                 px: 4,
-                py: 1.5,
+                py: 1.2,
                 bgcolor: theme.palette.background.paper,
                 color: 'text.primary',
-                border: `1px solid ${theme.palette.divider}`,
-                boxShadow: theme.shadows[2],
+                border: `1px solid rgba(224, 224, 224, 0.5)`,
+                boxShadow: 'none',
                 '&:hover': {
                   bgcolor: theme.palette.action.hover,
                   borderColor: theme.palette.action.disabled,

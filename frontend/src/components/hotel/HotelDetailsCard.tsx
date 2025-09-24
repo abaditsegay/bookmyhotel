@@ -88,11 +88,12 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
 
   return (
     <Card 
-      elevation={isMobile ? 1 : 3} 
+      elevation={0} 
       sx={{ 
         mb: isMobile ? 2 : 3,
-        borderRadius: isMobile ? 1 : 2,
+        borderRadius: 1,
         overflow: 'hidden',
+        border: '1px solid rgba(224, 224, 224, 0.3)',
         display: horizontalLayout && isLargeScreen ? 'flex' : 'block',
         flexDirection: horizontalLayout && isLargeScreen ? 'row' : 'column',
       }}
