@@ -298,11 +298,12 @@ const FrontDeskDashboard: React.FC = () => {
             '& .MuiTabs-scrollButtons': {
               '&.Mui-disabled': { opacity: 0.3 },
             },
-            '& .MuiTab-root:nth-of-type(4)': { // Target the 4th tab (Offline Bookings)
+            '& .MuiTab-root': { // Apply to all tabs for consistent styling
               backgroundColor: theme.palette.background.paper,
               color: theme.palette.text.secondary,
               border: `1px solid ${theme.palette.divider}`,
               borderRadius: '8px 8px 0 0',
+              marginRight: '4px',
               '&:hover': {
                 backgroundColor: theme.palette.action.hover,
                 color: theme.palette.text.primary,

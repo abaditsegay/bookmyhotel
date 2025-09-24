@@ -248,11 +248,11 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                 borderRadius: 2,
               }}>
                 <Box>
-                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: '#4caf50' }}>
                     Guest Information
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Please provide the guest details for this booking
+                    Please provide the guest's contact details
                   </Typography>
                 </Box>
               </Box>
@@ -261,7 +261,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
-                    label="First Name"
+                    label="First Name *"
                     value={guestInfo.firstName}
                     onChange={handleGuestInfoChange('firstName')}
                     required
@@ -270,8 +270,14 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                         backgroundColor: 'background.paper',
                         borderRadius: 2,
                         '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: 'primary.main',
+                          borderColor: '#4caf50',
                         },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                          borderColor: '#4caf50',
+                        },
+                      },
+                      '& .MuiInputLabel-root.Mui-focused': {
+                        color: '#4caf50',
                       },
                     }}
                   />
@@ -279,7 +285,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
-                    label="Last Name"
+                    label="Last Name *"
                     value={guestInfo.lastName}
                     onChange={handleGuestInfoChange('lastName')}
                     required
@@ -288,8 +294,14 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                         backgroundColor: 'background.paper',
                         borderRadius: 2,
                         '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: 'primary.main',
+                          borderColor: '#4caf50',
                         },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                          borderColor: '#4caf50',
+                        },
+                      },
+                      '& .MuiInputLabel-root.Mui-focused': {
+                        color: '#4caf50',
                       },
                     }}
                   />
@@ -297,7 +309,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
-                    label="Email"
+                    label="Email Address *"
                     type="email"
                     value={guestInfo.email}
                     onChange={handleGuestInfoChange('email')}
@@ -307,8 +319,14 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                         backgroundColor: 'background.paper',
                         borderRadius: 2,
                         '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: 'primary.main',
+                          borderColor: '#4caf50',
                         },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                          borderColor: '#4caf50',
+                        },
+                      },
+                      '& .MuiInputLabel-root.Mui-focused': {
+                        color: '#4caf50',
                       },
                     }}
                   />
@@ -316,7 +334,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
-                    label="Phone"
+                    label="Phone Number *"
                     value={guestInfo.phone}
                     onChange={handleGuestInfoChange('phone')}
                     required
@@ -325,8 +343,14 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                         backgroundColor: 'background.paper',
                         borderRadius: 2,
                         '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: 'primary.main',
+                          borderColor: '#4caf50',
                         },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                          borderColor: '#4caf50',
+                        },
+                      },
+                      '& .MuiInputLabel-root.Mui-focused': {
+                        color: '#4caf50',
                       },
                     }}
                   />
@@ -347,7 +371,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                 borderRadius: 2,
               }}>
                 <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5, color: '#4caf50' }}>
                     Stay Details
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -372,8 +396,14 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                               backgroundColor: 'background.paper',
                               borderRadius: 2,
                               '&:hover .MuiOutlinedInput-notchedOutline': {
-                                borderColor: 'success.main',
+                                borderColor: '#4caf50',
                               },
+                              '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                                borderColor: '#4caf50',
+                              },
+                            },
+                            '& .MuiInputLabel-root.Mui-focused': {
+                              color: '#4caf50',
                             },
                           }
                         } 
@@ -396,8 +426,14 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                               backgroundColor: 'background.paper',
                               borderRadius: 2,
                               '&:hover .MuiOutlinedInput-notchedOutline': {
-                                borderColor: 'success.main',
+                                borderColor: '#4caf50',
                               },
+                              '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                                borderColor: '#4caf50',
+                              },
+                            },
+                            '& .MuiInputLabel-root.Mui-focused': {
+                              color: '#4caf50',
                             },
                           }
                         } 
@@ -424,8 +460,12 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
         return (
           <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '500px' }}>
             {/* Room Selection Header */}
-            <Box sx={{ mb: 2 }}>
-              <Typography variant="h6" gutterBottom>
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="h6" sx={{ 
+                fontWeight: 'bold',
+                color: '#4caf50',
+                mb: 1
+              }}>
                 Available Rooms
               </Typography>
               <Typography variant="body2" color="text.secondary" gutterBottom>
@@ -458,8 +498,8 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
             >
               {roomsLoading ? (
                 <Box sx={{ textAlign: 'center', py: 4 }}>
-                  <CircularProgress size={40} />
-                  <Typography variant="body2" sx={{ mt: 2 }}>
+                  <CircularProgress size={40} sx={{ color: '#4caf50' }} />
+                  <Typography variant="body2" sx={{ mt: 2, color: 'text.secondary' }}>
                     Loading available rooms...
                   </Typography>
                 </Box>
@@ -477,14 +517,16 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                           sx={{ 
                             cursor: 'pointer',
                             border: selectedRoom?.id === room.id ? '2px solid' : '1px solid',
-                            borderColor: selectedRoom?.id === room.id ? 'text.primary' : 'divider',
-                            backgroundColor: selectedRoom?.id === room.id ? 'action.hover' : 'background.paper',
+                            borderColor: selectedRoom?.id === room.id ? '#4caf50' : 'divider',
+                            backgroundColor: selectedRoom?.id === room.id ? 'rgba(76, 175, 80, 0.08)' : 'background.paper',
                             elevation: 0,
-                            borderRadius: 2,
+                            borderRadius: 3,
                             transition: 'all 0.2s ease-in-out',
                             '&:hover': {
-                              borderColor: 'text.primary',
-                              backgroundColor: 'action.hover',
+                              borderColor: '#4caf50',
+                              backgroundColor: 'rgba(76, 175, 80, 0.04)',
+                              transform: 'translateY(-2px)',
+                              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
                             }
                           }}
                           onClick={() => setSelectedRoom(room)}
@@ -492,38 +534,45 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                           <CardContent sx={{ p: 3 }}>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
                               <Typography variant="h6" sx={{ 
-                                fontWeight: 600,
-                                color: 'text.primary'
+                                fontWeight: 'bold',
+                                color: 'text.primary',
+                                fontSize: '1.1rem'
                               }}>
                                 Room {room.roomNumber}
                               </Typography>
                               <Chip 
-                                label={room.roomType} 
+                                label={room.roomType.toUpperCase()} 
                                 size="small" 
                                 variant="outlined"
                                 sx={{
-                                  borderColor: 'divider',
-                                  color: 'text.secondary'
+                                  borderColor: '#4caf50',
+                                  color: '#4caf50',
+                                  fontWeight: 'medium',
+                                  fontSize: '0.75rem'
                                 }}
                               />
                             </Box>
                             <Typography variant="body2" sx={{ 
                               color: 'text.secondary',
-                              mb: 1
+                              mb: 1,
+                              fontSize: '0.875rem'
                             }}>
                               Capacity: {room.capacity} guest{room.capacity !== 1 ? 's' : ''}
                             </Typography>
                             {room.description && (
                               <Typography variant="body2" sx={{ 
                                 color: 'text.secondary',
-                                mb: 2
+                                mb: 3,
+                                fontSize: '0.875rem',
+                                lineHeight: 1.4
                               }}>
                                 {room.description}
                               </Typography>
                             )}
                             <Typography variant="h6" sx={{
-                              color: 'text.primary',
-                              fontWeight: 600
+                              color: '#4caf50',
+                              fontWeight: 'bold',
+                              fontSize: '1.2rem'
                             }}>
                               ETB {room.pricePerNight?.toFixed(0)}/night
                             </Typography>
@@ -580,8 +629,11 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
             >
               <Box>
                 {selectedRoom && (
-                  <Typography variant="body2" color="text.primary" sx={{ fontWeight: 'medium' }}>
-                    Room {selectedRoom.roomNumber} selected
+                  <Typography variant="body2" sx={{ 
+                    fontWeight: 'medium',
+                    color: '#4caf50'
+                  }}>
+                    ✓ Room {selectedRoom.roomNumber} selected
                   </Typography>
                 )}
               </Box>
@@ -590,9 +642,17 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                 <Button 
                   onClick={handleBack} 
                   disabled={loading}
-                  sx={{ minWidth: 100 }}
+                  sx={{ 
+                    minWidth: 100,
+                    color: 'text.secondary',
+                    textTransform: 'uppercase',
+                    fontWeight: 'medium',
+                    '&:hover': {
+                      bgcolor: 'action.hover'
+                    }
+                  }}
                 >
-                  Back
+                  BACK
                 </Button>
                 <Button 
                   variant="contained" 
@@ -600,9 +660,19 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                   disabled={loading || !selectedRoom || roomsLoading}
                   sx={{ 
                     minWidth: 120,
+                    bgcolor: '#4caf50',
+                    color: 'white',
+                    fontWeight: 'bold',
+                    textTransform: 'uppercase',
+                    '&:hover': {
+                      bgcolor: '#45a049',
+                    },
+                    '&:disabled': {
+                      bgcolor: 'action.disabled',
+                    }
                   }}
                 >
-                  {roomsLoading ? 'Loading...' : 'Next'}
+                  {roomsLoading ? 'Loading...' : 'NEXT'}
                 </Button>
               </Box>
             </Box>
@@ -1210,14 +1280,14 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                     variant="h5" 
                     sx={{ 
                       fontWeight: 'bold',
-                      color: 'text.primary',
+                      color: '#4caf50', // Green color to match screenshot
                       mb: 0.5,
                     }}
                   >
-                    Offline Walk-in Booking
+                    Walk-in Guest Booking
                   </Typography>
                   <Typography variant="body1" color="text.secondary">
-                    Working offline - bookings will sync automatically when connection is restored
+                    Complete the guest booking process step by step
                   </Typography>
                 </Box>
               </Box>
@@ -1246,13 +1316,21 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
             alternativeLabel
             sx={{
               '& .MuiStepLabel-root .Mui-completed': {
-                color: 'text.primary',
+                color: '#4caf50', // Green for completed steps
               },
               '& .MuiStepLabel-root .Mui-active': {
-                color: 'text.primary',
+                color: '#4caf50', // Green for active step
               },
               '& .MuiStepConnector-line': {
                 borderColor: 'divider',
+              },
+              '& .MuiStepIcon-root': {
+                '&.Mui-completed': {
+                  color: '#4caf50', // Green for completed step icons
+                },
+                '&.Mui-active': {
+                  color: '#4caf50', // Green for active step icon
+                },
               },
             }}
           >
