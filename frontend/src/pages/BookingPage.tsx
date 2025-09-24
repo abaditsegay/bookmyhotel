@@ -1566,6 +1566,28 @@ const BookingPage: React.FC = () => {
                             }}
                           />
                         </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <Box sx={{ 
+                            p: 2, 
+                            bgcolor: theme.palette.background.default, 
+                            color: theme.palette.text.primary, 
+                            borderRadius: 2,
+                            border: `1px solid ${theme.palette.divider}`
+                          }}>
+                            <Typography variant="body2" sx={{ fontWeight: 700, mb: 1, color: theme.palette.success.main }}>
+                              Credit Card Information
+                            </Typography>
+                            <Typography variant="caption" display="block" sx={{ fontWeight: 500 }}>
+                              • Accepted Cards: Visa, MasterCard, Amex
+                            </Typography>
+                            <Typography variant="caption" display="block" sx={{ fontWeight: 500 }}>
+                              • SSL Encrypted & Secure Processing
+                            </Typography>
+                            <Typography variant="caption" display="block" sx={{ fontWeight: 500 }}>
+                              • Amount: ETB {totalAmount?.toFixed(0)}
+                            </Typography>
+                          </Box>
+                        </Grid>
                         <Grid item xs={12}>
                           <Alert 
                             severity="info"
@@ -1717,6 +1739,28 @@ const BookingPage: React.FC = () => {
                                 }}
                               />
                             </Grid>
+                            <Grid item xs={12} sm={6}>
+                              <Box sx={{ 
+                                p: 2, 
+                                bgcolor: theme.palette.background.default, 
+                                color: theme.palette.text.primary, 
+                                borderRadius: 2,
+                                border: `1px solid ${theme.palette.divider}`
+                              }}>
+                                <Typography variant="body2" sx={{ fontWeight: 700, mb: 1, color: theme.palette.success.main }}>
+                                  Mobile Money Information
+                                </Typography>
+                                <Typography variant="caption" display="block" sx={{ fontWeight: 500 }}>
+                                  • Services: M-Pesa, Airtel Money, MTN
+                                </Typography>
+                                <Typography variant="caption" display="block" sx={{ fontWeight: 500 }}>
+                                  • Processing Time: 1-2 hours
+                                </Typography>
+                                <Typography variant="caption" display="block" sx={{ fontWeight: 500 }}>
+                                  • Amount: ETB {totalAmount?.toFixed(0)}
+                                </Typography>
+                              </Box>
+                            </Grid>
                             <Grid item xs={12}>
                               <Alert 
                                 severity="warning"
@@ -1807,6 +1851,28 @@ const BookingPage: React.FC = () => {
                             Your reservation will be confirmed and you can pay when you arrive at the hotel.
                           </Alert>
                           <Grid container spacing={2}>
+                            <Grid item xs={12} sm={6}>
+                              <Box sx={{ 
+                                p: 2, 
+                                bgcolor: theme.palette.background.default, 
+                                color: theme.palette.text.primary, 
+                                borderRadius: 2,
+                                border: `1px solid ${theme.palette.divider}`
+                              }}>
+                                <Typography variant="body2" sx={{ fontWeight: 700, mb: 1, color: theme.palette.success.main }}>
+                                  Front Desk Information
+                                </Typography>
+                                <Typography variant="caption" display="block" sx={{ fontWeight: 500 }}>
+                                  • Payment Methods: Cash, Card, Mobile
+                                </Typography>
+                                <Typography variant="caption" display="block" sx={{ fontWeight: 500 }}>
+                                  • Required: Valid ID & Confirmation
+                                </Typography>
+                                <Typography variant="caption" display="block" sx={{ fontWeight: 500 }}>
+                                  • Amount: ETB {totalAmount?.toFixed(0)}
+                                </Typography>
+                              </Box>
+                            </Grid>
                             <Grid item xs={12}>
                               <Alert 
                                 severity="warning"
@@ -1944,6 +2010,28 @@ const BookingPage: React.FC = () => {
                               ),
                             }}
                           />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <Box sx={{ 
+                            p: 2, 
+                            bgcolor: theme.palette.background.default, 
+                            color: theme.palette.text.primary, 
+                            borderRadius: 2,
+                            border: `1px solid ${theme.palette.divider}`
+                          }}>
+                            <Typography variant="body2" sx={{ fontWeight: 700, mb: 1, color: theme.palette.success.main }}>
+                              M-birr Information
+                            </Typography>
+                            <Typography variant="caption" display="block" sx={{ fontWeight: 500 }}>
+                              • USSD Code: *847#
+                            </Typography>
+                            <Typography variant="caption" display="block" sx={{ fontWeight: 500 }}>
+                              • Limits: 10 - 100,000 ETB
+                            </Typography>
+                            <Typography variant="caption" display="block" sx={{ fontWeight: 500 }}>
+                              • Amount: ETB {totalAmount?.toFixed(0)}
+                            </Typography>
+                          </Box>
                         </Grid>
                             <Grid item xs={12}>
                               <Alert 
