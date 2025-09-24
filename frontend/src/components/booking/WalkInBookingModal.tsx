@@ -741,26 +741,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                       }}
                       onClick={() => setSelectedRoom(room)}
                     >
-                      {selectedRoom?.id === room.id && (
-                        <Box
-                          sx={{
-                            position: 'absolute',
-                            top: 8,
-                            right: 8,
-                            backgroundColor: '#2e7d32',
-                            color: 'white',
-                            borderRadius: '50%',
-                            width: 24,
-                            height: 24,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            zIndex: 1,
-                          }}
-                        >
-                          ✓
-                        </Box>
-                      )}
+
                       <CardContent sx={{ 
                         color: 'inherit',
                       }}>
@@ -854,24 +835,9 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
               border: `2px solid ${theme.palette.divider}`,
               boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
             }}>
-              <Box sx={{
-                width: 60,
-                height: 60,
-                borderRadius: '50%',
-                bgcolor: '#2e7d32',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                mx: 'auto',
-                mb: 2,
-              }}>
-                <Typography variant="h4" sx={{ color: 'white' }}>
-                  ✓
-                </Typography>
-              </Box>
               <Typography variant="h5" sx={{ 
                 fontWeight: 700,
-                color: '#2e7d32',
+                color: theme.palette.text.primary,
                 mb: 1,
               }}>
                 Booking Confirmation
@@ -1204,7 +1170,6 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
             variant="contained" 
             onClick={handleNext}
             disabled={loading || (activeStep === 1 && (!selectedRoom || roomsLoading))}
-            startIcon={roomsLoading && activeStep === 1 ? <CircularProgress size={16} sx={{ color: 'white' }} /> : undefined}
             sx={{
               backgroundColor: '#2e7d32',
               color: 'white',
@@ -1225,7 +1190,6 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
             variant="contained" 
             onClick={handleCreateBooking}
             disabled={loading || !selectedRoom}
-            startIcon={loading ? <CircularProgress size={16} sx={{ color: 'white' }} /> : undefined}
             sx={{
               backgroundColor: '#2e7d32',
               color: 'white',

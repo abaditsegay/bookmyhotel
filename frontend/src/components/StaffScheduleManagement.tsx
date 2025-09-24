@@ -28,20 +28,16 @@ import {
   CircularProgress,
   TablePagination,
   Stack,
+  useTheme,
 } from '@mui/material';
 import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  Schedule as ScheduleIcon,
   FilterList as FilterIcon,
   Clear as ClearIcon,
-  Business as BusinessIcon,
-  Person as PersonIcon,
-  AccessTime as TimeIcon,
   Cancel as CancelIcon,
   Save as SaveIcon,
-  Upload as UploadIcon,
   CloudUpload as CloudUploadIcon,
   GetApp as DownloadIcon,
 } from '@mui/icons-material';
@@ -101,6 +97,7 @@ interface User {
 }
 
 const StaffScheduleManagement: React.FC = () => {
+  const theme = useTheme();
   const { token, user } = useAuth();
   const [schedules, setSchedules] = useState<StaffSchedule[]>([]);
   const [hotels, setHotels] = useState<Hotel[]>([]);
@@ -562,10 +559,15 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
       )}
 
       {/* Filters Section */}
-      <Paper elevation={1} sx={{ p: 3, mb: 3 }}>
+      <Paper elevation={0} sx={{ 
+        p: 3, 
+        mb: 3,
+        backgroundColor: theme.palette.background.paper,
+        border: `1px solid ${theme.palette.divider}`
+      }}>
         <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
           <Box display="flex" alignItems="center">
-            <FilterIcon sx={{ mr: 1, color: 'primary.main' }} />
+            <FilterIcon sx={{ mr: 1, color: theme.palette.text.secondary }} />
             <Typography variant="h6" component="h2">
               Filters
             </Typography>
@@ -573,7 +575,6 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
           <Box sx={{ display: 'flex', gap: 2 }}>
             <Button
               variant="contained"
-              startIcon={<AddIcon />}
               onClick={() => {
                 setEditingSchedule(null);
                 resetForm();
@@ -584,7 +585,6 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
             </Button>
             <Button
               variant="outlined"
-              startIcon={<UploadIcon />}
               onClick={() => setShowUploadModal(true)}
             >
               Upload Schedule
@@ -600,7 +600,7 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
                 label="Hotel"
                 onChange={(e) => setSelectedHotel(e.target.value as number | '')}
                 disabled={isHotelAdmin} // Disable for hotel admins
-                sx={isHotelAdmin ? { backgroundColor: 'grey.100' } : {}}
+                sx={isHotelAdmin ? { backgroundColor: theme.palette.action.hover } : {}}
               >
                 {isHotelAdmin && user?.hotelId && user?.hotelName ? (
                   <MenuItem value={parseInt(user.hotelId)}>{user.hotelName}</MenuItem>
@@ -659,7 +659,6 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
           <Grid item xs={12} sm={6} md={3}>
             <Button
               variant="outlined"
-              startIcon={<ClearIcon />}
               onClick={clearFilters}
               fullWidth
             >
@@ -674,7 +673,7 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
         <TableContainer>
           <Table>
             <TableHead>
-              <TableRow sx={{ backgroundColor: 'grey.50' }}>
+              <TableRow sx={{ backgroundColor: theme.palette.background.paper }}>
                 <TableCell><strong>Staff Member</strong></TableCell>
                 <TableCell><strong>Hotel</strong></TableCell>
                 <TableCell><strong>Date</strong></TableCell>
@@ -691,30 +690,21 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
                 <TableRow 
                   key={schedule.id} 
                   hover
-                  sx={{ '&:nth-of-type(odd)': { backgroundColor: 'action.hover' } }}
+                  sx={{ '&:nth-of-type(odd)': { backgroundColor: theme.palette.action.hover } }}
                 >
                   <TableCell>
-                    <Box display="flex" alignItems="center">
-                      <PersonIcon sx={{ mr: 1, color: 'primary.main' }} />
-                      <Typography variant="subtitle2" fontWeight="medium">
-                        {schedule.staffName}
-                      </Typography>
-                    </Box>
+                    <Typography variant="subtitle2" fontWeight="medium">
+                      {schedule.staffName}
+                    </Typography>
                   </TableCell>
                   <TableCell>
-                    <Box display="flex" alignItems="center">
-                      <BusinessIcon sx={{ mr: 1, color: 'text.secondary' }} />
-                      {schedule.hotelName}
-                    </Box>
+                    {schedule.hotelName}
                   </TableCell>
                   <TableCell>{formatDate(schedule.scheduleDate)}</TableCell>
                   <TableCell>
-                    <Box display="flex" alignItems="center">
-                      <TimeIcon sx={{ mr: 1, color: 'text.secondary' }} />
-                      <Typography variant="body2">
-                        {formatTime(schedule.startTime)} - {formatTime(schedule.endTime)}
-                      </Typography>
-                    </Box>
+                    <Typography variant="body2">
+                      {formatTime(schedule.startTime)} - {formatTime(schedule.endTime)}
+                    </Typography>
                   </TableCell>
                   <TableCell>
                     <Chip 
@@ -784,7 +774,6 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
 
         {schedules.length === 0 && (
           <Box textAlign="center" py={8}>
-            <ScheduleIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
             <Typography variant="h6" color="text.secondary" gutterBottom>
               No schedules found
             </Typography>
@@ -792,8 +781,8 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
               Create a new schedule to get started
             </Typography>
             <Button 
-              variant="contained" 
-              startIcon={<AddIcon />}
+              variant="contained"
+              sx={{ backgroundColor: '#2e7d32', '&:hover': { backgroundColor: '#1b5e20' } }}
               onClick={() => {
                 setEditingSchedule(null);
                 resetForm();
@@ -825,13 +814,16 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
         maxWidth="md" 
         fullWidth
         PaperProps={{
-          elevation: 8,
-          sx: { borderRadius: 2 }
+          elevation: 0,
+          sx: { 
+            borderRadius: 2,
+            backgroundColor: theme.palette.background.paper,
+            border: `1px solid ${theme.palette.divider}`
+          }
         }}
       >
         <DialogTitle sx={{ pb: 1 }}>
           <Box display="flex" alignItems="center">
-            <ScheduleIcon sx={{ mr: 1, color: 'primary.main' }} />
             {editingSchedule ? 'Edit Schedule' : 'Create New Schedule'}
           </Box>
         </DialogTitle>
@@ -915,7 +907,7 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
                     onChange={(e) => setFormData({...formData, hotelId: parseInt(e.target.value as string)})}
                     required
                     disabled={isHotelAdmin} // Disable for hotel admins
-                    sx={isHotelAdmin ? { backgroundColor: 'grey.100' } : {}}
+                    sx={isHotelAdmin ? { backgroundColor: theme.palette.action.hover } : {}}
                   >
                     {isHotelAdmin && user?.hotelId && user?.hotelName ? (
                       <MenuItem value={parseInt(user.hotelId)}>{user.hotelName}</MenuItem>
@@ -1028,14 +1020,12 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
             <Button 
               onClick={() => setShowModal(false)} 
               color="inherit"
-              startIcon={<CancelIcon />}
             >
               Cancel
             </Button>
             <Button 
               type="submit" 
               variant="contained" 
-              startIcon={editingSchedule ? <SaveIcon /> : <AddIcon />}
               sx={{ ml: 1 }}
             >
               {editingSchedule ? 'Update Schedule' : 'Create Schedule'}
@@ -1051,20 +1041,22 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
         maxWidth="sm" 
         fullWidth
         PaperProps={{
-          elevation: 8,
-          sx: { borderRadius: 2 }
+          elevation: 0,
+          sx: { 
+            borderRadius: 2,
+            backgroundColor: theme.palette.background.paper,
+            border: `1px solid ${theme.palette.divider}`
+          }
         }}
       >
         <DialogTitle sx={{ pb: 1 }}>
           <Box display="flex" alignItems="center">
-            <CloudUploadIcon sx={{ mr: 1, color: 'primary.main' }} />
             Upload Schedule File
           </Box>
         </DialogTitle>
         
         <DialogContent dividers>
           <Box textAlign="center" py={3}>
-            <CloudUploadIcon sx={{ fontSize: 64, color: 'primary.main', mb: 2 }} />
             <Typography variant="h6" gutterBottom>
               Upload CSV Schedule File
             </Typography>
@@ -1081,9 +1073,9 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
                 borderRadius: 2, 
                 p: 3, 
                 mb: 3,
-                backgroundColor: 'grey.50',
+                backgroundColor: theme.palette.background.paper,
                 cursor: 'pointer',
-                '&:hover': { backgroundColor: 'grey.100' }
+                '&:hover': { backgroundColor: theme.palette.action.hover }
               }}
               onClick={() => document.getElementById('file-upload')?.click()}
             >
@@ -1094,7 +1086,6 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
                 style={{ display: 'none' }}
                 onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
               />
-              <UploadIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 1 }} />
               <Typography variant="body1">
                 {uploadFile ? uploadFile.name : 'Click to select a file or drag and drop'}
               </Typography>
@@ -1105,7 +1096,6 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
 
             <Button
               variant="outlined"
-              startIcon={<DownloadIcon />}
               onClick={downloadTemplate}
               sx={{ mb: 2 }}
             >
@@ -1121,14 +1111,12 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
               setUploadFile(null);
             }} 
             color="inherit"
-            startIcon={<CancelIcon />}
           >
             Cancel
           </Button>
           <Button 
             onClick={handleFileUpload}
             variant="contained" 
-            startIcon={<CloudUploadIcon />}
             disabled={!uploadFile}
             sx={{ ml: 1 }}
           >

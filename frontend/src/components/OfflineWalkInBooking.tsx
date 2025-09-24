@@ -26,15 +26,6 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { format, addDays } from 'date-fns';
-import {
-  CloudOff as CloudOffIcon,
-  Search as SearchIcon,
-  Person as PersonIcon,
-  Phone as PhoneIcon,
-  Email as EmailIcon,
-  Sync as SyncIcon,
-  Save as SaveIcon,
-} from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import { useTenant } from '../contexts/TenantContext';
 import { API_CONFIG } from '../config/apiConfig';
@@ -237,9 +228,11 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
       case 0:
         return (
           <Card sx={{ 
-            background: 'linear-gradient(135deg, rgba(33, 150, 243, 0.05) 0%, rgba(21, 101, 192, 0.05) 100%)',
-            border: '1px solid rgba(33, 150, 243, 0.2)',
+            bgcolor: 'background.paper',
+            border: '1px solid',
+            borderColor: 'divider',
             borderRadius: 3,
+            elevation: 0,
           }}>
             <CardContent sx={{ p: 4 }}>
               {/* Guest Information Section */}
@@ -249,23 +242,11 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                 gap: 2, 
                 mb: 4,
                 p: 2,
-                background: 'linear-gradient(135deg, rgba(33, 150, 243, 0.1) 0%, rgba(21, 101, 192, 0.1) 100%)',
+                bgcolor: 'background.default',
+                border: '1px solid',
+                borderColor: 'divider',
                 borderRadius: 2,
               }}>
-                <Box sx={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: 2,
-                  bgcolor: 'primary.main',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: 2,
-                }}>
-                  <Typography variant="h6" color="white" sx={{ fontWeight: 'bold' }}>
-                    1
-                  </Typography>
-                </Box>
                 <Box>
                   <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5 }}>
                     Guest Information
@@ -360,23 +341,11 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                 mb: 3,
                 mt: 4,
                 p: 2,
-                background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(56, 142, 60, 0.1) 100%)',
+                bgcolor: 'background.default',
+                border: '1px solid',
+                borderColor: 'divider',
                 borderRadius: 2,
               }}>
-                <Box sx={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: 2,
-                  bgcolor: 'success.main',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: 2,
-                }}>
-                  <Typography variant="h6" color="white" sx={{ fontWeight: 'bold' }}>
-                    📅
-                  </Typography>
-                </Box>
                 <Box>
                   <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5 }}>
                     Stay Details
@@ -508,10 +477,10 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                           sx={{ 
                             cursor: 'pointer',
                             border: selectedRoom?.id === room.id ? '3px solid' : '1px solid',
-                            borderColor: selectedRoom?.id === room.id ? 'primary.main' : 'divider',
-                            backgroundColor: selectedRoom?.id === room.id ? 'primary.light' : 'background.paper',
+                            borderColor: selectedRoom?.id === room.id ? 'text.primary' : 'divider',
+                            backgroundColor: selectedRoom?.id === room.id ? 'action.selected' : 'background.paper',
                             transform: selectedRoom?.id === room.id ? 'scale(1.02)' : 'scale(1)',
-                            boxShadow: selectedRoom?.id === room.id ? '0 8px 25px rgba(25, 118, 210, 0.15)' : '0 2px 8px rgba(0,0,0,0.1)',
+                            boxShadow: selectedRoom?.id === room.id ? '0 4px 12px rgba(0,0,0,0.15)' : '0 2px 8px rgba(0,0,0,0.1)',
                             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                             position: 'relative',
                             '&:hover': {
@@ -521,26 +490,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                           }}
                           onClick={() => setSelectedRoom(room)}
                         >
-                          {selectedRoom?.id === room.id && (
-                            <Box
-                              sx={{
-                                position: 'absolute',
-                                top: 8,
-                                right: 8,
-                                backgroundColor: 'primary.main',
-                                color: 'white',
-                                borderRadius: '50%',
-                                width: 24,
-                                height: 24,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                zIndex: 1,
-                              }}
-                            >
-                              ✓
-                            </Box>
-                          )}
+
                           <CardContent sx={{ 
                             color: selectedRoom?.id === room.id ? 'primary.contrastText' : 'inherit',
                             '& .MuiTypography-root': {
@@ -624,8 +574,8 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
             >
               <Box>
                 {selectedRoom && (
-                  <Typography variant="body2" color="success.main" sx={{ fontWeight: 'medium' }}>
-                    ✓ Room {selectedRoom.roomNumber} selected
+                  <Typography variant="body2" color="text.primary" sx={{ fontWeight: 'medium' }}>
+                    Room {selectedRoom.roomNumber} selected
                   </Typography>
                 )}
               </Box>
@@ -642,15 +592,8 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                   variant="contained" 
                   onClick={handleNext}
                   disabled={loading || !selectedRoom || roomsLoading}
-                  startIcon={roomsLoading ? <CircularProgress size={16} /> : undefined}
                   sx={{ 
                     minWidth: 120,
-                    background: selectedRoom 
-                      ? 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)'
-                      : undefined,
-                    '&:hover': selectedRoom ? {
-                      background: 'linear-gradient(135deg, #1565c0 0%, #0d47a1 100%)',
-                    } : undefined,
                   }}
                 >
                   {roomsLoading ? 'Loading...' : 'Next'}
@@ -1231,9 +1174,11 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
   return (
     <Card sx={{ 
       minHeight: '70vh',
-      background: 'linear-gradient(135deg, rgba(255, 152, 0, 0.05) 0%, rgba(255, 193, 7, 0.05) 100%)',
-      border: '2px solid rgba(255, 152, 0, 0.3)',
+      bgcolor: 'background.paper',
+      border: '1px solid',
+      borderColor: 'divider',
       borderRadius: 3,
+      elevation: 0,
     }}>
       <CardContent sx={{ p: 3 }}>
         {/* Enhanced Header with Offline Status */}
@@ -1242,9 +1187,10 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
           <Box sx={{ 
             mb: 3,
             p: 3,
-            background: 'linear-gradient(135deg, rgba(255, 152, 0, 0.1) 0%, rgba(255, 193, 7, 0.1) 100%)',
+            bgcolor: 'background.default',
             borderRadius: 3,
-            border: '1px solid rgba(255, 152, 0, 0.3)',
+            border: '1px solid',
+            borderColor: 'divider',
           }}>
             <Box sx={{
               display: 'flex',
@@ -1253,27 +1199,12 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
               mb: 2,
             }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Box sx={{
-                  width: 56,
-                  height: 56,
-                  borderRadius: 3,
-                  bgcolor: 'warning.main',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: 2,
-                }}>
-                  <CloudOffIcon sx={{ fontSize: 28, color: 'white' }} />
-                </Box>
                 <Box>
                   <Typography 
                     variant="h5" 
                     sx={{ 
                       fontWeight: 'bold',
-                      background: 'linear-gradient(45deg, #ff9800, #ffc107)',
-                      backgroundClip: 'text',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
+                      color: 'text.primary',
                       mb: 0.5,
                     }}
                   >
@@ -1287,38 +1218,19 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
               
               <Box sx={{ display: 'flex', gap: 1 }}>
                 <Chip
-                  icon={<CloudOffIcon />}
                   label="Offline Mode"
+                  variant="outlined"
                   sx={{ 
                     fontWeight: 'bold',
-                    bgcolor: 'warning.main',
-                    color: 'warning.contrastText',
                   }}
                 />
                 {pendingSyncCount > 0 && (
                   <Chip
-                    icon={<SyncIcon />}
                     label={`${pendingSyncCount} pending sync`}
-                    color="info"
                     variant="outlined"
                   />
                 )}
               </Box>
-            </Box>
-            
-            <Box sx={{ 
-              p: 2,
-              bgcolor: 'info.main',
-              color: 'info.contrastText',
-              borderRadius: 2,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1.5,
-            }}>
-              <Typography variant="h6">ℹ️</Typography>
-              <Typography variant="body1" sx={{ fontWeight: 'medium' }}>
-                All bookings are saved locally and will automatically sync when internet connection is restored
-              </Typography>
             </Box>
           </Box>
 
@@ -1328,13 +1240,13 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
             alternativeLabel
             sx={{
               '& .MuiStepLabel-root .Mui-completed': {
-                color: 'success.main',
+                color: 'text.primary',
               },
               '& .MuiStepLabel-root .Mui-active': {
-                color: 'warning.main',
+                color: 'text.primary',
               },
               '& .MuiStepConnector-line': {
-                borderColor: 'rgba(255, 152, 0, 0.3)',
+                borderColor: 'divider',
               },
             }}
           >
@@ -1362,8 +1274,8 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
           maxWidth="sm"
           fullWidth
         >
-          <DialogTitle sx={{ textAlign: 'center', color: 'success.main' }}>
-            ✅ Success
+          <DialogTitle sx={{ textAlign: 'center', color: 'text.primary' }}>
+            Success
           </DialogTitle>
           <DialogContent>
             <Typography variant="body1" sx={{ textAlign: 'center', py: 2 }}>
@@ -1433,7 +1345,6 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
               variant="contained" 
               onClick={handleCreateBooking}
               disabled={loading || !selectedRoom}
-              startIcon={loading ? <CircularProgress size={16} /> : <SaveIcon />}
             >
               {loading ? 'Creating Booking...' : 'Create Booking'}
             </Button>
@@ -1463,7 +1374,6 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
             />
             <Button
               variant="contained"
-              startIcon={<SearchIcon />}
               onClick={handleGuestSearch}
               fullWidth
             >
@@ -1483,18 +1393,15 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                   <ListItemText
                     primary={
                       <Typography component="span" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <PersonIcon fontSize="small" />
                         {guest.name}
                       </Typography>
                     }
                     secondary={
                       <React.Fragment>
                         <Typography component="span" sx={{ display: 'flex', alignItems: 'center', gap: 1 }} variant="body2">
-                          <EmailIcon fontSize="small" />
                           {guest.email}
                         </Typography>
                         <Typography component="span" sx={{ display: 'flex', alignItems: 'center', gap: 1 }} variant="body2">
-                          <PhoneIcon fontSize="small" />
                           {guest.phone}
                         </Typography>
                         {guest.lastStay && (
