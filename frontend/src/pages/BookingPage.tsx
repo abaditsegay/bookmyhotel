@@ -582,10 +582,10 @@ const BookingPage: React.FC = () => {
           elevation={0} 
           sx={{ 
             mb: isMobile ? 3 : 4,
-            backgroundColor: 'white',
-            border: '1px solid #e0e0e0',
+            backgroundColor: theme.palette.background.paper,
+            border: `1px solid ${theme.palette.divider}`,
             borderRadius: 2,
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+            boxShadow: theme.shadows[2],
           }}
         >
           <CardContent sx={{ p: isMobile ? 2.5 : 3.5 }}>
@@ -613,15 +613,15 @@ const BookingPage: React.FC = () => {
               <Grid item xs={12} sm={6}>
                 <Box sx={{ 
                   p: 2.5,
-                  backgroundColor: 'white',
+                  backgroundColor: theme.palette.background.default,
                   borderRadius: 2,
-                  border: '1px solid #e0e0e0',
+                  border: `1px solid ${theme.palette.divider}`,
                   height: '100%',
                 }}>
                   <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>
                     ROOM TYPE
                   </Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 700, mt: 0.5, mb: 2, color: '#2e7d32' }}>
+                  <Typography variant="h6" sx={{ fontWeight: 700, mt: 0.5, mb: 2, color: theme.palette.success.main }}>
                     {roomData.roomType}
                   </Typography>
                   
@@ -639,9 +639,9 @@ const BookingPage: React.FC = () => {
               <Grid item xs={12} sm={6}>
                 <Box sx={{ 
                   p: 2.5,
-                  backgroundColor: 'white',
+                  backgroundColor: theme.palette.background.default,
                   borderRadius: 2,
-                  border: '1px solid #e0e0e0',
+                  border: `1px solid ${theme.palette.divider}`,
                   height: '100%',
                 }}>
                   <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>
@@ -669,12 +669,12 @@ const BookingPage: React.FC = () => {
                           </Typography>
                         </Box>
                         
-                        <Divider sx={{ my: 1.5, borderColor: '#f0f0f0' }} />
+                        <Divider sx={{ my: 1.5, borderColor: theme.palette.divider }} />
                         
                         <Box sx={{ 
                           p: 1.5,
-                          backgroundColor: '#e8f5e8',
-                          border: '1px solid #c8e6c9',
+                          backgroundColor: theme.palette.success.light,
+                          border: `1px solid ${theme.palette.success.main}`,
                           borderRadius: 2,
                           textAlign: 'center',
                         }}>
@@ -682,7 +682,7 @@ const BookingPage: React.FC = () => {
                             variant={isMobile ? 'h6' : 'h5'} 
                             sx={{ 
                               fontWeight: 700,
-                              color: '#2e7d32',
+                              color: theme.palette.success.dark,
                             }}
                           >
                             Total: ETB {totalAmount?.toFixed(0)}
@@ -802,7 +802,7 @@ const BookingPage: React.FC = () => {
                     left: 0,
                     right: 0,
                     height: 1,
-                    bgcolor: '#e0e0e0',
+                    bgcolor: theme.palette.divider,
                     transform: 'translateY(-50%)',
                   }
                 }}>
@@ -821,7 +821,7 @@ const BookingPage: React.FC = () => {
                       component="h2"
                       sx={{ 
                         fontWeight: 700,
-                        color: '#333',
+                        color: 'text.primary',
                         display: 'flex',
                         alignItems: 'center',
                         gap: 1,
@@ -838,11 +838,11 @@ const BookingPage: React.FC = () => {
                 <Grid item xs={12}>
                   <Card 
                     sx={{ 
-                      background: 'white',
-                      border: '1px solid #e0e0e0',
+                      background: theme.palette.background.paper,
+                      border: `1px solid ${theme.palette.divider}`,
                       borderRadius: 2,
                       overflow: 'hidden',
-                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                      boxShadow: theme.shadows[2],
                     }}
                   >
                     <CardContent sx={{ p: isMobile ? 2.5 : 3.5 }}>
@@ -855,7 +855,7 @@ const BookingPage: React.FC = () => {
                           width: 48,
                           height: 48,
                           borderRadius: '50%',
-                          bgcolor: '#2e7d32',
+                          bgcolor: theme.palette.success.main,
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
@@ -1370,13 +1370,13 @@ const BookingPage: React.FC = () => {
                   <Grid item xs={12}>
                     <Card 
                       sx={{ 
-                        border: '2px solid #2e7d32',
-                        backgroundColor: 'white',
+                        border: `2px solid ${theme.palette.success.main}`,
+                        backgroundColor: theme.palette.background.paper,
                         borderRadius: 2,
                         minHeight: 520, // Consistent height to accommodate all payment methods
                         display: 'flex',
                         flexDirection: 'column',
-                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                        boxShadow: theme.shadows[2],
                       }}
                     >
                       <CardContent sx={{ 
@@ -1577,13 +1577,13 @@ const BookingPage: React.FC = () => {
                 <>
                   <Grid item xs={12}>
                     <Card sx={{ 
-                      border: '2px solid #2e7d32',
-                      backgroundColor: 'white',
+                      border: `2px solid ${theme.palette.success.main}`,
+                      backgroundColor: theme.palette.background.paper,
                       borderRadius: 2,
                       minHeight: 520, // Consistent height to accommodate all payment methods
                       display: 'flex',
                       flexDirection: 'column',
-                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                      boxShadow: theme.shadows[2],
                     }}>
                       <CardContent sx={{ 
                         py: 3,
@@ -1713,13 +1713,13 @@ const BookingPage: React.FC = () => {
                 <>
                   <Grid item xs={12}>
                     <Card sx={{ 
-                      border: '2px solid #2e7d32',
-                      backgroundColor: 'white',
+                      border: `2px solid ${theme.palette.success.main}`,
+                      backgroundColor: theme.palette.background.paper,
                       borderRadius: 2,
                       minHeight: 520, // Consistent height to accommodate all payment methods
                       display: 'flex',
                       flexDirection: 'column',
-                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                      boxShadow: theme.shadows[2],
                     }}>
                       <CardContent sx={{ 
                         textAlign: 'center', 
@@ -1777,13 +1777,13 @@ const BookingPage: React.FC = () => {
                 <>
                   <Grid item xs={12}>
                     <Card sx={{ 
-                      border: '2px solid #2e7d32',
-                      backgroundColor: 'white',
+                      border: `2px solid ${theme.palette.success.main}`,
+                      backgroundColor: theme.palette.background.paper,
                       borderRadius: 2,
                       minHeight: 520, // Consistent height to accommodate all payment methods
                       display: 'flex',
                       flexDirection: 'column',
-                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                      boxShadow: theme.shadows[2],
                     }}>
                       <CardContent sx={{ 
                         py: 3,
@@ -1937,13 +1937,13 @@ const BookingPage: React.FC = () => {
                 <>
                   <Grid item xs={12}>
                     <Card sx={{ 
-                      border: '2px solid #2e7d32',
-                      backgroundColor: 'white',
+                      border: `2px solid ${theme.palette.success.main}`,
+                      backgroundColor: theme.palette.background.paper,
                       borderRadius: 2,
                       minHeight: 520, // Consistent height to accommodate all payment methods
                       display: 'flex',
                       flexDirection: 'column',
-                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                      boxShadow: theme.shadows[2],
                     }}>
                       <CardContent sx={{ 
                         py: 3,

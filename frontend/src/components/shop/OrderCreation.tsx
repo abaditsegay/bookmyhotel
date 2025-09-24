@@ -23,7 +23,8 @@ import {
   Chip,
   Divider,
   Switch,
-  FormControlLabel
+  FormControlLabel,
+  useTheme
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -48,6 +49,7 @@ interface OrderItem {
 const OrderCreation: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const theme = useTheme();
   const [products, setProducts] = useState<Product[]>([]);
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -77,23 +79,23 @@ const OrderCreation: React.FC = () => {
   const hotelId = user?.hotelId ? parseInt(user.hotelId) : null; // No fallback - should be from user context
 
   useEffect(() => {
-    loadProducts();
-  }, [hotelId]);
-
-  const loadProducts = async () => {
     if (!hotelId) {
       setError('Hotel ID not available. Please ensure you are logged in as a hotel user.');
       return;
     }
     
-    try {
-      const data = await shopApiService.getProducts(hotelId);
-      setProducts(data.content.filter(p => p.isActive && p.isAvailable && p.stockQuantity > 0));
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load products');
-    }
-  };
+    const loadData = async () => {
+      try {
+        const data = await shopApiService.getProducts(hotelId);
+        setProducts(data.content.filter(p => p.isActive && p.isAvailable && p.stockQuantity > 0));
+        setError(null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load products');
+      }
+    };
+    
+    loadData();
+  }, [hotelId]);
 
   const addProductToOrder = (product: Product) => {
     const existingItem = orderItems.find(item => item.product.id === product.id);
@@ -359,40 +361,105 @@ const OrderCreation: React.FC = () => {
 
               {/* Products Grid */}
               <Grid container spacing={2}>
-                {filteredProducts.map((product) => (
-                  <Grid item xs={12} sm={6} md={4} key={product.id}>
-                    <Card 
-                      variant="outlined" 
-                      sx={{ 
-                        cursor: 'pointer',
-                        '&:hover': { boxShadow: 2 }
-                      }}
-                      onClick={() => addProductToOrder(product)}
-                    >
-                      <CardContent sx={{ p: 2 }}>
-                        <Typography variant="subtitle2" noWrap>
-                          {product.name}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          SKU: {product.sku}
-                        </Typography>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
-                          <Chip
-                            label={product.category.replace('_', ' ')}
-                            color={getCategoryColor(product.category)}
-                            size="small"
-                          />
-                          <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                            ETB {product.price?.toFixed(0)}
+                {filteredProducts.map((product) => {
+                  const orderItem = orderItems.find(item => item.product.id === product.id);
+                  const isSelected = !!orderItem;
+                  const selectedQuantity = orderItem?.quantity || 0;
+                  
+                  return (
+                    <Grid item xs={12} sm={6} md={4} key={product.id}>
+                      <Card 
+                        variant="outlined" 
+                        sx={{ 
+                          cursor: 'pointer',
+                          position: 'relative',
+                          border: isSelected ? '2px solid' : '1px solid',
+                          borderColor: isSelected ? 'primary.main' : 'divider',
+                          backgroundColor: isSelected ? 'action.selected' : 'background.paper',
+                          '&:hover': { 
+                            boxShadow: 2,
+                            borderColor: isSelected ? 'primary.main' : 'primary.light'
+                          },
+                          transition: 'all 0.2s ease-in-out'
+                        }}
+                        onClick={() => addProductToOrder(product)}
+                      >
+                        {/* Selection indicator */}
+                        {isSelected && (
+                          <Box
+                            sx={{
+                              position: 'absolute',
+                              top: 8,
+                              right: 8,
+                              backgroundColor: 'primary.main',
+                              color: 'white',
+                              borderRadius: '50%',
+                              width: 24,
+                              height: 24,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '0.75rem',
+                              fontWeight: 'bold',
+                              zIndex: 1
+                            }}
+                          >
+                            {selectedQuantity}
+                          </Box>
+                        )}
+                        
+                        <CardContent sx={{ p: 2 }}>
+                          <Typography 
+                            variant="subtitle2" 
+                            noWrap
+                            sx={{ 
+                              fontWeight: isSelected ? 'bold' : 'normal',
+                              color: isSelected ? 'primary.main' : 'text.primary'
+                            }}
+                          >
+                            {product.name}
                           </Typography>
-                        </Box>
-                        <Typography variant="caption" color="text.secondary">
-                          Stock: {product.stockQuantity}
-                        </Typography>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                ))}
+                          <Typography variant="caption" color="text.secondary">
+                            SKU: {product.sku}
+                          </Typography>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
+                            <Chip
+                              label={product.category.replace('_', ' ')}
+                              color={getCategoryColor(product.category)}
+                              size="small"
+                              variant={isSelected ? 'filled' : 'outlined'}
+                            />
+                            <Typography 
+                              variant="body2" 
+                              sx={{ 
+                                fontWeight: 'bold',
+                                color: isSelected ? 'primary.main' : 'text.primary'
+                              }}
+                            >
+                              ETB {product.price?.toFixed(0)}
+                            </Typography>
+                          </Box>
+                          <Typography variant="caption" color="text.secondary">
+                            Stock: {product.stockQuantity}
+                          </Typography>
+                          {isSelected && (
+                            <Typography 
+                              variant="caption" 
+                              sx={{ 
+                                display: 'block',
+                                mt: 0.5,
+                                color: 'primary.main',
+                                fontWeight: 'medium'
+                              }}
+                            >
+                              Selected: {selectedQuantity} item{selectedQuantity !== 1 ? 's' : ''}
+                            </Typography>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                  );
+                })}
               </Grid>
             </CardContent>
           </Card>
@@ -400,7 +467,17 @@ const OrderCreation: React.FC = () => {
 
         {/* Order Summary */}
         <Grid item xs={12} md={4}>
-          <Card>
+          <Card sx={{ 
+            backgroundColor: theme.palette.mode === 'dark' 
+              ? theme.palette.grey[800] 
+              : theme.palette.grey[100],
+            border: '2px solid',
+            borderColor: theme.palette.primary.main,
+            boxShadow: theme.shadows[3],
+            '& .MuiCardContent-root': {
+              backgroundColor: 'transparent'
+            }
+          }}>
             <CardContent>
               <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <ReceiptIcon color="primary" />

@@ -204,7 +204,9 @@ const LoginPage: React.FC = () => {
     <Box
       sx={{
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+        background: theme.palette.mode === 'dark' 
+          ? `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.grey[900]} 100%)`
+          : `linear-gradient(135deg, ${theme.palette.grey[50]} 0%, ${theme.palette.grey[100]} 100%)`,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -229,10 +231,10 @@ const LoginPage: React.FC = () => {
             maxWidth: 500, 
             width: '100%', 
             height: 'fit-content',
-            background: 'white',
-            border: '1px solid #e0e0e0',
+            background: theme.palette.background.paper,
+            border: `1px solid ${theme.palette.divider}`,
             borderRadius: 4,
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
+            boxShadow: theme.shadows[8],
           }}
         >
           <CardContent sx={{ p: isMobile ? 3 : 5 }}>
@@ -242,9 +244,11 @@ const LoginPage: React.FC = () => {
                 mb: 4,
                 textAlign: 'center',
                 p: 2,
-                background: '#f8f9fa',
+                background: theme.palette.mode === 'dark' 
+                  ? theme.palette.grey[800] 
+                  : theme.palette.grey[50],
                 borderRadius: 3,
-                border: '1px solid #e9ecef',
+                border: `1px solid ${theme.palette.divider}`,
               }}
             >
               <Typography 
@@ -320,7 +324,9 @@ const LoginPage: React.FC = () => {
                   inputProps={{ 'data-testid': 'email-input' }}
                   sx={{
                     '& .MuiOutlinedInput-root': {
-                      backgroundColor: '#f8f9fa',
+                      backgroundColor: theme.palette.mode === 'dark' 
+                        ? theme.palette.grey[800] 
+                        : theme.palette.grey[50],
                       borderRadius: 2,
                       '&:hover .MuiOutlinedInput-notchedOutline': {
                         borderColor: 'primary.main',
@@ -343,7 +349,9 @@ const LoginPage: React.FC = () => {
                   inputProps={{ 'data-testid': 'password-input' }}
                   sx={{
                     '& .MuiOutlinedInput-root': {
-                      backgroundColor: '#f8f9fa',
+                      backgroundColor: theme.palette.mode === 'dark' 
+                        ? theme.palette.grey[800] 
+                        : theme.palette.grey[50],
                       borderRadius: 2,
                       '&:hover .MuiOutlinedInput-notchedOutline': {
                         borderColor: 'primary.main',
@@ -395,7 +403,9 @@ const LoginPage: React.FC = () => {
                     required
                     sx={{
                       '& .MuiOutlinedInput-root': {
-                        backgroundColor: '#f8f9fa',
+                        backgroundColor: theme.palette.mode === 'dark' 
+                          ? theme.palette.grey[800] 
+                          : theme.palette.grey[50],
                         borderRadius: 2,
                         '&:hover .MuiOutlinedInput-notchedOutline': {
                           borderColor: 'primary.main',
@@ -415,7 +425,9 @@ const LoginPage: React.FC = () => {
                     required
                     sx={{
                       '& .MuiOutlinedInput-root': {
-                        backgroundColor: '#f8f9fa',
+                        backgroundColor: theme.palette.mode === 'dark' 
+                          ? theme.palette.grey[800] 
+                          : theme.palette.grey[50],
                         borderRadius: 2,
                         '&:hover .MuiOutlinedInput-notchedOutline': {
                           borderColor: 'primary.main',
@@ -438,7 +450,9 @@ const LoginPage: React.FC = () => {
                   autoComplete="email"
                   sx={{
                     '& .MuiOutlinedInput-root': {
-                      backgroundColor: '#f8f9fa',
+                      backgroundColor: theme.palette.mode === 'dark' 
+                        ? theme.palette.grey[800] 
+                        : theme.palette.grey[50],
                       borderRadius: 2,
                       '&:hover .MuiOutlinedInput-notchedOutline': {
                         borderColor: 'primary.main',
@@ -457,7 +471,9 @@ const LoginPage: React.FC = () => {
                   margin="normal"
                   sx={{
                     '& .MuiOutlinedInput-root': {
-                      backgroundColor: '#f8f9fa',
+                      backgroundColor: theme.palette.mode === 'dark' 
+                        ? theme.palette.grey[800] 
+                        : theme.palette.grey[50],
                       borderRadius: 2,
                       '&:hover .MuiOutlinedInput-notchedOutline': {
                         borderColor: 'primary.main',
@@ -479,7 +495,9 @@ const LoginPage: React.FC = () => {
                   autoComplete="new-password"
                   sx={{
                     '& .MuiOutlinedInput-root': {
-                      backgroundColor: '#f8f9fa',
+                      backgroundColor: theme.palette.mode === 'dark' 
+                        ? theme.palette.grey[800] 
+                        : theme.palette.grey[50],
                       borderRadius: 2,
                       '&:hover .MuiOutlinedInput-notchedOutline': {
                         borderColor: 'primary.main',
@@ -501,7 +519,9 @@ const LoginPage: React.FC = () => {
                   autoComplete="new-password"
                   sx={{
                     '& .MuiOutlinedInput-root': {
-                      backgroundColor: '#f8f9fa',
+                      backgroundColor: theme.palette.mode === 'dark' 
+                        ? theme.palette.grey[800] 
+                        : theme.palette.grey[50],
                       borderRadius: 2,
                       '&:hover .MuiOutlinedInput-notchedOutline': {
                         borderColor: 'primary.main',
@@ -584,10 +604,10 @@ const LoginPage: React.FC = () => {
               maxWidth: 420, 
               width: '100%', 
               height: 'fit-content',
-              background: 'white',
-              border: '1px solid #e0e0e0',
+              background: theme.palette.background.paper,
+              border: `1px solid ${theme.palette.divider}`,
               borderRadius: 4,
-              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
+              boxShadow: theme.shadows[8],
             }}
           >
             <CardContent sx={{ p: isMobile ? 3 : 4 }}>
@@ -597,9 +617,11 @@ const LoginPage: React.FC = () => {
                   mb: 3,
                   textAlign: 'center',
                   p: 2,
-                  background: '#f8f9fa',
+                  background: theme.palette.mode === 'dark' 
+                    ? theme.palette.grey[800] 
+                    : theme.palette.grey[50],
                   borderRadius: 3,
-                  border: '1px solid #e9ecef',
+                  border: `1px solid ${theme.palette.divider}`,
                 }}
               >
                 <Typography 
@@ -634,10 +656,14 @@ const LoginPage: React.FC = () => {
                     borderRadius: 3,
                     borderWidth: 2,
                     borderColor: 'primary.main',
-                    backgroundColor: '#f8f9fa',
+                    backgroundColor: theme.palette.mode === 'dark' 
+                      ? theme.palette.grey[800] 
+                      : theme.palette.grey[50],
                     '&:hover': {
                       borderColor: 'primary.dark',
-                      backgroundColor: '#e9ecef',
+                      backgroundColor: theme.palette.mode === 'dark' 
+                        ? theme.palette.grey[700] 
+                        : theme.palette.grey[100],
                       transform: 'translateY(-2px)',
                       boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
                     },
