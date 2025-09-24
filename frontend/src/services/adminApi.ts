@@ -1,7 +1,6 @@
 // Admin API service for user and hotel management
 
 import { API_CONFIG } from '../config/apiConfig';
-import TokenManager from '../utils/tokenManager';
 
 const API_BASE_URL = API_CONFIG.BASE_URL;
 
@@ -61,6 +60,14 @@ class AdminApiService {
 
   async searchUsers(searchTerm: string, page: number = 0, size: number = 10): Promise<PagedResponse<UserManagementResponse>> {
     return this.fetchApi<PagedResponse<UserManagementResponse>>(`/admin/users/search?searchTerm=${encodeURIComponent(searchTerm)}&page=${page}&size=${size}`);
+  }
+
+  async getUsersByRole(role: string, page: number = 0, size: number = 10): Promise<PagedResponse<UserManagementResponse>> {
+    return this.fetchApi<PagedResponse<UserManagementResponse>>(`/admin/users/role/${role}/paginated?page=${page}&size=${size}`);
+  }
+
+  async getUsersByStatus(isActive: boolean, page: number = 0, size: number = 10): Promise<PagedResponse<UserManagementResponse>> {
+    return this.fetchApi<PagedResponse<UserManagementResponse>>(`/admin/users/status/${isActive}?page=${page}&size=${size}`);
   }
 
   async getUserById(id: number): Promise<UserManagementResponse> {

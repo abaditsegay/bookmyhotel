@@ -106,10 +106,12 @@ const UserManagementAdmin: React.FC = () => {
   const [loadingTenants, setLoadingTenants] = useState(false);
   const [loadingHotels, setLoadingHotels] = useState(false);
 
-  const roleOptions = ['SYSTEM_ADMIN', 'ADMIN', 'HOTEL_MANAGER', 'HOTEL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'CUSTOMER', 'GUEST'];
-  const statusOptions = ['ALL', 'ACTIVE', 'INACTIVE'];
-
-  // Set token in API service when component mounts
+  const roleOptions = ['SYSTEM_ADMIN', 'HOTEL_MANAGER', 'HOTEL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'CUSTOMER'];
+  const statusOptions = [
+    { value: '', label: 'All Status' },
+    { value: 'ACTIVE', label: 'Active' },
+    { value: 'INACTIVE', label: 'Inactive' }
+  ];  // Set token in API service when component mounts
   useEffect(() => {
     if (token) {
       adminApiService.setToken(token);
@@ -124,9 +126,20 @@ const UserManagementAdmin: React.FC = () => {
       setError(null);
       
       let response;
+      
+      // Determine which API to call based on filters
       if (filters.search) {
+        // Search has highest priority
         response = await adminApiService.searchUsers(filters.search, page, rowsPerPage);
+      } else if (filters.role) {
+        // Role filter
+        response = await adminApiService.getUsersByRole(filters.role, page, rowsPerPage);
+      } else if (filters.status && filters.status !== '' && filters.status !== 'ALL') {
+        // Status filter (convert status to boolean)
+        const isActive = filters.status === 'ACTIVE';
+        response = await adminApiService.getUsersByStatus(isActive, page, rowsPerPage);
       } else {
+        // No filters - get all users
         response = await adminApiService.getUsers(page, rowsPerPage);
       }
       
@@ -343,13 +356,11 @@ const UserManagementAdmin: React.FC = () => {
   const getRoleColor = (role: string) => {
     switch (role) {
       case 'SYSTEM_ADMIN': return 'error';
-      case 'ADMIN': return 'error';
       case 'HOTEL_MANAGER': return 'warning';
       case 'HOTEL_ADMIN': return 'info';
       case 'FRONTDESK': return 'success';
       case 'HOUSEKEEPING': return 'primary';
       case 'CUSTOMER': return 'default';
-      case 'GUEST': return 'secondary';
       default: return 'default';
     }
   };
@@ -436,8 +447,8 @@ const UserManagementAdmin: React.FC = () => {
                 label="Status"
               >
                 {statusOptions.map((status) => (
-                  <MenuItem key={status} value={status}>
-                    {status}
+                  <MenuItem key={status.value} value={status.value}>
+                    {status.label}
                   </MenuItem>
                 ))}
               </Select>

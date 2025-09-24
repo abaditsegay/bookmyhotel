@@ -88,8 +88,6 @@ const TenantManagementAdmin: React.FC = () => {
     description: '',
   });
 
-  const statusOptions = ['ALL', 'ACTIVE', 'INACTIVE'];
-
   // Set token in API service when component mounts
   useEffect(() => {
     if (token) {
@@ -104,10 +102,20 @@ const TenantManagementAdmin: React.FC = () => {
       setLoading(true);
       setError(null);
       
+      // Convert status filter to boolean for API
+      let isActiveFilter: boolean | undefined = undefined;
+      if (filters.status === 'ACTIVE') {
+        isActiveFilter = true;
+      } else if (filters.status === 'INACTIVE') {
+        isActiveFilter = false;
+      }
+      // If status is 'ALL' or empty, leave isActiveFilter as undefined
+      
       const response = await adminApiService.getTenants(
         page,
         rowsPerPage,
-        filters.search || undefined
+        filters.search || undefined,
+        isActiveFilter
       );
       
       console.log('Tenant API Response:', response);
@@ -138,11 +146,11 @@ const TenantManagementAdmin: React.FC = () => {
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       loadTenants();
-    }, filters.search ? 500 : 0); // Debounce search
+    }, filters.search ? 500 : 0); // Debounce search, but load immediately for status changes
 
     return () => clearTimeout(timeoutId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loadTenants, filters.search]);
+  }, [loadTenants, filters.search, filters.status]);
 
   // Memoized search handler to prevent input focus loss
   const handleSearchChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
@@ -347,9 +355,8 @@ const TenantManagementAdmin: React.FC = () => {
                   onChange={(e) => handleFilterChange('status', e.target.value)}
                 >
                   <MenuItem value="">All Status</MenuItem>
-                  {statusOptions.filter(status => status !== 'ALL').map(status => (
-                    <MenuItem key={status} value={status}>{status}</MenuItem>
-                  ))}
+                  <MenuItem value="ACTIVE">Active</MenuItem>
+                  <MenuItem value="INACTIVE">Inactive</MenuItem>
                 </Select>
               </FormControl>
             </Grid>

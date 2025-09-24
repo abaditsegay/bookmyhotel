@@ -644,6 +644,49 @@ const LoginPage: React.FC = () => {
               </Box>
               
               <Stack spacing={2}>
+                {/* System Admin User */}
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  onClick={() => fillSampleUser('admin@bookmyhotel.com', 'admin123')}
+                  sx={{ 
+                    textTransform: 'none', 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    py: 2,
+                    borderRadius: 3,
+                    borderWidth: 2,
+                    borderColor: theme.palette.primary.main,
+                    backgroundColor: theme.palette.mode === 'dark' 
+                      ? theme.palette.grey[900] 
+                      : theme.palette.grey[50],
+                    '&:hover': {
+                      borderColor: theme.palette.primary.dark,
+                      backgroundColor: theme.palette.mode === 'dark' 
+                        ? theme.palette.grey[800] 
+                        : theme.palette.grey[100],
+                      transform: 'translateY(-2px)',
+                      boxShadow: 'none',
+                    },
+                  }}
+                >
+                  <Typography variant="body2" fontWeight="bold" color="primary.main">⚡ SYSTEM ADMIN</Typography>
+                  <Typography variant="caption" color="textSecondary" sx={{ mt: 0.5 }}>
+                    admin@bookmyhotel.com
+                  </Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    Password: admin123
+                  </Typography>
+                  <Typography variant="caption" color="primary.main" sx={{ mt: 0.5 }}>
+                    🌐 Full System Access - ALL Tenants/Hotels
+                  </Typography>
+                </Button>
+
+                {/* Divider for Hotel Users */}
+                <Typography variant="caption" color="textSecondary" align="center" sx={{ py: 1 }}>
+                  ── Hotel Staff Accounts ──
+                </Typography>
+
                 <Button
                   variant="outlined"
                   fullWidth
