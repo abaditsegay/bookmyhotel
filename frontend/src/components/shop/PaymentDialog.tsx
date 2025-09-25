@@ -9,13 +9,11 @@ import {
   Grid,
   Card,
   CardContent,
-  CardActionArea,
   TextField,
   Divider,
   CircularProgress,
   Alert,
   FormControl,
-  InputLabel,
   Select,
   MenuItem,
   useTheme,
@@ -84,46 +82,26 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
       value: PaymentMethod.CASH,
       label: 'Cash Payment',
       icon: <CashIcon />,
-      color: theme.palette.primary.main,
+      color: '#1e3a8a',
       description: 'Pay with cash at the hotel reception'
     },
     {
       value: PaymentMethod.CARD,
       label: 'Credit/Debit Card',
       icon: <CreditCardIcon />,
-      color: theme.palette.info.main,
+      color: '#2563eb',
       description: 'Pay securely with your card'
     },
     {
       value: PaymentMethod.MOBILE_MONEY,
       label: 'Mobile Money',
       icon: <MobileIcon />,
-      color: theme.palette.primary.dark,
+      color: '#3b82f6',
       description: 'Mobile money payment'
-    },
-    {
-      value: PaymentMethod.MOBILE,
-      label: 'Mobile Payment',
-      icon: <PaymentIcon />,
-      color: theme.palette.primary.dark,
-      description: 'Mobile payment service'
-    },
-    {
-      value: PaymentMethod.CREDIT_CARD,
-      label: 'Credit Card',
-      icon: <CreditCardIcon />,
-      color: theme.palette.secondary.main,
-      description: 'Credit card payment'
-    },
-    {
-      value: PaymentMethod.ROOM_CHARGE,
-      label: 'Room Charge',
-      icon: <BankIcon />,
-      color: theme.palette.warning.main,
-      description: 'Charge to room account'
     }
   ];  const formatCurrency = (amount: number) => {
-    return `ETB ${amount?.toFixed(0)}`;
+    if (amount == null || isNaN(amount)) return 'ETB 0';
+    return `ETB ${amount.toFixed(0)}`;
   };
 
   const handlePaymentMethodSelect = (method: PaymentMethod) => {
@@ -241,13 +219,13 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
         return (
           <Box sx={{ mt: 2 }}>
             <Card sx={{ 
-              border: `2px solid ${theme.palette.divider}`,
-              backgroundColor: theme.palette.background.paper,
-              borderRadius: 2,
+              background: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)',
+              borderRadius: 3,
               minHeight: 420,
               display: 'flex',
               flexDirection: 'column',
-              boxShadow: theme.shadows[2]
+              boxShadow: '0 8px 32px rgba(59, 130, 246, 0.15)',
+              border: '1px solid rgba(147, 197, 253, 0.3)',
             }}>
               <CardContent sx={{ 
                 py: 3, 
@@ -255,28 +233,44 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                 display: 'flex',
                 flexDirection: 'column'
               }}>
-                <Box sx={{ textAlign: 'center', mb: 2 }}>
-                  <CreditCardIcon sx={{ 
-                    fontSize: 40, 
-                    color: theme.palette.success.main,
-                    mb: 1 
-                  }} />
-                  <Typography variant="h6" sx={{ 
-                    color: theme.palette.success.main,
-                    fontWeight: 700,
-                    mb: 0.5
+                <Box sx={{ textAlign: 'center', mb: 3 }}>
+                  <Box sx={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: 64,
+                    height: 64,
+                    borderRadius: '50%',
+                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                    backdropFilter: 'blur(10px)',
+                    mb: 2,
+                    border: '2px solid rgba(255, 255, 255, 0.4)',
                   }}>
-                    Credit/Debit Card Payment
+                    <CreditCardIcon sx={{ 
+                      fontSize: 32, 
+                      color: '#1e40af',
+                    }} />
+                  </Box>
+                  <Typography variant="h5" sx={{ 
+                    color: '#1e40af',
+                    fontWeight: 700,
+                    mb: 0.5,
+                    textShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                  }}>
+                    Secure Card Payment
                   </Typography>
                   <Typography variant="body2" sx={{ 
-                    color: theme.palette.text.secondary,
-                    mb: 1
+                    color: '#1e40af',
+                    mb: 2,
+                    opacity: 0.8,
                   }}>
-                    Secure card payment processing
+                    SSL encrypted payment processing
                   </Typography>
                   <Typography variant="h6" sx={{ 
-                    color: theme.palette.success.main,
-                    fontWeight: 700
+                    color: '#1e40af',
+                    fontWeight: 700,
+                    fontSize: '1.4rem',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.1)',
                   }}>
                     Amount: {formatCurrency(totalAmount)}
                   </Typography>
@@ -287,24 +281,31 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                   <Grid item xs={12}>
                     <TextField
                       fullWidth
-                      label="Cardholder Name"
                       value={cardName}
                       onChange={(e) => setCardName(e.target.value)}
-                      placeholder="John Doe"
+                      placeholder="Cardholder Name (e.g., John Doe)"
                       variant="outlined"
                       sx={{
                         '& .MuiOutlinedInput-root': {
-                          backgroundColor: theme.palette.background.paper,
-                          '&:hover .MuiOutlinedInput-notchedOutline': {
-                            borderColor: theme.palette.success.main,
+                          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                          borderRadius: 2,
+                          '& fieldset': {
+                            borderColor: 'rgba(30, 64, 175, 0.3)',
                           },
-                          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                            borderColor: theme.palette.success.main,
+                          '&:hover fieldset': {
+                            borderColor: 'rgba(30, 64, 175, 0.6)',
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: '#1e40af',
+                            borderWidth: 2,
                           },
                         },
-                        '& .MuiInputLabel-root': {
-                          '&.Mui-focused': {
-                            color: theme.palette.success.main,
+                        '& .MuiOutlinedInput-input': {
+                          color: '#1e40af',
+                          fontWeight: 500,
+                          '&::placeholder': {
+                            color: 'rgba(30, 64, 175, 0.6)',
+                            opacity: 1,
                           },
                         },
                       }}
@@ -313,29 +314,36 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                   <Grid item xs={12}>
                     <TextField
                       fullWidth
-                      label="Card Number"
                       value={cardNumber}
                       onChange={(e) => {
                         const value = e.target.value.replace(/\D/g, '');
                         const formatted = value.replace(/(\d{4})(?=\d)/g, '$1 ');
                         setCardNumber(formatted);
                       }}
-                      placeholder="1234 5678 9012 3456"
+                      placeholder="Card Number (1234 5678 9012 3456)"
                       inputProps={{ maxLength: 19 }}
                       variant="outlined"
                       sx={{
                         '& .MuiOutlinedInput-root': {
-                          backgroundColor: theme.palette.background.paper,
-                          '&:hover .MuiOutlinedInput-notchedOutline': {
-                            borderColor: theme.palette.success.main,
+                          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                          borderRadius: 2,
+                          '& fieldset': {
+                            borderColor: 'rgba(30, 64, 175, 0.3)',
                           },
-                          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                            borderColor: theme.palette.success.main,
+                          '&:hover fieldset': {
+                            borderColor: 'rgba(30, 64, 175, 0.6)',
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: '#1e40af',
+                            borderWidth: 2,
                           },
                         },
-                        '& .MuiInputLabel-root': {
-                          '&.Mui-focused': {
-                            color: theme.palette.success.main,
+                        '& .MuiOutlinedInput-input': {
+                          color: '#1e40af',
+                          fontWeight: 500,
+                          '&::placeholder': {
+                            color: 'rgba(30, 64, 175, 0.6)',
+                            opacity: 1,
                           },
                         },
                       }}
@@ -344,29 +352,36 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                   <Grid item xs={6}>
                     <TextField
                       fullWidth
-                      label="Expiry Date"
                       value={cardExpiry}
                       onChange={(e) => {
                         const value = e.target.value.replace(/\D/g, '');
                         const formatted = value.replace(/(\d{2})(\d{2})/, '$1/$2');
                         setCardExpiry(formatted);
                       }}
-                      placeholder="MM/YY"
+                      placeholder="Expiry (MM/YY)"
                       inputProps={{ maxLength: 5 }}
                       variant="outlined"
                       sx={{
                         '& .MuiOutlinedInput-root': {
-                          backgroundColor: theme.palette.background.paper,
-                          '&:hover .MuiOutlinedInput-notchedOutline': {
-                            borderColor: theme.palette.success.main,
+                          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                          borderRadius: 2,
+                          '& fieldset': {
+                            borderColor: 'rgba(30, 64, 175, 0.3)',
                           },
-                          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                            borderColor: theme.palette.success.main,
+                          '&:hover fieldset': {
+                            borderColor: 'rgba(30, 64, 175, 0.6)',
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: '#1e40af',
+                            borderWidth: 2,
                           },
                         },
-                        '& .MuiInputLabel-root': {
-                          '&.Mui-focused': {
-                            color: theme.palette.success.main,
+                        '& .MuiOutlinedInput-input': {
+                          color: '#1e40af',
+                          fontWeight: 500,
+                          '&::placeholder': {
+                            color: 'rgba(30, 64, 175, 0.6)',
+                            opacity: 1,
                           },
                         },
                       }}
@@ -375,25 +390,32 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                   <Grid item xs={6}>
                     <TextField
                       fullWidth
-                      label="CVV"
                       value={cardCvv}
                       onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, ''))}
-                      placeholder="123"
+                      placeholder="CVV (123)"
                       inputProps={{ maxLength: 4 }}
                       variant="outlined"
                       sx={{
                         '& .MuiOutlinedInput-root': {
-                          backgroundColor: theme.palette.background.paper,
-                          '&:hover .MuiOutlinedInput-notchedOutline': {
-                            borderColor: theme.palette.success.main,
+                          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                          borderRadius: 2,
+                          '& fieldset': {
+                            borderColor: 'rgba(30, 64, 175, 0.3)',
                           },
-                          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                            borderColor: theme.palette.success.main,
+                          '&:hover fieldset': {
+                            borderColor: 'rgba(30, 64, 175, 0.6)',
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: '#1e40af',
+                            borderWidth: 2,
                           },
                         },
-                        '& .MuiInputLabel-root': {
-                          '&.Mui-focused': {
-                            color: theme.palette.success.main,
+                        '& .MuiOutlinedInput-input': {
+                          color: '#1e40af',
+                          fontWeight: 500,
+                          '&::placeholder': {
+                            color: 'rgba(30, 64, 175, 0.6)',
+                            opacity: 1,
                           },
                         },
                       }}
@@ -410,13 +432,13 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
         return (
           <Box sx={{ mt: 2 }}>
             <Card sx={{ 
-              border: `2px solid ${theme.palette.divider}`,
-              backgroundColor: theme.palette.background.paper,
-              borderRadius: 2,
+              background: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)',
+              borderRadius: 3,
               minHeight: 420,
               display: 'flex',
               flexDirection: 'column',
-              boxShadow: theme.shadows[2]
+              boxShadow: '0 8px 32px rgba(30, 64, 175, 0.2)',
+              border: '1px solid rgba(30, 64, 175, 0.3)',
             }}>
               <CardContent sx={{ 
                 py: 3, 
@@ -424,28 +446,43 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                 display: 'flex',
                 flexDirection: 'column'
               }}>
-                <Box sx={{ textAlign: 'center', mb: 2 }}>
-                  <MobileIcon sx={{ 
-                    fontSize: 40, 
-                    color: theme.palette.success.main,
-                    mb: 1 
-                  }} />
-                  <Typography variant="h6" sx={{ 
-                    color: theme.palette.success.main,
+                <Box sx={{ textAlign: 'center', mb: 3 }}>
+                  <Box sx={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: 64,
+                    height: 64,
+                    borderRadius: '50%',
+                    backgroundColor: 'rgba(30, 64, 175, 0.1)',
+                    backdropFilter: 'blur(10px)',
+                    mb: 2,
+                    border: '2px solid rgba(30, 64, 175, 0.3)',
+                  }}>
+                    <MobileIcon sx={{ 
+                      fontSize: 32, 
+                      color: '#1e40af',
+                    }} />
+                  </Box>
+                  <Typography variant="h5" sx={{ 
+                    color: '#1e40af',
                     fontWeight: 700,
-                    mb: 0.5
+                    mb: 0.5,
+                    textShadow: '0 2px 4px rgba(0,0,0,0.1)',
                   }}>
                     Mobile Money Payment
                   </Typography>
                   <Typography variant="body2" sx={{ 
-                    color: theme.palette.text.secondary,
-                    mb: 1
+                    color: 'rgba(30, 64, 175, 0.8)',
+                    mb: 2
                   }}>
                     Pay securely with your mobile money account
                   </Typography>
                   <Typography variant="h6" sx={{ 
-                    color: theme.palette.success.main,
-                    fontWeight: 700
+                    color: '#1e40af',
+                    fontWeight: 700,
+                    fontSize: '1.4rem',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.1)',
                   }}>
                     Amount: {formatCurrency(totalAmount)}
                   </Typography>
@@ -455,28 +492,36 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                   <Grid container spacing={2}>
                   <Grid item xs={12}>
                     <FormControl fullWidth variant="outlined">
-                      <InputLabel sx={{
-                        '&.Mui-focused': {
-                          color: theme.palette.success.main,
-                        },
-                      }}>Mobile Money Provider</InputLabel>
                       <Select
                         value={mobileProvider}
-                        label="Mobile Money Provider"
                         onChange={(e) => setMobileProvider(e.target.value)}
+                        displayEmpty
                         sx={{
-                          backgroundColor: theme.palette.background.paper,
-                          '&:hover .MuiOutlinedInput-notchedOutline': {
-                            borderColor: theme.palette.success.main,
+                          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                          borderRadius: 2,
+                          '& fieldset': {
+                            borderColor: 'rgba(30, 64, 175, 0.3)',
                           },
-                          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                            borderColor: theme.palette.success.main,
+                          '&:hover fieldset': {
+                            borderColor: 'rgba(30, 64, 175, 0.6)',
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: '#1e40af',
+                            borderWidth: 2,
                           },
                           '& .MuiSelect-select': {
-                            minHeight: isMobile ? themeConstants.touchTargets.minimum : 'auto'
+                            minHeight: isMobile ? themeConstants.touchTargets.minimum : 'auto',
+                            color: '#1e40af',
+                            fontWeight: 500,
+                          },
+                          '& .MuiSelect-icon': {
+                            color: '#1e40af',
                           }
                         }}
                       >
+                        <MenuItem value="" disabled sx={{ color: 'rgba(30, 64, 175, 0.5)' }}>
+                          Select Mobile Money Provider
+                        </MenuItem>
                         <MenuItem value="M-birr">
                           🇪🇹 M-birr
                         </MenuItem>
@@ -492,24 +537,31 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                   <Grid item xs={12}>
                     <TextField
                       fullWidth
-                      label="Phone Number"
                       value={phoneNumber}
                       onChange={(e) => setPhoneNumber(e.target.value)}
-                      placeholder="+251 9XX XXX XXX"
+                      placeholder="Phone Number (+251 9XX XXX XXX)"
                       variant="outlined"
                       sx={{
                         '& .MuiOutlinedInput-root': {
-                          backgroundColor: theme.palette.background.paper,
-                          '&:hover .MuiOutlinedInput-notchedOutline': {
-                            borderColor: theme.palette.success.main,
+                          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                          borderRadius: 2,
+                          '& fieldset': {
+                            borderColor: 'rgba(30, 64, 175, 0.3)',
                           },
-                          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                            borderColor: theme.palette.success.main,
+                          '&:hover fieldset': {
+                            borderColor: 'rgba(30, 64, 175, 0.6)',
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: '#1e40af',
+                            borderWidth: 2,
                           },
                         },
-                        '& .MuiInputLabel-root': {
-                          '&.Mui-focused': {
-                            color: theme.palette.success.main,
+                        '& .MuiOutlinedInput-input': {
+                          color: '#1e40af',
+                          fontWeight: 500,
+                          '&::placeholder': {
+                            color: 'rgba(30, 64, 175, 0.6)',
+                            opacity: 1,
                           },
                         },
                       }}
@@ -526,47 +578,76 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
         return (
           <Box sx={{ mt: 2 }}>
             <Card sx={{ 
-              border: `2px solid ${theme.palette.divider}`,
-              backgroundColor: theme.palette.background.paper,
-              borderRadius: 2,
+              background: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)',
+              borderRadius: 3,
               minHeight: 420,
               display: 'flex',
               flexDirection: 'column',
-              boxShadow: theme.shadows[2]
+              boxShadow: '0 8px 32px rgba(30, 64, 175, 0.2)',
+              border: '1px solid rgba(30, 64, 175, 0.3)',
             }}>
               <CardContent sx={{ 
                 textAlign: 'center', 
-                py: 3,
+                py: 4,
                 flexGrow: 1,
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'center',
                 alignItems: 'center'
               }}>
-                <CashIcon sx={{ 
-                  fontSize: 48, 
-                  color: theme.palette.success.main,
-                  mb: 2 
-                }} />
-                <Typography variant="h6" sx={{ 
-                  color: theme.palette.success.main,
+                <Box sx={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: 80,
+                  height: 80,
+                  borderRadius: '50%',
+                  backgroundColor: 'rgba(30, 64, 175, 0.15)',
+                  backdropFilter: 'blur(10px)',
+                  mb: 3,
+                  border: '2px solid rgba(30, 64, 175, 0.3)',
+                }}>
+                  <CashIcon sx={{ 
+                    fontSize: 40, 
+                    color: '#1e40af',
+                  }} />
+                </Box>
+                <Typography variant="h5" sx={{ 
+                  color: '#1e40af',
                   fontWeight: 700,
-                  mb: 1
+                  mb: 2,
+                  textShadow: '0 2px 4px rgba(0,0,0,0.1)',
                 }}>
                   Cash Payment
                 </Typography>
                 <Typography variant="body1" sx={{ 
-                  color: theme.palette.text.secondary,
-                  mb: 2
+                  color: 'rgba(30, 64, 175, 0.8)',
+                  mb: 3,
+                  fontSize: '1.1rem',
                 }}>
                   Please collect cash payment from customer at the counter.
                 </Typography>
-                <Typography variant="h5" sx={{ 
-                  color: theme.palette.success.main,
-                  fontWeight: 700
+                <Box sx={{ 
+                  backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                  backdropFilter: 'blur(10px)',
+                  borderRadius: 2,
+                  padding: 3,
+                  border: '1px solid rgba(30, 64, 175, 0.2)',
                 }}>
-                  Amount to collect: {formatCurrency(totalAmount)}
-                </Typography>
+                  <Typography variant="h4" sx={{ 
+                    color: '#1e40af',
+                    fontWeight: 700,
+                    textShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                  }}>
+                    {formatCurrency(totalAmount)}
+                  </Typography>
+                  <Typography variant="body2" sx={{ 
+                    color: 'rgba(30, 64, 175, 0.8)',
+                    mt: 1,
+                  }}>
+                    Amount to collect
+                  </Typography>
+                </Box>
               </CardContent>
             </Card>
           </Box>
@@ -576,47 +657,76 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
         return (
           <Box sx={{ mt: 2 }}>
             <Card sx={{ 
-              border: `2px solid ${theme.palette.divider}`,
-              backgroundColor: theme.palette.background.paper,
-              borderRadius: 2,
+              background: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)',
+              borderRadius: 3,
               minHeight: 420,
               display: 'flex',
               flexDirection: 'column',
-              boxShadow: theme.shadows[2]
+              boxShadow: '0 8px 32px rgba(30, 64, 175, 0.2)',
+              border: '1px solid rgba(30, 64, 175, 0.3)',
             }}>
               <CardContent sx={{ 
                 textAlign: 'center', 
-                py: 3,
+                py: 4,
                 flexGrow: 1,
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'center',
                 alignItems: 'center'
               }}>
-                <BankIcon sx={{ 
-                  fontSize: 48, 
-                  color: theme.palette.success.main,
-                  mb: 2 
-                }} />
-                <Typography variant="h6" sx={{ 
-                  color: theme.palette.success.main,
+                <Box sx={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: 80,
+                  height: 80,
+                  borderRadius: '50%',
+                  backgroundColor: 'rgba(30, 64, 175, 0.15)',
+                  backdropFilter: 'blur(10px)',
+                  mb: 3,
+                  border: '2px solid rgba(30, 64, 175, 0.3)',
+                }}>
+                  <BankIcon sx={{ 
+                    fontSize: 40, 
+                    color: '#1e40af',
+                  }} />
+                </Box>
+                <Typography variant="h5" sx={{ 
+                  color: '#1e40af',
                   fontWeight: 700,
-                  mb: 1
+                  mb: 2,
+                  textShadow: '0 2px 4px rgba(0,0,0,0.1)',
                 }}>
                   Pay at Front Desk
                 </Typography>
                 <Typography variant="body1" sx={{ 
-                  color: theme.palette.text.secondary,
-                  mb: 2
+                  color: 'rgba(30, 64, 175, 0.8)',
+                  mb: 3,
+                  fontSize: '1.1rem',
                 }}>
                   Customer will complete payment at the front desk.
                 </Typography>
-                <Typography variant="h5" sx={{ 
-                  color: theme.palette.success.main,
-                  fontWeight: 700
+                <Box sx={{ 
+                  backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                  backdropFilter: 'blur(10px)',
+                  borderRadius: 2,
+                  padding: 3,
+                  border: '1px solid rgba(30, 64, 175, 0.2)',
                 }}>
-                  Amount: {formatCurrency(totalAmount)}
-                </Typography>
+                  <Typography variant="h4" sx={{ 
+                    color: '#1e40af',
+                    fontWeight: 700,
+                    textShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                  }}>
+                    {formatCurrency(totalAmount)}
+                  </Typography>
+                  <Typography variant="body2" sx={{ 
+                    color: 'rgba(30, 64, 175, 0.8)',
+                    mt: 1,
+                  }}>
+                    Total amount
+                  </Typography>
+                </Box>
               </CardContent>
             </Card>
           </Box>
@@ -638,26 +748,74 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
         sx={{
           '& .MuiDialog-paper': {
             margin: isMobile ? 0 : theme.spacing(2),
-            borderRadius: isMobile ? 0 : theme.shape.borderRadius,
+            borderRadius: isMobile ? 0 : 3,
+            background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)',
           }
         }}
       >
-        <DialogContent sx={{ textAlign: 'center', py: 4 }}>
-          <CheckIcon sx={{ fontSize: 64, color: 'success.main', mb: 2 }} />
-          <Typography variant="h5" gutterBottom>
+        <DialogContent sx={{ textAlign: 'center', py: 6 }}>
+          <Box sx={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: 100,
+            height: 100,
+            borderRadius: '50%',
+            backgroundColor: 'rgba(255, 255, 255, 0.15)',
+            backdropFilter: 'blur(10px)',
+            mb: 3,
+            border: '3px solid rgba(255, 255, 255, 0.3)',
+          }}>
+            <CheckIcon sx={{ fontSize: 48, color: '#ffffff' }} />
+          </Box>
+          <Typography variant="h4" sx={{ 
+            color: '#ffffff',
+            fontWeight: 700,
+            mb: 2,
+            textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+          }}>
             Payment Successful!
           </Typography>
-          <Typography variant="body1" color="text.secondary" gutterBottom>
+          <Typography variant="body1" sx={{ 
+            color: 'rgba(255, 255, 255, 0.9)',
+            fontSize: '1.2rem',
+            mb: 3,
+          }}>
             Payment has been processed successfully
           </Typography>
           {paymentReference && (
-            <Typography variant="body2" sx={{ mt: 2 }}>
-              Reference: {paymentReference}
-            </Typography>
+            <Box sx={{ 
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(10px)',
+              borderRadius: 2,
+              padding: 2,
+              mb: 3,
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+            }}>
+              <Typography variant="body2" sx={{ 
+                color: 'rgba(255, 255, 255, 0.8)',
+                mb: 0.5 
+              }}>
+                Reference Number:
+              </Typography>
+              <Typography variant="h6" sx={{ 
+                color: '#ffffff',
+                fontWeight: 600,
+                fontFamily: 'monospace',
+              }}>
+                {paymentReference}
+              </Typography>
+            </Box>
           )}
           <Box sx={{ mt: 3 }}>
-            <CircularProgress size={24} />
-            <Typography variant="body2" sx={{ mt: 1 }}>
+            <CircularProgress size={32} sx={{ 
+              color: 'rgba(255, 255, 255, 0.8)',
+              mb: 2,
+            }} />
+            <Typography variant="body2" sx={{ 
+              color: 'rgba(255, 255, 255, 0.9)',
+              fontSize: '1rem',
+            }}>
               Completing your order...
             </Typography>
           </Box>
@@ -676,20 +834,59 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
       sx={{
         '& .MuiDialog-paper': {
           margin: isMobile ? 0 : theme.spacing(2),
-          borderRadius: isMobile ? 0 : theme.shape.borderRadius,
+          borderRadius: isMobile ? 0 : 3,
+          overflow: 'hidden',
         }
       }}
     >
-      <DialogTitle>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <PaymentIcon color="primary" />
-          <Typography variant="h6">
-            Complete Payment - {formatCurrency(totalAmount)}
-          </Typography>
+      <DialogTitle sx={{
+        background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)',
+        color: '#ffffff',
+        py: 3,
+        position: 'relative',
+        '&::after': {
+          content: '""',
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: '1px',
+          background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)',
+        }
+      }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Box sx={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: 48,
+            height: 48,
+            borderRadius: '50%',
+            backgroundColor: 'rgba(255, 255, 255, 0.15)',
+            backdropFilter: 'blur(10px)',
+            border: '2px solid rgba(255, 255, 255, 0.2)',
+          }}>
+            <PaymentIcon sx={{ color: '#ffffff', fontSize: 28 }} />
+          </Box>
+          <Box>
+            <Typography variant="h5" sx={{ 
+              fontWeight: 700,
+              textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+              mb: 0.5,
+            }}>
+              Complete Payment
+            </Typography>
+            <Typography variant="h6" sx={{ 
+              color: 'rgba(255, 255, 255, 0.9)',
+              fontWeight: 600,
+            }}>
+              {formatCurrency(totalAmount)}
+            </Typography>
+          </Box>
         </Box>
       </DialogTitle>
 
-      <DialogContent>
+      <DialogContent sx={{ p: { xs: 2, md: 3 } }}>
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
             {error}
@@ -697,70 +894,116 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
         )}
 
         {/* Payment Method Selection */}
-        <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
+        <Typography variant="h6" sx={{ 
+          mt: 2,
+          mb: 2,
+          color: '#1e3a8a',
+          fontWeight: 700,
+        }}>
           Select Payment Method
         </Typography>
         
-        <Grid container spacing={{ xs: 1.5, md: 2 }} sx={{ mb: { xs: 2, md: 3 } }}>
-          {paymentMethods.map((method) => (
-            <Grid item xs={12} sm={6} key={method.value}>
-              <Card 
-                sx={{ 
-                  border: currentPaymentMethod === method.value ? 2 : 1,
-                  borderColor: currentPaymentMethod === method.value 
-                    ? theme.palette.success.main 
-                    : theme.palette.divider,
-                  backgroundColor: currentPaymentMethod === method.value 
-                    ? theme.palette.action.selected
-                    : theme.palette.background.paper,
-                  minHeight: isMobile ? themeConstants.touchTargets.large : 'auto',
-                  transition: 'all 0.2s ease',
-                  boxShadow: currentPaymentMethod === method.value 
-                    ? `0 4px 12px ${theme.palette.success.main}25`
-                    : theme.shadows[2],
+        <FormControl fullWidth sx={{ mb: { xs: 2, md: 3 } }}>
+          <Select
+            value={currentPaymentMethod}
+            onChange={(e) => handlePaymentMethodSelect(e.target.value as PaymentMethod)}
+            displayEmpty
+            sx={{
+              backgroundColor: theme.palette.background.paper,
+              borderRadius: 2,
+              '& fieldset': {
+                borderColor: 'rgba(30, 58, 138, 0.3)',
+              },
+              '&:hover fieldset': {
+                borderColor: '#3b82f6',
+              },
+              '&.Mui-focused fieldset': {
+                borderColor: '#1e3a8a',
+                borderWidth: 2,
+              },
+              '& .MuiSelect-select': {
+                minHeight: isMobile ? themeConstants.touchTargets.minimum : 'auto',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1.5,
+                color: '#1e3a8a',
+                fontWeight: 500,
+              },
+              '& .MuiSelect-icon': {
+                color: '#1e3a8a',
+              }
+            }}
+            MenuProps={{
+              PaperProps: {
+                sx: {
+                  borderRadius: 2,
+                  mt: 1,
+                  boxShadow: '0 8px 32px rgba(30, 58, 138, 0.15)',
+                  border: '1px solid rgba(30, 58, 138, 0.1)',
+                }
+              }
+            }}
+          >
+            <MenuItem value="" disabled sx={{ color: 'rgba(30, 58, 138, 0.5)' }}>
+              Select Payment Method
+            </MenuItem>
+            {paymentMethods.map((method) => (
+              <MenuItem 
+                key={method.value} 
+                value={method.value}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 2,
+                  py: 1.5,
+                  px: 2,
+                  minHeight: isMobile ? themeConstants.touchTargets.minimum : 'auto',
                   '&:hover': {
-                    backgroundColor: theme.palette.action.hover,
-                    borderColor: theme.palette.success.main,
-                    boxShadow: `0 4px 12px ${theme.palette.success.main}25`,
+                    backgroundColor: 'rgba(30, 58, 138, 0.08)',
+                  },
+                  '&.Mui-selected': {
+                    backgroundColor: 'rgba(30, 58, 138, 0.12)',
+                    '&:hover': {
+                      backgroundColor: 'rgba(30, 58, 138, 0.16)',
+                    }
                   }
                 }}
               >
-                <CardActionArea 
-                  onClick={() => handlePaymentMethodSelect(method.value)}
-                  sx={{
-                    minHeight: isMobile ? themeConstants.touchTargets.large : 'auto',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}
-                >
-                  <CardContent sx={{ 
-                    textAlign: 'center', 
-                    py: { xs: 2.5, md: 2 },
-                    px: { xs: 2, md: 2 }
+                <Box sx={{ 
+                  color: '#3b82f6',
+                  fontSize: 24,
+                  display: 'flex',
+                  alignItems: 'center',
+                }}>
+                  {method.icon}
+                </Box>
+                <Box sx={{ flexGrow: 1 }}>
+                  <Typography variant="subtitle1" sx={{ 
+                    fontWeight: 600,
+                    color: '#1e3a8a',
+                    lineHeight: 1.2,
                   }}>
-                    <Box sx={{ color: theme.palette.success.main, mb: 1 }}>
-                      {method.icon}
-                    </Box>
-                    <Typography variant="subtitle2" sx={{ 
-                      fontWeight: 600,
-                      color: theme.palette.text.primary
-                    }} gutterBottom>
-                      {method.label}
-                    </Typography>
-                    <Typography variant="caption" sx={{ 
-                      color: theme.palette.text.secondary 
-                    }}>
-                      {method.description}
-                    </Typography>
-                  </CardContent>
-                </CardActionArea>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
+                    {method.label}
+                  </Typography>
+                  <Typography variant="caption" sx={{ 
+                    color: theme.palette.text.secondary,
+                    display: 'block',
+                    lineHeight: 1.1,
+                    mt: 0.25,
+                  }}>
+                    {method.description}
+                  </Typography>
+                </Box>
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
 
-        <Divider sx={{ my: 2 }} />
+        <Divider sx={{ 
+          my: 2,
+          background: 'linear-gradient(90deg, transparent, rgba(30, 58, 138, 0.3), transparent)',
+          height: 2,
+        }} />
 
         {/* Payment Details */}
         <Box sx={{ 
@@ -776,7 +1019,9 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
       <DialogActions sx={{ 
         p: { xs: 2, md: 3 },
         gap: { xs: 1, md: 2 },
-        flexDirection: isMobile ? 'column-reverse' : 'row'
+        flexDirection: isMobile ? 'column-reverse' : 'row',
+        backgroundColor: 'rgba(30, 58, 138, 0.02)',
+        borderTop: '1px solid rgba(30, 58, 138, 0.1)',
       }}>
         <StandardButton 
           onClick={onClose} 
@@ -785,7 +1030,13 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
           fullWidth={isMobile}
           sx={{ 
             minHeight: themeConstants.touchTargets.minimum,
-            order: isMobile ? 2 : 1
+            order: isMobile ? 2 : 1,
+            borderColor: '#3b82f6',
+            color: '#1e3a8a',
+            '&:hover': {
+              backgroundColor: 'rgba(30, 58, 138, 0.04)',
+              borderColor: '#1e3a8a',
+            }
           }}
         >
           Cancel
@@ -794,11 +1045,21 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
           onClick={handleProcessPayment}
           variant="contained"
           disabled={processing}
-          startIcon={processing ? <CircularProgress size={20} /> : null}
+          startIcon={processing ? <CircularProgress size={20} sx={{ color: 'white' }} /> : null}
           fullWidth={isMobile}
           sx={{ 
             minHeight: themeConstants.touchTargets.minimum,
-            order: isMobile ? 1 : 2
+            order: isMobile ? 1 : 2,
+            background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)',
+            boxShadow: '0 4px 15px rgba(30, 58, 138, 0.4)',
+            '&:hover': {
+              background: 'linear-gradient(135deg, #1e40af 0%, #2563eb 100%)',
+              boxShadow: '0 6px 20px rgba(30, 58, 138, 0.5)',
+            },
+            '&:disabled': {
+              background: 'linear-gradient(135deg, rgba(30, 58, 138, 0.5) 0%, rgba(59, 130, 246, 0.5) 100%)',
+              color: 'rgba(255, 255, 255, 0.7)',
+            }
           }}
         >
           {processing ? 'Processing...' : `Pay ${formatCurrency(totalAmount)}`}
