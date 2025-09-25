@@ -33,7 +33,8 @@ import OfflineWalkInBooking from '../../components/OfflineWalkInBooking';
 import { roomCacheService } from '../../services/RoomCacheService';
 import PricingConfiguration from '../../components/PricingConfiguration';
 import HotelImageManagement from './HotelImageManagement';
-import { COLORS, addAlpha } from '../../theme/themeColors';
+import { COLORS } from '../../theme/themeColors';
+import { getBookingStatusColor } from '../../utils/statusColors';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -391,7 +392,7 @@ const HotelAdminDashboard: React.FC = () => {
     {
       title: 'Available Rooms',
       value: hotelData.availableRooms,
-      color: COLORS.PRIMARY,
+      color: 'success',
     },
     {
       title: 'Booked Rooms',
@@ -478,16 +479,16 @@ const HotelAdminDashboard: React.FC = () => {
                 onChange={(event, newValue) => setHotelDetailsTab(newValue)}
                 sx={{
                   '& .MuiTab-root': {
-                    color: COLORS.PRIMARY,
+                    color: theme.palette.primary.main,
                     '&:hover': {
-                      color: addAlpha(COLORS.PRIMARY, 0.8),
+                      color: theme.palette.primary.dark,
                     },
                     '&.Mui-selected': {
-                      color: COLORS.CONFIRMED,
+                      color: theme.palette.primary.main,
                     },
                   },
                   '& .MuiTabs-indicator': {
-                    backgroundColor: COLORS.PRIMARY,
+                    backgroundColor: theme.palette.primary.main,
                   },
                 }}
               >
@@ -629,7 +630,7 @@ const HotelAdminDashboard: React.FC = () => {
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
               <Typography variant="h6" sx={{ 
                 fontWeight: 'bold',
-                color: COLORS.PRIMARY 
+                color: theme.palette.primary.main 
               }}>
                 Hotel Reports & Analytics
               </Typography>
@@ -638,11 +639,11 @@ const HotelAdminDashboard: React.FC = () => {
                 onClick={loadReportsData}
                 disabled={reportsData.loading}
                 sx={{
-                  borderColor: COLORS.PRIMARY,
-                  color: COLORS.PRIMARY,
+                  borderColor: theme.palette.primary.main,
+                  color: theme.palette.primary.main,
                   '&:hover': {
-                    backgroundColor: addAlpha(COLORS.PRIMARY, 0.1),
-                    borderColor: COLORS.PRIMARY
+                    backgroundColor: theme.palette.primary.light + '20', // 20% opacity
+                    borderColor: theme.palette.primary.main
                   }
                 }}
               >
@@ -755,7 +756,7 @@ const HotelAdminDashboard: React.FC = () => {
                       border: `1px solid ${theme.palette.divider}`
                     }}>
                       <CardContent>
-                        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
+                        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: theme.palette.primary.main }}>
                           Booking Status Overview
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
@@ -775,11 +776,12 @@ const HotelAdminDashboard: React.FC = () => {
                             <Chip 
                               label={count} 
                               size="small" 
-                              sx={{ 
-                                backgroundColor: COLORS.PRIMARY, 
-                                color: 'white',
-                                '&:hover': { backgroundColor: addAlpha(COLORS.PRIMARY, 0.8) }
-                              }} 
+                              color={(() => {
+                                const statusColor = getBookingStatusColor(status);
+                                // Map custom colors to valid MUI colors
+                                if (statusColor === 'orange') return 'warning';
+                                return statusColor as 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning';
+                              })()}
                             />
                           </Box>
                         ))}
@@ -794,7 +796,7 @@ const HotelAdminDashboard: React.FC = () => {
                       border: `1px solid ${theme.palette.divider}`
                     }}>
                       <CardContent>
-                        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
+                        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: theme.palette.primary.main }}>
                           Staff by Role
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
@@ -815,9 +817,9 @@ const HotelAdminDashboard: React.FC = () => {
                               label={count} 
                               size="small" 
                               sx={{ 
-                                backgroundColor: COLORS.PRIMARY, 
-                                color: 'white',
-                                '&:hover': { backgroundColor: addAlpha(COLORS.PRIMARY, 0.8) }
+                                backgroundColor: theme.palette.primary.main, 
+                                color: theme.palette.primary.contrastText,
+                                '&:hover': { backgroundColor: theme.palette.primary.dark }
                               }} 
                             />
                           </Box>
@@ -835,7 +837,7 @@ const HotelAdminDashboard: React.FC = () => {
                       border: `1px solid ${theme.palette.divider}`
                     }}>
                       <CardContent>
-                        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
+                        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: theme.palette.primary.main }}>
                           Today's Operations Summary
                         </Typography>
                         <Grid container spacing={3}>
@@ -901,7 +903,7 @@ const HotelAdminDashboard: React.FC = () => {
                       border: `1px solid ${theme.palette.divider}`
                     }}>
                       <CardContent>
-                        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
+                        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: theme.palette.primary.main }}>
                           Current Month Performance
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
@@ -935,7 +937,7 @@ const HotelAdminDashboard: React.FC = () => {
                       border: `1px solid ${theme.palette.divider}`
                     }}>
                       <CardContent>
-                        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
+                        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: theme.palette.primary.main }}>
                           Year-to-Date Revenue
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
@@ -964,7 +966,7 @@ const HotelAdminDashboard: React.FC = () => {
                       border: `1px solid ${theme.palette.divider}`
                     }}>
                       <CardContent>
-                        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
+                        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: theme.palette.primary.main }}>
                           Booking Analytics
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
@@ -1002,7 +1004,7 @@ const HotelAdminDashboard: React.FC = () => {
                     border: `1px solid ${theme.palette.divider}`
                   }}>
                     <CardContent>
-                      <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3 }}>
+                      <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3, color: theme.palette.primary.main }}>
                         Booking Status Overview
                       </Typography>
                       <Grid container spacing={2}>
@@ -1019,11 +1021,12 @@ const HotelAdminDashboard: React.FC = () => {
                                 <Chip 
                                   label={status.replace('_', ' ')}
                                   size="small"
-                                  sx={{ 
-                                    backgroundColor: COLORS.PRIMARY, 
-                                    color: 'white',
-                                    '&:hover': { backgroundColor: addAlpha(COLORS.PRIMARY, 0.8) }
-                                  }}
+                                  color={(() => {
+                                    const statusColor = getBookingStatusColor(status);
+                                    // Map custom colors to valid MUI colors
+                                    if (statusColor === 'orange') return 'warning';
+                                    return statusColor as 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning';
+                                  })()}
                                 />
                               </CardContent>
                             </Card>
@@ -1043,7 +1046,7 @@ const HotelAdminDashboard: React.FC = () => {
                         border: `1px solid ${theme.palette.divider}`
                       }}>
                         <CardContent>
-                          <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3 }}>
+                          <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3, color: theme.palette.primary.main }}>
                             Room Type Distribution
                           </Typography>
                           {Object.entries(reportsData.hotelStats.roomsByType).map(([roomType, count]) => (
@@ -1058,7 +1061,7 @@ const HotelAdminDashboard: React.FC = () => {
                                     width: `${reportsData.hotelStats && reportsData.hotelStats.totalRooms > 0 
                                       ? (Number(count) / reportsData.hotelStats.totalRooms) * 100 
                                       : 0}%`, 
-                                    bgcolor: COLORS.PRIMARY, 
+                                    bgcolor: theme.palette.primary.main, 
                                     height: 6, 
                                     borderRadius: 1 
                                   }} 
@@ -1076,7 +1079,7 @@ const HotelAdminDashboard: React.FC = () => {
                         border: `1px solid ${theme.palette.divider}`
                       }}>
                         <CardContent>
-                          <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3 }}>
+                          <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3, color: theme.palette.primary.main }}>
                             Staff by Role
                           </Typography>
                           {reportsData.hotelStats?.staffByRole && Object.keys(reportsData.hotelStats.staffByRole).length > 0 ? (
@@ -1092,7 +1095,7 @@ const HotelAdminDashboard: React.FC = () => {
                                       width: `${reportsData.hotelStats && reportsData.hotelStats.totalStaff > 0 
                                         ? (Number(count) / reportsData.hotelStats.totalStaff) * 100 
                                         : 0}%`, 
-                                      bgcolor: COLORS.PRIMARY, 
+                                      bgcolor: theme.palette.primary.main, 
                                       height: 6, 
                                       borderRadius: 1 
                                     }} 
@@ -1119,7 +1122,7 @@ const HotelAdminDashboard: React.FC = () => {
                       border: `1px solid ${theme.palette.divider}`
                     }}>
                       <CardContent>
-                        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3 }}>
+                        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3, color: theme.palette.primary.main }}>
                           Upcoming Activity
                         </Typography>
                         <Box sx={{ mb: 2 }}>
@@ -1144,7 +1147,7 @@ const HotelAdminDashboard: React.FC = () => {
                       border: `1px solid ${theme.palette.divider}`
                     }}>
                       <CardContent>
-                        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3 }}>
+                        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3, color: theme.palette.primary.main }}>
                           Daily Operations Summary
                         </Typography>
                         <Box sx={{ mb: 2 }}>
@@ -1180,7 +1183,7 @@ const HotelAdminDashboard: React.FC = () => {
                       border: `1px solid ${theme.palette.divider}`
                     }}>
                       <CardContent>
-                        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3 }}>
+                        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3, color: theme.palette.primary.main }}>
                           Weekly Activity Trends
                         </Typography>
                         <Grid container spacing={2}>
@@ -1262,7 +1265,7 @@ const HotelAdminDashboard: React.FC = () => {
                       }}
                     >
                       <CardContent>
-                        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3 }}>
+                        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3, color: theme.palette.primary.main }}>
                           Quick Actions & Navigation
                         </Typography>
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
@@ -1271,11 +1274,11 @@ const HotelAdminDashboard: React.FC = () => {
                             size="small"
                             onClick={() => setActiveTab(3)}
                             sx={{
-                              borderColor: COLORS.PRIMARY,
-                              color: COLORS.PRIMARY,
+                              borderColor: theme.palette.primary.main,
+                              color: theme.palette.primary.main,
                               '&:hover': {
-                                backgroundColor: addAlpha(COLORS.PRIMARY, 0.1),
-                                borderColor: COLORS.PRIMARY
+                                backgroundColor: theme.palette.primary.light + '20', // 20% opacity
+                                borderColor: theme.palette.primary.main
                               }
                             }}
                           >
@@ -1286,11 +1289,11 @@ const HotelAdminDashboard: React.FC = () => {
                             size="small"
                             onClick={() => setActiveTab(2)}
                             sx={{
-                              borderColor: COLORS.PRIMARY,
-                              color: COLORS.PRIMARY,
+                              borderColor: theme.palette.primary.main,
+                              color: theme.palette.primary.main,
                               '&:hover': {
-                                backgroundColor: addAlpha(COLORS.PRIMARY, 0.1),
-                                borderColor: COLORS.PRIMARY
+                                backgroundColor: theme.palette.primary.light + '20', // 20% opacity
+                                borderColor: theme.palette.primary.main
                               }
                             }}
                           >
@@ -1301,11 +1304,11 @@ const HotelAdminDashboard: React.FC = () => {
                             size="small"
                             onClick={() => setActiveTab(1)}
                             sx={{
-                              borderColor: COLORS.PRIMARY,
-                              color: COLORS.PRIMARY,
+                              borderColor: theme.palette.primary.main,
+                              color: theme.palette.primary.main,
                               '&:hover': {
-                                backgroundColor: addAlpha(COLORS.PRIMARY, 0.1),
-                                borderColor: COLORS.PRIMARY
+                                backgroundColor: theme.palette.primary.light + '20', // 20% opacity
+                                borderColor: theme.palette.primary.main
                               }
                             }}
                           >
@@ -1316,11 +1319,11 @@ const HotelAdminDashboard: React.FC = () => {
                             size="small"
                             onClick={() => setActiveTab(4)}
                             sx={{
-                              borderColor: COLORS.PRIMARY,
-                              color: COLORS.PRIMARY,
+                              borderColor: theme.palette.primary.main,
+                              color: theme.palette.primary.main,
                               '&:hover': {
-                                backgroundColor: addAlpha(COLORS.PRIMARY, 0.1),
-                                borderColor: COLORS.PRIMARY
+                                backgroundColor: theme.palette.primary.light + '20', // 20% opacity
+                                borderColor: theme.palette.primary.main
                               }
                             }}
                           >
@@ -1410,7 +1413,7 @@ const HotelAdminDashboard: React.FC = () => {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle sx={{ textAlign: 'center', color: COLORS.PRIMARY }}>
+        <DialogTitle sx={{ textAlign: 'center', color: theme.palette.primary.main }}>
           ✅ Success
         </DialogTitle>
         <DialogContent>
