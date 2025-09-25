@@ -414,24 +414,24 @@ public class HotelPricingConfigService {
      * Update configuration by config ID (used by PUT endpoint)
      * 
      * @param configId the configuration ID
-     * @param updates the updates to apply
+     * @param updates  the updates to apply
      * @return updated configuration
      */
     @Transactional
     public HotelPricingConfig updateConfigurationById(Long configId, HotelPricingConfig updates) {
         logger.debug("Updating configuration with ID: {}", configId);
-        
+
         // Find the existing configuration by ID
         HotelPricingConfig existingConfig = pricingConfigRepository.findById(configId)
-            .orElseThrow(() -> new IllegalArgumentException("Configuration not found with ID: " + configId));
-        
+                .orElseThrow(() -> new IllegalArgumentException("Configuration not found with ID: " + configId));
+
         // Get the hotel from the existing configuration
         Hotel hotel = existingConfig.getHotel();
-        
+
         // Set the hotel in the updates object
         updates.setHotel(hotel);
         updates.setHotelId(hotel.getId());
-        
+
         // Use the existing updateConfiguration method
         return updateConfiguration(hotel.getId(), updates);
     }

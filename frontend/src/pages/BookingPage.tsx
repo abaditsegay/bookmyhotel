@@ -7,12 +7,9 @@ import {
   TextField,
   Grid,
   Alert,
-  Divider,
   Breadcrumbs,
   Link,
   IconButton,
-  Card,
-  CardContent,
   FormControl,
   FormLabel,
   RadioGroup,
@@ -41,7 +38,6 @@ import { useAuthenticatedApi } from '../hooks/useAuthenticatedApi';
 import { AvailableRoom, HotelSearchRequest } from '../types/hotel';
 import { useMockPayment, MockPaymentRequest } from '../services/mockPaymentGateway';
 import { PaymentMethod } from '../types/shop';
-import { COLORS } from '../theme/themeColors';
 import NumberStepper from '../components/common/NumberStepper';
 
 interface BookingPageState {
@@ -62,7 +58,6 @@ const BookingPage: React.FC = () => {
   // Mobile responsiveness
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   
   // Get data from navigation state
   const bookingData = location.state as BookingPageState;
@@ -92,8 +87,6 @@ const BookingPage: React.FC = () => {
   
   // Ethiopian payment state
   const [ethiopianPhoneNumber, setEthiopianPhoneNumber] = useState('');
-  const [showEthiopianPayment, setShowEthiopianPayment] = useState(false);
-  const [ethiopianPaymentResponse, setEthiopianPaymentResponse] = useState<any>(null);
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -125,10 +118,6 @@ const BookingPage: React.FC = () => {
 
   const handleTransferReceiptNumberChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setTransferReceiptNumber(e.target.value);
-  }, []);
-
-  const handleEthiopianPhoneNumberChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setEthiopianPhoneNumber(e.target.value);
   }, []);
 
   const handleGuestsChange = React.useCallback((newValue: number) => {
@@ -399,176 +388,153 @@ const BookingPage: React.FC = () => {
           px: isMobile ? 1 : 3,
         }}
       >
-        {/* Enhanced Header Section */}
-        <Card 
-          elevation={2}
-          sx={{ 
-            mb: isMobile ? 3 : 4,
-            background: `linear-gradient(135deg, ${theme.palette.primary.main}08 0%, ${theme.palette.secondary.main}08 100%)`,
-            border: `1px solid ${theme.palette.primary.main}20`,
-            borderRadius: 3,
-            overflow: 'hidden',
-          }}
-        >
-          <CardContent sx={{ p: isMobile ? 2.5 : 4 }}>
-            {/* Back Navigation */}
-            <Box sx={{ mb: isMobile ? 2 : 3 }}>
-              <Box sx={{ 
-                display: 'flex',
-                alignItems: 'center',
-                mb: isMobile ? 1.5 : 2,
-              }}>
-                <IconButton 
-                  onClick={handleBackToResults}
-                  sx={{ 
-                    mr: 2,
-                    bgcolor: 'background.paper',
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    '&:hover': {
-                      bgcolor: 'primary.main',
-                      color: 'primary.contrastText',
-                      borderColor: 'primary.main',
-                    },
-                    transition: 'all 0.2s ease-in-out',
-                  }}
-                  aria-label="back to search results"
-                >
-                  <ArrowBackIcon />
-                </IconButton>
-                
-                {!isMobile && (
-                  <Breadcrumbs 
-                    aria-label="breadcrumb"
-                    sx={{
-                      '& .MuiBreadcrumbs-separator': {
-                        color: 'primary.main',
-                        fontWeight: 'bold',
-                      },
-                    }}
-                  >
-                    <Link 
-                      component="button" 
-                      variant="body2" 
-                      onClick={() => navigate('/')}
-                      sx={{ 
-                        textDecoration: 'none',
-                        color: 'primary.main',
-                        fontWeight: 'medium',
-                        '&:hover': {
-                          color: 'primary.dark',
-                          textDecoration: 'underline',
-                        },
-                      }}
-                    >
-                      Hotel Search
-                    </Link>
-                    <Link 
-                      component="button" 
-                      variant="body2" 
-                      onClick={handleBackToResults}
-                      sx={{ 
-                        textDecoration: 'none',
-                        color: 'primary.main',
-                        fontWeight: 'medium',
-                        '&:hover': {
-                          color: 'primary.dark',
-                          textDecoration: 'underline',
-                        },
-                      }}
-                    >
-                      Search Results
-                    </Link>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ 
-                        color: 'text.primary',
-                        fontWeight: 'bold',
-                      }}
-                    >
-                      Book Your Stay
-                    </Typography>
-                  </Breadcrumbs>
-                )}
-                
-                {/* Mobile navigation hint */}
-                {isMobile && (
-                  <Typography 
-                    variant="body2" 
-                    sx={{ 
-                      color: 'text.secondary',
-                      fontWeight: 'medium',
-                    }}
-                  >
-                    ← Back to search results
-                  </Typography>
-                )}
-              </Box>
-            </Box>
-
-            {/* Main Header Content */}
+        {/* Compact Header Section */}
+        <Box sx={{ 
+          mb: isMobile ? 2 : 3,
+          p: isMobile ? 1.5 : 2,
+          backgroundColor: theme.palette.background.paper,
+          borderRadius: 1,
+        }}>
+          {/* Back Navigation */}
+          <Box sx={{ mb: isMobile ? 1 : 1.5 }}>
             <Box sx={{ 
               display: 'flex',
-              flexDirection: isMobile ? 'column' : 'row',
-              alignItems: isMobile ? 'flex-start' : 'center',
-              justifyContent: 'space-between',
-              gap: isMobile ? 2 : 3,
+              alignItems: 'center',
+              mb: isMobile ? 1 : 1.5,
             }}>
-              <Box sx={{ flex: 1 }}>
-                {/* Page Title */}
-                <Box sx={{ mb: 1 }}>
-                  {hotelName && (
-                    <Typography 
-                      variant={isMobile ? 'h6' : 'h5'} 
-                      sx={{ 
-                        color: 'text.primary',
-                        fontWeight: 'medium',
-                      }}
-                    >
-                      {hotelName}
-                    </Typography>
-                  )}
-                </Box>
-              </Box>
+              <IconButton 
+                onClick={handleBackToResults}
+                sx={{ 
+                  mr: 1.5,
+                  p: 0.75,
+                  '&:hover': {
+                    bgcolor: 'action.hover',
+                  },
+                }}
+                aria-label="back to search results"
+              >
+                <ArrowBackIcon />
+              </IconButton>
               
-              {/* Guest Booking Status */}
-              {isGuestBookingFlow && (
-                <Box sx={{ 
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: isMobile ? 'flex-start' : 'flex-end',
-                  gap: 1,
-                }}>
-                  <Chip 
-                    label="Guest Booking" 
+              {!isMobile && (
+                <Breadcrumbs 
+                  aria-label="breadcrumb"
+                  sx={{
+                    '& .MuiBreadcrumbs-separator': {
+                      color: 'primary.main',
+                    },
+                  }}
+                >
+                  <Link 
+                    component="button" 
+                    variant="body2" 
+                    onClick={() => navigate('/')}
                     sx={{ 
-                      bgcolor: 'info.main',
-                      color: 'info.contrastText',
-                      fontWeight: 'bold',
-                      fontSize: isMobile ? '0.75rem' : '0.875rem',
-                      height: isMobile ? 32 : 36,
-                      px: 1,
-                      '& .MuiChip-label': {
-                        px: 2,
+                      textDecoration: 'none',
+                      color: 'primary.main',
+                      '&:hover': {
+                        textDecoration: 'underline',
                       },
                     }}
-                  />
-                  
+                  >
+                    Hotel Search
+                  </Link>
+                  <Link 
+                    component="button" 
+                    variant="body2" 
+                    onClick={handleBackToResults}
+                    sx={{ 
+                      textDecoration: 'none',
+                      color: 'primary.main',
+                      '&:hover': {
+                        textDecoration: 'underline',
+                      },
+                    }}
+                  >
+                    Search Results
+                  </Link>
                   <Typography 
                     variant="body2" 
                     sx={{ 
-                      color: 'text.secondary',
-                      fontWeight: 'medium',
-                      textAlign: isMobile ? 'left' : 'right',
+                      color: 'text.primary',
+                      fontWeight: 600,
                     }}
                   >
-                    No account required!
+                    Book Your Stay
                   </Typography>
-                </Box>
+                </Breadcrumbs>
+              )}
+              
+              {/* Mobile navigation hint */}
+              {isMobile && (
+                <Typography 
+                  variant="body2" 
+                  sx={{ 
+                    color: 'text.secondary',
+                  }}
+                >
+                  ← Back to search results
+                </Typography>
               )}
             </Box>
-          </CardContent>
-        </Card>
+          </Box>
+
+          {/* Main Header Content */}
+          <Box sx={{ 
+            display: 'flex',
+            flexDirection: isMobile ? 'column' : 'row',
+            alignItems: isMobile ? 'flex-start' : 'center',
+            justifyContent: 'space-between',
+            gap: isMobile ? 1 : 2,
+          }}>
+            <Box sx={{ flex: 1 }}>
+              {/* Page Title */}
+              <Box>
+                {hotelName && (
+                  <Typography 
+                    variant={isMobile ? 'h6' : 'h5'} 
+                    sx={{ 
+                      color: 'text.primary',
+                      fontWeight: 600,
+                    }}
+                  >
+                    {hotelName}
+                  </Typography>
+                )}
+              </Box>
+            </Box>
+            
+            {/* Guest Booking Status */}
+            {isGuestBookingFlow && (
+              <Box sx={{ 
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: isMobile ? 'flex-start' : 'flex-end',
+                gap: 0.5,
+              }}>
+                <Chip 
+                  label="Guest Booking" 
+                  size="small"
+                  sx={{ 
+                    bgcolor: 'info.main',
+                    color: 'info.contrastText',
+                    fontWeight: 600,
+                  }}
+                />
+                
+                <Typography 
+                  variant="caption" 
+                  sx={{ 
+                    color: 'text.secondary',
+                    textAlign: isMobile ? 'left' : 'right',
+                  }}
+                >
+                  No account required!
+                </Typography>
+              </Box>
+            )}
+          </Box>
+        </Box>
 
         {/* Error Alert */}
         {error && (
@@ -577,135 +543,102 @@ const BookingPage: React.FC = () => {
           </Alert>
         )}
 
-        {/* Enhanced Room Details Card */}
-        <Card 
-          elevation={0} 
-          sx={{ 
-            mb: isMobile ? 3 : 4,
-            backgroundColor: theme.palette.background.paper,
-            border: `1px solid ${theme.palette.divider}`,
-            borderRadius: 2,
-            boxShadow: theme.shadows[2],
-          }}
-        >
-          <CardContent sx={{ p: isMobile ? 2.5 : 3.5 }}>
-            {/* Room Details Header */}
-            <Box sx={{ 
-              mb: 3,
-            }}>
-              <Typography 
-                variant={isMobile ? 'h6' : 'h5'} 
-                sx={{ 
-                  fontWeight: 700,
-                  color: COLORS.PRIMARY,
-                  mb: 0.5,
-                }}
-              >
-                Room Details
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
-                Your selected accommodation
-              </Typography>
-            </Box>
+        {/* Compact Room Details */}
+        <Box sx={{ 
+          mb: isMobile ? 2 : 3,
+          p: isMobile ? 1.5 : 2,
+          backgroundColor: theme.palette.background.paper,
+          borderRadius: 1,
+          border: `1px solid ${theme.palette.divider}`,
+        }}>
+          {/* Room Details Header */}
+          <Typography 
+            variant={isMobile ? 'subtitle1' : 'h6'} 
+            sx={{ 
+              fontWeight: 600,
+              color: 'primary.main',
+              mb: 1.5,
+            }}
+          >
+            Room Details
+          </Typography>
+          
+          {/* Room Information Grid */}
+          <Grid container spacing={isMobile ? 1.5 : 2}>
+            <Grid item xs={12} sm={6}>
+              <Box sx={{ 
+                p: 1.5,
+                backgroundColor: theme.palette.background.default,
+                borderRadius: 1,
+                border: `1px solid ${theme.palette.divider}`,
+              }}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+                  ROOM TYPE
+                </Typography>
+                <Typography variant="body1" sx={{ fontWeight: 600, mt: 0.5, color: 'primary.main' }}>
+                  {roomData.roomType}
+                </Typography>
+                
+                <Typography variant="body2" sx={{ mt: 0.5 }}>
+                  👥 Up to {roomData.capacity} guests
+                </Typography>
+              </Box>
+            </Grid>
             
-            {/* Room Information Grid */}
-            <Grid container spacing={isMobile ? 2 : 3}>
-              <Grid item xs={12} sm={6}>
-                <Box sx={{ 
-                  p: 2.5,
-                  backgroundColor: theme.palette.background.default,
-                  borderRadius: 2,
-                  border: `1px solid ${theme.palette.divider}`,
-                  height: '100%',
-                }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>
-                    ROOM TYPE
-                  </Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 700, mt: 0.5, mb: 2, color: COLORS.PRIMARY }}>
-                    {roomData.roomType}
-                  </Typography>
-                  
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                    <Typography variant="body2" sx={{ color: 'text.secondary', mr: 1 }}>
-                      👥
+            <Grid item xs={12} sm={6}>
+              <Box sx={{ 
+                p: 1.5,
+                backgroundColor: theme.palette.background.default,
+                borderRadius: 1,
+                border: `1px solid ${theme.palette.divider}`,
+              }}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+                  PRICING
+                </Typography>
+                
+                <Typography variant="body2" sx={{ mt: 0.5 }}>
+                  💰 ETB {roomData.pricePerNight?.toFixed(0)} per night
+                </Typography>
+                
+                {nights > 0 && (
+                  <>
+                    <Typography variant="body2" sx={{ mt: 0.5 }}>
+                      📅 {nights} night{nights !== 1 ? 's' : ''}
                     </Typography>
-                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                      Up to {roomData.capacity} guests
-                    </Typography>
-                  </Box>
-                </Box>
-              </Grid>
-              
-              <Grid item xs={12} sm={6}>
-                <Box sx={{ 
-                  p: 2.5,
-                  backgroundColor: theme.palette.background.default,
-                  borderRadius: 2,
-                  border: `1px solid ${theme.palette.divider}`,
-                  height: '100%',
-                }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>
-                    PRICING
-                  </Typography>
-                  
-                  <Box sx={{ mt: 1 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                      <Typography variant="body2" sx={{ color: 'text.secondary', mr: 1 }}>
-                        💰
-                      </Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                        ETB {roomData.pricePerNight?.toFixed(0)} per night
+                    
+                    <Box sx={{ 
+                      mt: 1,
+                      p: 1,
+                      backgroundColor: theme.palette.primary.main,
+                      color: 'white',
+                      borderRadius: 1,
+                      textAlign: 'center',
+                    }}>
+                      <Typography 
+                        variant="body1" 
+                        sx={{ 
+                          fontWeight: 700,
+                        }}
+                      >
+                        Total: ETB {totalAmount?.toFixed(0)}
                       </Typography>
                     </Box>
-                    
-                    {nights > 0 && (
-                      <>
-                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                          <Typography variant="body2" sx={{ color: 'text.secondary', mr: 1 }}>
-                            📅
-                          </Typography>
-                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                            {nights} night{nights !== 1 ? 's' : ''}
-                          </Typography>
-                        </Box>
-                        
-                        <Divider sx={{ my: 1.5, borderColor: theme.palette.divider }} />
-                        
-                        <Box sx={{ 
-                          p: 1.5,
-                          backgroundColor: COLORS.CARD_HOVER,
-                          border: `1px solid ${COLORS.CARD_BORDER}`,
-                          borderRadius: 2,
-                          textAlign: 'center',
-                        }}>
-                          <Typography 
-                            variant={isMobile ? 'h6' : 'h5'} 
-                            sx={{ 
-                              fontWeight: 700,
-                              color: COLORS.PRIMARY,
-                            }}
-                          >
-                            Total: ETB {totalAmount?.toFixed(0)}
-                          </Typography>
-                        </Box>
-                      </>
-                    )}
-                  </Box>
-                </Box>
-              </Grid>
+                  </>
+                )}
+              </Box>
             </Grid>
-          </CardContent>
-        </Card>
+          </Grid>
+        </Box>
 
         {/* Booking Form */}
         <form onSubmit={handleSubmit}>
-          <Card 
-            elevation={1} 
-            sx={{ 
-              p: isMobile ? 2 : 3, 
-              position: 'relative',
-            }}
-          >
+          <Box sx={{ 
+            p: isMobile ? 1.5 : 2, 
+            backgroundColor: theme.palette.background.paper,
+            borderRadius: 1,
+            border: `1px solid ${theme.palette.divider}`,
+            position: 'relative',
+          }}>
             {/* Loading overlay for booking form */}
             {loading && (
               <Box
@@ -731,7 +664,7 @@ const BookingPage: React.FC = () => {
                 </Box>
               </Box>
             )}
-            <Grid container spacing={isMobile ? 2 : 3}>
+            <Grid container spacing={isMobile ? 1.5 : 2}>
               {/* Dates and Guests - stacked on mobile */}
               <Grid item xs={12} sm={4}>
                 <DatePicker
@@ -792,390 +725,201 @@ const BookingPage: React.FC = () => {
 
               {/* Guest Information Section */}
               <Grid item xs={12}>
-                <Box sx={{ 
-                  my: isMobile ? 2 : 3,
-                  textAlign: 'center',
-                }}>
-                  <Typography 
-                    variant={isMobile ? 'h6' : 'h5'} 
-                    component="h2"
-                    sx={{ 
-                      fontWeight: 700,
-                      color: COLORS.PRIMARY,
-                      mb: 2,
-                    }}
-                  >
-                    Guest Information
-                  </Typography>
-                </Box>
+                <Typography 
+                  variant={isMobile ? 'subtitle1' : 'h6'} 
+                  sx={{ 
+                    fontWeight: 600,
+                    color: 'primary.main',
+                    my: 1,
+                  }}
+                >
+                  Guest Information
+                </Typography>
               </Grid>
 
               {isAuthenticated && !isGuestBookingFlow ? (
                 // Display authenticated user information with enhanced styling
                 <Grid item xs={12}>
-                  <Card 
-                    sx={{ 
-                      background: theme.palette.background.paper,
-                      border: `1px solid ${theme.palette.divider}`,
-                      borderRadius: 2,
-                      overflow: 'hidden',
-                      boxShadow: theme.shadows[2],
-                    }}
-                  >
-                    <CardContent sx={{ p: isMobile ? 2.5 : 3.5 }}>
-                      <Box sx={{ 
+                  <Box sx={{ 
+                    p: isMobile ? 1.5 : 2,
+                    backgroundColor: theme.palette.background.default,
+                    borderRadius: 1,
+                    border: `1px solid ${theme.palette.divider}`,
+                  }}>
+                    <Box sx={{ 
+                      display: 'flex',
+                      alignItems: 'center',
+                      mb: 1.5,
+                    }}>
+                      <Box sx={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: '50%',
+                        bgcolor: 'primary.main',
                         display: 'flex',
                         alignItems: 'center',
-                        mb: 2,
+                        justifyContent: 'center',
+                        mr: 1.5,
                       }}>
-                        <Box sx={{
-                          width: 48,
-                          height: 48,
-                          borderRadius: '50%',
-                          bgcolor: COLORS.PRIMARY,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          mr: 2,
-                        }}>
-                          <Typography variant="h6" sx={{ color: 'white', fontWeight: 700 }}>
-                            {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
-                          </Typography>
-                        </Box>
-                        <Box>
-                          <Typography variant="h6" sx={{ 
-                            fontWeight: 700,
-                            color: theme.palette.text.primary,
-                            mb: 0.5,
-                          }}>
-                            Registered Guest
-                          </Typography>
-                          <Typography variant="body2" sx={{ color: theme.palette.text.secondary, fontWeight: 500 }}>
-                            Using your account information
-                          </Typography>
-                        </Box>
+                        <Typography variant="body1" sx={{ color: 'white', fontWeight: 700 }}>
+                          {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
+                        </Typography>
                       </Box>
-                      
-                      <Grid container spacing={2}>
-                        <Grid item xs={12} sm={6}>
-                          <Box sx={{ 
-                            p: 2,
-                            bgcolor: theme.palette.action.hover,
-                            borderRadius: 2,
-                            border: `1px solid ${theme.palette.divider}`,
-                          }}>
-                            <Typography variant="caption" sx={{ fontWeight: 700, color: theme.palette.text.secondary }}>
-                              FULL NAME
-                            </Typography>
-                            <Typography variant="body1" sx={{ fontWeight: 600, mt: 0.5, color: theme.palette.text.primary }}>
-                              {user?.firstName || 'N/A'} {user?.lastName || 'N/A'}
-                            </Typography>
-                          </Box>
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                          <Box sx={{ 
-                            p: 2,
-                            bgcolor: theme.palette.action.hover,
-                            borderRadius: 2,
-                            border: `1px solid ${theme.palette.divider}`,
-                          }}>
-                            <Typography variant="caption" sx={{ fontWeight: 700, color: theme.palette.text.secondary }}>
-                              EMAIL ADDRESS
-                            </Typography>
-                            <Typography variant="body1" sx={{ fontWeight: 600, mt: 0.5, color: theme.palette.text.primary }}>
-                              {user?.email}
-                            </Typography>
-                          </Box>
-                        </Grid>
-                        {user?.phone && (
-                          <Grid item xs={12} sm={6}>
-                            <Box sx={{ 
-                              p: 2,
-                              bgcolor: theme.palette.action.hover,
-                              borderRadius: 2,
-                              border: `1px solid ${theme.palette.divider}`,
-                            }}>
-                              <Typography variant="caption" sx={{ fontWeight: 700, color: theme.palette.text.secondary }}>
-                                PHONE NUMBER
-                              </Typography>
-                              <Typography variant="body1" sx={{ fontWeight: 600, mt: 0.5, color: theme.palette.text.primary }}>
-                                {user.phone}
-                              </Typography>
-                            </Box>
-                          </Grid>
-                        )}
-                      </Grid>
-                    </CardContent>
-                  </Card>
+                      <Box>
+                        <Typography variant="body1" sx={{ 
+                          fontWeight: 600,
+                          color: theme.palette.text.primary,
+                        }}>
+                          {user?.firstName || 'N/A'} {user?.lastName || 'N/A'}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                          {user?.email}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Box>
                 </Grid>
               ) : (
                 // Enhanced guest input fields with professional styling
                 <Grid item xs={12}>
-                  <Card 
-                    sx={{ 
-                      background: theme.palette.background.paper,
-                      border: `1px solid ${theme.palette.divider}`,
-                      borderRadius: 2,
-                      overflow: 'hidden',
-                      boxShadow: theme.shadows[2],
-                    }}
-                  >
-                    <CardContent sx={{ p: isMobile ? 2.5 : 3.5 }}>
-                      <Box sx={{ 
-                        display: 'flex',
-                        alignItems: 'center',
-                        mb: 3,
-                      }}>
-                        <Box>
-                          <Typography variant="h6" sx={{ 
-                            fontWeight: 700,
-                            color: COLORS.PRIMARY,
-                            mb: 0.5,
-                          }}>
-                            Guest Details
-                          </Typography>
-                          <Typography variant="body2" sx={{ color: theme.palette.text.secondary, fontWeight: 500 }}>
-                            Please provide your information for the booking
-                          </Typography>
-                        </Box>
-                      </Box>
-                      
-                      <Grid container spacing={isMobile ? 2.5 : 3}>
-                        <Grid item xs={12} sm={6}>
-                          <TextField
-                            label="Full Name"
-                            value={guestName}
-                            onChange={handleGuestNameChange}
-                            fullWidth
-                            required
-                            variant="outlined"
-                            placeholder="Enter your full name"
-                            sx={{
-                              '& .MuiInputBase-root': {
-                                minHeight: isMobile ? 56 : 'auto',
-                                bgcolor: theme.palette.background.paper,
-                                borderRadius: 2,
-                              },
-                              '& .MuiOutlinedInput-root': {
-                                '&:hover fieldset': {
-                                  borderColor: COLORS.PRIMARY,
-                                },
-                                '&.Mui-focused fieldset': {
-                                  borderColor: COLORS.PRIMARY,
-                                },
-                              },
-                              '& .MuiInputLabel-root.Mui-focused': {
-                                color: COLORS.PRIMARY,
-                              },
-                            }}
-                          />
-                        </Grid>
-
-                        <Grid item xs={12} sm={6}>
-                          <TextField
-                            label="Email Address"
-                            type="email"
-                            value={guestEmail}
-                            onChange={handleGuestEmailChange}
-                            fullWidth
-                            required
-                            variant="outlined"
-                            placeholder="Enter your email address"
-                            sx={{
-                              '& .MuiInputBase-root': {
-                                minHeight: isMobile ? 56 : 'auto',
-                                bgcolor: theme.palette.background.paper,
-                                borderRadius: 2,
-                              },
-                              '& .MuiOutlinedInput-root': {
-                                '&:hover fieldset': {
-                                  borderColor: COLORS.PRIMARY,
-                                },
-                                '&.Mui-focused fieldset': {
-                                  borderColor: COLORS.PRIMARY,
-                                },
-                              },
-                              '& .MuiInputLabel-root.Mui-focused': {
-                                color: COLORS.PRIMARY,
-                              },
-                            }}
-                          />
-                        </Grid>
-
-                        <Grid item xs={12} sm={6}>
-                          <TextField
-                            label="Phone Number"
-                            value={guestPhone}
-                            onChange={handleGuestPhoneChange}
-                            fullWidth
-                            variant="outlined"
-                            placeholder="Enter your phone number (optional)"
-                            sx={{
-                              '& .MuiInputBase-root': {
-                                minHeight: isMobile ? 56 : 'auto',
-                                bgcolor: theme.palette.background.paper,
-                                borderRadius: 2,
-                              },
-                              '& .MuiOutlinedInput-root': {
-                                '&:hover fieldset': {
-                                  borderColor: COLORS.PRIMARY,
-                                },
-                                '&.Mui-focused fieldset': {
-                                  borderColor: COLORS.PRIMARY,
-                                },
-                              },
-                              '& .MuiInputLabel-root.Mui-focused': {
-                                color: COLORS.PRIMARY,
-                              },
-                            }}
-                          />
-                        </Grid>
+                  <Box sx={{ 
+                    p: isMobile ? 1.5 : 2,
+                    backgroundColor: theme.palette.background.default,
+                    borderRadius: 1,
+                    border: `1px solid ${theme.palette.divider}`,
+                  }}>
+                    <Typography variant="body1" sx={{ 
+                      fontWeight: 600,
+                      color: 'primary.main',
+                      mb: 1.5,
+                    }}>
+                      Guest Details
+                    </Typography>
+                    
+                    <Grid container spacing={isMobile ? 1.5 : 2}>
+                      <Grid item xs={12} sm={6}>
+                        <TextField
+                          label="Full Name"
+                          value={guestName}
+                          onChange={handleGuestNameChange}
+                          fullWidth
+                          required
+                          size="small"
+                          variant="outlined"
+                          placeholder="Enter your full name"
+                        />
                       </Grid>
-                      
-                      <Box sx={{ 
-                        mt: 2,
-                        p: 2,
-                        bgcolor: theme.palette.mode === 'dark' 
-                          ? theme.palette.action.selected 
-                          : theme.palette.action.hover,
-                        color: COLORS.PRIMARY,
-                        borderRadius: 2,
-                        border: `1px solid ${COLORS.CARD_BORDER}`,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 1,
-                      }}>
-                        <Typography variant="body2" sx={{ fontSize: '1.2em' }}>
-                          🔒
-                        </Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 600, color: COLORS.PRIMARY }}>
-                          Your information is secure and will only be used for this booking
-                        </Typography>
-                      </Box>
-                    </CardContent>
-                  </Card>
+
+                      <Grid item xs={12} sm={6}>
+                        <TextField
+                          label="Email Address"
+                          type="email"
+                          value={guestEmail}
+                          onChange={handleGuestEmailChange}
+                          fullWidth
+                          required
+                          size="small"
+                          variant="outlined"
+                          placeholder="Enter your email address"
+                        />
+                      </Grid>
+
+                      <Grid item xs={12} sm={6}>
+                        <TextField
+                          label="Phone Number"
+                          value={guestPhone}
+                          onChange={handleGuestPhoneChange}
+                          fullWidth
+                          size="small"
+                          variant="outlined"
+                          placeholder="Enter your phone number (optional)"
+                        />
+                      </Grid>
+                    </Grid>
+                    
+                    <Typography variant="caption" sx={{ 
+                      mt: 1,
+                      display: 'block',
+                      color: 'text.secondary'
+                    }}>
+                      🔒 Your information is secure and will only be used for this booking
+                    </Typography>
+                  </Box>
                 </Grid>
               )}
 
               {/* Special Requests Section */}
               <Grid item xs={12}>
-                <Card 
-                  sx={{ 
-                    background: theme.palette.background.paper,
-                    border: `1px solid ${theme.palette.divider}`,
-                    borderRadius: 2,
-                    boxShadow: theme.shadows[2],
-                  }}
-                >
-                  <CardContent sx={{ p: isMobile ? 2.5 : 3 }}>
-                    <Box sx={{ 
-                      display: 'flex',
-                      alignItems: 'center',
-                      mb: 2,
-                    }}>
-                      <Box>
-                        <Typography variant="h6" sx={{ 
-                          fontWeight: 700,
-                          color: COLORS.PRIMARY,
-                          mb: 0.5,
-                        }}>
-                          Special Requests
-                        </Typography>
-                        <Typography variant="body2" sx={{ color: COLORS.PRIMARY, fontWeight: 500 }}>
-                          Let us know if you have any special preferences
-                        </Typography>
-                      </Box>
-                    </Box>
-                    
-                    <TextField
-                      label="Special Requests (Optional)"
-                      value={specialRequests}
-                      onChange={handleSpecialRequestsChange}
-                      multiline
-                      rows={isMobile ? 3 : 4}
-                      fullWidth
-                      variant="outlined"
-                      placeholder="e.g., Late check-in, room preferences, dietary requirements, accessibility needs..."
-                      sx={{
-                        '& .MuiInputBase-root': {
-                          minHeight: isMobile ? 88 : 'auto',
-                          bgcolor: theme.palette.background.paper,
-                          borderRadius: 2,
-                        },
-                        '& .MuiOutlinedInput-root': {
-                          '&:hover fieldset': {
-                            borderColor: COLORS.PRIMARY,
+                <Box sx={{ 
+                  p: isMobile ? 1.5 : 2,
+                  backgroundColor: theme.palette.background.default,
+                  borderRadius: 1,
+                  border: `1px solid ${theme.palette.divider}`,
+                }}>
+                  <Typography variant="body1" sx={{ 
+                    fontWeight: 600,
+                    color: 'primary.main',
+                    mb: 1,
+                  }}>
+                    Special Requests (Optional)
+                  </Typography>
+                  
+                  <TextField
+                    value={specialRequests}
+                    onChange={handleSpecialRequestsChange}
+                    multiline
+                    rows={isMobile ? 2 : 3}
+                    fullWidth
+                    size="small"
+                    variant="outlined"
+                    placeholder="e.g., Late check-in, room preferences, dietary requirements..."
+                  />
+                  
+                  <Box sx={{ 
+                    mt: 1,
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: 0.5,
+                  }}>
+                    {['Early check-in', 'Late check-out', 'Airport pickup', 'High floor', 'Quiet room'].map((suggestion) => (
+                      <Chip
+                        key={suggestion}
+                        label={suggestion}
+                        size="small"
+                        variant="outlined"
+                        onClick={() => {
+                          if (!specialRequests.includes(suggestion)) {
+                            setSpecialRequests(prev => 
+                              prev ? `${prev}, ${suggestion}` : suggestion
+                            );
+                          }
+                        }}
+                        sx={{
+                          cursor: 'pointer',
+                          '&:hover': {
+                            backgroundColor: 'primary.main',
+                            color: 'white',
                           },
-                          '&.Mui-focused fieldset': {
-                            borderColor: COLORS.PRIMARY,
-                          },
-                        },
-                        '& .MuiInputLabel-root.Mui-focused': {
-                          color: COLORS.PRIMARY,
-                        },
-                      }}
-                    />
-                    
-                    <Box sx={{ 
-                      mt: 2,
-                      display: 'flex',
-                      flexWrap: 'wrap',
-                      gap: 1,
-                    }}>
-                      {['Early check-in', 'Late check-out', 'Airport pickup', 'High floor', 'Quiet room'].map((suggestion) => (
-                        <Chip
-                          key={suggestion}
-                          label={suggestion}
-                          size="small"
-                          variant="outlined"
-                          onClick={() => {
-                            if (!specialRequests.includes(suggestion)) {
-                              setSpecialRequests(prev => 
-                                prev ? `${prev}, ${suggestion}` : suggestion
-                              );
-                            }
-                          }}
-                          sx={{
-                            cursor: 'pointer',
-                            borderColor: COLORS.PRIMARY,
-                            color: COLORS.PRIMARY,
-                            backgroundColor: 'transparent',
-                            '&:hover': {
-                              backgroundColor: `${COLORS.PRIMARY} !important`,
-                              color: '#ffffff !important',
-                              borderColor: `${COLORS.PRIMARY} !important`,
-                            },
-                            '&:focus': {
-                              backgroundColor: `${COLORS.PRIMARY} !important`,
-                              color: '#ffffff !important',
-                              borderColor: `${COLORS.PRIMARY} !important`,
-                            },
-                          }}
-                        />
-                      ))}
-                    </Box>
-                  </CardContent>
-                </Card>
+                        }}
+                      />
+                    ))}
+                  </Box>
+                </Box>
               </Grid>
 
               {/* Payment Section */}
               <Grid item xs={12}>
-                <Divider sx={{ my: isMobile ? 1 : 2, bgcolor: theme.palette.background.paper }} />
-                <Box 
-                  sx={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    mb: isMobile ? 1 : 2,
-                    flexWrap: 'wrap',
-                  }}
-                >
-                  <LockIcon sx={{ mr: 1, color: COLORS.PRIMARY }} />
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  my: 1,
+                }}>
+                  <LockIcon sx={{ mr: 1, color: 'primary.main' }} />
                   <Typography 
                     variant={isMobile ? 'subtitle1' : 'h6'} 
-                    component="div"
-                    sx={{ fontWeight: 700, color: theme.palette.text.primary }}
+                    sx={{ fontWeight: 600, color: 'primary.main' }}
                   >
-                    Secure Payment Information
+                    Payment Information
                   </Typography>
                 </Box>
               </Grid>
@@ -1186,9 +930,10 @@ const BookingPage: React.FC = () => {
                   <FormLabel 
                     component="legend" 
                     sx={{ 
-                      fontWeight: 700, 
-                      color: COLORS.PRIMARY,
+                      fontWeight: 600, 
+                      color: 'primary.main',
                       fontSize: isMobile ? '0.875rem' : '1rem',
+                      mb: 1,
                     }}
                   >
                     Payment Method
@@ -1198,124 +943,93 @@ const BookingPage: React.FC = () => {
                     value={paymentMethod}
                     onChange={handlePaymentMethodChange}
                     sx={{ 
-                      mt: 1,
                       flexDirection: isMobile ? 'column' : 'row',
                       gap: isMobile ? 0.5 : 1,
                     }}
                   >
                     <FormControlLabel
                       value="credit_card"
-                      control={<Radio />}
+                      control={<Radio size="small" />}
                       label={
                         <Box 
                           sx={{ 
                             display: 'flex', 
                             alignItems: 'center',
-                            minHeight: isMobile ? 48 : 'auto',
-                            py: isMobile ? 1 : 0,
+                            py: 0.5,
                           }}
                         >
-                          <CreditCardIcon sx={{ mr: 1, color: COLORS.PRIMARY }} />
+                          <CreditCardIcon sx={{ mr: 1, fontSize: 20 }} />
                           Credit Card
                         </Box>
                       }
-                      sx={{
-                        mr: isMobile ? 0 : 2,
-                        mb: isMobile ? 0.5 : 0,
-                        '& .MuiFormControlLabel-root': {
-                          alignItems: 'flex-start',
-                        },
-                      }}
+                      sx={{ mr: isMobile ? 0 : 2 }}
                     />
                     <FormControlLabel
                       value="mobile_money"
-                      control={<Radio />}
+                      control={<Radio size="small" />}
                       label={
                         <Box 
                           sx={{ 
                             display: 'flex', 
                             alignItems: 'center',
-                            minHeight: isMobile ? 48 : 'auto',
-                            py: isMobile ? 1 : 0,
+                            py: 0.5,
                           }}
                         >
-                          <PhoneIcon sx={{ mr: 1, color: COLORS.PRIMARY }} />
-                          Mobile Money Transfer
+                          <PhoneIcon sx={{ mr: 1, fontSize: 20 }} />
+                          Mobile Money
                         </Box>
                       }
-                      sx={{
-                        mr: isMobile ? 0 : 2,
-                        mb: isMobile ? 0.5 : 0,
-                      }}
+                      sx={{ mr: isMobile ? 0 : 2 }}
                     />
                     <FormControlLabel
                       value="pay_at_frontdesk"
-                      control={<Radio />}
+                      control={<Radio size="small" />}
                       label={
                         <Box 
                           sx={{ 
                             display: 'flex', 
                             alignItems: 'center',
-                            minHeight: isMobile ? 48 : 'auto',
-                            py: isMobile ? 1 : 0,
+                            py: 0.5,
                           }}
                         >
-                          <HotelIcon sx={{ mr: 1, color: COLORS.PRIMARY }} />
+                          <HotelIcon sx={{ mr: 1, fontSize: 20 }} />
                           Pay at Front Desk
                         </Box>
                       }
-                      sx={{
-                        mr: isMobile ? 0 : 2,
-                        mb: isMobile ? 0.5 : 0,
-                      }}
+                      sx={{ mr: isMobile ? 0 : 2 }}
                     />
                     <FormControlLabel
                       value="mbirr"
-                      control={<Radio />}
+                      control={<Radio size="small" />}
                       label={
                         <Box 
                           sx={{ 
                             display: 'flex', 
                             alignItems: 'center',
-                            minHeight: isMobile ? 48 : 'auto',
-                            py: isMobile ? 1 : 0,
+                            py: 0.5,
                           }}
                         >
-                          <PhoneIcon sx={{ 
-                            mr: 1, 
-                            color: COLORS.PRIMARY
-                          }} />
+                          <PhoneIcon sx={{ mr: 1, fontSize: 20 }} />
                           🇪🇹 M-birr
                         </Box>
                       }
-                      sx={{
-                        mr: isMobile ? 0 : 2,
-                        mb: isMobile ? 0.5 : 0,
-                      }}
+                      sx={{ mr: isMobile ? 0 : 2 }}
                     />
                     <FormControlLabel
                       value="telebirr"
-                      control={<Radio />}
+                      control={<Radio size="small" />}
                       label={
                         <Box 
                           sx={{ 
                             display: 'flex', 
                             alignItems: 'center',
-                            minHeight: isMobile ? 48 : 'auto',
-                            py: isMobile ? 1 : 0,
+                            py: 0.5,
                           }}
                         >
-                          <PhoneIcon sx={{ 
-                            mr: 1, 
-                            color: COLORS.PRIMARY
-                          }} />
+                          <PhoneIcon sx={{ mr: 1, fontSize: 20 }} />
                           🇪🇹 Telebirr
                         </Box>
                       }
-                      sx={{
-                        mr: isMobile ? 0 : 2,
-                        mb: isMobile ? 0.5 : 0,
-                      }}
                     />
                   </RadioGroup>
                 </FormControl>
@@ -1325,53 +1039,27 @@ const BookingPage: React.FC = () => {
               {paymentMethod === 'credit_card' && (
                 <>
                   <Grid item xs={12}>
-                    <Card 
-                      sx={{ 
-                        border: `2px solid ${COLORS.PRIMARY}`,
-                        backgroundColor: theme.palette.background.paper,
-                        borderRadius: 2,
-                        minHeight: 520, // Consistent height to accommodate all payment methods
-                        display: 'flex',
-                        flexDirection: 'column',
-                        boxShadow: theme.shadows[2],
-                      }}
-                    >
-                      <CardContent sx={{ 
-                        py: 3,
-                        flexGrow: 1,
-                        display: 'flex',
-                        flexDirection: 'column'
-                      }}>
-                        <Box sx={{ textAlign: 'center', mb: 2 }}>
-                          <CreditCardIcon sx={{ 
-                            fontSize: 40, 
-                            color: COLORS.PRIMARY,
-                            mb: 1 
-                          }} />
-                          <Typography variant="h6" sx={{ 
-                            color: theme.palette.text.primary,
-                            fontWeight: 700,
-                            mb: 0.5
-                          }}>
-                            Credit/Debit Card Payment
-                          </Typography>
-                          <Typography variant="body2" sx={{ 
-                            color: theme.palette.text.secondary,
-                            mb: 1,
-                            fontWeight: 500
-                          }}>
-                            Secure card payment processing
-                          </Typography>
-                          <Typography variant="h6" sx={{ 
-                            color: COLORS.PRIMARY,
-                            fontWeight: 700
-                          }}>
-                            Amount: ETB {totalAmount?.toFixed(0)}
-                          </Typography>
-                        </Box>
-                        
-                        <Box sx={{ flexGrow: 1 }}>
-                          <Grid container spacing={isMobile ? 2 : 3}>
+                    <Box sx={{ 
+                      p: isMobile ? 1.5 : 2,
+                      backgroundColor: theme.palette.background.default,
+                      borderRadius: 1,
+                      border: `1px solid ${theme.palette.primary.main}`,
+                    }}>
+                      <Box sx={{ textAlign: 'center', mb: 1.5 }}>
+                        <CreditCardIcon sx={{ 
+                          fontSize: 32, 
+                          color: 'primary.main',
+                          mb: 0.5 
+                        }} />
+                        <Typography variant="body1" sx={{ 
+                          color: theme.palette.text.primary,
+                          fontWeight: 600,
+                        }}>
+                          Credit Card Payment - ETB {totalAmount?.toFixed(0)}
+                        </Typography>
+                      </Box>
+                      
+                      <Grid container spacing={isMobile ? 1.5 : 2}>
                         <Grid item xs={12}>
                           <TextField
                             label="Cardholder Name"
@@ -1379,25 +1067,8 @@ const BookingPage: React.FC = () => {
                             onChange={handleCardholderNameChange}
                             fullWidth
                             required
+                            size="small"
                             placeholder="John Doe"
-                            sx={{
-                              '& .MuiInputBase-root': {
-                                minHeight: isMobile ? 56 : 'auto',
-                                bgcolor: theme.palette.background.paper,
-                                borderRadius: 2,
-                              },
-                              '& .MuiOutlinedInput-root': {
-                                '&:hover fieldset': {
-                                  borderColor: COLORS.PRIMARY,
-                                },
-                                '&.Mui-focused fieldset': {
-                                  borderColor: COLORS.PRIMARY,
-                                },
-                              },
-                              '& .MuiInputLabel-root.Mui-focused': {
-                                color: COLORS.PRIMARY,
-                              },
-                            }}
                           />
                         </Grid>
                         <Grid item xs={12}>
@@ -1413,38 +1084,21 @@ const BookingPage: React.FC = () => {
                             }}
                             fullWidth
                             required
+                            size="small"
                             placeholder="1234 5678 9012 3456"
                             inputProps={{
                               inputMode: 'numeric',
                             }}
-                            sx={{
-                              '& .MuiInputBase-root': {
-                                minHeight: isMobile ? 56 : 'auto',
-                                bgcolor: theme.palette.background.paper,
-                                borderRadius: 2,
-                              },
-                              '& .MuiOutlinedInput-root': {
-                                '&:hover fieldset': {
-                                  borderColor: COLORS.PRIMARY,
-                                },
-                                '&.Mui-focused fieldset': {
-                                  borderColor: COLORS.PRIMARY,
-                                },
-                              },
-                              '& .MuiInputLabel-root.Mui-focused': {
-                                color: COLORS.PRIMARY,
-                              },
-                            }}
                             InputProps={{
                               startAdornment: (
                                 <InputAdornment position="start">
-                                  <CreditCardIcon sx={{ color: COLORS.PRIMARY }} />
+                                  <CreditCardIcon fontSize="small" />
                                 </InputAdornment>
                               ),
                             }}
                           />
                         </Grid>
-                        <Grid item xs={isMobile ? 12 : 6} sm={6}>
+                        <Grid item xs={6}>
                           <TextField
                             label="Expiry Date"
                             value={expiryDate}
@@ -1458,32 +1112,12 @@ const BookingPage: React.FC = () => {
                             }}
                             fullWidth
                             required
+                            size="small"
                             placeholder="MM/YY"
-                            inputProps={{ 
-                              maxLength: 5,
-                              inputMode: 'numeric',
-                            }}
-                            sx={{
-                              '& .MuiInputBase-root': {
-                                minHeight: isMobile ? 56 : 'auto',
-                                bgcolor: theme.palette.background.paper,
-                                borderRadius: 2,
-                              },
-                              '& .MuiOutlinedInput-root': {
-                                '&:hover fieldset': {
-                                  borderColor: COLORS.PRIMARY,
-                                },
-                                '&.Mui-focused fieldset': {
-                                  borderColor: COLORS.PRIMARY,
-                                },
-                              },
-                              '& .MuiInputLabel-root.Mui-focused': {
-                                color: COLORS.PRIMARY,
-                              },
-                            }}
+                            inputProps={{ maxLength: 5 }}
                           />
                         </Grid>
-                        <Grid item xs={isMobile ? 12 : 6} sm={6}>
+                        <Grid item xs={6}>
                           <TextField
                             label="CVV"
                             value={cvv}
@@ -1495,78 +1129,21 @@ const BookingPage: React.FC = () => {
                             }}
                             fullWidth
                             required
+                            size="small"
                             placeholder="123"
                             type="password"
-                            inputProps={{ 
-                              maxLength: 4,
-                              inputMode: 'numeric',
-                            }}
-                            sx={{
-                              '& .MuiInputBase-root': {
-                                minHeight: isMobile ? 56 : 'auto',
-                                bgcolor: theme.palette.background.paper,
-                                borderRadius: 2,
-                              },
-                              '& .MuiOutlinedInput-root': {
-                                '&:hover fieldset': {
-                                  borderColor: COLORS.PRIMARY,
-                                },
-                                '&.Mui-focused fieldset': {
-                                  borderColor: COLORS.PRIMARY,
-                                },
-                              },
-                              '& .MuiInputLabel-root.Mui-focused': {
-                                color: COLORS.PRIMARY,
-                              },
-                            }}
+                            inputProps={{ maxLength: 4 }}
                           />
                         </Grid>
-                        <Grid item xs={12} sm={6}>
-                          <Box sx={{ 
-                            p: 2, 
-                            bgcolor: theme.palette.background.default, 
-                            color: theme.palette.text.primary, 
-                            borderRadius: 2,
-                            border: `1px solid ${theme.palette.divider}`
-                          }}>
-                            <Typography variant="body2" sx={{ fontWeight: 700, mb: 1, color: COLORS.PRIMARY }}>
-                              Credit Card Information
-                            </Typography>
-                            <Typography variant="caption" display="block" sx={{ fontWeight: 500 }}>
-                              • Accepted Cards: Visa, MasterCard, Amex
-                            </Typography>
-                            <Typography variant="caption" display="block" sx={{ fontWeight: 500 }}>
-                              • SSL Encrypted & Secure Processing
-                            </Typography>
-                            <Typography variant="caption" display="block" sx={{ fontWeight: 500 }}>
-                              • Amount: ETB {totalAmount?.toFixed(0)}
-                            </Typography>
-                          </Box>
-                        </Grid>
                         <Grid item xs={12}>
-                          <Alert 
-                            severity="info"
-                            sx={{
-                              bgcolor: theme.palette.info.light,
-                              color: theme.palette.info.dark,
-                              '& .MuiAlert-icon': {
-                                color: theme.palette.info.main
-                              }
-                            }}
-                          >
-                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                              <strong>Payment Information:</strong><br />
-                              1. Enter your card details in the form above<br />
-                              2. All transactions are processed securely<br />
-                              3. You will receive confirmation immediately<br />
-                              4. Your booking will be confirmed automatically
+                          <Alert severity="info" sx={{ py: 0.5 }}>
+                            <Typography variant="caption">
+                              Secure SSL encrypted payment processing. All major cards accepted.
                             </Typography>
                           </Alert>
                         </Grid>
-                          </Grid>
-                        </Box>
-                      </CardContent>
-                    </Card>
+                      </Grid>
+                    </Box>
                   </Grid>
                 </>
               )}
@@ -1575,171 +1152,71 @@ const BookingPage: React.FC = () => {
               {paymentMethod === 'mobile_money' && (
                 <>
                   <Grid item xs={12}>
-                    <Card sx={{ 
-                      border: `2px solid ${COLORS.PRIMARY}`,
-                      backgroundColor: theme.palette.background.paper,
-                      borderRadius: 2,
-                      minHeight: 520, // Consistent height to accommodate all payment methods
-                      display: 'flex',
-                      flexDirection: 'column',
-                      boxShadow: theme.shadows[2],
+                    <Box sx={{ 
+                      p: isMobile ? 1.5 : 2,
+                      backgroundColor: theme.palette.background.default,
+                      borderRadius: 1,
+                      border: `1px solid ${theme.palette.primary.main}`,
                     }}>
-                      <CardContent sx={{ 
-                        py: 3,
-                        flexGrow: 1,
-                        display: 'flex',
-                        flexDirection: 'column'
-                      }}>
-                        <Box sx={{ textAlign: 'center', mb: 2 }}>
-                          <PhoneIcon sx={{ 
-                            fontSize: 40, 
-                            color: COLORS.PRIMARY,
-                            mb: 1 
-                          }} />
-                          <Typography variant="h6" sx={{ 
-                            color: theme.palette.text.primary,
-                            fontWeight: 700,
-                            mb: 0.5
-                          }}>
-                            Mobile Money Transfer
-                          </Typography>
-                          <Typography variant="body2" sx={{ 
-                            color: theme.palette.text.secondary,
-                            mb: 1,
-                            fontWeight: 500
-                          }}>
-                            Complete mobile money transfer and provide details
-                          </Typography>
-                          <Typography variant="h6" sx={{ 
-                            color: COLORS.PRIMARY,
-                            fontWeight: 700
-                          }}>
-                            Amount: ETB {totalAmount?.toFixed(0)}
-                          </Typography>
-                        </Box>
-                        
-                        <Box sx={{ flexGrow: 1 }}>
-                          <Alert 
-                            severity="info" 
-                            sx={{ 
-                              mb: 2,
-                              bgcolor: theme.palette.info.light,
-                              color: theme.palette.info.dark,
-                              '& .MuiAlert-icon': {
-                                color: theme.palette.info.main
-                              }
+                      <Box sx={{ textAlign: 'center', mb: 1.5 }}>
+                        <PhoneIcon sx={{ 
+                          fontSize: 32, 
+                          color: 'primary.main',
+                          mb: 0.5 
+                        }} />
+                        <Typography variant="body1" sx={{ 
+                          color: theme.palette.text.primary,
+                          fontWeight: 600,
+                        }}>
+                          Mobile Money Transfer - ETB {totalAmount?.toFixed(0)}
+                        </Typography>
+                      </Box>
+                      
+                      <Alert severity="info" sx={{ mb: 1.5, py: 0.5 }}>
+                        <Typography variant="caption">
+                          Complete mobile money transfer and provide details below.
+                        </Typography>
+                      </Alert>
+                      
+                      <Grid container spacing={isMobile ? 1.5 : 2}>
+                        <Grid item xs={12} sm={6}>
+                          <TextField
+                            label="Mobile Number"
+                            value={mobileNumber}
+                            onChange={handleMobileNumberChange}
+                            fullWidth
+                            required
+                            size="small"
+                            placeholder="+1234567890"
+                            InputProps={{
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <PhoneIcon fontSize="small" />
+                                </InputAdornment>
+                              ),
                             }}
-                          >
-                            Please complete the mobile money transfer to our account and provide the details below.
+                          />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <TextField
+                            label="Transfer Receipt Number"
+                            value={transferReceiptNumber}
+                            onChange={handleTransferReceiptNumberChange}
+                            fullWidth
+                            required
+                            size="small"
+                            placeholder="Receipt/Transaction ID"
+                          />
+                        </Grid>
+                        <Grid item xs={12}>
+                          <Alert severity="warning" sx={{ py: 0.5 }}>
+                            <Typography variant="caption">
+                              Transfer exact amount to our mobile money account and enter details above.
+                            </Typography>
                           </Alert>
-                          <Grid container spacing={2}>
-                            <Grid item xs={12} sm={6}>
-                              <TextField
-                                label="Mobile Number"
-                                value={mobileNumber}
-                                onChange={handleMobileNumberChange}
-                                fullWidth
-                                required
-                                placeholder="+1234567890"
-                                sx={{
-                                  '& .MuiInputBase-root': {
-                                    bgcolor: theme.palette.background.paper,
-                                    borderRadius: 2,
-                                  },
-                                  '& .MuiOutlinedInput-root': {
-                                    '&:hover fieldset': {
-                                      borderColor: COLORS.PRIMARY,
-                                    },
-                                    '&.Mui-focused fieldset': {
-                                      borderColor: COLORS.PRIMARY,
-                                    },
-                                  },
-                                  '& .MuiInputLabel-root.Mui-focused': {
-                                    color: COLORS.PRIMARY,
-                                  },
-                                }}
-                                InputProps={{
-                                  startAdornment: (
-                                    <InputAdornment position="start">
-                                      <PhoneIcon sx={{ color: COLORS.PRIMARY }} />
-                                    </InputAdornment>
-                                  ),
-                                }}
-                              />
-                            </Grid>
-                            <Grid item xs={12} sm={6}>
-                              <TextField
-                                label="Transfer Receipt Number"
-                                value={transferReceiptNumber}
-                                onChange={handleTransferReceiptNumberChange}
-                                fullWidth
-                                required
-                                placeholder="Receipt/Transaction ID"
-                                sx={{
-                                  '& .MuiInputBase-root': {
-                                    bgcolor: theme.palette.background.paper,
-                                    borderRadius: 2,
-                                  },
-                                  '& .MuiOutlinedInput-root': {
-                                    '&:hover fieldset': {
-                                      borderColor: COLORS.PRIMARY,
-                                    },
-                                    '&.Mui-focused fieldset': {
-                                      borderColor: COLORS.PRIMARY,
-                                    },
-                                  },
-                                  '& .MuiInputLabel-root.Mui-focused': {
-                                    color: COLORS.PRIMARY,
-                                  },
-                                }}
-                              />
-                            </Grid>
-                            <Grid item xs={12} sm={6}>
-                              <Box sx={{ 
-                                p: 2, 
-                                bgcolor: theme.palette.background.default, 
-                                color: theme.palette.text.primary, 
-                                borderRadius: 2,
-                                border: `1px solid ${theme.palette.divider}`
-                              }}>
-                                <Typography variant="body2" sx={{ fontWeight: 700, mb: 1, color: COLORS.PRIMARY }}>
-                                  Mobile Money Information
-                                </Typography>
-                                <Typography variant="caption" display="block" sx={{ fontWeight: 500 }}>
-                                  • Services: M-Pesa, Airtel Money, MTN
-                                </Typography>
-                                <Typography variant="caption" display="block" sx={{ fontWeight: 500 }}>
-                                  • Processing Time: 1-2 hours
-                                </Typography>
-                                <Typography variant="caption" display="block" sx={{ fontWeight: 500 }}>
-                                  • Amount: ETB {totalAmount?.toFixed(0)}
-                                </Typography>
-                              </Box>
-                            </Grid>
-                            <Grid item xs={12}>
-                              <Alert 
-                                severity="warning"
-                                sx={{
-                                  bgcolor: theme.palette.warning.light,
-                                  color: theme.palette.warning.dark,
-                                  '& .MuiAlert-icon': {
-                                    color: theme.palette.warning.main
-                                  }
-                                }}
-                              >
-                                <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                                  <strong>Transfer Instructions:</strong><br />
-                                  1. Transfer the exact amount to our mobile money account<br />
-                                  2. Enter your phone number and receipt/transaction ID above<br />
-                                  3. We will verify the payment within 1-2 hours<br />
-                                  4. Your booking will be confirmed after verification
-                                </Typography>
-                              </Alert>
-                            </Grid>
-                          </Grid>
-                        </Box>
-                      </CardContent>
-                    </Card>
+                        </Grid>
+                      </Grid>
+                    </Box>
                   </Grid>
                 </>
               )}
@@ -1748,110 +1225,38 @@ const BookingPage: React.FC = () => {
               {paymentMethod === 'pay_at_frontdesk' && (
                 <>
                   <Grid item xs={12}>
-                    <Card sx={{ 
-                      border: `2px solid ${COLORS.PRIMARY}`,
-                      backgroundColor: theme.palette.background.paper,
-                      borderRadius: 2,
-                      minHeight: 520, // Consistent height to accommodate all payment methods
-                      display: 'flex',
-                      flexDirection: 'column',
-                      boxShadow: theme.shadows[2],
+                    <Box sx={{ 
+                      p: isMobile ? 1.5 : 2,
+                      backgroundColor: theme.palette.background.default,
+                      borderRadius: 1,
+                      border: `1px solid ${theme.palette.primary.main}`,
                     }}>
-                      <CardContent sx={{ 
-                        py: 3,
-                        flexGrow: 1,
-                        display: 'flex',
-                        flexDirection: 'column'
-                      }}>
-                        <Box sx={{ textAlign: 'center', mb: 2 }}>
-                          <HotelIcon sx={{ 
-                            fontSize: 40, 
-                            color: COLORS.PRIMARY,
-                            mb: 1 
-                          }} />
-                          <Typography variant="h6" sx={{ 
-                            color: theme.palette.text.primary,
-                            fontWeight: 700,
-                            mb: 0.5
-                          }}>
-                            Pay at Front Desk
-                          </Typography>
-                          <Typography variant="body2" sx={{ 
-                            color: theme.palette.text.secondary,
-                            mb: 1,
-                            fontWeight: 500
-                          }}>
-                            Pay when you arrive at the hotel
-                          </Typography>
-                          <Typography variant="h6" sx={{ 
-                            color: COLORS.PRIMARY,
-                            fontWeight: 700
-                          }}>
-                            Amount: ETB {totalAmount?.toFixed(0)}
-                          </Typography>
-                        </Box>
-                        
-                        <Box sx={{ flexGrow: 1 }}>
-                          <Alert 
-                            severity="info" 
-                            sx={{ 
-                              mb: 2,
-                              bgcolor: theme.palette.info.light,
-                              color: theme.palette.info.dark,
-                              '& .MuiAlert-icon': {
-                                color: theme.palette.info.main
-                              }
-                            }}
-                          >
-                            Your reservation will be confirmed and you can pay when you arrive at the hotel.
-                          </Alert>
-                          <Grid container spacing={2}>
-                            <Grid item xs={12} sm={6}>
-                              <Box sx={{ 
-                                p: 2, 
-                                bgcolor: theme.palette.background.default, 
-                                color: theme.palette.text.primary, 
-                                borderRadius: 2,
-                                border: `1px solid ${theme.palette.divider}`
-                              }}>
-                                <Typography variant="body2" sx={{ fontWeight: 700, mb: 1, color: COLORS.PRIMARY }}>
-                                  Front Desk Information
-                                </Typography>
-                                <Typography variant="caption" display="block" sx={{ fontWeight: 500 }}>
-                                  • Payment Methods: Cash, Card, Mobile
-                                </Typography>
-                                <Typography variant="caption" display="block" sx={{ fontWeight: 500 }}>
-                                  • Required: Valid ID & Confirmation
-                                </Typography>
-                                <Typography variant="caption" display="block" sx={{ fontWeight: 500 }}>
-                                  • Amount: ETB {totalAmount?.toFixed(0)}
-                                </Typography>
-                              </Box>
-                            </Grid>
-                            <Grid item xs={12}>
-                              <Alert 
-                                severity="warning"
-                                sx={{
-                                  bgcolor: theme.palette.warning.light,
-                                  color: theme.palette.warning.dark,
-                                  '& .MuiAlert-icon': {
-                                    color: theme.palette.warning.main
-                                  }
-                                }}
-                              >
-                                <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                                  <strong>Check-in Instructions:</strong><br />
-                                  1. Arrive at the hotel front desk during check-in hours<br />
-                                  2. Present your booking confirmation and valid ID<br />
-                                  3. Pay the full amount using your preferred method<br />
-                                  4. Complete check-in and receive your room keys
-                                </Typography>
-                              </Alert>
-                            </Grid>
-                          </Grid>
-                        </Box>
-                      </CardContent>
-                    </Card>
+                      <Box sx={{ textAlign: 'center', mb: 1.5 }}>
+                        <HotelIcon sx={{ 
+                          fontSize: 32, 
+                          color: 'primary.main',
+                          mb: 0.5 
+                        }} />
+                        <Typography variant="body1" sx={{ 
+                          color: theme.palette.text.primary,
+                          fontWeight: 600,
+                        }}>
+                          Pay at Front Desk - ETB {totalAmount?.toFixed(0)}
+                        </Typography>
+                      </Box>
+                      
+                      <Alert severity="info" sx={{ mb: 1.5, py: 0.5 }}>
+                        <Typography variant="caption">
+                          Your reservation will be confirmed. Pay when you arrive at the hotel.
+                        </Typography>
+                      </Alert>
+                      
+                      <Alert severity="warning" sx={{ py: 0.5 }}>
+                        <Typography variant="caption">
+                          Bring valid ID and booking confirmation. Payment methods: Cash, Card, Mobile.
+                        </Typography>
+                      </Alert>
+                    </Box>
                   </Grid>
                 </>
               )}
@@ -1860,158 +1265,55 @@ const BookingPage: React.FC = () => {
               {paymentMethod === 'mbirr' && (
                 <>
                   <Grid item xs={12}>
-                    <Card sx={{ 
-                      border: `2px solid ${COLORS.PRIMARY}`,
-                      backgroundColor: theme.palette.background.paper,
-                      borderRadius: 2,
-                      minHeight: 520, // Consistent height to accommodate all payment methods
-                      display: 'flex',
-                      flexDirection: 'column',
-                      boxShadow: theme.shadows[2],
+                    <Box sx={{ 
+                      p: isMobile ? 1.5 : 2,
+                      backgroundColor: theme.palette.background.default,
+                      borderRadius: 1,
+                      border: `1px solid ${theme.palette.primary.main}`,
                     }}>
-                      <CardContent sx={{ 
-                        py: 3,
-                        flexGrow: 1,
-                        display: 'flex',
-                        flexDirection: 'column'
-                      }}>
-                        <Box sx={{ textAlign: 'center', mb: 2 }}>
-                          <PhoneIcon sx={{ 
-                            fontSize: 40, 
-                            color: COLORS.PRIMARY,
-                            mb: 1 
-                          }} />
-                          <Typography variant="h6" sx={{ 
-                            color: theme.palette.text.primary,
-                            fontWeight: 700,
-                            mb: 0.5
-                          }}>
-                            🇪🇹 M-birr Mobile Payment
-                          </Typography>
-                          <Typography variant="body2" sx={{ 
-                            color: theme.palette.text.secondary,
-                            mb: 1,
-                            fontWeight: 500
-                          }}>
-                            Pay securely using your M-birr mobile wallet
-                          </Typography>
-                          <Typography variant="h6" sx={{ 
-                            color: COLORS.PRIMARY,
-                            fontWeight: 700
-                          }}>
-                            Amount: ETB {totalAmount?.toFixed(0)}
-                          </Typography>
-                        </Box>
-                        
-                        <Box sx={{ flexGrow: 1 }}>
-                      <Alert 
-                        severity="info" 
-                        sx={{ 
-                          mb: 2,
-                          bgcolor: theme.palette.info.light,
-                          color: theme.palette.info.dark,
-                          '& .MuiAlert-icon': {
-                            color: theme.palette.info.main
+                      <Box sx={{ textAlign: 'center', mb: 1.5 }}>
+                        <PhoneIcon sx={{ 
+                          fontSize: 32, 
+                          color: 'primary.main',
+                          mb: 0.5 
+                        }} />
+                        <Typography variant="body1" sx={{ 
+                          color: theme.palette.text.primary,
+                          fontWeight: 600,
+                        }}>
+                          🇪🇹 M-birr Payment - ETB {totalAmount?.toFixed(0)}
+                        </Typography>
+                      </Box>
+                      
+                      <Alert severity="info" sx={{ mb: 1.5, py: 0.5 }}>
+                        <Typography variant="caption">
+                          You'll receive SMS instructions to complete payment.
+                        </Typography>
+                      </Alert>
+                      
+                      <TextField
+                        label="Ethiopian Mobile Number"
+                        value={ethiopianPhoneNumber}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/\D/g, '');
+                          if (value.length <= 10) {
+                            setEthiopianPhoneNumber(value.substring(0, 10));
                           }
                         }}
-                      >
-                        Pay securely using your M-birr mobile wallet. You'll receive SMS instructions to complete the payment.
-                      </Alert>
-                      <Grid container spacing={2}>
-                        <Grid item xs={12} sm={6}>
-                          <TextField
-                            label="Ethiopian Mobile Number"
-                            value={ethiopianPhoneNumber}
-                            onChange={(e) => {
-                              const value = e.target.value.replace(/\D/g, '');
-                              if (value.length <= 10) {
-                                if (value.length >= 2) {
-                                  setEthiopianPhoneNumber(`09${value.substring(2, 3)} ${value.substring(3, 5)} ${value.substring(5, 7)} ${value.substring(7, 9)}`);
-                                } else if (value.length >= 1) {
-                                  setEthiopianPhoneNumber(`09${value.substring(1)}`);
-                                } else {
-                                  setEthiopianPhoneNumber('09');
-                                }
-                              }
-                            }}
-                            fullWidth
-                            required
-                            placeholder="09 12 34 56 78"
-                            helperText="Enter your Ethiopian mobile number"
-                            sx={{
-                              '& .MuiInputBase-root': {
-                                bgcolor: theme.palette.background.paper,
-                                borderRadius: 2,
-                              },
-                              '& .MuiOutlinedInput-root': {
-                                '&:hover fieldset': {
-                                  borderColor: COLORS.PRIMARY,
-                                },
-                                '&.Mui-focused fieldset': {
-                                  borderColor: COLORS.PRIMARY,
-                                },
-                              },
-                              '& .MuiInputLabel-root.Mui-focused': {
-                                color: COLORS.PRIMARY,
-                              },
-                            }}
-                            InputProps={{
-                              startAdornment: (
-                                <InputAdornment position="start">
-                                  <PhoneIcon sx={{ 
-                                    color: COLORS.PRIMARY
-                                  }} />
-                                </InputAdornment>
-                              ),
-                            }}
-                          />
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                          <Box sx={{ 
-                            p: 2, 
-                            bgcolor: theme.palette.background.default, 
-                            color: theme.palette.text.primary, 
-                            borderRadius: 2,
-                            border: `1px solid ${theme.palette.divider}`
-                          }}>
-                            <Typography variant="body2" sx={{ fontWeight: 700, mb: 1, color: COLORS.PRIMARY }}>
-                              M-birr Information
-                            </Typography>
-                            <Typography variant="caption" display="block" sx={{ fontWeight: 500 }}>
-                              • USSD Code: *847#
-                            </Typography>
-                            <Typography variant="caption" display="block" sx={{ fontWeight: 500 }}>
-                              • Limits: 10 - 100,000 ETB
-                            </Typography>
-                            <Typography variant="caption" display="block" sx={{ fontWeight: 500 }}>
-                              • Amount: ETB {totalAmount?.toFixed(0)}
-                            </Typography>
-                          </Box>
-                        </Grid>
-                            <Grid item xs={12}>
-                              <Alert 
-                                severity="warning"
-                                sx={{
-                                  bgcolor: theme.palette.warning.light,
-                                  color: theme.palette.warning.dark,
-                                  '& .MuiAlert-icon': {
-                                    color: theme.palette.warning.main
-                                  }
-                                }}
-                              >
-                                <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                                  <strong>Payment Instructions:</strong><br />
-                                  1. You'll receive an SMS with payment instructions<br />
-                                  2. Open your M-birr app or dial *847#<br />
-                                  3. Follow the prompts to complete payment<br />
-                                  4. Your booking will be confirmed automatically
-                                </Typography>
-                              </Alert>
-                            </Grid>
-                          </Grid>
-                        </Box>
-                      </CardContent>
-                    </Card>
+                        fullWidth
+                        required
+                        size="small"
+                        placeholder="0912345678"
+                        helperText="Enter your Ethiopian mobile number"
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <PhoneIcon fontSize="small" />
+                            </InputAdornment>
+                          ),
+                        }}
+                      />
+                    </Box>
                   </Grid>
                 </>
               )}
@@ -2020,163 +1322,63 @@ const BookingPage: React.FC = () => {
               {paymentMethod === 'telebirr' && (
                 <>
                   <Grid item xs={12}>
-                    <Card sx={{ 
-                      border: `2px solid ${COLORS.PRIMARY}`,
-                      backgroundColor: theme.palette.background.paper,
-                      borderRadius: 2,
-                      minHeight: 520, // Consistent height to accommodate all payment methods
-                      display: 'flex',
-                      flexDirection: 'column',
-                      boxShadow: theme.shadows[2],
+                    <Box sx={{ 
+                      p: isMobile ? 1.5 : 2,
+                      backgroundColor: theme.palette.background.default,
+                      borderRadius: 1,
+                      border: `1px solid ${theme.palette.primary.main}`,
                     }}>
-                      <CardContent sx={{ 
-                        py: 3,
-                        flexGrow: 1,
-                        display: 'flex',
-                        flexDirection: 'column'
-                      }}>
-                        <Box sx={{ textAlign: 'center', mb: 2 }}>
-                          <PhoneIcon sx={{ 
-                            fontSize: 40, 
-                            color: COLORS.PRIMARY,
-                            mb: 1 
-                          }} />
-                          <Typography variant="h6" sx={{ 
-                            color: theme.palette.text.primary,
-                            fontWeight: 700,
-                            mb: 0.5
-                          }}>
-                            🇪🇹 Telebirr Mobile Payment
-                          </Typography>
-                          <Typography variant="body2" sx={{ 
-                            color: theme.palette.text.secondary,
-                            mb: 1,
-                            fontWeight: 500
-                          }}>
-                            Pay securely using your Telebirr mobile wallet
-                          </Typography>
-                          <Typography variant="h6" sx={{ 
-                            color: COLORS.PRIMARY,
-                            fontWeight: 700
-                          }}>
-                            Amount: ETB {totalAmount?.toFixed(0)}
-                          </Typography>
-                        </Box>
-                        
-                        <Box sx={{ flexGrow: 1 }}>
-                          <Alert 
-                            severity="info" 
-                            sx={{ 
-                              mb: 2,
-                              bgcolor: theme.palette.info.light,
-                              color: theme.palette.info.dark,
-                              '& .MuiAlert-icon': {
-                                color: theme.palette.info.main
-                              }
-                            }}
-                          >
-                            Pay securely using your Telebirr mobile wallet. You'll receive SMS instructions to complete the payment.
-                          </Alert>
-                      <Grid container spacing={2}>
-                        <Grid item xs={12} sm={6}>
-                          <TextField
-                            label="Ethiopian Mobile Number"
-                            value={ethiopianPhoneNumber}
-                            onChange={(e) => {
-                              const value = e.target.value.replace(/\D/g, '');
-                              if (value.length <= 10) {
-                                if (value.length >= 2) {
-                                  setEthiopianPhoneNumber(`09${value.substring(2, 3)} ${value.substring(3, 5)} ${value.substring(5, 7)} ${value.substring(7, 9)}`);
-                                } else if (value.length >= 1) {
-                                  setEthiopianPhoneNumber(`09${value.substring(1)}`);
-                                } else {
-                                  setEthiopianPhoneNumber('09');
-                                }
-                              }
-                            }}
-                            fullWidth
-                            required
-                            placeholder="09 12 34 56 78"
-                            helperText="Enter your Ethiopian mobile number"
-                            sx={{
-                              '& .MuiInputBase-root': {
-                                bgcolor: theme.palette.background.paper,
-                                borderRadius: 2,
-                              },
-                              '& .MuiOutlinedInput-root': {
-                                '&:hover fieldset': {
-                                  borderColor: COLORS.PRIMARY,
-                                },
-                                '&.Mui-focused fieldset': {
-                                  borderColor: COLORS.PRIMARY,
-                                },
-                              },
-                              '& .MuiInputLabel-root.Mui-focused': {
-                                color: COLORS.PRIMARY,
-                              },
-                            }}
-                            InputProps={{
-                              startAdornment: (
-                                <InputAdornment position="start">
-                                  <PhoneIcon sx={{ 
-                                    color: COLORS.PRIMARY
-                                  }} />
-                                </InputAdornment>
-                              ),
-                            }}
-                          />
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                          <Box sx={{ 
-                            p: 2, 
-                            bgcolor: theme.palette.background.default, 
-                            color: theme.palette.text.primary, 
-                            borderRadius: 2,
-                            border: `1px solid ${theme.palette.divider}`
-                          }}>
-                            <Typography variant="body2" sx={{ fontWeight: 700, mb: 1, color: COLORS.PRIMARY }}>
-                              Telebirr Information
-                            </Typography>
-                            <Typography variant="caption" display="block" sx={{ fontWeight: 500 }}>
-                              • USSD Code: *127#
-                            </Typography>
-                            <Typography variant="caption" display="block" sx={{ fontWeight: 500 }}>
-                              • Limits: 5 - 50,000 ETB
-                            </Typography>
-                            <Typography variant="caption" display="block" sx={{ fontWeight: 500 }}>
-                              • Amount: ETB {totalAmount?.toFixed(0)}
-                            </Typography>
-                          </Box>
-                            </Grid>
-                            <Grid item xs={12}>
-                              <Alert 
-                                severity="warning"
-                                sx={{
-                                  bgcolor: theme.palette.warning.light,
-                                  color: theme.palette.warning.dark,
-                                  '& .MuiAlert-icon': {
-                                    color: theme.palette.warning.main
-                                  }
-                                }}
-                              >
-                                <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                                  <strong>Payment Instructions:</strong><br />
-                                  1. You'll receive an SMS with payment instructions<br />
-                                  2. Open your Telebirr app or dial *127#<br />
-                                  3. Follow the prompts to complete payment<br />
-                                  4. Your booking will be confirmed automatically
-                                </Typography>
-                              </Alert>
-                            </Grid>
-                          </Grid>
-                        </Box>
-                      </CardContent>
-                    </Card>
+                      <Box sx={{ textAlign: 'center', mb: 1.5 }}>
+                        <PhoneIcon sx={{ 
+                          fontSize: 32, 
+                          color: 'primary.main',
+                          mb: 0.5 
+                        }} />
+                        <Typography variant="body1" sx={{ 
+                          color: theme.palette.text.primary,
+                          fontWeight: 600,
+                        }}>
+                          🇪🇹 Telebirr Payment - ETB {totalAmount?.toFixed(0)}
+                        </Typography>
+                      </Box>
+                      
+                      <Alert severity="info" sx={{ mb: 1.5, py: 0.5 }}>
+                        <Typography variant="caption">
+                          You'll receive SMS instructions to complete payment.
+                        </Typography>
+                      </Alert>
+                      
+                      <TextField
+                        label="Ethiopian Mobile Number"
+                        value={ethiopianPhoneNumber}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/\D/g, '');
+                          if (value.length <= 10) {
+                            setEthiopianPhoneNumber(value.substring(0, 10));
+                          }
+                        }}
+                        fullWidth
+                        required
+                        size="small"
+                        placeholder="0987654321"
+                        helperText="Enter your Ethiopian mobile number"
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <PhoneIcon fontSize="small" />
+                            </InputAdornment>
+                          ),
+                        }}
+                      />
+                    </Box>
                   </Grid>
                 </>
               )}
+
+
+
             </Grid>
-          </Card>
+          </Box>
 
           {/* Actions */}
           <Box 
