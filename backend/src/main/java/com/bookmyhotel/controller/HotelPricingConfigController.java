@@ -168,7 +168,7 @@ public class HotelPricingConfigController {
             // Validate the updates
             pricingConfigService.validateConfiguration(updates);
 
-            HotelPricingConfig updatedConfig = pricingConfigService.updateConfiguration(configId, updates);
+            HotelPricingConfig updatedConfig = pricingConfigService.updateConfigurationById(configId, updates);
 
             logger.info("Successfully updated pricing configuration: {}", configId);
 

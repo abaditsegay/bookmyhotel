@@ -140,7 +140,10 @@ const PricingConfigurationComponent: React.FC = () => {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(config)
+        body: JSON.stringify({
+          ...config,
+          hotel: { id: config.hotelId } // Add hotel object for backend validation
+        })
       });
 
       if (response.ok) {

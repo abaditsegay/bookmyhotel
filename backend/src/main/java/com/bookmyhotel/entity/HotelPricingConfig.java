@@ -38,7 +38,6 @@ public class HotelPricingConfig {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "hotel_id", nullable = false)
-    @NotNull
     @JsonIgnore // Prevent serialization of lazy-loaded hotel entity
     private Hotel hotel;
 

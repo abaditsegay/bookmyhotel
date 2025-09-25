@@ -96,11 +96,11 @@ public class HotelPricingConfigService {
         config.setCancellationFeeRate(new BigDecimal("0.50"));
         config.setNoShowPenaltyRate(new BigDecimal("1.00"));
         config.setModificationFeeRate(new BigDecimal("0.00"));
-        // Set meaningful default multipliers for Ethiopian hotels
-        config.setPeakSeasonMultiplier(new BigDecimal("1.30")); // 30% increase for peak season
-        config.setOffSeasonMultiplier(new BigDecimal("0.90")); // 10% discount for off season
-        config.setWeekendMultiplier(new BigDecimal("1.20")); // 20% increase for weekends
-        config.setHolidayMultiplier(new BigDecimal("1.50")); // 50% increase for holidays
+        // Set neutral default multipliers (no price impact)
+        config.setPeakSeasonMultiplier(new BigDecimal("1.00")); // No change for peak season by default
+        config.setOffSeasonMultiplier(new BigDecimal("1.00")); // No change for off season by default
+        config.setWeekendMultiplier(new BigDecimal("1.00")); // No change for weekends by default
+        config.setHolidayMultiplier(new BigDecimal("1.00")); // No change for holidays by default
         config.setCreatedAt(LocalDateTime.now());
         config.setUpdatedAt(LocalDateTime.now());
 
@@ -408,6 +408,32 @@ public class HotelPricingConfigService {
     @Transactional
     public HotelPricingConfig createConfiguration(Long hotelId, HotelPricingConfig config) {
         return updateConfiguration(hotelId, config);
+    }
+
+    /**
+     * Update configuration by config ID (used by PUT endpoint)
+     * 
+     * @param configId the configuration ID
+     * @param updates the updates to apply
+     * @return updated configuration
+     */
+    @Transactional
+    public HotelPricingConfig updateConfigurationById(Long configId, HotelPricingConfig updates) {
+        logger.debug("Updating configuration with ID: {}", configId);
+        
+        // Find the existing configuration by ID
+        HotelPricingConfig existingConfig = pricingConfigRepository.findById(configId)
+            .orElseThrow(() -> new IllegalArgumentException("Configuration not found with ID: " + configId));
+        
+        // Get the hotel from the existing configuration
+        Hotel hotel = existingConfig.getHotel();
+        
+        // Set the hotel in the updates object
+        updates.setHotel(hotel);
+        updates.setHotelId(hotel.getId());
+        
+        // Use the existing updateConfiguration method
+        return updateConfiguration(hotel.getId(), updates);
     }
 
     /**
