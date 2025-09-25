@@ -286,7 +286,7 @@ const PricingConfigurationComponent: React.FC = () => {
                 }
               }}
             >
-              <Typography variant="h6" sx={{ color: COLORS.PRIMARY }}>
+              <Typography variant="h6" sx={{ color: COLORS.PRIMARY, fontWeight: 'bold' }}>
                 General Settings
               </Typography>
             </AccordionSummary>
@@ -408,7 +408,7 @@ const PricingConfigurationComponent: React.FC = () => {
                 }
               }}
             >
-              <Typography variant="h6" sx={{ color: COLORS.PRIMARY }}>
+              <Typography variant="h6" sx={{ color: COLORS.PRIMARY, fontWeight: 'bold' }}>
                 Tax Configuration
               </Typography>
             </AccordionSummary>
@@ -503,7 +503,7 @@ const PricingConfigurationComponent: React.FC = () => {
                 }
               }}
             >
-              <Typography variant="h6" sx={{ color: COLORS.PRIMARY }}>
+              <Typography variant="h6" sx={{ color: COLORS.PRIMARY, fontWeight: 'bold' }}>
                 Seasonal Pricing Multipliers
               </Typography>
             </AccordionSummary>
@@ -570,7 +570,7 @@ const PricingConfigurationComponent: React.FC = () => {
                 }
               }}
             >
-              <Typography variant="h6" sx={{ color: COLORS.PRIMARY }}>
+              <Typography variant="h6" sx={{ color: COLORS.PRIMARY, fontWeight: 'bold' }}>
                 Booking Rules
               </Typography>
             </AccordionSummary>
@@ -656,7 +656,7 @@ const PricingConfigurationComponent: React.FC = () => {
                 }
               }}
             >
-              <Typography variant="h6" sx={{ color: COLORS.PRIMARY }}>
+              <Typography variant="h6" sx={{ color: COLORS.PRIMARY, fontWeight: 'bold' }}>
                 Discounts & Fees
               </Typography>
             </AccordionSummary>
@@ -811,7 +811,7 @@ const PricingConfigurationComponent: React.FC = () => {
                 }
               }}
             >
-              <Typography variant="h6" sx={{ color: COLORS.PRIMARY }}>
+              <Typography variant="h6" sx={{ color: COLORS.PRIMARY, fontWeight: 'bold' }}>
                 Additional Notes
               </Typography>
             </AccordionSummary>

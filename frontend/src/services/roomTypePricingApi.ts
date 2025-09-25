@@ -55,13 +55,13 @@ class RoomTypePricingService {
       basePricePerNight: backendData.basePricePerNight,
       weekendMultiplier: backendData.weekendPrice && backendData.basePricePerNight > 0 
         ? backendData.weekendPrice / backendData.basePricePerNight 
-        : 1.2,
+        : 1.0,
       holidayMultiplier: backendData.holidayPrice && backendData.basePricePerNight > 0
         ? backendData.holidayPrice / backendData.basePricePerNight
-        : 1.5,
+        : 1.0,
       peakSeasonMultiplier: backendData.peakSeasonPrice && backendData.basePricePerNight > 0
         ? backendData.peakSeasonPrice / backendData.basePricePerNight
-        : 1.3,
+        : 1.0,
       isActive: backendData.isActive,
       currency: backendData.currency,
       description: backendData.description,

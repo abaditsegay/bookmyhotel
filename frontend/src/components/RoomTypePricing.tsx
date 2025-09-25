@@ -66,18 +66,18 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedPricing, setSelectedPricing] = useState<RoomTypePricingResponse | null>(null);
   const [pricingMultipliers, setPricingMultipliers] = useState<PricingMultipliers>({
-    weekendMultiplier: 1.2,
-    holidayMultiplier: 1.5,
-    peakSeasonMultiplier: 1.3,
+    weekendMultiplier: 1.0,
+    holidayMultiplier: 1.0,
+    peakSeasonMultiplier: 1.0,
     currencyCode: 'ETB'
   });
 
   const [formData, setFormData] = useState<RoomTypePricingRequest>({
     roomType: 'SINGLE',
     basePricePerNight: 100,
-    weekendMultiplier: 1.2,
-    holidayMultiplier: 1.5,
-    peakSeasonMultiplier: 1.3,
+    weekendMultiplier: 1.0,
+    holidayMultiplier: 1.0,
+    peakSeasonMultiplier: 1.0,
     isActive: true,
     currency: 'ETB',
     description: ''
