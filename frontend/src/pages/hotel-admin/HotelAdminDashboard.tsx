@@ -391,7 +391,7 @@ const HotelAdminDashboard: React.FC = () => {
     {
       title: 'Available Rooms',
       value: hotelData.availableRooms,
-      color: 'success',
+      color: COLORS.PRIMARY,
     },
     {
       title: 'Booked Rooms',
@@ -567,7 +567,10 @@ const HotelAdminDashboard: React.FC = () => {
                           <Typography variant="body2" color="text.secondary">Status</Typography>
                           <Chip 
                             label={hotel.isActive ? 'Active' : 'Inactive'} 
-                            color={hotel.isActive ? 'success' : 'error'} 
+                            sx={{ 
+                              backgroundColor: hotel.isActive ? COLORS.PRIMARY : 'error.main',
+                              color: hotel.isActive ? 'white' : 'white'
+                            }}
                             size="small"
                           />
                         </Box>
@@ -624,13 +627,24 @@ const HotelAdminDashboard: React.FC = () => {
           {/* Reports Tab - Enhanced with More Data */}
           <Box>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+              <Typography variant="h6" sx={{ 
+                fontWeight: 'bold',
+                color: COLORS.PRIMARY 
+              }}>
                 Hotel Reports & Analytics
               </Typography>
               <Button
                 variant="outlined"
                 onClick={loadReportsData}
                 disabled={reportsData.loading}
+                sx={{
+                  borderColor: COLORS.PRIMARY,
+                  color: COLORS.PRIMARY,
+                  '&:hover': {
+                    backgroundColor: addAlpha(COLORS.PRIMARY, 0.1),
+                    borderColor: COLORS.PRIMARY
+                  }
+                }}
               >
                 Refresh Data
               </Button>
@@ -762,9 +776,9 @@ const HotelAdminDashboard: React.FC = () => {
                               label={count} 
                               size="small" 
                               sx={{ 
-                                backgroundColor: COLORS.SUCCESS, 
+                                backgroundColor: COLORS.PRIMARY, 
                                 color: 'white',
-                                '&:hover': { backgroundColor: COLORS.CHECKED_IN }
+                                '&:hover': { backgroundColor: addAlpha(COLORS.PRIMARY, 0.8) }
                               }} 
                             />
                           </Box>
@@ -801,9 +815,9 @@ const HotelAdminDashboard: React.FC = () => {
                               label={count} 
                               size="small" 
                               sx={{ 
-                                backgroundColor: COLORS.SUCCESS, 
+                                backgroundColor: COLORS.PRIMARY, 
                                 color: 'white',
-                                '&:hover': { backgroundColor: COLORS.CHECKED_IN }
+                                '&:hover': { backgroundColor: addAlpha(COLORS.PRIMARY, 0.8) }
                               }} 
                             />
                           </Box>
@@ -1006,9 +1020,9 @@ const HotelAdminDashboard: React.FC = () => {
                                   label={status.replace('_', ' ')}
                                   size="small"
                                   sx={{ 
-                                    backgroundColor: COLORS.SUCCESS, 
+                                    backgroundColor: COLORS.PRIMARY, 
                                     color: 'white',
-                                    '&:hover': { backgroundColor: COLORS.CHECKED_IN }
+                                    '&:hover': { backgroundColor: addAlpha(COLORS.PRIMARY, 0.8) }
                                   }}
                                 />
                               </CardContent>
@@ -1044,7 +1058,7 @@ const HotelAdminDashboard: React.FC = () => {
                                     width: `${reportsData.hotelStats && reportsData.hotelStats.totalRooms > 0 
                                       ? (Number(count) / reportsData.hotelStats.totalRooms) * 100 
                                       : 0}%`, 
-                                    bgcolor: COLORS.SUCCESS, 
+                                    bgcolor: COLORS.PRIMARY, 
                                     height: 6, 
                                     borderRadius: 1 
                                   }} 
@@ -1078,7 +1092,7 @@ const HotelAdminDashboard: React.FC = () => {
                                       width: `${reportsData.hotelStats && reportsData.hotelStats.totalStaff > 0 
                                         ? (Number(count) / reportsData.hotelStats.totalStaff) * 100 
                                         : 0}%`, 
-                                      bgcolor: COLORS.SUCCESS, 
+                                      bgcolor: COLORS.PRIMARY, 
                                       height: 6, 
                                       borderRadius: 1 
                                     }} 
@@ -1256,6 +1270,14 @@ const HotelAdminDashboard: React.FC = () => {
                             variant="outlined" 
                             size="small"
                             onClick={() => setActiveTab(3)}
+                            sx={{
+                              borderColor: COLORS.PRIMARY,
+                              color: COLORS.PRIMARY,
+                              '&:hover': {
+                                backgroundColor: addAlpha(COLORS.PRIMARY, 0.1),
+                                borderColor: COLORS.PRIMARY
+                              }
+                            }}
                           >
                             View All Bookings
                           </Button>
@@ -1263,6 +1285,14 @@ const HotelAdminDashboard: React.FC = () => {
                             variant="outlined" 
                             size="small"
                             onClick={() => setActiveTab(2)}
+                            sx={{
+                              borderColor: COLORS.PRIMARY,
+                              color: COLORS.PRIMARY,
+                              '&:hover': {
+                                backgroundColor: addAlpha(COLORS.PRIMARY, 0.1),
+                                borderColor: COLORS.PRIMARY
+                              }
+                            }}
                           >
                             Manage Rooms
                           </Button>
@@ -1270,6 +1300,14 @@ const HotelAdminDashboard: React.FC = () => {
                             variant="outlined" 
                             size="small"
                             onClick={() => setActiveTab(1)}
+                            sx={{
+                              borderColor: COLORS.PRIMARY,
+                              color: COLORS.PRIMARY,
+                              '&:hover': {
+                                backgroundColor: addAlpha(COLORS.PRIMARY, 0.1),
+                                borderColor: COLORS.PRIMARY
+                              }
+                            }}
                           >
                             Manage Staff
                           </Button>
@@ -1277,6 +1315,14 @@ const HotelAdminDashboard: React.FC = () => {
                             variant="outlined" 
                             size="small"
                             onClick={() => setActiveTab(4)}
+                            sx={{
+                              borderColor: COLORS.PRIMARY,
+                              color: COLORS.PRIMARY,
+                              '&:hover': {
+                                backgroundColor: addAlpha(COLORS.PRIMARY, 0.1),
+                                borderColor: COLORS.PRIMARY
+                              }
+                            }}
                           >
                             Staff Schedules
                           </Button>
@@ -1364,7 +1410,7 @@ const HotelAdminDashboard: React.FC = () => {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle sx={{ textAlign: 'center', color: 'success.main' }}>
+        <DialogTitle sx={{ textAlign: 'center', color: COLORS.PRIMARY }}>
           ✅ Success
         </DialogTitle>
         <DialogContent>

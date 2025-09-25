@@ -20,6 +20,7 @@ import {
 } from '@mui/material';
 import { operationsSupervisorApi } from '../../services/operationsSupervisorApi';
 import { HousekeepingTask, HousekeepingStaff, StaffPerformance } from '../../types/operations';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 
 interface StaffTasksDialogProps {
   open: boolean;
@@ -77,7 +78,12 @@ const StaffTasksDialog: React.FC<StaffTasksDialogProps> = ({
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
-      <DialogTitle>
+      <DialogTitle sx={{ 
+        textAlign: 'center', 
+        color: COLORS.PRIMARY,
+        borderBottom: '1px solid',
+        borderColor: 'divider'
+      }}>
         Staff Tasks - {staff?.user.firstName} {staff?.user.lastName}
       </DialogTitle>
       <DialogContent>
@@ -96,10 +102,19 @@ const StaffTasksDialog: React.FC<StaffTasksDialogProps> = ({
             {/* Performance Summary */}
             {performance && (
               <Box sx={{ mb: 3 }}>
-                <Typography variant="h6" gutterBottom>
+                <Typography variant="h6" gutterBottom sx={{ color: COLORS.PRIMARY }}>
                   Performance Summary
                 </Typography>
-                <Box sx={{ display: 'flex', gap: 3, mb: 2 }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  gap: 3, 
+                  mb: 2,
+                  p: 2,
+                  backgroundColor: addAlpha(COLORS.PRIMARY, 0.05),
+                  borderRadius: 1,
+                  border: '1px solid',
+                  borderColor: addAlpha(COLORS.PRIMARY, 0.2)
+                }}>
                   <Typography variant="body2">
                     <strong>Tasks Completed:</strong> {performance.tasksCompleted}
                   </Typography>
@@ -117,7 +132,7 @@ const StaffTasksDialog: React.FC<StaffTasksDialogProps> = ({
             )}
 
             {/* Tasks Table */}
-            <Typography variant="h6" gutterBottom>
+            <Typography variant="h6" gutterBottom sx={{ color: COLORS.PRIMARY }}>
               Recent Tasks
             </Typography>
             <TableContainer component={Paper}>
@@ -174,8 +189,21 @@ const StaffTasksDialog: React.FC<StaffTasksDialogProps> = ({
           </>
         )}
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Close</Button>
+      <DialogActions sx={{ p: 2 }}>
+        <Button 
+          onClick={onClose}
+          variant="outlined"
+          sx={{
+            borderColor: COLORS.PRIMARY,
+            color: COLORS.PRIMARY,
+            '&:hover': {
+              backgroundColor: addAlpha(COLORS.PRIMARY, 0.1),
+              borderColor: COLORS.PRIMARY
+            }
+          }}
+        >
+          Close
+        </Button>
       </DialogActions>
     </Dialog>
   );

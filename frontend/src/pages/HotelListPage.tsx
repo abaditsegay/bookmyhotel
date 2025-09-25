@@ -19,11 +19,11 @@ import {
 import { useNavigate, useLocation } from 'react-router-dom';
 import { hotelApiService } from '../services/hotelApi';
 import HotelListCard from '../components/hotel/HotelListCard';
+import { COLORS, addAlpha } from '../theme/themeColors';
 import { 
   HotelSearchRequest, 
   HotelSearchResult,
 } from '../types/hotel';
-import { COLORS } from '../theme/themeColors';
 
 const HotelListPage: React.FC = () => {
   const navigate = useNavigate();
@@ -188,7 +188,7 @@ const HotelListPage: React.FC = () => {
               variant={isMobile ? "h5" : "h4"} 
               sx={{ 
                 fontWeight: 700,
-                color: 'text.primary',
+                color: COLORS.PRIMARY,
                 mb: 1,
               }}
             >
@@ -210,14 +210,14 @@ const HotelListPage: React.FC = () => {
                 variant="body2" 
                 sx={{ 
                   display: 'inline-block',
-                  bgcolor: theme.palette.mode === 'dark' ? 'success.dark' : 'success.light',
-                  color: theme.palette.mode === 'dark' ? 'success.contrastText' : 'success.main',
+                  bgcolor: addAlpha(COLORS.PRIMARY, 0.1),
+                  color: COLORS.PRIMARY,
                   px: 2,
                   py: 0.75,
                   borderRadius: 1,
                   fontSize: '0.875rem',
                   fontWeight: 600,
-                  border: `1px solid ${theme.palette.success.main}`,
+                  border: `1px solid ${COLORS.PRIMARY}`,
                 }}
               >
                 {hotels.length} hotel{hotels.length === 1 ? '' : 's'} found
@@ -229,16 +229,16 @@ const HotelListPage: React.FC = () => {
                   py: 1,
                   px: 2.5,
                   bgcolor: theme.palette.background.paper,
-                  color: 'text.primary',
-                  border: `1px solid ${theme.palette.divider}`,
+                  color: COLORS.PRIMARY,
+                  border: `1px solid ${COLORS.PRIMARY}`,
                   borderRadius: 2,
                   fontWeight: 600,
                   textTransform: 'none',
                   fontSize: '0.875rem',
                   minWidth: 'auto',
                   '&:hover': {
-                    bgcolor: theme.palette.action.hover,
-                    borderColor: theme.palette.action.disabled,
+                    bgcolor: addAlpha(COLORS.PRIMARY, 0.1),
+                    borderColor: COLORS.PRIMARY,
                   },
                 }}
               >
@@ -301,13 +301,13 @@ const HotelListPage: React.FC = () => {
                 justifyContent: 'center',
                 boxShadow: 'none',
               }}>
-                <SearchIcon sx={{ fontSize: 40, color: 'text.secondary' }} />
+                <SearchIcon sx={{ fontSize: 40, color: COLORS.PRIMARY }} />
               </Box>
               <Typography 
                 variant={isMobile ? "h5" : "h4"} 
                 sx={{ 
                   fontWeight: 700,
-                  color: 'text.primary',
+                  color: COLORS.PRIMARY,
                 }}
               >
                 No Hotels Found
@@ -329,13 +329,10 @@ const HotelListPage: React.FC = () => {
                 fontWeight: 600,
                 px: 4,
                 py: 1.2,
-                bgcolor: theme.palette.background.paper,
-                color: 'text.primary',
-                border: `1px solid rgba(224, 224, 224, 0.5)`,
-                boxShadow: 'none',
+                backgroundColor: COLORS.PRIMARY,
                 '&:hover': {
-                  bgcolor: theme.palette.action.hover,
-                  borderColor: theme.palette.action.disabled,
+                  backgroundColor: COLORS.PRIMARY,
+                  filter: 'brightness(0.9)'
                 },
               }}
             >

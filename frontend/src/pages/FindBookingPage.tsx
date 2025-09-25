@@ -19,6 +19,7 @@ import { useNavigate } from 'react-router-dom';
 import { hotelApiService } from '../services/hotelApi';
 import { BookingResponse } from '../types/hotel';
 import { formatDateForDisplay } from '../utils/dateUtils';
+import { COLORS } from '../theme/themeColors';
 
 const FindBookingPage: React.FC = () => {
   const navigate = useNavigate();
@@ -254,7 +255,7 @@ const FindBookingPage: React.FC = () => {
                   variant="h4" 
                   sx={{ 
                     fontWeight: 'bold',
-                    color: 'success.main',
+                    color: COLORS.PRIMARY,
                     mb: 1,
                   }}
                 >
@@ -354,14 +355,14 @@ const FindBookingPage: React.FC = () => {
                     border: `1px solid rgba(224, 224, 224, 0.3)`,
                   }}
                 >
-                  <Typography variant="subtitle1" color="success.main" sx={{ fontWeight: 'bold', mb: 1 }}>
+                  <Typography variant="subtitle1" color={COLORS.PRIMARY} sx={{ fontWeight: 'bold', mb: 1 }}>
                     Total Amount
                   </Typography>
                   <Typography 
                     variant="h5" 
                     sx={{ 
                       fontWeight: 'bold',
-                      color: 'success.main',
+                      color: COLORS.PRIMARY,
                     }}
                   >
                     ETB {booking.totalAmount?.toFixed(0)}

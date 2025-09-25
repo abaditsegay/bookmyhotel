@@ -24,6 +24,7 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import ThemeToggle from '../components/common/ThemeToggle';
+import { COLORS } from '../theme/themeColors';
 
 const ProfilePage: React.FC = () => {
   const { user, updateProfile, changePassword } = useAuth();
@@ -163,7 +164,17 @@ const ProfilePage: React.FC = () => {
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
-      <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold', mb: 3 }}>
+      <Typography 
+        variant="h4" 
+        component="h1" 
+        gutterBottom 
+        sx={{ 
+          fontWeight: 'bold', 
+          mb: 3,
+          color: COLORS.PRIMARY,
+          textAlign: 'center'
+        }}
+      >
         My Profile
       </Typography>
 
@@ -182,34 +193,53 @@ const ProfilePage: React.FC = () => {
       <Grid container spacing={3}>
         {/* Profile Overview Card */}
         <Grid item xs={12} md={4}>
-          <Card sx={{ textAlign: 'center', p: 3 }}>
+          <Card sx={{ textAlign: 'center', p: 3, height: 'fit-content' }}>
             <Avatar
               sx={{
-                width: 100,
-                height: 100,
+                width: 120,
+                height: 120,
                 mx: 'auto',
                 mb: 2,
-                backgroundColor: 'primary.main',
-                fontSize: '2rem',
+                backgroundColor: COLORS.PRIMARY,
+                fontSize: '2.5rem',
+                fontWeight: 'bold',
+                border: `4px solid ${COLORS.PRIMARY}20`,
               }}
             >
               {user?.firstName?.[0] || user?.email?.[0] || <PersonIcon />}
             </Avatar>
-            <Typography variant="h6" gutterBottom>
+            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', mt: 1 }}>
               {user?.firstName} {user?.lastName}
             </Typography>
-            <Typography variant="body2" color="text.secondary" gutterBottom>
+            <Typography variant="body1" color="text.secondary" gutterBottom sx={{ mb: 1 }}>
               {user?.email}
             </Typography>
-            <Typography variant="body2" color="text.secondary" gutterBottom>
-              Role: {user?.role}
+            <Typography variant="body2" color="text.secondary" gutterBottom sx={{ 
+              backgroundColor: 'rgba(0,0,0,0.04)', 
+              px: 2, 
+              py: 0.5, 
+              borderRadius: 1,
+              display: 'inline-block'
+            }}>
+              {user?.role === 'ADMIN' ? 'Administrator' : 
+               user?.role === 'HOTEL_ADMIN' ? 'Hotel Administrator' :
+               user?.role === 'HOTEL_MANAGER' ? 'Hotel Manager' : 
+               user?.role === 'FRONTDESK' ? 'Front Desk' :
+               user?.role === 'HOUSEKEEPING' ? 'Housekeeping' : 'Guest'}
             </Typography>
             {!isEditing && (
               <Button
-                variant="outlined"
+                variant="contained"
                 startIcon={<EditIcon />}
                 onClick={handleEdit}
-                sx={{ mt: 2 }}
+                sx={{ 
+                  mt: 2, 
+                  backgroundColor: COLORS.PRIMARY,
+                  '&:hover': {
+                    backgroundColor: COLORS.PRIMARY,
+                    filter: 'brightness(0.9)'
+                  }
+                }}
               >
                 Edit Profile
               </Button>
@@ -222,7 +252,9 @@ const ProfilePage: React.FC = () => {
           <Card>
             <CardContent sx={{ p: 3 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                <Typography variant="h6">Profile Information</Typography>
+                <Typography variant="h6" sx={{ fontWeight: 'bold', color: COLORS.PRIMARY }}>
+                  Profile Information
+                </Typography>
                 {isEditing && (
                   <Box>
                     <Button
@@ -237,6 +269,13 @@ const ProfilePage: React.FC = () => {
                       variant="contained"
                       startIcon={<SaveIcon />}
                       onClick={handleSave}
+                      sx={{
+                        backgroundColor: COLORS.PRIMARY,
+                        '&:hover': {
+                          backgroundColor: COLORS.PRIMARY,
+                          filter: 'brightness(0.9)'
+                        }
+                      }}
                     >
                       Save Changes
                     </Button>
@@ -291,7 +330,13 @@ const ProfilePage: React.FC = () => {
               {isEditing && (
                 <>
                   <Divider sx={{ my: 3 }} />
-                  <Typography variant="h6" gutterBottom>
+                  <Typography variant="h6" gutterBottom sx={{ 
+                    fontWeight: 'bold', 
+                    color: COLORS.PRIMARY,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1
+                  }}>
                     Change Password (Optional)
                   </Typography>
                   <Grid container spacing={3}>
@@ -343,7 +388,7 @@ const ProfilePage: React.FC = () => {
       {/* Account Information Card */}
       <Card sx={{ mt: 3 }}>
         <CardContent sx={{ p: 3 }}>
-          <Typography variant="h6" gutterBottom>
+          <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', color: COLORS.PRIMARY }}>
             Account Information
           </Typography>
           <Grid container spacing={2}>
@@ -351,7 +396,15 @@ const ProfilePage: React.FC = () => {
               <Typography variant="body2" color="text.secondary">
                 Account Type
               </Typography>
-              <Typography variant="body1">
+              <Typography variant="body1" sx={{ 
+                backgroundColor: `${COLORS.PRIMARY}15`, 
+                color: COLORS.PRIMARY,
+                px: 2, 
+                py: 0.5, 
+                borderRadius: 1,
+                display: 'inline-block',
+                fontWeight: 'medium'
+              }}>
                 {user?.role === 'ADMIN' ? 'Administrator' : 
                  user?.role === 'HOTEL_ADMIN' ? 'Hotel Administrator' :
                  user?.role === 'HOTEL_MANAGER' ? 'Hotel Manager' : 
@@ -379,8 +432,14 @@ const ProfilePage: React.FC = () => {
               <Typography variant="body2" color="text.secondary">
                 Account Status
               </Typography>
-              <Typography variant="body1" color="success.main">
-                Active
+              <Typography variant="body1" sx={{ 
+                color: COLORS.PRIMARY,
+                fontWeight: 'bold',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.5
+              }}>
+                ● Active
               </Typography>
             </Grid>
           </Grid>
@@ -390,7 +449,7 @@ const ProfilePage: React.FC = () => {
       {/* Preferences Card */}
       <Card sx={{ mt: 3 }}>
         <CardContent sx={{ p: 3 }}>
-          <Typography variant="h6" gutterBottom>
+          <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', color: COLORS.PRIMARY }}>
             Preferences
           </Typography>
           <Grid container spacing={3}>

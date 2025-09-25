@@ -134,7 +134,7 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
       case 'MEDIUM': 
         return <CircleIcon sx={{ fontSize: '16px', color: COLORS.SECONDARY }} />;
       case 'LOW': 
-        return <CircleIcon sx={{ fontSize: '16px', color: theme.palette.success.main }} />;
+        return <CircleIcon sx={{ fontSize: '16px', color: COLORS.PRIMARY }} />;
       default: 
         return <CircleIcon sx={{ fontSize: '16px', color: theme.palette.info.main }} />;
     }
@@ -200,7 +200,7 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
               </MenuItem>
               <MenuItem value="LOW">
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <CircleIcon sx={{ fontSize: '14px', color: theme.palette.success.main }} />
+                  <CircleIcon sx={{ fontSize: '14px', color: COLORS.PRIMARY }} />
                   Low
                 </Box>
               </MenuItem>

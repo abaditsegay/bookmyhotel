@@ -36,6 +36,7 @@ import {
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { adminApiService, UserManagementResponse, HotelDTO, PagedResponse } from '../../services/adminApi';
+import { COLORS } from '../../theme/themeColors';
 
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -353,8 +354,10 @@ const AdminDashboard: React.FC = () => {
                         <Chip
                           label="Active"
                           size="small"
-                          color="success"
-                          variant="filled"
+                          sx={{ 
+                            backgroundColor: COLORS.PRIMARY,
+                            color: 'white'
+                          }}
                         />
                       </TableCell>
                       <TableCell>

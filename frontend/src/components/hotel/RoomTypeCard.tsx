@@ -210,24 +210,10 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
             </Typography>
             <Box sx={{ 
               display: 'flex', 
-              justifyContent: 'space-between', 
+              justifyContent: 'flex-end', 
               alignItems: 'center',
               mb: 1,
             }}>
-              <Chip 
-                label={roomType.roomType} 
-                sx={{ 
-                  fontSize: '0.65rem', 
-                  height: '22px',
-                  background: COLORS.CARD_HOVER,
-                  color: COLORS.PRIMARY,
-                  fontWeight: 600,
-                  border: `1px solid ${COLORS.CARD_BORDER}`,
-                  '& .MuiChip-label': {
-                    px: 1,
-                  }
-                }}
-              />
               <Box 
                 sx={{ 
                   textAlign: 'right',
@@ -267,21 +253,6 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
               <Typography variant="subtitle1" component="h3" gutterBottom>
                 {formatRoomTypeName(roomType.roomType)}
               </Typography>
-              <Chip 
-                label={roomType.roomType} 
-                size="small"
-                sx={{ 
-                  mb: 1, 
-                  fontSize: '0.7rem',
-                  background: COLORS.CARD_HOVER,
-                  color: COLORS.PRIMARY,
-                  fontWeight: 600,
-                  border: `1px solid ${COLORS.CARD_BORDER}`,
-                  '& .MuiChip-label': {
-                    px: 1.5,
-                  }
-                }}
-              />
             </Box>
             <Box 
               sx={{ 

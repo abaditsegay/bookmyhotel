@@ -373,7 +373,7 @@ const HotelDetailPage: React.FC = () => {
                 gutterBottom 
                 sx={{ 
                   fontWeight: 700, 
-                  color: 'text.primary',
+                  color: COLORS.PRIMARY,
                   lineHeight: 1.2,
                 }}
               >
@@ -440,7 +440,7 @@ const HotelDetailPage: React.FC = () => {
           /* Desktop Layout - Side by Side */
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
             <Box sx={{ flexGrow: 1 }}>
-              <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 700, color: 'text.primary' }}>
+              <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 700, color: COLORS.PRIMARY }}>
                 {hotel.name}
               </Typography>
               

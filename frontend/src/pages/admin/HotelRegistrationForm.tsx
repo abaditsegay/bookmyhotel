@@ -25,6 +25,7 @@ import {
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthenticatedApi } from '../../hooks/useAuthenticatedApi';
 import { useTenant } from '../../contexts/TenantContext';
+import { COLORS } from '../../theme/themeColors';
 
 interface HotelFormData {
   // Basic Information
@@ -335,8 +336,8 @@ const HotelRegistrationForm: React.FC = () => {
     return (
       <Container maxWidth="md" sx={{ py: 4 }}>
         <Paper sx={{ p: 4, textAlign: 'center' }}>
-          <Hotel sx={{ fontSize: 80, color: 'success.main', mb: 2 }} />
-          <Typography variant="h4" gutterBottom color="success.main">
+          <Hotel sx={{ fontSize: 80, color: COLORS.PRIMARY, mb: 2 }} />
+          <Typography variant="h4" gutterBottom sx={{ color: COLORS.PRIMARY }}>
             Hotel Registered Successfully!
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>

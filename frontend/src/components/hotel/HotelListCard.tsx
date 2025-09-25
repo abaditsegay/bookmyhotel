@@ -17,6 +17,7 @@ import {
   Visibility as ViewIcon,
 } from '@mui/icons-material';
 import { HotelSearchResult } from '../../types/hotel';
+import { COLORS } from '../../theme/themeColors';
 
 interface HotelListCardProps {
   hotel: HotelSearchResult;
@@ -173,7 +174,7 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
                 <Box sx={{ textAlign: 'right' }}>
                   <Typography 
                     variant="h6" 
-                    color="success.main" 
+                    color={COLORS.PRIMARY} 
                     sx={{ 
                       fontWeight: 'bold',
                       fontSize: '1.1rem',
@@ -195,7 +196,7 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
                 {hotel.name}
               </Typography>
               <Box sx={{ textAlign: 'right' }}>
-                <Typography variant="h6" color="success.main" sx={{ fontWeight: 'bold' }}>
+                <Typography variant="h6" color={COLORS.PRIMARY} sx={{ fontWeight: 'bold' }}>
                   From ETB {hotel.minPrice?.toFixed(0)}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">

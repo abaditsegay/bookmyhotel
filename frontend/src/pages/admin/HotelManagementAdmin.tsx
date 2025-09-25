@@ -47,6 +47,7 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import { adminApiService, HotelDTO, UpdateHotelRequest, TenantDTO, ApproveRegistrationRequest, HotelRegistrationResponse } from '../../services/adminApi';
 import HotelEditDialog from '../../components/hotel/HotelEditDialog';
+import { COLORS } from '../../theme/themeColors';
 
 interface Hotel extends HotelDTO {}
 
@@ -928,7 +929,7 @@ const HotelManagementAdmin: React.FC = () => {
                       <Typography color="textSecondary" gutterBottom>
                         Approved
                       </Typography>
-                      <Typography variant="h4" color="success.main">
+                      <Typography variant="h4" sx={{ color: COLORS.PRIMARY }}>
                         {registrationStats.approved}
                       </Typography>
                     </CardContent>
@@ -1003,7 +1004,13 @@ const HotelManagementAdmin: React.FC = () => {
                                 startIcon={<CheckIcon />}
                                 onClick={() => openApprovalDialog(registration)}
                                 variant="contained"
-                                color="success"
+                                sx={{
+                                  backgroundColor: COLORS.PRIMARY,
+                                  '&:hover': {
+                                    backgroundColor: COLORS.PRIMARY,
+                                    filter: 'brightness(0.9)'
+                                  }
+                                }}
                               >
                                 Approve
                               </Button>
@@ -1768,9 +1775,18 @@ const HotelManagementAdmin: React.FC = () => {
             </Button>
             <Button
               onClick={handleApproveRegistration}
-              color="success"
               variant="contained"
               disabled={!tenantId.trim()}
+              sx={{
+                backgroundColor: COLORS.PRIMARY,
+                '&:hover': {
+                  backgroundColor: COLORS.PRIMARY,
+                  filter: 'brightness(0.9)'
+                },
+                '&:disabled': {
+                  backgroundColor: 'rgba(0, 0, 0, 0.12)'
+                }
+              }}
             >
               Approve Registration
             </Button>

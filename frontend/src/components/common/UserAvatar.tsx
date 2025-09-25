@@ -114,7 +114,7 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
             right: variant === 'square' ? 2 : 0,
             width: width * 0.25,
             height: width * 0.25,
-            backgroundColor: theme.palette.success.main,
+            backgroundColor: COLORS.PRIMARY,
             borderRadius: '50%',
             border: `2px solid ${theme.palette.background.paper}`,
             zIndex: 1,

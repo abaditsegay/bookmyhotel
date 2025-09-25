@@ -25,6 +25,7 @@ import WalkInBookingModal from '../../components/booking/WalkInBookingModal';
 import FrontDeskRoomManagement from '../../components/frontdesk/FrontDeskRoomManagement';
 import OfflineWalkInBooking from '../../components/OfflineWalkInBooking';
 import { roomCacheService } from '../../services/RoomCacheService';
+import { COLORS } from '../../theme/themeColors';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -240,7 +241,7 @@ const FrontDeskDashboard: React.FC = () => {
         <Grid item xs={12} sm={6} md={2}>
           <Card>
             <CardContent sx={{ textAlign: 'center', py: 0.75, px: 1.5 }}>
-              <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'success.main', lineHeight: 1.2 }}>
+              <Typography variant="h6" sx={{ fontWeight: 'bold', color: COLORS.PRIMARY, lineHeight: 1.2 }}>
                 {todayStats.currentOccupancy}
               </Typography>
               <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
@@ -426,7 +427,7 @@ const FrontDeskDashboard: React.FC = () => {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle sx={{ textAlign: 'center', color: 'success.main' }}>
+        <DialogTitle sx={{ textAlign: 'center', color: COLORS.PRIMARY }}>
           ✅ Success
         </DialogTitle>
         <DialogContent>

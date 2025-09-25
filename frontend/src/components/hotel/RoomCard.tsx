@@ -17,6 +17,7 @@ import {
 } from '@mui/icons-material';
 import { AvailableRoom } from '../../types/hotel';
 import { useAuth } from '../../contexts/AuthContext';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 
 interface RoomCardProps {
   room: AvailableRoom;
@@ -112,14 +113,14 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
             <Box sx={{ 
               textAlign: 'center',
               p: 1.5,
-              backgroundColor: theme.palette.mode === 'dark' ? 'success.dark' : 'success.light',
-              border: `1px solid ${theme.palette.success.main}`,
+              backgroundColor: addAlpha(COLORS.PRIMARY, 0.1),
+              border: `1px solid ${COLORS.PRIMARY}`,
               borderRadius: 1,
             }}>
               <Typography 
                 variant="h6" 
                 sx={{ 
-                  color: theme.palette.mode === 'dark' ? 'success.contrastText' : 'success.main',
+                  color: COLORS.PRIMARY,
                   fontWeight: 700,
                   fontSize: isSmallMobile ? '1rem' : '1.25rem',
                 }}
@@ -157,7 +158,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
             </Box>
             <Box sx={{ textAlign: 'right' }}>
               <Typography variant="h6" sx={{ 
-                color: theme.palette.mode === 'dark' ? 'success.contrastText' : 'success.main',
+                color: COLORS.PRIMARY,
                 fontWeight: 700 
               }}>
                 ETB {room.pricePerNight?.toFixed(0)}
