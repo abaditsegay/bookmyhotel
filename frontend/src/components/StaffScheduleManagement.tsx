@@ -42,6 +42,7 @@ import {
   GetApp as DownloadIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
+import { COLORS } from '../theme/themeColors';
 
 /**
  * Create authenticated fetch request headers
@@ -782,7 +783,7 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
             </Typography>
             <Button 
               variant="contained"
-              sx={{ backgroundColor: '#2e7d32', '&:hover': { backgroundColor: '#1b5e20' } }}
+              sx={{ backgroundColor: COLORS.SUCCESS, '&:hover': { backgroundColor: COLORS.CHECKED_IN } }}
               onClick={() => {
                 setEditingSchedule(null);
                 resetForm();

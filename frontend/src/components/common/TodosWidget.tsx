@@ -24,6 +24,7 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import { Todo, useTodoApi } from '../../services/todoApi';
 import { themeConstants } from '../../theme/theme';
+import { COLORS } from '../../theme/themeColors';
 
 interface TodosWidgetProps {
   width?: string | number;
@@ -131,7 +132,7 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
       case 'HIGH': 
         return <CircleIcon sx={{ fontSize: '16px', color: theme.palette.error.main }} />;
       case 'MEDIUM': 
-        return <CircleIcon sx={{ fontSize: '16px', color: '#FFC107' }} />; // Yellow
+        return <CircleIcon sx={{ fontSize: '16px', color: COLORS.SECONDARY }} />;
       case 'LOW': 
         return <CircleIcon sx={{ fontSize: '16px', color: theme.palette.success.main }} />;
       default: 
@@ -193,7 +194,7 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
               </MenuItem>
               <MenuItem value="MEDIUM">
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <CircleIcon sx={{ fontSize: '14px', color: '#FFC107' }} />
+                  <CircleIcon sx={{ fontSize: '14px', color: COLORS.SECONDARY }} />
                   Medium
                 </Box>
               </MenuItem>

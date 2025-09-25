@@ -1,6 +1,7 @@
 import React from 'react';
 import { Avatar, Box, useTheme } from '@mui/material';
 import { Person as PersonIcon } from '@mui/icons-material';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 
 interface UserAvatarProps {
   user: {
@@ -55,19 +56,19 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
   const getBackgroundGradient = () => {
     if (customColor) return customColor;
     
-    // Generate different gradients based on user's first letter for variety
+    // Generate different blue gradients based on user's first letter for variety
     const initials = getInitials();
-    if (!initials) return 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+    if (!initials) return `linear-gradient(135deg, ${COLORS.PRIMARY} 0%, ${COLORS.SECONDARY} 100%)`;
     
     const gradients = [
-      'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', // Purple-Blue
-      'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', // Pink-Red
-      'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', // Blue-Cyan
-      'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)', // Green-Teal
-      'linear-gradient(135deg, #fa709a 0%, #fee140 100%)', // Pink-Yellow
-      'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)', // Teal-Pink
-      'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)', // Pink-Light Pink
-      'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)', // Purple-Pink
+      `linear-gradient(135deg, ${COLORS.PRIMARY} 0%, ${COLORS.SECONDARY} 100%)`, // Primary to Secondary
+      `linear-gradient(135deg, ${COLORS.SECONDARY} 0%, ${addAlpha(COLORS.PRIMARY, 0.7)} 100%)`, // Secondary to light Primary
+      `linear-gradient(135deg, ${addAlpha(COLORS.PRIMARY, 0.8)} 0%, ${COLORS.PRIMARY} 100%)`, // Light Primary to Primary
+      `linear-gradient(135deg, ${COLORS.PRIMARY} 0%, ${addAlpha(COLORS.SECONDARY, 0.8)} 100%)`, // Primary to light Secondary
+      `linear-gradient(135deg, ${addAlpha(COLORS.SECONDARY, 0.9)} 0%, ${COLORS.PRIMARY} 100%)`, // Very light Secondary to Primary
+      `linear-gradient(135deg, ${COLORS.SECONDARY} 0%, ${COLORS.PRIMARY} 100%)`, // Secondary to Primary
+      `linear-gradient(135deg, ${addAlpha(COLORS.PRIMARY, 0.6)} 0%, ${addAlpha(COLORS.SECONDARY, 0.8)} 100%)`, // Light variations
+      `linear-gradient(135deg, ${COLORS.PRIMARY} 0%, ${addAlpha(COLORS.PRIMARY, 0.5)} 100%)`, // Primary to very light Primary
     ];
     
     const index = initials.charCodeAt(0) % gradients.length;

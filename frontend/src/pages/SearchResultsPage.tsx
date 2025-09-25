@@ -24,6 +24,7 @@ import {
   HotelSearchRequest, 
   HotelSearchResult,
 } from '../types/hotel';
+import { COLORS } from '../theme/themeColors';
 
 const SearchResultsPage: React.FC = () => {
   // Updated to neutral design matching LoginPage
@@ -323,9 +324,9 @@ const SearchResultsPage: React.FC = () => {
                 borderRadius: 2,
                 textTransform: 'none',
                 fontWeight: 600,
-                borderColor: '#e0e0e0',
+                borderColor: COLORS.CARD_BORDER,
                 color: 'text.primary',
-                backgroundColor: '#f8f9fa',
+                backgroundColor: COLORS.CARD_HOVER,
                 '&:hover': {
                   borderColor: 'primary.main',
                   backgroundColor: 'primary.main',
@@ -343,9 +344,9 @@ const SearchResultsPage: React.FC = () => {
                 borderRadius: 2,
                 textTransform: 'none',
                 fontWeight: 600,
-                borderColor: '#e0e0e0',
+                borderColor: COLORS.CARD_BORDER,
                 color: 'text.primary',
-                backgroundColor: '#f8f9fa',
+                backgroundColor: COLORS.CARD_HOVER,
                 '&:hover': {
                   borderColor: 'primary.main',
                   backgroundColor: 'primary.main',

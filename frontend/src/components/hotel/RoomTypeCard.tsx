@@ -17,6 +17,7 @@ import {
 } from '@mui/icons-material';
 import { RoomTypeAvailability } from '../../types/hotel';
 import { useAuth } from '../../contexts/AuthContext';
+import { COLORS } from '../../theme/themeColors';
 
 interface RoomTypeCardProps {
   roomType: RoomTypeAvailability;
@@ -134,7 +135,7 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
               fontSize: isMobile ? '0.7rem' : '0.8rem',
               fontWeight: 700,
               boxShadow: theme.shadows[3],
-              border: `1px solid ${theme.palette.divider}`,
+              border: `1px solid ${COLORS.CARD_BORDER}`,
             }}
           >
             <CheckCircleIcon sx={{ 
@@ -166,7 +167,7 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
               zIndex: 2,
               fontWeight: 700,
               boxShadow: theme.shadows[3],
-              border: `1px solid ${theme.palette.divider}`,
+              border: `1px solid ${COLORS.CARD_BORDER}`,
             }}
           >
             <Typography 
@@ -218,10 +219,10 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
                 sx={{ 
                   fontSize: '0.65rem', 
                   height: '22px',
-                  background: theme.palette.background.paper,
-                  color: 'text.primary',
+                  background: COLORS.CARD_HOVER,
+                  color: COLORS.PRIMARY,
                   fontWeight: 600,
-                  border: `1px solid ${theme.palette.divider}`,
+                  border: `1px solid ${COLORS.CARD_BORDER}`,
                   '& .MuiChip-label': {
                     px: 1,
                   }
@@ -230,16 +231,16 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
               <Box 
                 sx={{ 
                   textAlign: 'right',
-                  background: theme.palette.action.selected,
+                  background: COLORS.CARD_HOVER,
                   borderRadius: 2,
                   padding: 1,
-                  border: `1px solid ${theme.palette.success.light}`,
+                  border: `1px solid ${COLORS.CARD_BORDER}`,
                 }}
               >
                 <Typography 
                   variant="h5" 
                   sx={{ 
-                    color: theme.palette.success.dark,
+                    color: COLORS.PRIMARY,
                     fontWeight: 700,
                     fontSize: isMobile ? '1.2rem' : '1.3rem',
                     lineHeight: 1.2,
@@ -272,10 +273,10 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
                 sx={{ 
                   mb: 1, 
                   fontSize: '0.7rem',
-                  background: theme.palette.background.paper,
-                  color: 'text.primary',
+                  background: COLORS.CARD_HOVER,
+                  color: COLORS.PRIMARY,
                   fontWeight: 600,
-                  border: `1px solid ${theme.palette.divider}`,
+                  border: `1px solid ${COLORS.CARD_BORDER}`,
                   '& .MuiChip-label': {
                     px: 1.5,
                   }
@@ -285,16 +286,16 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
             <Box 
               sx={{ 
                 textAlign: 'right',
-                background: theme.palette.action.selected,
+                background: COLORS.CARD_HOVER,
                 borderRadius: 2,
                 padding: 1.5,
-                border: `1px solid ${theme.palette.success.light}`,
+                border: `1px solid ${COLORS.CARD_BORDER}`,
               }}
             >
               <Typography 
                 variant="h5" 
                 sx={{ 
-                  color: theme.palette.success.dark,
+                  color: COLORS.PRIMARY,
                   fontWeight: 700,
                 }}
               >
@@ -411,7 +412,8 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
                 sx={{ 
                   fontSize: '0.6rem', 
                   height: 18,
-                  color: 'primary.main',
+                  color: COLORS.PRIMARY,
+                  borderColor: COLORS.PRIMARY,
                 }}
               />
             )}
@@ -435,13 +437,13 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
                   fontSize: isMobile ? '0.85rem' : '0.95rem',
                   py: isMobile ? 1 : 1.2,
                   minHeight: isMobile ? '44px' : '48px',
-                  backgroundColor: theme.palette.background.paper,
-                  color: theme.palette.success.dark,
-                  border: `2px solid ${theme.palette.divider}`,
+                  backgroundColor: COLORS.PRIMARY,
+                  color: 'white',
+                  border: `2px solid ${COLORS.PRIMARY}`,
                   boxShadow: theme.shadows[2],
                   '&:hover': {
-                    backgroundColor: theme.palette.action.hover,
-                    border: `2px solid ${theme.palette.success.light}`,
+                    backgroundColor: COLORS.PRIMARY_HOVER,
+                    border: `2px solid ${COLORS.PRIMARY_HOVER}`,
                     boxShadow: theme.shadows[4],
                     transform: 'translateY(-1px)',
                   },
@@ -466,13 +468,13 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
                     fontSize: isMobile ? '0.85rem' : '0.95rem',
                     py: isMobile ? 1 : 1.2,
                     minHeight: isMobile ? '44px' : '48px',
-                    backgroundColor: theme.palette.background.paper,
-                    color: theme.palette.success.dark,
-                    border: `2px solid ${theme.palette.divider}`,
+                    backgroundColor: COLORS.PRIMARY,
+                    color: 'white',
+                    border: `2px solid ${COLORS.PRIMARY}`,
                     boxShadow: theme.shadows[2],
                     '&:hover': {
-                      backgroundColor: theme.palette.action.hover,
-                      border: `2px solid ${theme.palette.success.light}`,
+                      backgroundColor: COLORS.PRIMARY_HOVER,
+                      border: `2px solid ${COLORS.PRIMARY_HOVER}`,
                       boxShadow: theme.shadows[4],
                       transform: 'translateY(-1px)',
                     },
@@ -494,12 +496,13 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
                     fontSize: isMobile ? '0.8rem' : '0.85rem',
                     py: isMobile ? 0.8 : 1,
                     minHeight: isMobile ? '40px' : '42px',
-                    backgroundColor: theme.palette.background.paper,
-                    color: theme.palette.primary.main,
-                    border: `2px solid ${theme.palette.primary.main}`,
+                    backgroundColor: 'transparent',
+                    color: COLORS.PRIMARY,
+                    border: `2px solid ${COLORS.PRIMARY}`,
                     '&:hover': {
-                      backgroundColor: theme.palette.primary.light,
-                      border: `2px solid ${theme.palette.primary.dark}`,
+                      backgroundColor: COLORS.CARD_HOVER,
+                      border: `2px solid ${COLORS.PRIMARY_HOVER}`,
+                      color: COLORS.PRIMARY_HOVER,
                       transform: 'translateY(-1px)',
                       boxShadow: theme.shadows[4],
                     },
@@ -526,11 +529,11 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
                 minHeight: isMobile ? '44px' : '48px',
                 backgroundColor: theme.palette.action.disabledBackground,
                 color: theme.palette.text.disabled,
-                border: `2px solid ${theme.palette.divider}`,
+                border: `2px solid ${COLORS.CARD_BORDER}`,
                 '&.Mui-disabled': {
                   backgroundColor: theme.palette.action.disabledBackground,
                   color: theme.palette.text.disabled,
-                  border: `2px solid ${theme.palette.divider}`,
+                  border: `2px solid ${COLORS.CARD_BORDER}`,
                 }
               }}
             >

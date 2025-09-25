@@ -23,6 +23,7 @@ import { ValidatedInput, ValidationSummary, ValidationStatus } from '../common/V
 import { useAsyncOperation } from '../../hooks/useLoading';
 import { useFormValidation } from '../../hooks/useFormValidation';
 import NumberStepper from '../common/NumberStepper';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 
 interface BookingFormProps {
   open: boolean;
@@ -251,7 +252,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
                 p: 3, 
                 mb: 3, 
                 backgroundColor: 'white',
-                border: '1px solid #e0e0e0',
+                border: `1px solid ${COLORS.CARD_BORDER}`,
                 borderRadius: 2,
                 boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
               }}
@@ -291,8 +292,8 @@ const BookingForm: React.FC<BookingFormProps> = ({
                       </Typography>
                       <Box 
                         sx={{ 
-                          backgroundColor: '#e8f5e8',
-                          border: '1px solid #c8e6c9',
+                          backgroundColor: addAlpha(COLORS.PRIMARY, 0.1),
+                          border: `1px solid ${addAlpha(COLORS.PRIMARY, 0.3)}`,
                           borderRadius: 2,
                           padding: 1.5,
                           mt: 1,
@@ -302,7 +303,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
                           variant="h6" 
                           component="div" 
                           sx={{ 
-                            color: '#2e7d32',
+                            color: COLORS.SUCCESS,
                             fontWeight: 700,
                             textAlign: 'center',
                           }}
@@ -321,7 +322,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
                   sx={{ 
                     mt: 2, 
                     pt: 2,
-                    borderTop: '1px solid #f0f0f0',
+                    borderTop: `1px solid ${COLORS.CARD_BORDER}`,
                     fontStyle: 'italic',
                   }}
                 >

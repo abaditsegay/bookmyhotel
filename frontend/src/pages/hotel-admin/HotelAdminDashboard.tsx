@@ -33,6 +33,7 @@ import OfflineWalkInBooking from '../../components/OfflineWalkInBooking';
 import { roomCacheService } from '../../services/RoomCacheService';
 import PricingConfiguration from '../../components/PricingConfiguration';
 import HotelImageManagement from './HotelImageManagement';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -477,16 +478,16 @@ const HotelAdminDashboard: React.FC = () => {
                 onChange={(event, newValue) => setHotelDetailsTab(newValue)}
                 sx={{
                   '& .MuiTab-root': {
-                    color: '#ff9800',
+                    color: COLORS.PRIMARY,
                     '&:hover': {
-                      color: '#f57c00',
+                      color: addAlpha(COLORS.PRIMARY, 0.8),
                     },
                     '&.Mui-selected': {
-                      color: '#e65100',
+                      color: COLORS.CONFIRMED,
                     },
                   },
                   '& .MuiTabs-indicator': {
-                    backgroundColor: '#ff9800',
+                    backgroundColor: COLORS.PRIMARY,
                   },
                 }}
               >
@@ -761,9 +762,9 @@ const HotelAdminDashboard: React.FC = () => {
                               label={count} 
                               size="small" 
                               sx={{ 
-                                backgroundColor: '#2e7d32', 
+                                backgroundColor: COLORS.SUCCESS, 
                                 color: 'white',
-                                '&:hover': { backgroundColor: '#1b5e20' }
+                                '&:hover': { backgroundColor: COLORS.CHECKED_IN }
                               }} 
                             />
                           </Box>
@@ -800,9 +801,9 @@ const HotelAdminDashboard: React.FC = () => {
                               label={count} 
                               size="small" 
                               sx={{ 
-                                backgroundColor: '#2e7d32', 
+                                backgroundColor: COLORS.SUCCESS, 
                                 color: 'white',
-                                '&:hover': { backgroundColor: '#1b5e20' }
+                                '&:hover': { backgroundColor: COLORS.CHECKED_IN }
                               }} 
                             />
                           </Box>
@@ -1005,9 +1006,9 @@ const HotelAdminDashboard: React.FC = () => {
                                   label={status.replace('_', ' ')}
                                   size="small"
                                   sx={{ 
-                                    backgroundColor: '#2e7d32', 
+                                    backgroundColor: COLORS.SUCCESS, 
                                     color: 'white',
-                                    '&:hover': { backgroundColor: '#1b5e20' }
+                                    '&:hover': { backgroundColor: COLORS.CHECKED_IN }
                                   }}
                                 />
                               </CardContent>
@@ -1043,7 +1044,7 @@ const HotelAdminDashboard: React.FC = () => {
                                     width: `${reportsData.hotelStats && reportsData.hotelStats.totalRooms > 0 
                                       ? (Number(count) / reportsData.hotelStats.totalRooms) * 100 
                                       : 0}%`, 
-                                    bgcolor: '#2e7d32', 
+                                    bgcolor: COLORS.SUCCESS, 
                                     height: 6, 
                                     borderRadius: 1 
                                   }} 
@@ -1077,7 +1078,7 @@ const HotelAdminDashboard: React.FC = () => {
                                       width: `${reportsData.hotelStats && reportsData.hotelStats.totalStaff > 0 
                                         ? (Number(count) / reportsData.hotelStats.totalStaff) * 100 
                                         : 0}%`, 
-                                      bgcolor: '#2e7d32', 
+                                      bgcolor: COLORS.SUCCESS, 
                                       height: 6, 
                                       borderRadius: 1 
                                     }} 

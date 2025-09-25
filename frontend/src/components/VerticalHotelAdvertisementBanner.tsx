@@ -17,6 +17,7 @@ import { useNavigate } from 'react-router-dom';
 import { hotelApiService } from '../services/hotelApi';
 import { HotelSearchResult } from '../types/hotel';
 import { useAuth } from '../contexts/AuthContext';
+import { COLORS } from '../theme/themeColors';
 
 interface VerticalHotelAdvertisementBannerProps {
   maxHotels?: number;
@@ -190,14 +191,14 @@ export default function VerticalHotelAdvertisementBanner({ maxHotels = 3 }: Vert
             width: 6,
           },
           '&::-webkit-scrollbar-track': {
-            backgroundColor: '#f1f1f1',
+            backgroundColor: COLORS.CARD_BORDER,
             borderRadius: 3,
           },
           '&::-webkit-scrollbar-thumb': {
-            backgroundColor: '#c1c1c1',
+            backgroundColor: COLORS.SECONDARY,
             borderRadius: 3,
             '&:hover': {
-              backgroundColor: '#a8a8a8',
+              backgroundColor: COLORS.PRIMARY,
             },
           },
         }}

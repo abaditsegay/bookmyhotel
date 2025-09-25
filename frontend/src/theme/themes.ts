@@ -2,53 +2,67 @@ import { createTheme } from '@mui/material/styles';
 
 // Custom theme constants (shared between light and dark themes)
 export const themeConstants = {
-  // Brand colors - Green Theme System
-  brandPrimary: '#4caf50',     // Main green color from your design
-  brandPrimaryLight: '#81c784',
-  brandPrimaryDark: '#388e3c',
-  brandSecondary: '#66bb6a',   // Complementary green
-  brandAccent: '#a5d6a7',      // Light green accent
+  // Brand colors - Professional Blue Theme System for Hotel Management
+  brandPrimary: '#1565c0',     // Professional deep blue - main brand color
+  brandPrimaryLight: '#42a5f5',
+  brandPrimaryDark: '#0d47a1',
+  brandSecondary: '#1976d2',   // Medium blue for secondary elements
+  brandAccent: '#e3f2fd',      // Light blue accent
   
-  // Green Color Palette for consistent theming
+  // Professional Blue Color Palette for consistent theming
+  bluePalette: {
+    50: '#e3f2fd',
+    100: '#bbdefb',
+    200: '#90caf9',
+    300: '#64b5f6',
+    400: '#42a5f6',
+    500: '#2196f3',   // Standard blue
+    600: '#1e88e5',
+    700: '#1976d2',   // Professional medium blue
+    800: '#1565c0',   // Professional deep blue
+    900: '#0d47a1',   // Dark professional blue
+  },
+  
+  // Green Color Palette for success states (keeping for backward compatibility)
   greenPalette: {
     50: '#e8f5e8',
     100: '#c8e6c8',
     200: '#a5d6a7',
     300: '#81c784',
     400: '#66bb6a',
-    500: '#4caf50',   // Main brand green
+    500: '#4caf50',   // Main green for success
     600: '#43a047',
     700: '#388e3c',
     800: '#2e7d32',
     900: '#1b5e20',
   },
   
-  // UI Element specific colors derived from green palette
+  // UI Element specific colors derived from blue palette
   uiColors: {
     // Form elements
-    inputFocus: '#4caf50',
-    inputHover: '#66bb6a',
-    inputBorder: '#a5d6a7',
+    inputFocus: '#1565c0',
+    inputHover: '#1976d2',
+    inputBorder: '#e3f2fd',
     
     // Buttons
-    primaryButton: '#4caf50',
-    primaryButtonHover: '#43a047',
-    primaryButtonPressed: '#388e3c',
+    primaryButton: '#1565c0',
+    primaryButtonHover: '#0d47a1',
+    primaryButtonPressed: '#0d47a1',
     
     // Status indicators
-    success: '#4caf50',
-    confirmed: '#1976d2',  // Blue for confirmed status as per your system
-    pending: '#ff9800',
-    error: '#f44336',
+    success: '#2e7d32',  // Keep green for success but more muted
+    confirmed: '#1565c0', // Blue for confirmed status
+    pending: '#f57c00',   // Professional orange
+    error: '#d32f2f',     // Professional red
     
     // Steppers and progress
-    stepperActive: '#4caf50',
-    stepperCompleted: '#388e3c',
-    stepperInactive: '#e0e0e0',
+    stepperActive: '#1565c0',
+    stepperCompleted: '#0d47a1',
+    stepperInactive: '#bdbdbd',
     
     // Cards and surfaces
-    cardBorder: '#e8f5e8',
-    cardHover: '#f1f8e9',
+    cardBorder: '#e3f2fd',
+    cardHover: '#f5f9ff',
     surfaceElevated: '#ffffff',
   },
   
@@ -114,18 +128,18 @@ export const themeConstants = {
     high: 0.3,
   },
   
-  // Gradient styles - different for light and dark themes
+  // Gradient styles - Professional blue theme for hotel management
   gradients: {
     light: {
-      primaryButton: 'linear-gradient(135deg, #4caf50 0%, #43a047 100%)',  // Green gradient to match primary color
-      secondaryButton: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)', // Blue gradient for secondary actions
-      successButton: 'linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)',
-      heroBackground: 'linear-gradient(135deg, #4caf50 0%, #43a047 100%)', // Green hero to match brand
+      primaryButton: 'linear-gradient(135deg, #1565c0 0%, #0d47a1 100%)',  // Professional blue gradient
+      secondaryButton: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)', // Medium blue gradient
+      successButton: 'linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)',  // Keep green for success
+      heroBackground: 'linear-gradient(135deg, #1565c0 0%, #1976d2 100%)', // Blue hero background
     },
     dark: {
-      primaryButton: 'linear-gradient(135deg, #66bb6a 0%, #4caf50 100%)',  // Lighter green for dark mode
-      secondaryButton: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)', // Blue for secondary
-      successButton: 'linear-gradient(135deg, #4caf50 0%, #2e7d32 100%)',
+      primaryButton: 'linear-gradient(135deg, #42a5f6 0%, #1976d2 100%)',  // Lighter blue for dark mode
+      secondaryButton: 'linear-gradient(135deg, #64b5f6 0%, #42a5f6 100%)', // Blue for secondary
+      successButton: 'linear-gradient(135deg, #4caf50 0%, #2e7d32 100%)',  // Green for success
       heroBackground: 'linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%)',
     }
   },
@@ -190,9 +204,9 @@ const lightThemeBase = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: themeConstants.brandPrimary,      // Green as primary
-      light: themeConstants.brandPrimaryLight,
-      dark: themeConstants.brandPrimaryDark,
+      main: '#1565c0',      // Professional blue as primary
+      light: '#42a5f6',
+      dark: '#0d47a1',
       contrastText: '#ffffff',
     },
     secondary: {
@@ -358,10 +372,10 @@ const darkThemeBase = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      main: themeConstants.brandPrimaryLight,  // Lighter green for dark mode
-      light: themeConstants.greenPalette[300],
-      dark: themeConstants.brandPrimary,
-      contrastText: '#000000',
+      main: '#1976d2',  // Professional blue for dark mode
+      light: '#42a5f6',
+      dark: '#1565c0',
+      contrastText: '#ffffff',
     },
     secondary: {
       main: '#64b5f6',  // Lighter blue for dark mode
@@ -548,3 +562,12 @@ export { extendedLightTheme as lightTheme, extendedDarkTheme as darkTheme };
 
 // Export the original light theme for backward compatibility  
 export default extendedLightTheme;
+
+// Helper function to get theme colors by mode
+export const getThemeColors = (mode: 'light' | 'dark' = 'light') => {
+  return {
+    gradients: themeConstants.gradients[mode],
+    colors: themeConstants.uiColors,
+    palette: mode === 'light' ? extendedLightTheme.palette : extendedDarkTheme.palette,
+  };
+};

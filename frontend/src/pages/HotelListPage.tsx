@@ -23,6 +23,7 @@ import {
   HotelSearchRequest, 
   HotelSearchResult,
 } from '../types/hotel';
+import { COLORS } from '../theme/themeColors';
 
 const HotelListPage: React.FC = () => {
   const navigate = useNavigate();
@@ -169,7 +170,7 @@ const HotelListPage: React.FC = () => {
         sx={{ 
           mb: isMobile ? 3 : 4,
           backgroundColor: theme.palette.background.paper,
-          border: `1px solid rgba(224, 224, 224, 0.3)`,
+          border: `1px solid ${COLORS.CARD_BORDER}`,
           borderRadius: 1,
           boxShadow: 'none',
           overflow: 'hidden',
@@ -276,7 +277,7 @@ const HotelListPage: React.FC = () => {
         <Card 
           sx={{ 
             backgroundColor: theme.palette.background.paper,
-            border: `1px solid rgba(224, 224, 224, 0.3)`,
+            border: `1px solid ${COLORS.CARD_BORDER}`,
             borderRadius: 1,
             boxShadow: 'none',
           }}
@@ -294,7 +295,7 @@ const HotelListPage: React.FC = () => {
                 height: 80,
                 borderRadius: 1,
                 bgcolor: theme.palette.background.paper,
-                border: `1px solid rgba(224, 224, 224, 0.3)`,
+                border: `1px solid ${COLORS.CARD_BORDER}`,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',

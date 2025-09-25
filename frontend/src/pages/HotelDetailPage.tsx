@@ -28,6 +28,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { hotelApiService } from '../services/hotelApi';
 import RoomCard from '../components/hotel/RoomCard';
 import RoomTypeCard from '../components/hotel/RoomTypeCard';
+import { COLORS } from '../theme/themeColors';
 import { 
   HotelSearchRequest, 
   HotelSearchResult,
@@ -415,13 +416,13 @@ const HotelDetailPage: React.FC = () => {
                 sx={{ 
                   textAlign: 'center',
                   p: 2,
-                  backgroundColor: theme.palette.action.selected,
+                  backgroundColor: COLORS.CARD_HOVER,
                   borderRadius: 1,
-                  border: `1px solid ${theme.palette.success.main}`,
+                  border: `1px solid ${COLORS.CARD_BORDER}`,
                 }}
               >
                 <Typography variant="h5" sx={{ 
-                  color: theme.palette.success.dark,
+                  color: COLORS.PRIMARY,
                   fontWeight: 700 
                 }}>
                   From ETB {hotel.minPrice?.toFixed(0)}
@@ -461,7 +462,7 @@ const HotelDetailPage: React.FC = () => {
             {searchRequest && (
               <Box sx={{ textAlign: 'right', ml: 3 }}>
                 <Typography variant="h5" sx={{ 
-                  color: theme.palette.success.dark,
+                  color: COLORS.PRIMARY,
                   fontWeight: 700 
                 }}>
                   From ETB {hotel.minPrice?.toFixed(0)}

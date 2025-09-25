@@ -141,25 +141,25 @@ export const NetworkStatusIndicator: React.FC<NetworkStatusIndicatorProps> = ({
             onClick={handleSync}
             disabled={!isOnline || isSyncing}
             style={{
-              backgroundColor: !isOnline ? '#FFA500' : '#c8e6c8',
-              color: !isOnline ? '#8B4513' : '#2e7d32',
+              backgroundColor: !isOnline ? '#ff9800' : '#4caf50',
+              color: !isOnline ? '#000000' : '#ffffff',
               fontWeight: 'bold',
-              border: `2px solid ${!isOnline ? '#8B4513' : '#4caf50'}`,
+              border: `2px solid ${!isOnline ? '#e65100' : '#2e7d32'}`,
             }}
             sx={{
               '& .MuiChip-icon': {
-                color: !isOnline ? '#8B4513 !important' : '#2e7d32 !important',
+                color: !isOnline ? '#000000 !important' : '#ffffff !important',
               },
               '& .MuiChip-label': {
-                color: !isOnline ? '#8B4513 !important' : '#2e7d32 !important',
+                color: !isOnline ? '#000000 !important' : '#ffffff !important',
                 fontWeight: 'bold !important',
               },
               '&:hover': {
-                backgroundColor: !isOnline ? '#FF8C00 !important' : '#a5d6a7 !important',
+                backgroundColor: !isOnline ? '#f57c00 !important' : '#45a049 !important',
               },
               '&.Mui-disabled': {
-                backgroundColor: !isOnline ? '#FFA500 !important' : '#c8e6c8 !important',
-                color: !isOnline ? '#8B4513 !important' : '#2e7d32 !important',
+                backgroundColor: !isOnline ? '#ff9800 !important' : '#4caf50 !important',
+                color: !isOnline ? '#000000 !important' : '#ffffff !important',
                 opacity: '0.9 !important',
               }
             }}

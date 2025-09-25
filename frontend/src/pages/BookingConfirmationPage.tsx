@@ -34,6 +34,8 @@ import {
 } from '@mui/icons-material';
 import { useAuthenticatedApi } from '../hooks/useAuthenticatedApi';
 
+import { COLORS, addAlpha } from '../theme/themeColors';
+
 interface BookingData {
   reservationId: number;
   confirmationNumber: string;
@@ -361,7 +363,7 @@ const BookingConfirmationPage: React.FC = () => {
           p: isMobile ? 3 : 4, 
           mb: isMobile ? 3 : 4, 
           textAlign: 'center', 
-          background: 'linear-gradient(135deg, #4caf50 0%, #2e7d32 100%)',
+          background: `linear-gradient(135deg, ${COLORS.SUCCESS} 0%, ${COLORS.CHECKED_IN} 100%)`,
           color: 'white',
           borderRadius: 3
         }}
@@ -573,13 +575,13 @@ const BookingConfirmationPage: React.FC = () => {
             <Card 
               elevation={0}
               sx={{ 
-                border: '2px solid #e3f2fd',
+                border: `2px solid ${COLORS.CARD_BORDER}`,
                 borderRadius: 2,
                 transition: 'all 0.3s ease',
                 '&:hover': {
-                  borderColor: '#1976d2',
+                  borderColor: COLORS.PRIMARY,
                   transform: isMobile ? 'none' : 'translateY(-2px)',
-                  boxShadow: isMobile ? 'none' : '0 8px 16px rgba(25, 118, 210, 0.1)'
+                  boxShadow: isMobile ? 'none' : `0 8px 16px ${addAlpha(COLORS.PRIMARY, 0.1)}`
                 }
               }}
             >
@@ -618,13 +620,13 @@ const BookingConfirmationPage: React.FC = () => {
             <Card 
               elevation={0}
               sx={{ 
-                border: '2px solid #e3f2fd',
+                border: `2px solid ${COLORS.CARD_BORDER}`,
                 borderRadius: 2,
                 transition: 'all 0.3s ease',
                 '&:hover': {
-                  borderColor: '#1976d2',
+                  borderColor: COLORS.PRIMARY,
                   transform: isMobile ? 'none' : 'translateY(-2px)',
-                  boxShadow: isMobile ? 'none' : '0 8px 16px rgba(25, 118, 210, 0.1)'
+                  boxShadow: isMobile ? 'none' : `0 8px 16px ${addAlpha(COLORS.PRIMARY, 0.1)}`
                 }
               }}
             >
@@ -663,13 +665,13 @@ const BookingConfirmationPage: React.FC = () => {
             <Card 
               elevation={0}
               sx={{ 
-                border: '2px solid #e3f2fd',
+                border: `2px solid ${COLORS.CARD_BORDER}`,
                 borderRadius: 2,
                 transition: 'all 0.3s ease',
                 '&:hover': {
-                  borderColor: '#1976d2',
+                  borderColor: COLORS.PRIMARY,
                   transform: isMobile ? 'none' : 'translateY(-2px)',
-                  boxShadow: isMobile ? 'none' : '0 8px 16px rgba(25, 118, 210, 0.1)'
+                  boxShadow: isMobile ? 'none' : `0 8px 16px ${addAlpha(COLORS.PRIMARY, 0.1)}`
                 }
               }}
             >
@@ -707,10 +709,10 @@ const BookingConfirmationPage: React.FC = () => {
             <Card 
               elevation={0}
               sx={{ 
-                border: '2px solid #4caf50',
+                border: `2px solid ${COLORS.SUCCESS}`,
                 borderRadius: 2,
                 transition: 'all 0.3s ease',
-                background: 'linear-gradient(135deg, #f1f8e9 0%, #e8f5e8 100%)',
+                background: `linear-gradient(135deg, ${addAlpha(COLORS.SUCCESS, 0.1)} 0%, ${addAlpha(COLORS.SUCCESS, 0.05)} 100%)`,
                 '&:hover': {
                   transform: isMobile ? 'none' : 'translateY(-2px)',
                   boxShadow: isMobile ? 'none' : '0 8px 16px rgba(76, 175, 80, 0.2)'
@@ -740,7 +742,7 @@ const BookingConfirmationPage: React.FC = () => {
                   component="div" 
                   sx={{ 
                     fontWeight: 'bold', 
-                    color: '#2e7d32',
+                    color: COLORS.SUCCESS,
                     fontSize: isMobile ? '1rem' : '1.25rem',
                   }}
                 >
@@ -768,7 +770,7 @@ const BookingConfirmationPage: React.FC = () => {
                 gutterBottom 
                 sx={{ 
                   fontWeight: 'bold', 
-                  color: '#1976d2', 
+                  color: COLORS.PRIMARY, 
                   mb: isMobile ? 1.5 : 2,
                 }}
               >
@@ -814,7 +816,7 @@ const BookingConfirmationPage: React.FC = () => {
                 gutterBottom 
                 sx={{ 
                   fontWeight: 'bold', 
-                  color: '#1976d2', 
+                  color: COLORS.PRIMARY, 
                   mb: isMobile ? 1.5 : 2,
                 }}
               >
@@ -842,7 +844,7 @@ const BookingConfirmationPage: React.FC = () => {
                 <Typography 
                   variant="body1" 
                   sx={{ 
-                    color: '#2e7d32', 
+                    color: COLORS.SUCCESS, 
                     fontWeight: 'bold',
                     fontSize: isMobile ? '0.9rem' : '1rem',
                   }}
@@ -868,7 +870,7 @@ const BookingConfirmationPage: React.FC = () => {
                 gutterBottom 
                 sx={{ 
                   fontWeight: 'bold', 
-                  color: '#1976d2', 
+                  color: COLORS.PRIMARY, 
                   mb: isMobile ? 1.5 : 2,
                 }}
               >
@@ -919,7 +921,7 @@ const BookingConfirmationPage: React.FC = () => {
                 gutterBottom 
                 sx={{ 
                   fontWeight: 'bold', 
-                  color: '#1976d2', 
+                  color: COLORS.PRIMARY, 
                   mb: isMobile ? 1.5 : 2,
                 }}
               >
@@ -973,23 +975,23 @@ const BookingConfirmationPage: React.FC = () => {
         </Typography>
         <Box sx={{ '& > div': { mb: 1 } }}>
           <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-            <Box component="span" sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#1976d2', mr: 2, flexShrink: 0 }} />
+            <Box component="span" sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: COLORS.PRIMARY, mr: 2, flexShrink: 0 }} />
             <strong>Your specific room number will be assigned at check-in</strong>
           </Typography>
           <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-            <Box component="span" sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#1976d2', mr: 2, flexShrink: 0 }} />
+            <Box component="span" sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: COLORS.PRIMARY, mr: 2, flexShrink: 0 }} />
             Please bring a valid ID for check-in
           </Typography>
           <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-            <Box component="span" sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#1976d2', mr: 2, flexShrink: 0 }} />
+            <Box component="span" sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: COLORS.PRIMARY, mr: 2, flexShrink: 0 }} />
             Check-in time: 3:00 PM | Check-out time: 11:00 AM
           </Typography>
           <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-            <Box component="span" sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#1976d2', mr: 2, flexShrink: 0 }} />
+            <Box component="span" sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: COLORS.PRIMARY, mr: 2, flexShrink: 0 }} />
             For any changes or cancellations, please contact the hotel directly
           </Typography>
           <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center' }}>
-            <Box component="span" sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#1976d2', mr: 2, flexShrink: 0 }} />
+            <Box component="span" sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: COLORS.PRIMARY, mr: 2, flexShrink: 0 }} />
             Keep your confirmation number for reference
           </Typography>
         </Box>
@@ -1016,9 +1018,9 @@ const BookingConfirmationPage: React.FC = () => {
             py: 1.5,
             minHeight: 48,
             flex: isMobile ? '1' : '0 0 auto',
-            background: 'linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)',
+            background: `linear-gradient(135deg, ${COLORS.SUCCESS} 0%, ${COLORS.CHECKED_IN} 100%)`,
             '&:hover': {
-              background: 'linear-gradient(135deg, #1b5e20 0%, #0d4f14 100%)',
+              background: `linear-gradient(135deg, ${COLORS.CHECKED_IN} 0%, ${COLORS.SUCCESS} 100%)`,
             }
           }}
         >
@@ -1034,11 +1036,11 @@ const BookingConfirmationPage: React.FC = () => {
             py: 1.5,
             minHeight: 48,
             flex: isMobile ? '1' : '0 0 auto',
-            borderColor: '#1976d2',
-            color: '#1976d2',
+            borderColor: COLORS.PRIMARY,
+            color: COLORS.PRIMARY,
             '&:hover': {
-              borderColor: '#1565c0',
-              backgroundColor: 'rgba(25, 118, 210, 0.04)',
+              borderColor: COLORS.CONFIRMED,
+              backgroundColor: addAlpha(COLORS.PRIMARY, 0.04),
             }
           }}
         >
@@ -1067,7 +1069,7 @@ const BookingConfirmationPage: React.FC = () => {
             component="div" 
             sx={{ 
               fontWeight: 'bold', 
-              color: '#1976d2',
+              color: COLORS.PRIMARY,
             }}
           >
             Email Booking Confirmation
@@ -1097,7 +1099,7 @@ const BookingConfirmationPage: React.FC = () => {
                 checked={includeItinerary}
                 onChange={(e) => setIncludeItinerary(e.target.checked)}
                 sx={{ 
-                  color: '#1976d2',
+                  color: COLORS.PRIMARY,
                   '& .MuiSvgIcon-root': {
                     fontSize: isMobile ? '1.5rem' : '1.25rem',
                   }
@@ -1140,9 +1142,9 @@ const BookingConfirmationPage: React.FC = () => {
               px: 4,
               minHeight: 48,
               width: isMobile ? '100%' : 'auto',
-              background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
+              background: `linear-gradient(135deg, ${COLORS.PRIMARY} 0%, ${COLORS.CONFIRMED} 100%)`,
               '&:hover': {
-                background: 'linear-gradient(135deg, #1565c0 0%, #0d47a1 100%)',
+                background: `linear-gradient(135deg, ${COLORS.CONFIRMED} 0%, ${COLORS.PRIMARY} 100%)`,
               }
             }}
           >
