@@ -177,13 +177,12 @@ public class ShopOrderService {
                     .orElseThrow(() -> new ResourceNotFoundException(
                             "Product not found with ID: " + itemRequest.getProductId()));
 
-            // Check if product has sufficient stock respecting minimum stock level
+            // Check if product has sufficient stock
             if (!product.canOrderQuantity(itemRequest.getQuantity())) {
-                int availableForOrder = product.getAvailableQuantityForOrder();
+                int availableStock = product.getStockQuantity();
                 throw new IllegalArgumentException(
                     "Insufficient stock for product '" + product.getName() + "'. " +
-                    "Available for order: " + availableForOrder + " (Minimum stock: " + product.getMinimumStockLevel() + 
-                    "), Requested: " + itemRequest.getQuantity()
+                    "Available stock: " + availableStock + ", Requested: " + itemRequest.getQuantity()
                 );
             }
 

@@ -195,28 +195,28 @@ public class Product extends HotelScopedEntity {
     }
 
     /**
-     * Check if product is available (active, explicitly available, and in stock)
+     * Check if product is available (active, explicitly available, and has stock)
      */
     public boolean isAvailable() {
-        return isActive && isAvailable && stockQuantity > minimumStockLevel;
+        return isActive && isAvailable && stockQuantity > 0;
     }
 
     /**
-     * Check if a specific quantity can be ordered without going below minimum stock
+     * Check if a specific quantity can be ordered (as long as stock doesn't go to 0)
      */
     public boolean canOrderQuantity(int quantity) {
-        return stockQuantity - quantity >= minimumStockLevel;
+        return stockQuantity - quantity >= 0;
     }
 
     /**
-     * Get available quantity that can be ordered (respecting minimum stock level)
+     * Get available quantity that can be ordered (all current stock)
      */
     public int getAvailableQuantityForOrder() {
-        return Math.max(0, stockQuantity - minimumStockLevel);
+        return Math.max(0, stockQuantity);
     }
 
     /**
-     * Reduce stock quantity
+     * Reduce stock quantity (allows going to 0 but not negative)
      */
     public boolean reduceStock(int quantity) {
         if (canOrderQuantity(quantity)) {
