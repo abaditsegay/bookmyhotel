@@ -99,7 +99,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
         }
         
         const data = await shopApiService.getProducts(hotelId);
-        setProducts(data.content.filter(p => p.isActive && p.isAvailable));
+        setProducts(data.content.filter(p => p.isActive)); // Only filter by isActive, keep all stock levels
         setError(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load products');
@@ -110,6 +110,14 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
   }, [hotelId, token, user?.tenantId]);
 
   const addProductToOrder = (product: Product) => {
+    // Prevent adding out-of-stock products
+    if (product.stockQuantity === 0) {
+      setError(`"${product.name}" is out of stock and cannot be added to the order.`);
+      // Clear error after 3 seconds
+      setTimeout(() => setError(null), 3000);
+      return;
+    }
+
     const existingItem = orderItems.find(item => item.product.id === product.id);
     if (existingItem) {
       updateItemQuantity(product.id, existingItem.quantity + 1);
