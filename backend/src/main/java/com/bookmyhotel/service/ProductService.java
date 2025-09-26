@@ -341,7 +341,7 @@ public class ProductService {
     public com.bookmyhotel.controller.InventoryController.InventorySummary getInventorySummary(Long hotelId) {
         long totalProducts = productRepository.countByHotelId(hotelId);
         long activeProducts = productRepository.countByHotelIdAndIsActiveTrue(hotelId);
-        long lowStockProducts = productRepository.countLowStockProductsByHotelId(hotelId, 10); // threshold of 10
+        long lowStockProducts = productRepository.countLowStockProductsByHotelId(hotelId); // use individual minimum stock levels
         long outOfStockProducts = productRepository.countOutOfStockProductsByHotelId(hotelId);
 
         return new com.bookmyhotel.controller.InventoryController.InventorySummary(

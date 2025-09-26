@@ -99,7 +99,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
         }
         
         const data = await shopApiService.getProducts(hotelId);
-        setProducts(data.content.filter(p => p.isActive && p.isAvailable && p.stockQuantity > 0));
+        setProducts(data.content.filter(p => p.isActive && p.isAvailable));
         setError(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load products');
@@ -347,14 +347,31 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
     return matchesSearch && matchesCategory;
   });
 
-  const getCategoryColor = (category: ProductCategory) => {
-    switch (category) {
-      case ProductCategory.BEVERAGES: return 'primary';
-      case ProductCategory.SNACKS: return 'secondary';
-      case ProductCategory.CULTURAL_CLOTHING: return 'success';
-      case ProductCategory.SOUVENIRS: return 'warning';
-      case ProductCategory.TOILETRIES: return 'info';
-      default: return 'default';
+  const getStockStatus = (product: Product) => {
+    if (product.stockQuantity === 0) {
+      return 'OUT_OF_STOCK';
+    } else if (product.stockQuantity <= product.minimumStockLevel) {
+      return 'LOW_STOCK';
+    } else {
+      return 'IN_STOCK';
+    }
+  };
+
+  const getStockStatusColor = (stockStatus: string) => {
+    switch (stockStatus) {
+      case 'OUT_OF_STOCK': return '#f44336'; // Red
+      case 'LOW_STOCK': return '#ff9800'; // Orange
+      case 'IN_STOCK': return '#4caf50'; // Green
+      default: return '#9e9e9e'; // Grey
+    }
+  };
+
+  const getStockStatusLabel = (stockStatus: string) => {
+    switch (stockStatus) {
+      case 'OUT_OF_STOCK': return 'Out of Stock';
+      case 'LOW_STOCK': return 'Low Stock';
+      case 'IN_STOCK': return 'In Stock';
+      default: return 'Unknown';
     }
   };
 
@@ -410,30 +427,76 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                 </Grid>
               </Grid>
 
+              {/* Stock Status Legend */}
+              <Box sx={{ mb: 2, display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
+                <Typography variant="caption" color="text.secondary">
+                  Stock Status:
+                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Box 
+                    sx={{ 
+                      width: 12, 
+                      height: 12, 
+                      backgroundColor: getStockStatusColor('IN_STOCK'), 
+                      borderRadius: '2px' 
+                    }} 
+                  />
+                  <Typography variant="caption">In Stock</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Box 
+                    sx={{ 
+                      width: 12, 
+                      height: 12, 
+                      backgroundColor: getStockStatusColor('LOW_STOCK'), 
+                      borderRadius: '2px' 
+                    }} 
+                  />
+                  <Typography variant="caption">Low Stock</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Box 
+                    sx={{ 
+                      width: 12, 
+                      height: 12, 
+                      backgroundColor: getStockStatusColor('OUT_OF_STOCK'), 
+                      borderRadius: '2px' 
+                    }} 
+                  />
+                  <Typography variant="caption">Out of Stock</Typography>
+                </Box>
+              </Box>
+
               {/* Products Grid */}
               <Grid container spacing={2}>
                 {filteredProducts.map((product) => {
                   const orderItem = orderItems.find(item => item.product.id === product.id);
                   const isSelected = !!orderItem;
                   const selectedQuantity = orderItem?.quantity || 0;
+                  const stockStatus = getStockStatus(product);
+                  const stockStatusColor = getStockStatusColor(stockStatus);
+                  const stockStatusLabel = getStockStatusLabel(stockStatus);
+                  const isOutOfStock = stockStatus === 'OUT_OF_STOCK';
                   
                   return (
                     <Grid item xs={12} sm={6} md={4} key={product.id}>
                       <Card 
                         variant="outlined" 
                         sx={{ 
-                          cursor: 'pointer',
+                          cursor: isOutOfStock ? 'not-allowed' : 'pointer',
                           position: 'relative',
-                          border: isSelected ? '2px solid' : '1px solid',
-                          borderColor: isSelected ? 'primary.main' : 'divider',
-                          backgroundColor: isSelected ? 'action.selected' : 'background.paper',
+                          border: isSelected ? '3px solid' : '2px solid',
+                          borderColor: isSelected ? 'primary.main' : 'grey.400',
+                          backgroundColor: isSelected ? 'action.selected' : isOutOfStock ? 'action.disabledBackground' : 'background.paper',
+                          opacity: isOutOfStock ? 0.6 : 1,
+                          boxShadow: 1,
                           '&:hover': { 
-                            boxShadow: 2,
-                            borderColor: isSelected ? 'primary.main' : 'primary.light'
+                            boxShadow: isOutOfStock ? 1 : 3,
+                            borderColor: isOutOfStock ? 'grey.400' : (isSelected ? 'primary.main' : 'primary.light')
                           },
                           transition: 'all 0.2s ease-in-out'
                         }}
-                        onClick={() => addProductToOrder(product)}
+                        onClick={() => !isOutOfStock && addProductToOrder(product)}
                       >
                         {/* Selection indicator */}
                         {isSelected && (
@@ -458,41 +521,89 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                             {selectedQuantity}
                           </Box>
                         )}
+
+                        {/* Stock Status Badge - Bottom Right */}
+                        <Box
+                          sx={{
+                            position: 'absolute',
+                            bottom: 8,
+                            right: 8,
+                            backgroundColor: stockStatusColor,
+                            color: 'white',
+                            borderRadius: '12px',
+                            px: 1,
+                            py: 0.25,
+                            fontSize: '0.7rem',
+                            fontWeight: 'bold',
+                            zIndex: 2,
+                            boxShadow: 1
+                          }}
+                        >
+                          {stockStatusLabel}
+                        </Box>
                         
-                        <CardContent sx={{ p: 2 }}>
+                        <CardContent sx={{ p: 2, pb: 4 }}>
                           <Typography 
                             variant="subtitle2" 
                             noWrap
                             sx={{ 
                               fontWeight: isSelected ? 'bold' : 'normal',
-                              color: isSelected ? 'primary.main' : 'text.primary'
+                              color: isSelected ? 'primary.main' : (isOutOfStock ? 'text.disabled' : 'text.primary')
                             }}
                           >
                             {product.name}
                           </Typography>
-                          <Typography variant="caption" color="text.secondary">
+                          <Typography variant="caption" color={isOutOfStock ? 'text.disabled' : 'text.secondary'}>
                             SKU: {product.sku}
                           </Typography>
                           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
                             <Chip
                               label={product.category.replace('_', ' ')}
-                              color={getCategoryColor(product.category)}
                               size="small"
-                              variant={isSelected ? 'filled' : 'outlined'}
+                              sx={{ 
+                                backgroundColor: 'white',
+                                color: 'primary.main',
+                                border: '1px solid',
+                                borderColor: 'primary.main',
+                                fontWeight: 'medium',
+                                opacity: isOutOfStock ? 0.7 : 1
+                              }}
                             />
                             <Typography 
                               variant="body2" 
                               sx={{ 
                                 fontWeight: 'bold',
-                                color: isSelected ? 'primary.main' : 'text.primary'
+                                color: isSelected ? 'primary.main' : (isOutOfStock ? 'text.disabled' : 'text.primary')
                               }}
                             >
                               ETB {product.price?.toFixed(0)}
                             </Typography>
                           </Box>
-                          <Typography variant="caption" color="text.secondary">
-                            Stock: {product.stockQuantity}
-                          </Typography>
+                          
+                          {/* Enhanced Stock Display */}
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
+                            <Typography 
+                              variant="caption" 
+                              sx={{ 
+                                color: stockStatusColor,
+                                fontWeight: 'medium'
+                              }}
+                            >
+                              Stock: {product.stockQuantity}
+                            </Typography>
+                            {stockStatus === 'LOW_STOCK' && (
+                              <Typography 
+                                variant="caption" 
+                                sx={{ 
+                                  color: stockStatusColor,
+                                  fontSize: '0.65rem'
+                                }}
+                              >
+                                Min: {product.minimumStockLevel}
+                              </Typography>
+                            )}
+                          </Box>
+
                           {isSelected && (
                             <Typography 
                               variant="caption" 
@@ -504,6 +615,21 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                               }}
                             >
                               Selected: {selectedQuantity} item{selectedQuantity !== 1 ? 's' : ''}
+                            </Typography>
+                          )}
+
+                          {isOutOfStock && (
+                            <Typography 
+                              variant="caption" 
+                              sx={{ 
+                                display: 'block',
+                                mt: 0.5,
+                                color: 'error.main',
+                                fontWeight: 'medium',
+                                fontStyle: 'italic'
+                              }}
+                            >
+                              Currently unavailable
                             </Typography>
                           )}
                         </CardContent>
