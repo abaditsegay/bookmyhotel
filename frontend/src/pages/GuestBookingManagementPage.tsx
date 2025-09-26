@@ -81,6 +81,11 @@ const GuestBookingManagementPage: React.FC = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   
+  // Price modification tracking
+  const [pricesModified, setPricesModified] = useState(false);
+  const [originalPricing, setOriginalPricing] = useState<{pricePerNight: number, totalAmount: number} | null>(null);
+  const [currentCalculatedTotal, setCurrentCalculatedTotal] = useState<number | null>(null);
+  
     // Modification form state
   const [modificationData, setModificationData] = useState({
     newGuestName: booking?.guestName || '',
@@ -94,6 +99,39 @@ const GuestBookingManagementPage: React.FC = () => {
   
   // Cancellation form state
   const [cancellationReason, setCancellationReason] = useState('');
+
+  // Calculate pricing for modified booking data
+  const calculateModifiedPricing = useCallback((modData: typeof modificationData) => {
+    if (!booking || !modData.newCheckInDate || !modData.newCheckOutDate) return null;
+    
+    const checkInDate = new Date(modData.newCheckInDate);
+    const checkOutDate = new Date(modData.newCheckOutDate);
+    const diffTime = Math.abs(checkOutDate.getTime() - checkInDate.getTime());
+    const nights = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    // For now, use the same price per night as the original booking
+    // In a real app, this might involve an API call to get current pricing
+    const basePricePerNight = booking.pricePerNight || 0;
+    
+    // Room type pricing adjustments (simplified)
+    let roomMultiplier = 1;
+    switch (modData.newRoomType.toLowerCase()) {
+      case 'standard': roomMultiplier = 1; break;
+      case 'deluxe': roomMultiplier = 1.3; break;
+      case 'suite': roomMultiplier = 1.8; break;
+      case 'presidential': roomMultiplier = 3; break;
+      default: roomMultiplier = 1;
+    }
+    
+    const newPricePerNight = basePricePerNight * roomMultiplier;
+    const newTotalAmount = newPricePerNight * nights;
+    
+    return {
+      pricePerNight: newPricePerNight,
+      totalAmount: newTotalAmount,
+      nights
+    };
+  }, [booking]);
 
   // Fetch booking data from token (for email links)
   const fetchBookingFromToken = useCallback(async () => {
@@ -224,8 +262,35 @@ const GuestBookingManagementPage: React.FC = () => {
         newNumberOfGuests: booking.numberOfGuests || 1,
         modificationReason: ''
       });
+      
+      // Only reset price tracking if dialog is not open
+      if (!modifyDialogOpen) {
+        setPricesModified(false);
+        setOriginalPricing(null);
+        setCurrentCalculatedTotal(null);
+      }
     }
-  }, [booking]);
+  }, [booking, modifyDialogOpen]);
+
+  // Track price changes during modification
+  useEffect(() => {
+    if (!modifyDialogOpen || !originalPricing) return;
+    
+    // Only track changes if the dialog is actually open and we have original pricing
+    const newPricing = calculateModifiedPricing(modificationData);
+    if (newPricing) {
+      setCurrentCalculatedTotal(newPricing.totalAmount);
+      
+      // Check if prices have actually changed from original
+      const hasChanged = Math.abs(newPricing.totalAmount - originalPricing.totalAmount) > 0.01 ||
+                        Math.abs(newPricing.pricePerNight - originalPricing.pricePerNight) > 0.01;
+      
+      // Once prices are modified, keep them modified until dialog closes
+      if (hasChanged) {
+        setPricesModified(true);
+      }
+    }
+  }, [modificationData, originalPricing, calculateModifiedPricing, modifyDialogOpen]);
 
   if (loading) {
     return (
@@ -291,6 +356,13 @@ const GuestBookingManagementPage: React.FC = () => {
     const now = new Date();
     
     return booking.status.toLowerCase() === 'confirmed' && checkInDate > now;
+  };
+
+  const handleCloseModifyDialog = () => {
+    setModifyDialogOpen(false);
+    setPricesModified(false);
+    setOriginalPricing(null);
+    setCurrentCalculatedTotal(null);
   };
 
   const handleModifyBooking = async () => {
@@ -524,7 +596,18 @@ const GuestBookingManagementPage: React.FC = () => {
           <Button
             variant="contained"
             startIcon={<EditIcon />}
-            onClick={() => setModifyDialogOpen(true)}
+            onClick={() => {
+              // Store original pricing when modify dialog opens
+              if (booking) {
+                setOriginalPricing({
+                  pricePerNight: booking.pricePerNight || 0,
+                  totalAmount: booking.totalAmount
+                });
+                setPricesModified(false);
+                setCurrentCalculatedTotal(null);
+              }
+              setModifyDialogOpen(true);
+            }}
             disabled={!canModifyBooking()}
           >
             Modify Booking
@@ -638,9 +721,57 @@ const GuestBookingManagementPage: React.FC = () => {
       </Accordion>
 
       {/* Modification Dialog */}
-      <Dialog open={modifyDialogOpen} onClose={() => setModifyDialogOpen(false)} maxWidth="md" fullWidth>
+      <Dialog open={modifyDialogOpen} onClose={handleCloseModifyDialog} maxWidth="md" fullWidth>
         <DialogTitle>Modify Your Booking</DialogTitle>
         <DialogContent>
+          {/* Price Change Indicator - Large and Prominent */}
+          {pricesModified && originalPricing && currentCalculatedTotal !== null && (
+            <Box sx={{ 
+              mb: 3, 
+              p: 3, 
+              backgroundColor: '#e3f2fd',
+              border: '2px solid #2196f3',
+              borderRadius: 2,
+              textAlign: 'center'
+            }}>
+              <Typography variant="h5" sx={{ color: '#1976d2', fontWeight: 'bold', mb: 2 }}>
+                🔄 PRICING UPDATED
+              </Typography>
+              <Grid container spacing={2} sx={{ mb: 2 }}>
+                <Grid item xs={4}>
+                  <Typography variant="h6" sx={{ color: '#666' }}>Original Total</Typography>
+                  <Typography variant="h4" sx={{ color: '#d32f2f', fontWeight: 'bold' }}>
+                    ${originalPricing.totalAmount.toFixed(2)}
+                  </Typography>
+                </Grid>
+                <Grid item xs={4}>
+                  <Typography variant="h6" sx={{ color: '#666' }}>New Total</Typography>
+                  <Typography variant="h4" sx={{ color: '#2e7d32', fontWeight: 'bold' }}>
+                    ${currentCalculatedTotal.toFixed(2)}
+                  </Typography>
+                </Grid>
+                <Grid item xs={4}>
+                  <Typography variant="h6" sx={{ color: '#666' }}>
+                    {currentCalculatedTotal > originalPricing.totalAmount ? 'Additional Cost' : 'Savings'}
+                  </Typography>
+                  <Typography 
+                    variant="h4" 
+                    sx={{ 
+                      color: currentCalculatedTotal > originalPricing.totalAmount ? '#d32f2f' : '#2e7d32',
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    {currentCalculatedTotal > originalPricing.totalAmount ? '+' : ''}
+                    ${(currentCalculatedTotal - originalPricing.totalAmount).toFixed(2)}
+                  </Typography>
+                </Grid>
+              </Grid>
+              <Typography variant="body1" sx={{ color: '#1976d2', fontStyle: 'italic' }}>
+                This pricing update will persist until you close this dialog
+              </Typography>
+            </Box>
+          )}
+          
           <Grid container spacing={2} sx={{ mt: 1 }}>
             <Grid item xs={12}>
               <TextField
@@ -724,7 +855,7 @@ const GuestBookingManagementPage: React.FC = () => {
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setModifyDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleCloseModifyDialog}>Cancel</Button>
           <Button
             onClick={handleModifyBooking}
             variant="contained"

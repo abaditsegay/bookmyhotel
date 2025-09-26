@@ -99,6 +99,10 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
   // New state for room type price calculation
   const [, setRoomTypePricing] = useState<any>(null);
   const [loadingRoomTypePricing, setLoadingRoomTypePricing] = useState(false);
+  
+  // New state to track if prices have been modified during editing session
+  const [pricesModified, setPricesModified] = useState(false);
+  const [originalPricing, setOriginalPricing] = useState<{pricePerNight: number, totalAmount: number} | null>(null);
 
   // Helper function to show error in dialog
   const showErrorDialog = (errorMessage: string) => {
@@ -182,12 +186,22 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
 
   const handleEdit = () => {
     setIsEditing(true);
+    // Store original pricing when editing starts
+    if (booking) {
+      setOriginalPricing({
+        pricePerNight: booking.pricePerNight,
+        totalAmount: booking.totalAmount
+      });
+    }
   };
 
   const handleCancel = () => {
     setIsEditing(false);
     setEditedBooking(booking ? { ...booking } : null);
     setSelectedRoomId(null);
+    // Reset price modification tracking
+    setPricesModified(false);
+    setOriginalPricing(null);
   };
 
   // Helper function to check if a booking can be modified
@@ -216,6 +230,10 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
       
       // Refresh booking data to ensure cache-busting works
       await refreshBooking();
+      
+      // Reset price modification tracking after successful save
+      setPricesModified(false);
+      setOriginalPricing(null);
       
       setIsEditing(false);
     } catch (err) {
@@ -578,6 +596,11 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
     const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
     const newTotalAmount = room.pricePerNight * nights;
     
+    // Check if pricing has changed from original
+    if (originalPricing && (room.pricePerNight !== originalPricing.pricePerNight || newTotalAmount !== originalPricing.totalAmount)) {
+      setPricesModified(true);
+    }
+    
     setEditedBooking({
       ...editedBooking,
       roomNumber: room.roomNumber,
@@ -623,6 +646,11 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
               pricing
             );
             
+            // Check if pricing has changed from original
+            if (originalPricing && (newPricePerNight !== originalPricing.pricePerNight || newTotal !== originalPricing.totalAmount)) {
+              setPricesModified(true);
+            }
+            
             setEditedBooking((prev) => {
               if (!prev) return null;
               return {
@@ -640,6 +668,28 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
       }
       
       // For all other cases (including front-desk mode room type changes)
+      // Check if dates are changing which might affect total pricing
+      if ((name === 'checkInDate' || name === 'checkOutDate') && editedBooking && originalPricing) {
+        // Calculate new total based on updated dates and current price per night
+        const checkInDate = name === 'checkInDate' ? value : editedBooking.checkInDate;
+        const checkOutDate = name === 'checkOutDate' ? value : editedBooking.checkOutDate;
+        
+        if (checkInDate && checkOutDate) {
+          const checkIn = new Date(checkInDate);
+          const checkOut = new Date(checkOutDate);
+          const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
+          const newTotal = editedBooking.pricePerNight * nights;
+          
+          // Check if total amount will change from original
+          if (newTotal !== originalPricing.totalAmount) {
+            setPricesModified(true);
+          }
+          
+          // Update the total amount in the booking data
+          updatedBooking.totalAmount = newTotal;
+        }
+      }
+      
       setEditedBooking(updatedBooking);
     }
   };
@@ -1128,6 +1178,23 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                       </Alert>
                     </Grid>
                   )}
+                  {isEditing && pricesModified && !loadingRoomTypePricing && !priceCalculating && (
+                    <Grid item xs={12}>
+                      <Alert 
+                        severity="warning" 
+                        sx={{ 
+                          backgroundColor: '#fff3cd', 
+                          color: '#856404',
+                          border: '1px solid #ffeaa7',
+                          '& .MuiAlert-icon': {
+                            color: '#856404'
+                          }
+                        }}
+                      >
+                        💰 Pricing has been modified during this editing session. Changes will be applied when you save.
+                      </Alert>
+                    </Grid>
+                  )}
                 </Grid>
               </CardContent>
             </Card>
@@ -1217,6 +1284,23 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                       variant="filled"
                     />
                   </Grid>
+                  {isEditing && pricesModified && !loadingRoomTypePricing && !priceCalculating && (
+                    <Grid item xs={12}>
+                      <Alert 
+                        severity="warning" 
+                        sx={{ 
+                          backgroundColor: '#fff3cd', 
+                          color: '#856404',
+                          border: '1px solid #ffeaa7',
+                          '& .MuiAlert-icon': {
+                            color: '#856404'
+                          }
+                        }}
+                      >
+                        💰 Pricing has been modified during this editing session. Changes will be applied when you save.
+                      </Alert>
+                    </Grid>
+                  )}
                 </Grid>
               </CardContent>
             </Card>
