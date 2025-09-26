@@ -22,6 +22,7 @@ import {
   Email as EmailIcon,
 } from '@mui/icons-material';
 import { ConsolidatedReceipt } from '../../services/frontDeskApi';
+import { formatDateForDisplay } from '../../utils/dateUtils';
 
 interface CheckoutReceiptDialogProps {
   open: boolean;
@@ -39,7 +40,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
   if (!receipt) return null;
 
   const formatCurrency = (amount: number) => `ETB ${amount.toFixed(0)}`;
-  const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString();
+  const formatDate = (dateString: string) => formatDateForDisplay(dateString);
   const formatDateTime = (dateString: string) => new Date(dateString).toLocaleString();
 
   const handlePrint = () => {

@@ -14,9 +14,18 @@ export const formatDateForInput = (dateString: string): string => {
     return dateString;
   }
   
-  // For ISO strings or other formats, extract just the date part
-  // This prevents timezone conversion issues
+  // If it's an ISO string or has time info, extract just the date part
+  if (dateString.includes('T') || dateString.includes(' ')) {
+    const dateOnly = dateString.split('T')[0].split(' ')[0];
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateOnly)) {
+      return dateOnly;
+    }
+  }
+  
+  // For other formats, extract date components manually to avoid timezone issues
   const date = new Date(dateString);
+  if (isNaN(date.getTime())) return ''; // Return empty if invalid
+  
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
@@ -31,16 +40,33 @@ export const formatDateForInput = (dateString: string): string => {
 export const formatDateForDisplay = (dateString: string): string => {
   if (!dateString) return '';
   
-  // For display, we want to show the actual date without timezone conversion
-  // If it's in YYYY-MM-DD format, create date with local timezone
+  // Extract date part from any format to avoid timezone issues
+  let dateOnly: string;
+  
+  // If it's in YYYY-MM-DD format, use as-is
   if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
-    const [year, month, day] = dateString.split('-');
-    const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-    return date.toLocaleDateString();
+    dateOnly = dateString;
+  } 
+  // If it's an ISO string or has time info, extract just the date part
+  else if (dateString.includes('T') || dateString.includes(' ')) {
+    dateOnly = dateString.split('T')[0].split(' ')[0];
+  }
+  // For other formats, try to convert to YYYY-MM-DD first
+  else {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString; // Return original if invalid
+    
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    dateOnly = `${year}-${month}-${day}`;
   }
   
-  // For other formats, use standard conversion but be careful about timezone
-  return new Date(dateString).toLocaleDateString();
+  // Always create date using local timezone to avoid off-by-one issues
+  const [year, month, day] = dateOnly.split('-');
+  const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+  
+  return date.toLocaleDateString();
 };
 
 /**
