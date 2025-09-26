@@ -31,18 +31,13 @@ import {
   useTheme,
 } from '@mui/material';
 import {
-  Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
   FilterList as FilterIcon,
-  Clear as ClearIcon,
   Cancel as CancelIcon,
-  Save as SaveIcon,
-  CloudUpload as CloudUploadIcon,
-  GetApp as DownloadIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
-import { COLORS } from '../theme/themeColors';
+import { getGradient, getInteractiveColor } from '../theme/themeColors';
 
 /**
  * Create authenticated fetch request headers
@@ -783,7 +778,18 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
             </Typography>
             <Button 
               variant="contained"
-              sx={{ backgroundColor: COLORS.SUCCESS, '&:hover': { backgroundColor: COLORS.CHECKED_IN } }}
+              sx={{ 
+                background: getGradient('primary'),
+                color: 'white',
+                fontWeight: 500,
+                '&:hover': { 
+                  background: getGradient('primary'),
+                  backgroundColor: getInteractiveColor('hover'),
+                },
+                '&:active': {
+                  backgroundColor: getInteractiveColor('pressed'),
+                }
+              }}
               onClick={() => {
                 setEditingSchedule(null);
                 resetForm();
@@ -995,8 +1001,8 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
                   }}
                   sx={{
                     '& .MuiInputBase-input.Mui-disabled': {
-                      WebkitTextFillColor: 'rgba(0, 0, 0, 0.6)',
-                      backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                      WebkitTextFillColor: theme.palette.text.disabled,
+                      backgroundColor: theme.palette.action.disabled,
                     },
                   }}
                   helperText="Role is automatically set based on selected staff member"

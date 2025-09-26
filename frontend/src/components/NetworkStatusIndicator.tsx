@@ -39,6 +39,7 @@ import {
 } from '@mui/icons-material';
 import { useNetworkStatus } from '../hooks/useNetworkStatus';
 import { useAuth } from '../contexts/AuthContext';
+import { COLORS } from '../theme/themeColors';
 
 interface NetworkStatusIndicatorProps {
   variant?: 'detailed' | 'minimal';
@@ -141,10 +142,10 @@ export const NetworkStatusIndicator: React.FC<NetworkStatusIndicatorProps> = ({
             onClick={handleSync}
             disabled={!isOnline || isSyncing}
             style={{
-              backgroundColor: !isOnline ? '#ff9800' : '#4caf50',
+              backgroundColor: !isOnline ? '#ff9800' : COLORS.SUCCESS,
               color: !isOnline ? '#000000' : '#ffffff',
               fontWeight: 'bold',
-              border: `2px solid ${!isOnline ? '#e65100' : '#2e7d32'}`,
+              border: `2px solid ${!isOnline ? '#e65100' : COLORS.CHECKED_IN}`,
             }}
             sx={{
               '& .MuiChip-icon': {
@@ -155,10 +156,10 @@ export const NetworkStatusIndicator: React.FC<NetworkStatusIndicatorProps> = ({
                 fontWeight: 'bold !important',
               },
               '&:hover': {
-                backgroundColor: !isOnline ? '#f57c00 !important' : '#45a049 !important',
+                backgroundColor: !isOnline ? '#f57c00 !important' : `${COLORS.PRIMARY_HOVER} !important`,
               },
               '&.Mui-disabled': {
-                backgroundColor: !isOnline ? '#ff9800 !important' : '#4caf50 !important',
+                backgroundColor: !isOnline ? '#ff9800 !important' : `${COLORS.SUCCESS} !important`,
                 color: !isOnline ? '#000000 !important' : '#ffffff !important',
                 opacity: '0.9 !important',
               }

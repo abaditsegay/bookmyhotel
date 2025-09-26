@@ -22,6 +22,7 @@ import {
   People as UsersIcon
 } from '@mui/icons-material';
 import axiosInstance from '../utils/axiosConfig';
+import { COLORS, getGradient, getInteractiveColor } from '../theme/themeColors';
 
 interface StaffSchedule {
   id: number;
@@ -143,7 +144,7 @@ const StaffScheduleDashboard: React.FC = () => {
     switch (status) {
       case 'SCHEDULED': return 'default';
       case 'CONFIRMED': return 'primary';
-      case 'COMPLETED': return 'success';
+      case 'COMPLETED': return 'primary';
       case 'CANCELLED': return 'error';
       case 'NO_SHOW': return 'warning';
       default: return 'default';
@@ -153,7 +154,7 @@ const StaffScheduleDashboard: React.FC = () => {
   const getDepartmentChipColor = (department: string) => {
     const colors: Record<string, 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning'> = {
       'FRONTDESK': 'primary',
-      'HOUSEKEEPING': 'success',
+      'HOUSEKEEPING': 'info',
       'MAINTENANCE': 'warning',
       'SECURITY': 'error',
       'RESTAURANT': 'info',
@@ -267,7 +268,7 @@ const StaffScheduleDashboard: React.FC = () => {
           </Grid>
           <Grid item xs={12} sm={6} md={2}>
             <Paper sx={{ p: 2, textAlign: 'center' }}>
-              <Typography variant="h6" color="success.main">
+              <Typography variant="h6" color="primary.main">
                 {stats.completedCount}
               </Typography>
               <Typography variant="caption" color="text.secondary">

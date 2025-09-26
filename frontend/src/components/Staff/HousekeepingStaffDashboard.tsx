@@ -126,11 +126,11 @@ const HousekeepingStaffDashboard: React.FC = () => {
     setStatusDialog(true);
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status.toUpperCase()) {
-      case 'PENDING': return 'warning';
-      case 'IN_PROGRESS': return 'info';
-      case 'COMPLETED': return 'success';
+  const getStatusChipColor = (status: string) => {
+    switch (status) {
+      case 'ASSIGNED': return 'default';
+      case 'IN_PROGRESS': return 'warning';
+      case 'COMPLETED': return 'primary';
       case 'CANCELLED': return 'error';
       default: return 'default';
     }
@@ -226,7 +226,7 @@ const HousekeepingStaffDashboard: React.FC = () => {
             <Grid item xs={12} sm={6} md={3}>
               <Card>
                 <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <CheckCircleIcon color="success" />
+                  <CheckCircleIcon color="primary" />
                   <Box>
                     <Typography color="textSecondary" gutterBottom>
                       Completed
@@ -309,7 +309,7 @@ const HousekeepingStaffDashboard: React.FC = () => {
                         <TableCell>
                           <Chip
                             label={task.status}
-                            color={getStatusColor(task.status)}
+                            color={getStatusChipColor(task.status)}
                             size="small"
                           />
                         </TableCell>
@@ -329,7 +329,7 @@ const HousekeepingStaffDashboard: React.FC = () => {
                             )}
                             {canCompleteTask(task) && (
                               <IconButton
-                                color="success"
+                                color="primary"
                                 onClick={() => handleCompleteTask(task)}
                                 title="Complete Task"
                               >

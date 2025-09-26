@@ -255,7 +255,7 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
   };
 
   const getStatusColor = (isActive: boolean) => {
-    return isActive ? 'success' : 'error';
+    return isActive ? 'primary' : 'error';
   };
 
   const resetFilters = () => {

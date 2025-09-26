@@ -29,6 +29,7 @@ import {
 } from '@mui/icons-material';
 import { PaymentMethod } from '../../types/shop';
 import { themeConstants } from '../../theme/theme';
+import { COLORS } from '../../theme/themeColors';
 import { StandardButton } from '../common';
 import { useMockPayment, MockPaymentRequest } from '../../services/mockPaymentGateway';
 
@@ -38,6 +39,7 @@ interface PaymentDialogProps {
   onPaymentComplete: (paymentMethod: PaymentMethod, paymentReference?: string) => void;
   totalAmount: number;
   selectedPaymentMethod?: PaymentMethod;
+  showSuccess?: boolean; // External control for success state
 }
 
 interface PaymentMethodOption {
@@ -54,6 +56,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
   onPaymentComplete,
   totalAmount,
   selectedPaymentMethod,
+  showSuccess = false, // Default to false
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -63,9 +66,10 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
     selectedPaymentMethod || PaymentMethod.CASH
   );
   const [processing, setProcessing] = useState(false);
-  const [paymentSuccess, setPaymentSuccess] = useState(false);
-  const [paymentReference, setPaymentReference] = useState('');
+  const [paymentReference, setPaymentReference] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  // Note: paymentSuccess is now controlled externally via showSuccess prop
 
   // Card payment fields with pre-filled test data
   const [cardNumber, setCardNumber] = useState('4111 1111 1111 1111');
@@ -82,21 +86,21 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
       value: PaymentMethod.CASH,
       label: 'Cash Payment',
       icon: <CashIcon />,
-      color: '#1e3a8a',
+      color: COLORS.PRIMARY_HOVER,
       description: 'Pay with cash at the hotel reception'
     },
     {
       value: PaymentMethod.CARD,
       label: 'Credit/Debit Card',
       icon: <CreditCardIcon />,
-      color: '#2563eb',
+      color: COLORS.PRIMARY,
       description: 'Pay securely with your card'
     },
     {
       value: PaymentMethod.MOBILE_MONEY,
       label: 'Mobile Money',
       icon: <MobileIcon />,
-      color: '#3b82f6',
+      color: COLORS.SECONDARY,
       description: 'Mobile money payment'
     }
   ];  const formatCurrency = (amount: number) => {
@@ -166,7 +170,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
       if (currentPaymentMethod === PaymentMethod.CASH || currentPaymentMethod === PaymentMethod.PAY_AT_FRONTDESK) {
         // For cash and front desk payments, no processing needed
         reference = `${currentPaymentMethod}-${Date.now()}`;
-        setPaymentSuccess(true);
+        // Don't set success here - let parent handle it after order creation
       } else {
         // Process payment through mock gateway
         const mockPaymentRequest: MockPaymentRequest = {
@@ -196,7 +200,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
         }
         
         reference = paymentResult.paymentReference;
-        setPaymentSuccess(true);
+        // Don't set success here - let parent handle it after order creation
       }
 
       setPaymentReference(reference);
@@ -219,13 +223,13 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
         return (
           <Box sx={{ mt: 2 }}>
             <Card sx={{ 
-              background: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)',
+              background: COLORS.CARD_HOVER,
               borderRadius: 3,
               minHeight: 420,
               display: 'flex',
               flexDirection: 'column',
-              boxShadow: '0 8px 32px rgba(59, 130, 246, 0.15)',
-              border: '1px solid rgba(147, 197, 253, 0.3)',
+              boxShadow: `0 8px 32px ${COLORS.PRIMARY}15`,
+              border: `1px solid ${COLORS.CARD_BORDER}`,
             }}>
               <CardContent sx={{ 
                 py: 3, 

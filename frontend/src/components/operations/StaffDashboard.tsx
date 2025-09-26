@@ -164,7 +164,7 @@ const StaffDashboard: React.FC<StaffDashboardProps> = ({ currentUserRole = 'OPER
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'success';
+      case 'active': return 'primary';
       case 'inactive': return 'error';
       case 'onLeave': return 'warning';
       default: return 'default';
@@ -242,7 +242,7 @@ const StaffDashboard: React.FC<StaffDashboardProps> = ({ currentUserRole = 'OPER
         <Grid item xs={12} sm={6} md={2.4}>
           <Card>
             <CardContent sx={{ textAlign: 'center' }}>
-              <SupervisorAccount sx={{ fontSize: 40, color: 'success.main', mb: 1 }} />
+              <SupervisorAccount sx={{ fontSize: 40, color: 'primary.main', mb: 1 }} />
               <Typography variant="h4">{counts.active}</Typography>
               <Typography variant="body2" color="text.secondary">Active</Typography>
             </CardContent>

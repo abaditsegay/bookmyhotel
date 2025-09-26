@@ -46,9 +46,13 @@ interface OrderItem {
   quantity: number;
 }
 
-const OrderCreation: React.FC = () => {
+interface OrderCreationProps {
+  onOrderComplete?: () => Promise<void>;
+}
+
+const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const theme = useTheme();
   const [products, setProducts] = useState<Product[]>([]);
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
@@ -86,6 +90,14 @@ const OrderCreation: React.FC = () => {
     
     const loadData = async () => {
       try {
+        // Configure shop API service with authentication
+        if (token) {
+          shopApiService.setToken(token);
+        }
+        if (user?.tenantId) {
+          shopApiService.setTenantId(user.tenantId);
+        }
+        
         const data = await shopApiService.getProducts(hotelId);
         setProducts(data.content.filter(p => p.isActive && p.isAvailable && p.stockQuantity > 0));
         setError(null);
@@ -95,7 +107,7 @@ const OrderCreation: React.FC = () => {
     };
     
     loadData();
-  }, [hotelId]);
+  }, [hotelId, token, user?.tenantId]);
 
   const addProductToOrder = (product: Product) => {
     const existingItem = orderItems.find(item => item.product.id === product.id);
@@ -168,32 +180,22 @@ const OrderCreation: React.FC = () => {
         console.log('Order created with room charging:', createdOrderResponse);
       }
 
-      // If payment is already completed (Complete Sale), finish transaction
-      if (paymentCompleted) {
-        // Transaction is complete, reset form and show success
-        setCreatedOrder(null);
-        setOrderItems([]);
-        setRoomNumber('');
-        setPaymentCompleted(false);
-        setCompletedPaymentMethod(null);
-        setPaymentReference(null);
-        
-        // Show success message
-        navigate('/shop?tab=orders', { 
-          state: { 
-            message: `Order ${createdOrderResponse.orderNumber} completed successfully!`,
-            type: 'success'
-          } 
-        });
-        return;
-      }
-
-      // For room charges, also complete immediately without receipt
+      // For room charges, complete immediately without receipt
       if (purchaseType === 'ROOM_CHARGE') {
         // Reset form and show success
         setCreatedOrder(null);
         setOrderItems([]);
         setRoomNumber('');
+        
+        // Refresh dashboard stats after room charge completion
+        if (onOrderComplete) {
+          try {
+            await onOrderComplete();
+            console.log('Dashboard stats refreshed after room charge completion');
+          } catch (error) {
+            console.error('Error refreshing dashboard stats:', error);
+          }
+        }
         
         // Show success message
         navigate('/shop?tab=orders', { 
@@ -221,19 +223,68 @@ const OrderCreation: React.FC = () => {
     }
   };
 
-  const handlePaymentComplete = (method: PaymentMethod, reference?: string) => {
+  const handlePaymentComplete = async (method: PaymentMethod, reference?: string) => {
     setCompletedPaymentMethod(method);
     setPaymentReference(reference || null);
     setPaymentCompleted(true);
     setPaymentDialogOpen(false);
     setError(null);
     
-    // After payment is completed, navigate to orders page
+    // Automatically complete the sale after successful payment
     if (createdOrder) {
+      try {
+        // Transaction is complete, reset form and show success
+        const orderNumber = createdOrder.orderNumber;
+        const orderId = createdOrder.id;
+        
+        // Reset form state
+        setCreatedOrder(null);
+        setOrderItems([]);
+        setRoomNumber('');
+        setPaymentCompleted(false);
+        setCompletedPaymentMethod(null);
+        setPaymentReference(null);
+        setReceiptDialogOpen(false); // Close receipt dialog if open
+        
+        // Refresh dashboard stats after successful order completion
+        if (onOrderComplete) {
+          try {
+            await onOrderComplete();
+            console.log('Dashboard stats refreshed after order completion');
+          } catch (error) {
+            console.error('Error refreshing dashboard stats:', error);
+          }
+        }
+        
+        // Show success message and navigate to orders page
+        navigate('/shop?tab=orders', { 
+          state: { 
+            message: `Order ${orderNumber} completed successfully! Payment processed via ${method}.`,
+            type: 'success',
+            orderId: orderId 
+          }
+        });
+      } catch (error) {
+        console.error('Error completing sale after payment:', error);
+        setError('Payment successful, but there was an error completing the sale. Please try again.');
+      }
+    } else {
+      // Fallback: if no created order, just navigate with payment success message
+      
+      // Refresh dashboard stats after payment
+      if (onOrderComplete) {
+        try {
+          await onOrderComplete();
+          console.log('Dashboard stats refreshed after payment completion');
+        } catch (error) {
+          console.error('Error refreshing dashboard stats:', error);
+        }
+      }
+      
       navigate('/shop?tab=orders', { 
         state: { 
-          message: `Order ${createdOrder.orderNumber} payment completed successfully!`,
-          orderId: createdOrder.id 
+          message: `Payment completed successfully via ${method}!`,
+          type: 'success'
         }
       });
     }
@@ -672,9 +723,7 @@ const OrderCreation: React.FC = () => {
                   ? 'Processing...' 
                   : purchaseType === 'ROOM_CHARGE' 
                     ? `Charge to Room ${roomNumber || ''}` 
-                    : paymentCompleted
-                      ? 'Complete Sale'
-                      : 'Proceed to Payment'
+                    : 'Create Order'
                 }
               </Button>
             </CardContent>

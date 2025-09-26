@@ -43,7 +43,7 @@ function TabPanel({ children, value, index, ...other }: TabPanelProps) {
 
 const ShopDashboard: React.FC = () => {
   const { t } = useTranslation();
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const [currentTab, setCurrentTab] = useState(() => {
     const tabParam = searchParams.get('tab');
@@ -66,18 +66,59 @@ const ShopDashboard: React.FC = () => {
       return;
     }
 
+    // Ensure we have authentication before making API calls
+    if (!token) {
+      console.warn('Cannot load dashboard data: No authentication token available');
+      setError('Authentication required. Please ensure you are logged in.');
+      return;
+    }
+
     try {
       setLoading(true);
+      
+      // Configure shop API service with authentication
+      console.info('Configuring shop API service with authentication...');
+      shopApiService.setToken(token);
+      console.info('Shop API service configured with token');
+
+      if (user?.tenantId) {
+        shopApiService.setTenantId(user.tenantId);
+        console.info(`Shop API service configured with tenant ID: ${user.tenantId}`);
+      } else {
+        console.warn('No tenant ID available for shop API');
+      }
+
+      console.info(`Loading dashboard stats for hotel ${hotelId}...`);
       const stats = await shopApiService.getDashboardStats(hotelId);
+      console.info('Dashboard stats loaded successfully:', stats);
+
+      // Additional validation of stats
+      const hasValidStats = stats && (
+        stats.totalProducts > 0 || 
+        stats.totalOrders > 0 || 
+        stats.totalRevenue > 0
+      );
+      
+      console.info('Stats validation:', {
+        hasStats: !!stats,
+        hasValidStats,
+        statsKeys: stats ? Object.keys(stats) : [],
+        sampleValues: stats ? {
+          totalProducts: stats.totalProducts,
+          totalOrders: stats.totalOrders,
+          totalRevenue: stats.totalRevenue
+        } : null
+      });
 
       setDashboardStats(stats);
       setError(null);
     } catch (err) {
+      console.error('Dashboard data loading error:', err);
       setError(err instanceof Error ? err.message : 'Failed to load dashboard data');
     } finally {
       setLoading(false);
     }
-  }, [hotelId]);
+  }, [hotelId, token, user?.tenantId]);
 
   useEffect(() => {
     if (hotelId) {
@@ -176,10 +217,10 @@ const ShopDashboard: React.FC = () => {
                     {t('shop.dashboard.stats.revenue')}
                   </Typography>
                   <Typography variant="h6" sx={{ lineHeight: 1.2 }}>
-                    ${dashboardStats.todayRevenue.toFixed(2)}
+                    ${dashboardStats.totalRevenue.toFixed(2)}
                   </Typography>
                   <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                    ETB {dashboardStats.todayRevenue?.toFixed(0)}
+                    ETB {dashboardStats.totalRevenue?.toFixed(0)}
                   </Typography>
                 </Box>
               </CardContent>
@@ -194,7 +235,7 @@ const ShopDashboard: React.FC = () => {
                     {t('shop.products.status.outOfStock')} {t('shop.dashboard.tabs.products')}
                   </Typography>
                   <Typography variant="h6" sx={{ lineHeight: 1.2 }}>
-                    {dashboardStats.lowStockProducts}
+                    {dashboardStats.outOfStockProducts}
                   </Typography>
                   <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
                     Need restocking
@@ -222,7 +263,7 @@ const ShopDashboard: React.FC = () => {
 
       {/* Tab Panels */}
       <TabPanel value={currentTab} index={0}>
-        <OrderCreation />
+        <OrderCreation onOrderComplete={loadDashboardData} />
       </TabPanel>
 
       <TabPanel value={currentTab} index={1}>

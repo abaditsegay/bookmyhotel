@@ -129,12 +129,11 @@ const MaintenanceStaffDashboard: React.FC = () => {
   };
 
   const getStatusColor = (status: string) => {
-    switch (status.toUpperCase()) {
-      case 'OPEN': return 'warning';
-      case 'IN_PROGRESS': return 'info';
-      case 'COMPLETED': return 'success';
+    switch (status) {
+      case 'ASSIGNED': return 'default';
+      case 'IN_PROGRESS': return 'warning';
+      case 'COMPLETED': return 'primary';
       case 'CANCELLED': return 'error';
-      case 'ON_HOLD': return 'default';
       default: return 'default';
     }
   };
@@ -243,7 +242,7 @@ const MaintenanceStaffDashboard: React.FC = () => {
             <Grid item xs={12} sm={6} md={3}>
               <Card>
                 <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <CheckCircleIcon color="success" />
+                                    <CheckCircleIcon color="primary" />
                   <Box>
                     <Typography color="textSecondary" gutterBottom>
                       Completed
@@ -347,7 +346,7 @@ const MaintenanceStaffDashboard: React.FC = () => {
                             )}
                             {canCompleteTask(task) && (
                               <IconButton
-                                color="success"
+                                color="primary"
                                 onClick={() => handleCompleteTask(task)}
                                 title="Complete Task"
                               >

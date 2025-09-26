@@ -354,7 +354,7 @@ const StaffDetails: React.FC = () => {
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <Chip
                           label={currentStaff?.isActive ? 'Active' : 'Inactive'}
-                          color={currentStaff?.isActive ? 'success' : 'error'}
+                          color={currentStaff?.isActive ? 'primary' : 'error'}
                           variant="filled"
                         />
                         <FormControlLabel

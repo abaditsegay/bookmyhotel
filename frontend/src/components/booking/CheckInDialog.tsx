@@ -353,130 +353,387 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
       fullWidth
       PaperProps={{
         sx: { 
-          borderRadius: 2,
+          borderRadius: 4,
           zIndex: 9999,
           backgroundColor: 'white',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
+          boxShadow: '0 12px 40px rgba(21, 101, 192, 0.2)',
+          border: '1px solid',
+          borderColor: 'primary.main',
+          overflow: 'hidden'
         }
       }}
       sx={{
         zIndex: 9999
       }}
     >
-      <DialogTitle sx={{ pb: 1 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <PersonIcon color="primary" />
-          <Typography variant="h6">Check-in Guest</Typography>
+      <DialogTitle sx={{ 
+        pb: 2,
+        pt: 3,
+        px: 3,
+        background: 'linear-gradient(135deg, #0d47a1 0%, #1565c0 50%, #1976d2 100%)',
+        color: 'white',
+        position: 'relative',
+        '&::after': {
+          content: '""',
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: '4px',
+          background: 'linear-gradient(90deg, #42a5f5 0%, #1976d2 50%, #0d47a1 100%)',
+        }
+      }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Box sx={{ 
+            p: 1.5, 
+            borderRadius: '50%', 
+            backgroundColor: 'rgba(255, 255, 255, 0.15)',
+            backdropFilter: 'blur(10px)'
+          }}>
+            <PersonIcon sx={{ color: 'white', fontSize: 28 }} />
+          </Box>
+          <Box>
+            <Typography variant="h5" sx={{ 
+              color: 'white', 
+              fontWeight: 700,
+              textShadow: '0 2px 4px rgba(0,0,0,0.2)'
+            }}>
+              Check-in Guest
+            </Typography>
+            <Typography variant="subtitle2" sx={{ 
+              color: 'rgba(255, 255, 255, 0.8)', 
+              fontWeight: 400,
+              mt: 0.5
+            }}>
+              Process guest check-in and room assignment
+            </Typography>
+          </Box>
         </Box>
       </DialogTitle>
       
-      <DialogContent>
+      <DialogContent sx={{ 
+        p: 3, 
+        backgroundColor: '#fafcff',
+        backgroundImage: 'linear-gradient(135deg, #fafcff 0%, #f0f7ff 100%)'
+      }}>
         {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
+          <Alert 
+            severity="error" 
+            sx={{ 
+              mb: 3,
+              borderRadius: 2,
+              border: '1px solid',
+              borderColor: 'error.light',
+              '& .MuiAlert-icon': {
+                color: 'error.main'
+              }
+            }}
+          >
             {error}
           </Alert>
         )}
 
         {/* Guest Information */}
-        <Paper elevation={1} sx={{ p: 2, mb: 2 }}>
-          <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <PersonIcon fontSize="small" />
-            Guest Information
-          </Typography>
-          <Grid container spacing={2}>
+        <Paper elevation={0} sx={{ 
+          p: 3, 
+          mb: 3,
+          border: '1px solid',
+          borderColor: 'primary.main',
+          borderRadius: 3,
+          background: 'linear-gradient(135deg, #ffffff 0%, #f5f9ff 100%)',
+          position: 'relative',
+          overflow: 'hidden',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '4px',
+            background: 'linear-gradient(90deg, #1565c0 0%, #1976d2 50%, #42a5f5 100%)',
+          }
+        }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+            <Box sx={{ 
+              p: 1, 
+              borderRadius: '50%', 
+              backgroundColor: 'primary.main',
+              color: 'white'
+            }}>
+              <PersonIcon fontSize="small" />
+            </Box>
+            <Typography variant="h6" sx={{ 
+              color: 'primary.main',
+              fontWeight: 700
+            }}>
+              Guest Information
+            </Typography>
+          </Box>
+          <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
-              <Typography variant="body2" color="text.secondary">Guest Name</Typography>
-              <Typography variant="body1" fontWeight="medium">{booking.guestName}</Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600, mb: 0.5 }}>
+                Guest Name
+              </Typography>
+              <Typography variant="body1" sx={{ fontWeight: 600, color: 'text.primary' }}>
+                {booking.guestName}
+              </Typography>
             </Grid>
             <Grid item xs={12} md={6}>
-              <Typography variant="body2" color="text.secondary">Email</Typography>
-              <Typography variant="body1">{booking.guestEmail}</Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600, mb: 0.5 }}>
+                Email
+              </Typography>
+              <Typography variant="body1" sx={{ color: 'text.primary' }}>
+                {booking.guestEmail}
+              </Typography>
             </Grid>
             <Grid item xs={12} md={6}>
-              <Typography variant="body2" color="text.secondary">Confirmation Number</Typography>
-              <Chip label={booking.confirmationNumber} size="small" color="primary" />
+              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600, mb: 0.5 }}>
+                Confirmation Number
+              </Typography>
+              <Chip 
+                label={booking.confirmationNumber} 
+                size="medium" 
+                sx={{
+                  backgroundColor: 'primary.main',
+                  color: 'white',
+                  fontWeight: 600,
+                  '&:hover': {
+                    backgroundColor: 'primary.dark'
+                  }
+                }}
+              />
             </Grid>
             <Grid item xs={12} md={6}>
-              <Typography variant="body2" color="text.secondary">Status</Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600, mb: 0.5 }}>
+                Status
+              </Typography>
               <Chip 
                 label={booking.status} 
-                size="small" 
-                color={
-                  booking.status === 'CONFIRMED' ? 'primary' :
-                  booking.status === 'CHECKED_IN' ? 'success' :
-                  booking.status === 'CHECKED_OUT' ? 'info' :
-                  booking.status === 'CANCELLED' ? 'error' :
-                  'warning'
-                } 
+                size="medium" 
+                sx={{
+                  backgroundColor: 
+                    booking.status === 'CONFIRMED' ? 'primary.main' :
+                    booking.status === 'CHECKED_IN' ? 'success.main' :
+                    booking.status === 'CHECKED_OUT' ? 'info.main' :
+                    booking.status === 'CANCELLED' ? 'error.main' :
+                    'warning.main',
+                  color: 'white',
+                  fontWeight: 600,
+                  '&:hover': {
+                    opacity: 0.8
+                  }
+                }}
               />
             </Grid>
           </Grid>
         </Paper>
 
         {/* Booking Details */}
-        <Paper elevation={1} sx={{ p: 2, mb: 2 }}>
-          <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <CalendarIcon fontSize="small" />
-            Booking Details
-          </Typography>
-          <Grid container spacing={2}>
+        <Paper elevation={0} sx={{ 
+          p: 3, 
+          mb: 3,
+          border: '1px solid',
+          borderColor: 'primary.light',
+          borderRadius: 3,
+          background: 'linear-gradient(135deg, #ffffff 0%, #f5f9ff 100%)',
+          position: 'relative',
+          overflow: 'hidden',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '3px',
+            background: 'linear-gradient(90deg, #42a5f5 0%, #1976d2 50%, #1565c0 100%)',
+          }
+        }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+            <Box sx={{ 
+              p: 1, 
+              borderRadius: '50%', 
+              backgroundColor: 'primary.light',
+              color: 'primary.main'
+            }}>
+              <CalendarIcon fontSize="small" />
+            </Box>
+            <Typography variant="h6" sx={{ 
+              color: 'primary.main',
+              fontWeight: 700
+            }}>
+              Booking Details
+            </Typography>
+          </Box>
+          <Grid container spacing={3}>
             <Grid item xs={12} md={4}>
-              <Typography variant="body2" color="text.secondary">Check-in Date</Typography>
-              <Typography variant="body1">{new Date(booking.checkInDate).toLocaleDateString()}</Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600, mb: 0.5 }}>
+                Check-in Date
+              </Typography>
+              <Typography variant="body1" sx={{ fontWeight: 600, color: 'text.primary' }}>
+                {new Date(booking.checkInDate).toLocaleDateString()}
+              </Typography>
             </Grid>
             <Grid item xs={12} md={4}>
-              <Typography variant="body2" color="text.secondary">Check-out Date</Typography>
-              <Typography variant="body1">{new Date(booking.checkOutDate).toLocaleDateString()}</Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600, mb: 0.5 }}>
+                Check-out Date
+              </Typography>
+              <Typography variant="body1" sx={{ fontWeight: 600, color: 'text.primary' }}>
+                {new Date(booking.checkOutDate).toLocaleDateString()}
+              </Typography>
             </Grid>
             <Grid item xs={12} md={4}>
-              <Typography variant="body2" color="text.secondary">Nights</Typography>
-              <Typography variant="body1" fontWeight="medium">{nights} night{nights !== 1 ? 's' : ''}</Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600, mb: 0.5 }}>
+                Nights
+              </Typography>
+              <Typography variant="h6" sx={{ fontWeight: 700, color: 'primary.main' }}>
+                {nights} night{nights !== 1 ? 's' : ''}
+              </Typography>
             </Grid>
             <Grid item xs={12} md={6}>
-              <Typography variant="body2" color="text.secondary">Original Room Type</Typography>
-              <Typography variant="body1">{booking.roomType}</Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600, mb: 0.5 }}>
+                Original Room Type
+              </Typography>
+              <Typography variant="body1" sx={{ color: 'text.primary' }}>
+                {booking.roomType}
+              </Typography>
             </Grid>
             <Grid item xs={12} md={6}>
-              <Typography variant="body2" color="text.secondary">Original Total</Typography>
-              <Typography variant="body1">${originalTotal.toFixed(2)}</Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600, mb: 0.5 }}>
+                Original Total
+              </Typography>
+              <Typography variant="h6" sx={{ fontWeight: 700, color: 'success.main' }}>
+                ${originalTotal.toFixed(2)}
+              </Typography>
             </Grid>
           </Grid>
         </Paper>
 
         {/* Assigned Room Information */}
-        <Paper elevation={1} sx={{ p: 2, mb: 2 }}>
-          <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <RoomIcon fontSize="small" />
-            Assigned Room
-          </Typography>
+        <Paper elevation={0} sx={{ 
+          p: 3, 
+          mb: 3,
+          border: '1px solid',
+          borderColor: 'primary.light',
+          borderRadius: 3,
+          background: 'linear-gradient(135deg, #ffffff 0%, #f5f9ff 100%)',
+          position: 'relative',
+          overflow: 'hidden',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '3px',
+            background: 'linear-gradient(90deg, #66bb6a 0%, #42a5f5 50%, #1976d2 100%)',
+          }
+        }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+            <Box sx={{ 
+              p: 1, 
+              borderRadius: '50%', 
+              backgroundColor: currentRoomNumber && currentRoomNumber !== 'To be assigned' ? 'success.main' : 'warning.main',
+              color: 'white'
+            }}>
+              <RoomIcon fontSize="small" />
+            </Box>
+            <Typography variant="h6" sx={{ 
+              color: 'primary.main',
+              fontWeight: 700
+            }}>
+              Assigned Room
+            </Typography>
+          </Box>
           
-          <Grid container spacing={2}>
+          <Grid container spacing={3}>
             {currentRoomNumber && currentRoomNumber !== 'To be assigned' ? (
               <>
                 <Grid item xs={12} md={6}>
-                  <Typography variant="body2" color="text.secondary">Room Number</Typography>
-                  <Typography variant="h6" color="primary.main">Room {currentRoomNumber}</Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600, mb: 0.5 }}>
+                    Room Number
+                  </Typography>
+                  <Typography variant="h5" sx={{ 
+                    fontWeight: 800, 
+                    color: 'primary.main',
+                    background: 'linear-gradient(45deg, #1565c0, #1976d2)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent'
+                  }}>
+                    Room {currentRoomNumber}
+                  </Typography>
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <Typography variant="body2" color="text.secondary">Room Type</Typography>
-                  <Typography variant="body1">{currentRoomType || booking.roomType}</Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600, mb: 0.5 }}>
+                    Room Type
+                  </Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary' }}>
+                    {currentRoomType || booking.roomType}
+                  </Typography>
                 </Grid>
                 <Grid item xs={12}>
                   {booking.status === 'CHECKED_IN' ? (
-                    <Alert severity="info">
-                      <strong>Guest is checked in to Room {currentRoomNumber}.</strong> You can select a different room from the available rooms below to automatically reassign if needed (maintenance issues, guest requests, etc.).
+                    <Alert 
+                      severity="info" 
+                      sx={{ 
+                        borderRadius: 2,
+                        border: '1px solid',
+                        borderColor: 'info.light',
+                        backgroundColor: 'rgba(33, 150, 243, 0.08)',
+                        '& .MuiAlert-icon': {
+                          color: 'info.main'
+                        }
+                      }}
+                    >
+                      <Typography sx={{ fontWeight: 600 }}>
+                        <strong>Guest is checked in to Room {currentRoomNumber}.</strong>
+                      </Typography>
+                      <Typography variant="body2" sx={{ mt: 0.5 }}>
+                        You can select a different room from the available rooms below to automatically reassign if needed (maintenance issues, guest requests, etc.).
+                      </Typography>
                     </Alert>
                   ) : (
-                    <Alert severity="success">
-                      Room is assigned and ready for check-in. You can select a different room from the available rooms below to automatically change the assignment.
+                    <Alert 
+                      severity="success" 
+                      sx={{ 
+                        borderRadius: 2,
+                        border: '1px solid',
+                        borderColor: 'success.light',
+                        backgroundColor: 'rgba(76, 175, 80, 0.08)',
+                        '& .MuiAlert-icon': {
+                          color: 'success.main'
+                        }
+                      }}
+                    >
+                      <Typography sx={{ fontWeight: 600 }}>
+                        Room is assigned and ready for check-in.
+                      </Typography>
+                      <Typography variant="body2" sx={{ mt: 0.5 }}>
+                        You can select a different room from the available rooms below to automatically change the assignment.
+                      </Typography>
                     </Alert>
                   )}
                 </Grid>
               </>
             ) : (
               <Grid item xs={12}>
-                <Alert severity="warning">
-                  No room assigned yet. Please select a room from the available rooms below.
+                <Alert 
+                  severity="warning" 
+                  sx={{ 
+                    borderRadius: 2,
+                    border: '1px solid',
+                    borderColor: 'warning.light',
+                    backgroundColor: 'rgba(255, 152, 0, 0.08)',
+                    '& .MuiAlert-icon': {
+                      color: 'warning.main'
+                    }
+                  }}
+                >
+                  <Typography sx={{ fontWeight: 600 }}>
+                    No room assigned yet.
+                  </Typography>
+                  <Typography variant="body2" sx={{ mt: 0.5 }}>
+                    Please select a room from the available rooms below.
+                  </Typography>
                 </Alert>
               </Grid>
             )}
@@ -484,30 +741,84 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
         </Paper>
 
         {/* Room Assignment */}
-        <Paper elevation={1} sx={{ p: 2, mb: 2 }} data-testid="room-assignment-section">
-          <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <RoomIcon fontSize="small" />
-            Room Assignment
-          </Typography>
+        <Paper elevation={0} sx={{ 
+          p: 3, 
+          mb: 3,
+          border: '1px solid',
+          borderColor: 'primary.light',
+          borderRadius: 3,
+          background: 'linear-gradient(135deg, #ffffff 0%, #f5f9ff 100%)',
+          position: 'relative',
+          overflow: 'hidden',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '3px',
+            background: 'linear-gradient(90deg, #1976d2 0%, #42a5f5 50%, #66bb6a 100%)',
+          }
+        }} data-testid="room-assignment-section">
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+            <Box sx={{ 
+              p: 1, 
+              borderRadius: '50%', 
+              backgroundColor: 'primary.main',
+              color: 'white'
+            }}>
+              <RoomIcon fontSize="small" />
+            </Box>
+            <Typography variant="h6" sx={{ 
+              color: 'primary.main',
+              fontWeight: 700
+            }}>
+              Room Assignment
+            </Typography>
+          </Box>
           
           {/* Room assignment interface - available for all bookings */}
           {booking.status === 'CHECKED_IN' && (
-            <Alert severity="warning" sx={{ mb: 2 }}>
-              <strong>Post Check-in Room Change:</strong> This guest is already checked in. 
-              Selecting a different room below will automatically reassign the guest to that room. 
-              This should only be done in special circumstances (maintenance issues, guest requests, etc.).
+            <Alert 
+              severity="warning" 
+              sx={{ 
+                mb: 3,
+                borderRadius: 2,
+                border: '1px solid',
+                borderColor: 'warning.light',
+                backgroundColor: 'rgba(255, 152, 0, 0.08)',
+                '& .MuiAlert-icon': {
+                  color: 'warning.main'
+                }
+              }}
+            >
+              <Typography sx={{ fontWeight: 600 }}>
+                <strong>Post Check-in Room Change:</strong> This guest is already checked in.
+              </Typography>
+              <Typography variant="body2" sx={{ mt: 0.5 }}>
+                Selecting a different room below will automatically reassign the guest to that room. 
+                This should only be done in special circumstances (maintenance issues, guest requests, etc.).
+              </Typography>
             </Alert>
           )}
           
           {loadingRooms ? (
-                <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
-                  <CircularProgress />
+                <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+                  <CircularProgress sx={{ color: 'primary.main' }} />
                 </Box>
               ) : (
                 <>
                   {/* Room Type Filter */}
-                  <FormControl fullWidth margin="normal">
-                    <InputLabel>Room Type</InputLabel>
+                  <FormControl fullWidth margin="normal" sx={{ mb: 3 }}>
+                    <InputLabel sx={{ 
+                      color: 'primary.main',
+                      fontWeight: 600,
+                      '&.Mui-focused': {
+                        color: 'primary.main'
+                      }
+                    }}>
+                      Room Type
+                    </InputLabel>
                     <Select
                       value={roomTypeOptions.includes(selectedRoomType) ? selectedRoomType : ''}
                       onChange={(e) => {
@@ -516,13 +827,31 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                         setSelectedRoomId(null); // Reset room selection when type changes
                       }}
                       label="Room Type"
+                      sx={{
+                        borderRadius: 2,
+                        '& .MuiOutlinedInput-root': {
+                          '& fieldset': {
+                            borderColor: 'primary.light',
+                            borderWidth: 1
+                          },
+                          '&:hover fieldset': {
+                            borderColor: 'primary.main',
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: 'primary.main',
+                            borderWidth: 1
+                          }
+                        }
+                      }}
                       MenuProps={{
                         PaperProps: {
                           style: {
                             maxHeight: 300,
                             zIndex: 9999,
                             backgroundColor: 'white',
-                            boxShadow: '0 4px 20px rgba(0,0,0,0.5)'
+                            boxShadow: '0 8px 32px rgba(21, 101, 192, 0.2)',
+                            borderRadius: 12,
+                            border: '1px solid #1976d2'
                           },
                         },
                         MenuListProps: {
@@ -543,7 +872,15 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                         keepMounted: false
                       }}
                     >
-                      <MenuItem value="">
+                      <MenuItem 
+                        value=""
+                        sx={{
+                          backgroundColor: 'transparent',
+                          '&:hover': {
+                            backgroundColor: 'primary.light'
+                          }
+                        }}
+                      >
                         All Room Types
                       </MenuItem>
                       {roomTypeOptions.map((roomType, index) => {
@@ -552,21 +889,43 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                             key={roomType} 
                             value={roomType}
                             sx={{ 
-                              backgroundColor: index % 2 === 0 ? 'grey.50' : 'background.paper' 
+                              backgroundColor: index % 2 === 0 ? 'rgba(25, 118, 210, 0.04)' : 'background.paper',
+                              '&:hover': {
+                                backgroundColor: 'primary.light'
+                              },
+                              '&.Mui-selected': {
+                                backgroundColor: 'primary.main',
+                                color: 'white',
+                                '&:hover': {
+                                  backgroundColor: 'primary.dark'
+                                }
+                              }
                             }}
                           >
                             {roomType}
                           </MenuItem>
                         );
                       })}
-                </Select>
-                <Typography variant="caption" color="text.secondary">
-                  Available: {roomTypeOptions.length} room types
-                </Typography>
-              </FormControl>
-
-              {/* Available Rooms */}
-              <Typography variant="subtitle2" sx={{ mt: 2, mb: 1 }}>
+                    </Select>
+                    <Typography variant="caption" sx={{ 
+                      color: 'primary.main', 
+                      fontWeight: 600, 
+                      mt: 1,
+                      display: 'block'
+                    }}>
+                      Available: {roomTypeOptions.length} room types
+                    </Typography>
+                  </FormControl>              {/* Available Rooms */}
+              <Typography variant="h6" sx={{ 
+                mt: 2, 
+                mb: 2,
+                color: 'primary.main',
+                fontWeight: 700,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1
+              }}>
+                <RoomIcon fontSize="small" />
                 Available Rooms ({filteredRooms.length})
               </Typography>
               
@@ -579,46 +938,93 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                   handleRoomAssignment(roomId);
                 }}
               >
-                <Box sx={{ maxHeight: '300px', overflowY: 'auto' }}>
+                <Box sx={{ maxHeight: '400px', overflowY: 'auto', pr: 1 }}>
                   {filteredRooms.map((room) => (
                     <Card 
                       key={room.id} 
                       variant="outlined" 
                       sx={{ 
-                        mb: 1, 
+                        mb: 2, 
                         cursor: 'pointer',
-                        '&:hover': { backgroundColor: 'action.hover' },
-                        backgroundColor: selectedRoomId === room.id ? 'action.selected' : 'transparent',
-                        border: selectedRoomId === room.id ? 2 : 1,
-                        borderColor: selectedRoomId === room.id ? 'primary.main' : 'divider'
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        '&:hover': { 
+                          backgroundColor: 'rgba(25, 118, 210, 0.08)',
+                          transform: 'translateY(-2px)',
+                          boxShadow: '0 8px 24px rgba(21, 101, 192, 0.15)',
+                          borderColor: 'primary.main'
+                        },
+                        backgroundColor: selectedRoomId === room.id ? 'rgba(25, 118, 210, 0.12)' : 'transparent',
+                        border: selectedRoomId === room.id ? 1 : 1,
+                        borderColor: selectedRoomId === room.id ? 'primary.main' : 'primary.light',
+                        borderRadius: 3,
+                        position: 'relative',
+                        overflow: 'hidden',
+                        ...(selectedRoomId === room.id && {
+                          '&::before': {
+                            content: '""',
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            height: '4px',
+                            background: 'linear-gradient(90deg, #1565c0 0%, #1976d2 50%, #42a5f5 100%)',
+                          }
+                        })
                       }}
                       onClick={() => {
                         setSelectedRoomId(room.id);
                         handleRoomAssignment(room.id);
                       }}
                     >
-                      <CardContent sx={{ py: 1 }}>
+                      <CardContent sx={{ py: 2, px: 3 }}>
                         <FormControlLabel
                           value={room.id.toString()}
-                          control={<Radio />}
+                          control={
+                            <Radio 
+                              sx={{
+                                color: 'primary.light',
+                                '&.Mui-checked': {
+                                  color: 'primary.main',
+                                },
+                              }}
+                            />
+                          }
                           label={
                             <Box sx={{ ml: 1, width: '100%' }}>
-                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <Typography variant="subtitle2">
-                                  Room {room.roomNumber} - {room.roomType}
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                                <Typography variant="h6" sx={{ 
+                                  fontWeight: 700,
+                                  color: selectedRoomId === room.id ? 'primary.main' : 'text.primary'
+                                }}>
+                                  Room {room.roomNumber}
                                 </Typography>
                                 <Chip 
                                   label={`ETB ${room.pricePerNight?.toFixed(0)}/night`} 
                                   size="small" 
-                                  color={selectedRoomId === room.id ? 'primary' : 'default'}
+                                  sx={{
+                                    backgroundColor: selectedRoomId === room.id ? 'primary.main' : 'primary.light',
+                                    color: selectedRoomId === room.id ? 'white' : 'primary.main',
+                                    fontWeight: 600,
+                                    '&:hover': {
+                                      backgroundColor: 'primary.main',
+                                      color: 'white'
+                                    }
+                                  }}
                                 />
                               </Box>
-                              <Typography variant="body2" color="text.secondary">
-                                Capacity: {room.capacity} • {room.description}
+                              <Typography variant="body1" sx={{ 
+                                fontWeight: 600, 
+                                color: 'primary.dark',
+                                mb: 0.5 
+                              }}>
+                                {room.roomType}
+                              </Typography>
+                              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                                Capacity: {room.capacity} guests • {room.description}
                               </Typography>
                             </Box>
                           }
-                          sx={{ width: '100%', m: 0 }}
+                          sx={{ width: '100%', m: 0, alignItems: 'flex-start' }}
                         />
                       </CardContent>
                     </Card>
@@ -627,7 +1033,19 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
               </RadioGroup>
 
               {filteredRooms.length === 0 && (
-                <Alert severity="warning" sx={{ mt: 1 }}>
+                <Alert 
+                  severity="warning" 
+                  sx={{ 
+                    mt: 2,
+                    borderRadius: 2,
+                    border: '1px solid',
+                    borderColor: 'warning.light',
+                    backgroundColor: 'rgba(255, 152, 0, 0.08)',
+                    '& .MuiAlert-icon': {
+                      color: 'warning.main'
+                    }
+                  }}
+                >
                   No available rooms found for the selected room type.
                 </Alert>
               )}
@@ -637,33 +1055,86 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
 
         {/* Price Summary */}
         {selectedRoomId && (
-          <Paper elevation={1} sx={{ p: 2 }}>
-            <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <MoneyIcon fontSize="small" />
-              Price Summary
-            </Typography>
-            <Grid container spacing={2}>
+          <Paper elevation={0} sx={{ 
+            p: 3,
+            border: '1px solid',
+            borderColor: 'success.light',
+            borderRadius: 3,
+            background: 'linear-gradient(135deg, #ffffff 0%, #f1f8e9 100%)',
+            position: 'relative',
+            overflow: 'hidden',
+            mb: 3,
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: '4px',
+              background: 'linear-gradient(90deg, #66bb6a 0%, #4caf50 50%, #2e7d32 100%)',
+            }
+          }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+              <Box sx={{ 
+                p: 1, 
+                borderRadius: '50%', 
+                backgroundColor: 'success.main',
+                color: 'white'
+              }}>
+                <MoneyIcon fontSize="small" />
+              </Box>
+              <Typography variant="h6" sx={{ 
+                color: 'success.dark',
+                fontWeight: 700
+              }}>
+                Price Summary
+              </Typography>
+            </Box>
+            <Grid container spacing={3}>
               <Grid item xs={12} md={6}>
-                <Typography variant="body2" color="text.secondary">New Price per Night</Typography>
-                <Typography variant="h6">${calculatedPricePerNight.toFixed(2)}</Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600, mb: 0.5 }}>
+                  New Price per Night
+                </Typography>
+                <Typography variant="h5" sx={{ 
+                  fontWeight: 800,
+                  color: 'success.main'
+                }}>
+                  ETB {calculatedPricePerNight.toFixed(0)}
+                </Typography>
               </Grid>
               <Grid item xs={12} md={6}>
-                <Typography variant="body2" color="text.secondary">New Total ({nights} nights)</Typography>
-                <Typography variant="h6">${calculatedTotal.toFixed(2)}</Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600, mb: 0.5 }}>
+                  New Total ({nights} nights)
+                </Typography>
+                <Typography variant="h5" sx={{ 
+                  fontWeight: 800,
+                  color: 'success.main'
+                }}>
+                  ETB {calculatedTotal.toFixed(0)}
+                </Typography>
               </Grid>
               {priceDifference !== 0 && (
                 <Grid item xs={12}>
-                  <Divider sx={{ my: 1 }} />
-                  <Typography 
-                    variant="body1" 
-                    sx={{ 
-                      color: priceDifference > 0 ? 'error.main' : 'success.main',
-                      fontWeight: 'medium'
-                    }}
-                  >
-                    Price {priceDifference > 0 ? 'Increase' : 'Decrease'}: 
-                    {priceDifference > 0 ? '+' : ''}${priceDifference.toFixed(2)}
-                  </Typography>
+                  <Divider sx={{ my: 2, borderColor: 'success.light' }} />
+                  <Box sx={{ 
+                    p: 2, 
+                    borderRadius: 2,
+                    backgroundColor: priceDifference > 0 ? 'rgba(244, 67, 54, 0.08)' : 'rgba(76, 175, 80, 0.08)',
+                    border: '1px solid',
+                    borderColor: priceDifference > 0 ? 'error.light' : 'success.light'
+                  }}>
+                    <Typography 
+                      variant="h6" 
+                      sx={{ 
+                        color: priceDifference > 0 ? 'error.main' : 'success.main',
+                        fontWeight: 700,
+                        textAlign: 'center'
+                      }}
+                    >
+                      Price {priceDifference > 0 ? 'Increase' : 'Decrease'}: 
+                      {priceDifference > 0 ? '+' : ''}ETB {Math.abs(priceDifference).toFixed(0)}
+                    </Typography>
+                  </Box>
                 </Grid>
               )}
             </Grid>
@@ -671,8 +1142,40 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
         )}
       </DialogContent>
       
-      <DialogActions sx={{ p: 2 }}>
-        <Button onClick={handleClose} disabled={loading}>
+      <DialogActions sx={{ 
+        p: 3,
+        pt: 2,
+        background: 'linear-gradient(135deg, #fafcff 0%, #f0f7ff 100%)',
+        borderTop: '1px solid',
+        borderColor: 'primary.light',
+        gap: 2
+      }}>
+        <Button 
+          onClick={handleClose} 
+          disabled={loading}
+          variant="outlined"
+          size="large"
+          sx={{
+            borderColor: 'primary.main',
+            color: 'primary.main',
+            borderWidth: 1,
+            borderRadius: 2,
+            px: 4,
+            py: 1.5,
+            fontWeight: 600,
+            textTransform: 'none',
+            fontSize: '1rem',
+            '&:hover': {
+              borderColor: 'primary.dark',
+              backgroundColor: 'rgba(25, 118, 210, 0.08)',
+              borderWidth: 1
+            },
+            '&:disabled': {
+              borderColor: '#e0e0e0',
+              color: '#9e9e9e'
+            }
+          }}
+        >
           Cancel
         </Button>
         
@@ -683,6 +1186,26 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
             variant="contained"
             color="primary"
             disabled={loading}
+            size="large"
+            sx={{
+              background: 'linear-gradient(135deg, #0d47a1 0%, #1565c0 50%, #1976d2 100%)',
+              fontWeight: 700,
+              px: 4,
+              py: 1.5,
+              borderRadius: 2,
+              textTransform: 'none',
+              fontSize: '1rem',
+              boxShadow: '0 4px 16px rgba(21, 101, 192, 0.4)',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #0a3d91 0%, #0d47a1 50%, #1565c0 100%)',
+                boxShadow: '0 6px 20px rgba(21, 101, 192, 0.5)',
+                transform: 'translateY(-2px)'
+              },
+              '&:active': {
+                transform: 'translateY(0px)'
+              },
+              transition: 'all 0.2s ease-in-out'
+            }}
           >
             Close
           </Button>
@@ -691,7 +1214,37 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
             onClick={handleCheckIn}
             variant="contained"
             disabled={!currentRoomNumber || currentRoomNumber === 'To be assigned' || loading} // Enable only if room is assigned
-            startIcon={loading ? <CircularProgress size={20} /> : null}
+            startIcon={loading ? <CircularProgress size={20} sx={{ color: 'white' }} /> : null}
+            size="large"
+            sx={{
+              background: !currentRoomNumber || currentRoomNumber === 'To be assigned' || loading 
+                ? '#e0e0e0' 
+                : 'linear-gradient(135deg, #0d47a1 0%, #1565c0 50%, #1976d2 100%)',
+              color: !currentRoomNumber || currentRoomNumber === 'To be assigned' || loading ? '#9e9e9e' : 'white',
+              fontWeight: 700,
+              px: 4,
+              py: 1.5,
+              borderRadius: 2,
+              textTransform: 'none',
+              fontSize: '1rem',
+              boxShadow: !currentRoomNumber || currentRoomNumber === 'To be assigned' || loading 
+                ? 'none' 
+                : '0 4px 16px rgba(21, 101, 192, 0.4)',
+              '&:hover': !currentRoomNumber || currentRoomNumber === 'To be assigned' || loading ? {} : {
+                background: 'linear-gradient(135deg, #0a3d91 0%, #0d47a1 50%, #1565c0 100%)',
+                boxShadow: '0 6px 20px rgba(21, 101, 192, 0.5)',
+                transform: 'translateY(-2px)'
+              },
+              '&:active': {
+                transform: 'translateY(0px)'
+              },
+              '&:disabled': {
+                background: '#e0e0e0',
+                color: '#9e9e9e',
+                boxShadow: 'none'
+              },
+              transition: 'all 0.2s ease-in-out'
+            }}
           >
             {loading ? 'Checking In...' : 'Check In Guest'}
           </Button>

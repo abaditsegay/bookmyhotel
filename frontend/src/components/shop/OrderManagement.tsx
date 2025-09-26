@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Button,
@@ -41,7 +41,7 @@ import { shopApiService } from '../../services/shopApi';
 import { ShopOrder, ShopOrderStatus, DeliveryType, ShopOrderUtils } from '../../types/shop';
 
 const OrderManagement: React.FC = () => {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const [orders, setOrders] = useState<ShopOrder[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loading, setLoading] = useState(true);
@@ -74,7 +74,7 @@ const OrderManagement: React.FC = () => {
     );
   }
 
-  const loadOrders = async () => {
+  const loadOrders = useCallback(async () => {
     if (!hotelId) {
       console.error('Cannot load orders: No hotel ID available');
       return;
@@ -82,6 +82,15 @@ const OrderManagement: React.FC = () => {
 
     try {
       setLoading(true);
+      
+      // Configure shop API service with authentication
+      if (token) {
+        shopApiService.setToken(token);
+      }
+      if (user?.tenantId) {
+        shopApiService.setTenantId(user.tenantId);
+      }
+      
       const data = await shopApiService.getOrders(hotelId);
       setOrders(data.content);
       setError(null);
@@ -90,7 +99,7 @@ const OrderManagement: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [hotelId, token, user?.tenantId]);
 
   const handleToggleOrderStatus = async (orderId: number) => {
     if (!hotelId) {

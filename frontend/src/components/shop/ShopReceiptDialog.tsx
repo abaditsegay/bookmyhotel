@@ -25,6 +25,7 @@ import {
   Close as CloseIcon,
 } from '@mui/icons-material';
 import { ShopOrder } from '../../types/shop';
+import { COLORS } from '../../theme/themeColors';
 
 interface ShopReceiptDialogProps {
   open: boolean;

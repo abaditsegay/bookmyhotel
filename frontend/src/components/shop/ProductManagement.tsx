@@ -44,7 +44,7 @@ import { translateProducts } from '../../utils/productTranslation';
 
 const ProductManagement: React.FC = () => {
   const { t } = useTranslation();
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loading, setLoading] = useState(true);
@@ -92,11 +92,29 @@ const ProductManagement: React.FC = () => {
     const loadProductsDebounced = async () => {
       try {
         setLoading(true);
+        
+        // Configure shop API service with authentication
+        if (token) {
+          shopApiService.setToken(token);
+        }
+        if (user?.tenantId) {
+          shopApiService.setTenantId(user.tenantId);
+        }
+        
         const data = await shopApiService.getProducts(hotelId, {
           page: page, // Already 0-indexed for API
           size: rowsPerPage,
           search: searchTerm.trim() || undefined,
           category: categoryFilter !== 'ALL' ? categoryFilter : undefined
+        });
+        
+        console.log('🛍️ Products API Response:', {
+          page,
+          size: rowsPerPage,
+          totalReceived: data.content.length,
+          totalElements: data.totalElements,
+          productIds: data.content.map(p => p.id),
+          hasDuplicateIds: data.content.length !== new Set(data.content.map(p => p.id)).size
         });
         
         setProducts(data.content);
@@ -112,7 +130,7 @@ const ProductManagement: React.FC = () => {
     // Debounce search term changes
     const debounceTimer = setTimeout(loadProductsDebounced, searchTerm ? 300 : 0);
     return () => clearTimeout(debounceTimer);
-  }, [hotelId, page, rowsPerPage, searchTerm, categoryFilter, refreshTrigger]);
+  }, [hotelId, page, rowsPerPage, searchTerm, categoryFilter, refreshTrigger, token, user?.tenantId]);
 
   const triggerRefresh = () => setRefreshTrigger(prev => prev + 1);
 
@@ -265,6 +283,16 @@ const ProductManagement: React.FC = () => {
 
   // Translate products for display
   const translatedProducts = translateProducts(products, t);
+  
+  // Debug logging for duplicates
+  console.log('🔍 Products Debug:', {
+    originalCount: products.length,
+    translatedCount: translatedProducts.length,
+    originalIds: products.map(p => p.id),
+    translatedIds: translatedProducts.map(p => p.id),
+    hasDuplicateOriginalIds: products.length !== new Set(products.map(p => p.id)).size,
+    hasDuplicateTranslatedIds: translatedProducts.length !== new Set(translatedProducts.map(p => p.id)).size
+  });
 
   const getCategoryColor = (category: ProductCategory) => {
     switch (category) {
