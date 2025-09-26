@@ -102,7 +102,8 @@ public class ProductService {
         product.setCategory(request.getCategory());
         product.setPrice(request.getPrice());
         product.setStockQuantity(request.getStockQuantity());
-        product.setMinimumStockLevel(request.getMinimumStockLevel() != null ? request.getMinimumStockLevel() : product.getMinimumStockLevel());
+        product.setMinimumStockLevel(request.getMinimumStockLevel() != null ? request.getMinimumStockLevel()
+                : product.getMinimumStockLevel());
         product.setSku(request.getSku());
         product.setImageUrl(request.getImageUrl());
         product.setIsActive(request.getIsActive() != null ? request.getIsActive() : product.getIsActive());
@@ -281,11 +282,11 @@ public class ProductService {
     }
 
     /**
-     * Get low stock products
+     * Get low stock products (products with stock at or below their minimum stock level)
      */
     @Transactional(readOnly = true)
-    public List<ProductResponse> getLowStockProducts(Long hotelId, Integer threshold) {
-        List<Product> products = productRepository.findLowStockProductsByHotelId(hotelId, threshold);
+    public List<ProductResponse> getLowStockProducts(Long hotelId) {
+        List<Product> products = productRepository.findLowStockProductsByHotelId(hotelId);
         return products.stream().map(this::convertToResponse).toList();
     }
 

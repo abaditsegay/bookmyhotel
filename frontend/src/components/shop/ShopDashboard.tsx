@@ -20,6 +20,7 @@ import { ShopDashboardStats } from '../../types/shop';
 import ProductManagement from './ProductManagement';
 import OrderManagement from './OrderManagement';
 import OrderCreation from './OrderCreation';
+import LowStockProducts from './LowStockProducts';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -48,7 +49,7 @@ const ShopDashboard: React.FC = () => {
   const [currentTab, setCurrentTab] = useState(() => {
     const tabParam = searchParams.get('tab');
     if (tabParam) {
-      const tabMap = { 'new-order': 0, 'products': 1, 'orders': 2 };
+      const tabMap = { 'new-order': 0, 'products': 1, 'low-stock': 2, 'orders': 3 };
       return tabMap[tabParam as keyof typeof tabMap] ?? 0;
     }
     return 0;
@@ -145,7 +146,7 @@ const ShopDashboard: React.FC = () => {
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setCurrentTab(newValue);
     // Update URL parameter to remember the tab
-    const tabNames = ['new-order', 'products', 'orders'];
+    const tabNames = ['new-order', 'products', 'low-stock', 'orders'];
     setSearchParams({ tab: tabNames[newValue] });
   };
 
@@ -232,13 +233,13 @@ const ShopDashboard: React.FC = () => {
               <CardContent sx={{ py: 1, px: 1.5 }}>
                 <Box>
                   <Typography color="textSecondary" gutterBottom variant="caption" sx={{ fontSize: '0.7rem' }}>
-                    {t('shop.products.status.outOfStock')} {t('shop.dashboard.tabs.products')}
+                    Low Stock Products
                   </Typography>
                   <Typography variant="h6" sx={{ lineHeight: 1.2 }}>
-                    {dashboardStats.outOfStockProducts}
+                    {dashboardStats.lowStockProducts}
                   </Typography>
                   <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                    Need restocking
+                    {dashboardStats.outOfStockProducts} out of stock
                   </Typography>
                 </Box>
               </CardContent>
@@ -257,6 +258,7 @@ const ShopDashboard: React.FC = () => {
         >
           <Tab label={t('shop.dashboard.tabs.newOrder')} />
           <Tab label={t('shop.dashboard.tabs.products')} />
+          <Tab label="Low Stock" />
           <Tab label={t('shop.dashboard.tabs.orders')} />
         </Tabs>
       </Paper>
@@ -271,6 +273,10 @@ const ShopDashboard: React.FC = () => {
       </TabPanel>
 
       <TabPanel value={currentTab} index={2}>
+        <LowStockProducts />
+      </TabPanel>
+
+      <TabPanel value={currentTab} index={3}>
         <OrderManagement />
       </TabPanel>
     </Box>

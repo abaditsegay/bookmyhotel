@@ -202,7 +202,8 @@ public class Product extends HotelScopedEntity {
     }
 
     /**
-     * Check if a specific quantity can be ordered (as long as stock doesn't go to 0)
+     * Check if a specific quantity can be ordered (as long as stock doesn't go to
+     * 0)
      */
     public boolean canOrderQuantity(int quantity) {
         return stockQuantity - quantity >= 0;

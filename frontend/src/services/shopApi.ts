@@ -201,11 +201,15 @@ class ShopApiService {
     return this.handleResponse<{ content: ProductStock[], totalElements: number }>(response);
   }
 
-  async getLowStockProducts(hotelId: number, threshold = 10): Promise<Product[]> {
-    const response = await fetch(`${API_BASE_URL}/hotels/${hotelId}/shop/inventory/low-stock?threshold=${threshold}`, {
+  async getLowStockProducts(
+    hotelId: number, 
+    page = 0, 
+    size = 20
+  ): Promise<{ content: Product[], totalElements: number, totalPages: number, number: number, size: number }> {
+    const response = await fetch(`${API_BASE_URL}/hotels/${hotelId}/shop/dashboard/low-stock?page=${page}&size=${size}`, {
       headers: this.getAuthHeaders(),
     });
-    return this.handleResponse<Product[]>(response);
+    return this.handleResponse<{ content: Product[], totalElements: number, totalPages: number, number: number, size: number }>(response);
   }
 
   async getOutOfStockProducts(hotelId: number): Promise<Product[]> {

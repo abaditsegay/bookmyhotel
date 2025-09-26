@@ -57,7 +57,10 @@
     "no": "No",
     "next": "Next",
     "previous": "Previous",
-    "submit": "Submit"
+    "submit": "Submit",
+    "refresh": "Refresh",
+    "rowsPerPage": "Rows per page:",
+    "displayedRows": "{{from}}-{{to}} of {{count}}"
   },
   "navigation": {
     "home": "Home",
@@ -71,5 +74,50 @@
     "english": "English",
     "amharic": "አማርኛ",
     "changeLanguage": "Change Language"
+  },
+  "shop": {
+    "dashboard": {
+      "tabs": {
+        "newOrder": "New Order",
+        "products": "Products",
+        "orders": "Orders"
+      },
+      "stats": {
+        "totalProducts": "Total Products",
+        "activeProducts": "Active",
+        "totalOrders": "Total Orders",
+        "revenue": "Revenue"
+      }
+    },
+    "lowStock": {
+      "title": "Low Stock Products",
+      "threshold": "Threshold",
+      "searchPlaceholder": "Search products by name, SKU, or category...",
+      "noProducts": "No low stock products found",
+      "noSearchResults": "No products match your search criteria"
+    },
+    "products": {
+      "table": {
+        "name": "Name",
+        "price": "Price",
+        "currentStock": "Current Stock",
+        "minimumStock": "Min Stock",
+        "reorderSuggestion": "Reorder Qty",
+        "status": "Status"
+      },
+      "form": {
+        "category": "Category",
+        "sku": "SKU"
+      },
+      "status": {
+        "outOfStock": "Out of Stock",
+        "lowStock": "Low Stock"
+      }
+    },
+    "orders": {
+      "status": {
+        "pending": "Pending"
+      }
+    }
   }
 }

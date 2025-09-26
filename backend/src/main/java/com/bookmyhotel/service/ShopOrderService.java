@@ -181,9 +181,8 @@ public class ShopOrderService {
             if (!product.canOrderQuantity(itemRequest.getQuantity())) {
                 int availableStock = product.getStockQuantity();
                 throw new IllegalArgumentException(
-                    "Insufficient stock for product '" + product.getName() + "'. " +
-                    "Available stock: " + availableStock + ", Requested: " + itemRequest.getQuantity()
-                );
+                        "Insufficient stock for product '" + product.getName() + "'. " +
+                                "Available stock: " + availableStock + ", Requested: " + itemRequest.getQuantity());
             }
 
             ShopOrderItem orderItem = new ShopOrderItem();
@@ -214,11 +213,11 @@ public class ShopOrderService {
             int newStockQuantity = product.getStockQuantity() - orderItem.getQuantity();
             product.setStockQuantity(newStockQuantity);
             productRepository.save(product);
-            
-            System.out.println("DEBUG: Stock decremented for product '" + product.getName() + 
-                             "' (ID: " + product.getId() + "). Old stock: " + 
-                             (product.getStockQuantity() + orderItem.getQuantity()) + 
-                             ", New stock: " + newStockQuantity);
+
+            System.out.println("DEBUG: Stock decremented for product '" + product.getName() +
+                    "' (ID: " + product.getId() + "). Old stock: " +
+                    (product.getStockQuantity() + orderItem.getQuantity()) +
+                    ", New stock: " + newStockQuantity);
         }
 
         // If payment method is ROOM_CHARGE and order is linked to a reservation,
