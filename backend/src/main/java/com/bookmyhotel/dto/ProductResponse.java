@@ -16,6 +16,7 @@ public class ProductResponse {
     private ProductCategory category;
     private BigDecimal price;
     private Integer stockQuantity;
+    private Integer minimumStockLevel;
     private String sku;
     private String imageUrl;
     private Boolean isActive;
@@ -88,6 +89,14 @@ public class ProductResponse {
     
     public void setStockQuantity(Integer stockQuantity) {
         this.stockQuantity = stockQuantity;
+    }
+    
+    public Integer getMinimumStockLevel() {
+        return minimumStockLevel;
+    }
+    
+    public void setMinimumStockLevel(Integer minimumStockLevel) {
+        this.minimumStockLevel = minimumStockLevel;
     }
     
     public String getSku() {

@@ -56,6 +56,7 @@ public class ProductService {
         product.setCategory(request.getCategory());
         product.setPrice(request.getPrice());
         product.setStockQuantity(request.getStockQuantity());
+        product.setMinimumStockLevel(request.getMinimumStockLevel() != null ? request.getMinimumStockLevel() : 0);
         product.setSku(request.getSku());
         product.setImageUrl(request.getImageUrl());
         product.setIsActive(request.getIsActive() != null ? request.getIsActive() : true);
@@ -101,6 +102,7 @@ public class ProductService {
         product.setCategory(request.getCategory());
         product.setPrice(request.getPrice());
         product.setStockQuantity(request.getStockQuantity());
+        product.setMinimumStockLevel(request.getMinimumStockLevel() != null ? request.getMinimumStockLevel() : product.getMinimumStockLevel());
         product.setSku(request.getSku());
         product.setImageUrl(request.getImageUrl());
         product.setIsActive(request.getIsActive() != null ? request.getIsActive() : product.getIsActive());
@@ -413,6 +415,7 @@ public class ProductService {
         response.setCategory(product.getCategory());
         response.setPrice(product.getPrice());
         response.setStockQuantity(product.getStockQuantity());
+        response.setMinimumStockLevel(product.getMinimumStockLevel());
         response.setSku(product.getSku());
         response.setImageUrl(product.getImageUrl());
         response.setIsActive(product.getIsActive());

@@ -54,26 +54,6 @@ const OrderManagement: React.FC = () => {
   // Get hotel ID from authenticated user
   const hotelId = user?.hotelId ? parseInt(user.hotelId) : null;
 
-  useEffect(() => {
-    if (hotelId) {
-      loadOrders();
-    }
-  }, [hotelId]);
-
-  // Early return if no hotel ID is available (after all hooks)
-  if (!hotelId) {
-    return (
-      <Box p={2}>
-        <Alert severity="error" sx={{ mb: 2 }}>
-          Unable to determine hotel ID for the current user. Please ensure you are logged in as a hotel staff member.
-        </Alert>
-        <Alert severity="info" sx={{ mb: 2 }}>
-          Current user: {user?.email} | Hotel ID: {user?.hotelId || 'Not assigned'}
-        </Alert>
-      </Box>
-    );
-  }
-
   const loadOrders = useCallback(async () => {
     if (!hotelId) {
       console.error('Cannot load orders: No hotel ID available');
@@ -100,6 +80,26 @@ const OrderManagement: React.FC = () => {
       setLoading(false);
     }
   }, [hotelId, token, user?.tenantId]);
+
+  useEffect(() => {
+    if (hotelId) {
+      loadOrders();
+    }
+  }, [hotelId, loadOrders]);
+
+  // Early return if no hotel ID is available (after all hooks)
+  if (!hotelId) {
+    return (
+      <Box p={2}>
+        <Alert severity="error" sx={{ mb: 2 }}>
+          Unable to determine hotel ID for the current user. Please ensure you are logged in as a hotel staff member.
+        </Alert>
+        <Alert severity="info" sx={{ mb: 2 }}>
+          Current user: {user?.email} | Hotel ID: {user?.hotelId || 'Not assigned'}
+        </Alert>
+      </Box>
+    );
+  }
 
   const handleToggleOrderStatus = async (orderId: number) => {
     if (!hotelId) {

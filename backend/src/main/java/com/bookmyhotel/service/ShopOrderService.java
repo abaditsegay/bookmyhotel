@@ -177,6 +177,16 @@ public class ShopOrderService {
                     .orElseThrow(() -> new ResourceNotFoundException(
                             "Product not found with ID: " + itemRequest.getProductId()));
 
+            // Check if product has sufficient stock respecting minimum stock level
+            if (!product.canOrderQuantity(itemRequest.getQuantity())) {
+                int availableForOrder = product.getAvailableQuantityForOrder();
+                throw new IllegalArgumentException(
+                    "Insufficient stock for product '" + product.getName() + "'. " +
+                    "Available for order: " + availableForOrder + " (Minimum stock: " + product.getMinimumStockLevel() + 
+                    "), Requested: " + itemRequest.getQuantity()
+                );
+            }
+
             ShopOrderItem orderItem = new ShopOrderItem();
             orderItem.setOrder(order);
             orderItem.setProduct(product);
@@ -198,6 +208,19 @@ public class ShopOrderService {
 
         // Save the order
         ShopOrder savedOrder = shopOrderRepository.save(order);
+
+        // **IMPORTANT: Decrement stock quantities for all ordered products**
+        for (ShopOrderItem orderItem : savedOrder.getOrderItems()) {
+            Product product = orderItem.getProduct();
+            int newStockQuantity = product.getStockQuantity() - orderItem.getQuantity();
+            product.setStockQuantity(newStockQuantity);
+            productRepository.save(product);
+            
+            System.out.println("DEBUG: Stock decremented for product '" + product.getName() + 
+                             "' (ID: " + product.getId() + "). Old stock: " + 
+                             (product.getStockQuantity() + orderItem.getQuantity()) + 
+                             ", New stock: " + newStockQuantity);
+        }
 
         // If payment method is ROOM_CHARGE and order is linked to a reservation,
         // create a room charge automatically

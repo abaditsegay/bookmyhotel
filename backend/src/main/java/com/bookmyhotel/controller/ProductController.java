@@ -1,6 +1,8 @@
 package com.bookmyhotel.controller;
 
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -233,5 +235,18 @@ public class ProductController {
     @GetMapping("/categories")
     public ResponseEntity<ProductCategory[]> getProductCategories() {
         return ResponseEntity.ok(ProductCategory.values());
+    }
+
+    /**
+     * Debug endpoint to check raw product data
+     * GET /api/hotels/{hotelId}/shop/products/debug
+     */
+    @GetMapping("/debug")
+    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('SYSTEM_ADMIN')")
+    public ResponseEntity<Map<String, Object>> debugProducts(@PathVariable Long hotelId) {
+        Map<String, Object> debug = new HashMap<>();
+        debug.put("hotelId", hotelId);
+        debug.put("products", productService.getProducts(hotelId, PageRequest.of(0, 100)));
+        return ResponseEntity.ok(debug);
     }
 }
