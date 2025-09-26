@@ -291,6 +291,15 @@ public class ProductService {
     }
 
     /**
+     * Get low stock products with custom threshold (for backward compatibility)
+     */
+    @Transactional(readOnly = true)
+    public List<ProductResponse> getLowStockProducts(Long hotelId, Integer threshold) {
+        List<Product> products = productRepository.findLowStockProductsByHotelIdAndThreshold(hotelId, threshold);
+        return products.stream().map(this::convertToResponse).toList();
+    }
+
+    /**
      * Get out of stock products
      */
     @Transactional(readOnly = true)

@@ -153,6 +153,12 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
        List<Product> findLowStockProductsByHotelId(@Param("hotelId") Long hotelId);
 
        /**
+        * Find products with low stock by hotel ID using threshold (for backward compatibility)
+        */
+       @Query("SELECT p FROM Product p WHERE p.hotel.id = :hotelId AND p.isActive = true AND p.stockQuantity <= :threshold")
+       List<Product> findLowStockProductsByHotelIdAndThreshold(@Param("hotelId") Long hotelId, @Param("threshold") Integer threshold);
+
+       /**
         * Find out of stock products by hotel ID
         */
        @Query("SELECT p FROM Product p WHERE p.hotel.id = :hotelId AND p.isActive = true AND p.stockQuantity = 0")
