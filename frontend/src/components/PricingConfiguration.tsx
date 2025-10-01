@@ -30,7 +30,7 @@ import {
   Info as InfoIcon
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
-import { COLORS } from '../theme/themeColors';
+import { getGradient, getInteractiveColor, getFormColor } from '../theme/themeColors';
 
 // Utility functions for converting between percentage (0-100) and decimal (0.0-1.0) values
 const toDecimal = (percentage: number): number => {
@@ -295,30 +295,30 @@ const PricingConfigurationComponent: React.FC = () => {
       '& .MuiTextField-root': {
         '& .MuiOutlinedInput-root': {
           '&:hover fieldset': {
-            borderColor: '#4A9B9B',
+            borderColor: getFormColor('hover'),
           },
           '&.Mui-focused fieldset': {
-            borderColor: '#4A9B9B',
+            borderColor: getFormColor('focus'),
           },
         },
         '& .MuiInputLabel-root': {
           '&.Mui-focused': {
-            color: '#4A9B9B',
+            color: getFormColor('focus'),
           },
         },
       },
       '& .MuiFormControl-root': {
         '& .MuiOutlinedInput-root': {
           '&:hover .MuiOutlinedInput-notchedOutline': {
-            borderColor: '#4A9B9B',
+            borderColor: getFormColor('hover'),
           },
           '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-            borderColor: '#4A9B9B',
+            borderColor: getFormColor('focus'),
           },
         },
         '& .MuiInputLabel-root': {
           '&.Mui-focused': {
-            color: '#4A9B9B',
+            color: getFormColor('focus'),
           },
         },
       },
@@ -330,12 +330,12 @@ const PricingConfigurationComponent: React.FC = () => {
             onClick={fetchConfiguration} 
             disabled={loading}
             sx={{
-              color: COLORS.PRIMARY,
+              color: getInteractiveColor(),
               bgcolor: 'background.paper',
               border: '1px solid',
               borderColor: 'divider',
               '&:hover': {
-                bgcolor: alpha(COLORS.PRIMARY, 0.1)
+                bgcolor: alpha(getInteractiveColor(), 0.1)
               }
             }}
           >
@@ -348,14 +348,27 @@ const PricingConfigurationComponent: React.FC = () => {
           onClick={saveConfiguration}
           disabled={saving}
           sx={{ 
-            bgcolor: COLORS.PRIMARY,
+            background: getGradient('primary'),
             color: 'white',
+            px: 3,
+            py: 1.5,
+            borderRadius: 2,
+            textTransform: 'none',
+            fontWeight: 600,
+            boxShadow: `0 4px 12px ${alpha(getInteractiveColor(), 0.2)}`,
             '&:hover': {
-              bgcolor: alpha(COLORS.PRIMARY, 0.8)
+              background: getGradient('primary'),
+              transform: 'translateY(-1px)',
+              boxShadow: `0 6px 16px ${alpha(getInteractiveColor(), 0.3)}`
+            },
+            '&:active': {
+              transform: 'translateY(0px)'
             },
             '&:disabled': {
-              bgcolor: alpha(COLORS.PRIMARY, 0.3),
-              color: alpha('#ffffff', 0.7)
+              bgcolor: alpha(getInteractiveColor(), 0.3),
+              color: alpha('#ffffff', 0.7),
+              transform: 'none',
+              boxShadow: 'none'
             }
           }}
         >
@@ -382,13 +395,13 @@ const PricingConfigurationComponent: React.FC = () => {
         sx={{ 
           mb: 3,
           borderRadius: 2,
-          bgcolor: alpha('#4A9B9B', 0.1),
-          border: `1px solid ${alpha('#4A9B9B', 0.2)}`,
+          bgcolor: alpha(getInteractiveColor(), 0.1),
+          border: `1px solid ${alpha(getInteractiveColor(), 0.2)}`,
           '& .MuiAlert-message': {
             color: theme.palette.text.primary
           },
           '& .MuiAlert-icon': {
-            color: '#4A9B9B'
+            color: getInteractiveColor()
           }
         }}
       >
@@ -422,9 +435,9 @@ const PricingConfigurationComponent: React.FC = () => {
                 borderColor: 'divider',
                 borderRadius: 2,
               }}>
-                <SettingsIcon sx={{ color: COLORS.PRIMARY }} />
+                <SettingsIcon sx={{ color: getInteractiveColor() }} />
                 <Box>
-                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: COLORS.PRIMARY }}>
+                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: getInteractiveColor() }}>
                     General Settings
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -447,14 +460,14 @@ const PricingConfigurationComponent: React.FC = () => {
                           backgroundColor: 'background.paper',
                           borderRadius: 2,
                           '&:hover .MuiOutlinedInput-notchedOutline': {
-                            borderColor: COLORS.PRIMARY,
+                            borderColor: getFormColor('hover'),
                           },
                           '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                            borderColor: COLORS.PRIMARY,
+                            borderColor: getFormColor('focus'),
                           }
                         },
                         '& .MuiInputLabel-root.Mui-focused': {
-                          color: COLORS.PRIMARY,
+                          color: getFormColor('focus'),
                         }
                       }}
                     >
@@ -476,14 +489,14 @@ const PricingConfigurationComponent: React.FC = () => {
                         backgroundColor: 'background.paper',
                         borderRadius: 2,
                         '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: COLORS.PRIMARY,
+                          borderColor: getFormColor('hover'),
                         },
                         '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: COLORS.PRIMARY,
+                          borderColor: getFormColor('focus'),
                         }
                       },
                       '& .MuiInputLabel-root.Mui-focused': {
-                        color: COLORS.PRIMARY,
+                        color: getFormColor('focus'),
                       }
                     }}
                   />
@@ -555,9 +568,9 @@ const PricingConfigurationComponent: React.FC = () => {
                 borderColor: 'divider',
                 borderRadius: 2,
               }}>
-                <ReceiptIcon sx={{ color: COLORS.PRIMARY }} />
+                <ReceiptIcon sx={{ color: getInteractiveColor() }} />
                 <Box>
-                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: COLORS.PRIMARY }}>
+                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: getInteractiveColor() }}>
                     Tax Configuration
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -596,14 +609,14 @@ const PricingConfigurationComponent: React.FC = () => {
                         backgroundColor: 'background.paper',
                         borderRadius: 2,
                         '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: COLORS.PRIMARY,
+                          borderColor: getFormColor('hover'),
                         },
                         '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: COLORS.PRIMARY,
+                          borderColor: getFormColor('focus'),
                         }
                       },
                       '& .MuiInputLabel-root.Mui-focused': {
-                        color: COLORS.PRIMARY,
+                        color: getFormColor('focus'),
                       }
                     }}
                   />
@@ -622,14 +635,14 @@ const PricingConfigurationComponent: React.FC = () => {
                         backgroundColor: 'background.paper',
                         borderRadius: 2,
                         '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: COLORS.PRIMARY,
+                          borderColor: getFormColor('hover'),
                         },
                         '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: COLORS.PRIMARY,
+                          borderColor: getFormColor('focus'),
                         }
                       },
                       '& .MuiInputLabel-root.Mui-focused': {
-                        color: COLORS.PRIMARY,
+                        color: getFormColor('focus'),
                       }
                     }}
                   />
@@ -648,14 +661,14 @@ const PricingConfigurationComponent: React.FC = () => {
                         backgroundColor: 'background.paper',
                         borderRadius: 2,
                         '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: COLORS.PRIMARY,
+                          borderColor: getFormColor('hover'),
                         },
                         '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: COLORS.PRIMARY,
+                          borderColor: getFormColor('focus'),
                         }
                       },
                       '& .MuiInputLabel-root.Mui-focused': {
-                        color: COLORS.PRIMARY,
+                        color: getFormColor('focus'),
                       }
                     }}
                   />
@@ -687,9 +700,9 @@ const PricingConfigurationComponent: React.FC = () => {
                 borderColor: 'divider',
                 borderRadius: 2,
               }}>
-                <DiscountIcon sx={{ color: COLORS.PRIMARY }} />
+                <DiscountIcon sx={{ color: getInteractiveColor() }} />
                 <Box>
-                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: COLORS.PRIMARY }}>
+                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: getInteractiveColor() }}>
                     Seasonal Pricing Multipliers
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -728,14 +741,14 @@ const PricingConfigurationComponent: React.FC = () => {
                         backgroundColor: 'background.paper',
                         borderRadius: 2,
                         '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: COLORS.PRIMARY,
+                          borderColor: getFormColor('hover'),
                         },
                         '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: COLORS.PRIMARY,
+                          borderColor: getFormColor('focus'),
                         }
                       },
                       '& .MuiInputLabel-root.Mui-focused': {
-                        color: COLORS.PRIMARY,
+                        color: getFormColor('focus'),
                       }
                     }}
                   />
@@ -754,14 +767,14 @@ const PricingConfigurationComponent: React.FC = () => {
                         backgroundColor: 'background.paper',
                         borderRadius: 2,
                         '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: COLORS.PRIMARY,
+                          borderColor: getFormColor('hover'),
                         },
                         '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: COLORS.PRIMARY,
+                          borderColor: getFormColor('focus'),
                         }
                       },
                       '& .MuiInputLabel-root.Mui-focused': {
-                        color: COLORS.PRIMARY,
+                        color: getFormColor('focus'),
                       }
                     }}
                   />
@@ -793,9 +806,9 @@ const PricingConfigurationComponent: React.FC = () => {
                 borderColor: 'divider',
                 borderRadius: 2,
               }}>
-                <SettingsIcon sx={{ color: COLORS.PRIMARY }} />
+                <SettingsIcon sx={{ color: getInteractiveColor() }} />
                 <Box>
-                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: COLORS.PRIMARY }}>
+                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: getInteractiveColor() }}>
                     Booking Rules
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -818,14 +831,14 @@ const PricingConfigurationComponent: React.FC = () => {
                         backgroundColor: 'background.paper',
                         borderRadius: 2,
                         '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: COLORS.PRIMARY,
+                          borderColor: getFormColor('hover'),
                         },
                         '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: COLORS.PRIMARY,
+                          borderColor: getFormColor('focus'),
                         }
                       },
                       '& .MuiInputLabel-root.Mui-focused': {
-                        color: COLORS.PRIMARY,
+                        color: getFormColor('focus'),
                       }
                     }}
                   />
@@ -843,14 +856,14 @@ const PricingConfigurationComponent: React.FC = () => {
                         backgroundColor: 'background.paper',
                         borderRadius: 2,
                         '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: COLORS.PRIMARY,
+                          borderColor: getFormColor('hover'),
                         },
                         '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: COLORS.PRIMARY,
+                          borderColor: getFormColor('focus'),
                         }
                       },
                       '& .MuiInputLabel-root.Mui-focused': {
-                        color: COLORS.PRIMARY,
+                        color: getFormColor('focus'),
                       }
                     }}
                   />
@@ -868,14 +881,14 @@ const PricingConfigurationComponent: React.FC = () => {
                         backgroundColor: 'background.paper',
                         borderRadius: 2,
                         '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: COLORS.PRIMARY,
+                          borderColor: getFormColor('hover'),
                         },
                         '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: COLORS.PRIMARY,
+                          borderColor: getFormColor('focus'),
                         }
                       },
                       '& .MuiInputLabel-root.Mui-focused': {
-                        color: COLORS.PRIMARY,
+                        color: getFormColor('focus'),
                       }
                     }}
                   />
@@ -907,9 +920,9 @@ const PricingConfigurationComponent: React.FC = () => {
                 borderColor: 'divider',
                 borderRadius: 2,
               }}>
-                <DiscountIcon sx={{ color: COLORS.PRIMARY }} />
+                <DiscountIcon sx={{ color: getInteractiveColor() }} />
                 <Box>
-                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: COLORS.PRIMARY }}>
+                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: getInteractiveColor() }}>
                     Discounts & Fees
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -933,14 +946,14 @@ const PricingConfigurationComponent: React.FC = () => {
                         backgroundColor: 'background.paper',
                         borderRadius: 2,
                         '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: COLORS.PRIMARY,
+                          borderColor: getInteractiveColor(),
                         },
                         '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: COLORS.PRIMARY,
+                          borderColor: getInteractiveColor(),
                         }
                       },
                       '& .MuiInputLabel-root.Mui-focused': {
-                        color: COLORS.PRIMARY,
+                        color: getInteractiveColor(),
                       }
                     }}
                   />
@@ -959,14 +972,14 @@ const PricingConfigurationComponent: React.FC = () => {
                         backgroundColor: 'background.paper',
                         borderRadius: 2,
                         '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: COLORS.PRIMARY,
+                          borderColor: getInteractiveColor(),
                         },
                         '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: COLORS.PRIMARY,
+                          borderColor: getInteractiveColor(),
                         }
                       },
                       '& .MuiInputLabel-root.Mui-focused': {
-                        color: COLORS.PRIMARY,
+                        color: getInteractiveColor(),
                       }
                     }}
                   />
@@ -985,14 +998,14 @@ const PricingConfigurationComponent: React.FC = () => {
                         backgroundColor: 'background.paper',
                         borderRadius: 2,
                         '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: COLORS.PRIMARY,
+                          borderColor: getInteractiveColor(),
                         },
                         '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: COLORS.PRIMARY,
+                          borderColor: getInteractiveColor(),
                         }
                       },
                       '& .MuiInputLabel-root.Mui-focused': {
-                        color: COLORS.PRIMARY,
+                        color: getInteractiveColor(),
                       }
                     }}
                   />
@@ -1011,14 +1024,14 @@ const PricingConfigurationComponent: React.FC = () => {
                         backgroundColor: 'background.paper',
                         borderRadius: 2,
                         '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: COLORS.PRIMARY,
+                          borderColor: getInteractiveColor(),
                         },
                         '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: COLORS.PRIMARY,
+                          borderColor: getInteractiveColor(),
                         }
                       },
                       '& .MuiInputLabel-root.Mui-focused': {
-                        color: COLORS.PRIMARY,
+                        color: getInteractiveColor(),
                       }
                     }}
                   />
@@ -1037,14 +1050,14 @@ const PricingConfigurationComponent: React.FC = () => {
                         backgroundColor: 'background.paper',
                         borderRadius: 2,
                         '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: COLORS.PRIMARY,
+                          borderColor: getInteractiveColor(),
                         },
                         '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: COLORS.PRIMARY,
+                          borderColor: getInteractiveColor(),
                         }
                       },
                       '& .MuiInputLabel-root.Mui-focused': {
-                        color: COLORS.PRIMARY,
+                        color: getInteractiveColor(),
                       }
                     }}
                   />
@@ -1063,14 +1076,14 @@ const PricingConfigurationComponent: React.FC = () => {
                         backgroundColor: 'background.paper',
                         borderRadius: 2,
                         '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: COLORS.PRIMARY,
+                          borderColor: getInteractiveColor(),
                         },
                         '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: COLORS.PRIMARY,
+                          borderColor: getInteractiveColor(),
                         }
                       },
                       '& .MuiInputLabel-root.Mui-focused': {
-                        color: COLORS.PRIMARY,
+                        color: getInteractiveColor(),
                       }
                     }}
                   />
@@ -1102,9 +1115,9 @@ const PricingConfigurationComponent: React.FC = () => {
                 borderColor: 'divider',
                 borderRadius: 2,
               }}>
-                <ReceiptIcon sx={{ color: COLORS.PRIMARY }} />
+                <ReceiptIcon sx={{ color: getInteractiveColor() }} />
                 <Box>
-                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: COLORS.PRIMARY }}>
+                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: getInteractiveColor() }}>
                     Cancellation Refund Policies
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -1143,14 +1156,14 @@ const PricingConfigurationComponent: React.FC = () => {
                         backgroundColor: 'background.paper',
                         borderRadius: 2,
                         '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: COLORS.PRIMARY,
+                          borderColor: getInteractiveColor(),
                         },
                         '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: COLORS.PRIMARY,
+                          borderColor: getInteractiveColor(),
                         }
                       },
                       '& .MuiInputLabel-root.Mui-focused': {
-                        color: COLORS.PRIMARY,
+                        color: getInteractiveColor(),
                       }
                     }}
                   />
@@ -1169,14 +1182,14 @@ const PricingConfigurationComponent: React.FC = () => {
                         backgroundColor: 'background.paper',
                         borderRadius: 2,
                         '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: COLORS.PRIMARY,
+                          borderColor: getInteractiveColor(),
                         },
                         '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: COLORS.PRIMARY,
+                          borderColor: getInteractiveColor(),
                         }
                       },
                       '& .MuiInputLabel-root.Mui-focused': {
-                        color: COLORS.PRIMARY,
+                        color: getInteractiveColor(),
                       }
                     }}
                   />
@@ -1195,14 +1208,14 @@ const PricingConfigurationComponent: React.FC = () => {
                         backgroundColor: 'background.paper',
                         borderRadius: 2,
                         '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: COLORS.PRIMARY,
+                          borderColor: getInteractiveColor(),
                         },
                         '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: COLORS.PRIMARY,
+                          borderColor: getInteractiveColor(),
                         }
                       },
                       '& .MuiInputLabel-root.Mui-focused': {
-                        color: COLORS.PRIMARY,
+                        color: getInteractiveColor(),
                       }
                     }}
                   />
@@ -1221,14 +1234,14 @@ const PricingConfigurationComponent: React.FC = () => {
                         backgroundColor: 'background.paper',
                         borderRadius: 2,
                         '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: COLORS.PRIMARY,
+                          borderColor: getInteractiveColor(),
                         },
                         '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: COLORS.PRIMARY,
+                          borderColor: getInteractiveColor(),
                         }
                       },
                       '& .MuiInputLabel-root.Mui-focused': {
-                        color: COLORS.PRIMARY,
+                        color: getInteractiveColor(),
                       }
                     }}
                   />
@@ -1275,9 +1288,9 @@ const PricingConfigurationComponent: React.FC = () => {
                 borderColor: 'divider',
                 borderRadius: 2,
               }}>
-                <InfoIcon sx={{ color: COLORS.PRIMARY }} />
+                <InfoIcon sx={{ color: getInteractiveColor() }} />
                 <Box>
-                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: COLORS.PRIMARY }}>
+                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: getInteractiveColor() }}>
                     Additional Notes
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -1299,14 +1312,14 @@ const PricingConfigurationComponent: React.FC = () => {
                     backgroundColor: 'background.paper',
                     borderRadius: 2,
                     '&:hover .MuiOutlinedInput-notchedOutline': {
-                      borderColor: COLORS.PRIMARY,
+                      borderColor: getInteractiveColor(),
                     },
                     '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                      borderColor: COLORS.PRIMARY,
+                      borderColor: getInteractiveColor(),
                     }
                   },
                   '& .MuiInputLabel-root.Mui-focused': {
-                    color: COLORS.PRIMARY,
+                    color: getInteractiveColor(),
                   }
                 }}
               />
