@@ -16,17 +16,21 @@ import {
   CircularProgress,
   Tooltip,
   IconButton,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails
+  Card,
+  CardContent,
+  useTheme,
+  alpha
 } from '@mui/material';
 import {
   Save as SaveIcon,
   Refresh as RefreshIcon,
-  ExpandMore as ExpandMoreIcon
+  Settings as SettingsIcon,
+  Receipt as ReceiptIcon,
+  Discount as DiscountIcon,
+  Info as InfoIcon
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
-import { COLORS, addAlpha } from '../theme/themeColors';
+import { COLORS } from '../theme/themeColors';
 
 // Interface for the pricing configuration
 interface PricingConfiguration {
@@ -55,6 +59,7 @@ interface PricingConfiguration {
 
 const PricingConfigurationComponent: React.FC = () => {
   const { user, token } = useAuth();
+  const theme = useTheme();
   const [config, setConfig] = useState<PricingConfiguration | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -217,42 +222,79 @@ const PricingConfigurationComponent: React.FC = () => {
   }
 
   return (
-    <Box p={3}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4" component="h1" sx={{ color: COLORS.PRIMARY }}>
-          Pricing & Tax Configuration
-        </Typography>
-        <Box>
-          <Tooltip title="Refresh Configuration">
-            <IconButton 
-              onClick={fetchConfiguration} 
-              disabled={loading}
-              sx={{
-                color: COLORS.PRIMARY,
-                '&:hover': {
-                  backgroundColor: addAlpha(COLORS.PRIMARY, 0.1)
-                }
-              }}
-            >
-              <RefreshIcon />
-            </IconButton>
-          </Tooltip>
-          <Button
-            variant="contained"
-            startIcon={saving ? <CircularProgress size={20} /> : <SaveIcon />}
-            onClick={saveConfiguration}
-            disabled={saving}
-            sx={{ 
-              ml: 1,
-              backgroundColor: COLORS.PRIMARY,
+    <Box sx={{ 
+      p: 3, 
+      bgcolor: 'background.default', 
+      minHeight: '100vh',
+      '& .MuiTextField-root': {
+        '& .MuiOutlinedInput-root': {
+          '&:hover fieldset': {
+            borderColor: '#4A9B9B',
+          },
+          '&.Mui-focused fieldset': {
+            borderColor: '#4A9B9B',
+          },
+        },
+        '& .MuiInputLabel-root': {
+          '&.Mui-focused': {
+            color: '#4A9B9B',
+          },
+        },
+      },
+      '& .MuiFormControl-root': {
+        '& .MuiOutlinedInput-root': {
+          '&:hover .MuiOutlinedInput-notchedOutline': {
+            borderColor: '#4A9B9B',
+          },
+          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+            borderColor: '#4A9B9B',
+          },
+        },
+        '& .MuiInputLabel-root': {
+          '&.Mui-focused': {
+            color: '#4A9B9B',
+          },
+        },
+      },
+    }}>
+      {/* Action Buttons */}
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mb: 3 }}>
+        <Tooltip title="Refresh Configuration">
+          <IconButton 
+            onClick={fetchConfiguration} 
+            disabled={loading}
+            sx={{
+              color: COLORS.PRIMARY,
+              bgcolor: 'background.paper',
+              border: '1px solid',
+              borderColor: 'divider',
               '&:hover': {
-                backgroundColor: addAlpha(COLORS.PRIMARY, 0.8)
+                bgcolor: alpha(COLORS.PRIMARY, 0.1)
               }
             }}
           >
-            {saving ? 'Saving...' : 'Save Configuration'}
-          </Button>
-        </Box>
+            <RefreshIcon />
+          </IconButton>
+        </Tooltip>
+        <Button
+          variant="contained"
+          startIcon={saving ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
+          onClick={saveConfiguration}
+          disabled={saving}
+          sx={{ 
+            bgcolor: COLORS.PRIMARY,
+            color: 'white',
+            '&:hover': {
+              bgcolor: alpha(COLORS.PRIMARY, 0.8)
+            },
+            '&:disabled': {
+              bgcolor: alpha(COLORS.PRIMARY, 0.3),
+              color: alpha('#ffffff', 0.7)
+            }
+          }}
+        >
+          {saving ? 'Saving...' : 'Save Configuration'}
+        </Button>
       </Box>
 
       {error && (
@@ -268,8 +310,23 @@ const PricingConfigurationComponent: React.FC = () => {
       )}
 
       {/* Pricing Policy Information */}
-      <Alert severity="info" sx={{ mb: 3 }}>
-        <Typography variant="body2">
+      <Alert 
+        severity="info" 
+        icon={<InfoIcon />}
+        sx={{ 
+          mb: 3,
+          borderRadius: 2,
+          bgcolor: alpha('#4A9B9B', 0.1),
+          border: `1px solid ${alpha('#4A9B9B', 0.2)}`,
+          '& .MuiAlert-message': {
+            color: theme.palette.text.primary
+          },
+          '& .MuiAlert-icon': {
+            color: '#4A9B9B'
+          }
+        }}
+      >
+        <Typography variant="body2" sx={{ fontWeight: 500 }}>
           <strong>Pricing Policy:</strong> Room prices are displayed without taxes. All applicable taxes 
           (VAT, service tax, city tax) will be calculated and added during the booking process. This 
           ensures transparent pricing for customers while maintaining compliance with tax regulations.
@@ -279,36 +336,59 @@ const PricingConfigurationComponent: React.FC = () => {
       <Grid container spacing={3}>
         {/* General Settings */}
         <Grid item xs={12}>
-          <Accordion defaultExpanded>
-            <AccordionSummary 
-              expandIcon={<ExpandMoreIcon />}
-              sx={{
-                backgroundColor: addAlpha(COLORS.PRIMARY, 0.05),
-                '&:hover': {
-                  backgroundColor: addAlpha(COLORS.PRIMARY, 0.1)
-                }
-              }}
-            >
-              <Typography variant="h6" sx={{ color: COLORS.PRIMARY, fontWeight: 'bold' }}>
-                General Settings
-              </Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Grid container spacing={2}>
+          <Card sx={{ 
+            bgcolor: 'background.paper',
+            border: '1px solid',
+            borderColor: 'divider',
+            borderRadius: 3,
+            elevation: 0,
+          }}>
+            <CardContent sx={{ p: 4 }}>
+              {/* General Settings Section */}
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 2, 
+                mb: 4,
+                p: 2,
+                bgcolor: 'background.default',
+                border: '1px solid',
+                borderColor: 'divider',
+                borderRadius: 2,
+              }}>
+                <SettingsIcon sx={{ color: COLORS.PRIMARY }} />
+                <Box>
+                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: COLORS.PRIMARY }}>
+                    General Settings
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Configure basic pricing policies and settings
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Grid container spacing={3}>
                 <Grid item xs={12} md={6}>
                   <FormControl fullWidth>
-                    <InputLabel sx={{ color: COLORS.PRIMARY }}>Pricing Strategy</InputLabel>
+                    <InputLabel>Pricing Strategy</InputLabel>
                     <Select
                       value={config.pricingStrategy}
                       onChange={(e) => handleInputChange('pricingStrategy', e.target.value)}
                       label="Pricing Strategy"
                       disabled // Always use Fixed Pricing
                       sx={{
-                        '& .MuiOutlinedInput-notchedOutline': {
-                          borderColor: addAlpha(COLORS.PRIMARY, 0.3)
+                        '& .MuiOutlinedInput-root': {
+                          backgroundColor: 'background.paper',
+                          borderRadius: 2,
+                          '&:hover .MuiOutlinedInput-notchedOutline': {
+                            borderColor: COLORS.PRIMARY,
+                          },
+                          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                            borderColor: COLORS.PRIMARY,
+                          }
                         },
-                        '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: COLORS.PRIMARY
+                        '& .MuiInputLabel-root.Mui-focused': {
+                          color: COLORS.PRIMARY,
                         }
                       }}
                     >
@@ -326,14 +406,18 @@ const PricingConfigurationComponent: React.FC = () => {
                     onChange={(e) => handleInputChange('currencyCode', e.target.value)}
                     placeholder="ETB"
                     sx={{
-                      '& .MuiInputLabel-root': {
-                        color: COLORS.PRIMARY
+                      '& .MuiOutlinedInput-root': {
+                        backgroundColor: 'background.paper',
+                        borderRadius: 2,
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                          borderColor: COLORS.PRIMARY,
+                        },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                          borderColor: COLORS.PRIMARY,
+                        }
                       },
-                      '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: addAlpha(COLORS.PRIMARY, 0.3)
-                      },
-                      '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: COLORS.PRIMARY
+                      '& .MuiInputLabel-root.Mui-focused': {
+                        color: COLORS.PRIMARY,
                       }
                     }}
                   />
@@ -344,19 +428,11 @@ const PricingConfigurationComponent: React.FC = () => {
                       <Switch
                         checked={false} // Always false - tax added during booking
                         disabled
-                        sx={{
-                          '& .MuiSwitch-switchBase.Mui-checked': {
-                            color: COLORS.PRIMARY,
-                            '& + .MuiSwitch-track': {
-                              backgroundColor: COLORS.PRIMARY
-                            }
-                          }
-                        }}
                       />
                     }
                     label={
                       <Box>
-                        <Typography variant="body2">
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
                           Tax Inclusive Pricing (prices shown include taxes)
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
@@ -372,19 +448,11 @@ const PricingConfigurationComponent: React.FC = () => {
                       <Switch
                         checked={false} // Always false - only fixed pricing
                         disabled
-                        sx={{
-                          '& .MuiSwitch-switchBase.Mui-checked': {
-                            color: COLORS.PRIMARY,
-                            '& + .MuiSwitch-track': {
-                              backgroundColor: COLORS.PRIMARY
-                            }
-                          }
-                        }}
                       />
                     }
                     label={
                       <Box>
-                        <Typography variant="body2">
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
                           Enable Dynamic Pricing (adjust prices based on demand)
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
@@ -395,34 +463,59 @@ const PricingConfigurationComponent: React.FC = () => {
                   />
                 </Grid>
               </Grid>
-            </AccordionDetails>
-          </Accordion>
+            </CardContent>
+          </Card>
         </Grid>
 
         {/* Tax Configuration */}
         <Grid item xs={12}>
-          <Accordion defaultExpanded>
-            <AccordionSummary 
-              expandIcon={<ExpandMoreIcon />}
-              sx={{
-                backgroundColor: addAlpha(COLORS.PRIMARY, 0.05),
-                '&:hover': {
-                  backgroundColor: addAlpha(COLORS.PRIMARY, 0.1)
-                }
-              }}
-            >
-              <Typography variant="h6" sx={{ color: COLORS.PRIMARY, fontWeight: 'bold' }}>
-                Tax Configuration
-              </Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Alert severity="info" sx={{ mb: 2 }}>
+          <Card sx={{ 
+            bgcolor: 'background.paper',
+            border: '1px solid',
+            borderColor: 'divider',
+            borderRadius: 3,
+            elevation: 0,
+          }}>
+            <CardContent sx={{ p: 4 }}>
+              {/* Tax Configuration Section */}
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 2, 
+                mb: 4,
+                p: 2,
+                bgcolor: 'background.default',
+                border: '1px solid',
+                borderColor: 'divider',
+                borderRadius: 2,
+              }}>
+                <ReceiptIcon sx={{ color: COLORS.PRIMARY }} />
+                <Box>
+                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: COLORS.PRIMARY }}>
+                    Tax Configuration
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Configure applicable tax rates for booking calculations
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Alert 
+                severity="info" 
+                sx={{ 
+                  mb: 2,
+                  borderRadius: 2,
+                  bgcolor: alpha(theme.palette.info.main, 0.1),
+                  border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
+                }}
+              >
                 <Typography variant="body2">
                   These tax rates will be automatically applied during the booking process. 
                   Room prices displayed to customers will not include these taxes.
                 </Typography>
               </Alert>
-              <Grid container spacing={2}>
+
+              <Grid container spacing={3}>
                 <Grid item xs={12} md={4}>
                   <TextField
                     fullWidth
@@ -433,14 +526,18 @@ const PricingConfigurationComponent: React.FC = () => {
                     inputProps={{ min: 0, max: 1, step: 0.01 }}
                     helperText={`Current VAT: ${calculateTaxPercentage(config.vatRate)} (Ethiopian standard: 15%)`}
                     sx={{
-                      '& .MuiInputLabel-root': {
-                        color: COLORS.PRIMARY
+                      '& .MuiOutlinedInput-root': {
+                        backgroundColor: 'background.paper',
+                        borderRadius: 2,
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                          borderColor: COLORS.PRIMARY,
+                        },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                          borderColor: COLORS.PRIMARY,
+                        }
                       },
-                      '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: addAlpha(COLORS.PRIMARY, 0.3)
-                      },
-                      '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: COLORS.PRIMARY
+                      '& .MuiInputLabel-root.Mui-focused': {
+                        color: COLORS.PRIMARY,
                       }
                     }}
                   />
@@ -455,14 +552,18 @@ const PricingConfigurationComponent: React.FC = () => {
                     inputProps={{ min: 0, max: 1, step: 0.01 }}
                     helperText={`Current service tax: ${calculateTaxPercentage(config.serviceTaxRate)} (Ethiopian standard: 5%)`}
                     sx={{
-                      '& .MuiInputLabel-root': {
-                        color: COLORS.PRIMARY
+                      '& .MuiOutlinedInput-root': {
+                        backgroundColor: 'background.paper',
+                        borderRadius: 2,
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                          borderColor: COLORS.PRIMARY,
+                        },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                          borderColor: COLORS.PRIMARY,
+                        }
                       },
-                      '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: addAlpha(COLORS.PRIMARY, 0.3)
-                      },
-                      '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: COLORS.PRIMARY
+                      '& .MuiInputLabel-root.Mui-focused': {
+                        color: COLORS.PRIMARY,
                       }
                     }}
                   />
@@ -477,47 +578,76 @@ const PricingConfigurationComponent: React.FC = () => {
                     inputProps={{ min: 0, max: 1, step: 0.01 }}
                     helperText={`Current city tax: ${calculateTaxPercentage(config.cityTaxRate)} (Usually 0% in Ethiopia)`}
                     sx={{
-                      '& .MuiInputLabel-root': {
-                        color: COLORS.PRIMARY
+                      '& .MuiOutlinedInput-root': {
+                        backgroundColor: 'background.paper',
+                        borderRadius: 2,
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                          borderColor: COLORS.PRIMARY,
+                        },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                          borderColor: COLORS.PRIMARY,
+                        }
                       },
-                      '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: addAlpha(COLORS.PRIMARY, 0.3)
-                      },
-                      '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: COLORS.PRIMARY
+                      '& .MuiInputLabel-root.Mui-focused': {
+                        color: COLORS.PRIMARY,
                       }
                     }}
                   />
                 </Grid>
               </Grid>
-            </AccordionDetails>
-          </Accordion>
+            </CardContent>
+          </Card>
         </Grid>
 
         {/* Seasonal Pricing */}
         <Grid item xs={12}>
-          <Accordion>
-            <AccordionSummary 
-              expandIcon={<ExpandMoreIcon />}
-              sx={{
-                backgroundColor: addAlpha(COLORS.PRIMARY, 0.05),
-                '&:hover': {
-                  backgroundColor: addAlpha(COLORS.PRIMARY, 0.1)
-                }
-              }}
-            >
-              <Typography variant="h6" sx={{ color: COLORS.PRIMARY, fontWeight: 'bold' }}>
-                Seasonal Pricing Multipliers
-              </Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Alert severity="info" sx={{ mb: 2 }}>
+          <Card sx={{ 
+            bgcolor: 'background.paper',
+            border: '1px solid',
+            borderColor: 'divider',
+            borderRadius: 3,
+            elevation: 0,
+          }}>
+            <CardContent sx={{ p: 4 }}>
+              {/* Seasonal Pricing Section */}
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 2, 
+                mb: 4,
+                p: 2,
+                bgcolor: 'background.default',
+                border: '1px solid',
+                borderColor: 'divider',
+                borderRadius: 2,
+              }}>
+                <DiscountIcon sx={{ color: COLORS.PRIMARY }} />
+                <Box>
+                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: COLORS.PRIMARY }}>
+                    Seasonal Pricing Multipliers
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Configure pricing adjustments for peak and off seasons
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Alert 
+                severity="info" 
+                sx={{ 
+                  mb: 2,
+                  borderRadius: 2,
+                  bgcolor: alpha(theme.palette.info.main, 0.1),
+                  border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
+                }}
+              >
                 <Typography variant="body2">
                   <strong>Note:</strong> Seasonal multipliers are set to 1.0 (no change) by default. 
                   Adjust these values if you want to modify prices during peak or off seasons.
                 </Typography>
               </Alert>
-              <Grid container spacing={2}>
+
+              <Grid container spacing={3}>
                 <Grid item xs={12} md={6}>
                   <TextField
                     fullWidth
@@ -528,11 +658,18 @@ const PricingConfigurationComponent: React.FC = () => {
                     inputProps={{ min: 0.1, step: 0.1 }}
                     helperText={`${config.peakSeasonMultiplier.toFixed(1)} = ${calculatePercentageChange(config.peakSeasonMultiplier)} during peak season`}
                     sx={{
-                      '& .MuiInputLabel-root': {
-                        color: COLORS.PRIMARY
+                      '& .MuiOutlinedInput-root': {
+                        backgroundColor: 'background.paper',
+                        borderRadius: 2,
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                          borderColor: COLORS.PRIMARY,
+                        },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                          borderColor: COLORS.PRIMARY,
+                        }
                       },
-                      '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: addAlpha(COLORS.PRIMARY, 0.3)
+                      '& .MuiInputLabel-root.Mui-focused': {
+                        color: COLORS.PRIMARY,
                       }
                     }}
                   />
@@ -547,38 +684,61 @@ const PricingConfigurationComponent: React.FC = () => {
                     inputProps={{ min: 0.1, step: 0.1 }}
                     helperText={`${config.offSeasonMultiplier.toFixed(1)} = ${calculatePercentageChange(config.offSeasonMultiplier)} during off season`}
                     sx={{
-                      '& .MuiInputLabel-root': {
-                        color: COLORS.PRIMARY
+                      '& .MuiOutlinedInput-root': {
+                        backgroundColor: 'background.paper',
+                        borderRadius: 2,
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                          borderColor: COLORS.PRIMARY,
+                        },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                          borderColor: COLORS.PRIMARY,
+                        }
                       },
-                      '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: addAlpha(COLORS.PRIMARY, 0.3)
+                      '& .MuiInputLabel-root.Mui-focused': {
+                        color: COLORS.PRIMARY,
                       }
                     }}
                   />
                 </Grid>
               </Grid>
-            </AccordionDetails>
-          </Accordion>
+            </CardContent>
+          </Card>
         </Grid>
 
         {/* Booking Rules */}
         <Grid item xs={12}>
-          <Accordion>
-            <AccordionSummary 
-              expandIcon={<ExpandMoreIcon />}
-              sx={{
-                backgroundColor: addAlpha(COLORS.PRIMARY, 0.05),
-                '&:hover': {
-                  backgroundColor: addAlpha(COLORS.PRIMARY, 0.1)
-                }
-              }}
-            >
-              <Typography variant="h6" sx={{ color: COLORS.PRIMARY, fontWeight: 'bold' }}>
-                Booking Rules
-              </Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Grid container spacing={2}>
+          <Card sx={{ 
+            bgcolor: 'background.paper',
+            border: '1px solid',
+            borderColor: 'divider',
+            borderRadius: 3,
+            elevation: 0,
+          }}>
+            <CardContent sx={{ p: 4 }}>
+              {/* Booking Rules Section */}
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 2, 
+                mb: 4,
+                p: 2,
+                bgcolor: 'background.default',
+                border: '1px solid',
+                borderColor: 'divider',
+                borderRadius: 2,
+              }}>
+                <SettingsIcon sx={{ color: COLORS.PRIMARY }} />
+                <Box>
+                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: COLORS.PRIMARY }}>
+                    Booking Rules
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Configure booking restrictions and requirements
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Grid container spacing={3}>
                 <Grid item xs={12} md={4}>
                   <TextField
                     fullWidth
@@ -588,14 +748,18 @@ const PricingConfigurationComponent: React.FC = () => {
                     onChange={(e) => handleInputChange('minimumStayNights', parseInt(e.target.value) || 1)}
                     inputProps={{ min: 1 }}
                     sx={{
-                      '& .MuiInputLabel-root': {
-                        color: COLORS.PRIMARY
+                      '& .MuiOutlinedInput-root': {
+                        backgroundColor: 'background.paper',
+                        borderRadius: 2,
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                          borderColor: COLORS.PRIMARY,
+                        },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                          borderColor: COLORS.PRIMARY,
+                        }
                       },
-                      '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: addAlpha(COLORS.PRIMARY, 0.3)
-                      },
-                      '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: COLORS.PRIMARY
+                      '& .MuiInputLabel-root.Mui-focused': {
+                        color: COLORS.PRIMARY,
                       }
                     }}
                   />
@@ -609,14 +773,18 @@ const PricingConfigurationComponent: React.FC = () => {
                     onChange={(e) => handleInputChange('minimumAdvanceBookingHours', parseInt(e.target.value) || 0)}
                     inputProps={{ min: 0 }}
                     sx={{
-                      '& .MuiInputLabel-root': {
-                        color: COLORS.PRIMARY
+                      '& .MuiOutlinedInput-root': {
+                        backgroundColor: 'background.paper',
+                        borderRadius: 2,
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                          borderColor: COLORS.PRIMARY,
+                        },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                          borderColor: COLORS.PRIMARY,
+                        }
                       },
-                      '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: addAlpha(COLORS.PRIMARY, 0.3)
-                      },
-                      '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: COLORS.PRIMARY
+                      '& .MuiInputLabel-root.Mui-focused': {
+                        color: COLORS.PRIMARY,
                       }
                     }}
                   />
@@ -630,41 +798,61 @@ const PricingConfigurationComponent: React.FC = () => {
                     onChange={(e) => handleInputChange('maximumAdvanceBookingDays', parseInt(e.target.value) || 365)}
                     inputProps={{ min: 1 }}
                     sx={{
-                      '& .MuiInputLabel-root': {
-                        color: COLORS.PRIMARY
+                      '& .MuiOutlinedInput-root': {
+                        backgroundColor: 'background.paper',
+                        borderRadius: 2,
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                          borderColor: COLORS.PRIMARY,
+                        },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                          borderColor: COLORS.PRIMARY,
+                        }
                       },
-                      '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: addAlpha(COLORS.PRIMARY, 0.3)
-                      },
-                      '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: COLORS.PRIMARY
+                      '& .MuiInputLabel-root.Mui-focused': {
+                        color: COLORS.PRIMARY,
                       }
                     }}
                   />
                 </Grid>
               </Grid>
-            </AccordionDetails>
-          </Accordion>
+            </CardContent>
+          </Card>
         </Grid>
 
         {/* Discounts & Fees */}
         <Grid item xs={12}>
-          <Accordion>
-            <AccordionSummary 
-              expandIcon={<ExpandMoreIcon />}
-              sx={{
-                backgroundColor: addAlpha(COLORS.PRIMARY, 0.05),
-                '&:hover': {
-                  backgroundColor: addAlpha(COLORS.PRIMARY, 0.1)
-                }
-              }}
-            >
-              <Typography variant="h6" sx={{ color: COLORS.PRIMARY, fontWeight: 'bold' }}>
-                Discounts & Fees
-              </Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Grid container spacing={2}>
+          <Card sx={{ 
+            bgcolor: 'background.paper',
+            border: '1px solid',
+            borderColor: 'divider',
+            borderRadius: 3,
+            elevation: 0,
+          }}>
+            <CardContent sx={{ p: 4 }}>
+              {/* Discounts & Fees Section */}
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 2, 
+                mb: 4,
+                p: 2,
+                bgcolor: 'background.default',
+                border: '1px solid',
+                borderColor: 'divider',
+                borderRadius: 2,
+              }}>
+                <DiscountIcon sx={{ color: COLORS.PRIMARY }} />
+                <Box>
+                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: COLORS.PRIMARY }}>
+                    Discounts & Fees
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Configure discount rates and penalty fees
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Grid container spacing={3}>
                 <Grid item xs={12} md={6}>
                   <TextField
                     fullWidth
@@ -675,14 +863,18 @@ const PricingConfigurationComponent: React.FC = () => {
                     inputProps={{ min: 1 }}
                     helperText="Days in advance to qualify for early booking discount"
                     sx={{
-                      '& .MuiInputLabel-root': {
-                        color: COLORS.PRIMARY
+                      '& .MuiOutlinedInput-root': {
+                        backgroundColor: 'background.paper',
+                        borderRadius: 2,
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                          borderColor: COLORS.PRIMARY,
+                        },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                          borderColor: COLORS.PRIMARY,
+                        }
                       },
-                      '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: addAlpha(COLORS.PRIMARY, 0.3)
-                      },
-                      '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: COLORS.PRIMARY
+                      '& .MuiInputLabel-root.Mui-focused': {
+                        color: COLORS.PRIMARY,
                       }
                     }}
                   />
@@ -697,14 +889,18 @@ const PricingConfigurationComponent: React.FC = () => {
                     inputProps={{ min: 0, max: 1, step: 0.01 }}
                     helperText={`${config.earlyBookingDiscountRate.toFixed(2)} = ${calculateDiscountPercentage(config.earlyBookingDiscountRate)}`}
                     sx={{
-                      '& .MuiInputLabel-root': {
-                        color: COLORS.PRIMARY
+                      '& .MuiOutlinedInput-root': {
+                        backgroundColor: 'background.paper',
+                        borderRadius: 2,
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                          borderColor: COLORS.PRIMARY,
+                        },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                          borderColor: COLORS.PRIMARY,
+                        }
                       },
-                      '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: addAlpha(COLORS.PRIMARY, 0.3)
-                      },
-                      '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: COLORS.PRIMARY
+                      '& .MuiInputLabel-root.Mui-focused': {
+                        color: COLORS.PRIMARY,
                       }
                     }}
                   />
@@ -719,14 +915,18 @@ const PricingConfigurationComponent: React.FC = () => {
                     inputProps={{ min: 0, max: 1, step: 0.01 }}
                     helperText={`${config.loyaltyDiscountRate.toFixed(2)} = ${calculateDiscountPercentage(config.loyaltyDiscountRate)}`}
                     sx={{
-                      '& .MuiInputLabel-root': {
-                        color: COLORS.PRIMARY
+                      '& .MuiOutlinedInput-root': {
+                        backgroundColor: 'background.paper',
+                        borderRadius: 2,
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                          borderColor: COLORS.PRIMARY,
+                        },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                          borderColor: COLORS.PRIMARY,
+                        }
                       },
-                      '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: addAlpha(COLORS.PRIMARY, 0.3)
-                      },
-                      '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: COLORS.PRIMARY
+                      '& .MuiInputLabel-root.Mui-focused': {
+                        color: COLORS.PRIMARY,
                       }
                     }}
                   />
@@ -741,14 +941,18 @@ const PricingConfigurationComponent: React.FC = () => {
                     inputProps={{ min: 0, max: 1, step: 0.01 }}
                     helperText={`${config.cancellationFeeRate.toFixed(2)} = ${calculateFeePercentage(config.cancellationFeeRate)}`}
                     sx={{
-                      '& .MuiInputLabel-root': {
-                        color: COLORS.PRIMARY
+                      '& .MuiOutlinedInput-root': {
+                        backgroundColor: 'background.paper',
+                        borderRadius: 2,
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                          borderColor: COLORS.PRIMARY,
+                        },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                          borderColor: COLORS.PRIMARY,
+                        }
                       },
-                      '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: addAlpha(COLORS.PRIMARY, 0.3)
-                      },
-                      '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: COLORS.PRIMARY
+                      '& .MuiInputLabel-root.Mui-focused': {
+                        color: COLORS.PRIMARY,
                       }
                     }}
                   />
@@ -763,14 +967,18 @@ const PricingConfigurationComponent: React.FC = () => {
                     inputProps={{ min: 0, max: 1, step: 0.01 }}
                     helperText={`${config.modificationFeeRate.toFixed(2)} = ${calculateFeePercentage(config.modificationFeeRate)}`}
                     sx={{
-                      '& .MuiInputLabel-root': {
-                        color: COLORS.PRIMARY
+                      '& .MuiOutlinedInput-root': {
+                        backgroundColor: 'background.paper',
+                        borderRadius: 2,
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                          borderColor: COLORS.PRIMARY,
+                        },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                          borderColor: COLORS.PRIMARY,
+                        }
                       },
-                      '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: addAlpha(COLORS.PRIMARY, 0.3)
-                      },
-                      '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: COLORS.PRIMARY
+                      '& .MuiInputLabel-root.Mui-focused': {
+                        color: COLORS.PRIMARY,
                       }
                     }}
                   />
@@ -785,40 +993,60 @@ const PricingConfigurationComponent: React.FC = () => {
                     inputProps={{ min: 0, max: 1, step: 0.01 }}
                     helperText={`${config.noShowPenaltyRate.toFixed(2)} = ${calculateFeePercentage(config.noShowPenaltyRate)} penalty`}
                     sx={{
-                      '& .MuiInputLabel-root': {
-                        color: COLORS.PRIMARY
+                      '& .MuiOutlinedInput-root': {
+                        backgroundColor: 'background.paper',
+                        borderRadius: 2,
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                          borderColor: COLORS.PRIMARY,
+                        },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                          borderColor: COLORS.PRIMARY,
+                        }
                       },
-                      '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: addAlpha(COLORS.PRIMARY, 0.3)
-                      },
-                      '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: COLORS.PRIMARY
+                      '& .MuiInputLabel-root.Mui-focused': {
+                        color: COLORS.PRIMARY,
                       }
                     }}
                   />
                 </Grid>
               </Grid>
-            </AccordionDetails>
-          </Accordion>
+            </CardContent>
+          </Card>
         </Grid>
 
         {/* Notes */}
         <Grid item xs={12}>
-          <Accordion>
-            <AccordionSummary 
-              expandIcon={<ExpandMoreIcon />}
-              sx={{
-                backgroundColor: addAlpha(COLORS.PRIMARY, 0.05),
-                '&:hover': {
-                  backgroundColor: addAlpha(COLORS.PRIMARY, 0.1)
-                }
-              }}
-            >
-              <Typography variant="h6" sx={{ color: COLORS.PRIMARY, fontWeight: 'bold' }}>
-                Additional Notes
-              </Typography>
-            </AccordionSummary>
-            <AccordionDetails>
+          <Card sx={{ 
+            bgcolor: 'background.paper',
+            border: '1px solid',
+            borderColor: 'divider',
+            borderRadius: 3,
+            elevation: 0,
+          }}>
+            <CardContent sx={{ p: 4 }}>
+              {/* Notes Section */}
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 2, 
+                mb: 4,
+                p: 2,
+                bgcolor: 'background.default',
+                border: '1px solid',
+                borderColor: 'divider',
+                borderRadius: 2,
+              }}>
+                <InfoIcon sx={{ color: COLORS.PRIMARY }} />
+                <Box>
+                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: COLORS.PRIMARY }}>
+                    Additional Notes
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Add any additional configuration notes or comments
+                  </Typography>
+                </Box>
+              </Box>
+
               <TextField
                 fullWidth
                 label="Configuration Notes"
@@ -828,25 +1056,43 @@ const PricingConfigurationComponent: React.FC = () => {
                 onChange={(e) => handleInputChange('notes', e.target.value)}
                 placeholder="Add any notes about this pricing configuration..."
                 sx={{
-                  '& .MuiInputLabel-root': {
-                    color: COLORS.PRIMARY
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: 'background.paper',
+                    borderRadius: 2,
+                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                      borderColor: COLORS.PRIMARY,
+                    },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                      borderColor: COLORS.PRIMARY,
+                    }
                   },
-                  '& .MuiOutlinedInput-notchedOutline': {
-                    borderColor: addAlpha(COLORS.PRIMARY, 0.3)
-                  },
-                  '&:hover .MuiOutlinedInput-notchedOutline': {
-                    borderColor: COLORS.PRIMARY
+                  '& .MuiInputLabel-root.Mui-focused': {
+                    color: COLORS.PRIMARY,
                   }
                 }}
               />
-            </AccordionDetails>
-          </Accordion>
+            </CardContent>
+          </Card>
         </Grid>
       </Grid>
 
       {/* Fixed Pricing Confirmation */}
-      <Alert severity="success" sx={{ mt: 2 }}>
-        <Typography variant="body2">
+      <Alert 
+        severity="success" 
+        sx={{ 
+          mt: 3,
+          borderRadius: 2,
+          bgcolor: alpha('#4A9B9B', 0.1),
+          border: `1px solid ${alpha('#4A9B9B', 0.3)}`,
+          '& .MuiAlert-message': {
+            color: theme.palette.text.primary
+          },
+          '& .MuiAlert-icon': {
+            color: '#4A9B9B'
+          }
+        }}
+      >
+        <Typography variant="body2" sx={{ fontWeight: 500 }}>
           <strong>Fixed Pricing Strategy Active:</strong> Room prices will remain consistent based on your configured rates. 
           All taxes (VAT: {calculateTaxPercentage(config.vatRate)}, Service Tax: {calculateTaxPercentage(config.serviceTaxRate)}, 
           {config.cityTaxRate > 0 && `City Tax: ${calculateTaxPercentage(config.cityTaxRate)}`}) 
