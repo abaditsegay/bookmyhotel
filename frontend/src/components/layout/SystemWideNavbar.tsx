@@ -93,8 +93,9 @@ export const SystemWideNavbar: React.FC = () => {
       elevation={0} // Remove elevation for better performance
       sx={{ 
         backgroundColor: theme.palette.primary.main,
-        backgroundImage: theme.custom?.constants?.gradients?.primaryButton || `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+        backgroundImage: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
         borderBottom: `1px solid ${theme.palette.divider}`, // Add subtle border for structure
+        zIndex: theme.zIndex.appBar, // Ensure proper z-index above sidebar
       }}
     >
       <Toolbar>

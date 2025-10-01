@@ -8,4 +8,13 @@ export { default as StandardLoading } from './StandardLoading';
 export { default as StandardError } from './StandardError';
 export { default as ErrorBoundary } from './ErrorBoundary';
 export { default as NavigationBreadcrumbs } from './NavigationBreadcrumbs';
+
+// Phase 2: Enhanced UX Components
+export { default as EnhancedLoading } from './EnhancedLoading';
+export { default as EnhancedTextField } from './EnhancedTextField';
+export { NotificationProvider, useNotification } from './NotificationSystem';
+export { InteractiveCard, AnimatedCounter, AnimatedProgressBar } from './MicroInteractions';
+export { validationRules } from './EnhancedTextField';
+
 export type { ErrorFallbackProps } from './ErrorBoundary';
+export type { NotificationOptions } from './NotificationSystem';

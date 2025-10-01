@@ -7,7 +7,6 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { StandardError } from '../components/common';
-import { themeConstants } from '../theme/theme';
 
 /**
  * 404 Not Found page component
@@ -66,7 +65,7 @@ const NotFoundPage: React.FC = () => {
           onClick={handleGoHome}
           sx={{ 
             minWidth: 120,
-            height: themeConstants.buttonSizes.medium
+            height: '44px'
           }}
         >
           Go Home
@@ -78,7 +77,7 @@ const NotFoundPage: React.FC = () => {
           onClick={handleGoBack}
           sx={{ 
             minWidth: 120,
-            height: themeConstants.buttonSizes.medium
+            height: '44px'
           }}
         >
           Go Back

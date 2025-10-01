@@ -1,301 +1,203 @@
-import { createTheme } from '@mui/material/styles';
+// Enhanced Material-UI Theme Configuration
+// Integrates our design system with Material-UI components
 
-// Custom theme constants
-export const themeConstants = {
-  // Brand colors
-  brandGold: '#FFD700',
-  hotelShopRed: '#cc0000',
-  
-  // Payment method colors
-  mbirrOrange: '#FF6B35',
-  telebirrGreen: '#00A651',
-  
-  // Dark theme payment method colors (for better contrast)
-  darkTheme: {
-    mbirrOrange: '#FF8A5C', // Lighter orange for dark backgrounds
-    telebirrGreen: '#2ECC71', // Lighter green for dark backgrounds
-    cardBackground: 'rgba(255, 255, 255, 0.05)', // Subtle card background
-    selectedCardBackground: 'rgba(255, 255, 255, 0.1)', // Selected card background
-    borderColor: 'rgba(255, 255, 255, 0.12)', // Border color for dark theme
+import { createTheme, ThemeOptions } from '@mui/material/styles';
+import { designSystem, animations } from './designSystem';
+
+const themeOptions: ThemeOptions = {
+  palette: {
+    mode: 'light',
+    primary: designSystem.colors.primary,
+    secondary: designSystem.colors.secondary,
+    success: designSystem.colors.success,
+    warning: designSystem.colors.warning,
+    error: designSystem.colors.error,
+    info: designSystem.colors.info,
+    text: designSystem.colors.text,
+    background: designSystem.colors.background,
+    divider: designSystem.colors.divider
   },
   
-  // Layout constants
-  logoHeight: 32, // 32px - compact navbar logo
-  headerMaxWidths: {
-    xs: '280px',
-    sm: '400px', 
-    md: '600px'
-  },
-  
-  // Common dimensions
-  commonHeights: {
-    loading: '200px',
-    scrollableArea: '300px',
-    uploadArea: '400px'
-  },
-  
-  // Standard spacing values (theme.spacing() multipliers)
-  spacing: {
-    xs: 0.5, // 4px
-    sm: 1,   // 8px  
-    md: 2,   // 16px
-    lg: 3,   // 24px
-    xl: 4,   // 32px
-    xxl: 6,  // 48px
-  },
-  
-  // Standard button sizes with mobile-optimized touch targets
-  buttonSizes: {
-    small: { height: 36, padding: '8px 16px' }, // Increased from 32px for better touch
-    medium: { height: 44, padding: '10px 24px' }, // Increased from 40px for better touch
-    large: { height: 52, padding: '12px 32px' }, // Increased from 48px for better touch
+  typography: {
+    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+    h1: designSystem.typography.h1,
+    h2: designSystem.typography.h2,
+    h3: designSystem.typography.h3,
+    h4: designSystem.typography.h4,
+    h5: designSystem.typography.h5,
+    h6: designSystem.typography.h6,
+    body1: designSystem.typography.body1,
+    body2: designSystem.typography.body2,
+    caption: designSystem.typography.caption,
+    button: designSystem.typography.button
   },
 
-  // Mobile-optimized touch targets (minimum 44px recommended)
-  touchTargets: {
-    minimum: 44, // Apple HIG and Material Design minimum
-    comfortable: 48, // Comfortable touch target
-    large: 56, // Large touch target for primary actions
+  spacing: designSystem.spacing.sm, // Base spacing unit (8px)
+
+  shape: {
+    borderRadius: designSystem.borderRadius.md
   },
 
-  // Mobile-specific spacing (responsive spacing multipliers)
-  mobileSpacing: {
-    xs: { mobile: 0.5, desktop: 0.5 }, // 4px
-    sm: { mobile: 1, desktop: 1 },     // 8px
-    md: { mobile: 1.5, desktop: 2 },   // 12px mobile, 16px desktop
-    lg: { mobile: 2, desktop: 3 },     // 16px mobile, 24px desktop
-    xl: { mobile: 2.5, desktop: 4 },   // 20px mobile, 32px desktop
-    xxl: { mobile: 3, desktop: 6 },    // 24px mobile, 48px desktop
-  },
-  
-  // Shadows and effects
-  shadows: {
-    textShadow: '2px 2px 4px rgba(0,0,0,0.7)',
-    cardShadow: '0 8px 32px rgba(0,0,0,0.3)',
-    buttonShadow: '0 4px 20px rgba(0,0,0,0.5)'
-  },
-  
-  // Border styles
-  borders: {
-    light: '1px solid',
-    medium: '2px solid',
-    dashed: '2px dashed'
-  },
-  
-  // Scrollbar styles
-  scrollbar: {
-    width: 6,
-    track: '#f1f1f1',
-    thumb: '#c1c1c1',
-    thumbRadius: 3,
-    thumbHover: '#a8a8a8',
-  },
-  
-  // Transparency values
-  alpha: {
-    low: 0.1,
-    medium: 0.2,
-    high: 0.3,
-  },
-  
-  // Gradient styles
-  gradients: {
-    primaryButton: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
-    successButton: 'linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)',
-  },
-  
-  // Performance-optimized animation styles
-  animations: {
-    fast: 'all 0.15s ease',
-    normal: 'all 0.2s ease', 
-    slow: 'all 0.3s ease',
-    none: 'none',
-  },
-  
-  // Lightweight shadow alternatives
-  lightShadows: {
-    minimal: '0 1px 3px rgba(0,0,0,0.1)',
-    light: '0 2px 4px rgba(0,0,0,0.1)', 
-    medium: '0 4px 8px rgba(0,0,0,0.1)',
-  },
+  shadows: [
+    'none',
+    designSystem.shadows.xs,
+    designSystem.shadows.sm,
+    designSystem.shadows.sm,
+    designSystem.shadows.md,
+    designSystem.shadows.md,
+    designSystem.shadows.lg,
+    designSystem.shadows.lg,
+    designSystem.shadows.xl,
+    designSystem.shadows.xl,
+    designSystem.shadows.xl,
+    designSystem.shadows.xl,
+    designSystem.shadows.xl,
+    designSystem.shadows.xl,
+    designSystem.shadows.xl,
+    designSystem.shadows.xl,
+    designSystem.shadows.xl,
+    designSystem.shadows.xl,
+    designSystem.shadows.xl,
+    designSystem.shadows.xl,
+    designSystem.shadows.xl,
+    designSystem.shadows.xl,
+    designSystem.shadows.xl,
+    designSystem.shadows.xl,
+    designSystem.shadows.xl
+  ],
 
-  // Mobile-first responsive utilities
-  mobile: {
-    // Safe area insets for notched devices
-    safeArea: {
-      top: 'env(safe-area-inset-top)',
-      bottom: 'env(safe-area-inset-bottom)',
-      left: 'env(safe-area-inset-left)',
-      right: 'env(safe-area-inset-right)',
-    },
-    
-    // Mobile viewport units
-    viewport: {
-      fullHeight: '100dvh', // Dynamic viewport height
-      smallHeight: '100svh', // Small viewport height
-      largeHeight: '100lvh', // Large viewport height
+  components: {
+    // Button component customization
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          textTransform: 'none',
+          fontWeight: 500,
+          borderRadius: designSystem.borderRadius.md,
+          transition: `all ${animations.duration.short}ms ${animations.easing.easeInOut}`
+        },
+        contained: {
+          boxShadow: designSystem.shadows.sm,
+          '&:hover': {
+            boxShadow: designSystem.shadows.md
+          }
+        },
+        outlined: {
+          borderWidth: '1.5px',
+          '&:hover': {
+            borderWidth: '1.5px'
+          }
+        }
+      }
     },
 
-    // Mobile-optimized font sizes
-    typography: {
-      h1: { mobile: '1.75rem', desktop: '2.5rem' }, // 28px mobile, 40px desktop
-      h2: { mobile: '1.5rem', desktop: '2rem' },    // 24px mobile, 32px desktop  
-      h3: { mobile: '1.25rem', desktop: '1.5rem' }, // 20px mobile, 24px desktop
-      h4: { mobile: '1.125rem', desktop: '1.25rem' }, // 18px mobile, 20px desktop
-      body1: { mobile: '0.875rem', desktop: '1rem' }, // 14px mobile, 16px desktop
-      body2: { mobile: '0.75rem', desktop: '0.875rem' }, // 12px mobile, 14px desktop
+    // Card component customization
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          borderRadius: designSystem.borderRadius.lg,
+          border: `1px solid ${designSystem.colors.primary[50]}`,
+          boxShadow: designSystem.shadows.card,
+          transition: `all ${animations.duration.short}ms ${animations.easing.easeInOut}`,
+          '&:hover': {
+            boxShadow: designSystem.shadows.cardHover
+          }
+        }
+      }
     },
 
-    // Mobile interaction states
-    interactions: {
-      tapHighlight: 'transparent', // Remove iOS tap highlight
-      userSelect: 'none', // Prevent text selection on buttons
-      touchAction: 'manipulation', // Prevent zoom on double tap
+    // TextField component customization
+    MuiTextField: {
+      styleOverrides: {
+        root: {
+          '& .MuiOutlinedInput-root': {
+            borderRadius: designSystem.borderRadius.md,
+            '&:hover .MuiOutlinedInput-notchedOutline': {
+              borderColor: designSystem.colors.primary.main
+            },
+            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+              borderColor: designSystem.colors.primary.main
+            }
+          },
+          '& .MuiInputLabel-root.Mui-focused': {
+            color: designSystem.colors.primary.main
+          }
+        }
+      }
     },
-  },
+
+    // FormControl component customization
+    MuiFormControl: {
+      styleOverrides: {
+        root: {
+          '& .MuiOutlinedInput-root': {
+            borderRadius: designSystem.borderRadius.md,
+            '&:hover .MuiOutlinedInput-notchedOutline': {
+              borderColor: designSystem.colors.primary.main
+            },
+            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+              borderColor: designSystem.colors.primary.main
+            }
+          },
+          '& .MuiInputLabel-root.Mui-focused': {
+            color: designSystem.colors.primary.main
+          }
+        }
+      }
+    },
+
+    // Dialog component customization
+    MuiDialog: {
+      styleOverrides: {
+        paper: {
+          borderRadius: designSystem.borderRadius.lg,
+          boxShadow: designSystem.shadows.dialog
+        }
+      }
+    },
+
+    // Chip component customization
+    MuiChip: {
+      styleOverrides: {
+        root: {
+          borderRadius: designSystem.borderRadius.md,
+          fontWeight: 500
+        }
+      }
+    },
+
+    // Divider component customization
+    MuiDivider: {
+      styleOverrides: {
+        root: {
+          borderColor: designSystem.colors.primary[50]
+        }
+      }
+    }
+  }
 };
 
-// Create theme with mode support
-const createAppTheme = (mode: 'light' | 'dark' = 'light') => createTheme({
-  palette: {
-    mode,
-    primary: {
-      main: mode === 'light' ? '#1976d2' : '#90caf9',
-      light: mode === 'light' ? '#42a5f5' : '#e3f2fd',
-      dark: mode === 'light' ? '#1565c0' : '#42a5f5',
-      contrastText: mode === 'light' ? '#ffffff' : '#000000',
-    },
-    secondary: {
-      main: mode === 'light' ? '#f50057' : '#f48fb1',
-      light: mode === 'light' ? '#ff5983' : '#fce4ec',
-      dark: mode === 'light' ? '#c51162' : '#f50057',
-      contrastText: '#ffffff',
-    },
-    background: {
-      default: mode === 'light' ? '#f5f5f5' : '#121212',
-      paper: mode === 'light' ? '#ffffff' : '#1e1e1e',
-    },
-    text: {
-      primary: mode === 'light' ? 'rgba(0, 0, 0, 0.87)' : 'rgba(255, 255, 255, 0.87)',
-      secondary: mode === 'light' ? 'rgba(0, 0, 0, 0.6)' : 'rgba(255, 255, 255, 0.6)',
-    },
-    divider: mode === 'light' ? 'rgba(0, 0, 0, 0.12)' : 'rgba(255, 255, 255, 0.12)',
-    action: {
-      hover: mode === 'light' ? 'rgba(0, 0, 0, 0.04)' : 'rgba(255, 255, 255, 0.08)',
-      selected: mode === 'light' ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.16)',
-      disabled: mode === 'light' ? 'rgba(0, 0, 0, 0.26)' : 'rgba(255, 255, 255, 0.3)',
-      disabledBackground: mode === 'light' ? 'rgba(0, 0, 0, 0.12)' : 'rgba(255, 255, 255, 0.12)',
-    },
-    // Add custom colors with dark mode support
-    success: {
-      main: mode === 'light' ? themeConstants.telebirrGreen : themeConstants.darkTheme.telebirrGreen,
-      light: mode === 'light' ? '#F0FFF4' : 'rgba(46, 204, 113, 0.16)',
-      dark: mode === 'light' ? '#1B5E20' : '#27AE60',
-      contrastText: '#ffffff',
-    },
-    warning: {
-      main: mode === 'light' ? themeConstants.mbirrOrange : themeConstants.darkTheme.mbirrOrange,
-      light: mode === 'light' ? '#FFF5F0' : 'rgba(255, 138, 92, 0.16)',
-      dark: mode === 'light' ? '#E65100' : '#FF6B35',
-      contrastText: '#ffffff',
-    },
-    info: {
-      main: mode === 'light' ? '#2196f3' : '#64b5f6',
-      light: mode === 'light' ? '#e3f2fd' : 'rgba(100, 181, 246, 0.16)',
-      dark: mode === 'light' ? '#0D47A1' : '#2196f3',
-      contrastText: '#ffffff',
-    },
-    error: {
-      main: mode === 'light' ? '#d32f2f' : '#f44336',
-      light: mode === 'light' ? '#ffebee' : 'rgba(244, 67, 54, 0.16)',
-      dark: mode === 'light' ? '#c62828' : '#d32f2f',
-      contrastText: '#ffffff',
-    },
-  },
-  typography: {
-    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
-    h1: {
-      fontWeight: 600,
-      fontSize: '1.75rem', // Mobile-first: 28px
-      '@media (min-width:600px)': {
-        fontSize: '2.5rem', // Desktop: 40px
-      },
-    },
-    h2: {
-      fontWeight: 600,
-      fontSize: '1.5rem', // Mobile-first: 24px
-      '@media (min-width:600px)': {
-        fontSize: '2rem', // Desktop: 32px
-      },
-    },
-    h3: {
-      fontWeight: 600,
-      fontSize: '1.25rem', // Mobile-first: 20px
-      '@media (min-width:600px)': {
-        fontSize: '1.5rem', // Desktop: 24px
-      },
-    },
-    h4: {
-      fontWeight: 500,
-      fontSize: '1.125rem', // Mobile-first: 18px
-      '@media (min-width:600px)': {
-        fontSize: '1.25rem', // Desktop: 20px
-      },
-    },
-    body1: {
-      fontSize: '0.875rem', // Mobile-first: 14px
-      '@media (min-width:600px)': {
-        fontSize: '1rem', // Desktop: 16px
-      },
-    },
-    body2: {
-      fontSize: '0.75rem', // Mobile-first: 12px
-      '@media (min-width:600px)': {
-        fontSize: '0.875rem', // Desktop: 14px
-      },
-    },
-  },
-  breakpoints: {
-    values: {
-      xs: 0, // Mobile first
-      sm: 600, // Small tablets
-      md: 900, // Tablets
-      lg: 1200, // Small laptops
-      xl: 1536, // Large screens
-    },
-  },
-  shape: {
-    borderRadius: 8,
-  },
-  spacing: 8, // Base spacing unit
-});
+export const theme = createTheme(themeOptions);
 
-// Extend theme with custom properties
+// Extend theme with custom properties for backward compatibility
 declare module '@mui/material/styles' {
   interface Theme {
     custom: {
-      constants: typeof themeConstants;
+      designSystem: typeof designSystem;
     };
   }
   interface ThemeOptions {
     custom?: {
-      constants?: typeof themeConstants;
+      designSystem?: typeof designSystem;
     };
   }
 }
 
-// Create the extended theme with custom properties
-const createExtendedTheme = (mode: 'light' | 'dark' = 'light') => {
-  const baseTheme = createAppTheme(mode);
-  return createTheme(baseTheme, {
-    custom: {
-      constants: themeConstants,
-    },
-  });
-};
+// Create the extended theme with design system access
+const extendedTheme = createTheme(theme, {
+  custom: {
+    designSystem,
+  },
+});
 
-const extendedTheme = createExtendedTheme('light'); // Default to light mode
-
-// Export both the theme creation functions and default theme
-export { createAppTheme, createExtendedTheme };
 export default extendedTheme;

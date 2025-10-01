@@ -20,7 +20,6 @@ import {
   Phone as PhoneIcon
 } from '@mui/icons-material';
 import TokenManager from '../utils/tokenManager';
-import { themeConstants } from '../theme/theme';
 import { StandardCard, StandardButton, StandardLoading, StandardError } from './common';
 
 interface PaymentStatusProps {
@@ -181,13 +180,13 @@ const PaymentStatusTracker: React.FC<PaymentStatusProps> = ({
     if (provider === 'MBIRR') {
       return { 
         name: 'M-birr', 
-        color: theme.palette.mode === 'dark' ? themeConstants.darkTheme.mbirrOrange : themeConstants.mbirrOrange, 
+        color: theme.palette.mode === 'dark' ? '#FFB347' : '#FFA500', 
         dialCode: '*847#' 
       };
     } else {
       return { 
         name: 'Telebirr', 
-        color: theme.palette.mode === 'dark' ? themeConstants.darkTheme.telebirrGreen : themeConstants.telebirrGreen, 
+        color: theme.palette.mode === 'dark' ? '#81C784' : '#4CAF50', 
         dialCode: '*127#' 
       };
     }
@@ -302,10 +301,10 @@ const PaymentStatusTracker: React.FC<PaymentStatusProps> = ({
             variant="outlined"
             sx={{
               backgroundColor: theme.palette.mode === 'dark' 
-                ? themeConstants.darkTheme.cardBackground 
+                ? 'rgba(255, 255, 255, 0.05)' 
                 : 'background.paper',
               borderColor: theme.palette.mode === 'dark' 
-                ? themeConstants.darkTheme.borderColor 
+                ? 'rgba(255, 255, 255, 0.1)' 
                 : 'divider'
             }}
           >
@@ -339,10 +338,10 @@ const PaymentStatusTracker: React.FC<PaymentStatusProps> = ({
             variant="outlined"
             sx={{
               backgroundColor: theme.palette.mode === 'dark' 
-                ? themeConstants.darkTheme.cardBackground 
+                ? 'rgba(255, 255, 255, 0.05)' 
                 : 'background.paper',
               borderColor: theme.palette.mode === 'dark' 
-                ? themeConstants.darkTheme.borderColor 
+                ? 'rgba(255, 255, 255, 0.1)' 
                 : 'divider'
             }}
           >
@@ -401,9 +400,9 @@ const PaymentStatusTracker: React.FC<PaymentStatusProps> = ({
               startIcon={loading ? <CircularProgress size={16} /> : <RefreshIcon />}
               disabled={loading}
               sx={{ 
-                minHeight: themeConstants.touchTargets.minimum,
+                minHeight: '44px',
                 minWidth: isMobile ? '100%' : 'auto',
-                height: isMobile ? themeConstants.touchTargets.large : themeConstants.touchTargets.minimum
+                height: isMobile ? '56px' : '44px'
               }}
             >
               {loading ? 'Refreshing...' : 'Refresh Status'}
@@ -415,9 +414,9 @@ const PaymentStatusTracker: React.FC<PaymentStatusProps> = ({
                 onClick={() => window.location.reload()}
                 sx={{ 
                   bgcolor: providerInfo.color,
-                  minHeight: themeConstants.touchTargets.minimum,
+                  minHeight: '44px',
                   minWidth: isMobile ? '100%' : 'auto',
-                  height: isMobile ? themeConstants.touchTargets.large : themeConstants.touchTargets.minimum,
+                  height: isMobile ? '56px' : '44px',
                   '&:hover': {
                     bgcolor: providerInfo.color,
                     filter: 'brightness(0.9)'
@@ -432,9 +431,9 @@ const PaymentStatusTracker: React.FC<PaymentStatusProps> = ({
                 onClick={() => window.location.href = '/bookings'}
                 color="success"
                 sx={{ 
-                  minHeight: themeConstants.touchTargets.minimum,
+                  minHeight: '44px',
                   minWidth: isMobile ? '100%' : 'auto',
-                  height: isMobile ? themeConstants.touchTargets.large : themeConstants.touchTargets.minimum
+                  height: isMobile ? '56px' : '44px'
                 }}
               >
                 View Booking

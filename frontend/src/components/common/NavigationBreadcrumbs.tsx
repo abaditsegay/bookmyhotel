@@ -11,7 +11,7 @@ import {
   Receipt as BookingIcon
 } from '@mui/icons-material';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { themeConstants } from '../../theme/theme';
+import { designSystem } from '../../theme/designSystem';
 
 interface BreadcrumbItem {
   label: string;
@@ -146,8 +146,8 @@ const NavigationBreadcrumbs: React.FC<NavigationBreadcrumbsProps> = ({
 
   return (
     <Box sx={{ 
-      mb: themeConstants.spacing.md,
-      py: themeConstants.spacing.sm,
+      mb: designSystem.spacing.md,
+      py: designSystem.spacing.sm,
       borderBottom: '1px solid',
       borderColor: 'divider'
     }}>
@@ -190,7 +190,7 @@ const NavigationBreadcrumbs: React.FC<NavigationBreadcrumbsProps> = ({
                     color: 'primary.main',
                     textDecoration: 'none',
                     cursor: 'pointer',
-                    padding: `${themeConstants.spacing.xs}px ${themeConstants.spacing.sm}px`,
+                    padding: `${designSystem.spacing.xs}px ${designSystem.spacing.sm}px`,
                     borderRadius: 1,
                     transition: 'all 0.2s ease-in-out',
                     '&:hover': {

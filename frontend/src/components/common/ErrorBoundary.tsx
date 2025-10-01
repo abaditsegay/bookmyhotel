@@ -7,7 +7,7 @@ import {
   ContactSupport as SupportIcon
 } from '@mui/icons-material';
 import StandardError from './StandardError';
-import { themeConstants } from '../../theme/theme';
+import { designSystem } from '../../theme/designSystem';
 
 interface ErrorBoundaryProps {
   /**
@@ -179,7 +179,7 @@ const DefaultErrorFallback: React.FC<ErrorFallbackProps> = ({
           onClick={resetError}
           sx={{ 
             minWidth: 120,
-            height: themeConstants.buttonSizes.medium
+            height: '44px'
           }}
         >
           Try Again
@@ -192,7 +192,7 @@ const DefaultErrorFallback: React.FC<ErrorFallbackProps> = ({
             onClick={handleGoHome}
             sx={{ 
               minWidth: 120,
-              height: themeConstants.buttonSizes.medium
+              height: '44px'
             }}
           >
             Go Home
@@ -205,7 +205,7 @@ const DefaultErrorFallback: React.FC<ErrorFallbackProps> = ({
           onClick={handleReportError}
           sx={{ 
             minWidth: 120,
-            height: themeConstants.buttonSizes.medium
+            height: '44px'
           }}
         >
           Report Issue

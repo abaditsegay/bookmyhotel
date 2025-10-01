@@ -1,6 +1,6 @@
 import React from 'react';
 import { TextField, TextFieldProps } from '@mui/material';
-import { themeConstants } from '../../theme/theme';
+import { designSystem } from '../../theme/designSystem';
 
 interface StandardTextFieldProps extends Omit<TextFieldProps, 'size'> {
   fieldSize?: 'small' | 'medium';
@@ -68,7 +68,7 @@ const StandardTextField: React.FC<StandardTextFieldProps> = ({
         
         // Border radius consistency
         '& .MuiOutlinedInput-root': {
-          borderRadius: `${themeConstants.spacing.xs * 8}px`, // 4px consistent with other components
+          borderRadius: `${designSystem.borderRadius.sm}px`, // 4px consistent with other components
           transition: 'all 0.2s ease-in-out',
           
           // Default state
@@ -101,7 +101,7 @@ const StandardTextField: React.FC<StandardTextFieldProps> = ({
         
         // Filled variant styling
         '& .MuiFilledInput-root': {
-          borderRadius: `${themeConstants.spacing.xs * 8}px ${themeConstants.spacing.xs * 8}px 0 0`,
+          borderRadius: `${designSystem.borderRadius.sm}px ${designSystem.borderRadius.sm}px 0 0`,
           '&:before, &:after': {
             borderRadius: 0,
           },
@@ -125,8 +125,8 @@ const StandardTextField: React.FC<StandardTextFieldProps> = ({
         
         // Helper text styling
         '& .MuiFormHelperText-root': {
-          marginLeft: themeConstants.spacing.xs * 2, // 4px
-          marginTop: themeConstants.spacing.xs, // 4px
+          marginLeft: designSystem.spacing.sm, // 8px
+          marginTop: designSystem.spacing.xs, // 4px
           fontSize: '12px',
         },
         

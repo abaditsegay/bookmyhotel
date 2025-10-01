@@ -2,14 +2,13 @@ import React, { useState } from 'react';
 import {
   Typography,
   Box,
-  Button,
   Container,
-  Card,
-  CardContent,
   useTheme,
   useMediaQuery,
 } from '@mui/material';
 import { StandardLoading, StandardError, ErrorBoundary } from '../components/common';
+import StandardCard from '../components/common/StandardCard';
+import StandardButton from '../components/common/StandardButton';
 
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -75,7 +74,7 @@ const HotelSearchPage: React.FC = () => {
         {/* 
         {!isOperationsUser && (
           <Box sx={{ gridArea: 'leftAd' }}>
-            <Card 
+            <StandardCard 
               elevation={1}
               sx={{ 
                 height: {
@@ -129,13 +128,13 @@ const HotelSearchPage: React.FC = () => {
               }}>
                 <VerticalHotelAdvertisementBanner maxHotels={6} />
               </Box>
-            </Card>
+            </StandardCard>
           </Box>
         )}
         */}
 
       {/* Main Search Form Section */}
-      <Card 
+      <StandardCard 
         elevation={0}
         sx={{ 
           mb: isMobile ? 3 : 4,
@@ -145,7 +144,7 @@ const HotelSearchPage: React.FC = () => {
           boxShadow: 'none',
         }}
       >
-        <CardContent sx={{ p: isMobile ? 2.5 : 4 }}>
+        <Box sx={{ p: isMobile ? 2.5 : 4 }}>
           <Box sx={{ 
             textAlign: 'center',
             mb: isMobile ? 2 : 3,
@@ -183,20 +182,17 @@ const HotelSearchPage: React.FC = () => {
             size="large"
             overlay={false}
           />
-        </CardContent>
-      </Card>
+        </Box>
+      </StandardCard>
 
       {/* Find My Booking Section */}
-      <Card 
-        elevation={0}
+      <StandardCard 
+        cardVariant="gradient"
         sx={{ 
-          backgroundColor: theme.palette.background.paper,
-          border: `1px solid rgba(224, 224, 224, 0.3)`,
-          borderRadius: 2,
-          boxShadow: 'none',
+          textAlign: 'center',
         }}
       >
-        <CardContent sx={{ p: isMobile ? 2.5 : 4 }}>
+        <Box sx={{ p: isMobile ? 2.5 : 4 }}>
           <Box sx={{ 
             textAlign: 'center',
             mb: isMobile ? 2 : 3,
@@ -214,37 +210,31 @@ const HotelSearchPage: React.FC = () => {
           </Box>
 
           <Box sx={{ textAlign: 'center', pt: 2 }}>
-            <Button
-              variant="outlined"
-              size="large"
+                        <StandardButton
+              variant="contained"
+              buttonSize="large"
+              gradient
+              fullWidth={isMobile}
               onClick={() => navigate('/find-booking')}
-              sx={{ 
-                borderRadius: 1,
-                textTransform: 'none',
-                fontWeight: 500,
-                px: isMobile ? 3 : 4,
-                py: 1.2,
-                fontSize: isMobile ? '1rem' : '1.1rem',
-                width: isMobile ? '100%' : 'auto',
-                maxWidth: isMobile ? '280px' : 'none',
-                borderColor: 'rgba(224, 224, 224, 0.5)',
-                color: 'text.primary',
-                boxShadow: 'none',
+              sx={{
+                mt: 2,
+                py: 1.5,
+                fontSize: '1.1rem',
+                fontWeight: 600,
+                borderRadius: 2,
+                background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
                 '&:hover': {
-                  borderColor: 'primary.main',
-                  backgroundColor: 'primary.main',
-                  color: 'primary.contrastText',
-                  boxShadow: 'none',
-                  transform: 'none',
+                  background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
+                  transform: 'translateY(-1px)',
                 },
                 transition: 'all 0.2s ease-in-out',
               }}
             >
               {t('hotelSearch.alreadyHaveBooking.button')}
-            </Button>
+            </StandardButton>
           </Box>
-        </CardContent>
-      </Card>
+        </Box>
+      </StandardCard>
     </Container>
     </Box>
   );

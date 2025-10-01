@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
-import { lightTheme, darkTheme } from '../theme/themes';
+import { ThemeProvider as MuiThemeProvider, createTheme } from '@mui/material/styles';
+import extendedTheme from '../theme/theme';
 
 export type ThemeMode = 'light' | 'dark';
 
@@ -44,7 +44,21 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     setThemeModeState(prevMode => prevMode === 'light' ? 'dark' : 'light');
   };
 
-  const currentTheme = themeMode === 'dark' ? darkTheme : lightTheme;
+  const currentTheme = createTheme(extendedTheme, {
+    palette: {
+      mode: themeMode,
+      ...(themeMode === 'dark' && {
+        background: {
+          default: '#121212',
+          paper: '#1e1e1e',
+        },
+        text: {
+          primary: '#ffffff',
+          secondary: '#b3b3b3',
+        },
+      }),
+    },
+  });
 
   return (
     <ThemeContext.Provider value={{ themeMode, toggleTheme, setThemeMode }}>

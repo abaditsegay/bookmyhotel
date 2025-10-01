@@ -182,12 +182,16 @@ const CalendarWidget: React.FC = () => {
 
   return (
     <Paper
-      elevation={1}
+      elevation={2}
       sx={{
-        p: 1,
+        p: 0,
         height: 'fit-content',
-        borderRadius: 1,
+        borderRadius: 2,
         overflow: 'hidden',
+        position: 'relative',
+        zIndex: 'auto',
+        backgroundColor: 'white',
+        border: 'none',
       }}
     >
       {/* Month Navigation Header */}
@@ -195,33 +199,40 @@ const CalendarWidget: React.FC = () => {
         sx={{
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'space-between',
-          mb: 1,
-          p: 1,
-          backgroundColor: alpha(theme.palette.background.paper, 0.7),
-          borderRadius: 1,
-          border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+          justifyContent: 'center',
+          py: 2,
+          px: 2,
+          backgroundColor: '#4A9B9B', // Teal color matching the design
+          color: 'white',
+          position: 'relative',
         }}
       >
         <IconButton 
           size="small" 
           onClick={() => navigateMonth('prev')}
           sx={{
-            backgroundColor: alpha(theme.palette.primary.main, 0.08),
+            position: 'absolute',
+            left: 8,
+            color: 'white',
             '&:hover': {
-              backgroundColor: alpha(theme.palette.primary.main, 0.15),
+              backgroundColor: alpha('#ffffff', 0.1),
             },
           }}
         >
           <ChevronLeft />
         </IconButton>
         
-        <Typography variant="h6" sx={{ 
-          fontWeight: 600, 
-          color: theme.palette.text.primary,
-          textAlign: 'center',
-          fontSize: '0.95rem',
-        }}>
+        <Typography 
+          variant="h6" 
+          sx={{ 
+            fontWeight: 700, 
+            color: 'white',
+            textAlign: 'center',
+            fontSize: '1.1rem',
+            textTransform: 'uppercase',
+            letterSpacing: '0.1em',
+          }}
+        >
           {currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
         </Typography>
         
@@ -229,9 +240,11 @@ const CalendarWidget: React.FC = () => {
           size="small" 
           onClick={() => navigateMonth('next')}
           sx={{
-            backgroundColor: alpha(theme.palette.primary.main, 0.08),
+            position: 'absolute',
+            right: 8,
+            color: 'white',
             '&:hover': {
-              backgroundColor: alpha(theme.palette.primary.main, 0.15),
+              backgroundColor: alpha('#ffffff', 0.1),
             },
           }}
         >
@@ -243,32 +256,27 @@ const CalendarWidget: React.FC = () => {
       <Box
         sx={{
           display: 'flex',
-          border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
-          borderBottom: 'none',
-          borderRadius: '4px 4px 0 0',
-          backgroundColor: alpha(theme.palette.primary.main, 0.04),
+          backgroundColor: '#f5f5f5',
+          borderBottom: '1px solid #e0e0e0',
         }}
       >
-          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, index) => (
+          {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
             <Box
-              key={day}
+              key={index}
               sx={{
                 flex: 1,
-                py: 1,
+                py: 1.5,
                 textAlign: 'center',
-                borderRight: index < 6 
-                  ? `1px solid ${alpha(theme.palette.divider, 0.2)}` 
-                  : 'none',
+                borderRight: index < 6 ? '1px solid #e0e0e0' : 'none',
               }}
             >
               <Typography
                 variant="caption"
                 sx={{
-                  fontSize: '0.7rem',
+                  fontSize: '0.75rem',
                   fontWeight: 600,
-                  color: theme.palette.text.secondary,
+                  color: '#666',
                   textTransform: 'uppercase',
-                  letterSpacing: 0.5,
                 }}
               >
                 {day}
@@ -280,8 +288,6 @@ const CalendarWidget: React.FC = () => {
         {/* Calendar Table */}
         <Box
           sx={{
-            border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
-            borderRadius: 1,
             overflow: 'hidden',
           }}
         >
@@ -292,7 +298,7 @@ const CalendarWidget: React.FC = () => {
               sx={{
                 display: 'flex',
                 borderBottom: weekIndex < Math.ceil(calendarDays.length / 7) - 1 
-                  ? `1px solid ${alpha(theme.palette.divider, 0.2)}` 
+                  ? '1px solid #e0e0e0' 
                   : 'none',
               }}
             >
@@ -302,25 +308,23 @@ const CalendarWidget: React.FC = () => {
                   onClick={() => date && setSelectedDate(date)}
                   sx={{
                     flex: 1,
-                    minHeight: 40,
+                    minHeight: 45,
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
                     cursor: date ? 'pointer' : 'default',
-                    borderRight: dayIndex < 6 
-                      ? `1px solid ${alpha(theme.palette.divider, 0.2)}` 
-                      : 'none',
+                    borderRight: dayIndex < 6 ? '1px solid #e0e0e0' : 'none',
                     backgroundColor: date ? (
                       isSelected(date) 
-                        ? alpha(theme.palette.primary.main, 0.1)
+                        ? '#4A9B9B'
                         : isToday(date) 
-                          ? alpha(theme.palette.secondary.main, 0.1)
-                          : 'transparent'
-                    ) : alpha(theme.palette.grey[300], 0.1),
+                          ? '#e8f4f4'
+                          : 'white'
+                    ) : '#fafafa',
                     transition: 'all 0.2s ease',
                     '&:hover': date ? {
-                      backgroundColor: alpha(theme.palette.primary.main, 0.05),
+                      backgroundColor: isSelected(date) ? '#4A9B9B' : '#f0f8f8',
                     } : {},
                   }}
                 >
@@ -329,12 +333,12 @@ const CalendarWidget: React.FC = () => {
                       <Typography
                         variant="body2"
                         sx={{
-                          fontWeight: isToday(date) ? 700 : isSelected(date) ? 600 : 400,
-                          color: isToday(date)
-                            ? theme.palette.secondary.main
-                            : isSelected(date)
-                            ? theme.palette.primary.main
-                            : theme.palette.text.primary,
+                          fontWeight: isToday(date) ? 600 : isSelected(date) ? 600 : 400,
+                          color: isSelected(date) 
+                            ? 'white'
+                            : isToday(date)
+                            ? '#4A9B9B'
+                            : '#333',
                           fontSize: '0.9rem',
                           mb: 0.25,
                         }}

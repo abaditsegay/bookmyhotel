@@ -30,7 +30,6 @@ import {
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { themeConstants } from '../../theme/theme';
 import { useNotifications } from '../../hooks/useNotifications';
 import NetworkStatusIndicator from '../NetworkStatusIndicator';
 import ThemeToggle from '../common/ThemeToggle';
@@ -397,9 +396,10 @@ const Navbar: React.FC = () => {
         elevation={0} // Remove elevation for better performance
         sx={{
           backgroundColor: theme.palette.primary.main,
-          backgroundImage: theme.custom?.constants?.gradients?.primaryButton || `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+          backgroundImage: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
           height: 'auto', // Allow AppBar to grow with content
           borderBottom: `1px solid ${theme.palette.divider}`, // Add subtle border for structure
+          zIndex: theme.zIndex.appBar, // Ensure proper z-index above sidebar
         }}
       >
         <Toolbar 
@@ -469,14 +469,14 @@ const Navbar: React.FC = () => {
                 component="div" 
                 sx={{ 
                   fontWeight: 'bold',
-                  color: themeConstants.brandGold,
+                  color: '#FFD700', // Gold color for hotel name
                   textAlign: 'center',
                   fontSize: { md: '1.8rem', lg: '2rem' }, // Start from md breakpoint
-                  textShadow: themeConstants.shadows.textShadow,
+                  textShadow: '0 2px 4px rgba(0,0,0,0.3)',
                   // Allow text to wrap and display fully
                   whiteSpace: 'normal',
                   wordBreak: 'break-word',
-                  maxWidth: themeConstants.headerMaxWidths,
+                  maxWidth: '200px',
                   lineHeight: 1.2,
                 }}
               >

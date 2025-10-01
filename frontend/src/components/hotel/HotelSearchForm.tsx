@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import {
   Paper,
   Grid,
-  TextField,
-  Button,
   Typography,
   Box,
   useTheme,
@@ -15,6 +13,11 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs, { Dayjs } from 'dayjs';
 import { useTranslation } from 'react-i18next';
 import { HotelSearchRequest } from '../../types/hotel';
+import StandardButton from '../common/StandardButton';
+import EnhancedTextField from '../common/EnhancedTextField';
+import { useNotification } from '../common/NotificationSystem';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import PeopleIcon from '@mui/icons-material/People';
 
 interface HotelSearchFormProps {
   onSearch: (searchRequest: HotelSearchRequest) => void;
@@ -25,6 +28,7 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
   const { t } = useTranslation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const { showNotification } = useNotification();
   
   const [location, setLocation] = useState('');
   const [checkInDate, setCheckInDate] = useState<Dayjs | null>(dayjs().add(7, 'day'));
@@ -35,12 +39,20 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
     e.preventDefault();
     
     if (!checkInDate || !checkOutDate) {
-      alert('Please select check-in and check-out dates');
+      showNotification({
+        type: 'warning',
+        title: 'Missing Dates',
+        message: 'Please select check-in and check-out dates',
+      });
       return;
     }
 
     if (checkInDate >= checkOutDate) {
-      alert('Check-out date must be after check-in date');
+      showNotification({
+        type: 'error',
+        title: 'Invalid Dates',
+        message: 'Check-out date must be after check-in date',
+      });
       return;
     }
 
@@ -124,26 +136,17 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
           <Grid container spacing={{ xs: 3, md: 3 }}>
             {/* Location Field - Mobile-First */}
             <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
+              <EnhancedTextField
                 label={t('hotelSearch.form.destination')}
                 placeholder={isMobile ? "Where are you going?" : t('hotelSearch.form.destinationPlaceholder')}
                 value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                variant="outlined"
+                onChange={setLocation}
+                icon={<LocationOnIcon />}
+                helperText="Enter city, hotel name, or landmark"
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     minHeight: { xs: '48px', md: '52px' },
                     fontSize: { xs: '1rem', md: '1rem' },
-                    backgroundColor: theme.palette.background.paper,
-                    borderRadius: 1,
-                    '&:hover fieldset': {
-                      borderColor: 'primary.main',
-                    },
-                  },
-                  '& .MuiInputLabel-root': {
-                    fontSize: { xs: '0.95rem', md: '1rem' },
-                    fontWeight: 500,
                   },
                 }}
               />
@@ -151,31 +154,22 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
 
             {/* Guests Field - Mobile-First */}
             <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                type="number"
+              <EnhancedTextField
                 label={t('hotelSearch.form.guests')}
-                value={guests}
-                onChange={(e) => setGuests(Number(e.target.value))}
-                inputProps={{ 
-                  min: 1, 
-                  max: 10,
-                  style: { fontSize: isMobile ? '1rem' : '1rem' }
-                }}
-                variant="outlined"
+                type="number"
+                value={guests.toString()}
+                onChange={(value) => setGuests(Number(value))}
+                icon={<PeopleIcon />}
+                validationRules={[
+                  {
+                    validate: (value) => Number(value) >= 1 && Number(value) <= 10,
+                    message: 'Guests must be between 1 and 10',
+                  }
+                ]}
+                helperText="Maximum 10 guests per search"
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     minHeight: { xs: '48px', md: '52px' },
-                    fontSize: { xs: '1rem', md: '1rem' },
-                    backgroundColor: theme.palette.background.paper,
-                    borderRadius: 1,
-                    '&:hover fieldset': {
-                      borderColor: 'primary.main',
-                    },
-                  },
-                  '& .MuiInputLabel-root': {
-                    fontSize: { xs: '0.95rem', md: '1rem' },
-                    fontWeight: 500,
                   },
                 }}
               />
@@ -292,23 +286,22 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
                 mt: { xs: 2, md: 3 },
                 px: { xs: 1, sm: 0 },
               }}>
-                <Button
+                <StandardButton
                   type="submit"
                   variant="contained"
-                  size="large"
+                  buttonSize="large"
+                  gradient
                   disabled={loading}
                   sx={{
                     minHeight: { xs: '50px', md: '48px' },
                     px: { xs: 4, sm: 6, md: 4 },
                     py: { xs: 1.2, md: 1.1 },
-                    borderRadius: 1,
                     fontSize: { 
                       xs: '1.05rem',
                       sm: '1.1rem', 
                       md: '1rem' 
                     },
                     fontWeight: 500,
-                    textTransform: 'none',
                     width: { 
                       xs: '100%',
                       sm: 'auto',
@@ -317,8 +310,6 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
                       xs: 'none',
                       sm: '400px',
                     },
-                    boxShadow: 'none',
-                    transition: 'all 0.2s ease-in-out',
                     '&:hover': {
                       boxShadow: 'none',
                       transform: 'none',
@@ -334,7 +325,7 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
                   }}
                 >
                   {loading ? t('hotelSearch.form.searching') : t('hotelSearch.form.searchButton')}
-                </Button>
+                </StandardButton>
               </Box>
             </Grid>
           </Grid>

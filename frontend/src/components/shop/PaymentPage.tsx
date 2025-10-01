@@ -40,7 +40,6 @@ import {
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { PaymentMethod } from '../../types/shop';
-import { themeConstants } from '../../theme/theme';
 import { COLORS } from '../../theme/themeColors';
 import { StandardButton } from '../common';
 import { useMockPayment, MockPaymentRequest } from '../../services/mockPaymentGateway';
@@ -1262,7 +1261,7 @@ const PaymentPage: React.FC = () => {
             variant="outlined"
             sx={{ 
               minWidth: 120,
-              minHeight: themeConstants.touchTargets.minimum
+              minHeight: '44px'
             }}
           >
             {activeStep === 0 ? 'Cancel' : 'Back'}
@@ -1274,7 +1273,7 @@ const PaymentPage: React.FC = () => {
             disabled={processing}
             sx={{ 
               minWidth: 200,
-              minHeight: themeConstants.touchTargets.minimum
+              minHeight: '44px'
             }}
           >
             {processing ? 'Processing...' : 

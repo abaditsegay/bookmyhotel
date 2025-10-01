@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, CircularProgress, Typography, Fade } from '@mui/material';
-import { themeConstants } from '../../theme/theme';
+import { designSystem } from '../../theme/designSystem';
 
 interface StandardLoadingProps {
   /**
@@ -78,7 +78,7 @@ const StandardLoading: React.FC<StandardLoadingProps> = ({
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: themeConstants.spacing.md, // 16px
+        gap: designSystem.spacing.md, // 16px
         minHeight: minHeight || '100px',
         ...(overlay && {
           position: 'absolute',

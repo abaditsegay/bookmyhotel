@@ -3,17 +3,16 @@ import {
   Container,
   Typography,
   TextField,
-  Button,
   Box,
   Alert,
   CircularProgress,
-  Card,
-  CardContent,
   Divider,
   useTheme,
   useMediaQuery,
   Stack,
 } from '@mui/material';
+import StandardCard from '../components/common/StandardCard';
+import StandardButton from '../components/common/StandardButton';
 // Icons removed for neutral design
 import { useNavigate } from 'react-router-dom';
 import { hotelApiService } from '../services/hotelApi';
@@ -92,17 +91,13 @@ const FindBookingPage: React.FC = () => {
     >
       <Container maxWidth="lg">
       {/* Professional Search Form */}
-      <Card 
-        elevation={0}
+      <StandardCard 
+        cardVariant="elevated"
         sx={{ 
           mb: 4,
-          background: theme.palette.background.paper,
-          borderRadius: 1,
-          border: `1px solid rgba(224, 224, 224, 0.3)`,
-          boxShadow: 'none',
         }}
       >
-        <CardContent sx={{ p: isMobile ? 3 : 5 }}>
+        <Box sx={{ p: isMobile ? 3 : 5 }}>
           <Box 
             sx={{ 
               mb: 4,
@@ -190,55 +185,36 @@ const FindBookingPage: React.FC = () => {
             )}
 
             <Box sx={{ textAlign: 'center', mt: 4 }}>
-              <Button
+              <StandardButton
                 type="submit"
                 variant="contained"
-                size="large"
+                buttonSize="large"
+                gradient
                 disabled={loading}
                 startIcon={loading ? <CircularProgress size={20} /> : undefined}
                 sx={{
                   px: 6,
                   py: 1.5,
-                  borderRadius: 1,
                   fontSize: '1.05rem',
                   fontWeight: 500,
-                  textTransform: 'none',
-                  boxShadow: 'none',
-                  '&:hover': {
-                    boxShadow: 'none',
-                    transform: 'none',
-                    opacity: 0.9,
-                  },
-                  '&:active': {
-                    transform: 'none',
-                  },
-                  '&.Mui-disabled': {
-                    background: theme.palette.grey[300],
-                    color: theme.palette.grey[500],
-                  }
                 }}
               >
                 {loading ? 'Searching...' : 'Find Booking'}
-              </Button>
+              </StandardButton>
             </Box>
           </form>
-        </CardContent>
-      </Card>
+        </Box>
+      </StandardCard>
 
       {/* Professional Booking Results */}
       {booking && (
-        <Card 
-          elevation={0}
+        <StandardCard 
+          cardVariant="gradient"
           sx={{
             mb: 4,
-            background: theme.palette.background.paper,
-            borderRadius: 1,
-            border: `1px solid rgba(224, 224, 224, 0.3)`,
-            boxShadow: 'none',
-            transition: 'none',
           }}
         >
-          <CardContent sx={{ p: isMobile ? 3 : 5 }}>
+          <Box sx={{ p: isMobile ? 3 : 5 }}>
             <Box 
               sx={{ 
                 display: 'flex', 
@@ -389,47 +365,33 @@ const FindBookingPage: React.FC = () => {
             </Box>
 
             <Box sx={{ textAlign: 'center', mt: 4 }}>
-              <Button
+              <StandardButton
                 variant="contained"
-                size="large"
+                buttonSize="large"
+                elevated
                 onClick={handleViewBooking}
-                color="primary"
                 sx={{
                   px: 6,
                   py: 1.5,
-                  borderRadius: 1,
                   fontSize: '1.1rem',
                   fontWeight: 500,
-                  textTransform: 'none',
-                  boxShadow: 'none',
-                  '&:hover': {
-                    boxShadow: 'none',
-                    transform: 'none',
-                    opacity: 0.9,
-                  },
-                  '&:active': {
-                    transform: 'none',
-                  },
                 }}
               >
                 Manage Booking
-              </Button>
+              </StandardButton>
             </Box>
-          </CardContent>
-        </Card>
+          </Box>
+        </StandardCard>
       )}
 
       {/* Professional Help Section */}
-      <Card 
-        elevation={0}
+      <StandardCard 
+        cardVariant="outlined"
         sx={{ 
           background: theme.palette.background.paper,
-          border: `1px solid rgba(224, 224, 224, 0.3)`,
-          borderRadius: 1,
-          boxShadow: 'none',
         }}
       >
-        <CardContent sx={{ p: 4 }}>
+        <Box sx={{ p: 4 }}>
           <Box 
             sx={{ 
               display: 'flex',
@@ -456,8 +418,8 @@ const FindBookingPage: React.FC = () => {
             The reference number can be found in your booking confirmation email.
             If you can't find your booking, please contact the hotel directly.
           </Typography>
-        </CardContent>
-      </Card>
+        </Box>
+      </StandardCard>
       </Container>
     </Box>
   );

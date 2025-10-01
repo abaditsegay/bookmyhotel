@@ -4,6 +4,7 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import './i18n'; // Initialize i18n
 import EnhancedLayout from './components/layout/EnhancedLayout';
 import { ErrorBoundary } from './components/common';
+import { NotificationProvider } from './components/common';
 // PWA install functionality disabled
 // import PWAInstallPrompt from './components/common/PWAInstallPrompt';
 // import { usePWAInstall } from './hooks/usePWAInstall';
@@ -27,8 +28,11 @@ import HotelManagementAdmin from './pages/admin/HotelManagementAdmin';
 import TenantManagementAdmin from './pages/admin/TenantManagementAdmin';
 import UserManagementAdmin from './pages/admin/UserManagementAdmin';
 import UserRegistrationForm from './pages/admin/UserRegistrationForm';
-import HotelViewEdit from './pages/admin/HotelViewEdit';
+import DesignSystemDemo from './components/DesignSystemDemo';
+import Phase2Demo from './components/Phase2Demo';
+import Phase3Demo from './components/demo/Phase3Demo';
 import UserViewEdit from './pages/admin/UserViewEdit';
+import HotelViewEdit from './pages/admin/HotelViewEdit';
 import HotelAdminDashboard from './pages/hotel-admin/HotelAdminDashboard';
 import { ErrorBoundaryDemo } from './components/demo';
 import NotFoundPage from './pages/NotFoundPage';
@@ -203,14 +207,15 @@ function App() {
       </Dialog>
       
       {/* Main App Content */}
-      <ErrorBoundary 
-        level="critical"
-        showDetails={process.env.NODE_ENV === 'development'}
-        onError={(error, errorInfo) => {
-          console.error('Critical App Error:', error, errorInfo);
-          // In production, send to error tracking service
-        }}
-      >
+      <NotificationProvider>
+        <ErrorBoundary 
+          level="critical"
+          showDetails={process.env.NODE_ENV === 'development'}
+          onError={(error, errorInfo) => {
+            console.error('Critical App Error:', error, errorInfo);
+            // In production, send to error tracking service
+          }}
+        >
         <EnhancedLayout hideSidebar={!isAuthenticated} maxWidth={isFullWidthRoute ? false : 'xl'}>
           <Routes>
         <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />} />
@@ -244,6 +249,9 @@ function App() {
         {process.env.NODE_ENV === 'development' && (
           <Route path="/demo/error-boundary" element={<ErrorBoundaryDemo />} />
         )}
+        <Route path="/demo/design-system" element={<DesignSystemDemo />} />
+        <Route path="/demo/phase2" element={<Phase2Demo />} />
+        <Route path="/demo/phase3" element={<Phase3Demo />} />
         <Route path="/register-hotel" element={<PublicHotelRegistration />} />
         <Route path="/register-hotel-admin" element={
           <PlaceholderPage 
@@ -540,6 +548,7 @@ function App() {
       */}
         </EnhancedLayout>
       </ErrorBoundary>
+      </NotificationProvider>
     </>
   );
 }

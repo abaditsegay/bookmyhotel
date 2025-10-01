@@ -150,11 +150,16 @@ const EnhancedLayout: React.FC<EnhancedLayoutProps> = ({
           <Box
             sx={{
               position: 'fixed',
-              top: 64, // Account for navbar height
+              top: {
+                xs: 56, // Mobile toolbar height
+                sm: 64, // Desktop toolbar height
+              },
               right: 0,
               bottom: 0,
               width: 350,
-              zIndex: theme.zIndex.drawer - 1,
+              zIndex: 900, // Set well below AppBar's z-index of 1100
+              overflow: 'auto', // Add scrolling for sidebar content
+              backgroundColor: 'background.paper', // Ensure solid background
             }}
           >
             {sidebarContent}

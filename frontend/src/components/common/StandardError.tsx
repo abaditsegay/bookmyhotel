@@ -7,7 +7,7 @@ import {
   CheckCircle as SuccessIcon,
   Refresh as RefreshIcon 
 } from '@mui/icons-material';
-import { themeConstants } from '../../theme/theme';
+import { designSystem } from '../../theme/designSystem';
 
 interface StandardErrorProps {
   /**
@@ -114,14 +114,14 @@ const StandardError: React.FC<StandardErrorProps> = ({
     <Box
       sx={{
         width: fullWidth ? '100%' : 'auto',
-        mb: themeConstants.spacing.md, // 16px
+        mb: designSystem.spacing.md, // 16px
       }}
     >
       <Alert
         severity={severity}
         icon={getIcon()}
         sx={{
-          borderRadius: `${themeConstants.spacing.xs}px`, // 4px consistent border radius
+          borderRadius: `${designSystem.spacing.xs}px`, // 4px consistent border radius
           '& .MuiAlert-icon': {
             fontSize: '24px',
           },
@@ -136,7 +136,7 @@ const StandardError: React.FC<StandardErrorProps> = ({
               sx={{
                 textTransform: 'none',
                 fontWeight: 600,
-                borderRadius: `${themeConstants.spacing.xs}px`,
+                borderRadius: `${designSystem.spacing.xs}px`,
                 transition: 'all 0.2s ease-in-out',
                 '&:hover': {
                   backgroundColor: 'rgba(255, 255, 255, 0.1)',

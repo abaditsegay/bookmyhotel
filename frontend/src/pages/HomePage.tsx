@@ -16,6 +16,8 @@ import {
 import { useNavigate } from 'react-router-dom';
 import VerticalHotelAdvertisementBanner from '../components/VerticalHotelAdvertisementBanner';
 import performanceUtils from '../utils/performanceUtils';
+import MuiCard from '../components/ui/MuiCard';
+import { Button } from '../components/ui/MuiButton';
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -39,6 +41,22 @@ const HomePage = () => {
                 <Typography variant="subtitle1" color="text.secondary">
                   Find Your Perfect Hotel
                 </Typography>
+                {/* Design System Demo Link */}
+                <Box sx={{ mt: 2 }}>
+                  <Typography 
+                    variant="caption" 
+                    component="a" 
+                    href="/demo/design-system" 
+                    sx={{ 
+                      color: 'primary.main', 
+                      textDecoration: 'underline',
+                      cursor: 'pointer',
+                      '&:hover': { color: 'primary.dark' }
+                    }}
+                  >
+                    View Design System Demo
+                  </Typography>
+                </Box>
               </Box>
 
               {/* Mobile Action Cards */}
@@ -49,7 +67,7 @@ const HomePage = () => {
                       textAlign: 'center', 
                       cursor: 'pointer',
                       ...performanceUtils.getAnimationStyles(enableAnimations),
-                      background: (theme) => theme.custom.constants.gradients.primaryButton,
+                      background: (theme) => `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
                       color: 'white',
                       ...performanceUtils.getHoverStyles(enableAnimations),
                     }}
@@ -73,7 +91,7 @@ const HomePage = () => {
                       textAlign: 'center', 
                       cursor: 'pointer',
                       ...performanceUtils.getAnimationStyles(enableAnimations),
-                      background: (theme) => theme.custom.constants.gradients.successButton,
+                      background: (theme) => `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.dark} 100%)`,
                       color: 'white',
                       ...performanceUtils.getHoverStyles(enableAnimations),
                     }}
@@ -135,17 +153,17 @@ const HomePage = () => {
                 overflowY: 'auto',
                 overflowX: 'hidden',
                 '&::-webkit-scrollbar': {
-                  width: (theme) => theme.custom.constants.scrollbar.width,
+                  width: (theme) => '8px',
                 },
                 '&::-webkit-scrollbar-track': {
-                  background: (theme) => theme.custom.constants.scrollbar.track,
+                  background: (theme) => theme.palette.grey[100],
                 },
                 '&::-webkit-scrollbar-thumb': {
-                  background: (theme) => theme.custom.constants.scrollbar.thumb,
-                  borderRadius: (theme) => theme.custom.constants.scrollbar.thumbRadius,
+                  background: (theme) => theme.palette.grey[400],
+                  borderRadius: (theme) => '4px',
                 },
                 '&::-webkit-scrollbar-thumb:hover': {
-                  background: (theme) => theme.custom.constants.scrollbar.thumbHover,
+                  background: (theme) => theme.palette.grey[500],
                 }
               }}>
                 <VerticalHotelAdvertisementBanner maxHotels={8} />
@@ -182,7 +200,7 @@ const HomePage = () => {
                     sx={{ 
                       p: 4, 
                       mb: 4,
-                      background: (theme) => theme.custom.constants.gradients.primaryButton,
+                      background: (theme) => `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
                       color: 'white',
                       textAlign: 'center'
                     }}
@@ -198,15 +216,15 @@ const HomePage = () => {
                       <Grid item xs={12}>
                         <Box
                           sx={{
-                            backgroundColor: (theme) => `rgba(255, 255, 255, ${theme.custom.constants.alpha.low})`,
+                            backgroundColor: (theme) => `rgba(255, 255, 255, ${0.1})`,
                             borderRadius: 1,
                             p: 2,
-                            border: (theme) => `1px solid rgba(255, 255, 255, ${theme.custom.constants.alpha.high})`,
+                            border: (theme) => `1px solid rgba(255, 255, 255, ${0.3})`,
                             cursor: 'pointer',
                             ...performanceUtils.getAnimationStyles(enableAnimations),
                             ...(enableAnimations && !performanceUtils.isSlowConnection() ? {
                               '&:hover': {
-                                backgroundColor: (theme) => `rgba(255, 255, 255, ${theme.custom.constants.alpha.medium})`,
+                                backgroundColor: (theme) => `rgba(255, 255, 255, ${0.2})`,
                               }
                             } : {})
                           }}
@@ -223,15 +241,15 @@ const HomePage = () => {
                       <Grid item xs={6}>
                         <Box
                           sx={{
-                            backgroundColor: (theme) => `rgba(255, 255, 255, ${theme.custom.constants.alpha.low})`,
+                            backgroundColor: (theme) => `rgba(255, 255, 255, ${0.1})`,
                             borderRadius: 1,
                             p: 2,
-                            border: (theme) => `1px solid rgba(255, 255, 255, ${theme.custom.constants.alpha.high})`,
+                            border: (theme) => `1px solid rgba(255, 255, 255, ${0.3})`,
                             cursor: 'pointer',
                             ...performanceUtils.getAnimationStyles(enableAnimations),
                             ...(enableAnimations && !performanceUtils.isSlowConnection() ? {
                               '&:hover': {
-                                backgroundColor: (theme) => `rgba(255, 255, 255, ${theme.custom.constants.alpha.medium})`,
+                                backgroundColor: (theme) => `rgba(255, 255, 255, ${0.2})`,
                               }
                             } : {})
                           }}
@@ -248,15 +266,15 @@ const HomePage = () => {
                       <Grid item xs={6}>
                         <Box
                           sx={{
-                            backgroundColor: (theme) => `rgba(255, 255, 255, ${theme.custom.constants.alpha.low})`,
+                            backgroundColor: (theme) => `rgba(255, 255, 255, ${0.1})`,
                             borderRadius: 1,
                             p: 2,
-                            border: (theme) => `1px solid rgba(255, 255, 255, ${theme.custom.constants.alpha.high})`,
+                            border: (theme) => `1px solid rgba(255, 255, 255, ${0.3})`,
                             cursor: 'pointer',
                             ...performanceUtils.getAnimationStyles(enableAnimations),
                             ...(enableAnimations && !performanceUtils.isSlowConnection() ? {
                               '&:hover': {
-                                backgroundColor: (theme) => `rgba(255, 255, 255, ${theme.custom.constants.alpha.medium})`,
+                                backgroundColor: (theme) => `rgba(255, 255, 255, ${0.2})`,
                               }
                             } : {})
                           }}
@@ -298,7 +316,7 @@ const HomePage = () => {
                   <Card 
                     sx={{ 
                       p: 3,
-                      background: (theme) => theme.custom.constants.gradients.successButton,
+                      background: (theme) => `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.dark} 100%)`,
                       color: 'white',
                       textAlign: 'center',
                       cursor: 'pointer',
@@ -342,17 +360,17 @@ const HomePage = () => {
                 overflowY: 'auto',
                 overflowX: 'hidden',
                 '&::-webkit-scrollbar': {
-                  width: (theme) => theme.custom.constants.scrollbar.width,
+                  width: (theme) => '8px',
                 },
                 '&::-webkit-scrollbar-track': {
-                  background: (theme) => theme.custom.constants.scrollbar.track,
+                  background: (theme) => theme.palette.grey[100],
                 },
                 '&::-webkit-scrollbar-thumb': {
-                  background: (theme) => theme.custom.constants.scrollbar.thumb,
-                  borderRadius: (theme) => theme.custom.constants.scrollbar.thumbRadius,
+                  background: (theme) => theme.palette.grey[400],
+                  borderRadius: (theme) => '4px',
                 },
                 '&::-webkit-scrollbar-thumb:hover': {
-                  background: (theme) => theme.custom.constants.scrollbar.thumbHover,
+                  background: (theme) => theme.palette.grey[500],
                 }
               }}>
                 <VerticalHotelAdvertisementBanner maxHotels={8} />

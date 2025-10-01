@@ -15,8 +15,7 @@ import {
   Grid,
   Divider,
   Card,
-  CardContent,
-  useTheme
+  CardContent
 } from '@mui/material';
 import {
   Phone as PhoneIcon,
@@ -32,6 +31,8 @@ interface EthiopianPaymentFormProps {
   bookingReference: string;
   customerName?: string;
   customerEmail?: string;
+  instructions?: string;
+  errorMessage?: string;
   onPaymentInitiated?: (response: any) => void;
   onError?: (error: string) => void;
 }
@@ -46,15 +47,16 @@ interface PaymentResponse {
   errorMessage?: string;
 }
 
-const EthiopianPaymentForm: React.FC<EthiopianPaymentFormProps> = ({
+export const EthiopianPaymentForm: React.FC<EthiopianPaymentFormProps> = ({ 
   amount,
+  onPaymentInitiated,
+  onError,
   bookingReference,
   customerName,
   customerEmail,
-  onPaymentInitiated,
-  onError
+  instructions,
+  errorMessage
 }) => {
-  const theme = useTheme();
   const [selectedProvider, setSelectedProvider] = useState<string>('telebirr');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [loading, setLoading] = useState(false);
@@ -161,8 +163,8 @@ const EthiopianPaymentForm: React.FC<EthiopianPaymentFormProps> = ({
       return {
         name: 'M-birr',
         description: 'Pay using your M-birr mobile wallet',
-        icon: <MbirrIcon sx={{ color: theme.custom.constants.mbirrOrange }} />,
-        color: theme.custom.constants.mbirrOrange,
+        icon: <MbirrIcon sx={{ color: '#FFA500' }} />,
+        color: '#FFA500',
         dialCode: '*847#',
         limits: 'Limits: 10 - 100,000 ETB'
       };
@@ -170,8 +172,8 @@ const EthiopianPaymentForm: React.FC<EthiopianPaymentFormProps> = ({
       return {
         name: 'Telebirr',
         description: 'Pay using your Telebirr mobile wallet',
-        icon: <TelebirrIcon sx={{ color: theme.custom.constants.telebirrGreen }} />,
-        color: theme.custom.constants.telebirrGreen,
+        icon: <TelebirrIcon sx={{ color: '#4CAF50' }} />,
+        color: '#4CAF50',
         dialCode: '*127#',
         limits: 'Limits: 5 - 50,000 ETB'
       };
@@ -319,7 +321,7 @@ const EthiopianPaymentForm: React.FC<EthiopianPaymentFormProps> = ({
                   control={<Radio />}
                   label={
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <MbirrIcon sx={{ mr: 1, color: (theme) => theme.custom.constants.mbirrOrange }} />
+                      <MbirrIcon sx={{ mr: 1, color: '#FFA500' }} />
                       M-birr
                     </Box>
                   }
@@ -329,7 +331,7 @@ const EthiopianPaymentForm: React.FC<EthiopianPaymentFormProps> = ({
                   control={<Radio />}
                   label={
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <TelebirrIcon sx={{ mr: 1, color: (theme) => theme.custom.constants.telebirrGreen }} />
+                      <TelebirrIcon sx={{ mr: 1, color: '#4CAF50' }} />
                       Telebirr
                     </Box>
                   }

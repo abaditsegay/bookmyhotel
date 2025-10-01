@@ -28,7 +28,6 @@ import {
   CheckCircle as CheckIcon,
 } from '@mui/icons-material';
 import { PaymentMethod } from '../../types/shop';
-import { themeConstants } from '../../theme/theme';
 import { COLORS } from '../../theme/themeColors';
 import { StandardButton } from '../common';
 import { useMockPayment, MockPaymentRequest } from '../../services/mockPaymentGateway';
@@ -514,7 +513,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                             borderWidth: 2,
                           },
                           '& .MuiSelect-select': {
-                            minHeight: isMobile ? themeConstants.touchTargets.minimum : 'auto',
+                            minHeight: isMobile ? '44px' : 'auto',
                             color: '#1e40af',
                             fontWeight: 500,
                           },
@@ -926,7 +925,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                 borderWidth: 2,
               },
               '& .MuiSelect-select': {
-                minHeight: isMobile ? themeConstants.touchTargets.minimum : 'auto',
+                minHeight: isMobile ? '44px' : 'auto',
                 display: 'flex',
                 alignItems: 'center',
                 gap: 1.5,
@@ -961,7 +960,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                   gap: 2,
                   py: 1.5,
                   px: 2,
-                  minHeight: isMobile ? themeConstants.touchTargets.minimum : 'auto',
+                  minHeight: isMobile ? '44px' : 'auto',
                   '&:hover': {
                     backgroundColor: 'rgba(30, 58, 138, 0.08)',
                   },
@@ -1033,7 +1032,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
           variant="outlined"
           fullWidth={isMobile}
           sx={{ 
-            minHeight: themeConstants.touchTargets.minimum,
+            minHeight: '44px',
             order: isMobile ? 2 : 1,
             borderColor: '#3b82f6',
             color: '#1e3a8a',
@@ -1052,7 +1051,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
           startIcon={processing ? <CircularProgress size={20} sx={{ color: 'white' }} /> : null}
           fullWidth={isMobile}
           sx={{ 
-            minHeight: themeConstants.touchTargets.minimum,
+            minHeight: '44px',
             order: isMobile ? 1 : 2,
             background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)',
             boxShadow: '0 4px 15px rgba(30, 58, 138, 0.4)',

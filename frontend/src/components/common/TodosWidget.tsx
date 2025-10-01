@@ -23,7 +23,7 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { Todo, useTodoApi } from '../../services/todoApi';
-import { themeConstants } from '../../theme/theme';
+import { designSystem } from '../../theme/designSystem';
 import { COLORS } from '../../theme/themeColors';
 
 interface TodosWidgetProps {
@@ -232,7 +232,7 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
                 sx={{
                   border: '1px solid',
                   borderColor: theme.palette.mode === 'dark' 
-                    ? themeConstants.darkTheme.borderColor 
+                    ? 'rgba(255, 255, 255, 0.12)' 
                     : 'divider',
                   borderRadius: 1,
                   mb: 1,
@@ -241,7 +241,7 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
                       ? 'rgba(255, 255, 255, 0.03)' 
                       : 'grey.50'
                     : theme.palette.mode === 'dark'
-                      ? themeConstants.darkTheme.cardBackground
+                      ? 'rgba(255, 255, 255, 0.05)'
                       : 'background.paper',
                   transition: 'all 0.2s ease',
                   '&:hover': {

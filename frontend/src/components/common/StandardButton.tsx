@@ -1,10 +1,12 @@
 import React from 'react';
 import { Button, ButtonProps } from '@mui/material';
-import { themeConstants } from '../../theme/theme';
+import { designSystem } from '../../theme/designSystem';
 
 interface StandardButtonProps extends Omit<ButtonProps, 'size'> {
   buttonSize?: 'small' | 'medium' | 'large';
   fullWidth?: boolean;
+  gradient?: boolean;
+  elevated?: boolean;
 }
 
 /**
@@ -42,11 +44,23 @@ const StandardButton: React.FC<StandardButtonProps> = ({
   buttonSize = 'medium',
   fullWidth = false,
   variant = 'contained',
+  gradient = false,
+  elevated = false,
   children,
   sx,
   ...props
 }) => {
-  const sizeConfig = themeConstants.buttonSizes[buttonSize];
+  const getSizeConfig = (size: 'small' | 'medium' | 'large') => {
+    switch (size) {
+      case 'small':
+        return { height: '36px', padding: '8px 16px' };
+      case 'large':
+        return { height: '52px', padding: '12px 32px' };
+      default:
+        return { height: '44px', padding: '10px 24px' };
+    }
+  };
+  const sizeConfig = getSizeConfig(buttonSize);
 
   return (
     <Button
@@ -55,20 +69,37 @@ const StandardButton: React.FC<StandardButtonProps> = ({
       sx={{
         ...sizeConfig,
         textTransform: 'none', // More modern look without all-caps
-        borderRadius: themeConstants.spacing.xs, // Consistent border radius
+        borderRadius: designSystem.borderRadius.md, // Consistent border radius
         fontWeight: 600,
         transition: 'all 0.2s ease-in-out',
         
-        // Variant-specific styling
-        ...(variant === 'contained' && {
-          boxShadow: themeConstants.shadows.buttonShadow,
+        // Gradient styling
+        ...(gradient && variant === 'contained' && {
+          background: (theme) => `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
           '&:hover': {
-            boxShadow: themeConstants.shadows.cardShadow,
+            background: (theme) => `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
+          },
+        }),
+        
+        // Elevated styling
+        ...(elevated && {
+          boxShadow: designSystem.shadows.lg,
+          '&:hover': {
+            boxShadow: designSystem.shadows.xl,
+            transform: 'translateY(-2px)',
+          },
+        }),
+        
+        // Variant-specific styling
+        ...(variant === 'contained' && !gradient && {
+          boxShadow: designSystem.shadows.sm,
+          '&:hover': {
+            boxShadow: designSystem.shadows.md,
             transform: 'translateY(-1px)',
           },
           '&:active': {
             transform: 'translateY(0)',
-            boxShadow: themeConstants.shadows.buttonShadow,
+            boxShadow: designSystem.shadows.sm,
           },
         }),
         
