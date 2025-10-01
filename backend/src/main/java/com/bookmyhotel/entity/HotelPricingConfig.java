@@ -95,6 +95,27 @@ public class HotelPricingConfig {
     @DecimalMax(value = "1.0000", message = "Cancellation fee rate cannot exceed 100%")
     private BigDecimal cancellationFeeRate = BigDecimal.ZERO; // Default 0%
 
+    // Cancellation Refund Policy Configuration
+    @Column(name = "refund_policy_7_plus_days", precision = 5, scale = 4)
+    @DecimalMin(value = "0.0000", message = "Refund rate cannot be negative")
+    @DecimalMax(value = "1.0000", message = "Refund rate cannot exceed 100%")
+    private BigDecimal refundPolicy7PlusDays = new BigDecimal("1.0000"); // Default 100%
+
+    @Column(name = "refund_policy_3_to_7_days", precision = 5, scale = 4)
+    @DecimalMin(value = "0.0000", message = "Refund rate cannot be negative")
+    @DecimalMax(value = "1.0000", message = "Refund rate cannot exceed 100%")
+    private BigDecimal refundPolicy3To7Days = new BigDecimal("0.5000"); // Default 50%
+
+    @Column(name = "refund_policy_1_to_2_days", precision = 5, scale = 4)
+    @DecimalMin(value = "0.0000", message = "Refund rate cannot be negative")
+    @DecimalMax(value = "1.0000", message = "Refund rate cannot exceed 100%")
+    private BigDecimal refundPolicy1To2Days = new BigDecimal("0.2500"); // Default 25%
+
+    @Column(name = "refund_policy_same_day", precision = 5, scale = 4)
+    @DecimalMin(value = "0.0000", message = "Refund rate cannot be negative")
+    @DecimalMax(value = "1.0000", message = "Refund rate cannot exceed 100%")
+    private BigDecimal refundPolicySameDay = BigDecimal.ZERO; // Default 0%
+
     @Column(name = "modification_fee_rate", precision = 5, scale = 4)
     @DecimalMin(value = "0.0000", message = "Modification fee rate cannot be negative")
     @DecimalMax(value = "1.0000", message = "Modification fee rate cannot exceed 100%")
@@ -315,6 +336,38 @@ public class HotelPricingConfig {
         this.cancellationFeeRate = cancellationFeeRate;
     }
 
+    public BigDecimal getRefundPolicy7PlusDays() {
+        return refundPolicy7PlusDays;
+    }
+
+    public void setRefundPolicy7PlusDays(BigDecimal refundPolicy7PlusDays) {
+        this.refundPolicy7PlusDays = refundPolicy7PlusDays;
+    }
+
+    public BigDecimal getRefundPolicy3To7Days() {
+        return refundPolicy3To7Days;
+    }
+
+    public void setRefundPolicy3To7Days(BigDecimal refundPolicy3To7Days) {
+        this.refundPolicy3To7Days = refundPolicy3To7Days;
+    }
+
+    public BigDecimal getRefundPolicy1To2Days() {
+        return refundPolicy1To2Days;
+    }
+
+    public void setRefundPolicy1To2Days(BigDecimal refundPolicy1To2Days) {
+        this.refundPolicy1To2Days = refundPolicy1To2Days;
+    }
+
+    public BigDecimal getRefundPolicySameDay() {
+        return refundPolicySameDay;
+    }
+
+    public void setRefundPolicySameDay(BigDecimal refundPolicySameDay) {
+        this.refundPolicySameDay = refundPolicySameDay;
+    }
+
     public BigDecimal getModificationFeeRate() {
         return modificationFeeRate;
     }
@@ -475,6 +528,23 @@ public class HotelPricingConfig {
         LocalDateTime now = LocalDateTime.now();
         return (effectiveFrom == null || !now.isBefore(effectiveFrom)) &&
                 (effectiveUntil == null || !now.isAfter(effectiveUntil));
+    }
+
+    /**
+     * Get the refund rate based on days until check-in
+     * @param daysUntilCheckIn number of days until check-in date
+     * @return refund rate as a percentage (0.0 to 1.0)
+     */
+    public BigDecimal getRefundRateForDays(long daysUntilCheckIn) {
+        if (daysUntilCheckIn > 7) {
+            return refundPolicy7PlusDays != null ? refundPolicy7PlusDays : new BigDecimal("1.0000");
+        } else if (daysUntilCheckIn >= 3) {
+            return refundPolicy3To7Days != null ? refundPolicy3To7Days : new BigDecimal("0.5000");
+        } else if (daysUntilCheckIn >= 1) {
+            return refundPolicy1To2Days != null ? refundPolicy1To2Days : new BigDecimal("0.2500");
+        } else {
+            return refundPolicySameDay != null ? refundPolicySameDay : BigDecimal.ZERO;
+        }
     }
 
     @Override

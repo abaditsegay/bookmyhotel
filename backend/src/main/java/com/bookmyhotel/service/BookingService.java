@@ -1,6 +1,7 @@
 package com.bookmyhotel.service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -89,6 +90,9 @@ public class BookingService {
     private EmailService emailService;
 
     @Autowired
+    private HotelPricingConfigService hotelPricingConfigService;
+
+    @Autowired
     private PdfService pdfService;
 
     @Autowired
@@ -102,9 +106,6 @@ public class BookingService {
 
     @Autowired
     private HotelRepository hotelRepository;
-
-    @Autowired
-    private HotelPricingConfigService hotelPricingConfigService;
 
     @Value("${stripe.api.key:}")
     private String stripeApiKey;
@@ -465,9 +466,9 @@ public class BookingService {
 
         // Create booking change notification for hotel admin/front desk
         try {
-            BigDecimal refundAmount = BigDecimal.ZERO; // TODO: Calculate actual refund amount
-            logger.info("📧 Creating cancellation notification with cancelledBy: '{}', reason: '{}'", cancelledBy,
-                    cancellationReason);
+            BigDecimal refundAmount = calculateCancellationRefund(reservation);
+            logger.info("📧 Creating cancellation notification with cancelledBy: '{}', reason: '{}', refundAmount: {}", 
+                    cancelledBy, cancellationReason, refundAmount);
             bookingChangeNotificationService.createCancellationNotification(
                     reservation, cancellationReason, refundAmount, cancelledBy);
             logger.info("✅ Cancellation notification created successfully");
@@ -1353,25 +1354,29 @@ public class BookingService {
                     return new BookingModificationResponse(false, "Room is not available for the new dates");
                 }
 
-                // Calculate price difference
+                // Calculate comprehensive price difference including taxes and fees
                 long oldNights = ChronoUnit.DAYS.between(reservation.getCheckInDate(), reservation.getCheckOutDate());
                 long newNights = ChronoUnit.DAYS.between(newCheckIn, newCheckOut);
 
-                BigDecimal priceDifference;
-                if (reservation.getRoom() != null) {
-                    // Use room price per night if room is assigned
-                    priceDifference = reservation.getRoom().getPricePerNight()
-                            .multiply(BigDecimal.valueOf(newNights - oldNights));
-                } else {
-                    // Use reservation price per night if no room assigned
-                    priceDifference = reservation.getPricePerNight()
-                            .multiply(BigDecimal.valueOf(newNights - oldNights));
+                BigDecimal oldTotal = calculateTotalAmountWithTaxes(reservation, oldNights);
+                BigDecimal newTotal = calculateTotalAmountWithTaxes(reservation, newNights);
+                BigDecimal priceDifference = newTotal.subtract(oldTotal);
+
+                // Validate calculation results
+                if (oldTotal.compareTo(BigDecimal.ZERO) <= 0 || newTotal.compareTo(BigDecimal.ZERO) <= 0) {
+                    logger.warn("Invalid price calculation for reservation {}: oldTotal={}, newTotal={}", 
+                            reservation.getConfirmationNumber(), oldTotal, newTotal);
+                    return new BookingModificationResponse(false, "Error calculating price difference");
                 }
 
                 if (priceDifference.compareTo(BigDecimal.ZERO) > 0) {
-                    additionalCharges = priceDifference;
+                    additionalCharges = priceDifference.setScale(2, RoundingMode.HALF_UP);
+                    logger.info("Additional charges calculated: {} for reservation {}", 
+                            additionalCharges, reservation.getConfirmationNumber());
                 } else if (priceDifference.compareTo(BigDecimal.ZERO) < 0) {
-                    refundAmount = priceDifference.abs();
+                    refundAmount = priceDifference.abs().setScale(2, RoundingMode.HALF_UP);
+                    logger.info("Refund amount calculated: {} for reservation {}", 
+                            refundAmount, reservation.getConfirmationNumber());
                 }
 
                 // Update dates
@@ -2160,28 +2165,121 @@ public class BookingService {
     }
 
     /**
-     * Calculate refund amount based on cancellation policy
+     * Calculate refund amount based on hotel's configurable cancellation policy
      */
     private BigDecimal calculateCancellationRefund(Reservation reservation) {
+        if (reservation == null || reservation.getTotalAmount() == null) {
+            logger.warn("Invalid reservation data for refund calculation");
+            return BigDecimal.ZERO;
+        }
+
         LocalDate now = LocalDate.now();
         LocalDate checkInDate = reservation.getCheckInDate();
         long daysUntilCheckIn = ChronoUnit.DAYS.between(now, checkInDate);
 
         BigDecimal totalAmount = reservation.getTotalAmount();
-
-        // Cancellation policy:
-        // - More than 7 days: 100% refund
-        // - 3-7 days: 50% refund
-        // - 1-2 days: 25% refund
-        // - Same day or past: No refund
-
-        // TODO: Get refund policy from hotel configuration
-        // For now, provide full refund to avoid hardcoded business rules
-        if (daysUntilCheckIn >= 0) {
-            return totalAmount; // Full refund until policy is configured
-        } else {
-            return BigDecimal.ZERO; // No refund for past dates
+        
+        // Validate total amount is positive
+        if (totalAmount.compareTo(BigDecimal.ZERO) <= 0) {
+            logger.warn("Invalid total amount for reservation {}: {}", 
+                    reservation.getConfirmationNumber(), totalAmount);
+            return BigDecimal.ZERO;
         }
+
+        // Get hotel's pricing configuration for refund policy
+        Long hotelId = null;
+        if (reservation.getRoom() != null && reservation.getRoom().getHotel() != null) {
+            hotelId = reservation.getRoom().getHotel().getId();
+        } else if (reservation.getHotel() != null) {
+            hotelId = reservation.getHotel().getId();
+        }
+
+        BigDecimal refundPercentage;
+        if (hotelId != null) {
+            try {
+                HotelPricingConfig pricingConfig = hotelPricingConfigService.getActiveConfiguration(hotelId);
+                if (pricingConfig != null) {
+                    refundPercentage = pricingConfig.getRefundRateForDays(daysUntilCheckIn);
+                    logger.info("Using hotel {} configured refund policy: {}% for {} days until check-in", 
+                            hotelId, refundPercentage.multiply(new BigDecimal("100")), daysUntilCheckIn);
+                } else {
+                    // Fall back to default policy if no configuration found
+                    refundPercentage = getDefaultRefundRate(daysUntilCheckIn);
+                    logger.warn("No pricing configuration found for hotel {}, using default refund policy", hotelId);
+                }
+            } catch (Exception e) {
+                logger.error("Error retrieving pricing configuration for hotel {}: {}", hotelId, e.getMessage());
+                refundPercentage = getDefaultRefundRate(daysUntilCheckIn);
+            }
+        } else {
+            // Fall back to default policy if hotel ID cannot be determined
+            refundPercentage = getDefaultRefundRate(daysUntilCheckIn);
+            logger.warn("Cannot determine hotel ID for reservation {}, using default refund policy", 
+                    reservation.getConfirmationNumber());
+        }
+        
+        BigDecimal refundAmount = totalAmount.multiply(refundPercentage)
+                .setScale(2, RoundingMode.HALF_UP);
+        
+        logger.info("Calculated refund for reservation {}: {} ({}% of {})", 
+                reservation.getConfirmationNumber(), refundAmount, 
+                refundPercentage.multiply(new BigDecimal("100")), totalAmount);
+        
+        return refundAmount;
+    }
+
+    /**
+     * Get default refund rate when hotel configuration is not available
+     */
+    private BigDecimal getDefaultRefundRate(long daysUntilCheckIn) {
+        if (daysUntilCheckIn > 7) {
+            return new BigDecimal("1.00"); // 100% refund
+        } else if (daysUntilCheckIn >= 3) {
+            return new BigDecimal("0.50"); // 50% refund
+        } else if (daysUntilCheckIn >= 1) {
+            return new BigDecimal("0.25"); // 25% refund
+        } else {
+            return BigDecimal.ZERO; // No refund for same day or past
+        }
+    }
+
+    /**
+     * Calculate total amount including taxes and fees for a given number of nights
+     */
+    private BigDecimal calculateTotalAmountWithTaxes(Reservation reservation, long nights) {
+        if (reservation == null || nights <= 0) {
+            return BigDecimal.ZERO;
+        }
+
+        BigDecimal pricePerNight;
+        if (reservation.getRoom() != null) {
+            pricePerNight = reservation.getRoom().getPricePerNight();
+        } else {
+            pricePerNight = reservation.getPricePerNight();
+        }
+
+        if (pricePerNight == null || pricePerNight.compareTo(BigDecimal.ZERO) <= 0) {
+            return BigDecimal.ZERO;
+        }
+
+        // Base amount
+        BigDecimal baseAmount = pricePerNight.multiply(BigDecimal.valueOf(nights));
+        
+        // Add taxes (assuming 15% tax rate - this should be configurable per hotel)
+        BigDecimal taxRate = new BigDecimal("0.15");
+        BigDecimal taxAmount = baseAmount.multiply(taxRate);
+        
+        // Add service fee (assuming 5% service fee - this should be configurable per hotel)
+        BigDecimal serviceFeeRate = new BigDecimal("0.05");
+        BigDecimal serviceFee = baseAmount.multiply(serviceFeeRate);
+        
+        BigDecimal totalAmount = baseAmount.add(taxAmount).add(serviceFee)
+                .setScale(2, RoundingMode.HALF_UP);
+
+        logger.debug("Calculated total amount for {} nights: base={}, tax={}, service={}, total={}", 
+                nights, baseAmount, taxAmount, serviceFee, totalAmount);
+        
+        return totalAmount;
     }
 
     /**

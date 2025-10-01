@@ -84,10 +84,20 @@ const NotificationsPage: React.FC = () => {
   };
 
   const formatCurrency = (amount: number) => {
+    // Validate amount is a valid number
+    if (typeof amount !== 'number' || isNaN(amount)) {
+      return 'N/A';
+    }
+    
+    // Ensure amount is not negative for display
+    const validAmount = Math.max(0, amount);
+    
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD'
-    }).format(amount);
+      currency: 'USD',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(validAmount);
   };
 
   const formatDate = (dateString: string) => {
@@ -207,13 +217,29 @@ const NotificationsPage: React.FC = () => {
               <TableCell>
                 <Box>
                   {notification.refundAmount && notification.refundAmount > 0 && (
-                    <Typography variant="body2" color="success.main" fontWeight={notification.status === 'UNREAD' ? 'bold' : 'normal'}>
-                      Refund: {formatCurrency(notification.refundAmount)}
+                    <Typography 
+                      variant="body2" 
+                      color="success.main" 
+                      fontWeight={notification.status === 'UNREAD' ? 'bold' : 'normal'}
+                      sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                    >
+                      ↩️ Hotel owes: {formatCurrency(notification.refundAmount)}
                     </Typography>
                   )}
                   {notification.additionalCharges && notification.additionalCharges > 0 && (
-                    <Typography variant="body2" color="warning.main" fontWeight={notification.status === 'UNREAD' ? 'bold' : 'normal'}>
-                      +{formatCurrency(notification.additionalCharges)}
+                    <Typography 
+                      variant="body2" 
+                      color="warning.main" 
+                      fontWeight={notification.status === 'UNREAD' ? 'bold' : 'normal'}
+                      sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                    >
+                      💳 Guest owes: {formatCurrency(notification.additionalCharges)}
+                    </Typography>
+                  )}
+                  {(!notification.refundAmount || notification.refundAmount === 0) && 
+                   (!notification.additionalCharges || notification.additionalCharges === 0) && (
+                    <Typography variant="body2" color="text.secondary">
+                      No payment changes
                     </Typography>
                   )}
                 </Box>
@@ -373,12 +399,23 @@ const NotificationsPage: React.FC = () => {
                   </Typography>
                   <Divider sx={{ mb: 2 }} />
                   {selectedNotification.cancellationReason && (
-                    <Typography><strong>Reason:</strong> {selectedNotification.cancellationReason}</Typography>
+                    <Typography sx={{ mb: 1 }}>
+                      <strong>Reason:</strong> {selectedNotification.cancellationReason}
+                    </Typography>
                   )}
                   {selectedNotification.refundAmount && selectedNotification.refundAmount > 0 && (
-                    <Typography color="success.main">
-                      <strong>Refund Amount:</strong> {formatCurrency(selectedNotification.refundAmount)}
-                    </Typography>
+                    <Alert severity="success" sx={{ mt: 2 }}>
+                      <Typography>
+                        <strong>💰 Refund Required:</strong> The hotel must refund {formatCurrency(selectedNotification.refundAmount)} to the guest.
+                      </Typography>
+                    </Alert>
+                  )}
+                  {(!selectedNotification.refundAmount || selectedNotification.refundAmount === 0) && (
+                    <Alert severity="info" sx={{ mt: 2 }}>
+                      <Typography>
+                        <strong>ℹ️ No Refund:</strong> No refund is required for this cancellation.
+                      </Typography>
+                    </Alert>
                   )}
                 </Box>
               )}
@@ -390,18 +427,36 @@ const NotificationsPage: React.FC = () => {
                   </Typography>
                   <Divider sx={{ mb: 2 }} />
                   {selectedNotification.changeDetails && (
-                    <Typography><strong>Changes:</strong> {selectedNotification.changeDetails}</Typography>
-                  )}
-                  {selectedNotification.additionalCharges && selectedNotification.additionalCharges > 0 && (
-                    <Typography color="warning.main">
-                      <strong>Additional Charges:</strong> {formatCurrency(selectedNotification.additionalCharges)}
+                    <Typography sx={{ mb: 1 }}>
+                      <strong>Changes:</strong> {selectedNotification.changeDetails}
                     </Typography>
                   )}
-                  {selectedNotification.refundAmount && selectedNotification.refundAmount > 0 && (
-                    <Typography color="success.main">
-                      <strong>Refund Amount:</strong> {formatCurrency(selectedNotification.refundAmount)}
-                    </Typography>
-                  )}
+                  
+                  {/* Payment Information Section */}
+                  <Box sx={{ mt: 2 }}>
+                    {selectedNotification.additionalCharges && selectedNotification.additionalCharges > 0 && (
+                      <Alert severity="warning" sx={{ mb: 1 }}>
+                        <Typography>
+                          <strong>💳 Additional Payment Required:</strong> The guest needs to pay an additional {formatCurrency(selectedNotification.additionalCharges)}.
+                        </Typography>
+                      </Alert>
+                    )}
+                    {selectedNotification.refundAmount && selectedNotification.refundAmount > 0 && (
+                      <Alert severity="success" sx={{ mb: 1 }}>
+                        <Typography>
+                          <strong>💰 Refund Due:</strong> The hotel must refund {formatCurrency(selectedNotification.refundAmount)} to the guest.
+                        </Typography>
+                      </Alert>
+                    )}
+                    {(!selectedNotification.additionalCharges || selectedNotification.additionalCharges === 0) && 
+                     (!selectedNotification.refundAmount || selectedNotification.refundAmount === 0) && (
+                      <Alert severity="info">
+                        <Typography>
+                          <strong>ℹ️ No Payment Changes:</strong> This modification does not require any additional payment or refund.
+                        </Typography>
+                      </Alert>
+                    )}
+                  </Box>
                 </Box>
               )}
 

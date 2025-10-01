@@ -32,14 +32,65 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import { COLORS } from '../theme/themeColors';
 
+// Utility functions for converting between percentage (0-100) and decimal (0.0-1.0) values
+const toDecimal = (percentage: number): number => {
+  return percentage / 100;
+};
+
+// Smart conversion that handles both decimal and percentage values from backend
+const smartToPercentage = (value: number): number => {
+  // If value is already in percentage range (>1), return as is
+  // If value is in decimal range (0-1), convert to percentage
+  return value > 1 ? value : Math.round(value * 100);
+};
+
+// Convert backend values to percentage for display
+const convertConfigForDisplay = (backendConfig: any): PricingConfiguration => {
+  return {
+    ...backendConfig,
+    vatRate: smartToPercentage(backendConfig.vatRate || 0),
+    serviceTaxRate: smartToPercentage(backendConfig.serviceTaxRate || 0),
+    cityTaxRate: smartToPercentage(backendConfig.cityTaxRate || 0),
+    earlyBookingDiscountRate: smartToPercentage(backendConfig.earlyBookingDiscountRate || 0),
+    loyaltyDiscountRate: smartToPercentage(backendConfig.loyaltyDiscountRate || 0),
+    cancellationFeeRate: smartToPercentage(backendConfig.cancellationFeeRate || 0),
+    modificationFeeRate: smartToPercentage(backendConfig.modificationFeeRate || 0),
+    noShowPenaltyRate: smartToPercentage(backendConfig.noShowPenaltyRate || 0),
+    refundPolicy7PlusDays: smartToPercentage(backendConfig.refundPolicy7PlusDays || 1.0),
+    refundPolicy3To7Days: smartToPercentage(backendConfig.refundPolicy3To7Days || 0.5),
+    refundPolicy1To2Days: smartToPercentage(backendConfig.refundPolicy1To2Days || 0.25),
+    refundPolicySameDay: smartToPercentage(backendConfig.refundPolicySameDay || 0)
+  };
+};
+
+// Convert percentage values to decimal for backend API
+const convertConfigForBackend = (displayConfig: PricingConfiguration): any => {
+  return {
+    ...displayConfig,
+    vatRate: toDecimal(displayConfig.vatRate),
+    serviceTaxRate: toDecimal(displayConfig.serviceTaxRate),
+    cityTaxRate: toDecimal(displayConfig.cityTaxRate),
+    earlyBookingDiscountRate: toDecimal(displayConfig.earlyBookingDiscountRate),
+    loyaltyDiscountRate: toDecimal(displayConfig.loyaltyDiscountRate),
+    cancellationFeeRate: toDecimal(displayConfig.cancellationFeeRate),
+    modificationFeeRate: toDecimal(displayConfig.modificationFeeRate),
+    noShowPenaltyRate: toDecimal(displayConfig.noShowPenaltyRate),
+    refundPolicy7PlusDays: toDecimal(displayConfig.refundPolicy7PlusDays || 100),
+    refundPolicy3To7Days: toDecimal(displayConfig.refundPolicy3To7Days || 50),
+    refundPolicy1To2Days: toDecimal(displayConfig.refundPolicy1To2Days || 25),
+    refundPolicySameDay: toDecimal(displayConfig.refundPolicySameDay || 0)
+  };
+};
+
 // Interface for the pricing configuration
+// Note: All rate fields are stored as decimal values (0.0-1.0) in backend but displayed as percentages (0-100) in UI
 interface PricingConfiguration {
   id?: number;
   hotelId: number;
   pricingStrategy: 'FIXED' | 'DYNAMIC' | 'SEASONAL';
-  vatRate: number;
-  serviceTaxRate: number;
-  cityTaxRate: number;
+  vatRate: number; // Stored as decimal (0.0-1.0), displayed as percentage (0-100)
+  serviceTaxRate: number; // Stored as decimal (0.0-1.0), displayed as percentage (0-100)
+  cityTaxRate: number; // Stored as decimal (0.0-1.0), displayed as percentage (0-100)
   taxInclusivePricing: boolean;
   peakSeasonMultiplier: number;
   offSeasonMultiplier: number;
@@ -47,14 +98,19 @@ interface PricingConfiguration {
   minimumAdvanceBookingHours: number;
   maximumAdvanceBookingDays: number;
   earlyBookingDaysThreshold: number;
-  earlyBookingDiscountRate: number;
-  loyaltyDiscountRate: number;
-  cancellationFeeRate: number;
-  modificationFeeRate: number;
-  noShowPenaltyRate: number;
+  earlyBookingDiscountRate: number; // Stored as decimal (0.0-1.0), displayed as percentage (0-100)
+  loyaltyDiscountRate: number; // Stored as decimal (0.0-1.0), displayed as percentage (0-100)
+  cancellationFeeRate: number; // Stored as decimal (0.0-1.0), displayed as percentage (0-100)
+  modificationFeeRate: number; // Stored as decimal (0.0-1.0), displayed as percentage (0-100)
+  noShowPenaltyRate: number; // Stored as decimal (0.0-1.0), displayed as percentage (0-100)
   dynamicPricingEnabled: boolean;
   currencyCode: string;
   notes?: string;
+  // Cancellation refund policy fields - stored as decimal (0.0-1.0), displayed as percentage (0-100)
+  refundPolicy7PlusDays?: number;
+  refundPolicy3To7Days?: number;
+  refundPolicy1To2Days?: number;
+  refundPolicySameDay?: number;
 }
 
 const PricingConfigurationComponent: React.FC = () => {
@@ -70,13 +126,13 @@ const PricingConfigurationComponent: React.FC = () => {
   const fetchConfiguration = useCallback(async () => {
     if (!token || !user?.hotelId) return;
 
-    // Default configuration values - Fixed pricing without tax
+    // Default configuration values - Fixed pricing without tax (values in percentage for display)
     const defaultConfig: PricingConfiguration = {
       hotelId: typeof user?.hotelId === 'string' ? parseInt(user.hotelId) : (user?.hotelId || 1),
       pricingStrategy: 'FIXED',
-      vatRate: 0.15, // 15% VAT (Ethiopian standard) - applied during booking
-      serviceTaxRate: 0.05, // 5% service tax - applied during booking
-      cityTaxRate: 0.00, // No city tax by default
+      vatRate: 15, // 15% VAT (Ethiopian standard) - displayed as percentage
+      serviceTaxRate: 5, // 5% service tax - displayed as percentage
+      cityTaxRate: 0, // No city tax by default - displayed as percentage
       taxInclusivePricing: false, // Prices shown without tax, tax added during booking
       peakSeasonMultiplier: 1.0, // No change - set to 1.0 to not affect pricing
       offSeasonMultiplier: 1.0, // No change - set to 1.0 to not affect pricing
@@ -84,14 +140,19 @@ const PricingConfigurationComponent: React.FC = () => {
       minimumAdvanceBookingHours: 2,
       maximumAdvanceBookingDays: 365,
       earlyBookingDaysThreshold: 30,
-      earlyBookingDiscountRate: 0.10, // 10% early booking discount
-      loyaltyDiscountRate: 0.05, // 5% loyalty discount
-      cancellationFeeRate: 0.10, // 10% cancellation fee
-      modificationFeeRate: 0.05, // 5% modification fee
-      noShowPenaltyRate: 1.00, // 100% no-show penalty
+      earlyBookingDiscountRate: 10, // 10% early booking discount - displayed as percentage
+      loyaltyDiscountRate: 5, // 5% loyalty discount - displayed as percentage
+      cancellationFeeRate: 10, // 10% cancellation fee - displayed as percentage
+      modificationFeeRate: 5, // 5% modification fee - displayed as percentage
+      noShowPenaltyRate: 100, // 100% no-show penalty - displayed as percentage
       dynamicPricingEnabled: false, // Always use fixed pricing
       currencyCode: 'ETB',
-      notes: 'Fixed pricing configuration - taxes applied during booking process'
+      notes: 'Fixed pricing configuration - taxes applied during booking process',
+      // Default refund policy values (displayed as percentages)
+      refundPolicy7PlusDays: 100, // 100% refund for cancellations 7+ days before
+      refundPolicy3To7Days: 50,   // 50% refund for cancellations 3-7 days before
+      refundPolicy1To2Days: 25,   // 25% refund for cancellations 1-2 days before
+      refundPolicySameDay: 0      // 0% refund for same-day cancellations
     };
 
     try {
@@ -110,7 +171,8 @@ const PricingConfigurationComponent: React.FC = () => {
 
       if (response.ok) {
         const configData = await response.json();
-        setConfig(configData);
+        // Convert backend decimal values to percentage for display
+        setConfig(convertConfigForDisplay(configData));
       } else {
         throw new Error('Failed to fetch pricing configuration');
       }
@@ -139,6 +201,9 @@ const PricingConfigurationComponent: React.FC = () => {
 
       const method = config.id ? 'PUT' : 'POST';
 
+      // Convert percentage values to decimal for backend
+      const backendConfig = convertConfigForBackend(config);
+      
       const response = await fetch(endpoint, {
         method,
         headers: {
@@ -146,14 +211,15 @@ const PricingConfigurationComponent: React.FC = () => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          ...config,
+          ...backendConfig,
           hotel: { id: config.hotelId } // Add hotel object for backend validation
         })
       });
 
       if (response.ok) {
         const savedConfig = await response.json();
-        setConfig(savedConfig);
+        // Convert backend decimal values to percentage for display
+        setConfig(convertConfigForDisplay(savedConfig));
         setSuccess('Pricing configuration saved successfully!');
         setTimeout(() => setSuccess(null), 5000);
       } else {
@@ -177,7 +243,7 @@ const PricingConfigurationComponent: React.FC = () => {
     } : null);
   };
 
-  // Helper functions to calculate dynamic percentages
+  // Helper functions to calculate dynamic percentages (now working with percentage values)
   const calculatePercentageChange = (multiplier: number): string => {
     if (multiplier === 1.0) return '0% (no change)';
     const percentage = Math.round((multiplier - 1) * 100);
@@ -189,15 +255,15 @@ const PricingConfigurationComponent: React.FC = () => {
   };
 
   const calculateDiscountPercentage = (rate: number): string => {
-    return `${Math.round(rate * 100)}% discount`;
+    return `${Math.round(rate)}% discount`; // rate is already a percentage
   };
 
   const calculateFeePercentage = (rate: number): string => {
-    return `${Math.round(rate * 100)}% fee`;
+    return `${Math.round(rate)}% fee`; // rate is already a percentage
   };
 
   const calculateTaxPercentage = (rate: number): string => {
-    return `${Math.round(rate * 100)}%`;
+    return `${Math.round(rate)}%`; // rate is already a percentage
   };
 
   // Load configuration on component mount
@@ -519,11 +585,11 @@ const PricingConfigurationComponent: React.FC = () => {
                 <Grid item xs={12} md={4}>
                   <TextField
                     fullWidth
-                    label="VAT Rate"
+                    label="VAT Rate (%)"
                     type="number"
                     value={config.vatRate}
                     onChange={(e) => handleInputChange('vatRate', parseFloat(e.target.value) || 0)}
-                    inputProps={{ min: 0, max: 1, step: 0.01 }}
+                    inputProps={{ min: 0, max: 100, step: 0.1 }}
                     helperText={`Current VAT: ${calculateTaxPercentage(config.vatRate)} (Ethiopian standard: 15%)`}
                     sx={{
                       '& .MuiOutlinedInput-root': {
@@ -545,11 +611,11 @@ const PricingConfigurationComponent: React.FC = () => {
                 <Grid item xs={12} md={4}>
                   <TextField
                     fullWidth
-                    label="Service Tax Rate"
+                    label="Service Tax Rate (%)"
                     type="number"
                     value={config.serviceTaxRate}
                     onChange={(e) => handleInputChange('serviceTaxRate', parseFloat(e.target.value) || 0)}
-                    inputProps={{ min: 0, max: 1, step: 0.01 }}
+                    inputProps={{ min: 0, max: 100, step: 0.1 }}
                     helperText={`Current service tax: ${calculateTaxPercentage(config.serviceTaxRate)} (Ethiopian standard: 5%)`}
                     sx={{
                       '& .MuiOutlinedInput-root': {
@@ -571,11 +637,11 @@ const PricingConfigurationComponent: React.FC = () => {
                 <Grid item xs={12} md={4}>
                   <TextField
                     fullWidth
-                    label="City Tax Rate"
+                    label="City Tax Rate (%)"
                     type="number"
                     value={config.cityTaxRate}
                     onChange={(e) => handleInputChange('cityTaxRate', parseFloat(e.target.value) || 0)}
-                    inputProps={{ min: 0, max: 1, step: 0.01 }}
+                    inputProps={{ min: 0, max: 100, step: 0.1 }}
                     helperText={`Current city tax: ${calculateTaxPercentage(config.cityTaxRate)} (Usually 0% in Ethiopia)`}
                     sx={{
                       '& .MuiOutlinedInput-root': {
@@ -882,12 +948,12 @@ const PricingConfigurationComponent: React.FC = () => {
                 <Grid item xs={12} md={6}>
                   <TextField
                     fullWidth
-                    label="Early Booking Discount Rate"
+                    label="Early Booking Discount Rate (%)"
                     type="number"
                     value={config.earlyBookingDiscountRate}
                     onChange={(e) => handleInputChange('earlyBookingDiscountRate', parseFloat(e.target.value) || 0)}
-                    inputProps={{ min: 0, max: 1, step: 0.01 }}
-                    helperText={`${config.earlyBookingDiscountRate.toFixed(2)} = ${calculateDiscountPercentage(config.earlyBookingDiscountRate)}`}
+                    inputProps={{ min: 0, max: 100, step: 0.1 }}
+                    helperText={`${config.earlyBookingDiscountRate.toFixed(1)} = ${calculateDiscountPercentage(config.earlyBookingDiscountRate)}`}
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         backgroundColor: 'background.paper',
@@ -908,12 +974,12 @@ const PricingConfigurationComponent: React.FC = () => {
                 <Grid item xs={12} md={6}>
                   <TextField
                     fullWidth
-                    label="Loyalty Discount Rate"
+                    label="Loyalty Discount Rate (%)"
                     type="number"
                     value={config.loyaltyDiscountRate}
                     onChange={(e) => handleInputChange('loyaltyDiscountRate', parseFloat(e.target.value) || 0)}
-                    inputProps={{ min: 0, max: 1, step: 0.01 }}
-                    helperText={`${config.loyaltyDiscountRate.toFixed(2)} = ${calculateDiscountPercentage(config.loyaltyDiscountRate)}`}
+                    inputProps={{ min: 0, max: 100, step: 0.1 }}
+                    helperText={`${config.loyaltyDiscountRate.toFixed(1)} = ${calculateDiscountPercentage(config.loyaltyDiscountRate)}`}
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         backgroundColor: 'background.paper',
@@ -934,12 +1000,12 @@ const PricingConfigurationComponent: React.FC = () => {
                 <Grid item xs={12} md={6}>
                   <TextField
                     fullWidth
-                    label="Cancellation Fee Rate"
+                    label="Cancellation Fee Rate (%)"
                     type="number"
                     value={config.cancellationFeeRate}
                     onChange={(e) => handleInputChange('cancellationFeeRate', parseFloat(e.target.value) || 0)}
-                    inputProps={{ min: 0, max: 1, step: 0.01 }}
-                    helperText={`${config.cancellationFeeRate.toFixed(2)} = ${calculateFeePercentage(config.cancellationFeeRate)}`}
+                    inputProps={{ min: 0, max: 100, step: 0.1 }}
+                    helperText={`${config.cancellationFeeRate.toFixed(1)} = ${calculateFeePercentage(config.cancellationFeeRate)}`}
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         backgroundColor: 'background.paper',
@@ -960,12 +1026,12 @@ const PricingConfigurationComponent: React.FC = () => {
                 <Grid item xs={12} md={6}>
                   <TextField
                     fullWidth
-                    label="Modification Fee Rate"
+                    label="Modification Fee Rate (%)"
                     type="number"
                     value={config.modificationFeeRate}
                     onChange={(e) => handleInputChange('modificationFeeRate', parseFloat(e.target.value) || 0)}
-                    inputProps={{ min: 0, max: 1, step: 0.01 }}
-                    helperText={`${config.modificationFeeRate.toFixed(2)} = ${calculateFeePercentage(config.modificationFeeRate)}`}
+                    inputProps={{ min: 0, max: 100, step: 0.1 }}
+                    helperText={`${config.modificationFeeRate.toFixed(1)} = ${calculateFeePercentage(config.modificationFeeRate)}`}
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         backgroundColor: 'background.paper',
@@ -986,12 +1052,12 @@ const PricingConfigurationComponent: React.FC = () => {
                 <Grid item xs={12} md={6}>
                   <TextField
                     fullWidth
-                    label="No-Show Penalty Rate"
+                    label="No-Show Penalty Rate (%)"
                     type="number"
                     value={config.noShowPenaltyRate}
                     onChange={(e) => handleInputChange('noShowPenaltyRate', parseFloat(e.target.value) || 1)}
-                    inputProps={{ min: 0, max: 1, step: 0.01 }}
-                    helperText={`${config.noShowPenaltyRate.toFixed(2)} = ${calculateFeePercentage(config.noShowPenaltyRate)} penalty`}
+                    inputProps={{ min: 0, max: 100, step: 0.1 }}
+                    helperText={`${config.noShowPenaltyRate.toFixed(1)} = ${calculateFeePercentage(config.noShowPenaltyRate)} penalty`}
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         backgroundColor: 'background.paper',
@@ -1010,6 +1076,179 @@ const PricingConfigurationComponent: React.FC = () => {
                   />
                 </Grid>
               </Grid>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Cancellation Refund Policies */}
+        <Grid item xs={12}>
+          <Card sx={{ 
+            bgcolor: 'background.paper',
+            border: '1px solid',
+            borderColor: 'divider',
+            borderRadius: 3,
+            elevation: 0,
+          }}>
+            <CardContent sx={{ p: 4 }}>
+              {/* Cancellation Refund Policies Section */}
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 2, 
+                mb: 4,
+                p: 2,
+                bgcolor: 'background.default',
+                border: '1px solid',
+                borderColor: 'divider',
+                borderRadius: 2,
+              }}>
+                <ReceiptIcon sx={{ color: COLORS.PRIMARY }} />
+                <Box>
+                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: COLORS.PRIMARY }}>
+                    Cancellation Refund Policies
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Configure refund percentages based on cancellation timing
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Alert 
+                severity="info" 
+                sx={{ 
+                  mb: 3,
+                  borderRadius: 2,
+                  bgcolor: alpha(theme.palette.info.main, 0.1),
+                  border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
+                }}
+              >
+                <Typography variant="body2">
+                  Set the refund percentage customers receive when they cancel their booking at different time periods before check-in. 
+                  These policies will be automatically applied when processing cancellations.
+                </Typography>
+              </Alert>
+
+              <Grid container spacing={3}>
+                <Grid item xs={12} sm={6} md={3}>
+                  <TextField
+                    fullWidth
+                    label="7+ Days Before Check-in"
+                    type="number"
+                    value={config.refundPolicy7PlusDays || 100}
+                    onChange={(e) => handleInputChange('refundPolicy7PlusDays', parseFloat(e.target.value) || 0)}
+                    inputProps={{ min: 0, max: 100, step: 1 }}
+                    helperText="% refund (recommended: 100%)"
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        backgroundColor: 'background.paper',
+                        borderRadius: 2,
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                          borderColor: COLORS.PRIMARY,
+                        },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                          borderColor: COLORS.PRIMARY,
+                        }
+                      },
+                      '& .MuiInputLabel-root.Mui-focused': {
+                        color: COLORS.PRIMARY,
+                      }
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <TextField
+                    fullWidth
+                    label="3-7 Days Before Check-in"
+                    type="number"
+                    value={config.refundPolicy3To7Days || 50}
+                    onChange={(e) => handleInputChange('refundPolicy3To7Days', parseFloat(e.target.value) || 0)}
+                    inputProps={{ min: 0, max: 100, step: 1 }}
+                    helperText="% refund (recommended: 50%)"
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        backgroundColor: 'background.paper',
+                        borderRadius: 2,
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                          borderColor: COLORS.PRIMARY,
+                        },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                          borderColor: COLORS.PRIMARY,
+                        }
+                      },
+                      '& .MuiInputLabel-root.Mui-focused': {
+                        color: COLORS.PRIMARY,
+                      }
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <TextField
+                    fullWidth
+                    label="1-2 Days Before Check-in"
+                    type="number"
+                    value={config.refundPolicy1To2Days || 25}
+                    onChange={(e) => handleInputChange('refundPolicy1To2Days', parseFloat(e.target.value) || 0)}
+                    inputProps={{ min: 0, max: 100, step: 1 }}
+                    helperText="% refund (recommended: 25%)"
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        backgroundColor: 'background.paper',
+                        borderRadius: 2,
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                          borderColor: COLORS.PRIMARY,
+                        },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                          borderColor: COLORS.PRIMARY,
+                        }
+                      },
+                      '& .MuiInputLabel-root.Mui-focused': {
+                        color: COLORS.PRIMARY,
+                      }
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <TextField
+                    fullWidth
+                    label="Same Day Cancellation"
+                    type="number"
+                    value={config.refundPolicySameDay || 0}
+                    onChange={(e) => handleInputChange('refundPolicySameDay', parseFloat(e.target.value) || 0)}
+                    inputProps={{ min: 0, max: 100, step: 1 }}
+                    helperText="% refund (recommended: 0%)"
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        backgroundColor: 'background.paper',
+                        borderRadius: 2,
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                          borderColor: COLORS.PRIMARY,
+                        },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                          borderColor: COLORS.PRIMARY,
+                        }
+                      },
+                      '& .MuiInputLabel-root.Mui-focused': {
+                        color: COLORS.PRIMARY,
+                      }
+                    }}
+                  />
+                </Grid>
+              </Grid>
+
+              <Alert 
+                severity="warning" 
+                sx={{ 
+                  mt: 2,
+                  borderRadius: 2,
+                  bgcolor: alpha(theme.palette.warning.main, 0.1),
+                  border: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`
+                }}
+              >
+                <Typography variant="body2">
+                  <strong>Note:</strong> These refund policies will replace the existing hardcoded cancellation rules. 
+                  Make sure to set policies that align with your business requirements and local regulations.
+                </Typography>
+              </Alert>
             </CardContent>
           </Card>
         </Grid>

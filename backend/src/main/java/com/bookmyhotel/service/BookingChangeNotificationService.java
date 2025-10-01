@@ -41,14 +41,25 @@ public class BookingChangeNotificationService {
     public BookingNotification createCancellationNotification(Reservation reservation, String cancellationReason,
             BigDecimal refundAmount, String updatedBy) {
         try {
+            // Validate input parameters
+            if (reservation == null) {
+                throw new IllegalArgumentException("Reservation cannot be null");
+            }
+            if (refundAmount != null && refundAmount.compareTo(BigDecimal.ZERO) < 0) {
+                throw new IllegalArgumentException("Refund amount cannot be negative");
+            }
+            if (cancellationReason == null || cancellationReason.trim().isEmpty()) {
+                cancellationReason = "Booking cancelled";
+            }
+
             BookingNotification notification = new BookingNotification(reservation, NotificationType.CANCELLED);
-            notification.setCancellationReason(cancellationReason);
+            notification.setCancellationReason(cancellationReason.trim());
             notification.setRefundAmount(refundAmount);
             notification.setUpdatedBy(updatedBy);
 
             BookingNotification savedNotification = notificationRepository.save(notification);
-            logger.info("Created cancellation notification for booking {} (ID: {})",
-                    reservation.getConfirmationNumber(), savedNotification.getId());
+            logger.info("Created cancellation notification for booking {} (ID: {}), refund amount: {}",
+                    reservation.getConfirmationNumber(), savedNotification.getId(), refundAmount);
 
             return savedNotification;
         } catch (Exception e) {
@@ -64,15 +75,29 @@ public class BookingChangeNotificationService {
     public BookingNotification createModificationNotification(Reservation reservation, String changeDetails,
             BigDecimal additionalCharges, BigDecimal refundAmount, String updatedBy) {
         try {
+            // Validate input parameters
+            if (reservation == null) {
+                throw new IllegalArgumentException("Reservation cannot be null");
+            }
+            if (additionalCharges != null && additionalCharges.compareTo(BigDecimal.ZERO) < 0) {
+                throw new IllegalArgumentException("Additional charges cannot be negative");
+            }
+            if (refundAmount != null && refundAmount.compareTo(BigDecimal.ZERO) < 0) {
+                throw new IllegalArgumentException("Refund amount cannot be negative");
+            }
+            if (changeDetails == null || changeDetails.trim().isEmpty()) {
+                changeDetails = "Booking details modified";
+            }
+
             BookingNotification notification = new BookingNotification(reservation, NotificationType.MODIFIED);
-            notification.setChangeDetails(changeDetails);
+            notification.setChangeDetails(changeDetails.trim());
             notification.setAdditionalCharges(additionalCharges);
             notification.setRefundAmount(refundAmount);
             notification.setUpdatedBy(updatedBy);
 
             BookingNotification savedNotification = notificationRepository.save(notification);
-            logger.info("Created modification notification for booking {} (ID: {})",
-                    reservation.getConfirmationNumber(), savedNotification.getId());
+            logger.info("Created modification notification for booking {} (ID: {}), additional charges: {}, refund: {}",
+                    reservation.getConfirmationNumber(), savedNotification.getId(), additionalCharges, refundAmount);
 
             return savedNotification;
         } catch (Exception e) {
