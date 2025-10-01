@@ -549,102 +549,110 @@ const BookingPage: React.FC = () => {
           </Alert>
         )}
 
-        {/* Room Details Card */}
-        <Card sx={{ 
-          mb: 3,
-          bgcolor: 'background.paper',
-          border: '1px solid',
-          borderColor: 'divider',
-          borderRadius: 3,
-          elevation: 0,
-        }}>
-          <CardContent sx={{ p: 3 }}>
-            {/* Room Details Header */}
-            <Box sx={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: 2, 
-              mb: 3,
-              p: 2,
-              bgcolor: 'background.default',
-              border: '1px solid',
-              borderColor: 'divider',
-              borderRadius: 2,
-            }}>
-              <HotelIcon sx={{ color: COLORS.PRIMARY }} />
-              <Box>
-                <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5, color: COLORS.PRIMARY }}>
-                  Room Details
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Your selected accommodation details
-                </Typography>
-              </Box>
-            </Box>
-            
-            {/* Room Information Grid */}
-            <Grid container spacing={3}>
-              <Grid item xs={12} sm={6}>
+        {/* Room Details Section */}
+        <Grid container spacing={isMobile ? 1.5 : 2} sx={{ mb: 3 }}>
+          <Grid item xs={12}>
+            <Card
+              sx={{
+                backgroundColor: alpha(COLORS.PRIMARY, 0.05),
+                border: `1px solid ${alpha(COLORS.PRIMARY, 0.2)}`,
+              }}
+            >
+              <CardContent>
                 <Box sx={{ 
-                  p: 2,
-                  backgroundColor: 'background.default',
-                  borderRadius: 2,
-                  border: '1px solid',
-                  borderColor: 'divider',
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  mb: 2,
                 }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
-                    ROOM TYPE
-                  </Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 600, mt: 0.5, color: COLORS.PRIMARY }}>
-                    {roomData.roomType}
-                  </Typography>
-                  
-                  <Typography variant="body2" sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-                    👥 Up to {roomData.capacity} guests
+                  <HotelIcon sx={{ mr: 1, color: COLORS.PRIMARY }} />
+                  <Typography 
+                    variant={isMobile ? 'subtitle1' : 'h6'} 
+                    sx={{ fontWeight: 600, color: COLORS.PRIMARY }}
+                  >
+                    Room Details
                   </Typography>
                 </Box>
-              </Grid>
-              
-              <Grid item xs={12} sm={6}>
-                <Box sx={{ 
-                  p: 2,
-                  backgroundColor: 'background.default',
-                  borderRadius: 2,
-                  border: '1px solid',
-                  borderColor: 'divider',
-                }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
-                    PRICING
-                  </Typography>
-                  
-                  <Typography variant="h6" sx={{ fontWeight: 600, mt: 0.5, color: COLORS.PRIMARY }}>
-                    💰 ETB {roomData.pricePerNight?.toFixed(0)} per night
-                  </Typography>
-                  
-                  {nights > 0 && (
-                    <>
-                      <Typography variant="body2" sx={{ mt: 1, mb: 1 }}>
-                        📅 {nights} night{nights !== 1 ? 's' : ''}
+
+                <Grid container spacing={isMobile ? 1.5 : 2}>
+                  <Grid item xs={12} sm={6}>
+                    <Box sx={{ 
+                      p: isMobile ? 1.5 : 2,
+                      backgroundColor: theme.palette.background.paper,
+                      borderRadius: 1,
+                      border: `1px solid ${alpha(COLORS.PRIMARY, 0.1)}`,
+                    }}>
+                      <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>
+                        Room Type
                       </Typography>
-                      
-                      <Box sx={{ 
-                        p: 1.5,
-                        backgroundColor: COLORS.PRIMARY,
-                        color: 'white',
-                        borderRadius: 2,
-                        textAlign: 'center',
-                      }}>
-                        <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                          Total: ETB {totalAmount?.toFixed(0)}
+                      <Typography variant="h6" sx={{ fontWeight: 600, mt: 0.5, color: COLORS.PRIMARY }}>
+                        {roomData.roomType}
+                      </Typography>
+                    </Box>
+                  </Grid>
+
+                  <Grid item xs={12} sm={6}>
+                    <Box sx={{ 
+                      p: isMobile ? 1.5 : 2,
+                      backgroundColor: theme.palette.background.paper,
+                      borderRadius: 1,
+                      border: `1px solid ${alpha(COLORS.PRIMARY, 0.1)}`,
+                    }}>
+                      <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>
+                        Hotel
+                      </Typography>
+                      <Typography variant="h6" sx={{ fontWeight: 600, mt: 0.5, color: COLORS.PRIMARY }}>
+                        {hotelName || 'Hotel Information'}
+                      </Typography>
+                    </Box>
+                  </Grid>
+
+                  <Grid item xs={12} sm={6}>
+                    <Box sx={{ 
+                      p: isMobile ? 1.5 : 2,
+                      backgroundColor: theme.palette.background.paper,
+                      borderRadius: 1,
+                      border: `1px solid ${alpha(COLORS.PRIMARY, 0.1)}`,
+                    }}>
+                      <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>
+                        Price per Night
+                      </Typography>
+                      <Typography variant="h6" sx={{ fontWeight: 600, mt: 0.5, color: COLORS.PRIMARY }}>
+                        💰 ETB {roomData.pricePerNight?.toFixed(0)}
+                      </Typography>
+                    </Box>
+                  </Grid>
+
+                  <Grid item xs={12} sm={6}>
+                    <Box sx={{ 
+                      p: isMobile ? 1.5 : 2,
+                      backgroundColor: theme.palette.background.paper,
+                      borderRadius: 1,
+                      border: `1px solid ${alpha(COLORS.PRIMARY, 0.1)}`,
+                    }}>
+                      <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>
+                        Total Amount
+                      </Typography>
+                      {nights > 0 ? (
+                        <Box>
+                          <Typography variant="body2" sx={{ mt: 0.5, color: 'text.secondary' }}>
+                            📅 {nights} night{nights !== 1 ? 's' : ''}
+                          </Typography>
+                          <Typography variant="h6" sx={{ fontWeight: 700, color: COLORS.PRIMARY }}>
+                            ETB {totalAmount?.toFixed(0)}
+                          </Typography>
+                        </Box>
+                      ) : (
+                        <Typography variant="h6" sx={{ fontWeight: 600, mt: 0.5, color: COLORS.PRIMARY }}>
+                          ETB {roomData.pricePerNight?.toFixed(0)}
                         </Typography>
-                      </Box>
-                    </>
-                  )}
-                </Box>
-              </Grid>
-            </Grid>
-          </CardContent>
-        </Card>
+                      )}
+                    </Box>
+                  </Grid>
+                </Grid>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
 
         {/* Booking Form */}
         <form onSubmit={handleSubmit}>
@@ -653,33 +661,8 @@ const BookingPage: React.FC = () => {
             backgroundColor: theme.palette.background.paper,
             borderRadius: 1,
             border: `1px solid ${theme.palette.divider}`,
-            position: 'relative',
           }}>
-            {/* Loading overlay for booking form */}
-            {loading && (
-              <Box
-                sx={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  backgroundColor: theme.palette.action.disabledBackground,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  zIndex: 1000,
-                  borderRadius: 1,
-                }}
-              >
-                <Box sx={{ textAlign: 'center' }}>
-                  <CircularProgress size={40} />
-                  <Typography variant="body2" sx={{ mt: 2 }}>
-                    Processing your booking...
-                  </Typography>
-                </Box>
-              </Box>
-            )}
+
             <Grid container spacing={isMobile ? 1.5 : 2}>
               {/* Dates and Guests - stacked on mobile */}
               <Grid item xs={12} sm={4}>

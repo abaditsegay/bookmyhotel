@@ -36,6 +36,125 @@ import { useAuthenticatedApi } from '../hooks/useAuthenticatedApi';
 
 import { COLORS, addAlpha } from '../theme/themeColors';
 
+// Print-specific CSS styles
+const printStyles = `
+  @media screen {
+    .print-only {
+      display: none !important;
+    }
+  }
+  
+  @media print {
+    .no-print {
+      display: none !important;
+    }
+    
+    .print-only {
+      display: block !important;
+    }
+    
+    body {
+      margin: 0;
+      padding: 0;
+      font-size: 12pt;
+      line-height: 1.4;
+      color: #000 !important;
+      background: white !important;
+    }
+    
+    .print-container {
+      margin: 0 !important;
+      padding: 20pt !important;
+      box-shadow: none !important;
+      border: none !important;
+      max-width: none !important;
+    }
+    
+    .print-header {
+      text-align: center;
+      margin-bottom: 20pt;
+    }
+    
+    .print-app-name {
+      font-size: 20pt;
+      font-weight: bold;
+      margin-bottom: 10pt;
+      color: #000 !important;
+    }
+    
+    .print-title {
+      font-size: 16pt;
+      font-weight: bold;
+      margin-bottom: 10pt;
+      color: #000 !important;
+    }
+    
+    .print-confirmation {
+      font-size: 14pt;
+      font-weight: bold;
+      margin-bottom: 20pt;
+      color: #000 !important;
+    }
+    
+    .print-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20pt;
+    }
+    
+    .print-table td {
+      padding: 8pt;
+      border: 1px solid #ddd;
+      vertical-align: top;
+    }
+    
+    .print-table .label {
+      width: 30%;
+      font-weight: bold;
+      background-color: #f5f5f5;
+    }
+    
+    .print-table .value {
+      width: 70%;
+    }
+    
+    .print-section {
+      margin-bottom: 20pt;
+    }
+    
+    .print-section-title {
+      font-size: 14pt;
+      font-weight: bold;
+      margin-bottom: 10pt;
+      color: #000 !important;
+    }
+    
+    .print-bullet {
+      margin-bottom: 5pt;
+    }
+    
+    .print-footer {
+      text-align: center;
+      margin-top: 20pt;
+      font-size: 12pt;
+      color: #000 !important;
+    }
+  }
+`;
+
+// Add styles to document head
+if (typeof document !== 'undefined') {
+  const existingStyle = document.getElementById('booking-print-styles');
+  if (existingStyle) {
+    existingStyle.remove();
+  }
+  const styleSheet = document.createElement('style');
+  styleSheet.id = 'booking-print-styles';
+  styleSheet.type = 'text/css';
+  styleSheet.innerText = printStyles;
+  document.head.appendChild(styleSheet);
+}
+
 interface BookingData {
   reservationId: number;
   confirmationNumber: string;
@@ -65,7 +184,6 @@ const BookingConfirmationPage: React.FC = () => {
   // Mobile responsiveness
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   
   const [booking, setBooking] = useState<BookingData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -348,17 +466,115 @@ const BookingConfirmationPage: React.FC = () => {
 
   const nights = calculateNights(booking.checkInDate, booking.checkOutDate);
 
+  // Print-only PDF format component
+  const PrintOnlyLayout = () => (
+    <div className="print-only">
+      {/* Print Header */}
+      <div className="print-header">
+        <div className="print-app-name">{booking.hotelName}</div>
+        <div className="print-title">Booking Confirmation</div>
+        <div className="print-confirmation">
+          Confirmation Number: {booking.confirmationNumber}
+        </div>
+      </div>
+
+      {/* Print Details Table */}
+      <table className="print-table">
+        <tbody>
+          <tr>
+            <td className="label">Guest Name:</td>
+            <td className="value">{booking.guestName}</td>
+          </tr>
+          <tr>
+            <td className="label">Email:</td>
+            <td className="value">{booking.guestEmail}</td>
+          </tr>
+          <tr>
+            <td className="label">Number of Guests:</td>
+            <td className="value">{booking.numberOfGuests || 1}</td>
+          </tr>
+          <tr>
+            <td className="label">Hotel:</td>
+            <td className="value">{booking.hotelName}</td>
+          </tr>
+          <tr>
+            <td className="label">Address:</td>
+            <td className="value">{booking.hotelAddress}</td>
+          </tr>
+          <tr>
+            <td className="label">Room Type:</td>
+            <td className="value">{booking.roomType}</td>
+          </tr>
+          <tr>
+            <td className="label">Room Assignment:</td>
+            <td className="value">Room will be assigned at check-in</td>
+          </tr>
+          <tr>
+            <td className="label">Check-in:</td>
+            <td className="value">{formatDateLong(booking.checkInDate)}</td>
+          </tr>
+          <tr>
+            <td className="label">Check-out:</td>
+            <td className="value">{formatDateLong(booking.checkOutDate)}</td>
+          </tr>
+          <tr>
+            <td className="label">Nights:</td>
+            <td className="value">{nights}</td>
+          </tr>
+          <tr>
+            <td className="label">Rate per night:</td>
+            <td className="value">ETB {booking.pricePerNight?.toFixed(0)}</td>
+          </tr>
+          <tr>
+            <td className="label">Total Amount:</td>
+            <td className="value">ETB {booking.totalAmount?.toFixed(0)}</td>
+          </tr>
+          <tr>
+            <td className="label">Status:</td>
+            <td className="value">{booking.status}</td>
+          </tr>
+          <tr>
+            <td className="label">Payment Status:</td>
+            <td className="value">{formatPaymentStatus(booking.paymentStatus)}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      {/* Important Information */}
+      <div className="print-section">
+        <div className="print-section-title">Important Information:</div>
+        <div className="print-bullet">• Your specific room number will be assigned at check-in</div>
+        <div className="print-bullet">• Please bring a valid ID for check-in</div>
+        <div className="print-bullet">• Check-in time: 3:00 PM | Check-out time: 11:00 AM</div>
+        <div className="print-bullet">• For any changes or cancellations, please contact the hotel directly</div>
+        <div className="print-bullet">• Keep your reservation ID and confirmation number for reference</div>
+      </div>
+
+      {/* Footer */}
+      <div className="print-footer">
+        Thank you for choosing {booking.hotelName}!
+      </div>
+    </div>
+  );
+
   return (
     <Container 
       maxWidth="lg" 
+      className="print-container"
       sx={{ 
         py: isMobile ? 3 : 6,
         px: isMobile ? 1 : 3,
       }}
     >
+      {/* Print-only PDF format layout */}
+      <PrintOnlyLayout />
+
+      {/* Screen-only layout */}
+      <div className="no-print">
       {/* Success Header */}
       <Paper 
         elevation={0}
+        className="print-paper print-header"
         sx={{ 
           p: isMobile ? 3 : 4, 
           mb: isMobile ? 3 : 4, 
@@ -406,6 +622,7 @@ const BookingConfirmationPage: React.FC = () => {
           <Chip
             label={`Confirmation: ${booking.confirmationNumber}`}
             variant="filled"
+            className="print-chip"
             sx={{ 
               bgcolor: 'rgba(255,255,255,0.2)', 
               color: 'white', 
@@ -428,6 +645,7 @@ const BookingConfirmationPage: React.FC = () => {
 
       {/* Action Buttons */}
       <Box 
+        className="no-print"
         sx={{ 
           display: 'flex', 
           justifyContent: 'center', 
@@ -506,6 +724,7 @@ const BookingConfirmationPage: React.FC = () => {
       {/* Booking Details */}
       <Paper 
         elevation={2} 
+        className="print-paper"
         sx={{ 
           p: isMobile ? 3 : 4, 
           mb: isMobile ? 3 : 4, 
@@ -550,6 +769,7 @@ const BookingConfirmationPage: React.FC = () => {
               label={booking.status.toUpperCase()}
               color={getStatusColor(booking.status) as any}
               variant="filled"
+              className="print-chip"
               sx={{ 
                 fontWeight: 'bold', 
                 fontSize: isMobile ? '0.8rem' : '0.9rem',
@@ -559,6 +779,7 @@ const BookingConfirmationPage: React.FC = () => {
               label={formatPaymentStatus(booking.paymentStatus)}
               color={getPaymentStatusColor(booking.paymentStatus) as any}
               variant="outlined"
+              className="print-chip"
               sx={{ 
                 fontWeight: '500',
                 fontSize: isMobile ? '0.8rem' : '0.9rem',
@@ -740,6 +961,7 @@ const BookingConfirmationPage: React.FC = () => {
                 <Typography 
                   variant={isMobile ? 'subtitle1' : 'h5'} 
                   component="div" 
+                  className="print-total"
                   sx={{ 
                     fontWeight: 'bold', 
                     color: COLORS.SUCCESS,
@@ -999,6 +1221,7 @@ const BookingConfirmationPage: React.FC = () => {
 
       {/* Navigation Buttons */}
       <Box 
+        className="no-print"
         sx={{ 
           display: 'flex', 
           justifyContent: 'center', 
@@ -1168,6 +1391,7 @@ const BookingConfirmationPage: React.FC = () => {
           {snackbarMessage}
         </Alert>
       </Snackbar>
+      </div> {/* End no-print */}
     </Container>
   );
 };

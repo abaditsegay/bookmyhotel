@@ -128,7 +128,7 @@ export const designSystem = {
       hint: 'rgba(0, 0, 0, 0.38)'
     },
     background: {
-      default: '#fafafa',
+      default: '#ffffff',
       paper: '#ffffff',
       light: '#f5f5f5'
     },
