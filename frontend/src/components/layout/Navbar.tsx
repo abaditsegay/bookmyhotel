@@ -476,12 +476,13 @@ const Navbar: React.FC = () => {
                   fontWeight: 'bold',
                   color: '#FFD700', // Gold color for hotel name
                   textAlign: 'center',
-                  fontSize: { md: '1.8rem', lg: '2rem' }, // Start from md breakpoint
+                  fontSize: { md: '1.5rem', lg: '1.8rem' }, // Slightly smaller to fit on one line
                   textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-                  // Allow text to wrap and display fully
-                  whiteSpace: 'normal',
-                  wordBreak: 'break-word',
-                  maxWidth: '200px',
+                  // Keep on single line
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  maxWidth: '400px', // Increased width to accommodate longer hotel names
                   lineHeight: 1.2,
                 }}
               >
