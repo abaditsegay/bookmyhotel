@@ -85,7 +85,7 @@ const FindBookingPage: React.FC = () => {
         minHeight: '100vh',
         background: theme.palette.mode === 'dark' 
           ? 'linear-gradient(135deg, #121212 0%, #1e1e1e 100%)'
-          : 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+          : 'linear-gradient(135deg, #ffffff 0%, #ffffff 100%)',
         py: 4,
       }}
     >
@@ -104,7 +104,7 @@ const FindBookingPage: React.FC = () => {
               textAlign: 'center',
               p: 2,
               background: theme.palette.background.default,
-              borderRadius: 1,
+              borderRadius: 0,
               border: `1px solid rgba(224, 224, 224, 0.3)`,
             }}
           >
@@ -136,7 +136,7 @@ const FindBookingPage: React.FC = () => {
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     backgroundColor: theme.palette.background.paper,
-                    borderRadius: 1,
+                    borderRadius: 0,
                     '&:hover .MuiOutlinedInput-notchedOutline': {
                       borderColor: 'primary.main',
                     },
@@ -157,7 +157,7 @@ const FindBookingPage: React.FC = () => {
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     backgroundColor: theme.palette.background.paper,
-                    borderRadius: 1,
+                    borderRadius: 0,
                     '&:hover .MuiOutlinedInput-notchedOutline': {
                       borderColor: 'primary.main',
                     },
@@ -174,7 +174,7 @@ const FindBookingPage: React.FC = () => {
                 severity="error" 
                 sx={{ 
                   mt: 3,
-                  borderRadius: 1,
+                  borderRadius: 0,
                   backgroundColor: theme.palette.mode === 'dark' 
                     ? 'rgba(244, 67, 54, 0.1)' 
                     : 'rgba(244, 67, 54, 0.04)',
@@ -222,7 +222,7 @@ const FindBookingPage: React.FC = () => {
                 mb: 4,
                 p: 2,
                 background: theme.palette.background.default,
-                borderRadius: 1,
+                borderRadius: 0,
                 border: `1px solid rgba(224, 224, 224, 0.3)`,
               }}
             >
@@ -269,7 +269,7 @@ const FindBookingPage: React.FC = () => {
                 <Box 
                   sx={{
                     p: 2,
-                    borderRadius: 1,
+                    borderRadius: 0,
                     background: theme.palette.background.paper,
                     border: `1px solid rgba(224, 224, 224, 0.3)`,
                     boxShadow: 'none',
@@ -286,7 +286,7 @@ const FindBookingPage: React.FC = () => {
                 <Box 
                   sx={{
                     p: 2,
-                    borderRadius: 1,
+                    borderRadius: 0,
                     background: theme.palette.background.paper,
                     border: `1px solid rgba(224, 224, 224, 0.3)`,
                     boxShadow: 'none',
@@ -303,7 +303,7 @@ const FindBookingPage: React.FC = () => {
                 <Box 
                   sx={{
                     p: 2,
-                    borderRadius: 1,
+                    borderRadius: 0,
                     background: theme.palette.background.paper,
                     border: `1px solid rgba(224, 224, 224, 0.3)`,
                     boxShadow: 'none',
@@ -326,7 +326,7 @@ const FindBookingPage: React.FC = () => {
                 <Box 
                   sx={{
                     p: 2,
-                    borderRadius: 1,
+                    borderRadius: 0,
                     background: theme.palette.background.default,
                     border: `1px solid rgba(224, 224, 224, 0.3)`,
                   }}
@@ -348,7 +348,7 @@ const FindBookingPage: React.FC = () => {
                 <Box 
                   sx={{
                     p: 2,
-                    borderRadius: 1,
+                    borderRadius: 0,
                     background: theme.palette.background.paper,
                     border: `1px solid rgba(224, 224, 224, 0.3)`,
                     boxShadow: 'none',
@@ -399,7 +399,7 @@ const FindBookingPage: React.FC = () => {
               mb: 3,
               p: 2,
               background: theme.palette.background.default,
-              borderRadius: 1,
+              borderRadius: 0,
               border: `1px solid rgba(224, 224, 224, 0.3)`,
             }}
           >

@@ -111,7 +111,7 @@ const printStyles = `
     .print-table .label {
       width: 30%;
       font-weight: bold;
-      background-color: #f5f5f5;
+      background-color: #ffffff;
     }
     
     .print-table .value {
@@ -374,7 +374,7 @@ const BookingConfirmationPage: React.FC = () => {
           elevation={2} 
           sx={{ 
             p: isMobile ? 3 : 6, 
-            borderRadius: 3,
+            borderRadius: 0,
           }}
         >
           <Box 
@@ -429,7 +429,7 @@ const BookingConfirmationPage: React.FC = () => {
           elevation={2} 
           sx={{ 
             p: isMobile ? 3 : 6, 
-            borderRadius: 3,
+            borderRadius: 0,
           }}
         >
           <Alert severity="error" sx={{ mb: isMobile ? 3 : 4, borderRadius: 2 }}>
@@ -581,7 +581,7 @@ const BookingConfirmationPage: React.FC = () => {
           textAlign: 'center', 
           background: `linear-gradient(135deg, ${COLORS.SUCCESS} 0%, ${COLORS.CHECKED_IN} 100%)`,
           color: 'white',
-          borderRadius: 3
+          borderRadius: 0
         }}
       >
         <CheckCircleIcon 
@@ -728,7 +728,7 @@ const BookingConfirmationPage: React.FC = () => {
         sx={{ 
           p: isMobile ? 3 : 4, 
           mb: isMobile ? 3 : 4, 
-          borderRadius: 3,
+          borderRadius: 0,
         }}
       >
         <Box 

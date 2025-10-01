@@ -313,7 +313,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
         minHeight: '100vh',
         background: themeMode === 'dark'
           ? 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)'
-          : 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+          : 'linear-gradient(135deg, #ffffff 0%, #ffffff 100%)',
         transition: 'all 0.3s ease',
         p: { xs: 2, sm: 3 },
         '@keyframes pulse': {

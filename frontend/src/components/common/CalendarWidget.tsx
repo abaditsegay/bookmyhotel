@@ -256,7 +256,7 @@ const CalendarWidget: React.FC = () => {
       <Box
         sx={{
           display: 'flex',
-          backgroundColor: '#f5f5f5',
+          backgroundColor: '#ffffff',
           borderBottom: '1px solid #e0e0e0',
         }}
       >
@@ -321,10 +321,10 @@ const CalendarWidget: React.FC = () => {
                         : isToday(date) 
                           ? '#e8f4f4'
                           : 'white'
-                    ) : '#fafafa',
+                    ) : '#ffffff',
                     transition: 'all 0.2s ease',
                     '&:hover': date ? {
-                      backgroundColor: isSelected(date) ? '#4A9B9B' : '#f0f8f8',
+                      backgroundColor: isSelected(date) ? '#4A9B9B' : '#ffffff',
                     } : {},
                   }}
                 >

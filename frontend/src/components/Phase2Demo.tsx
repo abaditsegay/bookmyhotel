@@ -63,7 +63,7 @@ const Phase2Demo: React.FC = () => {
         minHeight: '100vh',
         background: theme.palette.mode === 'dark' 
           ? 'linear-gradient(135deg, #121212 0%, #1e1e1e 100%)'
-          : 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+          : 'linear-gradient(135deg, #ffffff 0%, #ffffff 100%)',
         py: 4,
       }}
     >

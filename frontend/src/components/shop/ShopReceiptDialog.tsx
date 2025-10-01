@@ -218,7 +218,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
             }
             
             .print-total-row {
-              background-color: #f8fafc !important;
+              background-color: #ffffff !important;
               -webkit-print-color-adjust: exact !important;
               color-adjust: exact !important;
               print-color-adjust: exact !important;
@@ -578,7 +578,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                       <TableRow 
                         className="print-total-row"
                         sx={{
-                          backgroundColor: '#f8fafc',
+                          backgroundColor: '#ffffff',
                         }}
                       >
                         <TableCell colSpan={4}>

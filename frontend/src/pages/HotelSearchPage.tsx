@@ -59,7 +59,7 @@ const HotelSearchPage: React.FC = () => {
         minHeight: '100vh',
         background: theme.palette.mode === 'dark' 
           ? 'linear-gradient(135deg, #121212 0%, #1e1e1e 100%)'
-          : 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+          : 'linear-gradient(135deg, #ffffff 0%, #ffffff 100%)',
         py: 4,
       }}
     >
@@ -82,7 +82,7 @@ const HotelSearchPage: React.FC = () => {
                   md: '100%' // Desktop: full height
                 },
                 border: '1px solid rgba(224, 224, 224, 0.2)', // Much more subtle border
-                borderRadius: 3,
+                borderRadius: 0,
                 display: 'flex',
                 flexDirection: 'column',
                 overflow: 'hidden',
@@ -115,12 +115,12 @@ const HotelSearchPage: React.FC = () => {
                   }
                 },
                 '&::-webkit-scrollbar-track': {
-                  background: '#f8f9fa',
-                  borderRadius: '4px',
+                  background: '#ffffff',
+                  borderRadius: '0px',
                 },
                 '&::-webkit-scrollbar-thumb': {
                   background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  borderRadius: '4px',
+                  borderRadius: '0px',
                   '&:hover': {
                     background: 'linear-gradient(135deg, #556bea 0%, #653ba2 100%)',
                   }
@@ -140,7 +140,7 @@ const HotelSearchPage: React.FC = () => {
           mb: isMobile ? 3 : 4,
           backgroundColor: theme.palette.background.paper,
           border: `1px solid ${theme.palette.divider}`,
-          borderRadius: 2,
+          borderRadius: 0,
           boxShadow: 'none',
         }}
       >
@@ -150,7 +150,7 @@ const HotelSearchPage: React.FC = () => {
             mb: isMobile ? 2 : 3,
             p: 2,
             backgroundColor: theme.palette.background.default,
-            borderRadius: 1,
+            borderRadius: 0,
             border: `1px solid rgba(224, 224, 224, 0.3)`,
           }}>
             <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>
@@ -198,7 +198,7 @@ const HotelSearchPage: React.FC = () => {
             mb: isMobile ? 2 : 3,
             p: 2,
             backgroundColor: theme.palette.background.default,
-            borderRadius: 1,
+            borderRadius: 0,
             border: `1px solid rgba(224, 224, 224, 0.3)`,
           }}>
             <Typography variant="h5" sx={{ fontWeight: 600, mb: 1, color: 'text.primary' }}>
@@ -221,7 +221,7 @@ const HotelSearchPage: React.FC = () => {
                 py: 1.5,
                 fontSize: '1.1rem',
                 fontWeight: 600,
-                borderRadius: 2,
+                borderRadius: 0,
                 background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
                 '&:hover': {
                   background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
