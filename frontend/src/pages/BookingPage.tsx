@@ -18,8 +18,12 @@ import {
   InputAdornment,
   Chip,
   CircularProgress,
+  Card,
+  CardContent,
+  Avatar,
   useTheme,
   useMediaQuery,
+  alpha,
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -27,6 +31,7 @@ import {
   PhoneAndroid as PhoneIcon,
   Lock as LockIcon,
   Hotel as HotelIcon,
+  Person as PersonIcon,
 } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -39,6 +44,7 @@ import { AvailableRoom, HotelSearchRequest } from '../types/hotel';
 import { useMockPayment, MockPaymentRequest } from '../services/mockPaymentGateway';
 import { PaymentMethod } from '../types/shop';
 import NumberStepper from '../components/common/NumberStepper';
+import { COLORS } from '../theme/themeColors';
 
 interface BookingPageState {
   room?: AvailableRoom;
@@ -543,92 +549,102 @@ const BookingPage: React.FC = () => {
           </Alert>
         )}
 
-        {/* Compact Room Details */}
-        <Box sx={{ 
-          mb: isMobile ? 2 : 3,
-          p: isMobile ? 1.5 : 2,
-          backgroundColor: theme.palette.background.paper,
-          borderRadius: 1,
-          border: `1px solid ${theme.palette.divider}`,
+        {/* Room Details Card */}
+        <Card sx={{ 
+          mb: 3,
+          bgcolor: 'background.paper',
+          border: '1px solid',
+          borderColor: 'divider',
+          borderRadius: 3,
+          elevation: 0,
         }}>
-          {/* Room Details Header */}
-          <Typography 
-            variant={isMobile ? 'subtitle1' : 'h6'} 
-            sx={{ 
-              fontWeight: 600,
-              color: 'primary.main',
-              mb: 1.5,
-            }}
-          >
-            Room Details
-          </Typography>
-          
-          {/* Room Information Grid */}
-          <Grid container spacing={isMobile ? 1.5 : 2}>
-            <Grid item xs={12} sm={6}>
-              <Box sx={{ 
-                p: 1.5,
-                backgroundColor: theme.palette.background.default,
-                borderRadius: 1,
-                border: `1px solid ${theme.palette.divider}`,
-              }}>
-                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
-                  ROOM TYPE
+          <CardContent sx={{ p: 3 }}>
+            {/* Room Details Header */}
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: 2, 
+              mb: 3,
+              p: 2,
+              bgcolor: 'background.default',
+              border: '1px solid',
+              borderColor: 'divider',
+              borderRadius: 2,
+            }}>
+              <HotelIcon sx={{ color: COLORS.PRIMARY }} />
+              <Box>
+                <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5, color: COLORS.PRIMARY }}>
+                  Room Details
                 </Typography>
-                <Typography variant="body1" sx={{ fontWeight: 600, mt: 0.5, color: 'primary.main' }}>
-                  {roomData.roomType}
-                </Typography>
-                
-                <Typography variant="body2" sx={{ mt: 0.5 }}>
-                  👥 Up to {roomData.capacity} guests
+                <Typography variant="body2" color="text.secondary">
+                  Your selected accommodation details
                 </Typography>
               </Box>
-            </Grid>
+            </Box>
             
-            <Grid item xs={12} sm={6}>
-              <Box sx={{ 
-                p: 1.5,
-                backgroundColor: theme.palette.background.default,
-                borderRadius: 1,
-                border: `1px solid ${theme.palette.divider}`,
-              }}>
-                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
-                  PRICING
-                </Typography>
-                
-                <Typography variant="body2" sx={{ mt: 0.5 }}>
-                  💰 ETB {roomData.pricePerNight?.toFixed(0)} per night
-                </Typography>
-                
-                {nights > 0 && (
-                  <>
-                    <Typography variant="body2" sx={{ mt: 0.5 }}>
-                      📅 {nights} night{nights !== 1 ? 's' : ''}
-                    </Typography>
-                    
-                    <Box sx={{ 
-                      mt: 1,
-                      p: 1,
-                      backgroundColor: theme.palette.primary.main,
-                      color: 'white',
-                      borderRadius: 1,
-                      textAlign: 'center',
-                    }}>
-                      <Typography 
-                        variant="body1" 
-                        sx={{ 
-                          fontWeight: 700,
-                        }}
-                      >
-                        Total: ETB {totalAmount?.toFixed(0)}
+            {/* Room Information Grid */}
+            <Grid container spacing={3}>
+              <Grid item xs={12} sm={6}>
+                <Box sx={{ 
+                  p: 2,
+                  backgroundColor: 'background.default',
+                  borderRadius: 2,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+                    ROOM TYPE
+                  </Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 600, mt: 0.5, color: COLORS.PRIMARY }}>
+                    {roomData.roomType}
+                  </Typography>
+                  
+                  <Typography variant="body2" sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                    👥 Up to {roomData.capacity} guests
+                  </Typography>
+                </Box>
+              </Grid>
+              
+              <Grid item xs={12} sm={6}>
+                <Box sx={{ 
+                  p: 2,
+                  backgroundColor: 'background.default',
+                  borderRadius: 2,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+                    PRICING
+                  </Typography>
+                  
+                  <Typography variant="h6" sx={{ fontWeight: 600, mt: 0.5, color: COLORS.PRIMARY }}>
+                    💰 ETB {roomData.pricePerNight?.toFixed(0)} per night
+                  </Typography>
+                  
+                  {nights > 0 && (
+                    <>
+                      <Typography variant="body2" sx={{ mt: 1, mb: 1 }}>
+                        📅 {nights} night{nights !== 1 ? 's' : ''}
                       </Typography>
-                    </Box>
-                  </>
-                )}
-              </Box>
+                      
+                      <Box sx={{ 
+                        p: 1.5,
+                        backgroundColor: COLORS.PRIMARY,
+                        color: 'white',
+                        borderRadius: 2,
+                        textAlign: 'center',
+                      }}>
+                        <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                          Total: ETB {totalAmount?.toFixed(0)}
+                        </Typography>
+                      </Box>
+                    </>
+                  )}
+                </Box>
+              </Grid>
             </Grid>
-          </Grid>
-        </Box>
+          </CardContent>
+        </Card>
 
         {/* Booking Form */}
         <form onSubmit={handleSubmit}>
@@ -725,655 +741,657 @@ const BookingPage: React.FC = () => {
 
               {/* Guest Information Section */}
               <Grid item xs={12}>
-                <Typography 
-                  variant={isMobile ? 'subtitle1' : 'h6'} 
-                  sx={{ 
-                    fontWeight: 600,
-                    color: 'primary.main',
-                    my: 1,
+                <Card
+                  sx={{
+                    backgroundColor: alpha(COLORS.PRIMARY, 0.05),
+                    border: `1px solid ${alpha(COLORS.PRIMARY, 0.2)}`,
                   }}
                 >
-                  Guest Information
-                </Typography>
-              </Grid>
-
-              {isAuthenticated && !isGuestBookingFlow ? (
-                // Display authenticated user information with enhanced styling
-                <Grid item xs={12}>
-                  <Box sx={{ 
-                    p: isMobile ? 1.5 : 2,
-                    backgroundColor: theme.palette.background.default,
-                    borderRadius: 1,
-                    border: `1px solid ${theme.palette.divider}`,
-                  }}>
+                  <CardContent>
                     <Box sx={{ 
-                      display: 'flex',
-                      alignItems: 'center',
-                      mb: 1.5,
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      mb: 2,
                     }}>
-                      <Box sx={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: '50%',
-                        bgcolor: 'primary.main',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        mr: 1.5,
+                      <PersonIcon sx={{ mr: 1, color: COLORS.PRIMARY }} />
+                      <Typography 
+                        variant={isMobile ? 'subtitle1' : 'h6'} 
+                        sx={{ fontWeight: 600, color: COLORS.PRIMARY }}
+                      >
+                        Guest Information
+                      </Typography>
+                    </Box>
+
+                    {isAuthenticated && !isGuestBookingFlow ? (
+                      // Display authenticated user information with enhanced styling
+                      <Box sx={{ 
+                        p: isMobile ? 1.5 : 2,
+                        backgroundColor: theme.palette.background.paper,
+                        borderRadius: 1,
+                        border: `1px solid ${alpha(COLORS.PRIMARY, 0.1)}`,
+                        mb: 2,
                       }}>
-                        <Typography variant="body1" sx={{ color: 'white', fontWeight: 700 }}>
-                          {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
-                        </Typography>
+                        <Box sx={{ 
+                          display: 'flex',
+                          alignItems: 'center',
+                          mb: 1.5,
+                        }}>
+                          <Avatar sx={{
+                            width: 40,
+                            height: 40,
+                            bgcolor: COLORS.PRIMARY,
+                            mr: 1.5,
+                          }}>
+                            {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
+                          </Avatar>
+                          <Box>
+                            <Typography variant="body1" sx={{ 
+                              fontWeight: 600,
+                              color: theme.palette.text.primary,
+                            }}>
+                              {user?.firstName || 'N/A'} {user?.lastName || 'N/A'}
+                            </Typography>
+                            <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                              {user?.email}
+                            </Typography>
+                          </Box>
+                        </Box>
                       </Box>
-                      <Box>
+                    ) : (
+                      // Enhanced guest input fields with professional styling
+                      <Box sx={{ 
+                        p: isMobile ? 1.5 : 2,
+                        backgroundColor: theme.palette.background.paper,
+                        borderRadius: 1,
+                        border: `1px solid ${alpha(COLORS.PRIMARY, 0.1)}`,
+                        mb: 2,
+                      }}>
                         <Typography variant="body1" sx={{ 
                           fontWeight: 600,
-                          color: theme.palette.text.primary,
+                          color: COLORS.PRIMARY,
+                          mb: 1.5,
                         }}>
-                          {user?.firstName || 'N/A'} {user?.lastName || 'N/A'}
+                          Guest Details
                         </Typography>
-                        <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
-                          {user?.email}
+                        
+                        <Grid container spacing={isMobile ? 1.5 : 2}>
+                          <Grid item xs={12} sm={6}>
+                            <TextField
+                              label="Full Name"
+                              value={guestName}
+                              onChange={handleGuestNameChange}
+                              fullWidth
+                              required
+                              size="small"
+                              variant="outlined"
+                              placeholder="Enter your full name"
+                            />
+                          </Grid>
+
+                          <Grid item xs={12} sm={6}>
+                            <TextField
+                              label="Email Address"
+                              type="email"
+                              value={guestEmail}
+                              onChange={handleGuestEmailChange}
+                              fullWidth
+                              required
+                              size="small"
+                              variant="outlined"
+                              placeholder="Enter your email address"
+                            />
+                          </Grid>
+
+                          <Grid item xs={12} sm={6}>
+                            <TextField
+                              label="Phone Number"
+                              value={guestPhone}
+                              onChange={handleGuestPhoneChange}
+                              fullWidth
+                              size="small"
+                              variant="outlined"
+                              placeholder="Enter your phone number (optional)"
+                            />
+                          </Grid>
+                        </Grid>
+                        
+                        <Typography variant="caption" sx={{ 
+                          mt: 1,
+                          display: 'block',
+                          color: 'text.secondary'
+                        }}>
+                          🔒 Your information is secure and will only be used for this booking
                         </Typography>
                       </Box>
-                    </Box>
-                  </Box>
-                </Grid>
-              ) : (
-                // Enhanced guest input fields with professional styling
-                <Grid item xs={12}>
-                  <Box sx={{ 
-                    p: isMobile ? 1.5 : 2,
-                    backgroundColor: theme.palette.background.default,
-                    borderRadius: 1,
-                    border: `1px solid ${theme.palette.divider}`,
-                  }}>
-                    <Typography variant="body1" sx={{ 
-                      fontWeight: 600,
-                      color: 'primary.main',
-                      mb: 1.5,
+                    )}
+
+                    {/* Special Requests Section */}
+                    <Box sx={{ 
+                      p: isMobile ? 1.5 : 2,
+                      backgroundColor: theme.palette.background.paper,
+                      borderRadius: 1,
+                      border: `1px solid ${alpha(COLORS.PRIMARY, 0.1)}`,
                     }}>
-                      Guest Details
-                    </Typography>
-                    
-                    <Grid container spacing={isMobile ? 1.5 : 2}>
-                      <Grid item xs={12} sm={6}>
-                        <TextField
-                          label="Full Name"
-                          value={guestName}
-                          onChange={handleGuestNameChange}
-                          fullWidth
-                          required
-                          size="small"
-                          variant="outlined"
-                          placeholder="Enter your full name"
-                        />
-                      </Grid>
-
-                      <Grid item xs={12} sm={6}>
-                        <TextField
-                          label="Email Address"
-                          type="email"
-                          value={guestEmail}
-                          onChange={handleGuestEmailChange}
-                          fullWidth
-                          required
-                          size="small"
-                          variant="outlined"
-                          placeholder="Enter your email address"
-                        />
-                      </Grid>
-
-                      <Grid item xs={12} sm={6}>
-                        <TextField
-                          label="Phone Number"
-                          value={guestPhone}
-                          onChange={handleGuestPhoneChange}
-                          fullWidth
-                          size="small"
-                          variant="outlined"
-                          placeholder="Enter your phone number (optional)"
-                        />
-                      </Grid>
-                    </Grid>
-                    
-                    <Typography variant="caption" sx={{ 
-                      mt: 1,
-                      display: 'block',
-                      color: 'text.secondary'
-                    }}>
-                      🔒 Your information is secure and will only be used for this booking
-                    </Typography>
-                  </Box>
-                </Grid>
-              )}
-
-              {/* Special Requests Section */}
-              <Grid item xs={12}>
-                <Box sx={{ 
-                  p: isMobile ? 1.5 : 2,
-                  backgroundColor: theme.palette.background.default,
-                  borderRadius: 1,
-                  border: `1px solid ${theme.palette.divider}`,
-                }}>
-                  <Typography variant="body1" sx={{ 
-                    fontWeight: 600,
-                    color: 'primary.main',
-                    mb: 1,
-                  }}>
-                    Special Requests (Optional)
-                  </Typography>
-                  
-                  <TextField
-                    value={specialRequests}
-                    onChange={handleSpecialRequestsChange}
-                    multiline
-                    rows={isMobile ? 2 : 3}
-                    fullWidth
-                    size="small"
-                    variant="outlined"
-                    placeholder="e.g., Late check-in, room preferences, dietary requirements..."
-                  />
-                  
-                  <Box sx={{ 
-                    mt: 1,
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    gap: 0.5,
-                  }}>
-                    {['Early check-in', 'Late check-out', 'Airport pickup', 'High floor', 'Quiet room'].map((suggestion) => (
-                      <Chip
-                        key={suggestion}
-                        label={suggestion}
+                      <Typography variant="body1" sx={{ 
+                        fontWeight: 600,
+                        color: COLORS.PRIMARY,
+                        mb: 1,
+                      }}>
+                        Special Requests (Optional)
+                      </Typography>
+                      
+                      <TextField
+                        value={specialRequests}
+                        onChange={handleSpecialRequestsChange}
+                        multiline
+                        rows={isMobile ? 2 : 3}
+                        fullWidth
                         size="small"
                         variant="outlined"
-                        onClick={() => {
-                          if (!specialRequests.includes(suggestion)) {
-                            setSpecialRequests(prev => 
-                              prev ? `${prev}, ${suggestion}` : suggestion
-                            );
-                          }
-                        }}
-                        sx={{
-                          cursor: 'pointer',
-                          '&:hover': {
-                            backgroundColor: 'primary.main',
-                            color: 'white',
-                          },
-                        }}
+                        placeholder="e.g., Late check-in, room preferences, dietary requirements..."
                       />
-                    ))}
-                  </Box>
-                </Box>
+                      
+                      <Box sx={{ 
+                        mt: 1,
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: 0.5,
+                      }}>
+                        {['Early check-in', 'Late check-out', 'Airport pickup', 'High floor', 'Quiet room'].map((suggestion) => (
+                          <Chip
+                            key={suggestion}
+                            label={suggestion}
+                            size="small"
+                            variant="outlined"
+                            onClick={() => {
+                              if (!specialRequests.includes(suggestion)) {
+                                setSpecialRequests(prev => 
+                                  prev ? `${prev}, ${suggestion}` : suggestion
+                                );
+                              }
+                            }}
+                            sx={{
+                              cursor: 'pointer',
+                              borderColor: alpha(COLORS.PRIMARY, 0.3),
+                              color: COLORS.PRIMARY,
+                              '&:hover': {
+                                backgroundColor: alpha(COLORS.PRIMARY, 0.1),
+                                borderColor: COLORS.PRIMARY,
+                                color: COLORS.PRIMARY,
+                                transform: 'translateY(-1px)',
+                                boxShadow: `0 2px 8px ${alpha(COLORS.PRIMARY, 0.2)}`,
+                              },
+                            }}
+                          />
+                        ))}
+                      </Box>
+                    </Box>
+                  </CardContent>
+                </Card>
               </Grid>
 
               {/* Payment Section */}
               <Grid item xs={12}>
-                <Box sx={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  my: 1,
-                }}>
-                  <LockIcon sx={{ mr: 1, color: 'primary.main' }} />
-                  <Typography 
-                    variant={isMobile ? 'subtitle1' : 'h6'} 
-                    sx={{ fontWeight: 600, color: 'primary.main' }}
-                  >
-                    Payment Information
-                  </Typography>
-                </Box>
+                <Card
+                  sx={{
+                    backgroundColor: alpha(COLORS.PRIMARY, 0.05),
+                    border: `1px solid ${alpha(COLORS.PRIMARY, 0.2)}`,
+                  }}
+                >
+                  <CardContent>
+                    <Box sx={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      mb: 2,
+                    }}>
+                      <LockIcon sx={{ mr: 1, color: COLORS.PRIMARY }} />
+                      <Typography 
+                        variant={isMobile ? 'subtitle1' : 'h6'} 
+                        sx={{ fontWeight: 600, color: COLORS.PRIMARY }}
+                      >
+                        Payment Information
+                      </Typography>
+                    </Box>
+
+                    {/* Payment Method Selection */}
+                    <Box sx={{ 
+                      p: isMobile ? 1.5 : 2,
+                      backgroundColor: theme.palette.background.paper,
+                      borderRadius: 1,
+                      border: `1px solid ${alpha(COLORS.PRIMARY, 0.1)}`,
+                      mb: 2,
+                    }}>
+                      <FormControl component="fieldset">
+                        <FormLabel 
+                          component="legend" 
+                          sx={{ 
+                            fontWeight: 600, 
+                            color: COLORS.PRIMARY,
+                            fontSize: isMobile ? '0.875rem' : '1rem',
+                            mb: 1,
+                          }}
+                        >
+                          Payment Method
+                        </FormLabel>
+                        <RadioGroup
+                          row={!isMobile}
+                          value={paymentMethod}
+                          onChange={handlePaymentMethodChange}
+                          sx={{ 
+                            flexDirection: isMobile ? 'column' : 'row',
+                            gap: isMobile ? 0.5 : 1,
+                          }}
+                        >
+                          <FormControlLabel
+                            value="credit_card"
+                            control={<Radio size="small" />}
+                            label={
+                              <Box 
+                                sx={{ 
+                                  display: 'flex', 
+                                  alignItems: 'center',
+                                  py: 0.5,
+                                }}
+                              >
+                                <CreditCardIcon sx={{ mr: 1, fontSize: 20 }} />
+                                Credit Card
+                              </Box>
+                            }
+                            sx={{ mr: isMobile ? 0 : 2 }}
+                          />
+                          <FormControlLabel
+                            value="mobile_money"
+                            control={<Radio size="small" />}
+                            label={
+                              <Box 
+                                sx={{ 
+                                  display: 'flex', 
+                                  alignItems: 'center',
+                                  py: 0.5,
+                                }}
+                              >
+                                <PhoneIcon sx={{ mr: 1, fontSize: 20 }} />
+                                Mobile Money
+                              </Box>
+                            }
+                            sx={{ mr: isMobile ? 0 : 2 }}
+                          />
+                          <FormControlLabel
+                            value="pay_at_frontdesk"
+                            control={<Radio size="small" />}
+                            label={
+                              <Box 
+                                sx={{ 
+                                  display: 'flex', 
+                                  alignItems: 'center',
+                                  py: 0.5,
+                                }}
+                              >
+                                <HotelIcon sx={{ mr: 1, fontSize: 20 }} />
+                                Pay at Front Desk
+                              </Box>
+                            }
+                            sx={{ mr: isMobile ? 0 : 2 }}
+                          />
+                          <FormControlLabel
+                            value="mbirr"
+                            control={<Radio size="small" />}
+                            label={
+                              <Box 
+                                sx={{ 
+                                  display: 'flex', 
+                                  alignItems: 'center',
+                                  py: 0.5,
+                                }}
+                              >
+                                <PhoneIcon sx={{ mr: 1, fontSize: 20 }} />
+                                🇪🇹 M-birr
+                              </Box>
+                            }
+                            sx={{ mr: isMobile ? 0 : 2 }}
+                          />
+                          <FormControlLabel
+                            value="telebirr"
+                            control={<Radio size="small" />}
+                            label={
+                              <Box 
+                                sx={{ 
+                                  display: 'flex', 
+                                  alignItems: 'center',
+                                  py: 0.5,
+                                }}
+                              >
+                                <PhoneIcon sx={{ mr: 1, fontSize: 20 }} />
+                                🇪🇹 Telebirr
+                              </Box>
+                            }
+                          />
+                        </RadioGroup>
+                      </FormControl>
+                    </Box>
+
+                    {/* Credit Card Form */}
+                    {paymentMethod === 'credit_card' && (
+                      <Box sx={{ 
+                        p: isMobile ? 1.5 : 2,
+                        backgroundColor: theme.palette.background.paper,
+                        borderRadius: 1,
+                        border: `1px solid ${alpha(COLORS.PRIMARY, 0.1)}`,
+                      }}>
+                        <Box sx={{ textAlign: 'center', mb: 1.5 }}>
+                          <CreditCardIcon sx={{ 
+                            fontSize: 32, 
+                            color: COLORS.PRIMARY,
+                            mb: 0.5 
+                          }} />
+                          <Typography variant="body1" sx={{ 
+                            color: theme.palette.text.primary,
+                            fontWeight: 600,
+                          }}>
+                            Credit Card Payment - ETB {totalAmount?.toFixed(0)}
+                          </Typography>
+                        </Box>
+                        
+                        <Grid container spacing={isMobile ? 1.5 : 2}>
+                          <Grid item xs={12}>
+                            <TextField
+                              label="Cardholder Name"
+                              value={cardholderName}
+                              onChange={handleCardholderNameChange}
+                              fullWidth
+                              required
+                              size="small"
+                              placeholder="John Doe"
+                            />
+                          </Grid>
+                          <Grid item xs={12}>
+                            <TextField
+                              label="Card Number"
+                              value={creditCardNumber}
+                              onChange={(e) => {
+                                // Format card number with spaces
+                                const value = e.target.value.replace(/\s/g, '').replace(/(.{4})/g, '$1 ').trim();
+                                if (value.replace(/\s/g, '').length <= 16) {
+                                  setCreditCardNumber(value);
+                                }
+                              }}
+                              fullWidth
+                              required
+                              size="small"
+                              placeholder="1234 5678 9012 3456"
+                              inputProps={{
+                                inputMode: 'numeric',
+                              }}
+                              InputProps={{
+                                startAdornment: (
+                                  <InputAdornment position="start">
+                                    <CreditCardIcon fontSize="small" />
+                                  </InputAdornment>
+                                ),
+                              }}
+                            />
+                          </Grid>
+                          <Grid item xs={6}>
+                            <TextField
+                              label="Expiry Date"
+                              value={expiryDate}
+                              onChange={(e) => {
+                                // Format expiry date MM/YY
+                                let value = e.target.value.replace(/\D/g, '');
+                                if (value.length >= 2) {
+                                  value = value.substring(0, 2) + '/' + value.substring(2, 4);
+                                }
+                                setExpiryDate(value);
+                              }}
+                              fullWidth
+                              required
+                              size="small"
+                              placeholder="MM/YY"
+                              inputProps={{ maxLength: 5 }}
+                            />
+                          </Grid>
+                          <Grid item xs={6}>
+                            <TextField
+                              label="CVV"
+                              value={cvv}
+                              onChange={(e) => {
+                                const value = e.target.value.replace(/\D/g, '');
+                                if (value.length <= 4) {
+                                  setCvv(value);
+                                }
+                              }}
+                              fullWidth
+                              required
+                              size="small"
+                              placeholder="123"
+                              type="password"
+                              inputProps={{ maxLength: 4 }}
+                            />
+                          </Grid>
+                          <Grid item xs={12}>
+                            <Alert severity="info" sx={{ py: 0.5 }}>
+                              <Typography variant="caption">
+                                Secure SSL encrypted payment processing. All major cards accepted.
+                              </Typography>
+                            </Alert>
+                          </Grid>
+                        </Grid>
+                      </Box>
+                    )}
+
+                    {/* Mobile Money Form */}
+                    {paymentMethod === 'mobile_money' && (
+                      <Box sx={{ 
+                        p: isMobile ? 1.5 : 2,
+                        backgroundColor: theme.palette.background.paper,
+                        borderRadius: 1,
+                        border: `1px solid ${alpha(COLORS.PRIMARY, 0.1)}`,
+                      }}>
+                        <Box sx={{ textAlign: 'center', mb: 1.5 }}>
+                          <PhoneIcon sx={{ 
+                            fontSize: 32, 
+                            color: COLORS.PRIMARY,
+                            mb: 0.5 
+                          }} />
+                          <Typography variant="body1" sx={{ 
+                            color: theme.palette.text.primary,
+                            fontWeight: 600,
+                          }}>
+                            Mobile Money Transfer - ETB {totalAmount?.toFixed(0)}
+                          </Typography>
+                        </Box>
+                        
+                        <Alert severity="info" sx={{ mb: 1.5, py: 0.5 }}>
+                          <Typography variant="caption">
+                            Complete mobile money transfer and provide details below.
+                          </Typography>
+                        </Alert>
+                        
+                        <Grid container spacing={isMobile ? 1.5 : 2}>
+                          <Grid item xs={12} sm={6}>
+                            <TextField
+                              label="Mobile Number"
+                              value={mobileNumber}
+                              onChange={handleMobileNumberChange}
+                              fullWidth
+                              required
+                              size="small"
+                              placeholder="+1234567890"
+                              InputProps={{
+                                startAdornment: (
+                                  <InputAdornment position="start">
+                                    <PhoneIcon fontSize="small" />
+                                  </InputAdornment>
+                                ),
+                              }}
+                            />
+                          </Grid>
+                          <Grid item xs={12} sm={6}>
+                            <TextField
+                              label="Transfer Receipt Number"
+                              value={transferReceiptNumber}
+                              onChange={handleTransferReceiptNumberChange}
+                              fullWidth
+                              required
+                              size="small"
+                              placeholder="Receipt/Transaction ID"
+                            />
+                          </Grid>
+                          <Grid item xs={12}>
+                            <Alert severity="warning" sx={{ py: 0.5 }}>
+                              <Typography variant="caption">
+                                Transfer exact amount to our mobile money account and enter details above.
+                              </Typography>
+                            </Alert>
+                          </Grid>
+                        </Grid>
+                      </Box>
+                    )}
+
+                    {/* Pay at Front Desk Information */}
+                    {paymentMethod === 'pay_at_frontdesk' && (
+                      <Box sx={{ 
+                        p: isMobile ? 1.5 : 2,
+                        backgroundColor: theme.palette.background.paper,
+                        borderRadius: 1,
+                        border: `1px solid ${alpha(COLORS.PRIMARY, 0.1)}`,
+                      }}>
+                        <Box sx={{ textAlign: 'center', mb: 1.5 }}>
+                          <HotelIcon sx={{ 
+                            fontSize: 32, 
+                            color: COLORS.PRIMARY,
+                            mb: 0.5 
+                          }} />
+                          <Typography variant="body1" sx={{ 
+                            color: theme.palette.text.primary,
+                            fontWeight: 600,
+                          }}>
+                            Pay at Front Desk - ETB {totalAmount?.toFixed(0)}
+                          </Typography>
+                        </Box>
+                        
+                        <Alert severity="info" sx={{ mb: 1.5, py: 0.5 }}>
+                          <Typography variant="caption">
+                            Your reservation will be confirmed. Pay when you arrive at the hotel.
+                          </Typography>
+                        </Alert>
+                        
+                        <Alert severity="warning" sx={{ py: 0.5 }}>
+                          <Typography variant="caption">
+                            Bring valid ID and booking confirmation. Payment methods: Cash, Card, Mobile.
+                          </Typography>
+                        </Alert>
+                      </Box>
+                    )}
+
+                    {/* Ethiopian Mobile Payment (M-birr) */}
+                    {paymentMethod === 'mbirr' && (
+                      <Box sx={{ 
+                        p: isMobile ? 1.5 : 2,
+                        backgroundColor: theme.palette.background.paper,
+                        borderRadius: 1,
+                        border: `1px solid ${alpha(COLORS.PRIMARY, 0.1)}`,
+                      }}>
+                        <Box sx={{ textAlign: 'center', mb: 1.5 }}>
+                          <PhoneIcon sx={{ 
+                            fontSize: 32, 
+                            color: COLORS.PRIMARY,
+                            mb: 0.5 
+                          }} />
+                          <Typography variant="body1" sx={{ 
+                            color: theme.palette.text.primary,
+                            fontWeight: 600,
+                          }}>
+                            🇪🇹 M-birr Payment - ETB {totalAmount?.toFixed(0)}
+                          </Typography>
+                        </Box>
+                        
+                        <Alert severity="info" sx={{ mb: 1.5, py: 0.5 }}>
+                          <Typography variant="caption">
+                            You'll receive SMS instructions to complete payment.
+                          </Typography>
+                        </Alert>
+                        
+                        <TextField
+                          label="Ethiopian Mobile Number"
+                          value={ethiopianPhoneNumber}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/\D/g, '');
+                            if (value.length <= 10) {
+                              setEthiopianPhoneNumber(value.substring(0, 10));
+                            }
+                          }}
+                          fullWidth
+                          required
+                          size="small"
+                          placeholder="0912345678"
+                          helperText="Enter your Ethiopian mobile number"
+                          InputProps={{
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <PhoneIcon fontSize="small" />
+                              </InputAdornment>
+                            ),
+                          }}
+                        />
+                      </Box>
+                    )}
+
+                    {/* Ethiopian Mobile Payment (Telebirr) */}
+                    {paymentMethod === 'telebirr' && (
+                      <Box sx={{ 
+                        p: isMobile ? 1.5 : 2,
+                        backgroundColor: theme.palette.background.paper,
+                        borderRadius: 1,
+                        border: `1px solid ${alpha(COLORS.PRIMARY, 0.1)}`,
+                      }}>
+                        <Box sx={{ textAlign: 'center', mb: 1.5 }}>
+                          <PhoneIcon sx={{ 
+                            fontSize: 32, 
+                            color: COLORS.PRIMARY,
+                            mb: 0.5 
+                          }} />
+                          <Typography variant="body1" sx={{ 
+                            color: theme.palette.text.primary,
+                            fontWeight: 600,
+                          }}>
+                            🇪🇹 Telebirr Payment - ETB {totalAmount?.toFixed(0)}
+                          </Typography>
+                        </Box>
+                        
+                        <Alert severity="info" sx={{ mb: 1.5, py: 0.5 }}>
+                          <Typography variant="caption">
+                            You'll receive SMS instructions to complete payment.
+                          </Typography>
+                        </Alert>
+                        
+                        <TextField
+                          label="Ethiopian Mobile Number"
+                          value={ethiopianPhoneNumber}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/\D/g, '');
+                            if (value.length <= 10) {
+                              setEthiopianPhoneNumber(value.substring(0, 10));
+                            }
+                          }}
+                          fullWidth
+                          required
+                          size="small"
+                          placeholder="0987654321"
+                          helperText="Enter your Ethiopian mobile number"
+                          InputProps={{
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <PhoneIcon fontSize="small" />
+                              </InputAdornment>
+                            ),
+                          }}
+                        />
+                      </Box>
+                    )}
+                  </CardContent>
+                </Card>
               </Grid>
-
-              {/* Payment Method Selection */}
-              <Grid item xs={12}>
-                <FormControl component="fieldset">
-                  <FormLabel 
-                    component="legend" 
-                    sx={{ 
-                      fontWeight: 600, 
-                      color: 'primary.main',
-                      fontSize: isMobile ? '0.875rem' : '1rem',
-                      mb: 1,
-                    }}
-                  >
-                    Payment Method
-                  </FormLabel>
-                  <RadioGroup
-                    row={!isMobile}
-                    value={paymentMethod}
-                    onChange={handlePaymentMethodChange}
-                    sx={{ 
-                      flexDirection: isMobile ? 'column' : 'row',
-                      gap: isMobile ? 0.5 : 1,
-                    }}
-                  >
-                    <FormControlLabel
-                      value="credit_card"
-                      control={<Radio size="small" />}
-                      label={
-                        <Box 
-                          sx={{ 
-                            display: 'flex', 
-                            alignItems: 'center',
-                            py: 0.5,
-                          }}
-                        >
-                          <CreditCardIcon sx={{ mr: 1, fontSize: 20 }} />
-                          Credit Card
-                        </Box>
-                      }
-                      sx={{ mr: isMobile ? 0 : 2 }}
-                    />
-                    <FormControlLabel
-                      value="mobile_money"
-                      control={<Radio size="small" />}
-                      label={
-                        <Box 
-                          sx={{ 
-                            display: 'flex', 
-                            alignItems: 'center',
-                            py: 0.5,
-                          }}
-                        >
-                          <PhoneIcon sx={{ mr: 1, fontSize: 20 }} />
-                          Mobile Money
-                        </Box>
-                      }
-                      sx={{ mr: isMobile ? 0 : 2 }}
-                    />
-                    <FormControlLabel
-                      value="pay_at_frontdesk"
-                      control={<Radio size="small" />}
-                      label={
-                        <Box 
-                          sx={{ 
-                            display: 'flex', 
-                            alignItems: 'center',
-                            py: 0.5,
-                          }}
-                        >
-                          <HotelIcon sx={{ mr: 1, fontSize: 20 }} />
-                          Pay at Front Desk
-                        </Box>
-                      }
-                      sx={{ mr: isMobile ? 0 : 2 }}
-                    />
-                    <FormControlLabel
-                      value="mbirr"
-                      control={<Radio size="small" />}
-                      label={
-                        <Box 
-                          sx={{ 
-                            display: 'flex', 
-                            alignItems: 'center',
-                            py: 0.5,
-                          }}
-                        >
-                          <PhoneIcon sx={{ mr: 1, fontSize: 20 }} />
-                          🇪🇹 M-birr
-                        </Box>
-                      }
-                      sx={{ mr: isMobile ? 0 : 2 }}
-                    />
-                    <FormControlLabel
-                      value="telebirr"
-                      control={<Radio size="small" />}
-                      label={
-                        <Box 
-                          sx={{ 
-                            display: 'flex', 
-                            alignItems: 'center',
-                            py: 0.5,
-                          }}
-                        >
-                          <PhoneIcon sx={{ mr: 1, fontSize: 20 }} />
-                          🇪🇹 Telebirr
-                        </Box>
-                      }
-                    />
-                  </RadioGroup>
-                </FormControl>
-              </Grid>
-
-              {/* Credit Card Form */}
-              {paymentMethod === 'credit_card' && (
-                <>
-                  <Grid item xs={12}>
-                    <Box sx={{ 
-                      p: isMobile ? 1.5 : 2,
-                      backgroundColor: theme.palette.background.default,
-                      borderRadius: 1,
-                      border: `1px solid ${theme.palette.primary.main}`,
-                    }}>
-                      <Box sx={{ textAlign: 'center', mb: 1.5 }}>
-                        <CreditCardIcon sx={{ 
-                          fontSize: 32, 
-                          color: 'primary.main',
-                          mb: 0.5 
-                        }} />
-                        <Typography variant="body1" sx={{ 
-                          color: theme.palette.text.primary,
-                          fontWeight: 600,
-                        }}>
-                          Credit Card Payment - ETB {totalAmount?.toFixed(0)}
-                        </Typography>
-                      </Box>
-                      
-                      <Grid container spacing={isMobile ? 1.5 : 2}>
-                        <Grid item xs={12}>
-                          <TextField
-                            label="Cardholder Name"
-                            value={cardholderName}
-                            onChange={handleCardholderNameChange}
-                            fullWidth
-                            required
-                            size="small"
-                            placeholder="John Doe"
-                          />
-                        </Grid>
-                        <Grid item xs={12}>
-                          <TextField
-                            label="Card Number"
-                            value={creditCardNumber}
-                            onChange={(e) => {
-                              // Format card number with spaces
-                              const value = e.target.value.replace(/\s/g, '').replace(/(.{4})/g, '$1 ').trim();
-                              if (value.replace(/\s/g, '').length <= 16) {
-                                setCreditCardNumber(value);
-                              }
-                            }}
-                            fullWidth
-                            required
-                            size="small"
-                            placeholder="1234 5678 9012 3456"
-                            inputProps={{
-                              inputMode: 'numeric',
-                            }}
-                            InputProps={{
-                              startAdornment: (
-                                <InputAdornment position="start">
-                                  <CreditCardIcon fontSize="small" />
-                                </InputAdornment>
-                              ),
-                            }}
-                          />
-                        </Grid>
-                        <Grid item xs={6}>
-                          <TextField
-                            label="Expiry Date"
-                            value={expiryDate}
-                            onChange={(e) => {
-                              // Format expiry date MM/YY
-                              let value = e.target.value.replace(/\D/g, '');
-                              if (value.length >= 2) {
-                                value = value.substring(0, 2) + '/' + value.substring(2, 4);
-                              }
-                              setExpiryDate(value);
-                            }}
-                            fullWidth
-                            required
-                            size="small"
-                            placeholder="MM/YY"
-                            inputProps={{ maxLength: 5 }}
-                          />
-                        </Grid>
-                        <Grid item xs={6}>
-                          <TextField
-                            label="CVV"
-                            value={cvv}
-                            onChange={(e) => {
-                              const value = e.target.value.replace(/\D/g, '');
-                              if (value.length <= 4) {
-                                setCvv(value);
-                              }
-                            }}
-                            fullWidth
-                            required
-                            size="small"
-                            placeholder="123"
-                            type="password"
-                            inputProps={{ maxLength: 4 }}
-                          />
-                        </Grid>
-                        <Grid item xs={12}>
-                          <Alert severity="info" sx={{ py: 0.5 }}>
-                            <Typography variant="caption">
-                              Secure SSL encrypted payment processing. All major cards accepted.
-                            </Typography>
-                          </Alert>
-                        </Grid>
-                      </Grid>
-                    </Box>
-                  </Grid>
-                </>
-              )}
-
-              {/* Mobile Money Form */}
-              {paymentMethod === 'mobile_money' && (
-                <>
-                  <Grid item xs={12}>
-                    <Box sx={{ 
-                      p: isMobile ? 1.5 : 2,
-                      backgroundColor: theme.palette.background.default,
-                      borderRadius: 1,
-                      border: `1px solid ${theme.palette.primary.main}`,
-                    }}>
-                      <Box sx={{ textAlign: 'center', mb: 1.5 }}>
-                        <PhoneIcon sx={{ 
-                          fontSize: 32, 
-                          color: 'primary.main',
-                          mb: 0.5 
-                        }} />
-                        <Typography variant="body1" sx={{ 
-                          color: theme.palette.text.primary,
-                          fontWeight: 600,
-                        }}>
-                          Mobile Money Transfer - ETB {totalAmount?.toFixed(0)}
-                        </Typography>
-                      </Box>
-                      
-                      <Alert severity="info" sx={{ mb: 1.5, py: 0.5 }}>
-                        <Typography variant="caption">
-                          Complete mobile money transfer and provide details below.
-                        </Typography>
-                      </Alert>
-                      
-                      <Grid container spacing={isMobile ? 1.5 : 2}>
-                        <Grid item xs={12} sm={6}>
-                          <TextField
-                            label="Mobile Number"
-                            value={mobileNumber}
-                            onChange={handleMobileNumberChange}
-                            fullWidth
-                            required
-                            size="small"
-                            placeholder="+1234567890"
-                            InputProps={{
-                              startAdornment: (
-                                <InputAdornment position="start">
-                                  <PhoneIcon fontSize="small" />
-                                </InputAdornment>
-                              ),
-                            }}
-                          />
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                          <TextField
-                            label="Transfer Receipt Number"
-                            value={transferReceiptNumber}
-                            onChange={handleTransferReceiptNumberChange}
-                            fullWidth
-                            required
-                            size="small"
-                            placeholder="Receipt/Transaction ID"
-                          />
-                        </Grid>
-                        <Grid item xs={12}>
-                          <Alert severity="warning" sx={{ py: 0.5 }}>
-                            <Typography variant="caption">
-                              Transfer exact amount to our mobile money account and enter details above.
-                            </Typography>
-                          </Alert>
-                        </Grid>
-                      </Grid>
-                    </Box>
-                  </Grid>
-                </>
-              )}
-
-              {/* Pay at Front Desk Information */}
-              {paymentMethod === 'pay_at_frontdesk' && (
-                <>
-                  <Grid item xs={12}>
-                    <Box sx={{ 
-                      p: isMobile ? 1.5 : 2,
-                      backgroundColor: theme.palette.background.default,
-                      borderRadius: 1,
-                      border: `1px solid ${theme.palette.primary.main}`,
-                    }}>
-                      <Box sx={{ textAlign: 'center', mb: 1.5 }}>
-                        <HotelIcon sx={{ 
-                          fontSize: 32, 
-                          color: 'primary.main',
-                          mb: 0.5 
-                        }} />
-                        <Typography variant="body1" sx={{ 
-                          color: theme.palette.text.primary,
-                          fontWeight: 600,
-                        }}>
-                          Pay at Front Desk - ETB {totalAmount?.toFixed(0)}
-                        </Typography>
-                      </Box>
-                      
-                      <Alert severity="info" sx={{ mb: 1.5, py: 0.5 }}>
-                        <Typography variant="caption">
-                          Your reservation will be confirmed. Pay when you arrive at the hotel.
-                        </Typography>
-                      </Alert>
-                      
-                      <Alert severity="warning" sx={{ py: 0.5 }}>
-                        <Typography variant="caption">
-                          Bring valid ID and booking confirmation. Payment methods: Cash, Card, Mobile.
-                        </Typography>
-                      </Alert>
-                    </Box>
-                  </Grid>
-                </>
-              )}
-
-              {/* Ethiopian Mobile Payment (M-birr) */}
-              {paymentMethod === 'mbirr' && (
-                <>
-                  <Grid item xs={12}>
-                    <Box sx={{ 
-                      p: isMobile ? 1.5 : 2,
-                      backgroundColor: theme.palette.background.default,
-                      borderRadius: 1,
-                      border: `1px solid ${theme.palette.primary.main}`,
-                    }}>
-                      <Box sx={{ textAlign: 'center', mb: 1.5 }}>
-                        <PhoneIcon sx={{ 
-                          fontSize: 32, 
-                          color: 'primary.main',
-                          mb: 0.5 
-                        }} />
-                        <Typography variant="body1" sx={{ 
-                          color: theme.palette.text.primary,
-                          fontWeight: 600,
-                        }}>
-                          🇪🇹 M-birr Payment - ETB {totalAmount?.toFixed(0)}
-                        </Typography>
-                      </Box>
-                      
-                      <Alert severity="info" sx={{ mb: 1.5, py: 0.5 }}>
-                        <Typography variant="caption">
-                          You'll receive SMS instructions to complete payment.
-                        </Typography>
-                      </Alert>
-                      
-                      <TextField
-                        label="Ethiopian Mobile Number"
-                        value={ethiopianPhoneNumber}
-                        onChange={(e) => {
-                          const value = e.target.value.replace(/\D/g, '');
-                          if (value.length <= 10) {
-                            setEthiopianPhoneNumber(value.substring(0, 10));
-                          }
-                        }}
-                        fullWidth
-                        required
-                        size="small"
-                        placeholder="0912345678"
-                        helperText="Enter your Ethiopian mobile number"
-                        InputProps={{
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <PhoneIcon fontSize="small" />
-                            </InputAdornment>
-                          ),
-                        }}
-                      />
-                    </Box>
-                  </Grid>
-                </>
-              )}
-
-              {/* Ethiopian Mobile Payment (Telebirr) */}
-              {paymentMethod === 'telebirr' && (
-                <>
-                  <Grid item xs={12}>
-                    <Box sx={{ 
-                      p: isMobile ? 1.5 : 2,
-                      backgroundColor: theme.palette.background.default,
-                      borderRadius: 1,
-                      border: `1px solid ${theme.palette.primary.main}`,
-                    }}>
-                      <Box sx={{ textAlign: 'center', mb: 1.5 }}>
-                        <PhoneIcon sx={{ 
-                          fontSize: 32, 
-                          color: 'primary.main',
-                          mb: 0.5 
-                        }} />
-                        <Typography variant="body1" sx={{ 
-                          color: theme.palette.text.primary,
-                          fontWeight: 600,
-                        }}>
-                          🇪🇹 Telebirr Payment - ETB {totalAmount?.toFixed(0)}
-                        </Typography>
-                      </Box>
-                      
-                      <Alert severity="info" sx={{ mb: 1.5, py: 0.5 }}>
-                        <Typography variant="caption">
-                          You'll receive SMS instructions to complete payment.
-                        </Typography>
-                      </Alert>
-                      
-                      <TextField
-                        label="Ethiopian Mobile Number"
-                        value={ethiopianPhoneNumber}
-                        onChange={(e) => {
-                          const value = e.target.value.replace(/\D/g, '');
-                          if (value.length <= 10) {
-                            setEthiopianPhoneNumber(value.substring(0, 10));
-                          }
-                        }}
-                        fullWidth
-                        required
-                        size="small"
-                        placeholder="0987654321"
-                        helperText="Enter your Ethiopian mobile number"
-                        InputProps={{
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <PhoneIcon fontSize="small" />
-                            </InputAdornment>
-                          ),
-                        }}
-                      />
-                    </Box>
-                  </Grid>
-                </>
-              )}
 
 
 
