@@ -392,23 +392,28 @@ const Navbar: React.FC = () => {
   return (
     <>
       <AppBar 
-        position="sticky" 
-        elevation={0} // Remove elevation for better performance
+        position="fixed" 
+        elevation={2} // Add subtle elevation for better visual separation
         sx={{
           backgroundColor: theme.palette.primary.main,
           backgroundImage: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-          height: 'auto', // Allow AppBar to grow with content
+          height: 64, // Fixed height to prevent movement
           borderBottom: `1px solid ${theme.palette.divider}`, // Add subtle border for structure
           zIndex: theme.zIndex.appBar, // Ensure proper z-index above sidebar
+          top: 0, // Explicitly set top position
+          left: 0, // Explicitly set left position
+          right: 0, // Explicitly set right position
         }}
       >
         <Toolbar 
           sx={{ 
             justifyContent: 'space-between',
-            minHeight: 56, // Compact navbar height
-            height: 'auto', // Allow toolbar to grow
+            minHeight: 64, // Fixed height to match AppBar
+            height: 64, // Fixed height to prevent movement
             alignItems: 'center', // Center items vertically
-            py: 1 // Reduced padding for compact look
+            py: 0, // Remove padding to maintain fixed height
+            px: { xs: 1, sm: 2 }, // Responsive padding
+            margin: 0, // Ensure no margin
           }}
           disableGutters={false}
         >

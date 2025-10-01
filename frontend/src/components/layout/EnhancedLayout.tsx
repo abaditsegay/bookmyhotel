@@ -109,6 +109,7 @@ const EnhancedLayout: React.FC<EnhancedLayoutProps> = ({
           flexGrow: 1,
           display: 'flex',
           minHeight: 0, // Important for flex children
+          paddingTop: '64px', // Add padding for fixed navbar
         }}
       >
         {/* Main Content Area */}
@@ -150,10 +151,7 @@ const EnhancedLayout: React.FC<EnhancedLayoutProps> = ({
           <Box
             sx={{
               position: 'fixed',
-              top: {
-                xs: 56, // Mobile toolbar height
-                sm: 64, // Desktop toolbar height
-              },
+              top: 64, // Fixed position below navbar
               right: 0,
               bottom: 0,
               width: 350,
