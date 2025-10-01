@@ -1137,7 +1137,7 @@ const PricingConfigurationComponent: React.FC = () => {
                     value={config.refundPolicy7PlusDays || 100}
                     onChange={(e) => handleInputChange('refundPolicy7PlusDays', parseFloat(e.target.value) || 0)}
                     inputProps={{ min: 0, max: 100, step: 1 }}
-                    helperText="% refund (recommended: 100%)"
+                    helperText={`Current: ${config.refundPolicy7PlusDays || 100}% refund (recommended: 100%)`}
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         backgroundColor: 'background.paper',
@@ -1163,7 +1163,7 @@ const PricingConfigurationComponent: React.FC = () => {
                     value={config.refundPolicy3To7Days || 50}
                     onChange={(e) => handleInputChange('refundPolicy3To7Days', parseFloat(e.target.value) || 0)}
                     inputProps={{ min: 0, max: 100, step: 1 }}
-                    helperText="% refund (recommended: 50%)"
+                    helperText={`Current: ${config.refundPolicy3To7Days || 50}% refund (recommended: 50%)`}
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         backgroundColor: 'background.paper',
@@ -1189,7 +1189,7 @@ const PricingConfigurationComponent: React.FC = () => {
                     value={config.refundPolicy1To2Days || 25}
                     onChange={(e) => handleInputChange('refundPolicy1To2Days', parseFloat(e.target.value) || 0)}
                     inputProps={{ min: 0, max: 100, step: 1 }}
-                    helperText="% refund (recommended: 25%)"
+                    helperText={`Current: ${config.refundPolicy1To2Days || 25}% refund (recommended: 25%)`}
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         backgroundColor: 'background.paper',
@@ -1215,7 +1215,7 @@ const PricingConfigurationComponent: React.FC = () => {
                     value={config.refundPolicySameDay || 0}
                     onChange={(e) => handleInputChange('refundPolicySameDay', parseFloat(e.target.value) || 0)}
                     inputProps={{ min: 0, max: 100, step: 1 }}
-                    helperText="% refund (recommended: 0%)"
+                    helperText={`Current: ${config.refundPolicySameDay || 0}% refund (recommended: 0%)`}
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         backgroundColor: 'background.paper',
