@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -196,21 +197,22 @@ public class FrontDeskController {
      * and hotel admin)
      */
     @PutMapping("/checkout-with-receipt/{reservationId}")
+    @Transactional
     public ResponseEntity<CheckoutResponse> checkOutWithReceipt(
             @PathVariable Long reservationId,
             Authentication authentication) {
 
         try {
-            logger.info("Processing checkout with receipt for reservation ID: {} by user: {}", 
-                       reservationId, authentication.getName());
-            
+            logger.info("Processing checkout with receipt for reservation ID: {} by user: {}",
+                    reservationId, authentication.getName());
+
             // Use the generic checkout service method that works for both front desk and
             // hotel admin
             CheckoutResponse response = checkOutGuestWithReceiptGeneric(reservationId, authentication.getName());
-            
+
             logger.info("Checkout with receipt completed successfully for reservation ID: {}", reservationId);
             return ResponseEntity.ok(response);
-            
+
         } catch (ResourceNotFoundException e) {
             logger.error("Reservation not found during checkout: {}", e.getMessage());
             throw e; // Let the global exception handler deal with it
@@ -301,20 +303,23 @@ public class FrontDeskController {
     private CheckoutResponse checkOutGuestWithReceiptGeneric(Long reservationId, String generatedByEmail) {
         try {
             logger.info("Starting checkout process for reservation ID: {} by: {}", reservationId, generatedByEmail);
-            
-            Reservation reservation = reservationRepository.findById(reservationId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
 
-            logger.info("Found reservation: {} with status: {}", reservation.getConfirmationNumber(), reservation.getStatus());
-            
+            Reservation reservation = reservationRepository.findById(reservationId)
+                    .orElseThrow(
+                            () -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
+
+            logger.info("Found reservation: {} with status: {}", reservation.getConfirmationNumber(),
+                    reservation.getStatus());
+
             // Validate that check-out is allowed - only for checked-in guests
             if (reservation.getStatus() != ReservationStatus.CHECKED_IN) {
-                String errorMessage = String.format("Only checked-in guests can be checked out. Reservation %s (ID: %d) has status: %s. Please check-in the guest first.", 
-                    reservation.getConfirmationNumber(), reservationId, reservation.getStatus());
+                String errorMessage = String.format(
+                        "Only checked-in guests can be checked out. Reservation %s (ID: %d) has status: %s. Please check-in the guest first.",
+                        reservation.getConfirmationNumber(), reservationId, reservation.getStatus());
                 logger.warn(errorMessage);
                 throw new IllegalStateException(errorMessage);
             }
-            
+
             // Allow early checkout - guests can check out anytime after check-in
             logger.info("Processing checkout for checked-in guest. Early checkout allowed.");
 
@@ -325,15 +330,24 @@ public class FrontDeskController {
             // Update room status to need cleaning (if room is assigned)
             Room room = reservation.getRoom();
             if (room != null) {
-                logger.info("Updating room {} status to MAINTENANCE after checkout", room.getRoomNumber());
-                room.setStatus(RoomStatus.MAINTENANCE); // Assuming rooms need cleaning after checkout
-                roomRepository.save(room);
+                try {
+                    String roomNumber = room.getRoomNumber();
+                    logger.info("Updating room {} status to MAINTENANCE after checkout", roomNumber);
+                    room.setStatus(RoomStatus.MAINTENANCE); // Assuming rooms need cleaning after checkout
+                    roomRepository.save(room);
+                } catch (Exception e) {
+                    logger.warn("Could not access room details for reservation {}: {}", reservationId, e.getMessage());
+                    // Still try to update the room status even if we can't log the room number
+                    room.setStatus(RoomStatus.MAINTENANCE);
+                    roomRepository.save(room);
+                }
             } else {
                 logger.warn("No room assigned to reservation {}", reservationId);
             }
 
             reservation = reservationRepository.save(reservation);
-            logger.info("Reservation status updated to CHECKED_OUT for reservation: {}", reservation.getConfirmationNumber());
+            logger.info("Reservation status updated to CHECKED_OUT for reservation: {}",
+                    reservation.getConfirmationNumber());
 
             // Generate booking response
             BookingResponse bookingResponse = bookingService.convertToBookingResponse(reservation);
@@ -350,10 +364,12 @@ public class FrontDeskController {
 
             } catch (Exception e) {
                 // Log the error but don't fail the checkout process
-                logger.error("Failed to generate receipt during checkout for reservation {}: {}", reservationId, e.getMessage(), e);
+                logger.error("Failed to generate receipt during checkout for reservation {}: {}", reservationId,
+                        e.getMessage(), e);
 
                 return new CheckoutResponse(bookingResponse, null,
-                        "Guest checked out successfully. Receipt generation failed - please generate manually if needed. Error: " + e.getMessage());
+                        "Guest checked out successfully. Receipt generation failed - please generate manually if needed. Error: "
+                                + e.getMessage());
             }
         } catch (Exception e) {
             logger.error("Error in checkout process for reservation {}: {}", reservationId, e.getMessage(), e);
