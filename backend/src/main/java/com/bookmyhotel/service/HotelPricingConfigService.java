@@ -133,7 +133,7 @@ public class HotelPricingConfigService {
         if (existingConfig == null) {
             // No existing configuration, create new one
             logger.info("No existing configuration found for hotel {}, creating new one", hotelId);
-            
+
             // Ensure hotel is set
             if (updatedConfig.getHotel() == null) {
                 Optional<Hotel> hotel = hotelRepository.findById(hotelId);
@@ -151,13 +151,13 @@ public class HotelPricingConfigService {
             if (auth != null && auth.getName() != null) {
                 updatedConfig.setCreatedBy(auth.getName());
             }
-            
+
             configToSave = updatedConfig;
         } else {
             // Update existing configuration by copying values to the managed entity
-            logger.info("Updating existing configuration for hotel {}: ID {}, current version {}", 
-                       hotelId, existingConfig.getId(), existingConfig.getVersion());
-            
+            logger.info("Updating existing configuration for hotel {}: ID {}, current version {}",
+                    hotelId, existingConfig.getId(), existingConfig.getVersion());
+
             // Copy all updated values to the existing managed entity
             existingConfig.setPricingStrategy(updatedConfig.getPricingStrategy());
             existingConfig.setVatRate(updatedConfig.getVatRate());
@@ -180,16 +180,16 @@ public class HotelPricingConfigService {
             existingConfig.setDynamicPricingEnabled(updatedConfig.getDynamicPricingEnabled());
             existingConfig.setCurrencyCode(updatedConfig.getCurrencyCode());
             existingConfig.setNotes(updatedConfig.getNotes());
-            
+
             // Copy refund policy fields
             existingConfig.setRefundPolicy7PlusDays(updatedConfig.getRefundPolicy7PlusDays());
             existingConfig.setRefundPolicy3To7Days(updatedConfig.getRefundPolicy3To7Days());
             existingConfig.setRefundPolicy1To2Days(updatedConfig.getRefundPolicy1To2Days());
             existingConfig.setRefundPolicySameDay(updatedConfig.getRefundPolicySameDay());
-            
+
             // Update version and timestamps
             existingConfig.setVersion(existingConfig.getVersion() + 1);
-            
+
             configToSave = existingConfig;
         }
 
@@ -202,8 +202,8 @@ public class HotelPricingConfigService {
         }
 
         HotelPricingConfig saved = pricingConfigRepository.save(configToSave);
-        logger.info("Successfully updated pricing configuration for hotel {}: ID {}, new version {}", 
-                   hotelId, saved.getId(), saved.getVersion());
+        logger.info("Successfully updated pricing configuration for hotel {}: ID {}, new version {}",
+                hotelId, saved.getId(), saved.getVersion());
 
         return saved;
     }

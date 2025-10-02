@@ -22,6 +22,11 @@ import {
   DialogActions,
   CircularProgress,
   IconButton,
+  Card,
+  CardContent,
+  Avatar,
+  Stack,
+  Badge,
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -33,6 +38,19 @@ import {
   Email as EmailIcon,
   Star as StarIcon,
   Hotel as HotelIcon,
+  Language as WebsiteIcon,
+  AccessTime as TimeIcon,
+  CalendarToday as CalendarIcon,
+  Verified as VerifiedIcon,
+  Pending as PendingIcon,
+  Cancel as InactiveIcon,
+  Block as SuspendedIcon,
+  Business as BusinessIcon,
+  Analytics as AnalyticsIcon,
+  TrendingUp as TrendingUpIcon,
+  Schedule as ScheduleIcon,
+  AttachMoney as CurrencyIcon,
+  Public as PublicIcon,
 } from '@mui/icons-material';
 import { useAuthenticatedApi } from '../../hooks/useAuthenticatedApi';
 import { useTenant } from '../../contexts/TenantContext';
@@ -203,279 +221,740 @@ const HotelViewEdit: React.FC = () => {
 
   const currentHotel = isEditing ? editedHotel : hotel;
 
+  // Helper function to get status icon and color
+  const getStatusInfo = (status: string) => {
+    switch (status?.toUpperCase()) {
+      case 'ACTIVE':
+        return { icon: <VerifiedIcon />, color: 'success' as const, bgColor: '#e8f5e8' };
+      case 'PENDING':
+        return { icon: <PendingIcon />, color: 'warning' as const, bgColor: '#fff8e1' };
+      case 'INACTIVE':
+        return { icon: <InactiveIcon />, color: 'default' as const, bgColor: '#f5f5f5' };
+      case 'SUSPENDED':
+        return { icon: <SuspendedIcon />, color: 'error' as const, bgColor: '#ffebee' };
+      default:
+        return { icon: <VerifiedIcon />, color: 'success' as const, bgColor: '#e8f5e8' };
+    }
+  };
+
+  const statusInfo = getStatusInfo(currentHotel?.status || 'ACTIVE');
+
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <IconButton onClick={handleBackToAdmin} sx={{ mr: 1 }}>
-            <ArrowBackIcon />
-          </IconButton>
-          <Box>
-            <Typography variant="h4" sx={{ fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
-              <HotelIcon sx={{ mr: 1 }} />
-              {isEditing ? 'Edit Hotel' : 'Hotel Details'}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {currentHotel?.name}
-            </Typography>
-          </Box>
-        </Box>
-        
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          {isEditing ? (
-            <>
-              <Button
-                variant="outlined"
-                startIcon={<CancelIcon />}
-                onClick={handleCancelEdit}
-                disabled={saving}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="contained"
-                startIcon={saving ? <CircularProgress size={16} /> : <SaveIcon />}
-                onClick={handleSave}
-                disabled={saving}
-              >
-                {saving ? 'Saving...' : 'Save Changes'}
-              </Button>
-            </>
-          ) : (
-            <Button
-              variant="contained"
-              startIcon={<EditIcon />}
-              onClick={handleEdit}
-            >
-              Edit Hotel
-            </Button>
-          )}
-        </Box>
-      </Box>
-
-      {currentHotel && (
-        <Grid container spacing={3}>
-          {/* Basic Information */}
-          <Grid item xs={12} md={8}>
-            <Paper sx={{ p: 3, mb: 3 }}>
-              <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
-                Basic Information
-              </Typography>
-              <Divider sx={{ mb: 3 }} />
-              
-              <Grid container spacing={3}>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Hotel Name"
-                    value={currentHotel.name || ''}
-                    onChange={(e) => handleInputChange('name', e.target.value)}
-                    disabled={!isEditing}
-                    variant={isEditing ? 'outlined' : 'filled'}
-                  />
-                </Grid>
-                
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Description"
-                    multiline
-                    rows={3}
-                    value={currentHotel.description || ''}
-                    onChange={(e) => handleInputChange('description', e.target.value)}
-                    disabled={!isEditing}
-                    variant={isEditing ? 'outlined' : 'filled'}
-                  />
-                </Grid>
-
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="Phone"
-                    value={currentHotel.phone || ''}
-                    onChange={(e) => handleInputChange('phone', e.target.value)}
-                    disabled={!isEditing}
-                    variant={isEditing ? 'outlined' : 'filled'}
-                    InputProps={{
-                      startAdornment: <PhoneIcon sx={{ mr: 1, color: 'text.secondary' }} />,
-                    }}
-                  />
-                </Grid>
-
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="Email"
-                    value={currentHotel.email || ''}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                    disabled={!isEditing}
-                    variant={isEditing ? 'outlined' : 'filled'}
-                    InputProps={{
-                      startAdornment: <EmailIcon sx={{ mr: 1, color: 'text.secondary' }} />,
-                    }}
-                  />
-                </Grid>
-
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Website"
-                    value={currentHotel.website || ''}
-                    onChange={(e) => handleInputChange('website', e.target.value)}
-                    disabled={!isEditing}
-                    variant={isEditing ? 'outlined' : 'filled'}
-                  />
-                </Grid>
-              </Grid>
-            </Paper>
-
-            {/* Address Information */}
-            <Paper sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
-                Address Information
-              </Typography>
-              <Divider sx={{ mb: 3 }} />
-              
-              <Grid container spacing={3}>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Street Address"
-                    value={currentHotel.address || ''}
-                    onChange={(e) => handleInputChange('address', e.target.value)}
-                    disabled={!isEditing}
-                    variant={isEditing ? 'outlined' : 'filled'}
-                    InputProps={{
-                      startAdornment: <LocationIcon sx={{ mr: 1, color: 'text.secondary' }} />,
-                    }}
-                  />
-                </Grid>
-
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="City"
-                    value={currentHotel.city || ''}
-                    onChange={(e) => handleInputChange('city', e.target.value)}
-                    disabled={!isEditing}
-                    variant={isEditing ? 'outlined' : 'filled'}
-                  />
-                </Grid>
-
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="State/Province"
-                    value={currentHotel.state || ''}
-                    onChange={(e) => handleInputChange('state', e.target.value)}
-                    disabled={!isEditing}
-                    variant={isEditing ? 'outlined' : 'filled'}
-                  />
-                </Grid>
-
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="ZIP/Postal Code"
-                    value={currentHotel.zipCode || ''}
-                    onChange={(e) => handleInputChange('zipCode', e.target.value)}
-                    disabled={!isEditing}
-                    variant={isEditing ? 'outlined' : 'filled'}
-                  />
-                </Grid>
-
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="Country"
-                    value={currentHotel.country || ''}
-                    onChange={(e) => handleInputChange('country', e.target.value)}
-                    disabled={!isEditing}
-                    variant={isEditing ? 'outlined' : 'filled'}
-                  />
-                </Grid>
-              </Grid>
-            </Paper>
-          </Grid>
-
-          {/* Side Panel */}
-          <Grid item xs={12} md={4}>
-            <Paper sx={{ p: 3, mb: 3 }}>
-              <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
-                Hotel Status
-              </Typography>
-              <Divider sx={{ mb: 3 }} />
-              
-              <Box sx={{ mb: 3 }}>
-                <FormControl fullWidth disabled={!isEditing} variant={isEditing ? 'outlined' : 'filled'}>
-                  <InputLabel>Status</InputLabel>
-                  <Select
-                    value={currentHotel.status || 'ACTIVE'}
-                    onChange={(e) => handleInputChange('status', e.target.value)}
-                    label="Status"
-                  >
-                    <MenuItem value="ACTIVE">Active</MenuItem>
-                    <MenuItem value="INACTIVE">Inactive</MenuItem>
-                    <MenuItem value="PENDING">Pending</MenuItem>
-                    <MenuItem value="SUSPENDED">Suspended</MenuItem>
-                  </Select>
-                </FormControl>
-              </Box>
-
-              <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-                <Chip
-                  label={currentHotel.status || 'ACTIVE'}
-                  color={
-                    currentHotel.status === 'ACTIVE' 
-                      ? 'success' 
-                      : currentHotel.status === 'PENDING' 
-                        ? 'warning' 
-                        : 'default'
-                  }
-                  variant={currentHotel.status === 'INACTIVE' ? 'outlined' : 'filled'}
-                />
-              </Box>
-            </Paper>
-
-            <Paper sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
-                Hotel Statistics
-              </Typography>
-              <Divider sx={{ mb: 3 }} />
-              
-              <Box sx={{ textAlign: 'center' }}>
-                <Box sx={{ mb: 2 }}>
-                  <StarIcon sx={{ color: 'orange', mr: 0.5 }} />
-                  <Typography variant="h4" component="span" sx={{ fontWeight: 'bold' }}>
-                    {currentHotel.rating || 'N/A'}
+    <Box sx={{ minHeight: '100vh', bgcolor: '#f8fafc' }}>
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        {/* Enhanced Header with Hero Section */}
+        <Paper 
+          elevation={0}
+          sx={{ 
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            borderRadius: 3,
+            p: 4,
+            mb: 4,
+            color: 'white',
+            position: 'relative',
+            overflow: 'hidden'
+          }}
+        >
+          {/* Background Pattern */}
+          <Box 
+            sx={{
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              bottom: 0,
+              left: 0,
+              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+              opacity: 0.3
+            }}
+          />
+          
+          <Box sx={{ position: 'relative', zIndex: 1 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <IconButton 
+                  onClick={handleBackToAdmin} 
+                  sx={{ 
+                    mr: 2, 
+                    color: 'white',
+                    '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' }
+                  }}
+                >
+                  <ArrowBackIcon />
+                </IconButton>
+                <Avatar 
+                  sx={{ 
+                    width: 64, 
+                    height: 64, 
+                    bgcolor: 'rgba(255,255,255,0.2)', 
+                    mr: 3 
+                  }}
+                >
+                  <HotelIcon sx={{ fontSize: 32 }} />
+                </Avatar>
+                <Box>
+                  <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>
+                    {currentHotel?.name || 'Hotel Details'}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Average Rating
-                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Chip
+                      icon={statusInfo.icon}
+                      label={currentHotel?.status || 'ACTIVE'}
+                      sx={{
+                        color: 'white',
+                        bgcolor: 'rgba(255,255,255,0.2)',
+                        '& .MuiChip-icon': { color: 'white' }
+                      }}
+                    />
+                    {currentHotel?.city && (
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <LocationIcon sx={{ mr: 0.5, fontSize: 16 }} />
+                        <Typography variant="body1">
+                          {currentHotel.city}, {currentHotel.country}
+                        </Typography>
+                      </Box>
+                    )}
+                  </Box>
                 </Box>
-
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
-                    {currentHotel.totalRooms || 'N/A'}
+              </Box>
+              
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                {isEditing ? (
+                  <>
+                    <Button
+                      variant="outlined"
+                      startIcon={<CancelIcon />}
+                      onClick={handleCancelEdit}
+                      disabled={saving}
+                      sx={{
+                        color: 'white',
+                        borderColor: 'rgba(255,255,255,0.5)',
+                        '&:hover': { 
+                          borderColor: 'white',
+                          bgcolor: 'rgba(255,255,255,0.1)'
+                        }
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="contained"
+                      startIcon={saving ? <CircularProgress size={16} /> : <SaveIcon />}
+                      onClick={handleSave}
+                      disabled={saving}
+                      sx={{
+                        bgcolor: 'white',
+                        color: 'primary.main',
+                        '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' }
+                      }}
+                    >
+                      {saving ? 'Saving...' : 'Save Changes'}
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    variant="contained"
+                    startIcon={<EditIcon />}
+                    onClick={handleEdit}
+                    sx={{
+                      bgcolor: 'white',
+                      color: 'primary.main',
+                      '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' }
+                    }}
+                  >
+                    Edit Hotel
+                  </Button>
+                )}
+              </Box>
+            </Box>
+            
+            {/* Quick Stats in Hero */}
+            <Grid container spacing={3} sx={{ mt: 2 }}>
+              <Grid item xs={12} sm={3}>
+                <Box sx={{ textAlign: 'center' }}>
+                  <Typography variant="h4" sx={{ fontWeight: 700 }}>
+                    {currentHotel?.totalRooms || '0'}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant="body2" sx={{ opacity: 0.9 }}>
                     Total Rooms
                   </Typography>
                 </Box>
-
-                {currentHotel.createdAt && (
-                  <Box>
-                    <Typography variant="body2" color="text.secondary">
-                      Registered: {new Date(currentHotel.createdAt).toLocaleDateString()}
+              </Grid>
+              <Grid item xs={12} sm={3}>
+                <Box sx={{ textAlign: 'center' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <StarIcon sx={{ mr: 0.5, color: '#ffd700' }} />
+                    <Typography variant="h4" sx={{ fontWeight: 700 }}>
+                      {currentHotel?.rating || 'N/A'}
                     </Typography>
                   </Box>
-                )}
-              </Box>
-            </Paper>
+                  <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                    Average Rating
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={12} sm={3}>
+                <Box sx={{ textAlign: 'center' }}>
+                  <Typography variant="h4" sx={{ fontWeight: 700 }}>
+                    {currentHotel?.createdAt ? 
+                      Math.floor((Date.now() - new Date(currentHotel.createdAt).getTime()) / (1000 * 60 * 60 * 24))
+                      : '0'
+                    }
+                  </Typography>
+                  <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                    Days Active
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={12} sm={3}>
+                <Box sx={{ textAlign: 'center' }}>
+                  <Typography variant="h4" sx={{ fontWeight: 700 }}>
+                    {currentHotel?.currency || 'USD'}
+                  </Typography>
+                  <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                    Currency
+                  </Typography>
+                </Box>
+              </Grid>
+            </Grid>
+          </Box>
+        </Paper>
+
+        {currentHotel && (
+          <Grid container spacing={4}>
+            {/* Main Content Area */}
+            <Grid item xs={12} lg={8}>
+              {/* Basic Information Card */}
+              <Card elevation={0} sx={{ mb: 4, border: '1px solid #e0e7ff', borderRadius: 3 }}>
+                <CardContent sx={{ p: 4 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                    <Avatar sx={{ bgcolor: 'primary.main', mr: 2 }}>
+                      <BusinessIcon />
+                    </Avatar>
+                    <Typography variant="h5" sx={{ fontWeight: 600 }}>
+                      Basic Information
+                    </Typography>
+                  </Box>
+                  
+                  <Grid container spacing={3}>
+                    <Grid item xs={12}>
+                      <TextField
+                        fullWidth
+                        label="Hotel Name"
+                        value={currentHotel.name || ''}
+                        onChange={(e) => handleInputChange('name', e.target.value)}
+                        disabled={!isEditing}
+                        variant={isEditing ? 'outlined' : 'filled'}
+                        sx={{
+                          '& .MuiFilledInput-root': {
+                            bgcolor: 'grey.50',
+                            '&:hover': { bgcolor: 'grey.100' }
+                          }
+                        }}
+                      />
+                    </Grid>
+                    
+                    <Grid item xs={12}>
+                      <TextField
+                        fullWidth
+                        label="Description"
+                        multiline
+                        rows={4}
+                        value={currentHotel.description || ''}
+                        onChange={(e) => handleInputChange('description', e.target.value)}
+                        disabled={!isEditing}
+                        variant={isEditing ? 'outlined' : 'filled'}
+                        sx={{
+                          '& .MuiFilledInput-root': {
+                            bgcolor: 'grey.50',
+                            '&:hover': { bgcolor: 'grey.100' }
+                          }
+                        }}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        label="Phone Number"
+                        value={currentHotel.phone || ''}
+                        onChange={(e) => handleInputChange('phone', e.target.value)}
+                        disabled={!isEditing}
+                        variant={isEditing ? 'outlined' : 'filled'}
+                        InputProps={{
+                          startAdornment: (
+                            <Box sx={{ mr: 1, display: 'flex', alignItems: 'center' }}>
+                              <PhoneIcon sx={{ color: 'primary.main' }} />
+                            </Box>
+                          ),
+                        }}
+                        sx={{
+                          '& .MuiFilledInput-root': {
+                            bgcolor: 'grey.50',
+                            '&:hover': { bgcolor: 'grey.100' }
+                          }
+                        }}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        label="Email Address"
+                        value={currentHotel.email || ''}
+                        onChange={(e) => handleInputChange('email', e.target.value)}
+                        disabled={!isEditing}
+                        variant={isEditing ? 'outlined' : 'filled'}
+                        InputProps={{
+                          startAdornment: (
+                            <Box sx={{ mr: 1, display: 'flex', alignItems: 'center' }}>
+                              <EmailIcon sx={{ color: 'primary.main' }} />
+                            </Box>
+                          ),
+                        }}
+                        sx={{
+                          '& .MuiFilledInput-root': {
+                            bgcolor: 'grey.50',
+                            '&:hover': { bgcolor: 'grey.100' }
+                          }
+                        }}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <TextField
+                        fullWidth
+                        label="Website URL"
+                        value={currentHotel.website || ''}
+                        onChange={(e) => handleInputChange('website', e.target.value)}
+                        disabled={!isEditing}
+                        variant={isEditing ? 'outlined' : 'filled'}
+                        InputProps={{
+                          startAdornment: (
+                            <Box sx={{ mr: 1, display: 'flex', alignItems: 'center' }}>
+                              <WebsiteIcon sx={{ color: 'primary.main' }} />
+                            </Box>
+                          ),
+                        }}
+                        sx={{
+                          '& .MuiFilledInput-root': {
+                            bgcolor: 'grey.50',
+                            '&:hover': { bgcolor: 'grey.100' }
+                          }
+                        }}
+                      />
+                    </Grid>
+                  </Grid>
+                </CardContent>
+              </Card>
+
+              {/* Location Information Card */}
+              <Card elevation={0} sx={{ mb: 4, border: '1px solid #e0e7ff', borderRadius: 3 }}>
+                <CardContent sx={{ p: 4 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                    <Avatar sx={{ bgcolor: 'secondary.main', mr: 2 }}>
+                      <LocationIcon />
+                    </Avatar>
+                    <Typography variant="h5" sx={{ fontWeight: 600 }}>
+                      Location & Address
+                    </Typography>
+                  </Box>
+                  
+                  <Grid container spacing={3}>
+                    <Grid item xs={12}>
+                      <TextField
+                        fullWidth
+                        label="Street Address"
+                        value={currentHotel.address || ''}
+                        onChange={(e) => handleInputChange('address', e.target.value)}
+                        disabled={!isEditing}
+                        variant={isEditing ? 'outlined' : 'filled'}
+                        sx={{
+                          '& .MuiFilledInput-root': {
+                            bgcolor: 'grey.50',
+                            '&:hover': { bgcolor: 'grey.100' }
+                          }
+                        }}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        label="City"
+                        value={currentHotel.city || ''}
+                        onChange={(e) => handleInputChange('city', e.target.value)}
+                        disabled={!isEditing}
+                        variant={isEditing ? 'outlined' : 'filled'}
+                        sx={{
+                          '& .MuiFilledInput-root': {
+                            bgcolor: 'grey.50',
+                            '&:hover': { bgcolor: 'grey.100' }
+                          }
+                        }}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        label="State/Province"
+                        value={currentHotel.state || ''}
+                        onChange={(e) => handleInputChange('state', e.target.value)}
+                        disabled={!isEditing}
+                        variant={isEditing ? 'outlined' : 'filled'}
+                        sx={{
+                          '& .MuiFilledInput-root': {
+                            bgcolor: 'grey.50',
+                            '&:hover': { bgcolor: 'grey.100' }
+                          }
+                        }}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        label="ZIP/Postal Code"
+                        value={currentHotel.zipCode || ''}
+                        onChange={(e) => handleInputChange('zipCode', e.target.value)}
+                        disabled={!isEditing}
+                        variant={isEditing ? 'outlined' : 'filled'}
+                        sx={{
+                          '& .MuiFilledInput-root': {
+                            bgcolor: 'grey.50',
+                            '&:hover': { bgcolor: 'grey.100' }
+                          }
+                        }}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        label="Country"
+                        value={currentHotel.country || ''}
+                        onChange={(e) => handleInputChange('country', e.target.value)}
+                        disabled={!isEditing}
+                        variant={isEditing ? 'outlined' : 'filled'}
+                        sx={{
+                          '& .MuiFilledInput-root': {
+                            bgcolor: 'grey.50',
+                            '&:hover': { bgcolor: 'grey.100' }
+                          }
+                        }}
+                      />
+                    </Grid>
+                  </Grid>
+                </CardContent>
+              </Card>
+
+              {/* Operations & Settings Card */}
+              <Card elevation={0} sx={{ border: '1px solid #e0e7ff', borderRadius: 3 }}>
+                <CardContent sx={{ p: 4 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                    <Avatar sx={{ bgcolor: 'info.main', mr: 2 }}>
+                      <ScheduleIcon />
+                    </Avatar>
+                    <Typography variant="h5" sx={{ fontWeight: 600 }}>
+                      Operations & Settings
+                    </Typography>
+                  </Box>
+                  
+                  <Grid container spacing={3}>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        label="Check-in Time"
+                        value={currentHotel.checkInTime || ''}
+                        onChange={(e) => handleInputChange('checkInTime', e.target.value)}
+                        disabled={!isEditing}
+                        variant={isEditing ? 'outlined' : 'filled'}
+                        InputProps={{
+                          startAdornment: (
+                            <Box sx={{ mr: 1, display: 'flex', alignItems: 'center' }}>
+                              <TimeIcon sx={{ color: 'info.main' }} />
+                            </Box>
+                          ),
+                        }}
+                        sx={{
+                          '& .MuiFilledInput-root': {
+                            bgcolor: 'grey.50',
+                            '&:hover': { bgcolor: 'grey.100' }
+                          }
+                        }}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        label="Check-out Time"
+                        value={currentHotel.checkOutTime || ''}
+                        onChange={(e) => handleInputChange('checkOutTime', e.target.value)}
+                        disabled={!isEditing}
+                        variant={isEditing ? 'outlined' : 'filled'}
+                        InputProps={{
+                          startAdornment: (
+                            <Box sx={{ mr: 1, display: 'flex', alignItems: 'center' }}>
+                              <TimeIcon sx={{ color: 'info.main' }} />
+                            </Box>
+                          ),
+                        }}
+                        sx={{
+                          '& .MuiFilledInput-root': {
+                            bgcolor: 'grey.50',
+                            '&:hover': { bgcolor: 'grey.100' }
+                          }
+                        }}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        label="Currency"
+                        value={currentHotel.currency || ''}
+                        onChange={(e) => handleInputChange('currency', e.target.value)}
+                        disabled={!isEditing}
+                        variant={isEditing ? 'outlined' : 'filled'}
+                        InputProps={{
+                          startAdornment: (
+                            <Box sx={{ mr: 1, display: 'flex', alignItems: 'center' }}>
+                              <CurrencyIcon sx={{ color: 'success.main' }} />
+                            </Box>
+                          ),
+                        }}
+                        sx={{
+                          '& .MuiFilledInput-root': {
+                            bgcolor: 'grey.50',
+                            '&:hover': { bgcolor: 'grey.100' }
+                          }
+                        }}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        label="Time Zone"
+                        value={currentHotel.timeZone || ''}
+                        onChange={(e) => handleInputChange('timeZone', e.target.value)}
+                        disabled={!isEditing}
+                        variant={isEditing ? 'outlined' : 'filled'}
+                        InputProps={{
+                          startAdornment: (
+                            <Box sx={{ mr: 1, display: 'flex', alignItems: 'center' }}>
+                              <PublicIcon sx={{ color: 'warning.main' }} />
+                            </Box>
+                          ),
+                        }}
+                        sx={{
+                          '& .MuiFilledInput-root': {
+                            bgcolor: 'grey.50',
+                            '&:hover': { bgcolor: 'grey.100' }
+                          }
+                        }}
+                      />
+                    </Grid>
+                  </Grid>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            {/* Sidebar */}
+            <Grid item xs={12} lg={4}>
+              {/* Status Management Card */}
+              <Card elevation={0} sx={{ mb: 4, border: '1px solid #e0e7ff', borderRadius: 3 }}>
+                <CardContent sx={{ p: 4 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                    <Avatar sx={{ bgcolor: statusInfo.bgColor, mr: 2 }}>
+                      {React.cloneElement(statusInfo.icon, { sx: { color: `${statusInfo.color}.main` } })}
+                    </Avatar>
+                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                      Status Management
+                    </Typography>
+                  </Box>
+                  
+                  <FormControl 
+                    fullWidth 
+                    disabled={!isEditing} 
+                    variant={isEditing ? 'outlined' : 'filled'}
+                    sx={{ mb: 3 }}
+                  >
+                    <InputLabel>Hotel Status</InputLabel>
+                    <Select
+                      value={currentHotel.status || 'ACTIVE'}
+                      onChange={(e) => handleInputChange('status', e.target.value)}
+                      label="Hotel Status"
+                    >
+                      <MenuItem value="ACTIVE">
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <VerifiedIcon sx={{ mr: 1, color: 'success.main' }} />
+                          Active
+                        </Box>
+                      </MenuItem>
+                      <MenuItem value="PENDING">
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <PendingIcon sx={{ mr: 1, color: 'warning.main' }} />
+                          Pending
+                        </Box>
+                      </MenuItem>
+                      <MenuItem value="INACTIVE">
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <InactiveIcon sx={{ mr: 1, color: 'text.secondary' }} />
+                          Inactive
+                        </Box>
+                      </MenuItem>
+                      <MenuItem value="SUSPENDED">
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <SuspendedIcon sx={{ mr: 1, color: 'error.main' }} />
+                          Suspended
+                        </Box>
+                      </MenuItem>
+                    </Select>
+                  </FormControl>
+
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Chip
+                      icon={statusInfo.icon}
+                      label={currentHotel.status || 'ACTIVE'}
+                      color={statusInfo.color}
+                      variant="filled"
+                      size="medium"
+                      sx={{ px: 2, py: 1, fontSize: '0.875rem' }}
+                    />
+                  </Box>
+                </CardContent>
+              </Card>
+
+              {/* Analytics Card */}
+              <Card elevation={0} sx={{ mb: 4, border: '1px solid #e0e7ff', borderRadius: 3 }}>
+                <CardContent sx={{ p: 4 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                    <Avatar sx={{ bgcolor: 'success.main', mr: 2 }}>
+                      <AnalyticsIcon />
+                    </Avatar>
+                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                      Performance Metrics
+                    </Typography>
+                  </Box>
+                  
+                  <Stack spacing={3}>
+                    <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'warning.50', borderRadius: 2 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
+                        <StarIcon sx={{ color: '#ffd700', mr: 1 }} />
+                        <Typography variant="h3" sx={{ fontWeight: 700, color: 'warning.main' }}>
+                          {currentHotel.rating || 'N/A'}
+                        </Typography>
+                      </Box>
+                      <Typography variant="body2" color="warning.dark" sx={{ fontWeight: 500 }}>
+                        Average Rating
+                      </Typography>
+                    </Box>
+
+                    <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'primary.50', borderRadius: 2 }}>
+                      <Typography variant="h3" sx={{ fontWeight: 700, color: 'primary.main', mb: 1 }}>
+                        {currentHotel.totalRooms || '0'}
+                      </Typography>
+                      <Typography variant="body2" color="primary.dark" sx={{ fontWeight: 500 }}>
+                        Total Rooms
+                      </Typography>
+                    </Box>
+
+                    <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'success.50', borderRadius: 2 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
+                        <TrendingUpIcon sx={{ color: 'success.main', mr: 1 }} />
+                        <Typography variant="h3" sx={{ fontWeight: 700, color: 'success.main' }}>
+                          85%
+                        </Typography>
+                      </Box>
+                      <Typography variant="body2" color="success.dark" sx={{ fontWeight: 500 }}>
+                        Occupancy Rate
+                      </Typography>
+                    </Box>
+                  </Stack>
+                </CardContent>
+              </Card>
+
+              {/* System Information Card */}
+              <Card elevation={0} sx={{ border: '1px solid #e0e7ff', borderRadius: 3 }}>
+                <CardContent sx={{ p: 4 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                    <Avatar sx={{ bgcolor: 'info.main', mr: 2 }}>
+                      <CalendarIcon />
+                    </Avatar>
+                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                      System Information
+                    </Typography>
+                  </Box>
+                  
+                  <Stack spacing={2}>
+                    <Box>
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                        Created Date
+                      </Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        {currentHotel.createdAt ? 
+                          new Date(currentHotel.createdAt).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })
+                          : 'N/A'
+                        }
+                      </Typography>
+                    </Box>
+                    
+                    <Box>
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                        Last Updated
+                      </Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        {currentHotel.updatedAt ? 
+                          new Date(currentHotel.updatedAt).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })
+                          : 'N/A'
+                        }
+                      </Typography>
+                    </Box>
+                    
+                    <Box>
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                        Hotel ID
+                      </Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 500, fontFamily: 'monospace' }}>
+                        #{currentHotel.id}
+                      </Typography>
+                    </Box>
+                    
+                    <Box>
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                        Active Status
+                      </Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Badge 
+                          variant="dot" 
+                          sx={{ 
+                            '& .MuiBadge-badge': { 
+                              bgcolor: currentHotel.isActive ? 'success.main' : 'error.main',
+                              mr: 1
+                            } 
+                          }}
+                        />
+                        <Typography variant="body1" sx={{ fontWeight: 500, ml: 1 }}>
+                          {currentHotel.isActive ? 'Active' : 'Inactive'}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Stack>
+                </CardContent>
+              </Card>
+            </Grid>
           </Grid>
-        </Grid>
-      )}
+        )}
 
       {/* Cancel Confirmation Dialog */}
       <Dialog open={showCancelDialog} onClose={() => setShowCancelDialog(false)}>
@@ -493,27 +972,55 @@ const HotelViewEdit: React.FC = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Success/Error Messages */}
-      <Snackbar
-        open={!!successMessage}
-        autoHideDuration={6000}
-        onClose={() => setSuccessMessage(null)}
-      >
-        <Alert severity="success" onClose={() => setSuccessMessage(null)}>
-          {successMessage}
-        </Alert>
-      </Snackbar>
+        {/* Professional Footer */}
+        <Box sx={{ mt: 6, pt: 4, textAlign: 'center' }}>
+          <Divider sx={{ mb: 4 }} />
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+            BookMyHotel System Admin Dashboard - Version 2.0.0
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
+            Professional hotel management platform with advanced analytics
+          </Typography>
+        </Box>
 
-      <Snackbar
-        open={!!error}
-        autoHideDuration={6000}
-        onClose={() => setError(null)}
-      >
-        <Alert severity="error" onClose={() => setError(null)}>
-          {error}
-        </Alert>
-      </Snackbar>
-    </Container>
+        {/* Cancel Confirmation Dialog */}
+        <Dialog open={showCancelDialog} onClose={() => setShowCancelDialog(false)}>
+          <DialogTitle>Discard Changes?</DialogTitle>
+          <DialogContent>
+            <Typography>
+              You have unsaved changes. Are you sure you want to discard them?
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setShowCancelDialog(false)}>Keep Editing</Button>
+            <Button onClick={cancelEdit} color="error">
+              Discard Changes
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Success/Error Messages */}
+        <Snackbar
+          open={!!successMessage}
+          autoHideDuration={6000}
+          onClose={() => setSuccessMessage(null)}
+        >
+          <Alert severity="success" onClose={() => setSuccessMessage(null)}>
+            {successMessage}
+          </Alert>
+        </Snackbar>
+
+        <Snackbar
+          open={!!error}
+          autoHideDuration={6000}
+          onClose={() => setError(null)}
+        >
+          <Alert severity="error" onClose={() => setError(null)}>
+            {error}
+          </Alert>
+        </Snackbar>
+      </Container>
+    </Box>
   );
 };
 

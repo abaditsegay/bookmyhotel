@@ -532,6 +532,7 @@ public class HotelPricingConfig {
 
     /**
      * Get the refund rate based on days until check-in
+     * 
      * @param daysUntilCheckIn number of days until check-in date
      * @return refund rate as a percentage (0.0 to 1.0)
      */

@@ -467,7 +467,7 @@ public class BookingService {
         // Create booking change notification for hotel admin/front desk
         try {
             BigDecimal refundAmount = calculateCancellationRefund(reservation);
-            logger.info("📧 Creating cancellation notification with cancelledBy: '{}', reason: '{}', refundAmount: {}", 
+            logger.info("📧 Creating cancellation notification with cancelledBy: '{}', reason: '{}', refundAmount: {}",
                     cancelledBy, cancellationReason, refundAmount);
             bookingChangeNotificationService.createCancellationNotification(
                     reservation, cancellationReason, refundAmount, cancelledBy);
@@ -1364,18 +1364,18 @@ public class BookingService {
 
                 // Validate calculation results
                 if (oldTotal.compareTo(BigDecimal.ZERO) <= 0 || newTotal.compareTo(BigDecimal.ZERO) <= 0) {
-                    logger.warn("Invalid price calculation for reservation {}: oldTotal={}, newTotal={}", 
+                    logger.warn("Invalid price calculation for reservation {}: oldTotal={}, newTotal={}",
                             reservation.getConfirmationNumber(), oldTotal, newTotal);
                     return new BookingModificationResponse(false, "Error calculating price difference");
                 }
 
                 if (priceDifference.compareTo(BigDecimal.ZERO) > 0) {
                     additionalCharges = priceDifference.setScale(2, RoundingMode.HALF_UP);
-                    logger.info("Additional charges calculated: {} for reservation {}", 
+                    logger.info("Additional charges calculated: {} for reservation {}",
                             additionalCharges, reservation.getConfirmationNumber());
                 } else if (priceDifference.compareTo(BigDecimal.ZERO) < 0) {
                     refundAmount = priceDifference.abs().setScale(2, RoundingMode.HALF_UP);
-                    logger.info("Refund amount calculated: {} for reservation {}", 
+                    logger.info("Refund amount calculated: {} for reservation {}",
                             refundAmount, reservation.getConfirmationNumber());
                 }
 
@@ -2178,10 +2178,10 @@ public class BookingService {
         long daysUntilCheckIn = ChronoUnit.DAYS.between(now, checkInDate);
 
         BigDecimal totalAmount = reservation.getTotalAmount();
-        
+
         // Validate total amount is positive
         if (totalAmount.compareTo(BigDecimal.ZERO) <= 0) {
-            logger.warn("Invalid total amount for reservation {}: {}", 
+            logger.warn("Invalid total amount for reservation {}: {}",
                     reservation.getConfirmationNumber(), totalAmount);
             return BigDecimal.ZERO;
         }
@@ -2200,7 +2200,7 @@ public class BookingService {
                 HotelPricingConfig pricingConfig = hotelPricingConfigService.getActiveConfiguration(hotelId);
                 if (pricingConfig != null) {
                     refundPercentage = pricingConfig.getRefundRateForDays(daysUntilCheckIn);
-                    logger.info("Using hotel {} configured refund policy: {}% for {} days until check-in", 
+                    logger.info("Using hotel {} configured refund policy: {}% for {} days until check-in",
                             hotelId, refundPercentage.multiply(new BigDecimal("100")), daysUntilCheckIn);
                 } else {
                     // Fall back to default policy if no configuration found
@@ -2214,17 +2214,17 @@ public class BookingService {
         } else {
             // Fall back to default policy if hotel ID cannot be determined
             refundPercentage = getDefaultRefundRate(daysUntilCheckIn);
-            logger.warn("Cannot determine hotel ID for reservation {}, using default refund policy", 
+            logger.warn("Cannot determine hotel ID for reservation {}, using default refund policy",
                     reservation.getConfirmationNumber());
         }
-        
+
         BigDecimal refundAmount = totalAmount.multiply(refundPercentage)
                 .setScale(2, RoundingMode.HALF_UP);
-        
-        logger.info("Calculated refund for reservation {}: {} ({}% of {})", 
-                reservation.getConfirmationNumber(), refundAmount, 
+
+        logger.info("Calculated refund for reservation {}: {} ({}% of {})",
+                reservation.getConfirmationNumber(), refundAmount,
                 refundPercentage.multiply(new BigDecimal("100")), totalAmount);
-        
+
         return refundAmount;
     }
 
@@ -2264,21 +2264,22 @@ public class BookingService {
 
         // Base amount
         BigDecimal baseAmount = pricePerNight.multiply(BigDecimal.valueOf(nights));
-        
+
         // Add taxes (assuming 15% tax rate - this should be configurable per hotel)
         BigDecimal taxRate = new BigDecimal("0.15");
         BigDecimal taxAmount = baseAmount.multiply(taxRate);
-        
-        // Add service fee (assuming 5% service fee - this should be configurable per hotel)
+
+        // Add service fee (assuming 5% service fee - this should be configurable per
+        // hotel)
         BigDecimal serviceFeeRate = new BigDecimal("0.05");
         BigDecimal serviceFee = baseAmount.multiply(serviceFeeRate);
-        
+
         BigDecimal totalAmount = baseAmount.add(taxAmount).add(serviceFee)
                 .setScale(2, RoundingMode.HALF_UP);
 
-        logger.debug("Calculated total amount for {} nights: base={}, tax={}, service={}, total={}", 
+        logger.debug("Calculated total amount for {} nights: base={}, tax={}, service={}, total={}",
                 nights, baseAmount, taxAmount, serviceFee, totalAmount);
-        
+
         return totalAmount;
     }
 

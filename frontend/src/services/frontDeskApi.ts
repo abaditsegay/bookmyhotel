@@ -978,8 +978,20 @@ export const frontDeskApiService = {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to create walk-in booking');
+        let errorMessage = 'Failed to create walk-in booking';
+        
+        try {
+          const errorData = await response.json();
+          // Use the detailed error message from the backend
+          // For BookingException, the specific message is in 'details', not 'message'
+          errorMessage = errorData.details || errorData.message || errorData.error || errorMessage;
+          console.log('API Error:', errorMessage);
+        } catch (parseError) {
+          // If we can't parse the error response, use the status text
+          errorMessage = response.statusText || errorMessage;
+        }
+        
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();

@@ -33,7 +33,6 @@ import OfflineWalkInBooking from '../../components/OfflineWalkInBooking';
 import { roomCacheService } from '../../services/RoomCacheService';
 import PricingConfiguration from '../../components/PricingConfiguration';
 import HotelImageManagement from './HotelImageManagement';
-import { COLORS } from '../../theme/themeColors';
 import { getBookingStatusColor } from '../../utils/statusColors';
 
 interface TabPanelProps {
@@ -500,12 +499,41 @@ const HotelAdminDashboard: React.FC = () => {
             {/* Hotel Details Sub-tab */}
             <TabPanel value={hotelDetailsTab} index={0}>
               <Box>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                {/* Header Section with Edit Button */}
+                <Box sx={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center', 
+                  mb: 4,
+                  pb: 2,
+                  borderBottom: `2px solid ${theme.palette.divider}`
+                }}>
+                  <Box>
+                    <Typography variant="h4" sx={{ 
+                      fontWeight: 'bold', 
+                      color: theme.palette.primary.main,
+                      mb: 1
+                    }}>
+                      {hotel?.name || hotelData.name}
+                    </Typography>
+                    <Typography variant="subtitle1" color="text.secondary">
+                      Hotel Management Dashboard
+                    </Typography>
+                  </Box>
                   <Button
                     variant="contained"
                     onClick={handleEditHotel}
                     disabled={hotelLoading}
-                    sx={{ ml: 'auto' }}
+                    sx={{ 
+                      px: 3, 
+                      py: 1.5,
+                      borderRadius: 2,
+                      fontWeight: 'bold',
+                      background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
+                      '&:hover': {
+                        background: `linear-gradient(45deg, ${theme.palette.primary.dark}, ${theme.palette.primary.main})`
+                      }
+                    }}
                   >
                     Edit Hotel Details
                   </Button>
@@ -513,71 +541,370 @@ const HotelAdminDashboard: React.FC = () => {
                 
                 {/* Show loading or error states */}
                 {hotelLoading && (
-                  <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-                    <CircularProgress />
+                  <Box sx={{ display: 'flex', justifyContent: 'center', p: 6 }}>
+                    <CircularProgress size={60} />
+                    <Typography variant="h6" sx={{ ml: 2, alignSelf: 'center' }}>
+                      Loading hotel information...
+                    </Typography>
                   </Box>
                 )}
                 
                 {hotelError && (
-                  <Alert severity="error" sx={{ mb: 3 }}>
+                  <Alert severity="error" sx={{ mb: 4, borderRadius: 2 }}>
+                    <Typography variant="h6" gutterBottom>
+                      Unable to Load Hotel Information
+                    </Typography>
                     {hotelError}
                   </Alert>
                 )}
                 
                 {!hotelLoading && !hotelError && (
-                  <Grid container spacing={3}>
-                    <Grid item xs={12} md={6}>
-                      <Typography variant="h6" gutterBottom>Basic Information</Typography>
-                      <Box sx={{ mb: 2 }}>
-                        <Typography variant="body2" color="text.secondary">Hotel Name</Typography>
-                        <Typography variant="body1">{hotel?.name || hotelData.name}</Typography>
-                      </Box>
-                      <Box sx={{ mb: 2 }}>
-                        <Typography variant="body2" color="text.secondary">Description</Typography>
-                        <Typography variant="body1">{hotel?.description || 'No description available'}</Typography>
-                      </Box>
-                      <Box sx={{ mb: 2 }}>
-                        <Typography variant="body2" color="text.secondary">Address</Typography>
-                        <Typography variant="body1">
-                          {hotel?.address || 'Address not set'}
-                          {hotel?.city && `, ${hotel.city}`}
-                          {hotel?.country && `, ${hotel.country}`}
-                        </Typography>
-                      </Box>
-                      <Box sx={{ mb: 2 }}>
-                        <Typography variant="body2" color="text.secondary">Phone</Typography>
-                        <Typography variant="body1">{hotel?.phone || 'Phone not set'}</Typography>
-                      </Box>
-                      <Box sx={{ mb: 2 }}>
-                        <Typography variant="body2" color="text.secondary">Email</Typography>
-                        <Typography variant="body1">{hotel?.email || 'Email not set'}</Typography>
-                      </Box>
+                  <>
+                    {/* Key Metrics Cards */}
+                    <Grid container spacing={3} sx={{ mb: 4 }}>
+                      <Grid item xs={12} sm={6} md={3}>
+                        <Card elevation={0} sx={{ 
+                          background: `linear-gradient(135deg, ${theme.palette.primary.main}15, ${theme.palette.primary.light}10)`,
+                          border: `1px solid ${theme.palette.primary.main}30`,
+                          borderRadius: 3,
+                          height: '100%'
+                        }}>
+                          <CardContent sx={{ textAlign: 'center', p: 3 }}>
+                            <Box sx={{ 
+                              width: 60, 
+                              height: 60, 
+                              borderRadius: '50%', 
+                              backgroundColor: theme.palette.primary.main,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              mx: 'auto',
+                              mb: 2
+                            }}>
+                              <Typography variant="h5" sx={{ color: 'white', fontWeight: 'bold' }}>
+                                🏨
+                              </Typography>
+                            </Box>
+                            <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1, color: theme.palette.primary.main }}>
+                              {hotelData.totalRooms}
+                            </Typography>
+                            <Typography variant="body1" sx={{ fontWeight: 'medium' }}>
+                              Total Rooms
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              Managed properties
+                            </Typography>
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                      
+                      <Grid item xs={12} sm={6} md={3}>
+                        <Card elevation={0} sx={{ 
+                          background: `linear-gradient(135deg, ${theme.palette.success.main}15, ${theme.palette.success.light}10)`,
+                          border: `1px solid ${theme.palette.success.main}30`,
+                          borderRadius: 3,
+                          height: '100%'
+                        }}>
+                          <CardContent sx={{ textAlign: 'center', p: 3 }}>
+                            <Box sx={{ 
+                              width: 60, 
+                              height: 60, 
+                              borderRadius: '50%', 
+                              backgroundColor: theme.palette.success.main,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              mx: 'auto',
+                              mb: 2
+                            }}>
+                              <Typography variant="h5" sx={{ color: 'white', fontWeight: 'bold' }}>
+                                ✅
+                              </Typography>
+                            </Box>
+                            <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1, color: theme.palette.success.main }}>
+                              {hotelData.availableRooms}
+                            </Typography>
+                            <Typography variant="body1" sx={{ fontWeight: 'medium' }}>
+                              Available
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              Ready for booking
+                            </Typography>
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                      
+                      <Grid item xs={12} sm={6} md={3}>
+                        <Card elevation={0} sx={{ 
+                          background: `linear-gradient(135deg, ${theme.palette.warning.main}15, ${theme.palette.warning.light}10)`,
+                          border: `1px solid ${theme.palette.warning.main}30`,
+                          borderRadius: 3,
+                          height: '100%'
+                        }}>
+                          <CardContent sx={{ textAlign: 'center', p: 3 }}>
+                            <Box sx={{ 
+                              width: 60, 
+                              height: 60, 
+                              borderRadius: '50%', 
+                              backgroundColor: theme.palette.warning.main,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              mx: 'auto',
+                              mb: 2
+                            }}>
+                              <Typography variant="h5" sx={{ color: 'white', fontWeight: 'bold' }}>
+                                🛏️
+                              </Typography>
+                            </Box>
+                            <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1, color: theme.palette.warning.main }}>
+                              {hotelData.bookedRooms}
+                            </Typography>
+                            <Typography variant="body1" sx={{ fontWeight: 'medium' }}>
+                              Occupied
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              Currently booked
+                            </Typography>
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                      
+                      <Grid item xs={12} sm={6} md={3}>
+                        <Card elevation={0} sx={{ 
+                          background: `linear-gradient(135deg, ${theme.palette.info.main}15, ${theme.palette.info.light}10)`,
+                          border: `1px solid ${theme.palette.info.main}30`,
+                          borderRadius: 3,
+                          height: '100%'
+                        }}>
+                          <CardContent sx={{ textAlign: 'center', p: 3 }}>
+                            <Box sx={{ 
+                              width: 60, 
+                              height: 60, 
+                              borderRadius: '50%', 
+                              backgroundColor: theme.palette.info.main,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              mx: 'auto',
+                              mb: 2
+                            }}>
+                              <Typography variant="h5" sx={{ color: 'white', fontWeight: 'bold' }}>
+                                👥
+                              </Typography>
+                            </Box>
+                            <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1, color: theme.palette.info.main }}>
+                              {hotelData.activeStaff}
+                            </Typography>
+                            <Typography variant="body1" sx={{ fontWeight: 'medium' }}>
+                              Active Staff
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              Total: {hotelData.totalStaff} members
+                            </Typography>
+                          </CardContent>
+                        </Card>
+                      </Grid>
                     </Grid>
-                    <Grid item xs={12} md={6}>
-                      <Typography variant="h6" gutterBottom>Statistics</Typography>
-                      <Box sx={{ mb: 2 }}>
-                        <Typography variant="body2" color="text.secondary">Total Rooms</Typography>
-                        <Typography variant="body1">{hotelData.totalRooms} rooms</Typography>
-                      </Box>
-                      <Box sx={{ mb: 2 }}>
-                        <Typography variant="body2" color="text.secondary">Staff Members</Typography>
-                        <Typography variant="body1">{hotelData.totalStaff} staff members</Typography>
-                      </Box>
-                      {hotel?.isActive !== undefined && (
-                        <Box sx={{ mb: 2 }}>
-                          <Typography variant="body2" color="text.secondary">Status</Typography>
-                          <Chip 
-                            label={hotel.isActive ? 'Active' : 'Inactive'} 
-                            sx={{ 
-                              backgroundColor: hotel.isActive ? COLORS.PRIMARY : 'error.main',
-                              color: hotel.isActive ? 'white' : 'white'
-                            }}
-                            size="small"
-                          />
-                        </Box>
-                      )}
+
+                    {/* Hotel Information Cards */}
+                    <Grid container spacing={3}>
+                      {/* Basic Information Card */}
+                      <Grid item xs={12} md={6}>
+                        <Card elevation={0} sx={{ 
+                          border: `1px solid ${theme.palette.divider}`,
+                          borderRadius: 3,
+                          height: '100%'
+                        }}>
+                          <CardContent sx={{ p: 4 }}>
+                            <Box sx={{ 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              mb: 3,
+                              pb: 2,
+                              borderBottom: `1px solid ${theme.palette.divider}`
+                            }}>
+                              <Box sx={{ 
+                                width: 48, 
+                                height: 48, 
+                                borderRadius: 2, 
+                                backgroundColor: theme.palette.primary.main,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                mr: 2
+                              }}>
+                                <Typography variant="h6" sx={{ color: 'white', fontWeight: 'bold' }}>
+                                  ℹ️
+                                </Typography>
+                              </Box>
+                              <Typography variant="h5" sx={{ fontWeight: 'bold', color: theme.palette.primary.main }}>
+                                Hotel Information
+                              </Typography>
+                            </Box>
+                            
+                            <Box sx={{ mb: 3 }}>
+                              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 'medium', mb: 1 }}>
+                                Hotel Name
+                              </Typography>
+                              <Typography variant="h6" sx={{ fontWeight: 'medium' }}>
+                                {hotel?.name || hotelData.name}
+                              </Typography>
+                            </Box>
+                            
+                            <Box sx={{ mb: 3 }}>
+                              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 'medium', mb: 1 }}>
+                                Description
+                              </Typography>
+                              <Typography variant="body1" sx={{ 
+                                lineHeight: 1.6,
+                                color: hotel?.description ? theme.palette.text.primary : theme.palette.text.secondary,
+                                fontStyle: hotel?.description ? 'normal' : 'italic'
+                              }}>
+                                {hotel?.description || 'No description available'}
+                              </Typography>
+                            </Box>
+                            
+                            <Box sx={{ mb: 3 }}>
+                              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 'medium', mb: 1 }}>
+                                Address
+                              </Typography>
+                              <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
+                                {hotel?.address || 'Address not set'}
+                                {hotel?.city && `, ${hotel.city}`}
+                                {hotel?.country && `, ${hotel.country}`}
+                              </Typography>
+                            </Box>
+                            
+                            {hotel?.isActive !== undefined && (
+                              <Box>
+                                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 'medium', mb: 1 }}>
+                                  Status
+                                </Typography>
+                                <Chip 
+                                  label={hotel.isActive ? 'Active' : 'Inactive'} 
+                                  sx={{ 
+                                    backgroundColor: hotel.isActive ? theme.palette.success.main : theme.palette.error.main,
+                                    color: 'white',
+                                    fontWeight: 'bold',
+                                    px: 2,
+                                    py: 1
+                                  }}
+                                  size="medium"
+                                />
+                              </Box>
+                            )}
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                      
+                      {/* Contact & Operational Information Card */}
+                      <Grid item xs={12} md={6}>
+                        <Card elevation={0} sx={{ 
+                          border: `1px solid ${theme.palette.divider}`,
+                          borderRadius: 3,
+                          height: '100%'
+                        }}>
+                          <CardContent sx={{ p: 4 }}>
+                            <Box sx={{ 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              mb: 3,
+                              pb: 2,
+                              borderBottom: `1px solid ${theme.palette.divider}`
+                            }}>
+                              <Box sx={{ 
+                                width: 48, 
+                                height: 48, 
+                                borderRadius: 2, 
+                                backgroundColor: theme.palette.secondary.main,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                mr: 2
+                              }}>
+                                <Typography variant="h6" sx={{ color: 'white', fontWeight: 'bold' }}>
+                                  📞
+                                </Typography>
+                              </Box>
+                              <Typography variant="h5" sx={{ fontWeight: 'bold', color: theme.palette.secondary.main }}>
+                                Contact & Operations
+                              </Typography>
+                            </Box>
+                            
+                            <Box sx={{ mb: 3 }}>
+                              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 'medium', mb: 1 }}>
+                                Phone Number
+                              </Typography>
+                              <Typography variant="h6" sx={{ 
+                                fontWeight: 'medium',
+                                color: hotel?.phone ? theme.palette.text.primary : theme.palette.text.secondary,
+                                fontStyle: hotel?.phone ? 'normal' : 'italic'
+                              }}>
+                                {hotel?.phone || 'Phone not set'}
+                              </Typography>
+                            </Box>
+                            
+                            <Box sx={{ mb: 3 }}>
+                              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 'medium', mb: 1 }}>
+                                Email Address
+                              </Typography>
+                              <Typography variant="h6" sx={{ 
+                                fontWeight: 'medium',
+                                color: hotel?.email ? theme.palette.text.primary : theme.palette.text.secondary,
+                                fontStyle: hotel?.email ? 'normal' : 'italic'
+                              }}>
+                                {hotel?.email || 'Email not set'}
+                              </Typography>
+                            </Box>
+                            
+                            <Box sx={{ mb: 3 }}>
+                              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 'medium', mb: 1 }}>
+                                Room Capacity
+                              </Typography>
+                              <Typography variant="h6" sx={{ fontWeight: 'medium' }}>
+                                {hotelData.totalRooms} Total Rooms
+                              </Typography>
+                            </Box>
+                            
+                            <Box sx={{ mb: 3 }}>
+                              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 'medium', mb: 1 }}>
+                                Staff Count
+                              </Typography>
+                              <Typography variant="h6" sx={{ fontWeight: 'medium' }}>
+                                {hotelData.totalStaff} Team Members
+                              </Typography>
+                            </Box>
+                            
+                            <Box>
+                              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 'medium', mb: 1 }}>
+                                Occupancy Rate
+                              </Typography>
+                              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                <Typography variant="h6" sx={{ fontWeight: 'bold', mr: 2 }}>
+                                  {hotelData.totalRooms > 0 ? Math.round((hotelData.bookedRooms / hotelData.totalRooms) * 100) : 0}%
+                                </Typography>
+                                <Box sx={{ 
+                                  flexGrow: 1, 
+                                  height: 8, 
+                                  backgroundColor: theme.palette.action.hover, 
+                                  borderRadius: 4,
+                                  mr: 2
+                                }}>
+                                  <Box sx={{ 
+                                    width: `${hotelData.totalRooms > 0 ? (hotelData.bookedRooms / hotelData.totalRooms) * 100 : 0}%`, 
+                                    height: '100%', 
+                                    backgroundColor: theme.palette.primary.main, 
+                                    borderRadius: 4
+                                  }} />
+                                </Box>
+                              </Box>
+                            </Box>
+                          </CardContent>
+                        </Card>
+                      </Grid>
                     </Grid>
-                  </Grid>
+                  </>
                 )}
               </Box>
             </TabPanel>
