@@ -159,7 +159,7 @@ const NotificationsPage: React.FC = () => {
               key={notification.id}
               sx={{ 
                 '&:last-child td, &:last-child th': { border: 0 },
-                backgroundColor: notification.status === 'UNREAD' ? 'rgba(33, 150, 243, 0.1)' : 'inherit', // Light blue for unread
+                backgroundColor: notification.status === 'UNREAD' ? 'rgba(33, 150, 243, 0.1)' : 'inherit',
                 opacity: notification.status === 'ARCHIVED' ? 0.6 : 1,
                 cursor: 'pointer',
                 '&:hover': { backgroundColor: notification.status === 'UNREAD' ? 'rgba(33, 150, 243, 0.15)' : 'action.hover' }

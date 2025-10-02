@@ -623,11 +623,47 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
       </Box>
 
       {/* Bookings Table */}
-      <Card>
-        <TableContainer>
+      <Card 
+        sx={{ 
+          borderRadius: 3,
+          boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+          border: '1px solid #e0e7ff',
+          overflow: 'hidden'
+        }}
+      >
+        <TableContainer 
+          sx={{
+            '& .MuiTable-root': {
+              backgroundColor: '#ffffff'
+            }
+          }}
+        >
           <Table>
             <TableHead>
-              <TableRow>
+              <TableRow 
+                sx={{
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  '& .MuiTableCell-head': {
+                    color: '#ffffff',
+                    fontWeight: 600,
+                    fontSize: '0.95rem',
+                    letterSpacing: '0.5px',
+                    textTransform: 'uppercase',
+                    border: 'none',
+                    padding: '20px 16px',
+                    position: 'relative',
+                    '&::after': {
+                      content: '""',
+                      position: 'absolute',
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      height: '2px',
+                      background: 'rgba(255,255,255,0.3)'
+                    }
+                  }
+                }}
+              >
                 <TableCell><strong>Confirmation #</strong></TableCell>
                 <TableCell><strong>Guest</strong></TableCell>
                 <TableCell><strong>Room</strong></TableCell>
@@ -640,90 +676,227 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={showActions ? 7 : 6} align="center" sx={{ py: 4 }}>
-                    <CircularProgress />
+                  <TableCell 
+                    colSpan={showActions ? 7 : 6} 
+                    align="center" 
+                    sx={{ 
+                      py: 4,
+                      backgroundColor: '#f8fafc',
+                      border: 'none'
+                    }}
+                  >
+                    <CircularProgress sx={{ color: '#667eea' }} />
                   </TableCell>
                 </TableRow>
               ) : bookings.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={showActions ? 7 : 6} align="center" sx={{ py: 4 }}>
+                  <TableCell 
+                    colSpan={showActions ? 7 : 6} 
+                    align="center" 
+                    sx={{ 
+                      py: 4,
+                      backgroundColor: '#f8fafc',
+                      border: 'none'
+                    }}
+                  >
                     <Typography color="text.secondary">
                       No bookings found
                     </Typography>
                   </TableCell>
                 </TableRow>
               ) : (
-                bookings.map((booking) => (
-                  <TableRow key={booking.reservationId}>
-                    <TableCell>{booking.confirmationNumber}</TableCell>
+                bookings.map((booking, index) => (
+                  <TableRow 
+                    key={booking.reservationId}
+                    sx={{
+                      backgroundColor: index % 2 === 0 ? '#ffffff' : '#f8fafc',
+                      transition: 'all 0.2s ease-in-out',
+                      '&:hover': {
+                        backgroundColor: '#e0e7ff',
+                        transform: 'translateY(-1px)',
+                        boxShadow: '0 2px 8px rgba(102, 126, 234, 0.15)'
+                      },
+                      '& .MuiTableCell-body': {
+                        border: 'none',
+                        padding: '16px',
+                        fontSize: '0.9rem',
+                        borderBottom: '1px solid #e5e7eb'
+                      }
+                    }}
+                  >
+                    <TableCell>
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          fontFamily: 'monospace',
+                          fontWeight: 600,
+                          color: '#667eea',
+                          backgroundColor: '#f0f4ff',
+                          padding: '4px 8px',
+                          borderRadius: '6px',
+                          display: 'inline-block'
+                        }}
+                      >
+                        {booking.confirmationNumber}
+                      </Typography>
+                    </TableCell>
                     <TableCell>
                       <Box>
-                        <Typography variant="body2" fontWeight="bold">
+                        <Typography 
+                          variant="body2" 
+                          fontWeight="600"
+                          sx={{ color: '#1f2937', mb: 0.5 }}
+                        >
                           {booking.guestName}
                         </Typography>
-                        <Typography variant="caption" color="text.secondary">
+                        <Typography 
+                          variant="caption" 
+                          sx={{ 
+                            color: '#6b7280',
+                            fontSize: '0.75rem'
+                          }}
+                        >
                           {booking.guestEmail}
                         </Typography>
                       </Box>
                     </TableCell>
                     <TableCell>
-                      {booking.roomNumber} - {booking.roomType}
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Box 
+                          sx={{
+                            width: 8,
+                            height: 8,
+                            borderRadius: '50%',
+                            backgroundColor: '#10b981',
+                            flexShrink: 0
+                          }}
+                        />
+                        <Typography 
+                          variant="body2" 
+                          sx={{ 
+                            fontWeight: 500,
+                            color: '#374151'
+                          }}
+                        >
+                          {booking.roomNumber} - {booking.roomType}
+                        </Typography>
+                      </Box>
                     </TableCell>
-                    <TableCell>{formatDate(booking.checkInDate)}</TableCell>
-                    <TableCell>{formatDate(booking.checkOutDate)}</TableCell>
+                    <TableCell>
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          color: '#374151',
+                          fontWeight: 500
+                        }}
+                      >
+                        {formatDate(booking.checkInDate)}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          color: '#374151',
+                          fontWeight: 500
+                        }}
+                      >
+                        {formatDate(booking.checkOutDate)}
+                      </Typography>
+                    </TableCell>
                     <TableCell>
                       <Chip 
                         label={booking.status.replace('_', ' ')} 
                         color={getStatusColor(booking.status)} 
-                        size="small" 
+                        size="small"
+                        sx={{
+                          fontWeight: 600,
+                          fontSize: '0.75rem',
+                          height: '28px',
+                          borderRadius: '14px',
+                          textTransform: 'capitalize'
+                        }}
                       />
                     </TableCell>
                     {showActions && (
                       <TableCell>
-                        <Box sx={{ display: 'flex', gap: 0.5 }}>
-                          <Tooltip title="View Details">
+                        <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
+                          <Tooltip title="View Details" arrow>
                             <IconButton 
                               size="small"
                               onClick={() => handleViewBookingDetails(booking)}
+                              sx={{
+                                backgroundColor: '#f0f4ff',
+                                color: '#667eea',
+                                '&:hover': {
+                                  backgroundColor: '#e0e7ff',
+                                  transform: 'scale(1.1)'
+                                },
+                                transition: 'all 0.2s ease'
+                              }}
                             >
-                              <VisibilityIcon />
+                              <VisibilityIcon fontSize="small" />
                             </IconButton>
                           </Tooltip>
                           
                           {showCheckInOut && (
                             <>
                               {(booking.status.toUpperCase() === 'CONFIRMED' || booking.status.toUpperCase() === 'ARRIVING') && (
-                                <Tooltip title="Check In">
+                                <Tooltip title="Check In" arrow>
                                   <IconButton 
                                     size="small" 
-                                    color="success"
                                     onClick={() => handleBookingAction(booking, 'check-in')}
+                                    sx={{
+                                      backgroundColor: '#ecfdf5',
+                                      color: '#10b981',
+                                      '&:hover': {
+                                        backgroundColor: '#d1fae5',
+                                        transform: 'scale(1.1)'
+                                      },
+                                      transition: 'all 0.2s ease'
+                                    }}
                                   >
-                                    <CheckInIcon />
+                                    <CheckInIcon fontSize="small" />
                                   </IconButton>
                                 </Tooltip>
                               )}
                               {(booking.status.toUpperCase() === 'CHECKED_IN') && (
-                                <Tooltip title="Check Out">
+                                <Tooltip title="Check Out" arrow>
                                   <IconButton 
                                     size="small" 
-                                    color="warning"
                                     onClick={() => {
                                       setBookingForCheckout(booking);
                                       setCheckoutConfirmOpen(true);
                                     }}
+                                    sx={{
+                                      backgroundColor: '#fef3c7',
+                                      color: '#f59e0b',
+                                      '&:hover': {
+                                        backgroundColor: '#fde68a',
+                                        transform: 'scale(1.1)'
+                                      },
+                                      transition: 'all 0.2s ease'
+                                    }}
                                   >
-                                    <CheckOutIcon />
+                                    <CheckOutIcon fontSize="small" />
                                   </IconButton>
                                 </Tooltip>
                               )}
-                              <Tooltip title="Print Receipt">
+                              <Tooltip title="Print Receipt" arrow>
                                 <IconButton 
                                   size="small"
                                   onClick={() => handlePrintReceipt(booking)}
-                                  color="primary"
+                                  sx={{
+                                    backgroundColor: '#e0e7ff',
+                                    color: '#6366f1',
+                                    '&:hover': {
+                                      backgroundColor: '#c7d2fe',
+                                      transform: 'scale(1.1)'
+                                    },
+                                    transition: 'all 0.2s ease'
+                                  }}
                                 >
-                                  <PrintIcon />
+                                  <PrintIcon fontSize="small" />
                                 </IconButton>
                               </Tooltip>
                             </>
@@ -761,6 +934,42 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
             page={page}
             onPageChange={handlePageChange}
             onRowsPerPageChange={handleRowsPerPageChange}
+            sx={{
+              backgroundColor: '#f8fafc',
+              borderTop: '1px solid #e5e7eb',
+              '& .MuiTablePagination-toolbar': {
+                padding: '12px 24px',
+                color: '#374151'
+              },
+              '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                color: '#6b7280',
+                fontWeight: 500,
+                fontSize: '0.875rem'
+              },
+              '& .MuiTablePagination-select': {
+                backgroundColor: '#ffffff',
+                border: '1px solid #d1d5db',
+                borderRadius: '6px',
+                padding: '4px 8px',
+                color: '#374151',
+                fontWeight: 500
+              },
+              '& .MuiTablePagination-actions button': {
+                color: '#667eea',
+                backgroundColor: '#f0f4ff',
+                borderRadius: '6px',
+                margin: '0 2px',
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  backgroundColor: '#e0e7ff',
+                  transform: 'scale(1.05)'
+                },
+                '&.Mui-disabled': {
+                  color: '#9ca3af',
+                  backgroundColor: '#f3f4f6'
+                }
+              }
+            }}
           />
         </TableContainer>
       </Card>
