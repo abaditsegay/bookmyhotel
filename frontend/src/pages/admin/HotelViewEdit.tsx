@@ -52,6 +52,7 @@ import {
   AttachMoney as CurrencyIcon,
   Public as PublicIcon,
 } from '@mui/icons-material';
+import { COLORS } from '../../theme/themeColors';
 import { useAuthenticatedApi } from '../../hooks/useAuthenticatedApi';
 import { useTenant } from '../../contexts/TenantContext';
 
@@ -292,7 +293,11 @@ const HotelViewEdit: React.FC = () => {
                   <HotelIcon sx={{ fontSize: 32 }} />
                 </Avatar>
                 <Box>
-                  <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>
+                  <Typography variant="h3" sx={{ 
+                    fontWeight: 700, 
+                    mb: 1,
+                    color: COLORS.PRIMARY
+                  }}>
                     {currentHotel?.name || 'Hotel Details'}
                   </Typography>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>

@@ -21,6 +21,7 @@ import {
   Card,
   CardContent,
 } from '@mui/material';
+import { COLORS } from '../../theme/themeColors';
 import { Refresh, CheckCircle, Cancel, Visibility } from '@mui/icons-material';
 
 interface HotelRegistration {
@@ -152,7 +153,10 @@ const HotelRegistrationAdmin: React.FC = () => {
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
-      <Typography variant="h4" component="h1" gutterBottom>
+      <Typography variant="h4" component="h1" gutterBottom sx={{
+        color: COLORS.PRIMARY,
+        fontWeight: 600
+      }}>
         Hotel Registration Management
       </Typography>
 

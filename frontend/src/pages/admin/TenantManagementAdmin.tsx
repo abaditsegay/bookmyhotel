@@ -40,6 +40,7 @@ import {
   ToggleOff as ToggleOffIcon,
   ArrowBack as ArrowBackIcon,
 } from '@mui/icons-material';
+import { COLORS } from '../../theme/themeColors';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -310,7 +311,12 @@ const TenantManagementAdmin: React.FC = () => {
           >
             <ArrowBackIcon />
           </IconButton>
-          <Typography variant="h5" component="h1" sx={{ flexGrow: 1 }}>
+          <Typography variant="h5" component="h1" sx={{ 
+            flexGrow: 1,
+            color: COLORS.PRIMARY,
+            fontWeight: 600,
+            letterSpacing: '0.5px'
+          }}>
             Tenant Management
           </Typography>
           <Button

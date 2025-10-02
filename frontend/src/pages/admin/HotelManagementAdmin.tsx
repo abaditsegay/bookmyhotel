@@ -693,7 +693,12 @@ const HotelManagementAdmin: React.FC = () => {
           >
             <ArrowBackIcon />
           </IconButton>
-          <Typography variant="h5" component="h1" sx={{ flexGrow: 1 }}>
+          <Typography variant="h5" component="h1" sx={{ 
+            flexGrow: 1,
+            color: COLORS.PRIMARY,
+            fontWeight: 600,
+            letterSpacing: '0.5px'
+          }}>
             Hotel Management
           </Typography>
           <Button

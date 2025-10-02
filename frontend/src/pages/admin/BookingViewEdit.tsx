@@ -34,6 +34,7 @@ import {
   Cancel as CancelIcon,
   Room as RoomIcon,
 } from '@mui/icons-material';
+import { COLORS } from '../../theme/themeColors';
 import { useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { hotelAdminApi, RoomResponse } from '../../services/hotelAdminApi';
@@ -562,7 +563,10 @@ const BookingViewEdit: React.FC = () => {
             <IconButton onClick={handleBack} sx={{ mr: 1 }}>
               <ArrowBackIcon />
             </IconButton>
-            <Typography variant="h4" component="h1">
+            <Typography variant="h4" component="h1" sx={{
+              color: COLORS.PRIMARY,
+              fontWeight: 600
+            }}>
               Booking Details
             </Typography>
           </Box>

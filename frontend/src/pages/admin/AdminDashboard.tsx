@@ -220,6 +220,17 @@ const AdminDashboard: React.FC = () => {
 
   return (
     <Box sx={{ width: '100%', p: 3 }}>
+      {/* Page Header */}
+      <Box sx={{ mb: 3 }}>
+        <Typography variant="h4" component="h1" sx={{ 
+          color: COLORS.PRIMARY,
+          fontWeight: 600,
+          letterSpacing: '0.5px'
+        }}>
+          System Administration
+        </Typography>
+      </Box>
+      
       {/* Main Management Tabs */}
       <Paper sx={{ width: '100%', mb: 4 }}>
         <Tabs

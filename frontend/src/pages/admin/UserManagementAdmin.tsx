@@ -38,6 +38,7 @@ import {
   ToggleOn as ToggleOnIcon,
   ToggleOff as ToggleOffIcon,
 } from '@mui/icons-material';
+import { COLORS } from '../../theme/themeColors';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -387,7 +388,12 @@ const UserManagementAdmin: React.FC = () => {
         >
           <ArrowBackIcon />
         </IconButton>
-        <Typography variant="h4" component="h1" sx={{ flexGrow: 1 }}>
+        <Typography variant="h4" component="h1" sx={{ 
+          flexGrow: 1,
+          color: COLORS.PRIMARY,
+          fontWeight: 600,
+          letterSpacing: '0.5px'
+        }}>
           User Management
         </Typography>
         <Button

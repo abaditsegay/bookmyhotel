@@ -35,6 +35,7 @@ import {
   Person as PersonIcon,
   Badge as BadgeIcon,
 } from '@mui/icons-material';
+import { COLORS } from '../../theme/themeColors';
 import { useAuthenticatedApi } from '../../hooks/useAuthenticatedApi';
 
 interface UserData {
@@ -207,7 +208,12 @@ const UserViewEdit: React.FC = () => {
             <ArrowBackIcon />
           </IconButton>
           <Box>
-            <Typography variant="h4" sx={{ fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
+            <Typography variant="h4" sx={{ 
+              fontWeight: 'bold', 
+              display: 'flex', 
+              alignItems: 'center',
+              color: COLORS.PRIMARY
+            }}>
               <PersonIcon sx={{ mr: 1 }} />
               {isEditing ? 'Edit User' : 'User Details'}
             </Typography>
