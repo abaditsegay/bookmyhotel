@@ -2,6 +2,8 @@ package com.bookmyhotel.controller;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -46,6 +48,8 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/front-desk")
 @PreAuthorize("hasRole('FRONTDESK') or hasRole('HOTEL_ADMIN') or hasRole('SYSTEM_ADMIN')")
 public class FrontDeskController {
+
+    private static final Logger logger = LoggerFactory.getLogger(FrontDeskController.class);
 
     @Autowired
     private FrontDeskService frontDeskService;
@@ -196,10 +200,27 @@ public class FrontDeskController {
             @PathVariable Long reservationId,
             Authentication authentication) {
 
-        // Use the generic checkout service method that works for both front desk and
-        // hotel admin
-        CheckoutResponse response = checkOutGuestWithReceiptGeneric(reservationId, authentication.getName());
-        return ResponseEntity.ok(response);
+        try {
+            logger.info("Processing checkout with receipt for reservation ID: {} by user: {}", 
+                       reservationId, authentication.getName());
+            
+            // Use the generic checkout service method that works for both front desk and
+            // hotel admin
+            CheckoutResponse response = checkOutGuestWithReceiptGeneric(reservationId, authentication.getName());
+            
+            logger.info("Checkout with receipt completed successfully for reservation ID: {}", reservationId);
+            return ResponseEntity.ok(response);
+            
+        } catch (ResourceNotFoundException e) {
+            logger.error("Reservation not found during checkout: {}", e.getMessage());
+            throw e; // Let the global exception handler deal with it
+        } catch (IllegalStateException e) {
+            logger.error("Invalid state during checkout for reservation {}: {}", reservationId, e.getMessage());
+            throw e; // Let the global exception handler deal with it
+        } catch (Exception e) {
+            logger.error("Unexpected error during checkout for reservation {}: {}", reservationId, e.getMessage(), e);
+            throw new RuntimeException("Failed to process checkout: " + e.getMessage(), e);
+        }
     }
 
     /**
@@ -278,45 +299,65 @@ public class FrontDeskController {
      * but is role-agnostic and can be used by any authorized user
      */
     private CheckoutResponse checkOutGuestWithReceiptGeneric(Long reservationId, String generatedByEmail) {
-        Reservation reservation = reservationRepository.findById(reservationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
-
-        // Validate that check-out is allowed
-        if (reservation.getStatus() != ReservationStatus.CHECKED_IN) {
-            throw new IllegalStateException("Only checked-in guests can be checked out");
-        }
-
-        // Update reservation status
-        reservation.setStatus(ReservationStatus.CHECKED_OUT);
-        reservation.setActualCheckOutTime(java.time.LocalDateTime.now());
-
-        // Update room status to need cleaning (if room is assigned)
-        Room room = reservation.getRoom();
-        if (room != null) {
-            room.setStatus(RoomStatus.MAINTENANCE); // Assuming rooms need cleaning after checkout
-            roomRepository.save(room);
-        }
-
-        reservation = reservationRepository.save(reservation);
-
-        // Generate booking response
-        BookingResponse bookingResponse = bookingService.convertToBookingResponse(reservation);
-
-        // Generate final receipt with room and shop charges
         try {
-            ConsolidatedReceiptResponse receipt = checkoutReceiptService.generateFinalReceipt(
-                    reservationId, generatedByEmail);
+            logger.info("Starting checkout process for reservation ID: {} by: {}", reservationId, generatedByEmail);
+            
+            Reservation reservation = reservationRepository.findById(reservationId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
 
-            return new CheckoutResponse(bookingResponse, receipt,
-                    "Guest checked out successfully. Final receipt generated with room charges and shop charges.");
+            logger.info("Found reservation: {} with status: {}", reservation.getConfirmationNumber(), reservation.getStatus());
+            
+            // Validate that check-out is allowed - only for checked-in guests
+            if (reservation.getStatus() != ReservationStatus.CHECKED_IN) {
+                String errorMessage = String.format("Only checked-in guests can be checked out. Reservation %s (ID: %d) has status: %s. Please check-in the guest first.", 
+                    reservation.getConfirmationNumber(), reservationId, reservation.getStatus());
+                logger.warn(errorMessage);
+                throw new IllegalStateException(errorMessage);
+            }
+            
+            // Allow early checkout - guests can check out anytime after check-in
+            logger.info("Processing checkout for checked-in guest. Early checkout allowed.");
 
+            // Update reservation status
+            reservation.setStatus(ReservationStatus.CHECKED_OUT);
+            reservation.setActualCheckOutTime(java.time.LocalDateTime.now());
+
+            // Update room status to need cleaning (if room is assigned)
+            Room room = reservation.getRoom();
+            if (room != null) {
+                logger.info("Updating room {} status to MAINTENANCE after checkout", room.getRoomNumber());
+                room.setStatus(RoomStatus.MAINTENANCE); // Assuming rooms need cleaning after checkout
+                roomRepository.save(room);
+            } else {
+                logger.warn("No room assigned to reservation {}", reservationId);
+            }
+
+            reservation = reservationRepository.save(reservation);
+            logger.info("Reservation status updated to CHECKED_OUT for reservation: {}", reservation.getConfirmationNumber());
+
+            // Generate booking response
+            BookingResponse bookingResponse = bookingService.convertToBookingResponse(reservation);
+
+            // Generate final receipt with room and shop charges
+            try {
+                logger.info("Generating final receipt for reservation: {}", reservationId);
+                ConsolidatedReceiptResponse receipt = checkoutReceiptService.generateFinalReceipt(
+                        reservationId, generatedByEmail);
+
+                logger.info("Receipt generated successfully for reservation: {}", reservationId);
+                return new CheckoutResponse(bookingResponse, receipt,
+                        "Guest checked out successfully. Final receipt generated with room charges and shop charges.");
+
+            } catch (Exception e) {
+                // Log the error but don't fail the checkout process
+                logger.error("Failed to generate receipt during checkout for reservation {}: {}", reservationId, e.getMessage(), e);
+
+                return new CheckoutResponse(bookingResponse, null,
+                        "Guest checked out successfully. Receipt generation failed - please generate manually if needed. Error: " + e.getMessage());
+            }
         } catch (Exception e) {
-            // Log the error but don't fail the checkout process
-            System.err.println("Failed to generate receipt during checkout: " + e.getMessage());
-            e.printStackTrace();
-
-            return new CheckoutResponse(bookingResponse, null,
-                    "Guest checked out successfully. Receipt generation failed - please generate manually if needed.");
+            logger.error("Error in checkout process for reservation {}: {}", reservationId, e.getMessage(), e);
+            throw e; // Re-throw to be handled by the controller
         }
     }
 
