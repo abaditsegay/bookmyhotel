@@ -20,6 +20,19 @@ import { BookingResponse } from '../types/hotel';
 import { formatDateForDisplay } from '../utils/dateUtils';
 import { COLORS } from '../theme/themeColors';
 
+// Helper function to get payment status color
+const getPaymentStatusColor = (status?: string): string => {
+  switch (status?.toUpperCase()) {
+    case 'COMPLETED':
+      return '#4caf50'; // Green
+    case 'PROCESSING':
+      return '#ff9800'; // Orange
+    case 'PENDING':
+    default:
+      return '#f44336'; // Red
+  }
+};
+
 const FindBookingPage: React.FC = () => {
   const navigate = useNavigate();
   const theme = useTheme();
@@ -361,6 +374,48 @@ const FindBookingPage: React.FC = () => {
                     {booking.status}
                   </Typography>
                 </Box>
+
+                <Box 
+                  sx={{
+                    p: 2,
+                    borderRadius: 0,
+                    background: theme.palette.background.paper,
+                    border: `1px solid rgba(224, 224, 224, 0.3)`,
+                    boxShadow: 'none',
+                  }}
+                >
+                  <Typography variant="subtitle1" color="primary.main" sx={{ fontWeight: 'bold', mb: 1 }}>
+                    Payment Status
+                  </Typography>
+                  <Typography 
+                    variant="h6" 
+                    sx={{ 
+                      fontWeight: 'bold',
+                      color: getPaymentStatusColor(booking.paymentStatus),
+                    }}
+                  >
+                    {booking.paymentStatus || 'PENDING'}
+                  </Typography>
+                </Box>
+
+                {booking.paymentReference && (
+                  <Box 
+                    sx={{
+                      p: 2,
+                      borderRadius: 0,
+                      background: theme.palette.background.paper,
+                      border: `1px solid rgba(224, 224, 224, 0.3)`,
+                      boxShadow: 'none',
+                    }}
+                  >
+                    <Typography variant="subtitle1" color="primary.main" sx={{ fontWeight: 'bold', mb: 1 }}>
+                      Payment Reference
+                    </Typography>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                      {booking.paymentReference}
+                    </Typography>
+                  </Box>
+                )}
               </Box>
             </Box>
 

@@ -23,7 +23,10 @@ import {
   Tooltip,
   TextField,
   InputAdornment,
-  CircularProgress
+  CircularProgress,
+  Select,
+  MenuItem,
+  FormControl
 } from '@mui/material';
 import {
   Visibility as VisibilityIcon,
@@ -33,7 +36,9 @@ import {
   PersonAdd as AddGuestIcon,
   Check as CheckInIcon,
   ExitToApp as CheckOutIcon,
-  Print as PrintIcon
+  Print as PrintIcon,
+  Edit as EditIcon,
+  Cancel as CancelIcon
 } from '@mui/icons-material';
 import { useTenant } from '../../contexts/TenantContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -93,6 +98,17 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
     message: '', 
     severity: 'success' as 'success' | 'error' 
   });
+  
+  // Payment status editing state
+  const [editingPaymentStatus, setEditingPaymentStatus] = useState<number | null>(null);
+  const [paymentStatusDialog, setPaymentStatusDialog] = useState({
+    open: false,
+    bookingId: null as number | null,
+    currentStatus: '',
+    newStatus: '',
+    guestName: ''
+  });
+  const [updatingPaymentStatus, setUpdatingPaymentStatus] = useState(false);
   
   // Memoize search handler to prevent input focus loss
   const handleSearchChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -247,6 +263,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
           );
         } else {
           // Use hotel admin API
+          console.log('BookingManagementTable: Calling hotel admin API with search term:', debouncedSearchTerm);
           result = await hotelAdminApi.getHotelBookings(
             token,
             page,
@@ -558,18 +575,126 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
     }
   };
 
+  // Handle payment status editing
+  const handlePaymentStatusEdit = (reservationId: number) => {
+    setEditingPaymentStatus(reservationId);
+  };
+
+  const handlePaymentStatusSave = async (bookingId: number, newStatus: string) => {
+    if (!token) return;
+
+    setUpdatingPaymentStatus(true);
+    try {
+      const result = await hotelAdminApi.updateBookingPaymentStatus(token, bookingId, newStatus);
+      
+      if (result.success) {
+        // Update the booking in local state
+        setBookings(prev => prev.map(booking =>
+          booking.reservationId === bookingId
+            ? { ...booking, paymentStatus: newStatus }
+            : booking
+        ));
+        
+        setSnackbar({
+          open: true,
+          message: 'Payment status updated successfully',
+          severity: 'success'
+        });
+        
+        setEditingPaymentStatus(null);
+        setPaymentStatusDialog({ 
+          open: false, 
+          bookingId: null, 
+          currentStatus: '', 
+          newStatus: '', 
+          guestName: '' 
+        });
+      } else {
+        setSnackbar({
+          open: true,
+          message: result.message || 'Failed to update payment status',
+          severity: 'error'
+        });
+      }
+    } catch (error) {
+      console.error('Error updating payment status:', error);
+      setSnackbar({
+        open: true,
+        message: 'Failed to update payment status',
+        severity: 'error'
+      });
+    } finally {
+      setUpdatingPaymentStatus(false);
+    }
+  };
+
+  const handlePaymentStatusCancel = () => {
+    setEditingPaymentStatus(null);
+    setPaymentStatusDialog({ 
+      open: false, 
+      bookingId: null, 
+      currentStatus: '', 
+      newStatus: '', 
+      guestName: '' 
+    });
+  };
+
+  const handlePaymentStatusConfirm = (bookingId: number, currentStatus: string, newStatus: string, guestName: string) => {
+    setPaymentStatusDialog({
+      open: true,
+      bookingId,
+      currentStatus,
+      newStatus,
+      guestName
+    });
+  };
+
+  const handlePaymentStatusDialogConfirm = () => {
+    if (paymentStatusDialog.bookingId && paymentStatusDialog.newStatus) {
+      handlePaymentStatusSave(paymentStatusDialog.bookingId, paymentStatusDialog.newStatus);
+    }
+  };
+
+  // Get payment status color
+  const getPaymentStatusColor = (paymentStatus: string) => {
+    switch (paymentStatus.toUpperCase()) {
+      case 'COMPLETED':
+      case 'PAID': // Legacy status
+        return 'success';
+      case 'PROCESSING':
+        return 'warning';
+      case 'PENDING':
+      default:
+        return 'default';
+    }
+  };
+
+  // Normalize payment status for display and editing
+  const normalizePaymentStatus = (status: string) => {
+    const normalized = status?.toUpperCase();
+    // Convert legacy PAID status to COMPLETED
+    if (normalized === 'PAID') {
+      return 'COMPLETED';
+    }
+    // Ensure we only return valid enum values
+    if (['PENDING', 'PROCESSING', 'COMPLETED'].includes(normalized)) {
+      return normalized;
+    }
+    return 'PENDING';
+  };
+
   // Format date - using centralized utility to ensure consistency
   const formatDate = (dateString: string) => {
     return formatDateForDisplay(dateString);
   };
 
-  // Format currency
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-ET', {
-      style: 'currency',
-      currency: 'ETB',
-    }).format(amount);
-  };
+  // Format currency - keeping for future use
+  // const formatCurrency = (amount: number) => {
+  //   return new Intl.NumberFormat('en-ET', {
+  //     style: 'currency',
+  //     currency: 'ETB',
+  //   }).format(amount);
+  // };
 
   return (
     <Box>
@@ -583,7 +708,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
         
         {/* Search Input */}
         <TextField
-          placeholder="Search by guest name, confirmation number, or room..."
+          placeholder="Search by guest name, confirmation number, room, payment reference, or payment status..."
           value={searchTerm}
           onChange={handleSearchChange}
           InputProps={searchInputProps}
@@ -625,10 +750,11 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
       {/* Bookings Table */}
       <Card 
         sx={{ 
-          borderRadius: 3,
-          boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-          border: '1px solid #e0e7ff',
-          overflow: 'hidden'
+          borderRadius: 4,
+          boxShadow: '0 10px 40px rgba(37, 99, 235, 0.12), 0 4px 16px rgba(37, 99, 235, 0.08)',
+          border: '2px solid #bfdbfe',
+          overflow: 'hidden',
+          background: 'linear-gradient(180deg, #ffffff 0%, #f8faff 100%)'
         }}
       >
         <TableContainer 
@@ -642,24 +768,26 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
             <TableHead>
               <TableRow 
                 sx={{
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 50%, #1e40af 100%)',
+                  boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)',
                   '& .MuiTableCell-head': {
                     color: '#ffffff',
-                    fontWeight: 600,
-                    fontSize: '0.95rem',
-                    letterSpacing: '0.5px',
+                    fontWeight: 700,
+                    fontSize: '1rem',
+                    letterSpacing: '1px',
                     textTransform: 'uppercase',
                     border: 'none',
-                    padding: '20px 16px',
+                    padding: '24px 16px',
                     position: 'relative',
+                    textShadow: '0 1px 2px rgba(0,0,0,0.2)',
                     '&::after': {
                       content: '""',
                       position: 'absolute',
                       bottom: 0,
                       left: 0,
                       right: 0,
-                      height: '2px',
-                      background: 'rgba(255,255,255,0.3)'
+                      height: '3px',
+                      background: 'linear-gradient(90deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.6) 100%)'
                     }
                   }
                 }}
@@ -669,6 +797,8 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                 <TableCell><strong>Room</strong></TableCell>
                 <TableCell><strong>Check-in</strong></TableCell>
                 <TableCell><strong>Check-out</strong></TableCell>
+                <TableCell><strong>Payment Ref</strong></TableCell>
+                <TableCell><strong>Payment Status</strong></TableCell>
                 <TableCell><strong>Status</strong></TableCell>
                 {showActions && <TableCell><strong>Actions</strong></TableCell>}
               </TableRow>
@@ -677,7 +807,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
               {loading ? (
                 <TableRow>
                   <TableCell 
-                    colSpan={showActions ? 7 : 6} 
+                    colSpan={showActions ? 9 : 8} 
                     align="center" 
                     sx={{ 
                       py: 4,
@@ -685,13 +815,13 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                       border: 'none'
                     }}
                   >
-                    <CircularProgress sx={{ color: '#667eea' }} />
+                    <CircularProgress sx={{ color: '#2563eb' }} />
                   </TableCell>
                 </TableRow>
               ) : bookings.length === 0 ? (
                 <TableRow>
                   <TableCell 
-                    colSpan={showActions ? 7 : 6} 
+                    colSpan={showActions ? 9 : 8} 
                     align="center" 
                     sx={{ 
                       py: 4,
@@ -709,18 +839,18 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                   <TableRow 
                     key={booking.reservationId}
                     sx={{
-                      backgroundColor: index % 2 === 0 ? '#ffffff' : '#f8fafc',
-                      transition: 'all 0.2s ease-in-out',
+                      backgroundColor: index % 2 === 0 ? '#ffffff' : '#f8faff',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                       '&:hover': {
-                        backgroundColor: '#e0e7ff',
-                        transform: 'translateY(-1px)',
-                        boxShadow: '0 2px 8px rgba(102, 126, 234, 0.15)'
+                        backgroundColor: '#dbeafe',
+                        transform: 'translateY(-2px)',
+                        boxShadow: '0 8px 25px rgba(37, 99, 235, 0.15), 0 3px 10px rgba(37, 99, 235, 0.08)'
                       },
                       '& .MuiTableCell-body': {
                         border: 'none',
-                        padding: '16px',
-                        fontSize: '0.9rem',
-                        borderBottom: '1px solid #e5e7eb'
+                        padding: '18px 16px',
+                        fontSize: '1rem',
+                        borderBottom: '1px solid #e1e7ef'
                       }
                     }}
                   >
@@ -729,12 +859,14 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                         variant="body2" 
                         sx={{ 
                           fontFamily: 'monospace',
-                          fontWeight: 600,
-                          color: '#667eea',
-                          backgroundColor: '#f0f4ff',
-                          padding: '4px 8px',
-                          borderRadius: '6px',
-                          display: 'inline-block'
+                          fontWeight: 700,
+                          color: '#1e40af',
+                          backgroundColor: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)',
+                          padding: '6px 12px',
+                          borderRadius: '8px',
+                          display: 'inline-block',
+                          border: '1px solid #93c5fd',
+                          boxShadow: '0 2px 4px rgba(37, 99, 235, 0.1)'
                         }}
                       >
                         {booking.confirmationNumber}
@@ -745,7 +877,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                         <Typography 
                           variant="body2" 
                           fontWeight="600"
-                          sx={{ color: '#1f2937', mb: 0.5 }}
+                          sx={{ color: '#1e40af', mb: 0.5 }}
                         >
                           {booking.guestName}
                         </Typography>
@@ -753,7 +885,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                           variant="caption" 
                           sx={{ 
                             color: '#6b7280',
-                            fontSize: '0.75rem'
+                            fontSize: '0.85rem'
                           }}
                         >
                           {booking.guestEmail}
@@ -761,26 +893,15 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                       </Box>
                     </TableCell>
                     <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Box 
-                          sx={{
-                            width: 8,
-                            height: 8,
-                            borderRadius: '50%',
-                            backgroundColor: '#10b981',
-                            flexShrink: 0
-                          }}
-                        />
-                        <Typography 
-                          variant="body2" 
-                          sx={{ 
-                            fontWeight: 500,
-                            color: '#374151'
-                          }}
-                        >
-                          {booking.roomNumber} - {booking.roomType}
-                        </Typography>
-                      </Box>
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          fontWeight: 500,
+                          color: '#374151'
+                        }}
+                      >
+                        {booking.roomNumber} - {booking.roomType}
+                      </Typography>
                     </TableCell>
                     <TableCell>
                       <Typography 
@@ -805,16 +926,112 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                       </Typography>
                     </TableCell>
                     <TableCell>
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          fontFamily: 'monospace',
+                          fontWeight: 400,
+                          color: booking.paymentReference ? '#374151' : '#9ca3af',
+                          fontSize: '0.95rem'
+                        }}
+                      >
+                        {booking.paymentReference || 'N/A'}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      {mode === 'hotel-admin' && editingPaymentStatus === booking.reservationId ? (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <FormControl size="small" sx={{ minWidth: 120 }}>
+                            <Select
+                              value={normalizePaymentStatus(booking.paymentStatus || 'PENDING')}
+                              onChange={(e) => {
+                                const newStatus = e.target.value;
+                                const currentStatus = normalizePaymentStatus(booking.paymentStatus || 'PENDING');
+                                if (newStatus !== currentStatus) {
+                                  handlePaymentStatusConfirm(
+                                    booking.reservationId, 
+                                    currentStatus, 
+                                    newStatus,
+                                    booking.guestName
+                                  );
+                                }
+                              }}
+                              disabled={updatingPaymentStatus}
+                              sx={{
+                                height: '32px',
+                                '& .MuiSelect-select': {
+                                  padding: '4px 8px',
+                                  fontSize: '0.85rem'
+                                }
+                              }}
+                            >
+                              <MenuItem value="PENDING">PENDING</MenuItem>
+                              <MenuItem value="PROCESSING">PROCESSING</MenuItem>
+                              <MenuItem value="COMPLETED">COMPLETED</MenuItem>
+                            </Select>
+                          </FormControl>
+                          <IconButton
+                            size="small"
+                            onClick={handlePaymentStatusCancel}
+                            disabled={updatingPaymentStatus}
+                            sx={{
+                              color: '#ef4444',
+                              '&:hover': {
+                                backgroundColor: '#fef2f2'
+                              }
+                            }}
+                          >
+                            <CancelIcon fontSize="small" />
+                          </IconButton>
+                        </Box>
+                      ) : (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Chip 
+                            label={normalizePaymentStatus(booking.paymentStatus || 'PENDING')} 
+                            color={getPaymentStatusColor(booking.paymentStatus || 'PENDING')} 
+                            size="small"
+                            sx={{
+                              fontWeight: 600,
+                              fontSize: '0.85rem',
+                              height: '28px',
+                              borderRadius: '14px'
+                            }}
+                          />
+                          {mode === 'hotel-admin' && (
+                            <IconButton
+                              size="small"
+                              onClick={() => handlePaymentStatusEdit(booking.reservationId)}
+                              sx={{
+                                color: '#6b7280',
+                                padding: '4px',
+                                '&:hover': {
+                                  color: '#2563eb',
+                                  backgroundColor: '#f3f4f6'
+                                }
+                              }}
+                            >
+                              <EditIcon fontSize="small" />
+                            </IconButton>
+                          )}
+                        </Box>
+                      )}
+                    </TableCell>
+                    <TableCell>
                       <Chip 
                         label={booking.status.replace('_', ' ')} 
                         color={getStatusColor(booking.status)} 
                         size="small"
                         sx={{
-                          fontWeight: 600,
-                          fontSize: '0.75rem',
-                          height: '28px',
-                          borderRadius: '14px',
-                          textTransform: 'capitalize'
+                          fontWeight: 700,
+                          fontSize: '0.9rem',
+                          height: '32px',
+                          borderRadius: '16px',
+                          textTransform: 'capitalize',
+                          boxShadow: '0 2px 8px rgba(37, 99, 235, 0.15)',
+                          border: '1px solid rgba(37, 99, 235, 0.2)',
+                          '& .MuiChip-label': {
+                            paddingX: '12px'
+                          }
                         }}
                       />
                     </TableCell>
@@ -826,13 +1043,16 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                               size="small"
                               onClick={() => handleViewBookingDetails(booking)}
                               sx={{
-                                backgroundColor: '#f0f4ff',
-                                color: '#667eea',
+                                backgroundColor: '#dbeafe',
+                                color: '#1e40af',
+                                border: '1px solid #93c5fd',
                                 '&:hover': {
-                                  backgroundColor: '#e0e7ff',
-                                  transform: 'scale(1.1)'
+                                  backgroundColor: '#2563eb',
+                                  color: '#ffffff',
+                                  transform: 'scale(1.15)',
+                                  boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)'
                                 },
-                                transition: 'all 0.2s ease'
+                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                               }}
                             >
                               <VisibilityIcon fontSize="small" />
@@ -944,7 +1164,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
               '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
                 color: '#6b7280',
                 fontWeight: 500,
-                fontSize: '0.875rem'
+                fontSize: '0.975rem'
               },
               '& .MuiTablePagination-select': {
                 backgroundColor: '#ffffff',
@@ -1062,6 +1282,67 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
             variant="contained"
           >
             Check Out
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Payment Status Update Confirmation Dialog */}
+      <Dialog
+        open={paymentStatusDialog.open}
+        onClose={() => setPaymentStatusDialog({ 
+          open: false, 
+          bookingId: null, 
+          currentStatus: '', 
+          newStatus: '', 
+          guestName: '' 
+        })}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          Confirm Payment Status Change
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body1" sx={{ mb: 2 }}>
+            Are you sure you want to change the payment status for <strong>{paymentStatusDialog.guestName}</strong>?
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Current Status: <Chip 
+              label={paymentStatusDialog.currentStatus} 
+              color={getPaymentStatusColor(paymentStatusDialog.currentStatus)} 
+              size="small" 
+              sx={{ mx: 1 }}
+            />
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            New Status: <Chip 
+              label={paymentStatusDialog.newStatus} 
+              color={getPaymentStatusColor(paymentStatusDialog.newStatus)} 
+              size="small" 
+              sx={{ mx: 1 }}
+            />
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button 
+            onClick={() => setPaymentStatusDialog({ 
+              open: false, 
+              bookingId: null, 
+              currentStatus: '', 
+              newStatus: '', 
+              guestName: '' 
+            })} 
+            color="inherit"
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={handlePaymentStatusDialogConfirm}
+            color="primary"
+            variant="contained"
+            disabled={updatingPaymentStatus}
+          >
+            {updatingPaymentStatus ? <CircularProgress size={20} /> : 'Update Status'}
           </Button>
         </DialogActions>
       </Dialog>

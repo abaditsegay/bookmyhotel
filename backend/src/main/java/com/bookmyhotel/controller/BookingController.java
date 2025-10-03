@@ -264,6 +264,19 @@ public class BookingController {
     }
 
     /**
+     * Find booking by payment reference (useful for payment verification)
+     */
+    @GetMapping("/search/payment-reference/{paymentReference}")
+    public ResponseEntity<BookingResponse> findByPaymentReference(@PathVariable String paymentReference) {
+        try {
+            BookingResponse booking = bookingService.findByPaymentReferencePublic(paymentReference);
+            return ResponseEntity.ok(booking);
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    /**
      * Cancel a booking (for authenticated customers)
      */
     @PutMapping("/{reservationId}/cancel")

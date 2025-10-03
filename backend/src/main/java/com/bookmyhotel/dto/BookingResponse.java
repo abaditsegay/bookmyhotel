@@ -17,6 +17,7 @@ public class BookingResponse {
     private BigDecimal totalAmount;
     private String paymentStatus;
     private String paymentIntentId;
+    private String paymentReference;
     private LocalDateTime createdAt;
 
     // Hotel and room details
@@ -111,6 +112,14 @@ public class BookingResponse {
 
     public void setPaymentIntentId(String paymentIntentId) {
         this.paymentIntentId = paymentIntentId;
+    }
+
+    public String getPaymentReference() {
+        return paymentReference;
+    }
+
+    public void setPaymentReference(String paymentReference) {
+        this.paymentReference = paymentReference;
     }
 
     public LocalDateTime getCreatedAt() {

@@ -10,6 +10,7 @@ export interface BookingSearchResponse {
   totalAmount: number;
   paymentStatus: string;
   paymentIntentId?: string;
+  paymentReference?: string;
   createdAt: string;
   hotelName: string;
   hotelAddress: string;

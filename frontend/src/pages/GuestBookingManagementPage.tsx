@@ -62,6 +62,7 @@ interface BookingData {
   createdAt: string;
   paymentStatus: string;
   paymentIntentId?: string;
+  paymentReference?: string;
 }
 
 const GuestBookingManagementPage: React.FC = () => {
@@ -340,6 +341,19 @@ const GuestBookingManagementPage: React.FC = () => {
       case 'checked in': return 'info';
       case 'checked out': return 'default';
       default: return 'default';
+    }
+  };
+
+  // Helper function to get payment status color
+  const getPaymentStatusColor = (status?: string): string => {
+    switch (status?.toUpperCase()) {
+      case 'COMPLETED':
+        return '#4caf50'; // Green
+      case 'PROCESSING':
+        return '#ff9800'; // Orange
+      case 'PENDING':
+      default:
+        return '#f44336'; // Red
     }
   };
 
@@ -712,6 +726,40 @@ const GuestBookingManagementPage: React.FC = () => {
                         <strong>Number of Guests:</strong> {booking.numberOfGuests || 1}
                       </Typography>
                     </Grid>
+                  </Grid>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            {/* Payment Information */}
+            <Grid item xs={12}>
+              <Card variant="outlined">
+                <CardContent>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <Typography variant="h6">Payment Information</Typography>
+                  </Box>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} sm={6}>
+                      <Typography variant="body1">
+                        <strong>Payment Status:</strong>{' '}
+                        <Typography 
+                          component="span" 
+                          sx={{ 
+                            color: getPaymentStatusColor(booking.paymentStatus),
+                            fontWeight: 'bold' 
+                          }}
+                        >
+                          {booking.paymentStatus || 'PENDING'}
+                        </Typography>
+                      </Typography>
+                    </Grid>
+                    {booking.paymentReference && (
+                      <Grid item xs={12} sm={6}>
+                        <Typography variant="body1">
+                          <strong>Payment Reference:</strong> {booking.paymentReference}
+                        </Typography>
+                      </Grid>
+                    )}
                   </Grid>
                 </CardContent>
               </Card>

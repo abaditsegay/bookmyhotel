@@ -12,6 +12,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -61,6 +63,8 @@ import jakarta.persistence.Query;
 @Service
 @Transactional
 public class HotelAdminService {
+
+    private static final Logger logger = LoggerFactory.getLogger(HotelAdminService.class);
 
     @Autowired
     private UserRepository userRepository;
@@ -915,10 +919,13 @@ public class HotelAdminService {
 
         Pageable pageable = PageRequest.of(page, size);
         List<Reservation> allReservations = reservationRepository.findByHotelId(hotelId);
+        
+        // logger.debug("🔍 HotelAdminService: Found {} total reservations for hotel {}", allReservations.size(), hotelId);
 
         // Apply search filter if provided
         List<Reservation> filteredReservations = allReservations;
         if (search != null && !search.trim().isEmpty()) {
+            // logger.debug("🔍 HotelAdminService: Applying search filter with term: '{}'", search.trim());
             String searchLower = search.toLowerCase();
             filteredReservations = allReservations.stream()
                     .filter(reservation -> {
@@ -947,13 +954,31 @@ public class HotelAdminService {
                                 ? reservation.getRoom().getRoomNumber()
                                 : "To be assigned";
 
+                        // Get payment reference for search
+                        String paymentReference = reservation.getPaymentReference() != null 
+                                ? reservation.getPaymentReference() 
+                                : "";
+
+                        // Get confirmation number for search
+                        String confirmationNumber = reservation.getConfirmationNumber() != null 
+                                ? reservation.getConfirmationNumber() 
+                                : "";
+
+                        // Get payment status for search
+                        String paymentStatus = reservation.getPaymentStatusString();
+
                         return firstName.toLowerCase().contains(searchLower) ||
                                 lastName.toLowerCase().contains(searchLower) ||
                                 email.toLowerCase().contains(searchLower) ||
                                 roomNumber.toLowerCase().contains(searchLower) ||
+                                paymentReference.toLowerCase().contains(searchLower) ||
+                                confirmationNumber.toLowerCase().contains(searchLower) ||
+                                paymentStatus.toLowerCase().contains(searchLower) ||
                                 reservation.getStatus().name().toLowerCase().contains(searchLower);
                     })
                     .collect(Collectors.toList());
+            
+            // logger.debug("🔍 HotelAdminService: Search filter applied, {} results found", filteredReservations.size());
         }
 
         // Sort by check-in date descending
@@ -1071,6 +1096,23 @@ public class HotelAdminService {
     }
 
     /**
+     * Update booking payment status
+     */
+    @Transactional
+    public BookingResponse updateBookingPaymentStatus(Long reservationId, String paymentStatus) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new RuntimeException("Reservation not found with id: " + reservationId));
+
+        // Update payment status using the setter method that handles validation
+        reservation.setPaymentStatusFromString(paymentStatus);
+        
+        // Save the updated reservation
+        reservation = reservationRepository.save(reservation);
+
+        return convertToBookingResponse(reservation);
+    }
+
+    /**
      * Modify booking (admin version)
      */
     @Transactional
@@ -1166,6 +1208,7 @@ public class HotelAdminService {
         response.setCheckOutDate(reservation.getCheckOutDate());
         response.setTotalAmount(reservation.getTotalAmount());
         response.setPaymentIntentId(reservation.getPaymentIntentId());
+        response.setPaymentReference(reservation.getPaymentReference());
         response.setCreatedAt(reservation.getCreatedAt());
 
         // Room details
@@ -1224,12 +1267,8 @@ public class HotelAdminService {
             response.setGuestEmail("N/A");
         }
 
-        // Payment status
-        if (reservation.getPaymentIntentId() != null) {
-            response.setPaymentStatus("PAID");
-        } else {
-            response.setPaymentStatus("PENDING");
-        }
+        // Payment status - use the actual payment status from the entity
+        response.setPaymentStatus(reservation.getPaymentStatusString());
 
         return response;
     }

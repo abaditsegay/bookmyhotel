@@ -193,13 +193,17 @@ export const hotelAdminApi = {
       
       if (search && search.trim()) {
         params.append('search', search.trim());
+        console.log('HotelAdminApi: Adding search parameter:', search.trim());
       }
 
       // Get tenant ID from token/user
       const user = TokenManager.getUser();
       const tenantId = user?.tenantId || '';
 
-      const response = await fetch(`${API_BASE_URL}/hotel-admin/bookings?${params.toString()}&_t=${Date.now()}`, {
+      const url = `${API_BASE_URL}/hotel-admin/bookings?${params.toString()}&_t=${Date.now()}`;
+      console.log('HotelAdminApi: Fetching bookings from URL:', url);
+
+      const response = await fetch(url, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -299,6 +303,37 @@ export const hotelAdminApi = {
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to update booking status' 
+      };
+    }
+  },
+
+  // Update booking payment status
+  updateBookingPaymentStatus: async (
+    token: string,
+    reservationId: number, 
+    paymentStatus: string
+  ): Promise<{ success: boolean; data?: BookingResponse; message?: string }> => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/hotel-admin/bookings/${reservationId}/payment-status?paymentStatus=${paymentStatus}`,
+        {
+          method: 'PUT',
+          headers: getAuthHeaders(),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update payment status');
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      console.error('Payment status update error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to update payment status' 
       };
     }
   },

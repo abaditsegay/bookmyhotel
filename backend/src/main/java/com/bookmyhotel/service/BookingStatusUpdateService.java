@@ -136,6 +136,7 @@ public class BookingStatusUpdateService {
         response.setCheckOutDate(reservation.getCheckOutDate());
         response.setTotalAmount(reservation.getTotalAmount());
         response.setPaymentIntentId(reservation.getPaymentIntentId());
+        response.setPaymentReference(reservation.getPaymentReference());
         response.setCreatedAt(reservation.getCreatedAt());
         response.setNumberOfGuests(reservation.getNumberOfGuests());
         response.setSpecialRequests(reservation.getSpecialRequests());
@@ -196,12 +197,8 @@ public class BookingStatusUpdateService {
             response.setGuestEmail("N/A");
         }
 
-        // Payment status
-        if (reservation.getPaymentIntentId() != null) {
-            response.setPaymentStatus("PAID");
-        } else {
-            response.setPaymentStatus("PENDING");
-        }
+        // Payment status - use the actual payment status from the entity
+        response.setPaymentStatus(reservation.getPaymentStatusString());
 
         return response;
     }

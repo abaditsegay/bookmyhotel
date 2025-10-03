@@ -39,7 +39,8 @@ public enum PaymentMethod {
             case "credit_card" -> CREDIT_CARD;
             case "mobile_money" -> MOBILE_MONEY;
             case "pay_at_frontdesk" -> PAY_AT_FRONTDESK;
-            default -> CASH; // Default to cash
+            case "mock_payment_processed" -> CARD; // Map mock payment to card
+            default -> CASH; // Default to cash for unknown values
         };
     }
 

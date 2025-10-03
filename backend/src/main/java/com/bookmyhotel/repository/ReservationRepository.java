@@ -83,6 +83,17 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
        Optional<Reservation> findByPaymentIntentId(String paymentIntentId);
 
        /**
+        * Find reservation by payment reference ID
+        */
+       Optional<Reservation> findByPaymentReference(String paymentReference);
+
+       /**
+        * Find reservation by payment reference ID (public search across all tenants)
+        */
+       @Query("SELECT r FROM Reservation r JOIN FETCH r.hotel WHERE r.paymentReference = ?1")
+       Optional<Reservation> findByPaymentReferencePublic(String paymentReference);
+
+       /**
         * Find upcoming check-ins
         */
        @Query("SELECT r FROM Reservation r " +
@@ -142,25 +153,29 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
                      @Param("statuses") Set<ReservationStatus> statuses);
 
        /**
-        * Search reservations by guest name, room number, or confirmation number with
+        * Search reservations by guest name, room number, confirmation number, or
+        * payment reference with
         * pagination (updated for new structure)
         */
        @Query("SELECT r FROM Reservation r " +
                      "WHERE LOWER(r.guestInfo.name) LIKE LOWER(CONCAT('%', :search, '%')) " +
                      "OR LOWER(COALESCE(r.assignedRoom.roomNumber, 'TBA')) LIKE LOWER(CONCAT('%', :search, '%')) " +
                      "OR LOWER(r.confirmationNumber) LIKE LOWER(CONCAT('%', :search, '%')) " +
+                     "OR LOWER(COALESCE(r.paymentReference, '')) LIKE LOWER(CONCAT('%', :search, '%')) " +
                      "ORDER BY r.checkInDate DESC")
        Page<Reservation> findByGuestNameOrRoomNumberOrConfirmationNumber(@Param("search") String search,
                      Pageable pageable);
 
        /**
-        * Search reservations by guest name, room number, or confirmation number with
+        * Search reservations by guest name, room number, confirmation number, or
+        * payment reference with
         * pagination and tenant filtering (updated for new structure)
         */
        @Query("SELECT r FROM Reservation r " +
                      "WHERE (LOWER(r.guestInfo.name) LIKE LOWER(CONCAT('%', :search, '%')) " +
                      "OR LOWER(COALESCE(r.assignedRoom.roomNumber, 'TBA')) LIKE LOWER(CONCAT('%', :search, '%')) " +
-                     "OR LOWER(r.confirmationNumber) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+                     "OR LOWER(r.confirmationNumber) LIKE LOWER(CONCAT('%', :search, '%')) " +
+                     "OR LOWER(COALESCE(r.paymentReference, '')) LIKE LOWER(CONCAT('%', :search, '%'))) " +
                      "AND r.hotel.id = :hotelId " +
                      "ORDER BY r.checkInDate DESC")
        Page<Reservation> findByGuestNameOrRoomNumberOrConfirmationNumberAndHotelId(@Param("search") String search,

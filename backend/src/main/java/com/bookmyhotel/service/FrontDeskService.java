@@ -152,7 +152,9 @@ public class FrontDeskService {
                                 lastName.toLowerCase().contains(searchLower) ||
                                 email.toLowerCase().contains(searchLower) ||
                                 roomNumber.contains(searchLower) ||
-                                reservation.getConfirmationNumber().toLowerCase().contains(searchLower);
+                                reservation.getConfirmationNumber().toLowerCase().contains(searchLower) ||
+                                (reservation.getPaymentReference() != null &&
+                                        reservation.getPaymentReference().toLowerCase().contains(searchLower));
                     })
                     .collect(Collectors.toList());
         }

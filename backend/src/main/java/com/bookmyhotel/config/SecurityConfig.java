@@ -71,12 +71,14 @@ public class SecurityConfig {
                                 "/api/bookings",
                                 "/api/bookings/room-type",
                                 "/api/bookings/search",
+                                "/api/bookings/search/**",
                                 "/api/bookings/cancel",
                                 "/api/bookings/modify",
                                 "/api/bookings/{id}/email",
                                 "/api/bookings/{id}/pdf",
                                 "/api/booking/guest/**",
                                 "/api/booking-management/**",
+                                "/api/front-desk/bookings/search/**",
                                 "/actuator/health",
                                 "/error")
                         .permitAll()
@@ -137,10 +139,5 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
-    }
-
-    @Bean
-    public UserDetailsService userDetailsService() {
-        return new com.bookmyhotel.service.CustomUserDetailsService();
     }
 }

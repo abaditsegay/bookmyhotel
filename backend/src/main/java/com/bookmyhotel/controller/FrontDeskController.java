@@ -37,6 +37,7 @@ import com.bookmyhotel.entity.RoomStatus;
 import com.bookmyhotel.exception.ResourceNotFoundException;
 import com.bookmyhotel.repository.ReservationRepository;
 import com.bookmyhotel.repository.RoomRepository;
+import com.bookmyhotel.service.BookingService;
 import com.bookmyhotel.service.CheckoutReceiptService;
 import com.bookmyhotel.service.FrontDeskService;
 
@@ -89,6 +90,19 @@ public class FrontDeskController {
     public ResponseEntity<BookingResponse> getBookingDetails(@PathVariable Long reservationId) {
         BookingResponse booking = frontDeskService.getBookingDetails(reservationId);
         return ResponseEntity.ok(booking);
+    }
+
+    /**
+     * Search booking by payment reference (useful for payment verification)
+     */
+    @GetMapping("/bookings/search/payment-reference/{paymentReference}")
+    public ResponseEntity<BookingResponse> searchByPaymentReference(@PathVariable String paymentReference) {
+        try {
+            BookingResponse booking = bookingService.findByPaymentReferencePublic(paymentReference);
+            return ResponseEntity.ok(booking);
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     /**

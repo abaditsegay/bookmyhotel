@@ -115,7 +115,10 @@ class MockPaymentGateway {
 
     // Generate mock transaction ID
     const transactionId = this.generateTransactionId();
-    const paymentReference = this.generatePaymentReference(request.paymentMethod);
+    const paymentReference = this.generatePaymentReference(
+      request.paymentMethod, 
+      request.paymentDetails.transferReference
+    );
 
     // Return success if validation passes, otherwise return failure
     if (isValid) {
@@ -202,11 +205,20 @@ class MockPaymentGateway {
     return `TXN_${timestamp}_${random}`;
   }
 
-  private generatePaymentReference(paymentMethod: PaymentMethod): string {
+  private generatePaymentReference(paymentMethod: PaymentMethod, userReference?: string): string {
+    // Use user-provided reference for mobile money payments if available
+    if ((paymentMethod === PaymentMethod.MOBILE_MONEY || paymentMethod === PaymentMethod.MOBILE) && userReference) {
+      console.log('✅ Using user-provided payment reference:', userReference);
+      return userReference;
+    }
+    
+    // Otherwise generate a reference
     const timestamp = Date.now();
     const methodCode = this.getMethodCode(paymentMethod);
     const random = Math.floor(Math.random() * 1000);
-    return `${methodCode}_${timestamp}_${random}`;
+    const generatedRef = `${methodCode}_${timestamp}_${random}`;
+    console.log('🔄 Generated payment reference:', generatedRef);
+    return generatedRef;
   }
 
   private getMethodCode(paymentMethod: PaymentMethod): string {

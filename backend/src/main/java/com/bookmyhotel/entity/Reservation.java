@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -19,6 +20,8 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+
+import com.bookmyhotel.entity.converter.PaymentMethodConverter;
 import jakarta.validation.constraints.Positive;
 
 /**
@@ -60,11 +63,19 @@ public class Reservation extends HotelScopedEntity {
     @Column(name = "special_requests", length = 500)
     private String specialRequests;
 
-    @Column(name = "payment_intent_id", length = 100)
+    @Column(name = "payment_intent_id")
     private String paymentIntentId;
 
-    @Column(name = "payment_method", length = 100)
-    private String paymentMethod;
+    @Column(name = "payment_reference")
+    private String paymentReference;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_status", length = 20)
+    private PaymentStatus paymentStatus = PaymentStatus.PENDING;
+
+    @Convert(converter = PaymentMethodConverter.class)
+    @Column(name = "payment_method")
+    private PaymentMethod paymentMethod;
 
     @Column(name = "confirmation_number", length = 20, unique = true)
     private String confirmationNumber;
@@ -198,11 +209,39 @@ public class Reservation extends HotelScopedEntity {
     }
 
     public String getPaymentMethod() {
-        return paymentMethod;
+        return paymentMethod != null ? paymentMethod.name() : null;
     }
 
     public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = PaymentMethod.fromString(paymentMethod);
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
+    }
+
+    public String getPaymentReference() {
+        return paymentReference;
+    }
+
+    public void setPaymentReference(String paymentReference) {
+        this.paymentReference = paymentReference;
+    }
+
+    public PaymentStatus getPaymentStatus() {
+        return paymentStatus;
+    }
+
+    public void setPaymentStatus(PaymentStatus paymentStatus) {
+        this.paymentStatus = paymentStatus;
+    }
+
+    public String getPaymentStatusString() {
+        return paymentStatus != null ? paymentStatus.name() : PaymentStatus.PENDING.name();
+    }
+
+    public void setPaymentStatusFromString(String paymentStatus) {
+        this.paymentStatus = PaymentStatus.fromString(paymentStatus);
     }
 
     public RoomType getRoomType() {

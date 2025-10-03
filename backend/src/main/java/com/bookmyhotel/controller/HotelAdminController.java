@@ -306,6 +306,22 @@ public class HotelAdminController {
     }
 
     /**
+     * Update booking payment status
+     */
+    @PutMapping("/bookings/{reservationId}/payment-status")
+    public ResponseEntity<BookingResponse> updateBookingPaymentStatus(
+            @PathVariable Long reservationId,
+            @RequestParam String paymentStatus,
+            Authentication auth) {
+
+        // Verify the reservation belongs to the hotel admin's hotel
+        HotelDTO hotel = hotelAdminService.getMyHotel(auth.getName());
+
+        BookingResponse updated = hotelAdminService.updateBookingPaymentStatus(reservationId, paymentStatus);
+        return ResponseEntity.ok(updated);
+    }
+
+    /**
      * Modify booking details (admin version)
      */
     @PutMapping("/bookings/{reservationId}")

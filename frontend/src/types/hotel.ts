@@ -92,6 +92,7 @@ export interface BookingResponse {
   totalAmount: number;
   paymentStatus: string;
   paymentIntentId?: string;
+  paymentReference?: string;
   createdAt: string;
   hotelName: string;
   hotelAddress: string;

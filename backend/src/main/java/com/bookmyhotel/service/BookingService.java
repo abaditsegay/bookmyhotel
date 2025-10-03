@@ -825,6 +825,11 @@ public class BookingService {
         }
         reservation.setPaymentMethod(paymentMethodId); // Store the payment method
 
+        // Set payment reference if provided
+        if (request.getPaymentReference() != null) {
+            reservation.setPaymentReference(request.getPaymentReference());
+        }
+
         return reservation;
     }
 
@@ -899,6 +904,11 @@ public class BookingService {
             paymentMethodId = paymentMethodId.substring(0, 50);
         }
         reservation.setPaymentMethod(paymentMethodId);
+
+        // Set payment reference if provided
+        if (request.getPaymentReference() != null) {
+            reservation.setPaymentReference(request.getPaymentReference());
+        }
 
         return reservation;
     }
@@ -1024,6 +1034,7 @@ public class BookingService {
         response.setCheckOutDate(reservation.getCheckOutDate());
         response.setTotalAmount(reservation.getTotalAmount());
         response.setPaymentIntentId(reservation.getPaymentIntentId());
+        response.setPaymentReference(reservation.getPaymentReference());
         response.setCreatedAt(reservation.getCreatedAt());
 
         Room room = reservation.getRoom();
@@ -1087,14 +1098,8 @@ public class BookingService {
         // Special requests
         response.setSpecialRequests(reservation.getSpecialRequests());
 
-        // Payment status - now using the stored payment method for better accuracy
-        if (reservation.getPaymentIntentId() != null) {
-            response.setPaymentStatus("PAID");
-        } else if ("pay_at_frontdesk".equals(reservation.getPaymentMethod())) {
-            response.setPaymentStatus("PAY_AT_FRONTDESK");
-        } else {
-            response.setPaymentStatus("PENDING");
-        }
+        // Payment status - use the actual payment status from the entity
+        response.setPaymentStatus(reservation.getPaymentStatusString());
 
         return response;
     }
@@ -1251,6 +1256,17 @@ public class BookingService {
             throw new ResourceNotFoundException(
                     "The email address does not match the booking with confirmation number: " + confirmationNumber);
         }
+
+        return convertToBookingResponse(reservation);
+    }
+
+    /**
+     * Find booking by payment reference (public search across all tenants)
+     */
+    public BookingResponse findByPaymentReferencePublic(String paymentReference) {
+        Reservation reservation = reservationRepository.findByPaymentReferencePublic(paymentReference)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Booking not found with payment reference: " + paymentReference));
 
         return convertToBookingResponse(reservation);
     }
