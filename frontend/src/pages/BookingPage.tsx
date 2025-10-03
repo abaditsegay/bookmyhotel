@@ -81,18 +81,20 @@ const BookingPage: React.FC = () => {
   const [guestPhone, setGuestPhone] = useState(user?.phone || '');
   const [specialRequests, setSpecialRequests] = useState('');
   
-  // Payment state with mock test data pre-filled
+  // Payment state
   const mockPayment = useMockPayment();
-  const [paymentMethod, setPaymentMethod] = useState<'credit_card' | 'mobile_money' | 'pay_at_frontdesk' | 'mbirr' | 'telebirr'>('credit_card');
-  const [creditCardNumber, setCreditCardNumber] = useState('4111 1111 1111 1111');
-  const [expiryDate, setExpiryDate] = useState('12/27');
-  const [cvv, setCvv] = useState('123');
-  const [cardholderName, setCardholderName] = useState('John Doe');
-  const [mobileNumber, setMobileNumber] = useState('+251911123456');
-  const [transferReceiptNumber, setTransferReceiptNumber] = useState('TXN123456789');
+  const [paymentMethod, setPaymentMethod] = useState<'credit_card' | 'mobile_money' | 'pay_at_frontdesk' | 'mbirr' | 'telebirr'>('mobile_money');
+  const [creditCardNumber, setCreditCardNumber] = useState('');
+  const [expiryDate, setExpiryDate] = useState('');
+  const [cvv, setCvv] = useState('');
+  const [cardholderName, setCardholderName] = useState('');
+  const [mobileNumber, setMobileNumber] = useState('');
   
   // Ethiopian payment state
   const [ethiopianPhoneNumber, setEthiopianPhoneNumber] = useState('');
+  
+  // Mobile transfer reference number
+  const [mobileTransferReference, setMobileTransferReference] = useState('');
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -122,8 +124,8 @@ const BookingPage: React.FC = () => {
     setMobileNumber(e.target.value);
   }, []);
 
-  const handleTransferReceiptNumberChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setTransferReceiptNumber(e.target.value);
+  const handleMobileTransferReferenceChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setMobileTransferReference(e.target.value);
   }, []);
 
   const handleGuestsChange = React.useCallback((newValue: number) => {
@@ -134,20 +136,14 @@ const BookingPage: React.FC = () => {
     const newMethod = e.target.value as 'credit_card' | 'mobile_money' | 'pay_at_frontdesk' | 'mbirr' | 'telebirr';
     setPaymentMethod(newMethod);
     
-    // Pre-fill with test data for the selected payment method
-    if (newMethod === 'credit_card') {
-      setCreditCardNumber('4111 1111 1111 1111');
-      setExpiryDate('12/27');
-      setCvv('123');
-      setCardholderName('John Doe');
-    } else if (newMethod === 'mobile_money') {
-      setMobileNumber('+251911123456');
-      setTransferReceiptNumber('TXN123456789');
-    } else if (newMethod === 'mbirr') {
-      setEthiopianPhoneNumber('0911123456');
-    } else if (newMethod === 'telebirr') {
-      setEthiopianPhoneNumber('0987654321');
-    }
+    // Clear payment fields when switching methods
+    setCreditCardNumber('');
+    setExpiryDate('');
+    setCvv('');
+    setCardholderName('');
+    setMobileNumber('');
+    setEthiopianPhoneNumber('');
+    setMobileTransferReference('');
   }, []);
 
   // Update guest information when user data loads
@@ -249,8 +245,12 @@ const BookingPage: React.FC = () => {
     }
 
     if (paymentMethod === 'mobile_money') {
-      if (!mobileNumber || !transferReceiptNumber) {
-        setError('Please provide mobile number and transfer receipt number');
+      if (!mobileNumber) {
+        setError('Please provide mobile number');
+        return;
+      }
+      if (!mobileTransferReference) {
+        setError('Please provide mobile transfer reference number');
         return;
       }
       // Basic mobile number validation
@@ -299,6 +299,7 @@ const BookingPage: React.FC = () => {
             cvv: cvv,
             cardHolderName: cardholderName,
             phoneNumber: mobileNumber || ethiopianPhoneNumber,
+            transferReference: mobileTransferReference,
             provider: paymentMethod === 'mbirr' ? 'M-Birr' : 
                      paymentMethod === 'telebirr' ? 'TeleBirr' : 'Mobile Money',
             description: `Hotel booking for ${nights} nights`,
@@ -967,13 +968,15 @@ const BookingPage: React.FC = () => {
                         >
                           <FormControlLabel
                             value="credit_card"
-                            control={<Radio size="small" />}
+                            control={<Radio size="small" disabled />}
                             label={
                               <Box 
                                 sx={{ 
                                   display: 'flex', 
                                   alignItems: 'center',
                                   py: 0.5,
+                                  opacity: 0.4,
+                                  color: 'text.disabled',
                                 }}
                               >
                                 <CreditCardIcon sx={{ mr: 1, fontSize: 20 }} />
@@ -981,6 +984,7 @@ const BookingPage: React.FC = () => {
                               </Box>
                             }
                             sx={{ mr: isMobile ? 0 : 2 }}
+                            disabled
                           />
                           <FormControlLabel
                             value="mobile_money"
@@ -989,12 +993,26 @@ const BookingPage: React.FC = () => {
                               <Box 
                                 sx={{ 
                                   display: 'flex', 
-                                  alignItems: 'center',
+                                  flexDirection: 'column',
                                   py: 0.5,
                                 }}
                               >
-                                <PhoneIcon sx={{ mr: 1, fontSize: 20 }} />
-                                Mobile Money
+                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                  <PhoneIcon sx={{ mr: 1, fontSize: 20 }} />
+                                  Mobile Money
+                                </Box>
+                                <Typography 
+                                  variant="caption" 
+                                  sx={{ 
+                                    color: COLORS.PRIMARY, 
+                                    fontWeight: 600,
+                                    fontSize: '0.75rem',
+                                    mt: 0.3,
+                                    ml: 3,
+                                  }}
+                                >
+                                  Pay with your Mobile
+                                </Typography>
                               </Box>
                             }
                             sx={{ mr: isMobile ? 0 : 2 }}
@@ -1018,13 +1036,15 @@ const BookingPage: React.FC = () => {
                           />
                           <FormControlLabel
                             value="mbirr"
-                            control={<Radio size="small" />}
+                            control={<Radio size="small" disabled />}
                             label={
                               <Box 
                                 sx={{ 
                                   display: 'flex', 
                                   alignItems: 'center',
                                   py: 0.5,
+                                  opacity: 0.4,
+                                  color: 'text.disabled',
                                 }}
                               >
                                 <PhoneIcon sx={{ mr: 1, fontSize: 20 }} />
@@ -1032,22 +1052,26 @@ const BookingPage: React.FC = () => {
                               </Box>
                             }
                             sx={{ mr: isMobile ? 0 : 2 }}
+                            disabled
                           />
                           <FormControlLabel
                             value="telebirr"
-                            control={<Radio size="small" />}
+                            control={<Radio size="small" disabled />}
                             label={
                               <Box 
                                 sx={{ 
                                   display: 'flex', 
                                   alignItems: 'center',
                                   py: 0.5,
+                                  opacity: 0.4,
+                                  color: 'text.disabled',
                                 }}
                               >
                                 <PhoneIcon sx={{ mr: 1, fontSize: 20 }} />
                                 🇪🇹 Telebirr
                               </Box>
                             }
+                            disabled
                           />
                         </RadioGroup>
                       </FormControl>
@@ -1170,36 +1194,77 @@ const BookingPage: React.FC = () => {
                         borderRadius: 1,
                         border: `1px solid ${alpha(COLORS.PRIMARY, 0.1)}`,
                       }}>
-                        <Box sx={{ textAlign: 'center', mb: 1.5 }}>
+                        <Box sx={{ textAlign: 'center', mb: 2 }}>
                           <PhoneIcon sx={{ 
-                            fontSize: 32, 
+                            fontSize: 40, 
                             color: COLORS.PRIMARY,
-                            mb: 0.5 
+                            mb: 1 
                           }} />
-                          <Typography variant="body1" sx={{ 
-                            color: theme.palette.text.primary,
-                            fontWeight: 600,
+                          <Typography variant="h6" sx={{ 
+                            color: COLORS.PRIMARY,
+                            fontWeight: 700,
+                            mb: 0.5,
                           }}>
                             Mobile Money Transfer - ETB {totalAmount?.toFixed(0)}
                           </Typography>
+                          <Typography variant="body1" sx={{ 
+                            color: COLORS.PRIMARY,
+                            fontWeight: 600,
+                            fontSize: '1.1rem',
+                          }}>
+                            Pay with your Mobile
+                          </Typography>
                         </Box>
                         
-                        <Alert severity="info" sx={{ mb: 1.5, py: 0.5 }}>
-                          <Typography variant="caption">
-                            Complete mobile money transfer and provide details below.
+                        <Alert severity="info" sx={{ mb: 2, py: 1 }}>
+                          <Typography variant="body2">
+                            Complete mobile money transfer using your preferred mobile payment app.
                           </Typography>
                         </Alert>
                         
+                        {/* Hotel Mobile Number Display */}
+                        <Box sx={{ 
+                          mb: 2, 
+                          p: 2, 
+                          backgroundColor: alpha(theme.palette.grey[100], 0.7),
+                          borderRadius: 1,
+                          border: `1px solid ${alpha(theme.palette.grey[400], 0.3)}`,
+                        }}>
+                          <Typography variant="body2" sx={{ 
+                            fontWeight: 600, 
+                            mb: 1,
+                            color: theme.palette.text.secondary,
+                            textTransform: 'uppercase',
+                            letterSpacing: 0.5,
+                          }}>
+                            Transfer To (Mobile Money Only)
+                          </Typography>
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            <PhoneIcon sx={{ 
+                              mr: 1, 
+                              color: theme.palette.text.disabled,
+                              fontSize: '1.2rem' 
+                            }} />
+                            <Typography variant="h6" sx={{ 
+                              color: theme.palette.text.disabled,
+                              fontFamily: 'monospace',
+                              letterSpacing: 1,
+                            }}>
+                              +251 911 123 456
+                            </Typography>
+                          </Box>
+                        </Box>
+                        
                         <Grid container spacing={isMobile ? 1.5 : 2}>
-                          <Grid item xs={12} sm={6}>
+                          <Grid item xs={12}>
                             <TextField
-                              label="Mobile Number"
+                              label="Your Mobile Number"
                               value={mobileNumber}
                               onChange={handleMobileNumberChange}
                               fullWidth
                               required
-                              size="small"
-                              placeholder="+1234567890"
+                              size="medium"
+                              placeholder="+251912345678"
                               InputProps={{
                                 startAdornment: (
                                   <InputAdornment position="start">
@@ -1209,21 +1274,22 @@ const BookingPage: React.FC = () => {
                               }}
                             />
                           </Grid>
-                          <Grid item xs={12} sm={6}>
+                          <Grid item xs={12}>
                             <TextField
-                              label="Transfer Receipt Number"
-                              value={transferReceiptNumber}
-                              onChange={handleTransferReceiptNumberChange}
+                              label="Mobile Transfer Reference Number"
+                              value={mobileTransferReference}
+                              onChange={handleMobileTransferReferenceChange}
                               fullWidth
                               required
-                              size="small"
-                              placeholder="Receipt/Transaction ID"
+                              size="medium"
+                              placeholder="Enter reference number from your mobile transfer"
+                              helperText="Provide the reference number you received after completing the mobile money transfer"
                             />
                           </Grid>
                           <Grid item xs={12}>
-                            <Alert severity="warning" sx={{ py: 0.5 }}>
-                              <Typography variant="caption">
-                                Transfer exact amount to our mobile money account and enter details above.
+                            <Alert severity="success" sx={{ py: 1 }}>
+                              <Typography variant="body2">
+                                Transfer exact amount: <strong>ETB {totalAmount?.toFixed(0)}</strong> to the mobile number above, then enter your transfer reference number.
                               </Typography>
                             </Alert>
                           </Grid>

@@ -19,6 +19,7 @@ export interface MockPaymentRequest {
     // Mobile money details
     phoneNumber?: string;
     provider?: string;
+    transferReference?: string;
     
     // Bank transfer details
     accountNumber?: string;
