@@ -37,6 +37,7 @@ import com.bookmyhotel.dto.payment.PaymentInitiationRequest;
 import com.bookmyhotel.entity.GuestInfo;
 import com.bookmyhotel.entity.Hotel;
 import com.bookmyhotel.entity.HotelPricingConfig;
+import com.bookmyhotel.entity.PaymentStatus;
 import com.bookmyhotel.entity.Reservation;
 import com.bookmyhotel.entity.ReservationStatus;
 import com.bookmyhotel.entity.Room;
@@ -777,6 +778,14 @@ public class BookingService {
         }
         reservation.setPaymentMethod(paymentMethodId); // Store the payment method
 
+        // Set payment reference and status if provided
+        if (request.getPaymentReference() != null && !request.getPaymentReference().trim().isEmpty()) {
+            reservation.setPaymentReference(request.getPaymentReference());
+            reservation.setPaymentStatus(PaymentStatus.PROCESSING);
+        } else {
+            reservation.setPaymentStatus(PaymentStatus.PENDING);
+        }
+
         return reservation;
     }
 
@@ -825,9 +834,12 @@ public class BookingService {
         }
         reservation.setPaymentMethod(paymentMethodId); // Store the payment method
 
-        // Set payment reference if provided
-        if (request.getPaymentReference() != null) {
+        // Set payment reference and status if provided
+        if (request.getPaymentReference() != null && !request.getPaymentReference().trim().isEmpty()) {
             reservation.setPaymentReference(request.getPaymentReference());
+            reservation.setPaymentStatus(PaymentStatus.PROCESSING);
+        } else {
+            reservation.setPaymentStatus(PaymentStatus.PENDING);
         }
 
         return reservation;
@@ -905,9 +917,12 @@ public class BookingService {
         }
         reservation.setPaymentMethod(paymentMethodId);
 
-        // Set payment reference if provided
-        if (request.getPaymentReference() != null) {
+        // Set payment reference and status if provided
+        if (request.getPaymentReference() != null && !request.getPaymentReference().trim().isEmpty()) {
             reservation.setPaymentReference(request.getPaymentReference());
+            reservation.setPaymentStatus(PaymentStatus.PROCESSING);
+        } else {
+            reservation.setPaymentStatus(PaymentStatus.PENDING);
         }
 
         return reservation;
@@ -957,6 +972,14 @@ public class BookingService {
         }
         reservation.setPaymentMethod(paymentMethodId); // Store the payment method
 
+        // Set payment reference and status if provided
+        if (request.getPaymentReference() != null && !request.getPaymentReference().trim().isEmpty()) {
+            reservation.setPaymentReference(request.getPaymentReference());
+            reservation.setPaymentStatus(PaymentStatus.PROCESSING);
+        } else {
+            reservation.setPaymentStatus(PaymentStatus.PENDING);
+        }
+
         return reservation;
     }
 
@@ -996,6 +1019,14 @@ public class BookingService {
             paymentMethodId = paymentMethodId.substring(0, 50);
         }
         reservation.setPaymentMethod(paymentMethodId); // Store the payment method
+
+        // Set payment reference and status if provided
+        if (request.getPaymentReference() != null && !request.getPaymentReference().trim().isEmpty()) {
+            reservation.setPaymentReference(request.getPaymentReference());
+            reservation.setPaymentStatus(PaymentStatus.PROCESSING);
+        } else {
+            reservation.setPaymentStatus(PaymentStatus.PENDING);
+        }
 
         return reservation;
     }
