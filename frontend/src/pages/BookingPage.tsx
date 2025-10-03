@@ -98,6 +98,7 @@ const BookingPage: React.FC = () => {
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [hotelData, setHotelData] = useState<any>(null);
 
   // Memoized change handlers to prevent input focus loss
   const handleGuestNameChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -153,6 +154,26 @@ const BookingPage: React.FC = () => {
       setGuestEmail(user.email || '');
     }
   }, [user]);
+
+  // Fetch hotel data for mobile payment phone numbers
+  useEffect(() => {
+    const fetchHotelData = async () => {
+      if (bookingData?.hotelId) {
+        try {
+          // Use public hotel API to get hotel details
+          const response = await fetch(`/api/public/hotels/${bookingData.hotelId}`);
+          if (response.ok) {
+            const hotel = await response.json();
+            setHotelData(hotel);
+          }
+        } catch (error) {
+          console.error('Error fetching hotel data:', error);
+        }
+      }
+    };
+    
+    fetchHotelData();
+  }, [bookingData?.hotelId]);
 
   // Redirect if no booking data
   useEffect(() => {
@@ -1250,9 +1271,25 @@ const BookingPage: React.FC = () => {
                               fontFamily: 'monospace',
                               letterSpacing: 1,
                             }}>
-                              +251 911 123 456
+                              {hotelData?.mobilePaymentPhone || '+251-911-123-456'}
                             </Typography>
                           </Box>
+                          {hotelData?.mobilePaymentPhone2 && (
+                            <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
+                              <PhoneIcon sx={{ 
+                                mr: 1, 
+                                color: theme.palette.text.disabled,
+                                fontSize: '1.2rem' 
+                              }} />
+                              <Typography variant="body2" sx={{ 
+                                color: theme.palette.text.disabled,
+                                fontFamily: 'monospace',
+                                letterSpacing: 1,
+                              }}>
+                                {hotelData.mobilePaymentPhone2} (Alternative)
+                              </Typography>
+                            </Box>
+                          )}
                         </Box>
                         
                         <Grid container spacing={isMobile ? 1.5 : 2}>

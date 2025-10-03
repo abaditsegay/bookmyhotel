@@ -78,6 +78,8 @@ public class HotelRegistrationService {
         registration.setCity(request.getCity());
         registration.setCountry(request.getCountry());
         registration.setPhone(request.getPhone());
+        registration.setMobilePaymentPhone(request.getMobilePaymentPhone());
+        registration.setMobilePaymentPhone2(request.getMobilePaymentPhone2());
         registration.setContactEmail(request.getContactEmail());
         registration.setContactPerson(request.getContactPerson());
         registration.setLicenseNumber(request.getLicenseNumber());
@@ -267,7 +269,17 @@ public class HotelRegistrationService {
             hotel.setCity(registration.getCity());
             hotel.setCountry(registration.getCountry());
             hotel.setPhone(registration.getPhone());
+            hotel.setMobilePaymentPhone(registration.getMobilePaymentPhone());
+            hotel.setMobilePaymentPhone2(registration.getMobilePaymentPhone2());
             hotel.setEmail(registration.getContactEmail());
+            hotel.setContactPerson(registration.getContactPerson());
+            hotel.setLicenseNumber(registration.getLicenseNumber());
+            hotel.setTaxId(registration.getTaxId());
+            hotel.setWebsiteUrl(registration.getWebsiteUrl());
+            hotel.setFacilityAmenities(registration.getFacilityAmenities());
+            hotel.setNumberOfRooms(registration.getNumberOfRooms());
+            hotel.setCheckInTime(registration.getCheckInTime());
+            hotel.setCheckOutTime(registration.getCheckOutTime());
             hotel.setTenant(tenant); // Set the tenant
 
             return hotelRepository.save(hotel);

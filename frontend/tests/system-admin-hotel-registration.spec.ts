@@ -422,7 +422,7 @@ test.describe('System Admin - Hotel Registration', () => {
     await page.fill('[data-testid="email-input"]', 'admin@bookmyhotel.com');
     
     await hotelPage.highlightElement('[data-testid="password-input"]', '#ff6600', 600);
-    await page.fill('[data-testid="password-input"]', 'password123');
+    await page.fill('[data-testid="password-input"]', 'admin123');
     
     // Highlight and click login
     await hotelPage.highlightElement('[data-testid="login-button"]', '#ff6600', 800);
@@ -435,7 +435,7 @@ test.describe('System Admin - Hotel Registration', () => {
     await page.waitForLoadState('networkidle');
     
     // Verify we're logged in as system admin
-    await expect(page.locator('[data-testid="user-role"]')).toContainText(/SYSTEM_ADMIN|System Administrator/i);
+    await expect(page.locator('[data-testid="user-role"]')).toContainText('System Admin');
     
     // Navigate to hotel management
     await page.waitForSelector('[data-testid="stats-card-manage-hotels"]', { state: 'visible' });

@@ -6,10 +6,10 @@
 // Environment variables with fallbacks for local development
 export const API_CONFIG = {
   // Main API base URL - used for all backend API calls
-  BASE_URL: process.env.REACT_APP_API_URL || 'http://localhost:8080/api',
+  BASE_URL: process.env.REACT_APP_API_URL || 'http://localhost:8080/managemyhotel/api',
   
   // Backend server URL (without /api suffix) - for direct server calls if needed
-  SERVER_URL: process.env.REACT_APP_SERVER_URL || 'http://localhost:8080',
+  SERVER_URL: process.env.REACT_APP_SERVER_URL || 'http://localhost:8080/managemyhotel',
   
   // Timeout for API calls (in milliseconds)
   REQUEST_TIMEOUT: 30000,

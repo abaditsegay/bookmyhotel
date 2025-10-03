@@ -57,6 +57,14 @@ public class HotelRegistration {
     @Column(name = "phone", length = 20)
     private String phone;
 
+    @Size(max = 20, message = "Mobile payment phone must not exceed 20 characters")
+    @Column(name = "mobile_payment_phone", length = 20)
+    private String mobilePaymentPhone;
+
+    @Size(max = 20, message = "Mobile payment phone 2 must not exceed 20 characters")
+    @Column(name = "mobile_payment_phone2", length = 20)
+    private String mobilePaymentPhone2;
+
     @NotBlank(message = "Contact email is required")
     @Email(message = "Contact email should be valid")
     @Size(max = 100, message = "Contact email must not exceed 100 characters")
@@ -178,6 +186,22 @@ public class HotelRegistration {
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    public String getMobilePaymentPhone() {
+        return mobilePaymentPhone;
+    }
+
+    public void setMobilePaymentPhone(String mobilePaymentPhone) {
+        this.mobilePaymentPhone = mobilePaymentPhone;
+    }
+
+    public String getMobilePaymentPhone2() {
+        return mobilePaymentPhone2;
+    }
+
+    public void setMobilePaymentPhone2(String mobilePaymentPhone2) {
+        this.mobilePaymentPhone2 = mobilePaymentPhone2;
     }
 
     public String getContactEmail() {

@@ -9,7 +9,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -33,8 +32,7 @@ import jakarta.validation.Valid;
  */
 @RestController
 @RequestMapping("/api/admin/hotel-registrations")
-// Temporarily commenting out authorization for debugging
-// @PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasRole('ADMIN') or hasRole('SYSTEM_ADMIN')")
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class HotelRegistrationAdminController {
 

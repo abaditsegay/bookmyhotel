@@ -188,9 +188,9 @@ const AdminDashboard: React.FC = () => {
   // Search handlers
   // Filter and paginate hotels
   const filteredHotels = hotels.filter(hotel => {
-    const matchesSearch = hotel.name.toLowerCase().includes(hotelSearchTerm.toLowerCase()) ||
-                         hotel.address.toLowerCase().includes(hotelSearchTerm.toLowerCase()) ||
-                         hotel.city.toLowerCase().includes(hotelSearchTerm.toLowerCase());
+    const matchesSearch = (hotel.name?.toLowerCase().includes(hotelSearchTerm.toLowerCase()) || false) ||
+                         (hotel.address?.toLowerCase().includes(hotelSearchTerm.toLowerCase()) || false) ||
+                         (hotel.city?.toLowerCase().includes(hotelSearchTerm.toLowerCase()) || false);
     // Note: HotelDTO doesn't have status field, so we'll show all hotels for now
     return matchesSearch;
   });

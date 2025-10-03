@@ -77,7 +77,7 @@ class HotelApprovalPage {
     await this.page.fill('[data-testid="email-input"]', 'admin@bookmyhotel.com');
     
     await this.highlightElement(this.page.locator('[data-testid="password-input"]'), 'Password field', 1500);
-    await this.page.fill('[data-testid="password-input"]', 'password123');
+    await this.page.fill('[data-testid="password-input"]', 'admin123');
     
     await this.highlightElement(this.page.locator('[data-testid="login-button"]'), 'Login button', 1500);
     await this.page.click('[data-testid="login-button"]');

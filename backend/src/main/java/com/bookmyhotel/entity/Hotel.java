@@ -71,6 +71,44 @@ public class Hotel extends BaseEntity {
     @Column(name = "email", length = 100)
     private String email;
 
+    @Size(max = 255, message = "Contact person must not exceed 255 characters")
+    @Column(name = "contact_person", length = 255)
+    private String contactPerson;
+
+    @Size(max = 20, message = "Mobile payment phone must not exceed 20 characters")
+    @Column(name = "mobile_payment_phone", length = 20)
+    private String mobilePaymentPhone;
+
+    @Size(max = 20, message = "Mobile payment phone 2 must not exceed 20 characters")
+    @Column(name = "mobile_payment_phone2", length = 20)
+    private String mobilePaymentPhone2;
+
+    @Size(max = 100, message = "License number must not exceed 100 characters")
+    @Column(name = "license_number", length = 100)
+    private String licenseNumber;
+
+    @Size(max = 100, message = "Tax ID must not exceed 100 characters")
+    @Column(name = "tax_id", length = 100)
+    private String taxId;
+
+    @Size(max = 255, message = "Website URL must not exceed 255 characters")
+    @Column(name = "website", length = 255)
+    private String websiteUrl;
+
+    @Column(name = "amenities", columnDefinition = "TEXT")
+    private String facilityAmenities;
+
+    @Column(name = "number_of_rooms")
+    private Integer numberOfRooms;
+
+    @Size(max = 20, message = "Check-in time must not exceed 20 characters")
+    @Column(name = "check_in_time", length = 20)
+    private String checkInTime;
+
+    @Size(max = 20, message = "Check-out time must not exceed 20 characters")
+    @Column(name = "check_out_time", length = 20)
+    private String checkOutTime;
+
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 
@@ -162,6 +200,86 @@ public class Hotel extends BaseEntity {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getContactPerson() {
+        return contactPerson;
+    }
+
+    public void setContactPerson(String contactPerson) {
+        this.contactPerson = contactPerson;
+    }
+
+    public String getMobilePaymentPhone() {
+        return mobilePaymentPhone;
+    }
+
+    public void setMobilePaymentPhone(String mobilePaymentPhone) {
+        this.mobilePaymentPhone = mobilePaymentPhone;
+    }
+
+    public String getMobilePaymentPhone2() {
+        return mobilePaymentPhone2;
+    }
+
+    public void setMobilePaymentPhone2(String mobilePaymentPhone2) {
+        this.mobilePaymentPhone2 = mobilePaymentPhone2;
+    }
+
+    public String getLicenseNumber() {
+        return licenseNumber;
+    }
+
+    public void setLicenseNumber(String licenseNumber) {
+        this.licenseNumber = licenseNumber;
+    }
+
+    public String getTaxId() {
+        return taxId;
+    }
+
+    public void setTaxId(String taxId) {
+        this.taxId = taxId;
+    }
+
+    public String getWebsiteUrl() {
+        return websiteUrl;
+    }
+
+    public void setWebsiteUrl(String websiteUrl) {
+        this.websiteUrl = websiteUrl;
+    }
+
+    public String getFacilityAmenities() {
+        return facilityAmenities;
+    }
+
+    public void setFacilityAmenities(String facilityAmenities) {
+        this.facilityAmenities = facilityAmenities;
+    }
+
+    public Integer getNumberOfRooms() {
+        return numberOfRooms;
+    }
+
+    public void setNumberOfRooms(Integer numberOfRooms) {
+        this.numberOfRooms = numberOfRooms;
+    }
+
+    public String getCheckInTime() {
+        return checkInTime;
+    }
+
+    public void setCheckInTime(String checkInTime) {
+        this.checkInTime = checkInTime;
+    }
+
+    public String getCheckOutTime() {
+        return checkOutTime;
+    }
+
+    public void setCheckOutTime(String checkOutTime) {
+        this.checkOutTime = checkOutTime;
     }
 
     public Boolean getIsActive() {

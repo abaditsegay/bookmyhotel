@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_CONFIG } from '../../config/apiConfig';
 import {
   Typography,
   Box,
@@ -113,6 +114,8 @@ const HotelManagementAdmin: React.FC = () => {
     country: '',
     zipCode: '',
     phone: '',
+    mobilePaymentPhone: '',
+    mobilePaymentPhone2: '',
     contactEmail: '',
     contactPerson: '',
     licenseNumber: '',
@@ -134,6 +137,8 @@ const HotelManagementAdmin: React.FC = () => {
     country: '',
     zipCode: '',
     phone: '',
+    mobilePaymentPhone: '',
+    mobilePaymentPhone2: '',
     contactEmail: '',
     contactPerson: '',
     licenseNumber: '',
@@ -307,7 +312,7 @@ const HotelManagementAdmin: React.FC = () => {
         return;
       }
 
-      const response = await fetch('/api/admin/hotel-registrations', {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/admin/hotel-registrations`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -320,6 +325,8 @@ const HotelManagementAdmin: React.FC = () => {
           city: registrationForm.city,
           country: registrationForm.country,
           phone: registrationForm.phone,
+          mobilePaymentPhone: registrationForm.mobilePaymentPhone,
+          mobilePaymentPhone2: registrationForm.mobilePaymentPhone2,
           contactEmail: registrationForm.contactEmail,
           contactPerson: registrationForm.contactPerson,
           licenseNumber: registrationForm.licenseNumber,
@@ -343,6 +350,8 @@ const HotelManagementAdmin: React.FC = () => {
           country: '',
           zipCode: '',
           phone: '',
+          mobilePaymentPhone: '',
+          mobilePaymentPhone2: '',
           contactEmail: '',
           contactPerson: '',
           licenseNumber: '',
@@ -390,6 +399,8 @@ const HotelManagementAdmin: React.FC = () => {
       country: registration.country || '',
       zipCode: registration.zipCode || '',
       phone: registration.phone || '',
+      mobilePaymentPhone: '', // Not available in backend yet
+      mobilePaymentPhone2: '', // Not available in backend yet
       contactEmail: registration.contactEmail || '',
       contactPerson: registration.contactPerson || '',
       licenseNumber: registration.licenseNumber || '',
@@ -473,6 +484,8 @@ const HotelManagementAdmin: React.FC = () => {
         country: selectedRegistration.country || '',
         zipCode: selectedRegistration.zipCode || '',
         phone: selectedRegistration.phone || '',
+        mobilePaymentPhone: '', // Not available in backend yet
+        mobilePaymentPhone2: '', // Not available in backend yet
         contactEmail: selectedRegistration.contactEmail || '',
         contactPerson: selectedRegistration.contactPerson || '',
         licenseNumber: selectedRegistration.licenseNumber || '',
@@ -1107,17 +1120,8 @@ const HotelManagementAdmin: React.FC = () => {
                 />
               </Grid>
               
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label="Phone"
-                  fullWidth
-                  required
-                  value={registrationForm.phone}
-                  onChange={(e) => handleRegistrationFormChange('phone', e.target.value)}
-                />
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
+              {/* Row 5: Contact Email - moved before phone numbers */}
+              <Grid item xs={12}>
                 <TextField
                   label="Contact Email"
                   type="email"
@@ -1126,6 +1130,54 @@ const HotelManagementAdmin: React.FC = () => {
                   value={registrationForm.contactEmail}
                   onChange={(e) => handleRegistrationFormChange('contactEmail', e.target.value)}
                 />
+              </Grid>
+
+              {/* Phone Numbers Section with grouped styling */}
+              <Grid item xs={12}>
+                <Box sx={{ 
+                  border: '1px solid #e3f2fd', 
+                  borderRadius: 2, 
+                  p: 2, 
+                  backgroundColor: '#f8fcff',
+                  mt: 1
+                }}>
+                  <Typography variant="subtitle1" sx={{ mb: 2, color: '#1976d2', fontWeight: 600 }}>
+                    Phone Numbers
+                  </Typography>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Phone (Communication)"
+                        fullWidth
+                        required
+                        value={registrationForm.phone}
+                        onChange={(e) => handleRegistrationFormChange('phone', e.target.value)}
+                        helperText="Primary phone for general communication"
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      {/* Empty space to match screenshot layout */}
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Mobile Payment Phone"
+                        fullWidth
+                        value={registrationForm.mobilePaymentPhone}
+                        onChange={(e) => handleRegistrationFormChange('mobilePaymentPhone', e.target.value)}
+                        helperText="Primary mobile money account for payments"
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Mobile Payment Phone 2 (Optional)"
+                        fullWidth
+                        value={registrationForm.mobilePaymentPhone2}
+                        onChange={(e) => handleRegistrationFormChange('mobilePaymentPhone2', e.target.value)}
+                        helperText="Optional secondary mobile money account"
+                      />
+                    </Grid>
+                  </Grid>
+                </Box>
               </Grid>
 
               <Grid item xs={12} sm={6}>

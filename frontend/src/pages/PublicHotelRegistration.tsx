@@ -25,6 +25,8 @@ const PublicHotelRegistration: React.FC = () => {
     city: '',
     country: '',
     phone: '',
+    mobilePaymentPhone: '',
+    mobilePaymentPhone2: '',
     contactEmail: '',
     contactPerson: '',
     licenseNumber: '',
@@ -60,6 +62,8 @@ const PublicHotelRegistration: React.FC = () => {
           city: registrationForm.city,
           country: registrationForm.country,
           phone: registrationForm.phone,
+          mobilePaymentPhone: registrationForm.mobilePaymentPhone,
+          mobilePaymentPhone2: registrationForm.mobilePaymentPhone2,
           contactEmail: registrationForm.contactEmail,
           contactPerson: registrationForm.contactPerson,
           licenseNumber: registrationForm.licenseNumber,
@@ -80,6 +84,8 @@ const PublicHotelRegistration: React.FC = () => {
           city: '',
           country: '',
           phone: '',
+          mobilePaymentPhone: '',
+          mobilePaymentPhone2: '',
           contactEmail: '',
           contactPerson: '',
           licenseNumber: '',
@@ -204,12 +210,36 @@ const PublicHotelRegistration: React.FC = () => {
             
             <Grid item xs={12} sm={6}>
               <TextField
-                label="Phone"
+                label="Phone (Communication)"
                 fullWidth
                 required
                 value={registrationForm.phone}
                 onChange={(e) => handleRegistrationFormChange('phone', e.target.value)}
-                placeholder="Enter phone number"
+                placeholder="Enter communication phone number"
+                helperText="Primary phone for general communication"
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Mobile Payment Phone"
+                fullWidth
+                required
+                value={registrationForm.mobilePaymentPhone}
+                onChange={(e) => handleRegistrationFormChange('mobilePaymentPhone', e.target.value)}
+                placeholder="Enter mobile payment phone number"
+                helperText="Primary mobile money account for payments"
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Mobile Payment Phone 2 (Optional)"
+                fullWidth
+                value={registrationForm.mobilePaymentPhone2}
+                onChange={(e) => handleRegistrationFormChange('mobilePaymentPhone2', e.target.value)}
+                placeholder="Enter secondary mobile payment phone"
+                helperText="Optional secondary mobile money account"
               />
             </Grid>
 
@@ -311,7 +341,7 @@ const PublicHotelRegistration: React.FC = () => {
             <Button 
               variant="contained" 
               onClick={handleRegistrationSubmit}
-              disabled={!registrationForm.hotelName || !registrationForm.contactPerson || !registrationForm.contactEmail || loading}
+              disabled={!registrationForm.hotelName || !registrationForm.contactPerson || !registrationForm.contactEmail || !registrationForm.mobilePaymentPhone || loading}
               size="large"
             >
               {loading ? 'Submitting...' : 'Submit Registration'}

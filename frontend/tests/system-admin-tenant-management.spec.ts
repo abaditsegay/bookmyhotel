@@ -249,7 +249,7 @@ test.describe('System Admin - Tenant Management', () => {
     await page.fill('[data-testid="email-input"]', 'admin@bookmyhotel.com');
     
     await tenantPage.highlightElement('[data-testid="password-input"]', '#ff6600', 600);
-    await page.fill('[data-testid="password-input"]', 'password123');
+    await page.fill('[data-testid="password-input"]', 'admin123');
     
     // Highlight and click login
     await tenantPage.highlightElement('[data-testid="login-button"]', '#ff6600', 800);
@@ -262,7 +262,7 @@ test.describe('System Admin - Tenant Management', () => {
     await page.waitForLoadState('networkidle');
     
     // Verify we're logged in as system admin
-    await expect(page.locator('[data-testid="user-role"]')).toContainText('SYSTEM_ADMIN');
+    await expect(page.locator('[data-testid="user-role"]')).toContainText('System Admin');
     
     // Navigate to tenant management
     await page.waitForSelector('[data-testid="stats-card-manage-tenants"]', { state: 'visible' });

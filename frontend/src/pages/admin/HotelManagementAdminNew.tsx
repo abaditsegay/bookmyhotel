@@ -220,8 +220,8 @@ const HotelManagementAdmin: React.FC = () => {
   // Filter hotels based on search term and status
   const filteredHotels = useMemo(() => {
     return hotels.filter(hotel => {
-      const matchesSearch = hotel.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
-                           hotel.city.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+      const matchesSearch = (hotel.name?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) || false) ||
+                           (hotel.city?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) || false) ||
                            (hotel.email && hotel.email.toLowerCase().includes(debouncedSearchTerm.toLowerCase()));
       
       const matchesStatus = statusFilter === 'all' || 
