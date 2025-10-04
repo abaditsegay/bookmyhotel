@@ -768,18 +768,18 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
             <TableHead>
               <TableRow 
                 sx={{
-                  background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 50%, #1e40af 100%)',
-                  boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)',
+                  background: 'linear-gradient(135deg, #64748b 0%, #475569 50%, #334155 100%)',
+                  boxShadow: '0 4px 12px rgba(100, 116, 139, 0.15)',
                   '& .MuiTableCell-head': {
                     color: '#ffffff',
-                    fontWeight: 700,
-                    fontSize: '1rem',
-                    letterSpacing: '1px',
+                    fontWeight: 600,
+                    fontSize: '0.95rem',
+                    letterSpacing: '0.5px',
                     textTransform: 'uppercase',
                     border: 'none',
-                    padding: '24px 16px',
+                    padding: '20px 16px',
                     position: 'relative',
-                    textShadow: '0 1px 2px rgba(0,0,0,0.2)',
+                    textShadow: '0 1px 2px rgba(0,0,0,0.1)',
                     '&::after': {
                       content: '""',
                       position: 'absolute',

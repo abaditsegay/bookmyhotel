@@ -34,6 +34,7 @@ import {
 } from '@mui/icons-material';
 // import { useAuth } from '../contexts/AuthContext';
 import { useNotificationsWithEvents, BookingNotification } from '../hooks/useNotifications';
+import { useBookingNotifications } from '../hooks/useBookingNotifications';
 
 const NotificationsPage: React.FC = () => {
   // const { user } = useAuth(); // Keep for future role-based features
@@ -52,6 +53,13 @@ const NotificationsPage: React.FC = () => {
   const [selectedNotification, setSelectedNotification] = useState<BookingNotification | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [typeFilter, setTypeFilter] = useState<string>('ALL');
+
+  // Get booking notifications (history) for the selected notification
+  const { 
+    history: bookingHistory, 
+    loading: historyLoading, 
+    error: historyError 
+  } = useBookingNotifications(selectedNotification?.confirmationNumber || null);
 
   const openDetails = (notification: BookingNotification) => {
     setSelectedNotification(notification);
@@ -84,17 +92,9 @@ const NotificationsPage: React.FC = () => {
   };
 
   const formatCurrency = (amount: number) => {
-    // Validate amount is a valid number
-    if (typeof amount !== 'number' || isNaN(amount) || amount === null || amount === undefined) {
-      return 'N/A';
-    }
-    
-    // Return formatted amount (including zero)
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
+      currency: 'USD'
     }).format(amount);
   };
 
@@ -447,7 +447,7 @@ const NotificationsPage: React.FC = () => {
                   <Divider sx={{ mb: 2 }} />
                   {selectedNotification.changeDetails && (
                     <Typography sx={{ mb: 1 }}>
-                      <strong>Changes:</strong> {selectedNotification.changeDetails}
+                      <strong>Latest Changes:</strong> {selectedNotification.changeDetails}
                     </Typography>
                   )}
                   
@@ -474,6 +474,131 @@ const NotificationsPage: React.FC = () => {
                           <strong>ℹ️ No Payment Changes:</strong> This modification does not require any additional payment or refund.
                         </Typography>
                       </Alert>
+                    )}
+                  </Box>
+
+                  {/* Complete Notification History Section */}
+                  <Box sx={{ mt: 3 }}>
+                    <Typography variant="h6" gutterBottom>
+                      Complete Notification History
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary" sx={{ mb: 1 }}>
+                      Complete chronological history of all notifications for this booking (including current)
+                    </Typography>
+                    <Divider sx={{ mb: 2 }} />
+                    
+                    {historyLoading && (
+                      <Box display="flex" justifyContent="center" p={2}>
+                        <CircularProgress size={24} />
+                        <Typography sx={{ ml: 1 }}>Loading notification history...</Typography>
+                      </Box>
+                    )}
+
+                    {historyError && (
+                      <Alert severity="warning" sx={{ mb: 2 }}>
+                        <Typography>
+                          Unable to load notification history: {historyError}
+                        </Typography>
+                      </Alert>
+                    )}
+
+                    {!historyLoading && !historyError && bookingHistory.length === 0 && (
+                      <Typography color="textSecondary" sx={{ fontStyle: 'italic' }}>
+                        No notifications found for this booking.
+                      </Typography>
+                    )}
+
+                    {!historyLoading && !historyError && bookingHistory.length > 0 && (
+                      <TableContainer component={Paper} variant="outlined">
+                        <Table size="small" aria-label="modification history">
+                          <TableHead>
+                            <TableRow>
+                              <TableCell><strong>Date</strong></TableCell>
+                              <TableCell><strong>Type</strong></TableCell>
+                              <TableCell><strong>Status</strong></TableCell>
+                              <TableCell><strong>Details</strong></TableCell>
+                              <TableCell><strong>Amount</strong></TableCell>
+                              <TableCell><strong>Updated By</strong></TableCell>
+                            </TableRow>
+                          </TableHead>
+                          <TableBody>
+                            {bookingHistory.map((notification, index) => (
+                              <TableRow 
+                                key={notification.id}
+                                sx={{
+                                  backgroundColor: index === 0 ? 'action.hover' : 'inherit',
+                                  '&:hover': {
+                                    backgroundColor: index === 0 ? 'action.selected' : 'action.hover',
+                                  }
+                                }}
+                              >
+                                <TableCell>
+                                  <Box display="flex" alignItems="center" gap={1}>
+                                    <Box>
+                                      <Typography variant="body2">
+                                        {new Date(notification.createdAt).toLocaleDateString()}
+                                      </Typography>
+                                      <Typography variant="caption" color="textSecondary">
+                                        {new Date(notification.createdAt).toLocaleTimeString()}
+                                      </Typography>
+                                    </Box>
+                                    {index === 0 && (
+                                      <Chip 
+                                        label="Latest" 
+                                        size="small"
+                                        color="success"
+                                        variant="filled"
+                                        sx={{ ml: 1, fontSize: '0.75rem' }}
+                                      />
+                                    )}
+                                  </Box>
+                                </TableCell>
+                                <TableCell>
+                                  <Chip 
+                                    label={notification.type} 
+                                    size="small"
+                                    color={notification.type === 'CANCELLED' ? 'error' : 'primary'}
+                                    variant="outlined"
+                                  />
+                                </TableCell>
+                                <TableCell>
+                                  <Chip 
+                                    label={notification.status} 
+                                    size="small"
+                                    color={notification.status === 'UNREAD' ? 'warning' : 'default'}
+                                    variant="filled"
+                                  />
+                                </TableCell>
+                                <TableCell>
+                                  <Typography variant="body2" sx={{ fontSize: '0.875rem' }}>
+                                    {notification.changeDetails || notification.cancellationReason || 'No additional details'}
+                                  </Typography>
+                                </TableCell>
+                                <TableCell>
+                                  {(notification.additionalCharges ?? 0) > 0 ? (
+                                    <Typography variant="body2" color="warning.main">
+                                      +ETB {notification.additionalCharges!.toFixed(2)}
+                                    </Typography>
+                                  ) : (notification.refundAmount ?? 0) > 0 ? (
+                                    <Typography variant="body2" color="success.main">
+                                      -ETB {notification.refundAmount!.toFixed(2)}
+                                    </Typography>
+                                  ) : (
+                                    <Typography variant="body2" color="textSecondary">
+                                      ETB {notification.checkInDate ? '0.00' : '-'}
+                                    </Typography>
+                                  )}
+                                </TableCell>
+                                <TableCell>
+                                  <Typography variant="body2">
+                                    {notification.updatedBy || 'System'}
+                                  </Typography>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </TableContainer>
                     )}
                   </Box>
                 </Box>

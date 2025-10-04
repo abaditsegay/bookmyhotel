@@ -919,13 +919,15 @@ public class HotelAdminService {
 
         Pageable pageable = PageRequest.of(page, size);
         List<Reservation> allReservations = reservationRepository.findByHotelId(hotelId);
-        
-        // logger.debug("🔍 HotelAdminService: Found {} total reservations for hotel {}", allReservations.size(), hotelId);
+
+        // logger.debug("🔍 HotelAdminService: Found {} total reservations for hotel
+        // {}", allReservations.size(), hotelId);
 
         // Apply search filter if provided
         List<Reservation> filteredReservations = allReservations;
         if (search != null && !search.trim().isEmpty()) {
-            // logger.debug("🔍 HotelAdminService: Applying search filter with term: '{}'", search.trim());
+            // logger.debug("🔍 HotelAdminService: Applying search filter with term: '{}'",
+            // search.trim());
             String searchLower = search.toLowerCase();
             filteredReservations = allReservations.stream()
                     .filter(reservation -> {
@@ -955,13 +957,13 @@ public class HotelAdminService {
                                 : "To be assigned";
 
                         // Get payment reference for search
-                        String paymentReference = reservation.getPaymentReference() != null 
-                                ? reservation.getPaymentReference() 
+                        String paymentReference = reservation.getPaymentReference() != null
+                                ? reservation.getPaymentReference()
                                 : "";
 
                         // Get confirmation number for search
-                        String confirmationNumber = reservation.getConfirmationNumber() != null 
-                                ? reservation.getConfirmationNumber() 
+                        String confirmationNumber = reservation.getConfirmationNumber() != null
+                                ? reservation.getConfirmationNumber()
                                 : "";
 
                         // Get payment status for search
@@ -977,8 +979,9 @@ public class HotelAdminService {
                                 reservation.getStatus().name().toLowerCase().contains(searchLower);
                     })
                     .collect(Collectors.toList());
-            
-            // logger.debug("🔍 HotelAdminService: Search filter applied, {} results found", filteredReservations.size());
+
+            // logger.debug("🔍 HotelAdminService: Search filter applied, {} results found",
+            // filteredReservations.size());
         }
 
         // Sort by check-in date descending
@@ -1105,7 +1108,7 @@ public class HotelAdminService {
 
         // Update payment status using the setter method that handles validation
         reservation.setPaymentStatusFromString(paymentStatus);
-        
+
         // Save the updated reservation
         reservation = reservationRepository.save(reservation);
 

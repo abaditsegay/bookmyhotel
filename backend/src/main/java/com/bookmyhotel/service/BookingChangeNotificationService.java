@@ -88,43 +88,49 @@ public class BookingChangeNotificationService {
             if (changeDetails == null || changeDetails.trim().isEmpty()) {
                 changeDetails = "Booking details modified";
             }
-            
-            // Skip notification creation if no financial implications (both amounts are zero or null)
-            boolean hasAdditionalCharges = additionalCharges != null && additionalCharges.compareTo(BigDecimal.ZERO) > 0;
+
+            // Skip notification creation if no financial implications (both amounts are
+            // zero or null)
+            boolean hasAdditionalCharges = additionalCharges != null
+                    && additionalCharges.compareTo(BigDecimal.ZERO) > 0;
             boolean hasRefundAmount = refundAmount != null && refundAmount.compareTo(BigDecimal.ZERO) > 0;
-            
+
             if (!hasAdditionalCharges && !hasRefundAmount) {
-                logger.info("Skipping modification notification for booking {} - no financial implications (additional charges: {}, refund: {})",
-                    reservation.getConfirmationNumber(), additionalCharges, refundAmount);
+                logger.info(
+                        "Skipping modification notification for booking {} - no financial implications (additional charges: {}, refund: {})",
+                        reservation.getConfirmationNumber(), additionalCharges, refundAmount);
                 return null; // No notification needed for non-financial modifications
             }
 
-            // Check for recent duplicate notification (within last 5 minutes) for the same booking
+            // Check for recent duplicate notification (within last 5 minutes) for the same
+            // booking
             LocalDateTime cutoffTime = LocalDateTime.now().minusMinutes(5);
             List<BookingNotification> recentNotifications = notificationRepository
-                .findByReservationIdAndTypeAndCreatedAtAfter(
-                    reservation.getId(), 
-                    NotificationType.MODIFIED, 
-                    cutoffTime
-                );
-            
-            // If there's a recent modification notification, update it instead of creating a new one
+                    .findByReservationIdAndTypeAndCreatedAtAfter(
+                            reservation.getId(),
+                            NotificationType.MODIFIED,
+                            cutoffTime);
+
+            // If there's a recent modification notification, update it instead of creating
+            // a new one
             if (!recentNotifications.isEmpty()) {
                 BookingNotification existingNotification = recentNotifications.get(0);
-                logger.info("Updating existing modification notification for booking {} instead of creating duplicate", 
-                    reservation.getConfirmationNumber());
-                
+                logger.info("Updating existing modification notification for booking {} instead of creating duplicate",
+                        reservation.getConfirmationNumber());
+
                 // Update the existing notification with new amounts (final values)
                 existingNotification.setChangeDetails(changeDetails.trim());
                 existingNotification.setAdditionalCharges(additionalCharges);
                 existingNotification.setRefundAmount(refundAmount);
                 existingNotification.setUpdatedBy(updatedBy);
                 existingNotification.setCreatedAt(LocalDateTime.now()); // Update timestamp
-                
+
                 BookingNotification updatedNotification = notificationRepository.save(existingNotification);
-                logger.info("Updated modification notification for booking {} (ID: {}), final additional charges: {}, final refund: {}",
-                    reservation.getConfirmationNumber(), updatedNotification.getId(), additionalCharges, refundAmount);
-                
+                logger.info(
+                        "Updated modification notification for booking {} (ID: {}), final additional charges: {}, final refund: {}",
+                        reservation.getConfirmationNumber(), updatedNotification.getId(), additionalCharges,
+                        refundAmount);
+
                 return updatedNotification;
             }
 
@@ -246,6 +252,17 @@ public class BookingChangeNotificationService {
     }
 
     /**
+     * Get notifications by confirmation number for a specific hotel
+     * Returns notifications ordered by creation date (newest first)
+     */
+    public List<BookingNotification> getNotificationsByConfirmationNumber(String confirmationNumber, Long hotelId) {
+        logger.debug("Getting notifications for confirmation number: {} and hotel: {}", confirmationNumber, hotelId);
+        List<BookingNotification> notifications = notificationRepository.findByConfirmationNumberAndHotelIdOrderByCreatedAtDesc(confirmationNumber, hotelId);
+        logger.debug("Found {} notifications for confirmation number: {}", notifications.size(), confirmationNumber);
+        return notifications;
+    }
+
+    /**
      * Cleanup old archived notifications (for maintenance tasks)
      */
     public void cleanupOldNotifications(int daysOld) {
@@ -301,29 +318,31 @@ public class BookingChangeNotificationService {
     }
 
     /**
-     * Clean up notifications with zero financial values (both additionalCharges and refundAmount are zero or null)
+     * Clean up notifications with zero financial values (both additionalCharges and
+     * refundAmount are zero or null)
      * This helps remove confusing "0"/"00" notifications from the display
      */
     public int cleanupZeroValueNotifications() {
         try {
             List<BookingNotification> zeroValueNotifications = notificationRepository.findAll()
-                .stream()
-                .filter(notification -> {
-                    boolean hasZeroAdditionalCharges = notification.getAdditionalCharges() == null || 
-                        notification.getAdditionalCharges().compareTo(BigDecimal.ZERO) == 0;
-                    boolean hasZeroRefundAmount = notification.getRefundAmount() == null || 
-                        notification.getRefundAmount().compareTo(BigDecimal.ZERO) == 0;
-                    return notification.getType() == NotificationType.MODIFIED && 
-                           hasZeroAdditionalCharges && hasZeroRefundAmount;
-                })
-                .toList();
-            
+                    .stream()
+                    .filter(notification -> {
+                        boolean hasZeroAdditionalCharges = notification.getAdditionalCharges() == null ||
+                                notification.getAdditionalCharges().compareTo(BigDecimal.ZERO) == 0;
+                        boolean hasZeroRefundAmount = notification.getRefundAmount() == null ||
+                                notification.getRefundAmount().compareTo(BigDecimal.ZERO) == 0;
+                        return notification.getType() == NotificationType.MODIFIED &&
+                                hasZeroAdditionalCharges && hasZeroRefundAmount;
+                    })
+                    .toList();
+
             if (!zeroValueNotifications.isEmpty()) {
                 notificationRepository.deleteAll(zeroValueNotifications);
-                logger.info("Cleaned up {} modification notifications with zero financial values", zeroValueNotifications.size());
+                logger.info("Cleaned up {} modification notifications with zero financial values",
+                        zeroValueNotifications.size());
                 return zeroValueNotifications.size();
             }
-            
+
             return 0;
         } catch (Exception e) {
             logger.error("Failed to cleanup zero value notifications: {}", e.getMessage());

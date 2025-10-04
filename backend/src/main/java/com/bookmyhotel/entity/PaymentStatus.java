@@ -25,7 +25,7 @@ public enum PaymentStatus {
         if (status == null || status.trim().isEmpty()) {
             return PENDING; // Default to PENDING
         }
-        
+
         try {
             return PaymentStatus.valueOf(status.trim().toUpperCase());
         } catch (IllegalArgumentException e) {

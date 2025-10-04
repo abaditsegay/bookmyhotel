@@ -283,31 +283,43 @@ public class EmailService {
     public void sendBookingAuthenticationEmail(BookingResponse booking, String managementToken, String action) {
         // Check if Microsoft Graph is configured
         if (!microsoftGraphEmailService.isConfigured()) {
-            logger.warn("Microsoft Graph OAuth2 is not configured. Using development mode for booking authentication email to: {}",
+            logger.warn(
+                    "Microsoft Graph OAuth2 is not configured. Using development mode for booking authentication email to: {}",
                     booking.getGuestEmail());
-            
+
             // In development mode, log the token URL instead of sending email
             String managementUrl = appUrl + "/guest-booking-management?token=" + managementToken;
-            
+
             logger.info("=== DEVELOPMENT MODE EMAIL ===");
             logger.info("To: {}", booking.getGuestEmail());
-            logger.info("Subject: Booking Management Authentication - {} ({})", booking.getHotelName(), booking.getConfirmationNumber());
+            logger.info("Subject: Booking Management Authentication - {} ({})", booking.getHotelName(),
+                    booking.getConfirmationNumber());
             logger.info("Management URL: {}", managementUrl);
             logger.info("Action: {}", getActionText(action));
             logger.info("==============================");
-            
+
             return; // Return successfully without sending actual email
         }
 
         try {
-            logger.info("Sending booking authentication email to: {} for action: {} via Microsoft Graph OAuth2", 
-                booking.getGuestEmail(), action);
+            logger.info("Sending booking authentication email to: {} for action: {} via Microsoft Graph OAuth2",
+                    booking.getGuestEmail(), action);
 
             // Prepare email data
             Map<String, Object> templateData = prepareBookingEmailData(booking, false);
             templateData.put("managementToken", managementToken);
             templateData.put("action", action);
             templateData.put("actionText", getActionText(action));
+
+            // Add individual booking fields for direct template access
+            templateData.put("confirmationNumber", booking.getConfirmationNumber());
+            templateData.put("hotelName", booking.getHotelName());
+            templateData.put("guestName", booking.getGuestName());
+            templateData.put("guestEmail", booking.getGuestEmail());
+            templateData.put("roomType", booking.getRoomType());
+            templateData.put("totalAmount", booking.getTotalAmount());
+            templateData.put("checkInDate", booking.getCheckInDate());
+            templateData.put("checkOutDate", booking.getCheckOutDate());
             
             // Create management URL with token
             String managementUrl = appUrl + "/guest-booking-management?token=" + managementToken;

@@ -20,70 +20,75 @@ import com.bookmyhotel.enums.NotificationType;
 @Repository
 public interface BookingNotificationRepository extends JpaRepository<BookingNotification, Long> {
 
-    /**
-     * Find all notifications for a specific hotel ordered by creation date (newest
-     * first)
-     */
-    Page<BookingNotification> findByHotelIdOrderByCreatedAtDesc(Long hotelId, Pageable pageable);
+        /**
+         * Find all notifications for a specific hotel ordered by creation date (newest
+         * first)
+         */
+        Page<BookingNotification> findByHotelIdOrderByCreatedAtDesc(Long hotelId, Pageable pageable);
 
-    /**
-     * Find notifications by hotel ID and status
-     */
-    List<BookingNotification> findByHotelIdAndStatus(Long hotelId, NotificationStatus status);
+        /**
+         * Find notifications by hotel ID and status
+         */
+        List<BookingNotification> findByHotelIdAndStatus(Long hotelId, NotificationStatus status);
 
-    /**
-     * Count unread notifications for a hotel
-     */
-    long countByHotelIdAndStatus(Long hotelId, NotificationStatus status);
+        /**
+         * Count unread notifications for a hotel
+         */
+        long countByHotelIdAndStatus(Long hotelId, NotificationStatus status);
 
-    /**
-     * Find notifications by hotel ID and type
-     */
-    Page<BookingNotification> findByHotelIdAndTypeOrderByCreatedAtDesc(Long hotelId, NotificationType type,
-            Pageable pageable);
+        /**
+         * Find notifications by hotel ID and type
+         */
+        Page<BookingNotification> findByHotelIdAndTypeOrderByCreatedAtDesc(Long hotelId, NotificationType type,
+                        Pageable pageable);
 
-    /**
-     * Find notifications by hotel ID, type and status
-     */
-    Page<BookingNotification> findByHotelIdAndTypeAndStatusOrderByCreatedAtDesc(Long hotelId, NotificationType type,
-            NotificationStatus status, Pageable pageable);
+        /**
+         * Find notifications by hotel ID, type and status
+         */
+        Page<BookingNotification> findByHotelIdAndTypeAndStatusOrderByCreatedAtDesc(Long hotelId, NotificationType type,
+                        NotificationStatus status, Pageable pageable);
 
-    /**
-     * Find recent notifications for a hotel (limited number)
-     */
-    @Query("SELECT n FROM BookingNotification n WHERE n.hotelId = :hotelId ORDER BY n.createdAt DESC")
-    List<BookingNotification> findRecentByHotelId(@Param("hotelId") Long hotelId, Pageable pageable);
+        /**
+         * Find recent notifications for a hotel (limited number)
+         */
+        @Query("SELECT n FROM BookingNotification n WHERE n.hotelId = :hotelId ORDER BY n.createdAt DESC")
+        List<BookingNotification> findRecentByHotelId(@Param("hotelId") Long hotelId, Pageable pageable);
 
-    /**
-     * Find all notifications for a tenant
-     */
-    Page<BookingNotification> findByTenantIdOrderByCreatedAtDesc(String tenantId, Pageable pageable);
+        /**
+         * Find all notifications for a tenant
+         */
+        Page<BookingNotification> findByTenantIdOrderByCreatedAtDesc(String tenantId, Pageable pageable);
 
-    /**
-     * Count total notifications for a hotel
-     */
-    long countByHotelId(Long hotelId);
+        /**
+         * Count total notifications for a hotel
+         */
+        long countByHotelId(Long hotelId);
 
-    /**
-     * Count notifications by type for a hotel
-     */
-    long countByHotelIdAndType(Long hotelId, NotificationType type);
+        /**
+         * Count notifications by type for a hotel
+         */
+        long countByHotelIdAndType(Long hotelId, NotificationType type);
 
-    /**
-     * Find notifications by reservation ID
-     */
-    List<BookingNotification> findByReservationIdOrderByCreatedAtDesc(Long reservationId);
+        /**
+         * Find notifications by reservation ID
+         */
+        List<BookingNotification> findByReservationIdOrderByCreatedAtDesc(Long reservationId);
 
-    /**
-     * Find recent notifications by reservation ID, type, and creation time
-     */
-    List<BookingNotification> findByReservationIdAndTypeAndCreatedAtAfter(Long reservationId, NotificationType type, 
-            java.time.LocalDateTime createdAfter);
+        /**
+         * Find recent notifications by reservation ID, type, and creation time
+         */
+        List<BookingNotification> findByReservationIdAndTypeAndCreatedAtAfter(Long reservationId, NotificationType type,
+                        java.time.LocalDateTime createdAfter);
 
-    /**
-     * Delete old notifications (for cleanup tasks)
-     */
-    @Query("DELETE FROM BookingNotification n WHERE n.createdAt < :cutoffDate AND n.status = :status")
-    void deleteOldNotifications(@Param("cutoffDate") java.time.LocalDateTime cutoffDate,
-            @Param("status") NotificationStatus status);
+        /**
+         * Find notifications by confirmation number and hotel ID ordered by creation date (newest first)
+         */
+        List<BookingNotification> findByConfirmationNumberAndHotelIdOrderByCreatedAtDesc(String confirmationNumber, Long hotelId);
+
+        /**
+         * Delete old notifications (for cleanup tasks)
+         */
+        @Query("DELETE FROM BookingNotification n WHERE n.createdAt < :cutoffDate AND n.status = :status")
+        void deleteOldNotifications(@Param("cutoffDate") java.time.LocalDateTime cutoffDate,
+                        @Param("status") NotificationStatus status);
 }

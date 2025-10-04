@@ -1603,13 +1603,15 @@ public class BookingService {
                 logger.warn("Failed to send modification confirmation email: {}", e.getMessage());
             }
 
-            // Create booking change notification for hotel admin/front desk (only if there are financial implications)
+            // Create booking change notification for hotel admin/front desk (only if there
+            // are financial implications)
             try {
                 String modificationReason = request.getReason() != null &&
                         !request.getReason().trim().isEmpty()
                                 ? request.getReason().trim()
                                 : "Booking details updated";
-                BookingNotification notification = bookingChangeNotificationService.createModificationNotification(reservation, modificationReason,
+                BookingNotification notification = bookingChangeNotificationService.createModificationNotification(
+                        reservation, modificationReason,
                         additionalCharges, refundAmount, "Guest");
                 if (notification != null) {
                     logger.info("Created booking modification notification for financial implications");
@@ -1964,12 +1966,14 @@ public class BookingService {
                 logger.warn("Failed to send modification confirmation email: {}", e.getMessage());
             }
 
-            // Create booking change notification for hotel admin/front desk (only if there are financial implications)
+            // Create booking change notification for hotel admin/front desk (only if there
+            // are financial implications)
             try {
                 String modificationReason = request.getReason() != null && !request.getReason().trim().isEmpty()
                         ? request.getReason().trim()
                         : "Booking details updated";
-                BookingNotification notification = bookingChangeNotificationService.createModificationNotification(reservation, modificationReason,
+                BookingNotification notification = bookingChangeNotificationService.createModificationNotification(
+                        reservation, modificationReason,
                         additionalCharges, refundAmount, "Staff");
                 if (notification != null) {
                     logger.info("Created booking modification notification for financial implications");

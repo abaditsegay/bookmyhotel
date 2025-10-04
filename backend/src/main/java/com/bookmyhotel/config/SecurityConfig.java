@@ -10,7 +10,6 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -99,6 +98,9 @@ public class SecurityConfig {
 
                         // User endpoints (authenticated users only)
                         .requestMatchers("/api/users/**").authenticated()
+
+                        // Hotel management endpoints (authenticated hotel staff)
+                        .requestMatchers("/managemyhotel/api/**").authenticated()
 
                         // All other requests require authentication
                         .anyRequest().authenticated())

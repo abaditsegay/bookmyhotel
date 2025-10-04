@@ -6,88 +6,166 @@
     <title>Booking Management Authentication</title>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
+            font-family: Arial, sans-serif;
+            line-height: 1.5;
             color: #333;
-            max-width: 600px;
-            margin: 0 auto;
+            margin: 0;
             padding: 20px;
-            background-color: #f8f9fa;
+            background-color: #f9f9f9;
         }
         .container {
-            background-color: #ffffff;
-            border-radius: 8px;
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border: 1px solid #ddd;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
         }
         .header {
-            background: linear-gradient(135deg, #1976d2, #1565c0);
-            color: white;
-            padding: 30px 40px;
             text-align: center;
+            margin-bottom: 30px;
+            padding: 30px 40px;
+            border-bottom: 2px solid #ff9800;
+            background: linear-gradient(135deg, #fff3e0, #ffe0b2);
         }
         .header h1 {
-            margin: 0;
+            color: #e65100;
+            margin: 0 0 10px 0;
             font-size: 28px;
-            font-weight: 300;
+            font-weight: 600;
+        }
+        .header p {
+            margin: 0;
+            font-size: 16px;
+            color: #bf360c;
         }
         .content {
             padding: 40px;
         }
-        .booking-info {
-            background-color: #f8f9fa;
-            border-left: 4px solid #1976d2;
-            padding: 20px;
+        .greeting {
+            font-size: 16px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .main-message {
+            font-size: 16px;
+            margin-bottom: 25px;
+            color: #555;
+            line-height: 1.6;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
             margin: 20px 0;
-            border-radius: 0 8px 8px 0;
         }
-        .booking-info h3 {
-            margin: 0 0 15px 0;
-            color: #1976d2;
-            font-size: 18px;
-        }
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            padding: 4px 0;
-        }
-        .info-label {
-            font-weight: 600;
+        
+        th {
+            background-color: #f5f5f5;
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+            font-weight: bold;
             color: #555;
         }
-        .info-value {
-            color: #333;
+        
+        td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            vertical-align: top;
+        }
+        
+        .section-title {
+            background-color: #fff3e0;
+            font-weight: bold;
+            color: #e65100;
+            text-align: center;
+        }
+        
+        .highlight-row {
+            background-color: #fff3e0;
+            font-weight: bold;
+        }
+        
+        .highlight-row td {
+            color: #e65100;
+            font-weight: bold;
+        }
+        
+        .booking-details-container {
+            margin: 30px 0;
+        }
+        .auth-button-container {
+            text-align: center;
+            margin: 30px 0;
         }
         .auth-button {
             display: inline-block;
-            background: linear-gradient(135deg, #2e7d32, #1b5e20);
-            color: white;
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+            color: white !important;
             padding: 15px 30px;
             text-decoration: none;
             border-radius: 25px;
             font-weight: 600;
             font-size: 16px;
             text-align: center;
-            margin: 20px 0;
-            box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
+            box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
             transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
         }
         .auth-button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(46, 125, 50, 0.4);
+            box-shadow: 0 6px 16px rgba(255, 152, 0, 0.4);
+            background: linear-gradient(135deg, #f57c00, #ef6c00);
+        }
+        .auth-button::before {
+            content: '�';
+            margin-right: 8px;
         }
         .security-notice {
-            background-color: #fff3cd;
+            background: #fff3cd;
             border: 1px solid #ffeaa7;
             border-radius: 6px;
             padding: 15px;
             margin: 20px 0;
         }
-        .security-notice .icon {
+        .security-notice .content {
+            margin: 0;
+            padding: 0;
+        }
+        .security-notice strong {
             color: #856404;
-            font-weight: bold;
-            margin-right: 8px;
+        }
+        .steps-section {
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .steps-section h4 {
+            margin: 0 0 15px 0;
+            color: #333;
+            font-size: 16px;
+        }
+        .steps-list {
+            list-style: decimal;
+            padding-left: 20px;
+            margin: 0;
+        }
+        .steps-list li {
+            padding: 4px 0;
+            color: #555;
+        }
+        .backup-link {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: 13px;
+            color: #666;
+        }
+        .backup-link strong {
+            color: #333;
         }
         .footer {
             background-color: #f8f9fa;
@@ -100,14 +178,10 @@
         .footer p {
             margin: 5px 0;
         }
-        .link-backup {
-            word-break: break-all;
-            font-size: 12px;
-            color: #666;
-            margin-top: 15px;
-            padding: 10px;
-            background-color: #f8f9fa;
-            border-radius: 4px;
+        .footer .hotel-info {
+            font-weight: bold;
+            color: #333;
+            font-size: 16px;
         }
         @media only screen and (max-width: 600px) {
             body {
@@ -116,11 +190,16 @@
             .header, .content, .footer {
                 padding: 20px;
             }
-            .info-row {
-                flex-direction: column;
+            table {
+                margin: 15px 0;
             }
-            .info-label {
-                margin-bottom: 4px;
+            th, td {
+                padding: 10px 8px;
+                font-size: 14px;
+            }
+            .auth-button {
+                width: 100%;
+                padding: 15px 20px;
             }
         }
     </style>
@@ -135,87 +214,120 @@
 
         <!-- Content -->
         <div class="content">
-            <p>Hello <strong th:text="${guestName}">Guest</strong>,</p>
+            <p class="greeting">Hello <strong th:text="${booking.guestName}">Valued Guest</strong>,</p>
             
-            <p>You have requested to <strong th:text="${actionText}">manage your booking</strong>. For your security, please click the button below to authenticate and proceed with your booking management.</p>
+            <p class="main-message">
+                You have requested to <strong th:text="${actionText}">manage your booking</strong>. For your security and to protect your personal information, we require authentication before you can access your booking management portal.
+            </p>
 
-            <!-- Booking Information -->
-            <div class="booking-info">
-                <h3>📋 Booking Details</h3>
-                <div class="info-row">
-                    <span class="info-label">Confirmation Number:</span>
-                    <span class="info-value" th:text="${confirmationNumber}">BK00000001</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Hotel:</span>
-                    <span class="info-value" th:text="${hotelName}">Hotel Name</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Guest:</span>
-                    <span class="info-value" th:text="${guestName}">Guest Name</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Check-in:</span>
-                    <span class="info-value" th:text="${formattedCheckInDate}">Check-in Date</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Check-out:</span>
-                    <span class="info-value" th:text="${formattedCheckOutDate}">Check-out Date</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Room Type:</span>
-                    <span class="info-value" th:text="${roomType}">Room Type</span>
-                </div>
+            <!-- Booking Information Tables -->
+            <div class="booking-details-container">
+                <!-- Basic Booking Information -->
+                <table>
+                    <tr>
+                        <th colspan="2" class="section-title">📋 Booking Information</th>
+                    </tr>
+                    <tr class="highlight-row">
+                        <td><strong>Confirmation Number</strong></td>
+                        <td th:text="${booking.confirmationNumber}">BK00000001</td>
+                    </tr>
+                    <tr>
+                        <td>Hotel Name</td>
+                        <td th:text="${booking.hotelName}">Hotel Name</td>
+                    </tr>
+                    <tr>
+                        <td>Guest Name</td>
+                        <td th:text="${booking.guestName}">Guest Name</td>
+                    </tr>
+                    <tr>
+                        <td>Room Type</td>
+                        <td th:text="${booking.roomType}">Room Type</td>
+                    </tr>
+                </table>
+
+                <!-- Stay Details -->
+                <table>
+                    <tr>
+                        <th colspan="2" class="section-title">📅 Stay Details</th>
+                    </tr>
+                    <tr>
+                        <td>Check-in Date</td>
+                        <td th:text="${formattedCheckInDate}">Nov 15, 2025</td>
+                    </tr>
+                    <tr>
+                        <td>Check-out Date</td>
+                        <td th:text="${formattedCheckOutDate}">Nov 18, 2025</td>
+                    </tr>
+                    <tr th:if="${nights > 0}">
+                        <td>Duration</td>
+                        <td>
+                            <span th:text="${nights}">3</span> night<span th:if="${nights > 1}">s</span>
+                        </td>
+                    </tr>
+                    <tr class="highlight-row" th:if="${booking.totalAmount != null and booking.totalAmount > 0}">
+                        <td><strong>Total Amount</strong></td>
+                        <td>
+                            <strong>ETB <span th:text="${#numbers.formatDecimal(booking.totalAmount, 1, 2)}">0.00</span></strong>
+                        </td>
+                    </tr>
+                </table>
             </div>
 
             <!-- Authentication Button -->
-            <div style="text-align: center; margin: 30px 0;">
+            <div class="auth-button-container">
                 <a th:href="${managementUrl}" class="auth-button">
-                    🔓 Authenticate & <span th:text="${action == 'modify' ? 'Modify' : (action == 'cancel' ? 'Cancel' : 'Manage')}">Manage</span> Booking
+                    Authenticate & <span th:text="${action == 'modify' ? 'Modify' : (action == 'cancel' ? 'Cancel' : 'Manage')}">Manage</span> Booking
                 </a>
             </div>
 
             <!-- Security Notice -->
             <div class="security-notice">
-                <span class="icon">🔒</span>
-                <strong>Security Notice:</strong> This link is secure and will expire in 24 hours. Only click this link if you requested to <span th:text="${actionText}">manage your booking</span>.
+                <div class="content">
+                    <strong>Security Notice:</strong> This authentication link is secure and will expire in 24 hours. Only click this link if you personally requested to <span th:text="${actionText}">manage your booking</span>.
+                </div>
             </div>
 
-            <!-- Instructions -->
-            <div style="margin: 20px 0;">
+            <!-- Step-by-step Instructions -->
+            <div class="steps-section">
                 <h4>What happens next?</h4>
-                <ul>
-                    <li>Click the authentication button above</li>
-                    <li>You'll be securely redirected to your booking management page</li>
-                    <li th:if="${action == 'modify'}">Make the desired changes to your booking details</li>
-                    <li th:if="${action == 'cancel'}">Complete the cancellation process</li>
+                <ol class="steps-list">
+                    <li>Click the blue authentication button above to verify your identity</li>
+                    <li>You'll be securely redirected to your personalized booking management portal</li>
+                    <li th:if="${action == 'modify'}">Review and make the desired changes to your booking details</li>
+                    <li th:if="${action == 'cancel'}">Complete the cancellation process and receive confirmation</li>
                     <li th:if="${action != 'modify' && action != 'cancel'}">Access all available booking management options</li>
-                    <li>Receive confirmation of any changes made</li>
-                </ul>
+                    <li>Receive instant confirmation of any changes made to your reservation</li>
+                </ol>
             </div>
 
             <!-- Backup Link -->
-            <div class="link-backup">
-                <strong>Link not working?</strong> Copy and paste this URL into your browser:<br>
-                <span th:text="${managementUrl}">Management URL</span>
+            <div class="backup-link">
+                <strong>Having trouble with the button?</strong> Copy and paste this secure link into your browser:<br>
+                <div style="word-break: break-all; margin-top: 8px; font-family: monospace; font-size: 12px;">
+                    <span th:text="${managementUrl}">Management URL</span>
+                </div>
             </div>
 
-            <p style="margin-top: 30px;">
-                If you did not request to <span th:text="${actionText}">manage your booking</span>, please ignore this email or contact us immediately.
-            </p>
+            <div style="margin-top: 35px; padding: 20px; background-color: #f8fafc; border-radius: 6px; border-left: 4px solid #ef4444;">
+                <p style="margin: 0; color: #374151;">
+                    <strong>Important:</strong> If you did not request to <span th:text="${actionText}">manage your booking</span>, please ignore this email and contact us immediately at your hotel's front desk.
+                </p>
+            </div>
 
-            <p>
-                <strong>Need help?</strong> Contact the hotel directly or reply to this email.
-            </p>
+            <div style="margin-top: 25px; text-align: center; color: #64748b;">
+                <p style="margin: 0;">
+                    <strong>Need assistance?</strong> Contact <span th:text="${booking.hotelName}">the hotel</span> directly or reach out to our customer support team.
+                </p>
+            </div>
         </div>
 
         <!-- Footer -->
         <div class="footer">
-            <p><strong th:text="${hotelName}">Hotel Name</strong></p>
-            <p th:text="${hotelAddress}">Hotel Address</p>
-            <p>This email was sent regarding your booking confirmation <span th:text="${confirmationNumber}">BK00000001</span></p>
-            <p style="margin-top: 15px; font-size: 12px; color: #999;">
-                This is an automated email. Please do not reply directly to this email.
+            <p class="hotel-info" th:text="${booking.hotelName}">Hotel Name</p>
+            <p th:if="${booking.hotelAddress}" th:text="${booking.hotelAddress}">Hotel Address</p>
+            <p style="margin-top: 20px;">This email was sent regarding your booking <strong th:text="${booking.confirmationNumber}">BK00000001</strong></p>
+            <p style="margin-top: 15px; font-size: 12px; color: #94a3b8;">
+                This is an automated secure email. Please do not reply directly to this message.
             </p>
         </div>
     </div>

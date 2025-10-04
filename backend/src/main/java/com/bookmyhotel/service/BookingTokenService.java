@@ -30,7 +30,7 @@ public class BookingTokenService {
     public String generateBookingManagementToken(Long reservationId, String guestEmail) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + BOOKING_TOKEN_VALIDITY);
-        
+
         SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
 
         return Jwts.builder()
@@ -50,7 +50,7 @@ public class BookingTokenService {
     public Long validateBookingToken(String token) {
         try {
             SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
-            
+
             Claims claims = Jwts.parser()
                     .verifyWith(key)
                     .build()
@@ -79,7 +79,7 @@ public class BookingTokenService {
     public String getGuestEmailFromToken(String token) {
         try {
             SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
-            
+
             Claims claims = Jwts.parser()
                     .verifyWith(key)
                     .build()

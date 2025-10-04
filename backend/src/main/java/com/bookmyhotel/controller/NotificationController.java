@@ -217,6 +217,34 @@ public class NotificationController {
     }
 
     /**
+     * Get notifications by confirmation number
+     * Returns all notifications for a specific confirmation number
+     * Used for booking modification history
+     */
+    @GetMapping("/by-confirmation/{confirmationNumber}")
+    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK')")
+    public ResponseEntity<List<BookingNotificationResponse>> getNotificationsByConfirmationNumber(
+            @PathVariable String confirmationNumber,
+            Authentication auth) {
+
+        logger.info("🔍 Getting notifications for confirmation number: {}", confirmationNumber);
+
+        Long currentHotelId = getCurrentUserHotelId(auth);
+        if (currentHotelId == null) {
+            logger.warn("❌ No hotel ID found for user: {}", auth.getName());
+            return ResponseEntity.badRequest().build();
+        }
+
+        List<BookingNotification> notifications = notificationService.getNotificationsByConfirmationNumber(confirmationNumber, currentHotelId);
+        List<BookingNotificationResponse> response = notifications.stream()
+                .map(this::convertToResponse)
+                .toList();
+
+        logger.info("✅ Found {} notifications for confirmation number: {}", response.size(), confirmationNumber);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
      * Get a specific notification by ID
      */
     @GetMapping("/{id}")
@@ -285,27 +313,28 @@ public class NotificationController {
 
     /**
      * Cleanup notifications with zero financial values
-     * This endpoint helps remove confusing "0"/"00" notifications that provide no financial information
+     * This endpoint helps remove confusing "0"/"00" notifications that provide no
+     * financial information
      */
     @PostMapping("/cleanup-zero-values")
     @PreAuthorize("hasRole('HOTEL_ADMIN')")
     public ResponseEntity<Map<String, Object>> cleanupZeroValueNotifications() {
         try {
             int cleanedCount = notificationService.cleanupZeroValueNotifications();
-            
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "Cleanup completed successfully");
             response.put("cleanedCount", cleanedCount);
-            
+
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             logger.error("Failed to cleanup zero value notifications: {}", e.getMessage());
-            
+
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("success", false);
             errorResponse.put("message", "Failed to cleanup notifications: " + e.getMessage());
-            
+
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
