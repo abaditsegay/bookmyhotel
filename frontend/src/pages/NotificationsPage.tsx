@@ -85,19 +85,17 @@ const NotificationsPage: React.FC = () => {
 
   const formatCurrency = (amount: number) => {
     // Validate amount is a valid number
-    if (typeof amount !== 'number' || isNaN(amount)) {
+    if (typeof amount !== 'number' || isNaN(amount) || amount === null || amount === undefined) {
       return 'N/A';
     }
     
-    // Ensure amount is not negative for display
-    const validAmount = Math.max(0, amount);
-    
+    // Return formatted amount (including zero)
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
-    }).format(validAmount);
+    }).format(amount);
   };
 
   const formatDate = (dateString: string) => {
@@ -236,11 +234,32 @@ const NotificationsPage: React.FC = () => {
                       💳 Guest owes: {formatCurrency(notification.additionalCharges)}
                     </Typography>
                   )}
-                  {(!notification.refundAmount || notification.refundAmount === 0) && 
-                   (!notification.additionalCharges || notification.additionalCharges === 0) && (
+                  {/* Only show "No payment changes" if BOTH amounts are explicitly 0 or null AND this is a modification */}
+                  {notification.type === 'MODIFIED' &&
+                   (notification.refundAmount === 0 || !notification.refundAmount) && 
+                   (notification.additionalCharges === 0 || !notification.additionalCharges) && (
                     <Typography variant="body2" color="text.secondary">
                       No payment changes
                     </Typography>
+                  )}
+                  {/* For cancellations, show appropriate refund status */}
+                  {notification.type === 'CANCELLED' && (
+                    <>
+                      {notification.refundAmount && notification.refundAmount > 0 ? (
+                        <Typography 
+                          variant="body2" 
+                          color="success.main" 
+                          fontWeight={notification.status === 'UNREAD' ? 'bold' : 'normal'}
+                          sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                        >
+                          ↩️ Refund due: {formatCurrency(notification.refundAmount)}
+                        </Typography>
+                      ) : (
+                        <Typography variant="body2" color="text.secondary">
+                          No refund applicable
+                        </Typography>
+                      )}
+                    </>
                   )}
                 </Box>
               </TableCell>

@@ -45,9 +45,12 @@ const EnhancedLayout: React.FC<EnhancedLayoutProps> = ({
   // Sidebar state for mobile/tablet
   const [sidebarOpen, setSidebarOpen] = useState(false);
   
+  // Add state for toggling sidebar visibility
+  const [sidebarVisible, setSidebarVisible] = useState(true);
+  
   // Show sidebar only for authenticated users, when not hidden, and not for CUSTOMER/GUEST roles
   const showSidebar = isAuthenticated && !hideSidebar && user?.roles && 
-    !user.roles.includes('CUSTOMER') && !user.roles.includes('GUEST');
+    !user.roles.includes('CUSTOMER') && !user.roles.includes('GUEST') && sidebarVisible;
   
   // Determine which navbar to render
   const renderNavbar = () => {
@@ -120,7 +123,9 @@ const EnhancedLayout: React.FC<EnhancedLayoutProps> = ({
             flexDirection: 'column',
             minWidth: 0, // Prevent flex item from overflowing
             // Adjust width based on sidebar presence
-            ...(showSidebar && isDesktop && {
+            ...(isAuthenticated && !hideSidebar && user?.roles && 
+                !user.roles.includes('CUSTOMER') && !user.roles.includes('GUEST') && 
+                isDesktop && sidebarVisible && {
               marginRight: '350px', // Make room for fixed sidebar
             }),
           }}
@@ -146,8 +151,36 @@ const EnhancedLayout: React.FC<EnhancedLayoutProps> = ({
           </Container>
         </Box>
         
+        {/* Desktop Sidebar Toggle Button */}
+        {isAuthenticated && !hideSidebar && user?.roles && 
+         !user.roles.includes('CUSTOMER') && !user.roles.includes('GUEST') && isDesktop && (
+          <IconButton
+            onClick={() => setSidebarVisible(!sidebarVisible)}
+            sx={{
+              position: 'fixed',
+              top: 80,
+              right: sidebarVisible ? 360 : 16,
+              zIndex: 1000,
+              bgcolor: 'error.main',
+              color: 'white',
+              boxShadow: 2,
+              border: 1,
+              borderColor: 'error.main',
+              '&:hover': {
+                bgcolor: 'error.dark',
+                boxShadow: 3,
+              },
+              transition: 'all 0.3s ease',
+            }}
+            size="small"
+          >
+            <CalendarIcon />
+          </IconButton>
+        )}
+        
         {/* Desktop Sidebar - Fixed position */}
-        {showSidebar && isDesktop && (
+        {isAuthenticated && !hideSidebar && user?.roles && 
+         !user.roles.includes('CUSTOMER') && !user.roles.includes('GUEST') && isDesktop && (
           <Box
             sx={{
               position: 'fixed',
@@ -158,6 +191,9 @@ const EnhancedLayout: React.FC<EnhancedLayoutProps> = ({
               zIndex: 900, // Set well below AppBar's z-index of 1100
               overflow: 'auto', // Add scrolling for sidebar content
               backgroundColor: 'background.paper', // Ensure solid background
+              transform: sidebarVisible ? 'translateX(0)' : 'translateX(100%)',
+              transition: 'transform 0.3s ease-in-out',
+              boxShadow: sidebarVisible ? 2 : 0,
             }}
           >
             {sidebarContent}

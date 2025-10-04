@@ -75,6 +75,12 @@ public interface BookingNotificationRepository extends JpaRepository<BookingNoti
     List<BookingNotification> findByReservationIdOrderByCreatedAtDesc(Long reservationId);
 
     /**
+     * Find recent notifications by reservation ID, type, and creation time
+     */
+    List<BookingNotification> findByReservationIdAndTypeAndCreatedAtAfter(Long reservationId, NotificationType type, 
+            java.time.LocalDateTime createdAfter);
+
+    /**
      * Delete old notifications (for cleanup tasks)
      */
     @Query("DELETE FROM BookingNotification n WHERE n.createdAt < :cutoffDate AND n.status = :status")

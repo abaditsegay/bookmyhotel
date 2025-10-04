@@ -34,6 +34,7 @@ import com.bookmyhotel.dto.BookingRequest;
 import com.bookmyhotel.dto.BookingResponse;
 import com.bookmyhotel.dto.RoomTypeBookingRequest;
 import com.bookmyhotel.dto.payment.PaymentInitiationRequest;
+import com.bookmyhotel.entity.BookingNotification;
 import com.bookmyhotel.entity.GuestInfo;
 import com.bookmyhotel.entity.Hotel;
 import com.bookmyhotel.entity.HotelPricingConfig;
@@ -1442,8 +1443,8 @@ public class BookingService {
 
             // Handle room type changes
             if (request.getNewRoomType() != null && !request.getNewRoomType().trim().isEmpty()) {
-                logger.info("Processing room type change request: {} for reservation {}", 
-                    request.getNewRoomType(), reservation.getConfirmationNumber());
+                logger.info("Processing room type change request: {} for reservation {}",
+                        request.getNewRoomType(), reservation.getConfirmationNumber());
 
                 // Convert string to RoomType enum for validation
                 RoomType requestedRoomType;
@@ -1460,21 +1461,23 @@ public class BookingService {
                     logger.info("Reservation has no assigned room, proceeding with room type change");
                     needsRoomChange = true;
                 } else if (!requestedRoomType.equals(reservation.getRoom().getRoomType())) {
-                    logger.info("Current room type: {}, Requested room type: {}", 
-                        reservation.getRoom().getRoomType(), requestedRoomType);
+                    logger.info("Current room type: {}, Requested room type: {}",
+                            reservation.getRoom().getRoomType(), requestedRoomType);
                     needsRoomChange = true;
                 } else {
-                    logger.info("Requested room type {} is same as current room type, no change needed", 
-                        requestedRoomType);
+                    logger.info("Requested room type {} is same as current room type, no change needed",
+                            requestedRoomType);
                 }
 
                 if (needsRoomChange) {
-                    // Use the effective dates (new dates if they were modified, otherwise current dates)
+                    // Use the effective dates (new dates if they were modified, otherwise current
+                    // dates)
                     LocalDate effectiveCheckIn = reservation.getCheckInDate();
                     LocalDate effectiveCheckOut = reservation.getCheckOutDate();
-                    
-                    logger.info("Finding available room of type {} for dates {} to {} at hotel {}", 
-                        requestedRoomType.name(), effectiveCheckIn, effectiveCheckOut, reservation.getHotel().getId());
+
+                    logger.info("Finding available room of type {} for dates {} to {} at hotel {}",
+                            requestedRoomType.name(), effectiveCheckIn, effectiveCheckOut,
+                            reservation.getHotel().getId());
 
                     // Find an available room of the new type using the public method
                     Optional<Room> newRoomOpt = roomRepository.findFirstAvailableRoomOfTypePublic(
@@ -1484,7 +1487,8 @@ public class BookingService {
                             effectiveCheckOut);
 
                     if (newRoomOpt.isEmpty()) {
-                        logger.error("No available rooms of type {} found for the requested dates", requestedRoomType.name());
+                        logger.error("No available rooms of type {} found for the requested dates",
+                                requestedRoomType.name());
                         return new BookingModificationResponse(false,
                                 "No available rooms of type '" + request.getNewRoomType() + "' for your dates");
                     }
@@ -1495,24 +1499,24 @@ public class BookingService {
                     // Calculate price difference for room upgrade/downgrade using effective dates
                     long nights = ChronoUnit.DAYS.between(effectiveCheckIn, effectiveCheckOut);
                     BigDecimal oldRoomTotal;
-                    
+
                     if (reservation.getRoom() != null) {
                         // Use current room price if room is assigned
                         oldRoomTotal = reservation.getRoom().getPricePerNight().multiply(BigDecimal.valueOf(nights));
-                        logger.info("Current room price: {} per night, total: {}", 
-                            reservation.getRoom().getPricePerNight(), oldRoomTotal);
+                        logger.info("Current room price: {} per night, total: {}",
+                                reservation.getRoom().getPricePerNight(), oldRoomTotal);
                     } else {
                         // Use reservation price per night if no room assigned yet
                         oldRoomTotal = reservation.getPricePerNight().multiply(BigDecimal.valueOf(nights));
-                        logger.info("Using reservation price: {} per night, total: {}", 
-                            reservation.getPricePerNight(), oldRoomTotal);
+                        logger.info("Using reservation price: {} per night, total: {}",
+                                reservation.getPricePerNight(), oldRoomTotal);
                     }
-                    
+
                     BigDecimal newRoomTotal = newRoom.getPricePerNight().multiply(BigDecimal.valueOf(nights));
                     BigDecimal roomPriceDifference = newRoomTotal.subtract(oldRoomTotal);
-                    
-                    logger.info("New room price: {} per night, total: {}, difference: {}", 
-                        newRoom.getPricePerNight(), newRoomTotal, roomPriceDifference);
+
+                    logger.info("New room price: {} per night, total: {}, difference: {}",
+                            newRoom.getPricePerNight(), newRoomTotal, roomPriceDifference);
 
                     if (roomPriceDifference.compareTo(BigDecimal.ZERO) > 0) {
                         additionalCharges = additionalCharges.add(roomPriceDifference);
@@ -1527,13 +1531,14 @@ public class BookingService {
                     reservation.setRoom(newRoom);
                     reservation.setRoomType(newRoom.getRoomType()); // CRITICAL: Update room type field
                     reservation.setTotalAmount(newRoomTotal);
-                    
-                    logger.info("Updated reservation - Old room: {}, New room: {}, Old room type: {}, New room type: {}, New total: {}", 
-                        oldRoom != null ? oldRoom.getRoomNumber() : "None", 
-                        newRoom.getRoomNumber(),
-                        oldRoom != null ? oldRoom.getRoomType() : reservation.getRoomType(),
-                        newRoom.getRoomType(),
-                        newRoomTotal);
+
+                    logger.info(
+                            "Updated reservation - Old room: {}, New room: {}, Old room type: {}, New room type: {}, New total: {}",
+                            oldRoom != null ? oldRoom.getRoomNumber() : "None",
+                            newRoom.getRoomNumber(),
+                            oldRoom != null ? oldRoom.getRoomType() : reservation.getRoomType(),
+                            newRoom.getRoomType(),
+                            newRoomTotal);
                 }
             } // Update guest information if provided
             if (request.getGuestName() != null && !request.getGuestName().trim().isEmpty()) {
@@ -1598,14 +1603,19 @@ public class BookingService {
                 logger.warn("Failed to send modification confirmation email: {}", e.getMessage());
             }
 
-            // Create booking change notification for hotel admin/front desk
+            // Create booking change notification for hotel admin/front desk (only if there are financial implications)
             try {
                 String modificationReason = request.getReason() != null &&
                         !request.getReason().trim().isEmpty()
                                 ? request.getReason().trim()
                                 : "Booking details updated";
-                bookingChangeNotificationService.createModificationNotification(reservation, modificationReason,
+                BookingNotification notification = bookingChangeNotificationService.createModificationNotification(reservation, modificationReason,
                         additionalCharges, refundAmount, "Guest");
+                if (notification != null) {
+                    logger.info("Created booking modification notification for financial implications");
+                } else {
+                    logger.info("No notification created - booking modification had no financial implications");
+                }
             } catch (Exception e) {
                 logger.warn("Failed to create booking modification notification: {}", e.getMessage());
             }
@@ -1954,13 +1964,18 @@ public class BookingService {
                 logger.warn("Failed to send modification confirmation email: {}", e.getMessage());
             }
 
-            // Create booking change notification for hotel admin/front desk
+            // Create booking change notification for hotel admin/front desk (only if there are financial implications)
             try {
                 String modificationReason = request.getReason() != null && !request.getReason().trim().isEmpty()
                         ? request.getReason().trim()
                         : "Booking details updated";
-                bookingChangeNotificationService.createModificationNotification(reservation, modificationReason,
+                BookingNotification notification = bookingChangeNotificationService.createModificationNotification(reservation, modificationReason,
                         additionalCharges, refundAmount, "Staff");
+                if (notification != null) {
+                    logger.info("Created booking modification notification for financial implications");
+                } else {
+                    logger.info("No notification created - booking modification had no financial implications");
+                }
             } catch (Exception e) {
                 logger.warn("Failed to create booking modification notification: {}", e.getMessage());
             }
@@ -2545,13 +2560,12 @@ public class BookingService {
         try {
             // Find the booking to get details
             BookingResponse booking = findByConfirmationNumberPublic(confirmationNumber);
-            
+
             // Generate a secure token for the booking management
             String managementToken = bookingTokenService.generateBookingManagementToken(
-                booking.getReservationId(), 
-                booking.getGuestEmail()
-            );
-            
+                    booking.getReservationId(),
+                    booking.getGuestEmail());
+
             // Determine action for email content
             String actionText = "manage";
             if ("modify".equals(action)) {
@@ -2559,12 +2573,13 @@ public class BookingService {
             } else if ("cancel".equals(action)) {
                 actionText = "cancel";
             }
-            
+
             // Send the authentication email
             emailService.sendBookingAuthenticationEmail(booking, managementToken, actionText);
-            
-            logger.info("Booking authentication email sent for confirmation: {} to email: {}", confirmationNumber, email);
-            
+
+            logger.info("Booking authentication email sent for confirmation: {} to email: {}", confirmationNumber,
+                    email);
+
         } catch (Exception e) {
             logger.error("Failed to send booking authentication email for confirmation: {}", confirmationNumber, e);
             throw new RuntimeException("Failed to send authentication email", e);

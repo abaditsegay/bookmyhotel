@@ -10,12 +10,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -279,6 +281,33 @@ public class NotificationController {
         }
 
         return response;
+    }
+
+    /**
+     * Cleanup notifications with zero financial values
+     * This endpoint helps remove confusing "0"/"00" notifications that provide no financial information
+     */
+    @PostMapping("/cleanup-zero-values")
+    @PreAuthorize("hasRole('HOTEL_ADMIN')")
+    public ResponseEntity<Map<String, Object>> cleanupZeroValueNotifications() {
+        try {
+            int cleanedCount = notificationService.cleanupZeroValueNotifications();
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Cleanup completed successfully");
+            response.put("cleanedCount", cleanedCount);
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("Failed to cleanup zero value notifications: {}", e.getMessage());
+            
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "Failed to cleanup notifications: " + e.getMessage());
+            
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
     }
 
     /**

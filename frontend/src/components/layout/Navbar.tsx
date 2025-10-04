@@ -221,16 +221,14 @@ const Navbar: React.FC = () => {
             fontSize: '0.8rem', // Smaller font size
             textTransform: 'none', // Disable all caps
             color: 'white', // Force white text color
-            backgroundColor: item.label === 'Shop' 
-              ? 'red' 
-              : item.path && isActivePath(item.path) 
-                ? 'rgba(255, 255, 255, 0.1)' 
-                : 'transparent',
+            backgroundColor: item.path && isActivePath(item.path) 
+              ? 'rgba(255, 255, 255, 0.1)' 
+              : 'transparent',
+            border: item.label === 'Shop' ? '1px solid red' : 'none',
             '&:hover': {
-              backgroundColor: item.label === 'Shop' 
-                ? 'error.dark' 
-                : 'rgba(255, 255, 255, 0.1)',
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
               color: 'white', // Maintain white color on hover
+              border: item.label === 'Shop' ? '1px solid rgba(255, 0, 0, 0.8)' : 'none',
             },
             // Ensure proper stacking and boundaries
             position: 'relative',
@@ -287,15 +285,13 @@ const Navbar: React.FC = () => {
             onClick={() => handleItemClick(item)}
             sx={{
               cursor: 'pointer',
-              backgroundColor: item.label === 'Hotel Shop' 
-                ? theme.palette.error.main
-                : item.path && isActivePath(item.path) 
-                  ? theme.palette.action.selected 
-                  : 'transparent',
+              backgroundColor: item.path && isActivePath(item.path) 
+                ? theme.palette.action.selected 
+                : 'transparent',
+              border: item.label === 'Shop' ? '1px solid red' : 'none',
               '&:hover': {
-                backgroundColor: item.label === 'Hotel Shop' 
-                  ? theme.palette.error.dark
-                  : theme.palette.action.hover,
+                backgroundColor: theme.palette.action.hover,
+                border: item.label === 'Shop' ? '1px solid rgba(255, 0, 0, 0.8)' : 'none',
               },
             }}
           >
