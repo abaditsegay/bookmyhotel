@@ -118,6 +118,8 @@ export interface Hotel {
   city?: string;
   country?: string;
   phone?: string;
+  mobilePaymentPhone?: string;
+  mobilePaymentPhone2?: string;
   email?: string;
   tenantId?: string;
   isActive?: boolean;

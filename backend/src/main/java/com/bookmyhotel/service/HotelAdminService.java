@@ -131,6 +131,8 @@ public class HotelAdminService {
         hotel.setCity(hotelDTO.getCity());
         hotel.setCountry(hotelDTO.getCountry());
         hotel.setPhone(hotelDTO.getPhone());
+        hotel.setMobilePaymentPhone(hotelDTO.getMobilePaymentPhone());
+        hotel.setMobilePaymentPhone2(hotelDTO.getMobilePaymentPhone2());
         hotel.setEmail(hotelDTO.getEmail());
         hotel.setUpdatedAt(LocalDateTime.now());
 
@@ -804,6 +806,8 @@ public class HotelAdminService {
         dto.setCity(hotel.getCity());
         dto.setCountry(hotel.getCountry());
         dto.setPhone(hotel.getPhone());
+        dto.setMobilePaymentPhone(hotel.getMobilePaymentPhone());
+        dto.setMobilePaymentPhone2(hotel.getMobilePaymentPhone2());
         dto.setEmail(hotel.getEmail());
         dto.setIsActive(hotel.getIsActive());
         dto.setCreatedAt(hotel.getCreatedAt());

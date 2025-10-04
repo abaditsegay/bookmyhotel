@@ -257,7 +257,8 @@ public class BookingChangeNotificationService {
      */
     public List<BookingNotification> getNotificationsByConfirmationNumber(String confirmationNumber, Long hotelId) {
         logger.debug("Getting notifications for confirmation number: {} and hotel: {}", confirmationNumber, hotelId);
-        List<BookingNotification> notifications = notificationRepository.findByConfirmationNumberAndHotelIdOrderByCreatedAtDesc(confirmationNumber, hotelId);
+        List<BookingNotification> notifications = notificationRepository
+                .findByConfirmationNumberAndHotelIdOrderByCreatedAtDesc(confirmationNumber, hotelId);
         logger.debug("Found {} notifications for confirmation number: {}", notifications.size(), confirmationNumber);
         return notifications;
     }

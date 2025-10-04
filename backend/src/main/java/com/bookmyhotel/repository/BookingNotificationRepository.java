@@ -81,9 +81,11 @@ public interface BookingNotificationRepository extends JpaRepository<BookingNoti
                         java.time.LocalDateTime createdAfter);
 
         /**
-         * Find notifications by confirmation number and hotel ID ordered by creation date (newest first)
+         * Find notifications by confirmation number and hotel ID ordered by creation
+         * date (newest first)
          */
-        List<BookingNotification> findByConfirmationNumberAndHotelIdOrderByCreatedAtDesc(String confirmationNumber, Long hotelId);
+        List<BookingNotification> findByConfirmationNumberAndHotelIdOrderByCreatedAtDesc(String confirmationNumber,
+                        Long hotelId);
 
         /**
          * Delete old notifications (for cleanup tasks)

@@ -320,7 +320,7 @@ public class EmailService {
             templateData.put("totalAmount", booking.getTotalAmount());
             templateData.put("checkInDate", booking.getCheckInDate());
             templateData.put("checkOutDate", booking.getCheckOutDate());
-            
+
             // Create management URL with token
             String managementUrl = appUrl + "/guest-booking-management?token=" + managementToken;
             templateData.put("managementUrl", managementUrl);

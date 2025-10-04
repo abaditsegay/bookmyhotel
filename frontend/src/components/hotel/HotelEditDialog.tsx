@@ -37,6 +37,8 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
     city: '',
     country: '',
     phone: '',
+    mobilePaymentPhone: '',
+    mobilePaymentPhone2: '',
     email: '',
     totalRooms: 0,
   });
@@ -54,6 +56,8 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
         city: hotel.city || '',
         country: hotel.country || '',
         phone: hotel.phone || '',
+        mobilePaymentPhone: hotel.mobilePaymentPhone || '',
+        mobilePaymentPhone2: hotel.mobilePaymentPhone2 || '',
         email: hotel.email || '',
         totalRooms: hotel.totalRooms || hotel.roomCount || 0,
       });
@@ -219,12 +223,37 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
             
             <Grid item xs={12} sm={6}>
               <TextField
-                label="Phone"
+                label="Communication Phone"
                 fullWidth
                 value={formData.phone || ''}
                 onChange={handleInputChange('phone')}
                 disabled={saving}
                 inputProps={{ maxLength: 20 }}
+                helperText="Main contact number for hotel communications"
+              />
+            </Grid>
+            
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Primary Payment Phone"
+                fullWidth
+                value={formData.mobilePaymentPhone || ''}
+                onChange={handleInputChange('mobilePaymentPhone')}
+                disabled={saving}
+                inputProps={{ maxLength: 20 }}
+                helperText="Primary mobile number for payment processing"
+              />
+            </Grid>
+            
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Secondary Payment Phone"
+                fullWidth
+                value={formData.mobilePaymentPhone2 || ''}
+                onChange={handleInputChange('mobilePaymentPhone2')}
+                disabled={saving}
+                inputProps={{ maxLength: 20 }}
+                helperText="Backup mobile number for payment processing"
               />
             </Grid>
             

@@ -27,6 +27,7 @@ import RoomManagement from './RoomManagement';
 import StaffManagement from './StaffManagement';
 import StaffScheduleManagement from '../../components/StaffScheduleManagement';
 import HotelEditDialog from '../../components/hotel/HotelEditDialog';
+import HotelDetailsManagement from '../../components/hotel/HotelDetailsManagement';
 import WalkInBookingModal from '../../components/booking/WalkInBookingModal';
 import BookingManagementTable from '../../components/booking/BookingManagementTable';
 import OfflineWalkInBooking from '../../components/OfflineWalkInBooking';
@@ -834,7 +835,7 @@ const HotelAdminDashboard: React.FC = () => {
                             
                             <Box sx={{ mb: 3 }}>
                               <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 'medium', mb: 1 }}>
-                                Phone Number
+                                Communication Phone
                               </Typography>
                               <Typography variant="h6" sx={{ 
                                 fontWeight: 'medium',
@@ -842,6 +843,32 @@ const HotelAdminDashboard: React.FC = () => {
                                 fontStyle: hotel?.phone ? 'normal' : 'italic'
                               }}>
                                 {hotel?.phone || 'Phone not set'}
+                              </Typography>
+                            </Box>
+                            
+                            <Box sx={{ mb: 3 }}>
+                              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 'medium', mb: 1 }}>
+                                Primary Payment Phone
+                              </Typography>
+                              <Typography variant="h6" sx={{ 
+                                fontWeight: 'medium',
+                                color: hotel?.mobilePaymentPhone ? theme.palette.text.primary : theme.palette.text.secondary,
+                                fontStyle: hotel?.mobilePaymentPhone ? 'normal' : 'italic'
+                              }}>
+                                {hotel?.mobilePaymentPhone || 'Payment phone not set'}
+                              </Typography>
+                            </Box>
+                            
+                            <Box sx={{ mb: 3 }}>
+                              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 'medium', mb: 1 }}>
+                                Secondary Payment Phone
+                              </Typography>
+                              <Typography variant="h6" sx={{ 
+                                fontWeight: 'medium',
+                                color: hotel?.mobilePaymentPhone2 ? theme.palette.text.primary : theme.palette.text.secondary,
+                                fontStyle: hotel?.mobilePaymentPhone2 ? 'normal' : 'italic'
+                              }}>
+                                {hotel?.mobilePaymentPhone2 || 'Secondary payment phone not set'}
                               </Typography>
                             </Box>
                             

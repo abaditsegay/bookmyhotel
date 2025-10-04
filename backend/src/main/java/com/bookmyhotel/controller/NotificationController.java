@@ -235,7 +235,8 @@ public class NotificationController {
             return ResponseEntity.badRequest().build();
         }
 
-        List<BookingNotification> notifications = notificationService.getNotificationsByConfirmationNumber(confirmationNumber, currentHotelId);
+        List<BookingNotification> notifications = notificationService
+                .getNotificationsByConfirmationNumber(confirmationNumber, currentHotelId);
         List<BookingNotificationResponse> response = notifications.stream()
                 .map(this::convertToResponse)
                 .toList();

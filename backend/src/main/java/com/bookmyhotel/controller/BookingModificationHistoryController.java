@@ -49,12 +49,16 @@ public class BookingModificationHistoryController {
     public ResponseEntity<List<BookingModificationHistory>> getHistoryByConfirmationNumber(
             @PathVariable String confirmationNumber) {
         try {
-            logger.info("🔍 API Request: Fetching modification history for confirmation number: {}", confirmationNumber);
-            List<BookingModificationHistory> history = historyService.getHistoryByConfirmationNumber(confirmationNumber);
-            logger.info("✅ API Response: Found {} modification records for confirmation: {}", history.size(), confirmationNumber);
+            logger.info("🔍 API Request: Fetching modification history for confirmation number: {}",
+                    confirmationNumber);
+            List<BookingModificationHistory> history = historyService
+                    .getHistoryByConfirmationNumber(confirmationNumber);
+            logger.info("✅ API Response: Found {} modification records for confirmation: {}", history.size(),
+                    confirmationNumber);
             return ResponseEntity.ok(history);
         } catch (Exception e) {
-            logger.error("❌ API Error: Error fetching modification history for confirmation {}: {}", confirmationNumber, e.getMessage(), e);
+            logger.error("❌ API Error: Error fetching modification history for confirmation {}: {}", confirmationNumber,
+                    e.getMessage(), e);
             return ResponseEntity.internalServerError().build();
         }
     }

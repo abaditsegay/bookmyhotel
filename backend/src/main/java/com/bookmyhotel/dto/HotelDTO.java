@@ -33,6 +33,12 @@ public class HotelDTO {
     @Size(max = 20, message = "Phone must not exceed 20 characters")
     private String phone;
     
+    @Size(max = 20, message = "Mobile payment phone must not exceed 20 characters")
+    private String mobilePaymentPhone;
+    
+    @Size(max = 20, message = "Secondary mobile payment phone must not exceed 20 characters")
+    private String mobilePaymentPhone2;
+    
     @Email(message = "Email should be valid")
     @Size(max = 100, message = "Email must not exceed 100 characters")
     private String email;
@@ -59,6 +65,20 @@ public class HotelDTO {
         this.city = city;
         this.country = country;
         this.phone = phone;
+        this.email = email;
+    }
+    
+    public HotelDTO(Long id, String name, String description, String address, String city, String country, 
+                   String phone, String mobilePaymentPhone, String mobilePaymentPhone2, String email) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.address = address;
+        this.city = city;
+        this.country = country;
+        this.phone = phone;
+        this.mobilePaymentPhone = mobilePaymentPhone;
+        this.mobilePaymentPhone2 = mobilePaymentPhone2;
         this.email = email;
     }
     
@@ -117,6 +137,22 @@ public class HotelDTO {
     
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+    
+    public String getMobilePaymentPhone() {
+        return mobilePaymentPhone;
+    }
+    
+    public void setMobilePaymentPhone(String mobilePaymentPhone) {
+        this.mobilePaymentPhone = mobilePaymentPhone;
+    }
+    
+    public String getMobilePaymentPhone2() {
+        return mobilePaymentPhone2;
+    }
+    
+    public void setMobilePaymentPhone2(String mobilePaymentPhone2) {
+        this.mobilePaymentPhone2 = mobilePaymentPhone2;
     }
     
     public String getEmail() {
