@@ -467,8 +467,9 @@ const NotificationsPage: React.FC = () => {
                         </Typography>
                       </Alert>
                     )}
-                    {(!selectedNotification.additionalCharges || selectedNotification.additionalCharges === 0) && 
-                     (!selectedNotification.refundAmount || selectedNotification.refundAmount === 0) && (
+                    {/* Fixed logic: Only show "No Payment Changes" if BOTH amounts are explicitly zero or null/undefined */}
+                    {((selectedNotification.additionalCharges ?? 0) <= 0) && 
+                     ((selectedNotification.refundAmount ?? 0) <= 0) && (
                       <Alert severity="info">
                         <Typography>
                           <strong>ℹ️ No Payment Changes:</strong> This modification does not require any additional payment or refund.
