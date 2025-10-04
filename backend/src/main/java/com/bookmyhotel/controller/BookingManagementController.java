@@ -3,6 +3,7 @@ package com.bookmyhotel.controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -32,6 +33,9 @@ import com.bookmyhotel.tenant.TenantContext;
 public class BookingManagementController {
 
     private static final Logger logger = LoggerFactory.getLogger(BookingManagementController.class);
+
+    @Value("${app.url:http://localhost:3000}")
+    private String appUrl;
 
     @Autowired
     private BookingTokenService bookingTokenService;
@@ -307,8 +311,7 @@ public class BookingManagementController {
                     reservationEmail);
 
             // Generate management URL
-            String baseUrl = "https://www.shegeroom.com";
-            String managementUrl = baseUrl + "/guest-booking-management?token=" + newToken;
+            String managementUrl = appUrl + "/guest-booking-management?token=" + newToken;
 
             logger.info("Successfully generated new token for reservation: {}", reservation.getId());
 

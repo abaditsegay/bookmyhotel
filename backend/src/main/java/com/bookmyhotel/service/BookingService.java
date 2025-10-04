@@ -2529,4 +2529,37 @@ public class BookingService {
 
         return false;
     }
+
+    /**
+     * Send booking authentication email for management access
+     */
+    public void sendBookingAuthenticationEmail(String confirmationNumber, String email, String action) {
+        try {
+            // Find the booking to get details
+            BookingResponse booking = findByConfirmationNumberPublic(confirmationNumber);
+            
+            // Generate a secure token for the booking management
+            String managementToken = bookingTokenService.generateBookingManagementToken(
+                booking.getReservationId(), 
+                booking.getGuestEmail()
+            );
+            
+            // Determine action for email content
+            String actionText = "manage";
+            if ("modify".equals(action)) {
+                actionText = "modify";
+            } else if ("cancel".equals(action)) {
+                actionText = "cancel";
+            }
+            
+            // Send the authentication email
+            emailService.sendBookingAuthenticationEmail(booking, managementToken, actionText);
+            
+            logger.info("Booking authentication email sent for confirmation: {} to email: {}", confirmationNumber, email);
+            
+        } catch (Exception e) {
+            logger.error("Failed to send booking authentication email for confirmation: {}", confirmationNumber, e);
+            throw new RuntimeException("Failed to send authentication email", e);
+        }
+    }
 }

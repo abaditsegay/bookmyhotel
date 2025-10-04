@@ -72,6 +72,7 @@ public class SecurityConfig {
                                 "/api/bookings/room-type",
                                 "/api/bookings/search",
                                 "/api/bookings/search/**",
+                                "/api/bookings/authenticate",
                                 "/api/bookings/cancel",
                                 "/api/bookings/modify",
                                 "/api/bookings/{id}/email",

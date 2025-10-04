@@ -31,7 +31,7 @@ import {
   Person as PersonIcon
 } from '@mui/icons-material';
 import { bookingApiService } from '../services/bookingApi';
-import { buildApiUrl } from '../config/apiConfig';
+import { buildApiUrl, API_CONFIG } from '../config/apiConfig';
 import { ROOM_TYPES } from '../constants/roomTypes';
 import { formatDateForInput, formatDateForAPI, formatDateForDisplay } from '../utils/dateUtils';
 
@@ -79,6 +79,9 @@ const GuestBookingManagementPage: React.FC = () => {
   const [loading, setLoading] = useState(!initialBooking); // Only load if no initial booking
   const [modifyDialogOpen, setModifyDialogOpen] = useState(false);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authMessage, setAuthMessage] = useState('');
+  const [pendingAction, setPendingAction] = useState<'modify' | 'cancel' | null>(null);
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   
@@ -372,6 +375,40 @@ const GuestBookingManagementPage: React.FC = () => {
     return booking.status.toLowerCase() === 'confirmed' && checkInDate > now;
   };
 
+  // Email authentication for modify/cancel actions
+  const sendAuthenticationEmail = async (action: 'modify' | 'cancel') => {
+    try {
+      setAuthLoading(true);
+      setAuthMessage('');
+      setPendingAction(action);
+      
+      const response = await fetch(`${API_CONFIG.BASE_URL}/bookings/authenticate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          confirmationNumber: booking.confirmationNumber,
+          email: booking.guestEmail,
+          action: action
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setAuthMessage(`Authentication email sent! Please check your email and click the link to ${action} your booking.`);
+      } else {
+        setAuthMessage(result.message || `Failed to send authentication email for ${action}. Please try again.`);
+      }
+    } catch (error) {
+      console.error('Error sending authentication email:', error);
+      setAuthMessage(`Failed to send authentication email for ${action}. Please try again.`);
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
   const handleCloseModifyDialog = () => {
     setModifyDialogOpen(false);
     setPricesModified(false);
@@ -611,31 +648,50 @@ const GuestBookingManagementPage: React.FC = () => {
             variant="contained"
             startIcon={<EditIcon />}
             onClick={() => {
-              // Store original pricing when modify dialog opens
-              if (booking) {
+              if (token) {
+                // User came from email link, show modify dialog directly
                 setOriginalPricing({
-                  pricePerNight: booking.pricePerNight || 0,
+                  pricePerNight: booking.pricePerNight,
                   totalAmount: booking.totalAmount
                 });
-                setPricesModified(false);
-                setCurrentCalculatedTotal(null);
+                setModifyDialogOpen(true);
+              } else {
+                // User found booking through search, require email authentication
+                sendAuthenticationEmail('modify');
               }
-              setModifyDialogOpen(true);
             }}
-            disabled={!canModifyBooking()}
+            disabled={!canModifyBooking() || authLoading}
           >
-            Modify Booking
+            {authLoading && pendingAction === 'modify' ? 'Sending Email...' : 'Modify Booking'}
           </Button>
           <Button
             variant="outlined"
             color="error"
             startIcon={<CancelIcon />}
-            onClick={() => setCancelDialogOpen(true)}
-            disabled={!canCancelBooking()}
+            onClick={() => {
+              if (token) {
+                // User came from email link, show cancel dialog directly
+                setCancelDialogOpen(true);
+              } else {
+                // User found booking through search, require email authentication
+                sendAuthenticationEmail('cancel');
+              }
+            }}
+            disabled={!canCancelBooking() || authLoading}
           >
-            Cancel Booking
+            {authLoading && pendingAction === 'cancel' ? 'Sending Email...' : 'Cancel Booking'}
           </Button>
         </Box>
+
+        {/* Authentication Message */}
+        {authMessage && (
+          <Alert 
+            severity={authMessage.includes('sent') ? 'success' : 'error'}
+            sx={{ mt: 2 }}
+          >
+            {authMessage}
+          </Alert>
+        )}
 
         {!canModifyBooking() && booking.status.toLowerCase() === 'confirmed' && (
           <Alert severity="info" sx={{ mt: 2 }}>

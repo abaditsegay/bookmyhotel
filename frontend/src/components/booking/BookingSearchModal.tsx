@@ -284,9 +284,55 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
                     <HotelIcon sx={{ mr: 1, color: 'primary.main', fontSize: 20 }} />
                     <Typography variant="body2" color="text.secondary">Hotel & Room Type</Typography>
                   </Box>
-                  <Typography variant="body1" fontWeight="medium">
-                    {booking.hotelName}
-                  </Typography>
+                  
+                  {/* Hotel Name with Payment Info at rightmost */}
+                  <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1, flexWrap: 'wrap', gap: 1 }}>
+                    <Typography variant="body1" fontWeight="medium">
+                      {booking.hotelName}
+                    </Typography>
+                    
+                    {/* Payment Information - Rightmost */}
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, alignItems: 'flex-end' }}>
+                      {/* Payment Status */}
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography variant="caption" color="text.secondary">Payment Status:</Typography>
+                        <Box
+                          sx={{
+                            px: 1,
+                            py: 0.25,
+                            borderRadius: 0.5,
+                            backgroundColor: getPaymentStatusColor(booking.paymentStatus),
+                            color: 'white',
+                            fontSize: '0.7rem',
+                            fontWeight: '500',
+                            textTransform: 'uppercase',
+                          }}
+                        >
+                          {booking.paymentStatus || 'PENDING'}
+                        </Box>
+                      </Box>
+                      
+                      {/* Payment Reference */}
+                      {booking.paymentReference && (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Typography variant="caption" color="text.secondary">Payment Ref:</Typography>
+                          <Typography 
+                            variant="caption" 
+                            sx={{ 
+                              fontFamily: 'monospace',
+                              backgroundColor: '#f0f0f0',
+                              px: 0.5,
+                              py: 0.25,
+                              borderRadius: 0.5,
+                              fontSize: '0.7rem',
+                            }}
+                          >
+                            {booking.paymentReference}
+                          </Typography>
+                        </Box>
+                      )}
+                    </Box>
+                  </Box>
                   <Typography variant="body2" color="text.secondary">
                     Room Type {booking.roomType}
                   </Typography>

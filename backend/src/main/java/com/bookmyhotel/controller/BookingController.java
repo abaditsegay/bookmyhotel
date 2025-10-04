@@ -300,4 +300,49 @@ public class BookingController {
             return ResponseEntity.badRequest().body(response);
         }
     }
+
+    /**
+     * Send authentication email for booking management
+     */
+    @PostMapping("/authenticate")
+    public ResponseEntity<?> authenticateBookingAccess(@RequestBody Map<String, String> request) {
+        try {
+            String confirmationNumber = request.get("confirmationNumber");
+            String email = request.get("email");
+            String action = request.get("action"); // "modify" or "cancel"
+            
+            if (confirmationNumber == null || confirmationNumber.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Confirmation number is required"));
+            }
+            
+            if (email == null || email.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Email is required"));
+            }
+            
+            // Verify the booking exists and email matches
+            try {
+                BookingResponse booking = bookingService.findByConfirmationNumberPublic(confirmationNumber);
+                
+                if (!booking.getGuestEmail().equalsIgnoreCase(email.trim())) {
+                    return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Email does not match the booking record"));
+                }
+                
+                // Send authentication email with secure token
+                bookingService.sendBookingAuthenticationEmail(confirmationNumber, email.trim(), action);
+                
+                return ResponseEntity.ok(Map.of(
+                    "success", true, 
+                    "message", "Authentication email sent successfully. Please check your email and click the link to manage your booking."
+                ));
+                
+            } catch (ResourceNotFoundException e) {
+                return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Booking not found with the provided confirmation number"));
+            }
+            
+        } catch (Exception e) {
+            logger.error("Error sending booking authentication email", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("success", false, "message", "Failed to send authentication email. Please try again."));
+        }
+    }
 }
