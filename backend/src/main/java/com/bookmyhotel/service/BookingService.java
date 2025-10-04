@@ -1440,92 +1440,100 @@ public class BookingService {
                 }
             }
 
-            // Handle room changes by room type
-            if (request.getNewRoomType() != null
-                    && (reservation.getRoom() == null
-                            || !request.getNewRoomType().equals(reservation.getRoom().getRoomType().name()))) {
-                // Find an available room of the new type
-                Room newRoom = roomRepository.findFirstAvailableRoomOfTypePublic(
-                        reservation.getHotel().getId(),
-                        request.getNewRoomType(),
-                        reservation.getCheckInDate(),
-                        reservation.getCheckOutDate())
-                        .orElseThrow(() -> new BookingException(
-                                "No available rooms of type " + request.getNewRoomType() + " for your dates"));
+            // Handle room type changes
+            if (request.getNewRoomType() != null && !request.getNewRoomType().trim().isEmpty()) {
+                logger.info("Processing room type change request: {} for reservation {}", 
+                    request.getNewRoomType(), reservation.getConfirmationNumber());
 
-                // Room is available if we found one above
-
-                // Calculate price difference for room upgrade/downgrade
-                long nights = ChronoUnit.DAYS.between(reservation.getCheckInDate(), reservation.getCheckOutDate());
-                BigDecimal oldRoomTotal;
-                if (reservation.getRoom() != null) {
-                    // Use current room price if room is assigned
-                    oldRoomTotal = reservation.getRoom().getPricePerNight().multiply(BigDecimal.valueOf(nights));
-                } else {
-                    // Use reservation price per night if no room assigned yet
-                    oldRoomTotal = reservation.getPricePerNight().multiply(BigDecimal.valueOf(nights));
-                }
-                BigDecimal newRoomTotal = newRoom.getPricePerNight().multiply(BigDecimal.valueOf(nights));
-                BigDecimal roomPriceDifference = newRoomTotal.subtract(oldRoomTotal);
-
-                if (roomPriceDifference.compareTo(BigDecimal.ZERO) > 0) {
-                    additionalCharges = additionalCharges.add(roomPriceDifference);
-                } else if (roomPriceDifference.compareTo(BigDecimal.ZERO) < 0) {
-                    refundAmount = refundAmount.add(roomPriceDifference.abs());
-                }
-
-                // Update room and total amount
-                reservation.setRoom(newRoom);
-                reservation.setTotalAmount(newRoomTotal);
-            }
-            // Handle room changes by type name
-            else if (request.getNewRoomType() != null && !request.getNewRoomType().trim().isEmpty()) {
-
-                // Convert string to RoomType enum
+                // Convert string to RoomType enum for validation
                 RoomType requestedRoomType;
                 try {
                     requestedRoomType = RoomType.valueOf(request.getNewRoomType().trim().toUpperCase());
                 } catch (IllegalArgumentException e) {
+                    logger.error("Invalid room type provided: {}", request.getNewRoomType());
                     return new BookingModificationResponse(false, "Invalid room type: " + request.getNewRoomType());
                 }
 
                 // Check if it's actually a different room type
-                if (reservation.getRoom() == null || !requestedRoomType.equals(reservation.getRoom().getRoomType())) {
+                boolean needsRoomChange = false;
+                if (reservation.getRoom() == null) {
+                    logger.info("Reservation has no assigned room, proceeding with room type change");
+                    needsRoomChange = true;
+                } else if (!requestedRoomType.equals(reservation.getRoom().getRoomType())) {
+                    logger.info("Current room type: {}, Requested room type: {}", 
+                        reservation.getRoom().getRoomType(), requestedRoomType);
+                    needsRoomChange = true;
+                } else {
+                    logger.info("Requested room type {} is same as current room type, no change needed", 
+                        requestedRoomType);
+                }
 
-                    // Use the effective dates (new dates if they were modified, otherwise current
-                    // dates)
+                if (needsRoomChange) {
+                    // Use the effective dates (new dates if they were modified, otherwise current dates)
                     LocalDate effectiveCheckIn = reservation.getCheckInDate();
                     LocalDate effectiveCheckOut = reservation.getCheckOutDate();
+                    
+                    logger.info("Finding available room of type {} for dates {} to {} at hotel {}", 
+                        requestedRoomType.name(), effectiveCheckIn, effectiveCheckOut, reservation.getHotel().getId());
 
-                    // Find an available room of the requested type directly using the availability
-                    // query
-                    Room newRoom = findAvailableRoomOfType(
+                    // Find an available room of the new type using the public method
+                    Optional<Room> newRoomOpt = roomRepository.findFirstAvailableRoomOfTypePublic(
+                            reservation.getHotel().getId(),
                             requestedRoomType.name(),
                             effectiveCheckIn,
-                            effectiveCheckOut,
-                            reservation.getId());
+                            effectiveCheckOut);
 
-                    if (newRoom == null) {
+                    if (newRoomOpt.isEmpty()) {
+                        logger.error("No available rooms of type {} found for the requested dates", requestedRoomType.name());
                         return new BookingModificationResponse(false,
                                 "No available rooms of type '" + request.getNewRoomType() + "' for your dates");
                     }
 
+                    Room newRoom = newRoomOpt.get();
+                    logger.info("Found available room: {} (ID: {})", newRoom.getRoomNumber(), newRoom.getId());
+
                     // Calculate price difference for room upgrade/downgrade using effective dates
                     long nights = ChronoUnit.DAYS.between(effectiveCheckIn, effectiveCheckOut);
-                    BigDecimal oldRoomTotal = reservation.getRoom().getPricePerNight()
-                            .multiply(BigDecimal.valueOf(nights));
+                    BigDecimal oldRoomTotal;
+                    
+                    if (reservation.getRoom() != null) {
+                        // Use current room price if room is assigned
+                        oldRoomTotal = reservation.getRoom().getPricePerNight().multiply(BigDecimal.valueOf(nights));
+                        logger.info("Current room price: {} per night, total: {}", 
+                            reservation.getRoom().getPricePerNight(), oldRoomTotal);
+                    } else {
+                        // Use reservation price per night if no room assigned yet
+                        oldRoomTotal = reservation.getPricePerNight().multiply(BigDecimal.valueOf(nights));
+                        logger.info("Using reservation price: {} per night, total: {}", 
+                            reservation.getPricePerNight(), oldRoomTotal);
+                    }
+                    
                     BigDecimal newRoomTotal = newRoom.getPricePerNight().multiply(BigDecimal.valueOf(nights));
                     BigDecimal roomPriceDifference = newRoomTotal.subtract(oldRoomTotal);
+                    
+                    logger.info("New room price: {} per night, total: {}, difference: {}", 
+                        newRoom.getPricePerNight(), newRoomTotal, roomPriceDifference);
 
                     if (roomPriceDifference.compareTo(BigDecimal.ZERO) > 0) {
                         additionalCharges = additionalCharges.add(roomPriceDifference);
+                        logger.info("Additional charges: {}", roomPriceDifference);
                     } else if (roomPriceDifference.compareTo(BigDecimal.ZERO) < 0) {
                         refundAmount = refundAmount.add(roomPriceDifference.abs());
+                        logger.info("Refund amount: {}", roomPriceDifference.abs());
                     }
 
-                    // Update room and total amount
+                    // Update room, room type, and total amount
+                    Room oldRoom = reservation.getRoom();
                     reservation.setRoom(newRoom);
+                    reservation.setRoomType(newRoom.getRoomType()); // CRITICAL: Update room type field
                     reservation.setTotalAmount(newRoomTotal);
+                    
+                    logger.info("Updated reservation - Old room: {}, New room: {}, Old room type: {}, New room type: {}, New total: {}", 
+                        oldRoom != null ? oldRoom.getRoomNumber() : "None", 
+                        newRoom.getRoomNumber(),
+                        oldRoom != null ? oldRoom.getRoomType() : reservation.getRoomType(),
+                        newRoom.getRoomType(),
+                        newRoomTotal);
                 }
             } // Update guest information if provided
             if (request.getGuestName() != null && !request.getGuestName().trim().isEmpty()) {
