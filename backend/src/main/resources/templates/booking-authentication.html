@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Booking Management Authentication</title>
     <style>
+        /* Ensure all text content is fully displayed without truncation */
+        * {
+            white-space: normal !important;
+            overflow: visible !important;
+            text-overflow: clip !important;
+            word-wrap: break-word !important;
+        }
+        
         body {
             font-family: Arial, sans-serif;
             line-height: 1.5;
@@ -12,6 +20,9 @@
             margin: 0;
             padding: 20px;
             background-color: #f9f9f9;
+            white-space: normal;
+            overflow: visible;
+            text-overflow: clip;
         }
         .container {
             max-width: 600px;
@@ -51,6 +62,9 @@
             margin-bottom: 25px;
             color: #555;
             line-height: 1.6;
+            white-space: normal;
+            overflow: visible;
+            text-overflow: clip;
         }
         table {
             width: 100%;
@@ -71,6 +85,10 @@
             padding: 12px;
             border: 1px solid #ddd;
             vertical-align: top;
+            white-space: normal;
+            overflow: visible;
+            text-overflow: clip;
+            word-wrap: break-word;
         }
         
         .section-title {
@@ -220,6 +238,16 @@
                 You have requested to <strong th:text="${actionText}">manage your booking</strong>. For your security and to protect your personal information, we require authentication before you can access your booking management portal.
             </p>
 
+            <!-- Ensure full content visibility -->
+            <div style="width: 100%; overflow: visible; word-wrap: break-word;">
+                <p style="margin: 10px 0; color: #666; font-size: 14px;">
+                    <strong>Action requested:</strong> <span th:text="${actionText}">Manage your booking</span>
+                </p>
+                <p style="margin: 10px 0; color: #666; font-size: 14px;">
+                    <strong>Booking reference:</strong> <span th:text="${booking.confirmationNumber}">BK00000001</span>
+                </p>
+            </div>
+
             <!-- Booking Information Tables -->
             <div class="booking-details-container">
                 <!-- Basic Booking Information -->
@@ -303,7 +331,7 @@
             <!-- Backup Link -->
             <div class="backup-link">
                 <strong>Having trouble with the button?</strong> Copy and paste this secure link into your browser:<br>
-                <div style="word-break: break-all; margin-top: 8px; font-family: monospace; font-size: 12px;">
+                <div style="word-break: break-word; margin-top: 8px; font-family: monospace; font-size: 12px; white-space: normal; overflow: visible;">
                     <span th:text="${managementUrl}">Management URL</span>
                 </div>
             </div>
