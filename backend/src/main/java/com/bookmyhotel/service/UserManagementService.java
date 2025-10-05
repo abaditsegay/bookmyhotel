@@ -63,6 +63,22 @@ public class UserManagementService {
     }
 
     /**
+     * Get users by role with pagination
+     */
+    public Page<UserManagementResponse> getUsersByRolePaginated(UserRole role, Pageable pageable) {
+        Page<User> users = userRepository.findByRolesContaining(role, pageable);
+        return users.map(this::convertToResponse);
+    }
+
+    /**
+     * Get users by status (active/inactive) with pagination
+     */
+    public Page<UserManagementResponse> getUsersByStatus(boolean isActive, Pageable pageable) {
+        Page<User> users = userRepository.findByIsActive(isActive, pageable);
+        return users.map(this::convertToResponse);
+    }
+
+    /**
      * Get users by hotel
      */
     public Page<UserManagementResponse> getUsersByHotel(Long hotelId, Pageable pageable) {

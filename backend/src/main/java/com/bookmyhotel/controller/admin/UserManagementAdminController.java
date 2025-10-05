@@ -76,6 +76,34 @@ public class UserManagementAdminController {
     }
 
     /**
+     * Get users by role with pagination
+     */
+    @GetMapping("/role/{role}/paginated")
+    public ResponseEntity<Page<UserManagementResponse>> getUsersByRolePaginated(
+            @PathVariable UserRole role,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<UserManagementResponse> users = userManagementService.getUsersByRolePaginated(role, pageable);
+        return ResponseEntity.ok(users);
+    }
+
+    /**
+     * Get users by status (active/inactive) with pagination
+     */
+    @GetMapping("/status/{isActive}")
+    public ResponseEntity<Page<UserManagementResponse>> getUsersByStatus(
+            @PathVariable boolean isActive,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<UserManagementResponse> users = userManagementService.getUsersByStatus(isActive, pageable);
+        return ResponseEntity.ok(users);
+    }
+
+    /**
      * Get users by tenant
      */
     @GetMapping("/tenant/{tenantId}")
