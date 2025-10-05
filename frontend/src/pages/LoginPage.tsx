@@ -731,43 +731,6 @@ const LoginPage: React.FC = () => {
                   </Typography>
                 </Button>
 
-                {/* Addis Sunshine Hotel Test Users */}
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  onClick={() => fillSampleUser('admin.addis@addissunshine.com', 'password')}
-                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
-                >
-                  <Typography variant="body2" fontWeight="bold">🌟 Hotel Admin - Addis Sunshine</Typography>
-                  <Typography variant="caption" color="textSecondary" sx={{ mt: 0.5 }}>
-                    admin.addis@addissunshine.com
-                  </Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    Password: password
-                  </Typography>
-                  <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
-                    🌟 Addis Sunshine Hotel (200 rooms)
-                  </Typography>
-                </Button>
-
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  onClick={() => fillSampleUser('frontdesk.addis@addissunshine.com', 'password')}
-                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
-                >
-                  <Typography variant="body2" fontWeight="bold">🇪🇹 Front Desk - Addis Sunshine</Typography>
-                  <Typography variant="caption" color="textSecondary" sx={{ mt: 0.5 }}>
-                    frontdesk.addis@addissunshine.com
-                  </Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    Password: password
-                  </Typography>
-                  <Typography variant="caption" color="info.main" sx={{ mt: 0.5 }}>
-                    🇪🇹 Addis Sunshine Hotel Front Desk
-                  </Typography>
-                </Button>
-
               </Stack>
             </CardContent>
           </Card>
