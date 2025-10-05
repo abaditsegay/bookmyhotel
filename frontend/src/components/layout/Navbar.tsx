@@ -407,9 +407,9 @@ const Navbar: React.FC = () => {
 
   // Helper function to get text color based on authentication state
   const getTextColor = () => {
-    // For authenticated users with gray background, use dark text
+    // For both authenticated users and guests with dark backgrounds, use white text
     if (user) {
-      return theme.palette.text.primary;
+      return 'white'; // White text on dark blue-gray background
     }
     // For guest booking with blue background, use white text
     return 'white';
@@ -417,11 +417,11 @@ const Navbar: React.FC = () => {
 
   // Helper function to get navbar background based on authentication state
   const getNavbarBackground = () => {
-    // For authenticated users, use table header colors (gray gradient)
+    // For authenticated users, use dark slate gray like table headers
     if (user) {
       return {
-        backgroundColor: theme.palette.grey[100],
-        backgroundImage: `linear-gradient(135deg, ${theme.palette.grey[100]} 0%, ${theme.palette.grey[200]} 100%)`,
+        backgroundColor: '#37474f', // Dark blue-gray color matching table header
+        backgroundImage: 'linear-gradient(135deg, #37474f 0%, #263238 100%)', // Darker gradient for depth
       };
     }
     // For guest booking, keep the blue gradient
@@ -515,10 +515,10 @@ const Navbar: React.FC = () => {
                 component="div" 
                 sx={{ 
                   fontWeight: 'bold',
-                  color: user ? theme.palette.primary.main : '#FFD700', // Blue for authenticated users, gold for guests
+                  color: user ? 'white' : '#FFD700', // White for authenticated users, gold for guests
                   textAlign: 'center',
                   fontSize: { md: '1.5rem', lg: '1.8rem' }, // Slightly smaller to fit on one line
-                  textShadow: user ? 'none' : '0 2px 4px rgba(0,0,0,0.3)', // Remove shadow for authenticated users
+                  textShadow: user ? '0 1px 2px rgba(0,0,0,0.5)' : '0 2px 4px rgba(0,0,0,0.3)', // Add shadow for white text on dark background
                   // Keep on single line
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
@@ -556,8 +556,8 @@ const Navbar: React.FC = () => {
                   variant="outlined"
                   data-testid="user-role"
                   sx={{ 
-                    color: user ? theme.palette.text.primary : 'white', 
-                    borderColor: user ? theme.palette.primary.main : 'rgba(255, 255, 255, 0.5)',
+                    color: user ? 'white' : 'white', 
+                    borderColor: user ? 'rgba(255, 255, 255, 0.7)' : 'rgba(255, 255, 255, 0.5)',
                     fontSize: '0.75rem',
                     fontWeight: 500,
                     display: { xs: 'none', sm: 'flex' }, // Hide on mobile to save space

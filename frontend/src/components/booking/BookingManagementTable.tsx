@@ -26,7 +26,8 @@ import {
   CircularProgress,
   Select,
   MenuItem,
-  FormControl
+  FormControl,
+  useTheme
 } from '@mui/material';
 import {
   Visibility as VisibilityIcon,
@@ -42,6 +43,7 @@ import {
 } from '@mui/icons-material';
 import { useTenant } from '../../contexts/TenantContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTheme as useCustomTheme } from '../../contexts/ThemeContext';
 import { hotelAdminApi } from '../../services/hotelAdminApi';
 import { frontDeskApiService, CheckoutResponse } from '../../services/frontDeskApi';
 import CheckoutReceiptDialog from '../receipts/CheckoutReceiptDialog';
@@ -73,6 +75,8 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
 }) => {
   const { tenant, tenantId } = useTenant();
   const { token } = useAuth();
+  const { themeMode } = useCustomTheme();
+  const muiTheme = useTheme();
   const navigate = useNavigate();
   
   // Memoize InputProps to prevent re-creation on every render
@@ -751,16 +755,22 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
       <Card 
         sx={{ 
           borderRadius: 4,
-          boxShadow: '0 10px 40px rgba(37, 99, 235, 0.12), 0 4px 16px rgba(37, 99, 235, 0.08)',
-          border: '2px solid #bfdbfe',
+          boxShadow: themeMode === 'dark' 
+            ? '0 10px 40px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.2)'
+            : '0 10px 40px rgba(37, 99, 235, 0.12), 0 4px 16px rgba(37, 99, 235, 0.08)',
+          border: themeMode === 'dark' 
+            ? '2px solid rgba(255, 255, 255, 0.1)'
+            : '2px solid #bfdbfe',
           overflow: 'hidden',
-          background: 'linear-gradient(180deg, #ffffff 0%, #f8faff 100%)'
+          background: themeMode === 'dark'
+            ? muiTheme.palette.background.paper
+            : 'linear-gradient(180deg, #ffffff 0%, #f8faff 100%)'
         }}
       >
         <TableContainer 
           sx={{
             '& .MuiTable-root': {
-              backgroundColor: '#ffffff'
+              backgroundColor: muiTheme.palette.background.paper
             }
           }}
         >
@@ -811,11 +821,11 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                     align="center" 
                     sx={{ 
                       py: 4,
-                      backgroundColor: '#f8fafc',
+                      backgroundColor: muiTheme.palette.background.default,
                       border: 'none'
                     }}
                   >
-                    <CircularProgress sx={{ color: '#2563eb' }} />
+                    <CircularProgress sx={{ color: muiTheme.palette.primary.main }} />
                   </TableCell>
                 </TableRow>
               ) : bookings.length === 0 ? (
@@ -825,7 +835,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                     align="center" 
                     sx={{ 
                       py: 4,
-                      backgroundColor: '#f8fafc',
+                      backgroundColor: muiTheme.palette.background.default,
                       border: 'none'
                     }}
                   >
@@ -839,18 +849,28 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                   <TableRow 
                     key={booking.reservationId}
                     sx={{
-                      backgroundColor: index % 2 === 0 ? '#ffffff' : '#f8faff',
+                      backgroundColor: index % 2 === 0 
+                        ? muiTheme.palette.background.paper 
+                        : themeMode === 'dark' 
+                          ? 'rgba(255, 255, 255, 0.02)' 
+                          : '#f8faff',
                       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                       '&:hover': {
-                        backgroundColor: '#dbeafe',
+                        backgroundColor: themeMode === 'dark'
+                          ? 'rgba(255, 255, 255, 0.08)'
+                          : '#dbeafe',
                         transform: 'translateY(-2px)',
-                        boxShadow: '0 8px 25px rgba(37, 99, 235, 0.15), 0 3px 10px rgba(37, 99, 235, 0.08)'
+                        boxShadow: themeMode === 'dark'
+                          ? '0 8px 25px rgba(0, 0, 0, 0.4), 0 3px 10px rgba(0, 0, 0, 0.3)'
+                          : '0 8px 25px rgba(37, 99, 235, 0.15), 0 3px 10px rgba(37, 99, 235, 0.08)'
                       },
                       '& .MuiTableCell-body': {
                         border: 'none',
                         padding: '18px 16px',
                         fontSize: '1rem',
-                        borderBottom: '1px solid #e1e7ef'
+                        borderBottom: themeMode === 'dark' 
+                          ? '1px solid rgba(255, 255, 255, 0.1)' 
+                          : '1px solid #e1e7ef'
                       }
                     }}
                   >
@@ -860,13 +880,19 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                         sx={{ 
                           fontFamily: 'monospace',
                           fontWeight: 700,
-                          color: '#1e40af',
-                          backgroundColor: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)',
+                          color: themeMode === 'dark' ? '#60a5fa' : '#1e40af',
+                          backgroundColor: themeMode === 'dark' 
+                            ? 'rgba(96, 165, 250, 0.1)' 
+                            : 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)',
                           padding: '6px 12px',
                           borderRadius: '8px',
                           display: 'inline-block',
-                          border: '1px solid #93c5fd',
-                          boxShadow: '0 2px 4px rgba(37, 99, 235, 0.1)'
+                          border: themeMode === 'dark' 
+                            ? '1px solid rgba(96, 165, 250, 0.3)' 
+                            : '1px solid #93c5fd',
+                          boxShadow: themeMode === 'dark'
+                            ? '0 2px 4px rgba(0, 0, 0, 0.3)'
+                            : '0 2px 4px rgba(37, 99, 235, 0.1)'
                         }}
                       >
                         {booking.confirmationNumber}
@@ -877,14 +903,17 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                         <Typography 
                           variant="body2" 
                           fontWeight="600"
-                          sx={{ color: '#1e40af', mb: 0.5 }}
+                          sx={{ 
+                            color: themeMode === 'dark' ? '#60a5fa' : '#1e40af', 
+                            mb: 0.5 
+                          }}
                         >
                           {booking.guestName}
                         </Typography>
                         <Typography 
                           variant="caption" 
                           sx={{ 
-                            color: '#6b7280',
+                            color: muiTheme.palette.text.secondary,
                             fontSize: '0.85rem'
                           }}
                         >
@@ -897,7 +926,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                         variant="body2" 
                         sx={{ 
                           fontWeight: 500,
-                          color: '#374151'
+                          color: muiTheme.palette.text.primary
                         }}
                       >
                         {booking.roomNumber} - {booking.roomType}
@@ -907,7 +936,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                       <Typography 
                         variant="body2" 
                         sx={{ 
-                          color: '#374151',
+                          color: muiTheme.palette.text.primary,
                           fontWeight: 500
                         }}
                       >
@@ -918,7 +947,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                       <Typography 
                         variant="body2" 
                         sx={{ 
-                          color: '#374151',
+                          color: muiTheme.palette.text.primary,
                           fontWeight: 500
                         }}
                       >
@@ -931,7 +960,9 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                         sx={{ 
                           fontFamily: 'monospace',
                           fontWeight: 400,
-                          color: booking.paymentReference ? '#374151' : '#9ca3af',
+                          color: booking.paymentReference 
+                            ? muiTheme.palette.text.primary 
+                            : muiTheme.palette.text.secondary,
                           fontSize: '0.95rem'
                         }}
                       >
@@ -1002,11 +1033,13 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                               size="small"
                               onClick={() => handlePaymentStatusEdit(booking.reservationId)}
                               sx={{
-                                color: '#6b7280',
+                                color: muiTheme.palette.text.secondary,
                                 padding: '4px',
                                 '&:hover': {
-                                  color: '#2563eb',
-                                  backgroundColor: '#f3f4f6'
+                                  color: muiTheme.palette.primary.main,
+                                  backgroundColor: themeMode === 'dark' 
+                                    ? 'rgba(255, 255, 255, 0.08)' 
+                                    : '#f3f4f6'
                                 }
                               }}
                             >
@@ -1155,38 +1188,50 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
             onPageChange={handlePageChange}
             onRowsPerPageChange={handleRowsPerPageChange}
             sx={{
-              backgroundColor: '#f8fafc',
-              borderTop: '1px solid #e5e7eb',
+              backgroundColor: themeMode === 'dark' 
+                ? muiTheme.palette.background.paper 
+                : '#f8fafc',
+              borderTop: themeMode === 'dark' 
+                ? '1px solid rgba(255, 255, 255, 0.1)' 
+                : '1px solid #e5e7eb',
               '& .MuiTablePagination-toolbar': {
                 padding: '12px 24px',
-                color: '#374151'
+                color: muiTheme.palette.text.primary
               },
               '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
-                color: '#6b7280',
+                color: muiTheme.palette.text.secondary,
                 fontWeight: 500,
                 fontSize: '0.975rem'
               },
               '& .MuiTablePagination-select': {
-                backgroundColor: '#ffffff',
-                border: '1px solid #d1d5db',
+                backgroundColor: muiTheme.palette.background.paper,
+                border: themeMode === 'dark' 
+                  ? '1px solid rgba(255, 255, 255, 0.2)' 
+                  : '1px solid #d1d5db',
                 borderRadius: '6px',
                 padding: '4px 8px',
-                color: '#374151',
+                color: muiTheme.palette.text.primary,
                 fontWeight: 500
               },
               '& .MuiTablePagination-actions button': {
-                color: '#667eea',
-                backgroundColor: '#f0f4ff',
+                color: themeMode === 'dark' ? '#60a5fa' : '#667eea',
+                backgroundColor: themeMode === 'dark' 
+                  ? 'rgba(96, 165, 250, 0.1)' 
+                  : '#f0f4ff',
                 borderRadius: '6px',
                 margin: '0 2px',
                 transition: 'all 0.2s ease',
                 '&:hover': {
-                  backgroundColor: '#e0e7ff',
+                  backgroundColor: themeMode === 'dark' 
+                    ? 'rgba(96, 165, 250, 0.2)' 
+                    : '#e0e7ff',
                   transform: 'scale(1.05)'
                 },
                 '&.Mui-disabled': {
-                  color: '#9ca3af',
-                  backgroundColor: '#f3f4f6'
+                  color: muiTheme.palette.text.disabled,
+                  backgroundColor: themeMode === 'dark' 
+                    ? 'rgba(255, 255, 255, 0.05)' 
+                    : '#f3f4f6'
                 }
               }
             }}
