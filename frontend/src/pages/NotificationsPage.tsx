@@ -23,14 +23,19 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Paper
+  Paper,
+  TextField,
+  InputAdornment,
+  IconButton
 } from '@mui/material';
 import {
   NotificationsActive as NotificationsActiveIcon,
   Cancel as CancelIcon,
   Edit as EditIcon,
   Refresh as RefreshIcon,
-  Info as InfoIcon
+  Info as InfoIcon,
+  Search as SearchIcon,
+  Clear as ClearIcon
 } from '@mui/icons-material';
 // import { useAuth } from '../contexts/AuthContext';
 import { useNotificationsWithEvents, BookingNotification } from '../hooks/useNotifications';
@@ -53,6 +58,7 @@ const NotificationsPage: React.FC = () => {
   const [selectedNotification, setSelectedNotification] = useState<BookingNotification | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [typeFilter, setTypeFilter] = useState<string>('ALL');
+  const [confirmationFilter, setConfirmationFilter] = useState<string>('');
 
   // Get booking notifications (history) for the selected notification
   const { 
@@ -106,17 +112,17 @@ const NotificationsPage: React.FC = () => {
     // Ensure notifications is always an array
     let filtered = Array.isArray(notifications) ? notifications : [];
     
-    // Debug logging
-    console.log('🔍 Debug getFilteredNotifications:');
-    console.log('  - Raw notifications count:', notifications.length);
-    console.log('  - Raw notifications:', notifications);
-    console.log('  - Type filter:', typeFilter);
-    console.log('  - Notification types:', notifications.map(n => n.type));
-    
     // Apply type filter
     if (typeFilter !== 'ALL') {
       filtered = filtered.filter(n => n.type === typeFilter);
-      console.log('  - After type filter:', filtered.length, 'notifications');
+    }
+    
+    // Apply confirmation number filter
+    if (confirmationFilter.trim()) {
+      const searchTerm = confirmationFilter.toLowerCase().trim();
+      filtered = filtered.filter(n => 
+        n.confirmationNumber.toLowerCase().includes(searchTerm)
+      );
     }
     
     // Sort by status first (UNREAD on top), then by creation date (newest first)
@@ -128,8 +134,6 @@ const NotificationsPage: React.FC = () => {
       // If both have same status, sort by creation date (newest first)
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
-    console.log('  - Final result:', sorted.length, 'notifications');
-    console.log('  - Final notifications:', sorted);
     
     return sorted;
   };
@@ -341,6 +345,32 @@ const NotificationsPage: React.FC = () => {
             <MenuItem value="MODIFIED">Modified Only</MenuItem>
           </Select>
         </FormControl>
+        
+        <TextField
+          size="small"
+          placeholder="Search by confirmation number..."
+          value={confirmationFilter}
+          onChange={(e) => setConfirmationFilter(e.target.value)}
+          sx={{ minWidth: 250 }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            ),
+            endAdornment: confirmationFilter && (
+              <InputAdornment position="end">
+                <IconButton
+                  size="small"
+                  onClick={() => setConfirmationFilter('')}
+                  edge="end"
+                >
+                  <ClearIcon />
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
+        />
       </Box>
 
       {/* Notifications Table */}
@@ -353,7 +383,10 @@ const NotificationsPage: React.FC = () => {
             No notifications found
           </Typography>
           <Typography variant="body2" color="textSecondary">
-            Try adjusting your filter or check back later
+            {typeFilter !== 'ALL' || confirmationFilter.trim() 
+              ? 'Try adjusting your filters or search terms' 
+              : 'No notifications available at this time'
+            }
           </Typography>
         </Box>
       )}
