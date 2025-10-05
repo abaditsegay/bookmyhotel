@@ -220,14 +220,14 @@ const Navbar: React.FC = () => {
             borderRadius: 2,
             fontSize: '0.8rem', // Smaller font size
             textTransform: 'none', // Disable all caps
-            color: 'white', // Force white text color
+            color: getTextColor(), // Use dynamic text color
             backgroundColor: item.path && isActivePath(item.path) 
-              ? 'rgba(255, 255, 255, 0.1)' 
+              ? getActiveBackground()
               : 'transparent',
             border: item.label === 'Shop' ? '1px solid red' : 'none',
             '&:hover': {
-              backgroundColor: 'rgba(255, 255, 255, 0.1)',
-              color: 'white', // Maintain white color on hover
+              backgroundColor: getHoverBackground(),
+              color: getTextColor(), // Maintain dynamic color on hover
               border: item.label === 'Shop' ? '1px solid rgba(255, 0, 0, 0.8)' : 'none',
             },
             // Ensure proper stacking and boundaries
@@ -385,14 +385,59 @@ const Navbar: React.FC = () => {
     </Menu>
   );
 
+  // Helper function to get hover background based on authentication state
+  const getHoverBackground = () => {
+    // For authenticated users with gray background, use darker gray
+    if (user) {
+      return 'rgba(0, 0, 0, 0.04)';
+    }
+    // For guest booking with blue background, use white overlay
+    return 'rgba(255, 255, 255, 0.1)';
+  };
+
+  // Helper function to get active background based on authentication state
+  const getActiveBackground = () => {
+    // For authenticated users with gray background, use slightly darker gray
+    if (user) {
+      return 'rgba(0, 0, 0, 0.08)';
+    }
+    // For guest booking with blue background, use white overlay
+    return 'rgba(255, 255, 255, 0.1)';
+  };
+
+  // Helper function to get text color based on authentication state
+  const getTextColor = () => {
+    // For authenticated users with gray background, use dark text
+    if (user) {
+      return theme.palette.text.primary;
+    }
+    // For guest booking with blue background, use white text
+    return 'white';
+  };
+
+  // Helper function to get navbar background based on authentication state
+  const getNavbarBackground = () => {
+    // For authenticated users, use table header colors (gray gradient)
+    if (user) {
+      return {
+        backgroundColor: theme.palette.grey[100],
+        backgroundImage: `linear-gradient(135deg, ${theme.palette.grey[100]} 0%, ${theme.palette.grey[200]} 100%)`,
+      };
+    }
+    // For guest booking, keep the blue gradient
+    return {
+      backgroundColor: theme.palette.primary.main,
+      backgroundImage: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+    };
+  };
+
   return (
     <>
       <AppBar 
         position="fixed" 
         elevation={2} // Add subtle elevation for better visual separation
         sx={{
-          backgroundColor: theme.palette.primary.main,
-          backgroundImage: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+          ...getNavbarBackground(),
           height: 64, // Fixed height to prevent movement
           borderBottom: `1px solid ${theme.palette.divider}`, // Add subtle border for structure
           zIndex: theme.zIndex.appBar, // Ensure proper z-index above sidebar
@@ -470,10 +515,10 @@ const Navbar: React.FC = () => {
                 component="div" 
                 sx={{ 
                   fontWeight: 'bold',
-                  color: '#FFD700', // Gold color for hotel name
+                  color: user ? theme.palette.primary.main : '#FFD700', // Blue for authenticated users, gold for guests
                   textAlign: 'center',
                   fontSize: { md: '1.5rem', lg: '1.8rem' }, // Slightly smaller to fit on one line
-                  textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                  textShadow: user ? 'none' : '0 2px 4px rgba(0,0,0,0.3)', // Remove shadow for authenticated users
                   // Keep on single line
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
@@ -511,8 +556,8 @@ const Navbar: React.FC = () => {
                   variant="outlined"
                   data-testid="user-role"
                   sx={{ 
-                    color: 'white', 
-                    borderColor: 'rgba(255, 255, 255, 0.5)',
+                    color: user ? theme.palette.text.primary : 'white', 
+                    borderColor: user ? theme.palette.primary.main : 'rgba(255, 255, 255, 0.5)',
                     fontSize: '0.75rem',
                     fontWeight: 500,
                     display: { xs: 'none', sm: 'flex' }, // Hide on mobile to save space
@@ -530,7 +575,7 @@ const Navbar: React.FC = () => {
                 )}
                 
                 {/* User Icon & Menu */}
-                <IconButton onClick={handleMenuOpen} sx={{ p: 0.5, color: 'white', position: 'relative', zIndex: 10 }}>
+                <IconButton onClick={handleMenuOpen} sx={{ p: 0.5, color: getTextColor(), position: 'relative', zIndex: 10 }}>
                   <PersonIcon sx={{ fontSize: 28 }} />
                 </IconButton>
                 <UserMenu />
@@ -559,7 +604,7 @@ const Navbar: React.FC = () => {
                         borderRadius: 2,
                         fontSize: '0.8rem', // Smaller font size
                         textTransform: 'none', // Disable all caps
-                        '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
+                        '&:hover': { backgroundColor: getHoverBackground() },
                       }}
                     >
                       Reserve MyStay
@@ -573,7 +618,7 @@ const Navbar: React.FC = () => {
                     borderRadius: 2,
                     fontSize: '0.8rem', // Smaller font size
                     textTransform: 'none', // Disable all caps
-                    '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
+                    '&:hover': { backgroundColor: getHoverBackground() },
                   }}
                 >
                   Login
