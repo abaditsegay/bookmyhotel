@@ -208,11 +208,27 @@ const LoginPage: React.FC = () => {
           ? `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.grey[900]} 100%)`
           : `linear-gradient(135deg, #ffffff 0%, #ffffff 100%)`,
         display: 'flex',
+        flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
         py: 4,
       }}
     >
+      {/* Main Title Outside Login Form */}
+      <Typography 
+        variant="h3" 
+        component="h1" 
+        sx={{ 
+          fontWeight: 'bold',
+          color: 'primary.main',
+          mb: 4,
+          textAlign: 'center',
+          px: 2,
+        }}
+      >
+        Shegeroom Hotel Reservation Management
+      </Typography>
+      
       <Container maxWidth="lg">
         <Box
           sx={{
@@ -238,34 +254,7 @@ const LoginPage: React.FC = () => {
           }}
         >
           <CardContent sx={{ p: isMobile ? 3 : 5 }}>
-            {/* Professional Header */}
-            <Box 
-              sx={{ 
-                mb: 4,
-                textAlign: 'center',
-                p: 2,
-                background: theme.palette.mode === 'dark' 
-                  ? theme.palette.grey[800] 
-                  : '#ffffff',
-                borderRadius: 0,
-                border: `1px solid ${theme.palette.divider}`,
-              }}
-            >
-              <Typography 
-                variant="h4" 
-                component="h1" 
-                gutterBottom 
-                sx={{ 
-                  fontWeight: 'bold',
-                  color: 'text.primary',
-                }}
-              >
-                BookMyHotel
-              </Typography>
-              <Typography variant="body1" color="text.secondary">
-                Professional Hotel Management System
-              </Typography>
-            </Box>
+
             
             {bookingData && (
               <Alert severity="info" sx={{ mb: 3 }}>
