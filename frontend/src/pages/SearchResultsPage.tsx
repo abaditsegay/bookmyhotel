@@ -48,9 +48,9 @@ const SearchResultsPage: React.FC = () => {
     try {
       setLoading(true);
       setError('');
-      console.log('🔍 Re-performing hotel search:', searchReq);
+      // console.log('🔍 Re-performing hotel search:', searchReq);
       const results = await hotelApiService.searchHotelsPublic(searchReq);
-      console.log('✅ Hotel search results:', results);
+      // console.log('✅ Hotel search results:', results);
       setHotels(results);
     } catch (err) {
       console.error('❌ Hotel search failed:', err);
@@ -319,7 +319,9 @@ const SearchResultsPage: React.FC = () => {
           >
             <Button 
               variant="outlined"
-              onClick={() => console.log('Open filters')}
+              onClick={() => {
+                // console.log('Open filters')
+              }}
               sx={{ 
                 borderRadius: 2,
                 textTransform: 'none',
@@ -339,7 +341,9 @@ const SearchResultsPage: React.FC = () => {
             </Button>
             <Button 
               variant="outlined"
-              onClick={() => console.log('Open sort options')}
+              onClick={() => {
+                // console.log('Open sort options')
+              }}
               sx={{ 
                 borderRadius: 2,
                 textTransform: 'none',

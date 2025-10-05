@@ -51,6 +51,7 @@ import CheckInDialog from './CheckInDialog';
 import { Booking } from '../../types/booking-shared';
 import { formatDateForDisplay } from '../../utils/dateUtils';
 import BookingNotificationEvents from '../../utils/bookingNotificationEvents';
+import { logger } from '../../utils/logger';
 
 interface BookingManagementTableProps {
   mode: 'hotel-admin' | 'front-desk';
@@ -120,7 +121,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
   }, []);
   
   // Debug state logging
-  console.log('BookingManagementTable: Current state:', {
+  logger.componentState('BookingManagementTable', {
     mode,
     tenant: tenant?.id,
     token: token ? 'present' : 'missing',
@@ -128,10 +129,10 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
     totalElements,
     loading,
     page,
-    size
-  });
-  
-  // Receipt dialog state
+    searchTerm,
+    debouncedSearchTerm,
+    refreshTrigger
+  });  // Receipt dialog state
   const [receiptDialogOpen, setReceiptDialogOpen] = useState(false);
   const [checkoutReceipt, setCheckoutReceipt] = useState<CheckoutResponse | null>(null);
   const [checkInDialogOpen, setCheckInDialogOpen] = useState(false);
@@ -141,7 +142,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
 
   // Debug dialog state
   useEffect(() => {
-    console.log('CheckInDialog state changed:', { checkInDialogOpen, bookingForCheckIn });
+    logger.debug('CheckInDialog state changed', { checkInDialogOpen, bookingForCheckIn });
   }, [checkInDialogOpen, bookingForCheckIn]);
 
   // Manual refresh function (used by refresh button)
@@ -166,7 +167,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
       return;
     }
     
-    console.log('BookingManagementTable: Manual refresh triggered');
+    // console.log('BookingManagementTable: Manual refresh triggered');
     
     setLoading(true);
     try {
@@ -245,13 +246,13 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
         return;
       }
       
-      console.log('BookingManagementTable: Loading bookings with params:', { 
-        mode, 
-        page,
-        size,
-        searchTerm: debouncedSearchTerm,
-        tenant: tenant?.id
-      });
+      // console.log('BookingManagementTable: Loading bookings with params:', { 
+      //   mode, 
+      //   page,
+      //   size,
+      //   searchTerm: debouncedSearchTerm,
+      //   tenant: tenant?.id
+      // });
       
       setLoading(true);
       try {
@@ -267,7 +268,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
           );
         } else {
           // Use hotel admin API
-          console.log('BookingManagementTable: Calling hotel admin API with search term:', debouncedSearchTerm);
+          // console.log('BookingManagementTable: Calling hotel admin API with search term:', debouncedSearchTerm);
           result = await hotelAdminApi.getHotelBookings(
             token,
             page,
@@ -276,7 +277,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
           );
         }
 
-        console.log('BookingManagementTable: API response:', result);
+        // console.log('BookingManagementTable: API response:', result);
 
         if (result.success && result.data) {
           // Handle different data structures between front-desk and hotel-admin APIs
@@ -292,7 +293,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
             totalElements = result.data.totalElements || 0;
           }
           
-          console.log('BookingManagementTable: Setting bookings:', content.length, 'items, total:', totalElements);
+          // console.log('BookingManagementTable: Setting bookings:', content.length, 'items, total:', totalElements);
           setBookings(content);
           setTotalElements(totalElements);
         } else {
@@ -315,27 +316,27 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
       }
     };
 
-    console.log('BookingManagementTable: useEffect triggered - loading bookings');
+    // console.log('BookingManagementTable: useEffect triggered - loading bookings');
     loadData();
   }, [page, size, token, mode, debouncedSearchTerm, tenant, tenantId]);
 
   // Debug: Log bookings data when it changes
   useEffect(() => {
     if (bookings.length > 0) {
-      console.log('BookingManagementTable: Bookings data:', bookings.map(b => ({
-        id: b.reservationId,
-        status: b.status,
-        statusUpper: b.status.toUpperCase(),
-        guestName: b.guestName,
-        canCheckIn: (b.status.toUpperCase() === 'CONFIRMED' || b.status.toUpperCase() === 'ARRIVING')
-      })));
+      // console.log('BookingManagementTable: Bookings data:', bookings.map(b => ({
+      //   id: b.reservationId,
+      //   status: b.status,
+      //   statusUpper: b.status.toUpperCase(),
+      //   guestName: b.guestName,
+      //   canCheckIn: (b.status.toUpperCase() === 'CONFIRMED' || b.status.toUpperCase() === 'ARRIVING')
+      // })));
     }
   }, [bookings]);
 
   // Handle search with debounce - only reset page when search changes
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      console.log('BookingManagementTable: Search term changed, updating debounced search and resetting page');
+      // console.log('BookingManagementTable: Search term changed, updating debounced search and resetting page');
       setDebouncedSearchTerm(searchTerm);
       setPage(0);
     }, 500);
@@ -346,21 +347,21 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
   // Handle refresh trigger - when this prop changes, refresh the data
   useEffect(() => {
     if (refreshTrigger && refreshTrigger > 0) {
-      console.log('BookingManagementTable: Refresh trigger received:', refreshTrigger);
+      // console.log('BookingManagementTable: Refresh trigger received:', refreshTrigger);
       loadBookings();
     }
   }, [refreshTrigger, loadBookings]);
 
   // Handle page change
   const handlePageChange = (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
-    console.log('BookingManagementTable: Page change requested from', page, 'to', newPage);
+    // console.log('BookingManagementTable: Page change requested from', page, 'to', newPage);
     setPage(newPage);
   };
 
   // Handle rows per page change
   const handleRowsPerPageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newSize = parseInt(event.target.value, 10);
-    console.log('BookingManagementTable: Rows per page change to', newSize);
+    // console.log('BookingManagementTable: Rows per page change to', newSize);
     setSize(newSize);
     setPage(0);
   };
@@ -477,7 +478,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
 
   // Handle successful check-in
   const handleCheckInSuccess = (updatedBooking: Booking) => {
-    console.log('🔥 handleCheckInSuccess called with:', updatedBooking);
+    // console.log('🔥 handleCheckInSuccess called with:', updatedBooking);
     
     // Update the booking in the local state
     setBookings(prev => prev.map(b => 
@@ -740,7 +741,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
               variant="contained" 
               startIcon={<AddGuestIcon />}
               onClick={() => {
-                console.log('Walk-in Guest button clicked in BookingManagementTable'); // Debug log
+                // console.log('Walk-in Guest button clicked in BookingManagementTable'); // Debug log
                 onWalkInRequest?.();
               }}
               disabled={!onWalkInRequest}
@@ -1286,7 +1287,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
       <CheckInDialog
         open={checkInDialogOpen}
         onClose={() => {
-          console.log('CheckInDialog onClose called');
+          // console.log('CheckInDialog onClose called');
           setCheckInDialogOpen(false);
           setBookingForCheckIn(null);
         }}

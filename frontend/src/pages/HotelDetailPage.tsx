@@ -102,14 +102,14 @@ const HotelDetailPage: React.FC = () => {
         }
 
         // Fetch hotel details
-        console.log('🏨 Loading hotel details for:', hotelId);
+        // console.log('🏨 Loading hotel details for:', hotelId);
         const hotelDetails = await hotelApiService.getHotelDetailsPublic(
           parseInt(hotelId),
           state?.searchRequest?.checkInDate,
           state?.searchRequest?.checkOutDate,
           state?.searchRequest?.guests
         );
-        console.log('✅ Hotel details loaded:', hotelDetails);
+        // console.log('✅ Hotel details loaded:', hotelDetails);
         setHotel(hotelDetails);
       } catch (err) {
         console.error('❌ Failed to load hotel details:', err);

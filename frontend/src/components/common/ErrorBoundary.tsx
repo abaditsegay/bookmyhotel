@@ -7,7 +7,7 @@ import {
   ContactSupport as SupportIcon
 } from '@mui/icons-material';
 import StandardError from './StandardError';
-import { designSystem } from '../../theme/designSystem';
+
 
 interface ErrorBoundaryProps {
   /**

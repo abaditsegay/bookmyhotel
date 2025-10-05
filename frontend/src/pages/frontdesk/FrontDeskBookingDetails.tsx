@@ -81,7 +81,7 @@ const FrontDeskBookingDetails: React.FC = () => {
           return;
         }
 
-        console.log('Loading booking with reservation ID:', reservationId);
+        // console.log('Loading booking with reservation ID:', reservationId);
         
         const result = await frontDeskApiService.getBookingById(token, reservationId);
         
@@ -107,11 +107,11 @@ const FrontDeskBookingDetails: React.FC = () => {
             paymentIntentId: responseData.paymentIntentId
           };
           
-          console.log('Found booking:', mappedBooking);
+          // console.log('Found booking:', mappedBooking);
           setBooking(mappedBooking);
           setEditedBooking({ ...mappedBooking });
         } else {
-          console.log('Booking not found for reservation ID:', reservationId);
+          // console.log('Booking not found for reservation ID:', reservationId);
           setError(result.message || `Booking not found for ID: ${reservationId}`);
         }
       } catch (err) {
@@ -153,7 +153,7 @@ const FrontDeskBookingDetails: React.FC = () => {
           try {
             // Try to find and assign room by room number
             // This would need a proper room lookup API call in production
-            console.log('Room assignment update needed for:', editedBooking.roomNumber, editedBooking.roomType);
+            // console.log('Room assignment update needed for:', editedBooking.roomNumber, editedBooking.roomType);
             setSuccess('Room assignment will be updated during check-in process');
             hasUpdates = true;
           } catch (roomError) {

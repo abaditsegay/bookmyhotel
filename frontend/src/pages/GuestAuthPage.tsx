@@ -102,12 +102,12 @@ const GuestAuthPage: React.FC = () => {
     await new Promise(resolve => setTimeout(resolve, 100));
 
     try {
-      console.log('Starting mobile-friendly login...');
+      // console.log('Starting mobile-friendly login...');
       const success = await login(loginEmail, loginPassword);
-      console.log('Login result:', success);
+      // console.log('Login result:', success);
       
       if (success) {
-        console.log('Login successful, navigating...');
+        // console.log('Login successful, navigating...');
         // Add small delay before navigation
         await new Promise(resolve => setTimeout(resolve, 200));
         
