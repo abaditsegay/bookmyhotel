@@ -371,6 +371,7 @@ const HotelAdminDashboard: React.FC = () => {
     name: hotel.name || user?.hotelName || 'Loading...',
     totalRooms: reportsData.hotelStats?.totalRooms || hotel.totalRooms || 0,
     availableRooms: reportsData.hotelStats?.availableRooms || hotel.availableRooms || 0,
+    confirmedBookings: reportsData.hotelStats?.confirmedBookings || 0,
     bookedRooms: reportsData.hotelStats?.bookedRooms || hotel.bookedRooms || 0,
     totalStaff: reportsData.hotelStats?.totalStaff || hotel.totalStaff || 0,
     activeStaff: reportsData.hotelStats?.activeStaff || hotel.totalStaff || 0,
@@ -378,6 +379,7 @@ const HotelAdminDashboard: React.FC = () => {
     name: user?.hotelName || (hotelLoading ? 'Loading hotel...' : 'Hotel information not available'),
     totalRooms: reportsData.hotelStats?.totalRooms || 0,
     availableRooms: reportsData.hotelStats?.availableRooms || 0,
+    confirmedBookings: reportsData.hotelStats?.confirmedBookings || 0,
     bookedRooms: reportsData.hotelStats?.bookedRooms || 0,
     totalStaff: reportsData.hotelStats?.totalStaff || 0,
     activeStaff: reportsData.hotelStats?.activeStaff || 0,
@@ -395,8 +397,8 @@ const HotelAdminDashboard: React.FC = () => {
       color: 'success',
     },
     {
-      title: 'Booked Rooms',
-      value: hotelData.bookedRooms,
+      title: 'Confirmed Bookings',
+      value: hotelData.confirmedBookings,
       color: 'warning',
     },
     {

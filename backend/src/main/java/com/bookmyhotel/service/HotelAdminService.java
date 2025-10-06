@@ -801,8 +801,16 @@ public class HotelAdminService {
         List<Reservation> allReservations = reservationRepository.findByHotelId(hotel.getId());
         LocalDate today = LocalDate.now();
 
-        // Booked rooms: rooms with active reservations (confirmed, checked-in, or
-        // future bookings)
+        // Active reservations count (confirmed, checked-in, or future pending bookings)
+        long activeReservations = allReservations.stream()
+                .filter(r -> r.getStatus() == ReservationStatus.CONFIRMED ||
+                        r.getStatus() == ReservationStatus.CHECKED_IN ||
+                        (r.getStatus() == ReservationStatus.PENDING && r.getCheckInDate().isAfter(today)))
+                .filter(r -> !r.getCheckOutDate().isBefore(today)) // Not already checked out
+                .count();
+        stats.put("confirmedBookings", activeReservations);
+
+        // Booked rooms: rooms with active reservations that have assigned rooms
         Set<Long> bookedRoomIds = allReservations.stream()
                 .filter(r -> r.getStatus() == ReservationStatus.CONFIRMED ||
                         r.getStatus() == ReservationStatus.CHECKED_IN ||
