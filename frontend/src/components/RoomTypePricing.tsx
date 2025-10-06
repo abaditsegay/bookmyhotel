@@ -534,7 +534,18 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
                   readOnly: true,
                 }}
                 helperText="From hotel pricing configuration"
-                variant="filled"
+                variant="outlined"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                    '& fieldset': {
+                      borderColor: 'rgba(0, 0, 0, 0.23)',
+                    },
+                  },
+                  '& .MuiInputBase-input': {
+                    color: 'text.primary',
+                  }
+                }}
               />
             </Grid>
             <Grid item xs={12} md={4}>
@@ -546,7 +557,18 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
                   readOnly: true,
                 }}
                 helperText="From hotel pricing configuration"
-                variant="filled"
+                variant="outlined"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                    '& fieldset': {
+                      borderColor: 'rgba(0, 0, 0, 0.23)',
+                    },
+                  },
+                  '& .MuiInputBase-input': {
+                    color: 'text.primary',
+                  }
+                }}
               />
             </Grid>
             <Grid item xs={12} md={4}>
@@ -558,7 +580,18 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
                   readOnly: true,
                 }}
                 helperText="From hotel pricing configuration"
-                variant="filled"
+                variant="outlined"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                    '& fieldset': {
+                      borderColor: 'rgba(0, 0, 0, 0.23)',
+                    },
+                  },
+                  '& .MuiInputBase-input': {
+                    color: 'text.primary',
+                  }
+                }}
               />
             </Grid>
             <Grid item xs={12} md={6}>
