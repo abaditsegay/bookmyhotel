@@ -759,33 +759,69 @@ const BookingConfirmationPage: React.FC = () => {
           <Box 
             sx={{ 
               display: 'flex', 
-              gap: isMobile ? 1 : 2, 
+              gap: isMobile ? 1.5 : 2, 
               flexDirection: isMobile ? 'row' : 'column', 
               alignItems: isMobile ? 'center' : 'flex-end',
               order: isMobile ? 1 : 2,
               justifyContent: 'center',
             }}
           >
-            <Chip
-              label={`Booking: ${booking.status.toUpperCase()}`}
-              color={getStatusColor(booking.status) as any}
-              variant="filled"
-              className="print-chip"
-              sx={{ 
-                fontWeight: 'bold', 
-                fontSize: isMobile ? '0.8rem' : '0.9rem',
-              }}
-            />
-            <Chip
-              label={`Payment: ${formatPaymentStatus(booking.paymentStatus)}`}
-              color={getPaymentStatusColor(booking.paymentStatus) as any}
-              variant="outlined"
-              className="print-chip"
-              sx={{ 
-                fontWeight: '500',
-                fontSize: isMobile ? '0.8rem' : '0.9rem',
-              }}
-            />
+            {/* Booking Status */}
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
+              <Typography
+                variant="caption"
+                sx={{
+                  fontWeight: '600',
+                  fontSize: isMobile ? '0.75rem' : '0.8rem',
+                  color: 'text.secondary',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                }}
+              >
+                Booking Status
+              </Typography>
+              <Chip
+                label={booking.status.toUpperCase()}
+                color={getStatusColor(booking.status) as any}
+                variant="filled"
+                className="print-chip"
+                sx={{ 
+                  fontWeight: 'bold', 
+                  fontSize: isMobile ? '0.8rem' : '0.9rem',
+                }}
+              />
+            </Box>
+            
+            {/* Payment Status */}
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
+              <Typography
+                variant="caption"
+                sx={{
+                  fontWeight: '600',
+                  fontSize: isMobile ? '0.75rem' : '0.8rem',
+                  color: 'text.secondary',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                }}
+              >
+                Payment Status
+              </Typography>
+              <Chip
+                label={formatPaymentStatus(booking.paymentStatus)}
+                variant="outlined"
+                className="print-chip"
+                sx={{ 
+                  fontWeight: '500',
+                  fontSize: isMobile ? '0.8rem' : '0.9rem',
+                  backgroundColor: 'orange',
+                  color: 'white',
+                  borderColor: 'orange',
+                  '&:hover': {
+                    backgroundColor: 'darkorange',
+                  }
+                }}
+              />
+            </Box>
           </Box>
         </Box>
 
