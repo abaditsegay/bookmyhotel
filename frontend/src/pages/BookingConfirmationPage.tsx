@@ -767,7 +767,7 @@ const BookingConfirmationPage: React.FC = () => {
             }}
           >
             <Chip
-              label={booking.status.toUpperCase()}
+              label={`Booking: ${booking.status.toUpperCase()}`}
               color={getStatusColor(booking.status) as any}
               variant="filled"
               className="print-chip"
@@ -777,7 +777,7 @@ const BookingConfirmationPage: React.FC = () => {
               }}
             />
             <Chip
-              label={formatPaymentStatus(booking.paymentStatus)}
+              label={`Payment: ${formatPaymentStatus(booking.paymentStatus)}`}
               color={getPaymentStatusColor(booking.paymentStatus) as any}
               variant="outlined"
               className="print-chip"
