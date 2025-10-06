@@ -814,17 +814,29 @@ public class HotelAdminService {
         // Count confirmed bookings (CONFIRMED status or CHECKED_IN status, regardless of dates for CHECKED_IN)
         long confirmedBookings = allReservations.stream()
                 .filter(r -> {
+                    System.out.println("🔍 Processing reservation " + r.getId() + " - Status: " + r.getStatus() + 
+                        ", Check-in: " + r.getCheckInDate() + ", Check-out: " + r.getCheckOutDate());
+                    
                     boolean isConfirmedOrCheckedIn = r.getStatus() == ReservationStatus.CONFIRMED || 
                                                    r.getStatus() == ReservationStatus.CHECKED_IN;
                     
+                    if (!isConfirmedOrCheckedIn) {
+                        System.out.println("🔍 Reservation " + r.getId() + " excluded - not CONFIRMED or CHECKED_IN");
+                        return false;
+                    }
+                    
                     // For CHECKED_IN guests, count them regardless of dates
                     if (r.getStatus() == ReservationStatus.CHECKED_IN) {
+                        System.out.println("🔍 Reservation " + r.getId() + " included - CHECKED_IN guest");
                         return true;
                     }
                     
-                    // For CONFIRMED bookings, only count if checkout date is in the future
+                    // For CONFIRMED bookings, only count if checkout date is in the future or today
                     if (r.getStatus() == ReservationStatus.CONFIRMED) {
-                        return !r.getCheckOutDate().isBefore(today);
+                        boolean isFutureOrToday = !r.getCheckOutDate().isBefore(today);
+                        System.out.println("🔍 Reservation " + r.getId() + " - CONFIRMED booking, checkout date check: " + 
+                            r.getCheckOutDate() + " >= " + today + " = " + isFutureOrToday);
+                        return isFutureOrToday;
                     }
                     
                     return false;
