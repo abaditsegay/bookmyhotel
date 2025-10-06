@@ -37,6 +37,9 @@ public class BookingStatusUpdateService {
     @Autowired
     private BookingChangeNotificationService bookingChangeNotificationService;
 
+    @Autowired
+    private AutomatedRoomStatusService automatedRoomStatusService;
+
     /**
      * Update booking status with notification creation
      * 
@@ -109,6 +112,12 @@ public class BookingStatusUpdateService {
         }
 
         System.out.println("✅ Status updated successfully: " + oldStatus + " → " + newStatus);
+        
+        // Trigger automated room status consistency check for the affected room
+        if (room != null) {
+            automatedRoomStatusService.checkRoomStatusConsistency(room.getId());
+        }
+        
         return convertToBookingResponse(reservation);
     }
 

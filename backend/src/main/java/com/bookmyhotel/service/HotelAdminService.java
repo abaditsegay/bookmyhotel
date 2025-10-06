@@ -99,6 +99,9 @@ public class HotelAdminService {
     @Autowired
     private HotelImageService hotelImageService;
 
+    @Autowired
+    private AutomatedRoomStatusService automatedRoomStatusService;
+
     /**
      * Get the hotel for the logged-in hotel admin
      */
@@ -1497,8 +1500,11 @@ public class HotelAdminService {
     /**
      * Fix room status consistency - ensure occupied rooms have checked-in guests
      * and available rooms don't have checked-in guests
+     * 
+     * Now delegates to the AutomatedRoomStatusService for consistency
      */
     public void fixRoomStatusConsistency(String adminEmail) {
+        // Validate that the admin exists and has access to a hotel
         User admin = getUserByEmail(adminEmail);
         Hotel hotel = admin.getHotel();
 
@@ -1506,27 +1512,9 @@ public class HotelAdminService {
             throw new RuntimeException("Hotel admin is not associated with any hotel");
         }
 
-        List<Room> hotelRooms = roomRepository.findByHotelId(hotel.getId());
+        logger.info("🔧 Manual fix requested by admin: {} for hotel: {}", adminEmail, hotel.getName());
         
-        for (Room room : hotelRooms) {
-            // Check if room has checked-in guest
-            boolean hasCheckedInGuest = room.getReservations() != null && 
-                room.getReservations().stream()
-                    .anyMatch(reservation -> 
-                        reservation.getStatus() == ReservationStatus.CHECKED_IN &&
-                        reservation.getCheckOutDate().isAfter(LocalDate.now())
-                    );
-
-            // Update room status based on actual occupancy
-            if (hasCheckedInGuest && room.getStatus() != RoomStatus.OCCUPIED) {
-                room.setStatus(RoomStatus.OCCUPIED);
-                roomRepository.save(room);
-                logger.info("Updated room {} status to OCCUPIED (has checked-in guest)", room.getRoomNumber());
-            } else if (!hasCheckedInGuest && room.getStatus() == RoomStatus.OCCUPIED && room.getIsAvailable()) {
-                room.setStatus(RoomStatus.AVAILABLE);
-                roomRepository.save(room);
-                logger.info("Updated room {} status to AVAILABLE (no checked-in guest)", room.getRoomNumber());
-            }
-        }
+        // Delegate to the automated service which handles the actual logic
+        automatedRoomStatusService.triggerImmediateConsistencyCheck();
     }
 }

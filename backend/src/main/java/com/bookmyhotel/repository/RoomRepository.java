@@ -311,4 +311,18 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
         */
        @Query("SELECT r FROM Room r ORDER BY r.hotel.id ASC, r.roomNumber ASC")
        List<Room> findAllByOrderByHotelIdAscRoomNumberAsc();
+
+       /**
+        * Find rooms that need maintenance after checkout
+        * Used by automated room status service
+        */
+       @Query("SELECT DISTINCT r FROM Room r " +
+              "INNER JOIN r.reservations res " +
+              "WHERE res.status = 'CHECKED_OUT' " +
+              "AND res.actualCheckOutTime BETWEEN :startTime AND :endTime " +
+              "AND r.status != 'MAINTENANCE' " +
+              "AND r.status != 'OUT_OF_ORDER'")
+       List<Room> findRoomsNeedingMaintenanceAfterCheckout(
+               @Param("startTime") java.time.LocalDateTime startTime,
+               @Param("endTime") java.time.LocalDateTime endTime);
 }

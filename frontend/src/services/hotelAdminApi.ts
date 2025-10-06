@@ -1400,7 +1400,7 @@ export const hotelAdminApi = {
   /**
    * Fix room status consistency
    */
-  fixRoomStatusConsistency: async (token: string): Promise<{ success: boolean; data?: any; message?: string }> => {
+  fixRoomStatusConsistency: async (token: string): Promise<{ success: boolean; data?: any; message?: string; automatedSystem?: any }> => {
     try {
       const response = await fetch(`${API_BASE_URL}/hotel-admin/fix-room-status`, {
         method: 'POST',
@@ -1413,7 +1413,12 @@ export const hotelAdminApi = {
         return { success: false, message: result.message || 'Failed to fix room status consistency' };
       }
 
-      return { success: true, data: result };
+      return { 
+        success: true, 
+        data: result,
+        message: result.message,
+        automatedSystem: result.automatedSystem
+      };
     } catch (error) {
       console.error('Fix room status consistency error:', error);
       return { 
@@ -1422,4 +1427,30 @@ export const hotelAdminApi = {
       };
     }
   },
+
+  /**
+   * Get automation status for room management
+   */
+  getAutomationStatus: async (token: string): Promise<{ success: boolean; data?: any; message?: string }> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/hotel-admin/automation-status`, {
+        method: 'GET',
+        headers: getAuthHeaders(token),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        return { success: false, message: result.message || 'Failed to get automation status' };
+      }
+
+      return { success: true, data: result };
+    } catch (error) {
+      console.error('Get automation status error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Network error' 
+      };
+    }
+  }
 };

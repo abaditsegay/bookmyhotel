@@ -92,6 +92,8 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
   const [statusUpdating, setStatusUpdating] = useState(false);
   const [availabilityUpdating, setAvailabilityUpdating] = useState<Record<number, boolean>>({});
   const [fixingConsistency, setFixingConsistency] = useState(false);
+  const [showAutomationInfo, setShowAutomationInfo] = useState(false);
+  const [automationStatus, setAutomationStatus] = useState<any>(null);
 
   // Form states
   const [roomForm, setRoomForm] = useState<RoomCreateRequest>({
@@ -310,6 +312,19 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
         console.log('🔧 Room status consistency fixed, refreshing room list...');
         await loadRooms();
         setError(null);
+        
+        // Show automation info if available
+        if (response.automatedSystem) {
+          setAutomationStatus(response.automatedSystem);
+          setShowAutomationInfo(true);
+          console.log('🤖 Automated system info:', response.automatedSystem);
+          
+          // Auto-hide automation info after 5 seconds
+          setTimeout(() => {
+            setShowAutomationInfo(false);
+          }, 5000);
+        }
+        
         console.log('🔧 Room list refreshed');
       } else {
         setError(response.message || 'Failed to fix room status consistency');
@@ -427,13 +442,33 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
 
   return (
     <Box>
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
-            {error}
-          </Alert>
-        )}
+      {/* Error Alert */}
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+          {error}
+        </Alert>
+      )}
 
-        {/* Tabs with Add Buttons */}
+      {/* Automation Info Alert */}
+      {showAutomationInfo && automationStatus && (
+        <Alert 
+          severity="info" 
+          sx={{ mb: 2 }} 
+          onClose={() => setShowAutomationInfo(false)}
+        >
+          <Box>
+            <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>
+              🤖 Automated Room Status Management Active
+            </Typography>
+            <Typography variant="body2" sx={{ mb: 1 }}>
+              Status synchronization runs automatically every {automationStatus.scheduleInterval || '5 minutes'}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Real-time checks are enabled when bookings change
+            </Typography>
+          </Box>
+        </Alert>
+      )}        {/* Tabs with Add Buttons */}
         <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Tabs value={tabValue} onChange={(e, newValue) => setTabValue(newValue)}>
             <Tab label="Rooms" />
@@ -462,8 +497,9 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
                 onClick={handleFixRoomStatusConsistency}
                 disabled={fixingConsistency}
                 sx={{ minHeight: 36 }}
+                title="Manual status sync - Automated sync runs every 5 minutes"
               >
-                {fixingConsistency ? '🔧 Fixing...' : '🔧 Fix Status'}
+                {fixingConsistency ? '🔧 Syncing...' : '🤖 Sync Status'}
               </Button>
             </Box>
           )}
