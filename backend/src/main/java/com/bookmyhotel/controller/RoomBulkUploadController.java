@@ -39,15 +39,8 @@ public class RoomBulkUploadController {
 
             @Parameter(description = "Whether to skip validation errors and import valid rows only") @RequestParam(value = "skipErrors", defaultValue = "false") boolean skipErrors) {
 
-        System.out.println("🔥 BULK UPLOAD REQUEST RECEIVED!");
-        System.out.println("🔥 Hotel ID: " + hotelId);
-        System.out.println("🔥 File name: " + (file != null ? file.getOriginalFilename() : "null"));
-        System.out.println("🔥 File size: " + (file != null ? file.getSize() : "null"));
-        System.out.println("🔥 Skip errors: " + skipErrors);
-
         try {
             Map<String, Object> result = roomBulkUploadService.uploadRoomsFromCsv(hotelId, file, skipErrors);
-            System.out.println("🔥 Service returned: " + result);
             return ResponseEntity.ok(result);
 
         } catch (Exception e) {

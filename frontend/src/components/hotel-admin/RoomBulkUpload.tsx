@@ -348,10 +348,13 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
       const result = await hotelAdminApi.bulkUploadRooms(token, uploadedFile, false, hotelId?.toString());
       
       if (result.success) {
-        const data = result.data || {};
-        const successfulImports = data.successfulImports || 0;
-        const failedImports = data.failedImports || 0;
-        const importErrors = data.importErrors || [];
+        // The backend wraps the response in { success: true, data: { successfulImports, ... } }
+        // So we need to access result.data.data to get the actual import statistics
+        const responseData = result.data?.data || result.data || {};
+        
+        const successfulImports = responseData.successfulImports || 0;
+        const failedImports = responseData.failedImports || 0;
+        const importErrors = responseData.importErrors || [];
         
         // Store stats for success overlay
         setImportStats({
@@ -360,8 +363,8 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
           errors: importErrors
         });
         
-        if (onUploadComplete && data.importedRooms) {
-          onUploadComplete(data.importedRooms);
+        if (onUploadComplete && responseData.importedRooms) {
+          onUploadComplete(responseData.importedRooms);
         }
         
         setActiveStep(5);

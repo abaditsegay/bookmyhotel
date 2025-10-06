@@ -368,11 +368,12 @@ public class HotelAdminService {
         // Get all rooms for this hotel using hotel ID instead of hotel entity
         List<Room> allRooms = roomRepository.findByHotelId(hotel.getId());
         System.err.println("🔍 Found " + allRooms.size() + " total rooms for hotel ID: " + hotel.getId());
-        
+
         if (allRooms.isEmpty()) {
             System.err.println("🔍 No rooms found in database for hotel ID: " + hotel.getId());
         } else {
-            System.err.println("🔍 Room IDs: " + allRooms.stream().map(r -> r.getId()).collect(java.util.stream.Collectors.toList()));
+            System.err.println("🔍 Room IDs: "
+                    + allRooms.stream().map(r -> r.getId()).collect(java.util.stream.Collectors.toList()));
         }
 
         // Apply filters
@@ -386,7 +387,8 @@ public class HotelAdminService {
                         matches = room.getRoomNumber().toLowerCase().contains(searchLower) ||
                                 (room.getDescription() != null
                                         && room.getDescription().toLowerCase().contains(searchLower));
-                        System.err.println("🔍 Search filter '" + search + "' on room " + room.getRoomNumber() + ": " + matches);
+                        System.err.println(
+                                "🔍 Search filter '" + search + "' on room " + room.getRoomNumber() + ": " + matches);
                     }
 
                     // Room type filter
@@ -405,12 +407,13 @@ public class HotelAdminService {
                 .collect(Collectors.toList());
 
         System.err.println("🔍 After filtering: " + filteredRooms.size() + " rooms remain");
-        System.err.println("🔍 Filters applied - search: '" + search + "', roomType: '" + roomType + "', available: " + available);
+        System.err.println(
+                "🔍 Filters applied - search: '" + search + "', roomType: '" + roomType + "', available: " + available);
 
         // Manual pagination with bounds checking
         int start = page * size;
         int end = Math.min(start + size, filteredRooms.size());
-        
+
         System.err.println("🔍 Pagination - page: " + page + ", size: " + size + ", start: " + start + ", end: " + end);
 
         List<Room> pageContent;
