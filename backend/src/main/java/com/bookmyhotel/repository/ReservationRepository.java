@@ -225,4 +225,15 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
        List<Reservation> findByHotelIdAndDateRange(@Param("hotelId") Long hotelId,
                      @Param("startDate") java.time.LocalDateTime startDate,
                      @Param("endDate") java.time.LocalDateTime endDate);
+
+       /**
+        * Find reservations by assigned room
+        */
+       List<Reservation> findByAssignedRoom(com.bookmyhotel.entity.Room room);
+
+       /**
+        * Find reservations by assigned room and status
+        */
+       List<Reservation> findByAssignedRoomAndStatusIn(com.bookmyhotel.entity.Room room,
+                     List<ReservationStatus> statuses);
 }

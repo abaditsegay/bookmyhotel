@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -10,8 +10,15 @@ import {
   Box,
   Alert,
   CircularProgress,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  SelectChangeEvent,
 } from '@mui/material';
 import { Hotel } from '../../types/hotel';
+import { adminApiService, TenantDTO } from '../../services/adminApi';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface HotelEditDialogProps {
   open: boolean;
@@ -41,10 +48,15 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
     mobilePaymentPhone2: '',
     email: '',
     totalRooms: 0,
+    tenantId: '',
   });
 
   const [localError, setLocalError] = useState<string>('');
   const [saving, setSaving] = useState(false);
+  const [tenants, setTenants] = useState<TenantDTO[]>([]);
+  const [loadingTenants, setLoadingTenants] = useState(false);
+  
+  const { token } = useAuth();
 
   // Update form data when hotel prop changes
   useEffect(() => {
@@ -60,16 +72,35 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
         mobilePaymentPhone2: hotel.mobilePaymentPhone2 || '',
         email: hotel.email || '',
         totalRooms: hotel.totalRooms || hotel.roomCount || 0,
+        tenantId: hotel.tenantId || '',
       });
     }
   }, [hotel]);
 
-  // Clear errors when dialog opens
+  // Clear errors when dialog opens and load tenants
   useEffect(() => {
     if (open) {
       setLocalError('');
+      loadTenants();
     }
   }, [open]);
+
+  // Load active tenants for selection
+  const loadTenants = useCallback(async () => {
+    if (!token) return;
+    
+    try {
+      setLoadingTenants(true);
+      adminApiService.setToken(token);
+      const activeTenants = await adminApiService.getActiveTenants();
+      setTenants(activeTenants);
+    } catch (err) {
+      console.error('Error loading tenants:', err);
+      setLocalError('Failed to load tenants');
+    } finally {
+      setLoadingTenants(false);
+    }
+  }, [token]);
 
   const handleInputChange = (field: keyof Hotel) => (
     event: React.ChangeEvent<HTMLInputElement>
@@ -82,6 +113,14 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
     if (localError) setLocalError('');
   };
 
+  const handleTenantChange = (event: SelectChangeEvent<string>) => {
+    setFormData((prev) => ({
+      ...prev,
+      tenantId: event.target.value,
+    }));
+    if (localError) setLocalError('');
+  };
+
   const validateForm = (): boolean => {
     if (!formData.name?.trim()) {
       setLocalError('Hotel name is required');
@@ -89,6 +128,10 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
     }
     if (!formData.address?.trim()) {
       setLocalError('Address is required');
+      return false;
+    }
+    if (!formData.tenantId?.trim()) {
+      setLocalError('Please select a tenant');
       return false;
     }
     if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
@@ -172,6 +215,26 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
                 disabled={saving}
                 inputProps={{ maxLength: 100 }}
               />
+            </Grid>
+            
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth disabled={saving || loadingTenants}>
+                <InputLabel>Tenant *</InputLabel>
+                <Select
+                  value={formData.tenantId || ''}
+                  label="Tenant *"
+                  onChange={handleTenantChange}
+                >
+                  <MenuItem value="">
+                    <em>Select a tenant</em>
+                  </MenuItem>
+                  {tenants.map((tenant) => (
+                    <MenuItem key={tenant.tenantId} value={tenant.tenantId}>
+                      {tenant.name} {tenant.subdomain ? `(${tenant.subdomain})` : ''}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
             </Grid>
             
             <Grid item xs={12}>

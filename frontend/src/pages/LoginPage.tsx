@@ -731,6 +731,85 @@ const LoginPage: React.FC = () => {
                   </Typography>
                 </Button>
 
+                {/* Sam's Hotel at Bole Users */}
+                <Typography variant="caption" color="textSecondary" align="center" sx={{ py: 1 }}>
+                  ── Sam's Hotel at Bole ──
+                </Typography>
+
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  onClick={() => fillSampleUser('admin.samhotel@bookmyhotel.com', 'password123')}
+                  sx={{ 
+                    textTransform: 'none', 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    py: 2,
+                    borderRadius: 0,
+                    borderWidth: 2,
+                    borderColor: 'secondary.main',
+                    backgroundColor: theme.palette.mode === 'dark' 
+                      ? theme.palette.grey[800] 
+                      : '#ffffff',
+                    '&:hover': {
+                      borderColor: 'secondary.dark',
+                      backgroundColor: theme.palette.mode === 'dark' 
+                        ? theme.palette.grey[700] 
+                        : '#ffffff',
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
+                    },
+                  }}
+                >
+                  <Typography variant="body2" fontWeight="bold">🏨 Hotel Admin - Sam's Hotel at Bole</Typography>
+                  <Typography variant="caption" color="textSecondary" sx={{ mt: 0.5 }}>
+                    admin.samhotel@bookmyhotel.com
+                  </Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    Password: password123
+                  </Typography>
+                  <Typography variant="caption" color="secondary.main" sx={{ mt: 0.5 }}>
+                    🏨 Sam's Hotel at Bole (Frisco)
+                  </Typography>
+                </Button>
+
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  onClick={() => fillSampleUser('frontdesk.samhotel@bookmyhotel.com', 'password123')}
+                  sx={{ 
+                    textTransform: 'none', 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    py: 2,
+                    borderRadius: 0,
+                    borderWidth: 2,
+                    borderColor: 'secondary.main',
+                    backgroundColor: theme.palette.mode === 'dark' 
+                      ? theme.palette.grey[800] 
+                      : '#ffffff',
+                    '&:hover': {
+                      borderColor: 'secondary.dark',
+                      backgroundColor: theme.palette.mode === 'dark' 
+                        ? theme.palette.grey[700] 
+                        : '#ffffff',
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
+                    },
+                  }}
+                >
+                  <Typography variant="body2" fontWeight="bold">🎯 Front Desk - Sam's Hotel at Bole</Typography>
+                  <Typography variant="caption" color="textSecondary" sx={{ mt: 0.5 }}>
+                    frontdesk.samhotel@bookmyhotel.com
+                  </Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    Password: password123
+                  </Typography>
+                  <Typography variant="caption" color="secondary.main" sx={{ mt: 0.5 }}>
+                    🎯 Sam's Hotel at Bole Front Desk
+                  </Typography>
+                </Button>
+
               </Stack>
             </CardContent>
           </Card>

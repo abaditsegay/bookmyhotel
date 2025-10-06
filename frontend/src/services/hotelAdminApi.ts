@@ -1282,4 +1282,116 @@ export const hotelAdminApi = {
       };
     }
   },
+
+  // Bulk upload rooms from CSV
+  bulkUploadRooms: async (
+    token: string,
+    file: File,
+    skipErrors: boolean = false,
+    hotelId?: string
+  ): Promise<{ success: boolean; data?: any; message?: string }> => {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const user = TokenManager.getUser();
+      const targetHotelId = hotelId || user?.hotelId || '';
+      
+      const response = await fetch(
+        `${API_BASE_URL}/hotel-admin/hotels/${targetHotelId}/rooms/bulk/upload?skipErrors=${skipErrors}`, 
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'X-Tenant-ID': user?.tenantId || '',
+          },
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to upload rooms');
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      console.error('Bulk upload error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to upload rooms'
+      };
+    }
+  },
+
+  // Validate CSV file without importing
+  validateCsv: async (
+    token: string,
+    file: File,
+    hotelId?: string
+  ): Promise<{ success: boolean; data?: any; message?: string }> => {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const user = TokenManager.getUser();
+      const targetHotelId = hotelId || user?.hotelId || '';
+      
+      const response = await fetch(
+        `${API_BASE_URL}/hotel-admin/hotels/${targetHotelId}/rooms/bulk/validate`, 
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'X-Tenant-ID': user?.tenantId || '',
+          },
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to validate CSV');
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      console.error('CSV validation error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to validate CSV'
+      };
+    }
+  },
+
+  // Get bulk upload template info
+  getBulkUploadTemplateInfo: async (
+    token: string
+  ): Promise<{ success: boolean; data?: any; message?: string }> => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/hotel-admin/rooms/bulk/template-info`, 
+        {
+          method: 'GET',
+          headers: getAuthHeaders(token),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to get template info');
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      console.error('Template info error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to get template info'
+      };
+    }
+  },
 };

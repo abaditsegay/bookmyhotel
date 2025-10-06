@@ -367,6 +367,13 @@ public class HotelAdminService {
 
         // Get all rooms for this hotel using hotel ID instead of hotel entity
         List<Room> allRooms = roomRepository.findByHotelId(hotel.getId());
+        System.err.println("🔍 Found " + allRooms.size() + " total rooms for hotel ID: " + hotel.getId());
+        
+        if (allRooms.isEmpty()) {
+            System.err.println("🔍 No rooms found in database for hotel ID: " + hotel.getId());
+        } else {
+            System.err.println("🔍 Room IDs: " + allRooms.stream().map(r -> r.getId()).collect(java.util.stream.Collectors.toList()));
+        }
 
         // Apply filters
         List<Room> filteredRooms = allRooms.stream()
@@ -379,6 +386,7 @@ public class HotelAdminService {
                         matches = room.getRoomNumber().toLowerCase().contains(searchLower) ||
                                 (room.getDescription() != null
                                         && room.getDescription().toLowerCase().contains(searchLower));
+                        System.err.println("🔍 Search filter '" + search + "' on room " + room.getRoomNumber() + ": " + matches);
                     }
 
                     // Room type filter
@@ -396,9 +404,14 @@ public class HotelAdminService {
                 })
                 .collect(Collectors.toList());
 
+        System.err.println("🔍 After filtering: " + filteredRooms.size() + " rooms remain");
+        System.err.println("🔍 Filters applied - search: '" + search + "', roomType: '" + roomType + "', available: " + available);
+
         // Manual pagination with bounds checking
         int start = page * size;
         int end = Math.min(start + size, filteredRooms.size());
+        
+        System.err.println("🔍 Pagination - page: " + page + ", size: " + size + ", start: " + start + ", end: " + end);
 
         List<Room> pageContent;
         if (start >= filteredRooms.size()) {
@@ -591,19 +604,72 @@ public class HotelAdminService {
     /**
      * Delete room
      */
+    @Caching(evict = {
+            @CacheEvict(value = CacheConfig.ROOMS_BY_HOTEL_CACHE, allEntries = true),
+            @CacheEvict(value = CacheConfig.ROOM_TYPES_CACHE, allEntries = true),
+            @CacheEvict(value = CacheConfig.AVAILABLE_ROOMS_CACHE, allEntries = true)
+    })
     public void deleteRoom(Long roomId, String adminEmail) {
+        System.out.println("🔥 DELETE ROOM REQUEST");
+        System.out.println("🔥 Room ID (database primary key): " + roomId);
+        System.out.println("🔥 Admin email: " + adminEmail);
+
         User admin = getUserByEmail(adminEmail);
         Hotel hotel = admin.getHotel();
 
-        Room room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new RuntimeException("Room not found"));
+        System.out.println("🔥 Admin found: " + admin.getEmail());
+        System.out.println(
+                "🔥 Hotel: " + (hotel != null ? hotel.getName() + " (Hotel ID: " + hotel.getId() + ")" : "null"));
+
+        Room room = roomRepository.findById(roomId).orElse(null);
+        System.out.println("🔥 Room found: "
+                + (room != null ? "Yes - Room Number: " + room.getRoomNumber() + " (ID: " + room.getId() + ")" : "No"));
+
+        if (room == null) {
+            System.out.println("🔥 ERROR: Room with database ID " + roomId + " not found in database");
+            throw new RuntimeException("Room not found");
+        }
 
         // Verify the room belongs to the same hotel
+        System.out.println("🔥 Room's hotel ID: " + room.getHotel().getId());
+        System.out.println("🔥 Admin's hotel ID: " + hotel.getId());
+
         if (!room.getHotel().getId().equals(hotel.getId())) {
+            System.out.println("🔥 ERROR: Room does not belong to admin's hotel");
             throw new RuntimeException("Room does not belong to your hotel");
         }
 
+        System.out.println("🔥 Checking for active reservations for Room " + room.getRoomNumber() + " (ID: "
+                + room.getId() + ")...");
+        // Check if room has active reservations
+        List<Reservation> activeReservations = reservationRepository.findByAssignedRoomAndStatusIn(
+                room,
+                Arrays.asList(ReservationStatus.CONFIRMED, ReservationStatus.CHECKED_IN));
+
+        System.out.println("🔥 Active reservations found: " + activeReservations.size());
+        if (!activeReservations.isEmpty()) {
+            System.out.println("🔥 ERROR: Cannot delete room with active reservations");
+            throw new RuntimeException(
+                    "Cannot delete room with active reservations. Please complete or cancel existing reservations first.");
+        }
+
+        System.out.println("🔥 Checking for all reservations for Room " + room.getRoomNumber() + "...");
+        // Check if room has any reservations (past or future) and nullify the
+        // assignedRoom reference
+        List<Reservation> allReservations = reservationRepository.findByAssignedRoom(room);
+        System.out.println("🔥 Total reservations found: " + allReservations.size());
+
+        for (Reservation reservation : allReservations) {
+            System.out.println("🔥 Nullifying reservation " + reservation.getId() + " (Confirmation: "
+                    + reservation.getConfirmationNumber() + ")");
+            reservation.setAssignedRoom(null);
+            reservationRepository.save(reservation);
+        }
+
+        System.out.println("🔥 Deleting Room " + room.getRoomNumber() + " (ID: " + room.getId() + ")...");
+        // Now safe to delete the room
         roomRepository.delete(room);
+        System.out.println("🔥 SUCCESS: Room " + room.getRoomNumber() + " deleted successfully");
     }
 
     /**

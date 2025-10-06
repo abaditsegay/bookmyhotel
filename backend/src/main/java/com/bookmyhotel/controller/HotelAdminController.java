@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -208,6 +209,27 @@ public class HotelAdminController {
     public ResponseEntity<Void> deleteRoom(@PathVariable Long roomId, Authentication auth) {
         hotelAdminService.deleteRoom(roomId, auth.getName());
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/rooms/debug")
+    public ResponseEntity<List<Map<String, Object>>> debugListRooms(Authentication auth) {
+        try {
+            // Get all rooms using the paginated method with a large page size
+            Page<RoomDTO> roomsPage = hotelAdminService.getHotelRooms(auth.getName(), 0, 1000, "", "", null);
+            List<RoomDTO> rooms = roomsPage.getContent();
+
+            List<Map<String, Object>> debugInfo = rooms.stream().map(room -> {
+                Map<String, Object> info = new HashMap<>();
+                info.put("id", room.getId());
+                info.put("roomNumber", room.getRoomNumber());
+                info.put("roomType", room.getRoomType());
+                info.put("status", room.getStatus());
+                return info;
+            }).collect(Collectors.toList());
+            return ResponseEntity.ok(debugInfo);
+        } catch (Exception e) {
+            return ResponseEntity.ok(List.of(Map.of("error", e.getMessage())));
+        }
     }
 
     @PutMapping("/rooms/{roomId}/availability")

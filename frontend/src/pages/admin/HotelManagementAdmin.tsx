@@ -635,7 +635,7 @@ const HotelManagementAdmin: React.FC = () => {
         country: hotelData.country || selectedHotel.country || '',
         phone: hotelData.phone || selectedHotel.phone || '',
         email: hotelData.email || selectedHotel.email || '',
-        tenantId: selectedHotel.tenantId || null
+        tenantId: hotelData.tenantId || selectedHotel.tenantId || null
       };
 
       await adminApiService.updateHotel(selectedHotel.id, updateRequest);

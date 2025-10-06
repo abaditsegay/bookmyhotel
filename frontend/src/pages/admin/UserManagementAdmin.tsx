@@ -88,6 +88,8 @@ const UserManagementAdmin: React.FC = () => {
     phone: '',
     password: '',
     roles: [],
+    tenantId: undefined,
+    hotelId: undefined,
   });
 
   const [editForm, setEditForm] = useState<UpdateUserRequest>({
@@ -245,6 +247,8 @@ const UserManagementAdmin: React.FC = () => {
         phone: '',
         password: '',
         roles: [],
+        tenantId: undefined,
+        hotelId: undefined,
       });
       setHotels([]); // Clear hotels when form is reset
       loadUsers();
@@ -629,11 +633,14 @@ const UserManagementAdmin: React.FC = () => {
                   value={userForm.roles.length > 0 ? userForm.roles[0] : ''}
                   onChange={(e) => {
                     const selectedRole = e.target.value;
+                    const isHotelBoundRole = ['HOTEL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING'].includes(selectedRole);
+                    console.log('Role selected:', selectedRole, 'Is hotel bound:', isHotelBoundRole);
                     setUserForm({ 
                       ...userForm, 
                       roles: [selectedRole],
-                      // Clear hotel selection if role changes from HOTEL_ADMIN
-                      hotelId: selectedRole === 'HOTEL_ADMIN' ? userForm.hotelId : undefined
+                      // Clear hotel/tenant selection if role changes to a non-hotel-bound role
+                      hotelId: isHotelBoundRole ? userForm.hotelId : undefined,
+                      tenantId: isHotelBoundRole ? userForm.tenantId : undefined
                     });
                   }}
                   label="Role"
@@ -647,8 +654,12 @@ const UserManagementAdmin: React.FC = () => {
               </FormControl>
             </Grid>
             
-            {/* Tenant Selection - Show for HOTEL_ADMIN */}
-            {userForm.roles.includes('HOTEL_ADMIN') && (
+            {/* Tenant Selection - Show for hotel-bound roles */}
+            {(() => {
+              const shouldShow = (userForm.roles.includes('HOTEL_ADMIN') || userForm.roles.includes('FRONTDESK') || userForm.roles.includes('HOUSEKEEPING'));
+              console.log('Should show tenant selection:', shouldShow, 'User roles:', userForm.roles);
+              return shouldShow;
+            })() && (
               <Grid item xs={12} md={6}>
                 <FormControl fullWidth required>
                   <InputLabel>Tenant</InputLabel>
@@ -675,8 +686,8 @@ const UserManagementAdmin: React.FC = () => {
               </Grid>
             )}
 
-            {/* Hotel Selection - Show for HOTEL_ADMIN when tenant is selected */}
-            {userForm.roles.includes('HOTEL_ADMIN') && userForm.tenantId && (
+            {/* Hotel Selection - Show for hotel-bound roles when tenant is selected */}
+            {(userForm.roles.includes('HOTEL_ADMIN') || userForm.roles.includes('FRONTDESK') || userForm.roles.includes('HOUSEKEEPING')) && userForm.tenantId && (
               <Grid item xs={12} md={6}>
                 <FormControl fullWidth required>
                   <InputLabel>Hotel</InputLabel>

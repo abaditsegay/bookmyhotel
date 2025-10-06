@@ -39,6 +39,9 @@ public class DataInitializer implements CommandLineRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(DataInitializer.class);
 
+    // Flag to disable data initialization completely
+    private static final boolean ENABLE_DATA_INITIALIZATION = false;
+
     @Autowired
     private UserRepository userRepository;
 
@@ -62,6 +65,11 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        if (!ENABLE_DATA_INITIALIZATION) {
+            logger.info("Data initialization is disabled - skipping all initialization");
+            return;
+        }
+
         logger.info("Starting data initialization...");
 
         // Always create system admin user for administrative access

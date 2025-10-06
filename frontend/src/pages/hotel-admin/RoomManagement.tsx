@@ -47,6 +47,7 @@ import { useNavigate } from 'react-router-dom';
 import { hotelAdminApi, RoomResponse, RoomCreateRequest, RoomUpdateRequest } from '../../services/hotelAdminApi';
 import { useAuth } from '../../contexts/AuthContext';
 import RoomTypePricing from '../../components/RoomTypePricing';
+import RoomBulkUpload from '../../components/hotel-admin/RoomBulkUpload';
 import { ROOM_TYPE_VALUES } from '../../constants/roomTypes';
 
 interface RoomFilters {
@@ -82,6 +83,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
+  const [bulkUploadDialogOpen, setBulkUploadDialogOpen] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<RoomResponse | null>(null);
 
   // Status update states
@@ -121,6 +123,8 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
   const loadRooms = useCallback(async () => {
     if (!token) return;
     
+    console.log('🔄 Loading rooms... page:', page, 'size:', rowsPerPage, 'filters:', filters);
+    
     try {
       setLoading(true);
       setError(null);
@@ -136,15 +140,16 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
       );
       
       if (response.success && response.data) {
-        console.log('Room API Response:', response.data);
-        console.log('Total Elements:', response.data.totalElements);
+        console.log('🔄 Room API Response:', response.data);
+        console.log('🔄 Total Elements:', response.data.totalElements);
+        console.log('🔄 Room count in response:', response.data.content?.length);
         
         setRooms(response.data.content);
         
         // Extract pagination info directly from response data
         const totalElements = response.data.totalElements || 0;
         
-        console.log('Total Elements from response:', totalElements);
+        console.log('🔄 Total Elements from response:', totalElements);
         setTotalElements(totalElements);
       } else {
         setError(response.message || 'Failed to load rooms');
@@ -294,17 +299,24 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
     
     try {
       setLoading(true);
+      console.log('🗑️ Deleting room:', selectedRoom.id, selectedRoom.roomNumber);
+      
       const response = await hotelAdminApi.deleteRoom(token, selectedRoom.id);
+      console.log('🗑️ Delete response:', response);
+      
       if (response.success) {
+        console.log('🗑️ Delete successful, refreshing room list...');
         setDeleteDialogOpen(false);
         setSelectedRoom(null);
         await loadRooms();
         setError(null);
+        console.log('🗑️ Room list refreshed');
       } else {
+        console.log('🗑️ Delete failed:', response.message);
         setError(response.message || 'Failed to delete room. Room may have active bookings.');
       }
     } catch (err) {
-      console.error('Error deleting room:', err);
+      console.error('🗑️ Error deleting room:', err);
       setError('Failed to delete room. Room may have active bookings.');
     } finally {
       setLoading(false);
@@ -400,14 +412,23 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
             <Tab label="Pricing" />
           </Tabs>
           {tabValue === 0 && (
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={() => setCreateDialogOpen(true)}
-              sx={{ minHeight: 36 }}
-            >
-              Add New Room
-            </Button>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={() => setCreateDialogOpen(true)}
+                sx={{ minHeight: 36 }}
+              >
+                Add New Room
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={() => setBulkUploadDialogOpen(true)}
+                sx={{ minHeight: 36 }}
+              >
+                📤 Bulk Upload
+              </Button>
+            </Box>
           )}
           {tabValue === 1 && (
             <Button
@@ -891,6 +912,32 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
               disabled={loading}
             >
               Delete
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Bulk Upload Dialog */}
+        <Dialog
+          open={bulkUploadDialogOpen}
+          onClose={() => setBulkUploadDialogOpen(false)}
+          maxWidth="lg"
+          fullWidth
+        >
+          <DialogTitle>
+            🏨 Bulk Room Upload
+          </DialogTitle>
+          <DialogContent sx={{ p: 0 }}>
+            <RoomBulkUpload
+              onUploadComplete={(rooms) => {
+                setBulkUploadDialogOpen(false);
+                loadRooms(); // Refresh the room list
+                alert(`Successfully uploaded ${rooms.length} rooms!`);
+              }}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setBulkUploadDialogOpen(false)}>
+              Close
             </Button>
           </DialogActions>
         </Dialog>

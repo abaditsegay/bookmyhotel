@@ -125,10 +125,17 @@ public class UserManagementService {
             request.setTenantId(null); // System-wide users should not have tenant assignments
         }
 
-        // If creating a HOTEL_ADMIN, validate hotel assignment
-        if (request.getRoles().contains(UserRole.HOTEL_ADMIN)) {
+        // If creating a hotel-bound user (HOTEL_ADMIN, FRONTDESK, HOUSEKEEPING),
+        // validate hotel assignment
+        boolean hasHotelBoundRole = request.getRoles().stream()
+                .anyMatch(role -> role == UserRole.HOTEL_ADMIN ||
+                        role == UserRole.FRONTDESK ||
+                        role == UserRole.HOUSEKEEPING);
+
+        if (hasHotelBoundRole && !hasSystemWideRole) {
             if (request.getHotelId() == null) {
-                throw new RuntimeException("Hotel assignment is required for HOTEL_ADMIN users");
+                throw new RuntimeException(
+                        "Hotel assignment is required for hotel-bound users (HOTEL_ADMIN, FRONTDESK, HOUSEKEEPING)");
             }
 
             // Verify the hotel exists
@@ -150,8 +157,8 @@ public class UserManagementService {
         user.setRoles(request.getRoles());
         user.setIsActive(true); // New users are active by default
 
-        // Set hotel for HOTEL_ADMIN users (only if they are not system-wide)
-        if (request.getRoles().contains(UserRole.HOTEL_ADMIN) && !hasSystemWideRole && request.getHotelId() != null) {
+        // Set hotel for hotel-bound users (only if they are not system-wide)
+        if (hasHotelBoundRole && !hasSystemWideRole && request.getHotelId() != null) {
             Hotel hotel = hotelRepository.findById(request.getHotelId()).orElse(null);
             user.setHotel(hotel);
         }

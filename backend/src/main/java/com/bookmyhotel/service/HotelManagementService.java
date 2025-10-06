@@ -13,10 +13,12 @@ import com.bookmyhotel.dto.HotelDTO;
 import com.bookmyhotel.dto.RoomDTO;
 import com.bookmyhotel.entity.Hotel;
 import com.bookmyhotel.entity.Room;
+import com.bookmyhotel.entity.Tenant;
 import com.bookmyhotel.entity.User;
 import com.bookmyhotel.exception.ResourceNotFoundException;
 import com.bookmyhotel.repository.HotelRepository;
 import com.bookmyhotel.repository.RoomRepository;
+import com.bookmyhotel.repository.TenantRepository;
 import com.bookmyhotel.repository.UserRepository;
 
 /**
@@ -34,6 +36,9 @@ public class HotelManagementService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private TenantRepository tenantRepository;
 
     /**
      * Get all hotels with pagination
@@ -321,9 +326,14 @@ public class HotelManagementService {
         hotel.setCountry(dto.getCountry());
         hotel.setPhone(dto.getPhone());
         hotel.setEmail(dto.getEmail());
-        // Note: tenant relationship should be set through proper tenant reference, not
-        // by string ID
-        // hotel.setTenantId(dto.getTenantId());
+
+        // Handle tenant relationship update
+        if (dto.getTenantId() != null) {
+            Tenant tenant = tenantRepository.findById(dto.getTenantId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Tenant not found with id: " + dto.getTenantId()));
+            hotel.setTenant(tenant);
+        }
+
         if (dto.getIsActive() != null) {
             hotel.setIsActive(dto.getIsActive());
         }
