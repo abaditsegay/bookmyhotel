@@ -733,17 +733,9 @@ public class HotelAdminController {
      * Fix room status consistency for hotel
      */
     @PostMapping("/fix-room-status")
-    public ResponseEntity<Map<String, Object>> fixRoomStatusConsistency() {
+    public ResponseEntity<Map<String, Object>> fixRoomStatusConsistency(Authentication auth) {
         try {
-            User admin = userService.getCurrentUser();
-            if (admin.getHotel() == null) {
-                Map<String, Object> response = new HashMap<>();
-                response.put("success", false);
-                response.put("message", "Hotel not found for admin");
-                return ResponseEntity.badRequest().body(response);
-            }
-
-            hotelAdminService.fixRoomStatusConsistency(admin.getHotel().getId());
+            hotelAdminService.fixRoomStatusConsistency(auth.getName());
             
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);

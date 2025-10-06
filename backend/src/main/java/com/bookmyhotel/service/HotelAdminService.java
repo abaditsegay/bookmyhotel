@@ -1498,8 +1498,15 @@ public class HotelAdminService {
      * Fix room status consistency - ensure occupied rooms have checked-in guests
      * and available rooms don't have checked-in guests
      */
-    public void fixRoomStatusConsistency(Long hotelId) {
-        List<Room> hotelRooms = roomRepository.findByHotelId(hotelId);
+    public void fixRoomStatusConsistency(String adminEmail) {
+        User admin = getUserByEmail(adminEmail);
+        Hotel hotel = admin.getHotel();
+
+        if (hotel == null) {
+            throw new RuntimeException("Hotel admin is not associated with any hotel");
+        }
+
+        List<Room> hotelRooms = roomRepository.findByHotelId(hotel.getId());
         
         for (Room room : hotelRooms) {
             // Check if room has checked-in guest
