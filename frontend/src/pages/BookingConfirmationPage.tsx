@@ -759,9 +759,9 @@ const BookingConfirmationPage: React.FC = () => {
           <Box 
             sx={{ 
               display: 'flex', 
-              gap: isMobile ? 1.5 : 2, 
-              flexDirection: isMobile ? 'row' : 'column', 
-              alignItems: isMobile ? 'center' : 'flex-end',
+              gap: isMobile ? 1.5 : 3, 
+              flexDirection: 'row', 
+              alignItems: 'center',
               order: isMobile ? 1 : 2,
               justifyContent: 'center',
             }}
