@@ -929,10 +929,25 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
           <DialogContent sx={{ p: 0 }}>
             <RoomBulkUpload
               onUploadComplete={(rooms) => {
-                setBulkUploadDialogOpen(false);
-                loadRooms(); // Refresh the room list
-                alert(`Successfully uploaded ${rooms.length} rooms!`);
+                console.log('🔄 Bulk upload completed, received rooms:', rooms?.length || 0);
+                // Reset pagination to first page to see newly added rooms
+                setPage(0);
+                // Clear any filters to ensure all rooms are visible
+                setFilters({
+                  roomNumber: '',
+                  roomType: '',
+                  status: ''
+                });
+                setSearchTerm('');
+                
+                // Keep dialog open to show success overlay
+                // Force reload with a delay to ensure backend cache is cleared
+                setTimeout(() => {
+                  console.log('🔄 Reloading rooms after bulk upload...');
+                  loadRooms();
+                }, 500);
               }}
+              onClose={() => setBulkUploadDialogOpen(false)}
             />
           </DialogContent>
           <DialogActions>

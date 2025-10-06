@@ -53,10 +53,11 @@ interface ValidationError {
 
 interface RoomBulkUploadProps {
   onUploadComplete?: (rooms: RoomData[]) => void;
+  onClose?: () => void;
   hotelId?: string;
 }
 
-const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, hotelId }) => {
+const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClose, hotelId }) => {
   const { token } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -68,6 +69,12 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, hotel
   const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
   const [errorDialogOpen, setErrorDialogOpen] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+  const [successOverlayOpen, setSuccessOverlayOpen] = useState(false);
+  const [importStats, setImportStats] = useState<{
+    successful: number;
+    failed: number;
+    errors: string[];
+  }>({ successful: 0, failed: 0, errors: [] });
 
   const steps = [
     'Download Template',
@@ -346,13 +353,22 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, hotel
         const failedImports = data.failedImports || 0;
         const importErrors = data.importErrors || [];
         
+        // Store stats for success overlay
+        setImportStats({
+          successful: successfulImports,
+          failed: failedImports,
+          errors: importErrors
+        });
+        
         if (onUploadComplete && data.importedRooms) {
           onUploadComplete(data.importedRooms);
         }
         
         setActiveStep(5);
         
-        // Success handled by the stepper UI - no need for alert
+        // Show success overlay
+        setSuccessOverlayOpen(true);
+        
         console.log(`Import completed: ${successfulImports} rooms imported` + 
           (failedImports > 0 ? `, ${failedImports} failed` : ''));
         
@@ -377,6 +393,8 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, hotel
     setValidationErrors([]);
     setIsImporting(false);
     setActiveStep(0);
+    setSuccessOverlayOpen(false);
+    setImportStats({ successful: 0, failed: 0, errors: [] });
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -797,6 +815,173 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, hotel
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setErrorDialogOpen(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Success Overlay */}
+      <Dialog
+        open={successOverlayOpen}
+        onClose={() => setSuccessOverlayOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            background: 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)',
+            color: 'white',
+            textAlign: 'center',
+            animation: 'slideIn 0.5s ease-out',
+            '@keyframes slideIn': {
+              '0%': {
+                transform: 'scale(0.8) translateY(-50px)',
+                opacity: 0,
+              },
+              '100%': {
+                transform: 'scale(1) translateY(0)',
+                opacity: 1,
+              },
+            },
+          }
+        }}
+      >
+        <DialogContent sx={{ py: 4, px: 4 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+            {/* Success Icon with Animation */}
+            <Box
+              sx={{
+                width: 80,
+                height: 80,
+                borderRadius: '50%',
+                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                animation: 'bounce 0.6s ease-in-out 0.3s both',
+                '@keyframes bounce': {
+                  '0%, 20%, 50%, 80%, 100%': {
+                    transform: 'translateY(0)',
+                  },
+                  '40%': {
+                    transform: 'translateY(-10px)',
+                  },
+                  '60%': {
+                    transform: 'translateY(-5px)',
+                  },
+                },
+              }}
+            >
+              <SuccessIcon sx={{ fontSize: 48, color: 'white' }} />
+            </Box>
+
+            {/* Success Message */}
+            <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1 }}>
+              🎉 Import Successful!
+            </Typography>
+
+            {/* Import Statistics */}
+            <Box sx={{ width: '100%', mb: 2 }}>
+              <Typography variant="h6" sx={{ mb: 2 }}>
+                Import Summary
+              </Typography>
+              
+              <Box sx={{ display: 'flex', justifyContent: 'space-around', mb: 2 }}>
+                <Box sx={{ textAlign: 'center' }}>
+                  <Typography variant="h3" sx={{ fontWeight: 'bold', color: 'rgba(255, 255, 255, 0.9)' }}>
+                    {importStats.successful}
+                  </Typography>
+                  <Typography variant="body2">
+                    Rooms Created
+                  </Typography>
+                </Box>
+                
+                {importStats.failed > 0 && (
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Typography variant="h3" sx={{ fontWeight: 'bold', color: 'rgba(255, 255, 255, 0.7)' }}>
+                      {importStats.failed}
+                    </Typography>
+                    <Typography variant="body2">
+                      Skipped
+                    </Typography>
+                  </Box>
+                )}
+              </Box>
+
+              {/* Progress Bar Animation */}
+              <Box sx={{ position: 'relative', mb: 2 }}>
+                <LinearProgress
+                  variant="determinate"
+                  value={100}
+                  sx={{
+                    height: 8,
+                    borderRadius: 4,
+                    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                    '& .MuiLinearProgress-bar': {
+                      backgroundColor: 'white',
+                      borderRadius: 4,
+                      animation: 'progressFill 1s ease-out 0.5s both',
+                      '@keyframes progressFill': {
+                        '0%': {
+                          transform: 'scaleX(0)',
+                        },
+                        '100%': {
+                          transform: 'scaleX(1)',
+                        },
+                      },
+                    },
+                  }}
+                />
+              </Box>
+
+              <Typography variant="body1" sx={{ opacity: 0.9 }}>
+                Your rooms have been successfully imported and are now available for booking!
+              </Typography>
+
+              {/* Show errors if any */}
+              {importStats.errors.length > 0 && (
+                <Box sx={{ mt: 2, p: 2, backgroundColor: 'rgba(255, 255, 255, 0.1)', borderRadius: 2 }}>
+                  <Typography variant="body2" sx={{ mb: 1, fontWeight: 'bold' }}>
+                    Import Warnings:
+                  </Typography>
+                  {importStats.errors.slice(0, 3).map((error, index) => (
+                    <Typography key={index} variant="caption" sx={{ display: 'block', opacity: 0.8 }}>
+                      • {error}
+                    </Typography>
+                  ))}
+                  {importStats.errors.length > 3 && (
+                    <Typography variant="caption" sx={{ opacity: 0.7 }}>
+                      ... and {importStats.errors.length - 3} more
+                    </Typography>
+                  )}
+                </Box>
+              )}
+            </Box>
+          </Box>
+        </DialogContent>
+        
+        <DialogActions sx={{ justifyContent: 'center', pb: 3 }}>
+          <Button
+            variant="contained"
+            size="large"
+            onClick={() => {
+              setSuccessOverlayOpen(false);
+              if (onClose) {
+                onClose();
+              }
+            }}
+            sx={{
+              backgroundColor: 'rgba(255, 255, 255, 0.2)',
+              color: 'white',
+              '&:hover': {
+                backgroundColor: 'rgba(255, 255, 255, 0.3)',
+              },
+              px: 4,
+              py: 1.5,
+              borderRadius: 2,
+              fontWeight: 'bold',
+            }}
+          >
+            Close & Continue
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>

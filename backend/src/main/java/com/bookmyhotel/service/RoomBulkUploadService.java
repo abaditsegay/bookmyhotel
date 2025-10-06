@@ -1,11 +1,14 @@
 package com.bookmyhotel.service;
 
+import com.bookmyhotel.config.CacheConfig;
 import com.bookmyhotel.entity.Hotel;
 import com.bookmyhotel.entity.Room;
 import com.bookmyhotel.entity.RoomType;
 import com.bookmyhotel.entity.RoomStatus;
 import com.bookmyhotel.repository.HotelRepository;
 import com.bookmyhotel.repository.RoomRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -190,6 +193,11 @@ public class RoomBulkUploadService {
         return result;
     }
 
+    @Caching(evict = {
+            @CacheEvict(value = CacheConfig.ROOMS_BY_HOTEL_CACHE, allEntries = true),
+            @CacheEvict(value = CacheConfig.ROOM_TYPES_CACHE, allEntries = true),
+            @CacheEvict(value = CacheConfig.AVAILABLE_ROOMS_CACHE, allEntries = true)
+    })
     public Map<String, Object> uploadRoomsFromCsv(Long hotelId, MultipartFile file, boolean skipErrors) {
         Map<String, Object> result = new HashMap<>();
 
