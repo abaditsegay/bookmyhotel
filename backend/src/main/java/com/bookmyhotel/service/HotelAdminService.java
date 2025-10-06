@@ -811,34 +811,31 @@ public class HotelAdminService {
                 ", Check-in: " + r.getCheckInDate() + ", Check-out: " + r.getCheckOutDate());
         }
 
-        // Count confirmed bookings (CONFIRMED status or CHECKED_IN status, regardless of dates for CHECKED_IN)
+        // Count confirmed bookings (CONFIRMED status or CHECKED_IN status)
+        // We want to count all CONFIRMED bookings that haven't checked out yet,
+        // and all CHECKED_IN bookings regardless of dates
         long confirmedBookings = allReservations.stream()
                 .filter(r -> {
                     System.out.println("🔍 Processing reservation " + r.getId() + " - Status: " + r.getStatus() + 
                         ", Check-in: " + r.getCheckInDate() + ", Check-out: " + r.getCheckOutDate());
                     
-                    boolean isConfirmedOrCheckedIn = r.getStatus() == ReservationStatus.CONFIRMED || 
-                                                   r.getStatus() == ReservationStatus.CHECKED_IN;
-                    
-                    if (!isConfirmedOrCheckedIn) {
-                        System.out.println("🔍 Reservation " + r.getId() + " excluded - not CONFIRMED or CHECKED_IN");
-                        return false;
-                    }
-                    
-                    // For CHECKED_IN guests, count them regardless of dates
+                    // Count CHECKED_IN bookings regardless of dates (current guests)
                     if (r.getStatus() == ReservationStatus.CHECKED_IN) {
                         System.out.println("🔍 Reservation " + r.getId() + " included - CHECKED_IN guest");
                         return true;
                     }
                     
-                    // For CONFIRMED bookings, only count if checkout date is in the future or today
+                    // Count CONFIRMED bookings that haven't passed their checkout date
                     if (r.getStatus() == ReservationStatus.CONFIRMED) {
-                        boolean isFutureOrToday = !r.getCheckOutDate().isBefore(today);
+                        // Use isAfter instead of !isBefore to be more explicit
+                        // A booking is still valid if checkout date is today or in the future
+                        boolean isValidBooking = r.getCheckOutDate().isAfter(today) || r.getCheckOutDate().isEqual(today);
                         System.out.println("🔍 Reservation " + r.getId() + " - CONFIRMED booking, checkout date check: " + 
-                            r.getCheckOutDate() + " >= " + today + " = " + isFutureOrToday);
-                        return isFutureOrToday;
+                            r.getCheckOutDate() + " >= " + today + " = " + isValidBooking);
+                        return isValidBooking;
                     }
                     
+                    System.out.println("🔍 Reservation " + r.getId() + " excluded - status: " + r.getStatus());
                     return false;
                 })
                 .count();
@@ -849,14 +846,14 @@ public class HotelAdminService {
         // Booked rooms: rooms with active reservations that have assigned rooms
         Set<Long> bookedRoomIds = allReservations.stream()
                 .filter(r -> {
-                    // For CHECKED_IN guests, count them regardless of dates
+                    // Count CHECKED_IN bookings regardless of dates (current guests)
                     if (r.getStatus() == ReservationStatus.CHECKED_IN) {
                         return true;
                     }
                     
-                    // For CONFIRMED bookings, only count if checkout date is in the future
+                    // Count CONFIRMED bookings that haven't passed their checkout date
                     if (r.getStatus() == ReservationStatus.CONFIRMED) {
-                        return !r.getCheckOutDate().isBefore(today);
+                        return r.getCheckOutDate().isAfter(today) || r.getCheckOutDate().isEqual(today);
                     }
                     
                     return false;
