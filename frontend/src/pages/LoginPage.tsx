@@ -739,7 +739,7 @@ const LoginPage: React.FC = () => {
                 <Button
                   variant="outlined"
                   fullWidth
-                  onClick={() => fillSampleUser('admin.samhotel@bookmyhotel.com', 'password123')}
+                  onClick={() => fillSampleUser('samhotel.admin@samhotel.com', 'password123')}
                   sx={{ 
                     textTransform: 'none', 
                     display: 'flex', 
@@ -763,7 +763,7 @@ const LoginPage: React.FC = () => {
                 >
                   <Typography variant="body2" fontWeight="bold">🏨 Hotel Admin - Sam's Hotel at Bole</Typography>
                   <Typography variant="caption" color="textSecondary" sx={{ mt: 0.5 }}>
-                    admin.samhotel@bookmyhotel.com
+                    samhotel.admin@samhotel.com
                   </Typography>
                   <Typography variant="caption" color="textSecondary">
                     Password: password123
@@ -776,7 +776,7 @@ const LoginPage: React.FC = () => {
                 <Button
                   variant="outlined"
                   fullWidth
-                  onClick={() => fillSampleUser('frontdesk.samhotel@bookmyhotel.com', 'password123')}
+                  onClick={() => fillSampleUser('samhotel.frontdesk@samhotel.com', 'password123')}
                   sx={{ 
                     textTransform: 'none', 
                     display: 'flex', 
@@ -800,7 +800,7 @@ const LoginPage: React.FC = () => {
                 >
                   <Typography variant="body2" fontWeight="bold">🎯 Front Desk - Sam's Hotel at Bole</Typography>
                   <Typography variant="caption" color="textSecondary" sx={{ mt: 0.5 }}>
-                    frontdesk.samhotel@bookmyhotel.com
+                    samhotel.frontdesk@samhotel.com
                   </Typography>
                   <Typography variant="caption" color="textSecondary">
                     Password: password123
