@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Sam's Hotel Authentication</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        button { margin: 5px; padding: 10px 15px; cursor: pointer; }
+        pre { background-color: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Sam's Hotel Authentication Test</h1>
+    
+    <div class="test-section">
+        <h3>Test Admin Login</h3>
+        <button onclick="testLogin('admin.samhotel@bookmyhotel.com', 'password123')">
+            Test Admin (admin.samhotel@bookmyhotel.com)
+        </button>
+        <div id="admin-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Test Front Desk Login</h3>
+        <button onclick="testLogin('frontdesk.samhotel@bookmyhotel.com', 'password123')">
+            Test Front Desk (frontdesk.samhotel@bookmyhotel.com)
+        </button>
+        <div id="frontdesk-result"></div>
+    </div>
+
+    <script>
+        async function testLogin(email, password) {
+            const resultDiv = email.includes('admin') ? 
+                document.getElementById('admin-result') : 
+                document.getElementById('frontdesk-result');
+            
+            resultDiv.innerHTML = '<p>Testing login...</p>';
+
+            try {
+                const response = await fetch('http://localhost:8080/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        password: password
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Login Successful!</h4>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Login Failed</h4>
+                            <p>Status: ${response.status}</p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Network Error</h4>
+                        <p>${error.message}</p>
+                        <p>Make sure the backend is running on http://localhost:8080</p>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

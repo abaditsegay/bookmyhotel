@@ -280,6 +280,14 @@ const BookingConfirmationPage: React.FC = () => {
     });
   };
 
+  const formatCurrency = (amount: number) => {
+    // Format currency with thousand separators
+    return `ETB ${amount.toLocaleString('en-US', { 
+      minimumFractionDigits: 0, 
+      maximumFractionDigits: 0 
+    })}`;
+  };
+
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'confirmed': return 'primary';
@@ -535,11 +543,11 @@ const BookingConfirmationPage: React.FC = () => {
           </tr>
           <tr>
             <td className="label">Rate per night:</td>
-            <td className="value">ETB {booking.pricePerNight?.toFixed(0)}</td>
+            <td className="value">{formatCurrency(booking.pricePerNight || 0)}</td>
           </tr>
           <tr>
             <td className="label">Total Amount:</td>
-            <td className="value">ETB {booking.totalAmount?.toFixed(0)}</td>
+            <td className="value">{formatCurrency(booking.totalAmount || 0)}</td>
           </tr>
           <tr>
             <td className="label">Status:</td>
@@ -1016,7 +1024,7 @@ const BookingConfirmationPage: React.FC = () => {
                     fontSize: isMobile ? '1rem' : '1.25rem',
                   }}
                 >
-                  ETB {booking.totalAmount?.toFixed(0)}
+                  {formatCurrency(booking.totalAmount || 0)}
                 </Typography>
               </CardContent>
             </Card>
@@ -1110,7 +1118,7 @@ const BookingConfirmationPage: React.FC = () => {
                     fontSize: isMobile ? '0.9rem' : '1rem',
                   }}
                 >
-                  <strong>Rate:</strong> ETB {booking.pricePerNight?.toFixed(0)}/night
+                  <strong>Rate:</strong> {formatCurrency(booking.pricePerNight || 0)}/night
                 </Typography>
                 <Typography 
                   variant="body1" 

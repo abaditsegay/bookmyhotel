@@ -41,6 +41,7 @@ import { hotelAdminApi, RoomResponse } from '../../services/hotelAdminApi';
 import { frontDeskApiService } from '../../services/frontDeskApi';
 import { ROOM_TYPE_VALUES } from '../../constants/roomTypes';
 import { formatDateForDisplay, formatDateForInput } from '../../utils/dateUtils';
+import { formatCurrency } from '../../utils/currencyUtils';
 
 // Unified BookingData interface
 export interface BookingData {
@@ -717,13 +718,6 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
     return formatDateForDisplay(dateString);
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-ET', {
-      style: 'currency',
-      currency: 'ETB'
-    }).format(amount);
-  };
-
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'confirmed': return 'primary';
@@ -1396,7 +1390,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                         secondary={
                           <span>
                             <Typography component="span" variant="body2" color="text.primary">
-                              ETB {room.pricePerNight?.toFixed(0)}/night
+                              {formatCurrency(room.pricePerNight || 0)}/night
                             </Typography>
                             {room.description && (
                               <Typography component="span" variant="body2" sx={{ ml: 1 }}>

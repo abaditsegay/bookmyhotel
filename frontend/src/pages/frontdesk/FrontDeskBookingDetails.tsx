@@ -29,6 +29,7 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { frontDeskApiService } from '../../services/frontDeskApi';
 import { ROOM_TYPES } from '../../constants/roomTypes';
+import { formatCurrency } from '../../utils/currencyUtils';
 
 // Map BookingResponse from API to display format
 interface BookingData {
@@ -239,13 +240,6 @@ const FrontDeskBookingDetails: React.FC = () => {
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString();
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'ETB'
-    }).format(amount);
   };
 
   const getStatusColor = (status: string) => {

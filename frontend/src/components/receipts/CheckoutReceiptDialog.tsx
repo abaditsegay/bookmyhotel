@@ -1,4 +1,5 @@
 import React from 'react';
+import { formatCurrency } from '../../utils/currencyUtils';
 import {
   Dialog,
   DialogContent,
@@ -39,7 +40,6 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
 }) => {
   if (!receipt) return null;
 
-  const formatCurrency = (amount: number) => `ETB ${amount.toFixed(0)}`;
   const formatDate = (dateString: string) => formatDateForDisplay(dateString);
   const formatDateTime = (dateString: string) => new Date(dateString).toLocaleString();
 

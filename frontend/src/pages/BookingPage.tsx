@@ -42,6 +42,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useAuthenticatedApi } from '../hooks/useAuthenticatedApi';
 import { AvailableRoom, HotelSearchRequest } from '../types/hotel';
 import { useMockPayment, MockPaymentRequest } from '../services/mockPaymentGateway';
+import { formatCurrency } from '../utils/currencyUtils';
 import { PaymentMethod } from '../types/shop';
 import NumberStepper from '../components/common/NumberStepper';
 import { COLORS } from '../theme/themeColors';
@@ -645,7 +646,7 @@ const BookingPage: React.FC = () => {
                         Price per Night
                       </Typography>
                       <Typography variant="h6" sx={{ fontWeight: 600, mt: 0.5, color: COLORS.PRIMARY }}>
-                        💰 ETB {roomData.pricePerNight?.toFixed(0)}
+                        💰 {formatCurrency(roomData.pricePerNight || 0)}
                       </Typography>
                     </Box>
                   </Grid>
@@ -666,12 +667,12 @@ const BookingPage: React.FC = () => {
                             📅 {nights} night{nights !== 1 ? 's' : ''}
                           </Typography>
                           <Typography variant="h6" sx={{ fontWeight: 700, color: COLORS.PRIMARY }}>
-                            ETB {totalAmount?.toFixed(0)}
+                            {formatCurrency(totalAmount || 0)}
                           </Typography>
                         </Box>
                       ) : (
                         <Typography variant="h6" sx={{ fontWeight: 600, mt: 0.5, color: COLORS.PRIMARY }}>
-                          ETB {roomData.pricePerNight?.toFixed(0)}
+                          {formatCurrency(roomData.pricePerNight || 0)}
                         </Typography>
                       )}
                     </Box>

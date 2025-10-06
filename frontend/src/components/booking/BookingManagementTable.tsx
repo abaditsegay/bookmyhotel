@@ -50,6 +50,7 @@ import CheckoutReceiptDialog from '../receipts/CheckoutReceiptDialog';
 import CheckInDialog from './CheckInDialog';
 import { Booking } from '../../types/booking-shared';
 import { formatDateForDisplay } from '../../utils/dateUtils';
+import { formatCurrency } from '../../utils/currencyUtils';
 import BookingNotificationEvents from '../../utils/bookingNotificationEvents';
 import { logger } from '../../utils/logger';
 
@@ -692,14 +693,6 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
   const formatDate = (dateString: string) => {
     return formatDateForDisplay(dateString);
   };
-
-  // Format currency - keeping for future use
-  // const formatCurrency = (amount: number) => {
-  //   return new Intl.NumberFormat('en-ET', {
-  //     style: 'currency',
-  //     currency: 'ETB',
-  //   }).format(amount);
-  // };
 
   return (
     <Box>

@@ -46,6 +46,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { hotelAdminApi, RoomResponse, RoomCreateRequest, RoomUpdateRequest } from '../../services/hotelAdminApi';
 import { useAuth } from '../../contexts/AuthContext';
+import { formatCurrency } from '../../utils/currencyUtils';
 import RoomTypePricing from '../../components/RoomTypePricing';
 import RoomBulkUpload from '../../components/hotel-admin/RoomBulkUpload';
 import { ROOM_TYPE_VALUES } from '../../constants/roomTypes';
@@ -567,7 +568,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
                         </Typography>
                       </TableCell>
                       <TableCell>{room.capacity} guests</TableCell>
-                      <TableCell>ETB {room.pricePerNight?.toFixed(0)}</TableCell>
+                      <TableCell>{formatCurrency(room.pricePerNight || 0)}</TableCell>
                       <TableCell>
                         <FormControlLabel
                           control={
@@ -697,7 +698,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
                         Type: {selectedRoom.roomType}
                       </Typography>
                       <Typography variant="body2" color="text.secondary" gutterBottom>
-                        Price per Night: ETB {selectedRoom.pricePerNight?.toFixed(0)}
+                        Price per Night: {formatCurrency(selectedRoom.pricePerNight || 0)}
                       </Typography>
                       <Typography variant="body2" color="text.secondary" gutterBottom>
                         Capacity: {selectedRoom.capacity} guests

@@ -29,6 +29,7 @@ import { useTenant } from '../../contexts/TenantContext';
 import { hotelApiService } from '../../services/hotelApi';
 import { hotelAdminApi } from '../../services/hotelAdminApi';
 import { frontDeskApiService } from '../../services/frontDeskApi';
+import { formatCurrency } from '../../utils/currencyUtils';
 import { API_CONFIG } from '../../config/apiConfig';
 import NumberStepper from '../common/NumberStepper';
 import { COLORS, addAlpha } from '../../theme/themeColors';
@@ -811,7 +812,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                           color: COLORS.PRIMARY,
                           fontWeight: 700
                         }}>
-                          ETB {room.pricePerNight?.toFixed(0)}/night
+                          {formatCurrency(room.pricePerNight || 0)}/night
                         </Typography>
                       </CardContent>
                     </Card>
@@ -1015,10 +1016,10 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                     }}>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                         <Typography variant="body1">
-                          ETB {(selectedRoom?.pricePerNight || 0)?.toFixed(0)}/night × {Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24))} night{Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)) !== 1 ? 's' : ''}
+                          {formatCurrency(selectedRoom?.pricePerNight || 0)}/night × {Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24))} night{Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)) !== 1 ? 's' : ''}
                         </Typography>
                         <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                          ETB {calculateTotalAmount()?.toFixed(0)}
+                          {formatCurrency(calculateTotalAmount() || 0)}
                         </Typography>
                       </Box>
                     </Box>
@@ -1038,7 +1039,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                         Total Amount
                       </Typography>
                       <Typography variant="h4" sx={{ color: 'white', fontWeight: 700 }}>
-                        ETB {calculateTotalAmount()?.toFixed(0)}
+                        {formatCurrency(calculateTotalAmount() || 0)}
                       </Typography>
                     </Box>
                     
