@@ -562,10 +562,15 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
                         />
                       </TableCell>
                       <TableCell>
-                        {/* For now, show placeholder until currentGuest field is added to backend */}
-                        <Typography variant="body2" color="text.secondary">
-                          No guest
-                        </Typography>
+                        {room.currentGuest ? (
+                          <Typography variant="body2" fontWeight="medium">
+                            {room.currentGuest}
+                          </Typography>
+                        ) : (
+                          <Typography variant="body2" color="text.secondary">
+                            No guest
+                          </Typography>
+                        )}
                       </TableCell>
                       <TableCell>{room.capacity} guests</TableCell>
                       <TableCell>{formatCurrency(room.pricePerNight || 0)}</TableCell>

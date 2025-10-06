@@ -67,6 +67,7 @@ export interface RoomResponse {
   status: string;
   hotelId: number;
   hotelName: string;
+  currentGuest?: string;
   createdAt: string;
   updatedAt: string;
 }
