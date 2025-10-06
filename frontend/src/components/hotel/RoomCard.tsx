@@ -18,6 +18,7 @@ import {
 import { AvailableRoom } from '../../types/hotel';
 import { useAuth } from '../../contexts/AuthContext';
 import { COLORS, addAlpha } from '../../theme/themeColors';
+import { formatCurrency } from '../../utils/currencyUtils';
 
 interface RoomCardProps {
   room: AvailableRoom;
@@ -125,7 +126,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
                   fontSize: isSmallMobile ? '1rem' : '1.25rem',
                 }}
               >
-                ETB {room.pricePerNight?.toFixed(0)}
+                {formatCurrency(room.pricePerNight || 0)}
               </Typography>
               <Typography 
                 variant="caption" 
@@ -161,7 +162,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
                 color: COLORS.PRIMARY,
                 fontWeight: 700 
               }}>
-                ETB {room.pricePerNight?.toFixed(0)}
+                {formatCurrency(room.pricePerNight || 0)}
               </Typography>
               <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
                 per night

@@ -33,6 +33,7 @@ import {
 } from '@mui/icons-material';
 import { hotelAdminApi } from '../../services/hotelAdminApi';
 import { useAuth } from '../../contexts/AuthContext';
+import { formatCurrency } from '../../utils/currencyUtils';
 
 interface RoomData {
   roomNumber: string;
@@ -597,7 +598,7 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
                                 <TableRow key={index}>
                                   <TableCell>{room.roomNumber}</TableCell>
                                   <TableCell>{room.roomType}</TableCell>
-                                  <TableCell>${room.pricePerNight}</TableCell>
+                                  <TableCell>{formatCurrency(room.pricePerNight || 0)}</TableCell>
                                   <TableCell>{room.capacity}</TableCell>
                                   <TableCell>{room.status || 'Available'}</TableCell>
                                   <TableCell>{room.description || '-'}</TableCell>
@@ -757,7 +758,7 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
                     <TableCell>{room.roomNumber}</TableCell>
                     <TableCell>{room.roomType}</TableCell>
                     <TableCell>{room.capacity}</TableCell>
-                    <TableCell>${room.pricePerNight}</TableCell>
+                    <TableCell>{formatCurrency(room.pricePerNight || 0)}</TableCell>
                     <TableCell>{room.status || 'AVAILABLE'}</TableCell>
                     <TableCell>{room.isAvailable ? 'Yes' : 'No'}</TableCell>
                   </TableRow>
