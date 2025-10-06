@@ -749,7 +749,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                         {formatCurrency(selectedRoom?.pricePerNight || 0)}/night × {Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24))} night{Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)) !== 1 ? 's' : ''}
                       </Typography>
                       <Typography variant="body2">
-                        ETB {calculateTotalAmount()?.toFixed(0)}
+                        {formatCurrency(calculateTotalAmount() || 0)}
                       </Typography>
                     </Box>
                     <Divider />
@@ -758,7 +758,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                         Total Amount
                       </Typography>
                       <Typography variant="h6" color="primary.main">
-                        ETB {calculateTotalAmount()}
+                        {formatCurrency(calculateTotalAmount() || 0)}
                       </Typography>
                     </Box>
                     <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
