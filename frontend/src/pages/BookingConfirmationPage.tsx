@@ -269,17 +269,6 @@ const BookingConfirmationPage: React.FC = () => {
     }
   };
 
-  const getPaymentStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'paid': return 'success';
-      case 'pending': return 'warning';
-      case 'pay_at_frontdesk': return 'info';
-      case 'failed': return 'error';
-      case 'refunded': return 'info';
-      default: return 'default';
-    }
-  };
-
   const formatPaymentStatus = (status: string) => {
     switch (status.toUpperCase()) {
       case 'PAY_AT_FRONTDESK': return 'Pay at Front Desk';
@@ -1047,63 +1036,6 @@ const BookingConfirmationPage: React.FC = () => {
                   {booking.hotelName}
                 </Typography>
                 
-                {/* Payment Status and Reference */}
-                <Box sx={{ mb: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ 
-                        fontWeight: '600',
-                        fontSize: isMobile ? '0.85rem' : '0.9rem',
-                        color: 'text.primary',
-                      }}
-                    >
-                      Payment Status:
-                    </Typography>
-                    <Chip
-                      label={formatPaymentStatus(booking.paymentStatus)}
-                      color={getPaymentStatusColor(booking.paymentStatus) as any}
-                      variant="filled"
-                      size="small"
-                      sx={{ 
-                        fontWeight: '500',
-                        fontSize: isMobile ? '0.75rem' : '0.8rem',
-                        height: 24,
-                      }}
-                    />
-                  </Box>
-                  
-                  {booking.paymentReference && (
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Typography 
-                        variant="body2" 
-                        sx={{ 
-                          fontWeight: '600',
-                          fontSize: isMobile ? '0.85rem' : '0.9rem',
-                          color: 'text.primary',
-                        }}
-                      >
-                        Payment Ref:
-                      </Typography>
-                      <Typography 
-                        variant="body2" 
-                        sx={{ 
-                          fontFamily: 'monospace',
-                          backgroundColor: '#f5f5f5',
-                          px: 1,
-                          py: 0.5,
-                          borderRadius: 1,
-                          fontSize: isMobile ? '0.8rem' : '0.85rem',
-                          color: 'text.primary',
-                          border: '1px solid #e0e0e0',
-                        }}
-                      >
-                        {booking.paymentReference}
-                      </Typography>
-                    </Box>
-                  )}
-                </Box>
-                
                 <Typography 
                   variant="body1" 
                   color="text.secondary" 
@@ -1262,12 +1194,6 @@ const BookingConfirmationPage: React.FC = () => {
                   }}
                 >
                   <strong>Duration:</strong> {nights} night{nights !== 1 ? 's' : ''}
-                </Typography>
-                <Typography 
-                  variant="body1"
-                  sx={{ fontSize: isMobile ? '0.9rem' : '1rem' }}
-                >
-                  <strong>Payment:</strong> {formatPaymentStatus(booking.paymentStatus)}
                 </Typography>
               </Box>
             </Box>
