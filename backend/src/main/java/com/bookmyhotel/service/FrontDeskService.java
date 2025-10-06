@@ -359,7 +359,7 @@ public class FrontDeskService {
         }
 
         if (reservation.getCheckInDate().isAfter(LocalDate.now().plusDays(1))) {
-            throw new IllegalStateException("Cannot check in more than 1 day early");
+            throw new IllegalStateException("Early check-in is not allowed");
         }
 
         // Verify room is available
@@ -605,7 +605,7 @@ public class FrontDeskService {
         }
 
         if (reservation.getCheckInDate().isAfter(LocalDate.now().plusDays(1))) {
-            throw new IllegalStateException("Cannot check in more than 1 day early");
+            throw new IllegalStateException("Early check-in is not allowed");
         }
 
         // Update reservation status
