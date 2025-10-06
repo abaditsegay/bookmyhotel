@@ -1493,4 +1493,33 @@ public class HotelAdminService {
 
         return dto;
     }
+
+    /**
+     * Fix room status consistency - ensure occupied rooms have checked-in guests
+     * and available rooms don't have checked-in guests
+     */
+    public void fixRoomStatusConsistency(Long hotelId) {
+        List<Room> hotelRooms = roomRepository.findByHotelId(hotelId);
+        
+        for (Room room : hotelRooms) {
+            // Check if room has checked-in guest
+            boolean hasCheckedInGuest = room.getReservations() != null && 
+                room.getReservations().stream()
+                    .anyMatch(reservation -> 
+                        reservation.getStatus() == ReservationStatus.CHECKED_IN &&
+                        reservation.getCheckOutDate().isAfter(LocalDate.now())
+                    );
+
+            // Update room status based on actual occupancy
+            if (hasCheckedInGuest && room.getStatus() != RoomStatus.OCCUPIED) {
+                room.setStatus(RoomStatus.OCCUPIED);
+                roomRepository.save(room);
+                logger.info("Updated room {} status to OCCUPIED (has checked-in guest)", room.getRoomNumber());
+            } else if (!hasCheckedInGuest && room.getStatus() == RoomStatus.OCCUPIED && room.getIsAvailable()) {
+                room.setStatus(RoomStatus.AVAILABLE);
+                roomRepository.save(room);
+                logger.info("Updated room {} status to AVAILABLE (no checked-in guest)", room.getRoomNumber());
+            }
+        }
+    }
 }

@@ -91,6 +91,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
   const [newStatus, setNewStatus] = useState('');
   const [statusUpdating, setStatusUpdating] = useState(false);
   const [availabilityUpdating, setAvailabilityUpdating] = useState<Record<number, boolean>>({});
+  const [fixingConsistency, setFixingConsistency] = useState(false);
 
   // Form states
   const [roomForm, setRoomForm] = useState<RoomCreateRequest>({
@@ -295,6 +296,32 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
     }
   };
 
+  const handleFixRoomStatusConsistency = async () => {
+    if (!token) return;
+    
+    try {
+      setFixingConsistency(true);
+      console.log('🔧 Fixing room status consistency...');
+      
+      const response = await hotelAdminApi.fixRoomStatusConsistency(token);
+      console.log('🔧 Fix consistency response:', response);
+      
+      if (response.success) {
+        console.log('🔧 Room status consistency fixed, refreshing room list...');
+        await loadRooms();
+        setError(null);
+        console.log('🔧 Room list refreshed');
+      } else {
+        setError(response.message || 'Failed to fix room status consistency');
+      }
+    } catch (error) {
+      console.error('Fix room status consistency error:', error);
+      setError('Failed to fix room status consistency');
+    } finally {
+      setFixingConsistency(false);
+    }
+  };
+
   const handleDeleteRoom = async () => {
     if (!selectedRoom || !token) return;
     
@@ -428,6 +455,15 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
                 sx={{ minHeight: 36 }}
               >
                 📤 Bulk Upload
+              </Button>
+              <Button
+                variant="outlined"
+                color="warning"
+                onClick={handleFixRoomStatusConsistency}
+                disabled={fixingConsistency}
+                sx={{ minHeight: 36 }}
+              >
+                {fixingConsistency ? '🔧 Fixing...' : '🔧 Fix Status'}
               </Button>
             </Box>
           )}

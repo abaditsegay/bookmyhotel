@@ -728,4 +728,32 @@ public class HotelAdminController {
         response.put("updatedAt", image.getUpdatedAt());
         return response;
     }
+
+    /**
+     * Fix room status consistency for hotel
+     */
+    @PostMapping("/fix-room-status")
+    public ResponseEntity<Map<String, Object>> fixRoomStatusConsistency() {
+        try {
+            User admin = userService.getCurrentUser();
+            if (admin.getHotel() == null) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", false);
+                response.put("message", "Hotel not found for admin");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            hotelAdminService.fixRoomStatusConsistency(admin.getHotel().getId());
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Room status consistency check completed");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "Failed to fix room status consistency: " + e.getMessage());
+            return ResponseEntity.status(500).body(response);
+        }
+    }
 }

@@ -1396,4 +1396,30 @@ export const hotelAdminApi = {
       };
     }
   },
+
+  /**
+   * Fix room status consistency
+   */
+  fixRoomStatusConsistency: async (token: string): Promise<{ success: boolean; data?: any; message?: string }> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/hotel-admin/fix-room-status`, {
+        method: 'POST',
+        headers: getAuthHeaders(token),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        return { success: false, message: result.message || 'Failed to fix room status consistency' };
+      }
+
+      return { success: true, data: result };
+    } catch (error) {
+      console.error('Fix room status consistency error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to fix room status consistency'
+      };
+    }
+  },
 };
