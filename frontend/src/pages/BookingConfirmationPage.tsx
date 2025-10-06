@@ -269,6 +269,17 @@ const BookingConfirmationPage: React.FC = () => {
     });
   };
 
+  const formatDateTimeLong = (dateTimeString: string) => {
+    // Handle datetime strings (ISO format like "2025-10-06T14:30:00")
+    const date = new Date(dateTimeString);
+    return date.toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'confirmed': return 'primary';
@@ -1195,7 +1206,7 @@ const BookingConfirmationPage: React.FC = () => {
                     fontSize: isMobile ? '0.9rem' : '1rem',
                   }}
                 >
-                  <strong>Booked on:</strong> {formatDateLong(booking.createdAt)}
+                  <strong>Booked on:</strong> {formatDateTimeLong(booking.createdAt)}
                 </Typography>
                 <Typography 
                   variant="body1" 
