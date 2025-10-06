@@ -142,13 +142,15 @@
             <artifactId>micrometer-registry-prometheus</artifactId>
         </dependency>
         
-        <!-- Development Tools -->
+        <!-- Development Tools (temporarily disabled) -->
+        <!-- 
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
             <scope>runtime</scope>
             <optional>true</optional>
         </dependency>
+        -->
         
         <!-- Lombok -->
         <dependency>
@@ -194,6 +196,9 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>com.bookmyhotel.BookMyHotelApplication</mainClass>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.flywaydb</groupId>

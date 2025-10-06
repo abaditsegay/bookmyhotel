@@ -3,7 +3,8 @@ package com.bookmyhotel.util;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 public class GeneratePasswordHash {
-    public static void main(String[] args) {
+    // Utility method to generate password hashes (renamed from main to avoid Spring Boot conflicts)
+    public static void generatePasswordHash(String[] args) {
         if (args.length != 1) {
             System.out.println("Usage: java GeneratePasswordHash <password>");
             return;
