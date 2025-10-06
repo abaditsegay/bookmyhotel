@@ -234,14 +234,22 @@ const BookingConfirmationPage: React.FC = () => {
   }, [reservationId, locationBooking, fromSearch, fetchBookingData]);
 
   const calculateNights = (checkIn: string, checkOut: string) => {
-    const checkInDate = new Date(checkIn);
-    const checkOutDate = new Date(checkOut);
+    // Parse as local dates to avoid timezone conversion issues
+    const [checkInYear, checkInMonth, checkInDay] = checkIn.split('-').map(Number);
+    const [checkOutYear, checkOutMonth, checkOutDay] = checkOut.split('-').map(Number);
+    
+    const checkInDate = new Date(checkInYear, checkInMonth - 1, checkInDay);
+    const checkOutDate = new Date(checkOutYear, checkOutMonth - 1, checkOutDay);
+    
     const diffTime = Math.abs(checkOutDate.getTime() - checkInDate.getTime());
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    // Parse as local date to avoid timezone conversion issues
+    const [year, month, day] = dateString.split('-').map(Number);
+    const date = new Date(year, month - 1, day); // Month is 0-indexed
+    return date.toLocaleDateString('en-US', {
       weekday: 'short',
       year: 'numeric',
       month: 'short',
@@ -250,7 +258,10 @@ const BookingConfirmationPage: React.FC = () => {
   };
 
   const formatDateLong = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    // Parse as local date to avoid timezone conversion issues
+    const [year, month, day] = dateString.split('-').map(Number);
+    const date = new Date(year, month - 1, day); // Month is 0-indexed
+    return date.toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
