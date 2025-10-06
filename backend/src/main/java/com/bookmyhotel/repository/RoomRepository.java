@@ -117,6 +117,11 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
        boolean existsByHotelAndRoomNumber(Hotel hotel, String roomNumber);
 
        /**
+        * Check if room number exists for a hotel (alternate parameter order)
+        */
+       boolean existsByRoomNumberAndHotel(String roomNumber, Hotel hotel);
+
+       /**
         * Count rooms by hotel
         */
        long countByHotel(Hotel hotel);

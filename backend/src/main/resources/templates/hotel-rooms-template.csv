@@ -1,0 +1,11 @@
+Room Number,Room Type,Floor,Capacity,Base Price,Description,Amenities,Status,Size (sqft),Bed Type,View Type,Has Balcony,Has Kitchenette,Accessibility Features
+101,Standard,1,2,120.00,"Comfortable standard room with city view","WiFi,TV,Air Conditioning,Mini Fridge",Available,300,Queen,City,No,No,None
+102,Standard,1,2,120.00,"Comfortable standard room with city view","WiFi,TV,Air Conditioning,Mini Fridge",Available,300,Queen,City,No,No,None
+103,Deluxe,1,2,180.00,"Spacious deluxe room with premium amenities","WiFi,TV,Air Conditioning,Mini Fridge,Coffee Machine,Safe",Available,400,King,Garden,Yes,No,None
+201,Suite,2,4,350.00,"Luxurious suite with separate living area","WiFi,TV,Air Conditioning,Mini Fridge,Coffee Machine,Safe,Sofa,Dining Table",Available,600,King,Ocean,Yes,Yes,Wheelchair Accessible
+202,Standard,2,2,125.00,"Standard room on second floor","WiFi,TV,Air Conditioning,Mini Fridge",Available,300,Queen,Garden,No,No,None
+203,Deluxe,2,3,200.00,"Deluxe room with extra bed","WiFi,TV,Air Conditioning,Mini Fridge,Coffee Machine,Safe,Extra Bed",Available,450,King,City,Yes,No,None
+301,Premium,3,2,250.00,"Premium room with ocean view","WiFi,TV,Air Conditioning,Mini Fridge,Coffee Machine,Safe,Jacuzzi",Available,500,King,Ocean,Yes,No,None
+302,Standard,3,1,100.00,"Cozy single occupancy room","WiFi,TV,Air Conditioning,Mini Fridge",Available,250,Single,City,No,No,None
+303,Family,3,6,300.00,"Large family room with bunk beds","WiFi,TV,Air Conditioning,Mini Fridge,Coffee Machine,Bunk Beds",Available,700,King + Bunk,Garden,Yes,Yes,None
+401,Penthouse,4,4,500.00,"Exclusive penthouse with panoramic views","WiFi,TV,Air Conditioning,Mini Fridge,Coffee Machine,Safe,Jacuzzi,Terrace,Premium Bar",Available,800,King,Panoramic,Yes,Yes,VIP Access
