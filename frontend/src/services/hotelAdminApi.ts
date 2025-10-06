@@ -48,6 +48,7 @@ export interface BookingStats {
 export interface HotelStatistics {
   totalRooms: number;
   availableRooms: number;
+  confirmedBookings: number;
   bookedRooms: number;
   totalStaff: number;
   activeStaff: number;
