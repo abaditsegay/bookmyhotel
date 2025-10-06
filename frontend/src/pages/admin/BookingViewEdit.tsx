@@ -934,7 +934,7 @@ const BookingViewEdit: React.FC = () => {
                         secondary={
                           <span>
                             <Typography component="span" variant="body2" color="text.primary">
-                              ETB {room.pricePerNight?.toFixed(0)}/night
+                              {formatCurrency(room.pricePerNight || 0)}/night
                             </Typography>
                             {room.description && (
                               <Typography component="span" variant="body2" sx={{ ml: 1 }}>

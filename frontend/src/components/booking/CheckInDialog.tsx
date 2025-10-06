@@ -29,6 +29,7 @@ import {
   AttachMoney as MoneyIcon,
   CalendarToday as CalendarIcon,
 } from '@mui/icons-material';
+import { formatCurrency } from '../../utils/currencyUtils';
 import { frontDeskApiService } from '../../services/frontDeskApi';
 import { hotelAdminApi } from '../../services/hotelAdminApi';
 import { useAuth } from '../../contexts/AuthContext';
@@ -999,7 +1000,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                                   Room {room.roomNumber}
                                 </Typography>
                                 <Chip 
-                                  label={`ETB ${room.pricePerNight?.toFixed(0)}/night`} 
+                                  label={`${formatCurrency(room.pricePerNight || 0)}/night`} 
                                   size="small" 
                                   sx={{
                                     backgroundColor: selectedRoomId === room.id ? 'primary.main' : 'primary.light',

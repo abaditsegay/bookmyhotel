@@ -18,6 +18,7 @@ import {
 } from '@mui/icons-material';
 import { HotelSearchResult } from '../../types/hotel';
 import { COLORS } from '../../theme/themeColors';
+import { formatCurrency } from '../../utils/currencyUtils';
 
 interface HotelListCardProps {
   hotel: HotelSearchResult;
@@ -290,7 +291,7 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
               lineHeight: 1.3,
             }}
           >
-            <strong>Price range:</strong> ETB {hotel.minPrice?.toFixed(0)} - ETB {hotel.maxPrice?.toFixed(0)} per night
+            <strong>Price range:</strong> {formatCurrency(hotel.minPrice || 0)} - {formatCurrency(hotel.maxPrice || 0)} per night
           </Typography>
         </Box>
 

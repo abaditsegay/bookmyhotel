@@ -36,6 +36,7 @@ import { syncManager } from '../services/SyncManager';
 import { roomCacheService } from '../services/RoomCacheService';
 import NumberStepper from './common/NumberStepper';
 import { COLORS, addAlpha } from '../theme/themeColors';
+import { formatCurrency } from '../utils/currencyUtils';
 
 // Define interfaces for offline walk-in booking (matching online version EXACTLY)
 interface WalkInGuestInfo {
@@ -578,7 +579,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                               fontWeight: 'bold',
                               fontSize: '1.2rem'
                             }}>
-                              ETB {room.pricePerNight?.toFixed(0)}/night
+                              {formatCurrency(room.pricePerNight || 0)}/night
                             </Typography>
                           </CardContent>
                         </Card>
@@ -745,7 +746,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                     </Typography>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                       <Typography variant="body2">
-                        ETB {(selectedRoom?.pricePerNight || 0)?.toFixed(0)}/night × {Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24))} night{Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)) !== 1 ? 's' : ''}
+                        {formatCurrency(selectedRoom?.pricePerNight || 0)}/night × {Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24))} night{Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)) !== 1 ? 's' : ''}
                       </Typography>
                       <Typography variant="body2">
                         ETB {calculateTotalAmount()?.toFixed(0)}
