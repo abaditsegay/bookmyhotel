@@ -801,26 +801,60 @@ public class HotelAdminService {
         List<Reservation> allReservations = reservationRepository.findByHotelId(hotel.getId());
         LocalDate today = LocalDate.now();
 
-        // Active reservations count (confirmed, checked-in, or future pending bookings)
-        long activeReservations = allReservations.stream()
-                .filter(r -> r.getStatus() == ReservationStatus.CONFIRMED ||
-                        r.getStatus() == ReservationStatus.CHECKED_IN ||
-                        (r.getStatus() == ReservationStatus.PENDING && r.getCheckInDate().isAfter(today)))
-                .filter(r -> !r.getCheckOutDate().isBefore(today)) // Not already checked out
+        // Debug logging
+        System.out.println("🔍 Hotel Statistics Debug - Hotel ID: " + hotel.getId());
+        System.out.println("🔍 Total reservations found: " + allReservations.size());
+        System.out.println("🔍 Today's date: " + today);
+        
+        for (Reservation r : allReservations) {
+            System.out.println("🔍 Reservation " + r.getId() + " - Status: " + r.getStatus() + 
+                ", Check-in: " + r.getCheckInDate() + ", Check-out: " + r.getCheckOutDate());
+        }
+
+        // Count confirmed bookings (CONFIRMED status or CHECKED_IN status, regardless of dates for CHECKED_IN)
+        long confirmedBookings = allReservations.stream()
+                .filter(r -> {
+                    boolean isConfirmedOrCheckedIn = r.getStatus() == ReservationStatus.CONFIRMED || 
+                                                   r.getStatus() == ReservationStatus.CHECKED_IN;
+                    
+                    // For CHECKED_IN guests, count them regardless of dates
+                    if (r.getStatus() == ReservationStatus.CHECKED_IN) {
+                        return true;
+                    }
+                    
+                    // For CONFIRMED bookings, only count if checkout date is in the future
+                    if (r.getStatus() == ReservationStatus.CONFIRMED) {
+                        return !r.getCheckOutDate().isBefore(today);
+                    }
+                    
+                    return false;
+                })
                 .count();
-        stats.put("confirmedBookings", activeReservations);
+        
+        System.out.println("🔍 Confirmed bookings calculated: " + confirmedBookings);
+        stats.put("confirmedBookings", confirmedBookings);
 
         // Booked rooms: rooms with active reservations that have assigned rooms
         Set<Long> bookedRoomIds = allReservations.stream()
-                .filter(r -> r.getStatus() == ReservationStatus.CONFIRMED ||
-                        r.getStatus() == ReservationStatus.CHECKED_IN ||
-                        (r.getStatus() == ReservationStatus.PENDING && r.getCheckInDate().isAfter(today)))
-                .filter(r -> !r.getCheckOutDate().isBefore(today)) // Not already checked out
+                .filter(r -> {
+                    // For CHECKED_IN guests, count them regardless of dates
+                    if (r.getStatus() == ReservationStatus.CHECKED_IN) {
+                        return true;
+                    }
+                    
+                    // For CONFIRMED bookings, only count if checkout date is in the future
+                    if (r.getStatus() == ReservationStatus.CONFIRMED) {
+                        return !r.getCheckOutDate().isBefore(today);
+                    }
+                    
+                    return false;
+                })
                 .filter(r -> r.getRoom() != null) // Filter out reservations without assigned rooms
                 .map(r -> r.getRoom().getId())
                 .collect(Collectors.toSet());
 
         long bookedRooms = bookedRoomIds.size();
+        System.out.println("🔍 Booked rooms calculated: " + bookedRooms);
         stats.put("bookedRooms", bookedRooms);
 
         // Available rooms: total rooms minus booked rooms, and must be available for
