@@ -11,7 +11,8 @@ import {
 import { 
   Menu as MenuIcon, 
   Close as CloseIcon,
-  CalendarToday as CalendarIcon 
+  ChevronLeft as ChevronLeftIcon,
+  ChevronRight as ChevronRightIcon
 } from '@mui/icons-material';
 import Navbar from './Navbar';
 import { SystemWideNavbar } from './SystemWideNavbar';
@@ -174,7 +175,7 @@ const EnhancedLayout: React.FC<EnhancedLayoutProps> = ({
             }}
             size="small"
           >
-            <CalendarIcon />
+            {sidebarVisible ? <ChevronRightIcon /> : <ChevronLeftIcon />}
           </IconButton>
         )}
         
@@ -233,7 +234,7 @@ const EnhancedLayout: React.FC<EnhancedLayoutProps> = ({
             zIndex: theme.zIndex.speedDial,
           }}
         >
-          <CalendarIcon />
+          <ChevronLeftIcon />
         </Fab>
       )}
       
