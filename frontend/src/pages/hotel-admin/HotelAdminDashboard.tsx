@@ -399,7 +399,7 @@ const HotelAdminDashboard: React.FC = () => {
       color: 'success',
     },
     {
-      title: 'Confirmed Bookings',
+      title: t('dashboard.hotelAdmin.metrics.confirmedBookings'),
       value: hotelData.confirmedBookings,
       color: 'warning',
     },

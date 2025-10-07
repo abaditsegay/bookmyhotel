@@ -166,7 +166,8 @@ export const enTranslations = {
         staffCount: "Staff Count",
         teamMembers: "Team Members",
         occupancyRate: "Occupancy Rate",
-        currentOccupancyRate: "Current Occupancy Rate"
+        currentOccupancyRate: "Current Occupancy Rate",
+        confirmedBookings: "Confirmed Bookings"
       },
       
       // Sections
@@ -248,22 +249,36 @@ export const enTranslations = {
   booking: {
     details: {
       title: "Booking Details",
+      hotelAdminTitle: "Hotel Admin - Booking Details",
+      frontDeskTitle: "Front Desk - Booking Details",
+      
+      // Section Headers
       guestInformation: "Guest Information",
+      bookingDetails: "Booking Details",
+      hotelRoomInformation: "Hotel & Room Information",
+      stayInformation: "Stay Information",
+      additionalInformation: "Additional Information",
+      
+      // Guest Information Fields
       guestName: "Guest Name",
       email: "Email",
       phone: "Phone",
-      confirmationNumber: "Confirmation Number",
       
-      hotelInformation: "Hotel Information",
+      // Booking Details Fields
+      confirmationNumber: "Confirmation Number",
+      status: "Status",
+      paymentStatus: "Payment Status",
+      
+      // Hotel & Room Information Fields
       hotelName: "Hotel Name",
       hotelAddress: "Hotel Address",
-      
-      roomDetails: "Room Details",
       roomType: "Room Type",
       roomNumber: "Room Number",
-      roomNumberPlaceholder: "Enter room number or assign during check-in",
+      roomNumberPlaceholder: "Enter room number or use 'Select Room' button above",
+      roomNumberHelperText: "You can either type a room number or use the 'Select Room' button to choose from available rooms",
+      roomNumberTBA: "TBA (To Be Assigned)",
       
-      stayDetails: "Stay Details",
+      // Stay Information Fields
       checkInDate: "Check-in Date",
       checkOutDate: "Check-out Date",
       pricePerNight: "Price per Night",
@@ -271,24 +286,146 @@ export const enTranslations = {
       guests: "Guests",
       duration: "Duration",
       
-      paymentDetails: "Payment Details",
+      // Additional Information Fields
       bookingDate: "Booking Date",
       paymentIntentId: "Payment Intent ID",
-      paymentStatus: "Payment Status",
       
       // Actions
+      edit: "Edit",
+      save: "Save",
+      saving: "Saving...",
+      cancel: "Cancel",
+      selectRoom: "Select Room",
       checkIn: "Check In",
       checkOut: "Check Out",
-      cancel: "Cancel Booking",
+      cancelBooking: "Cancel Booking",
       modify: "Modify Booking",
       sendConfirmation: "Send Confirmation",
       
-      // Status
+      // Status Values
       confirmed: "Confirmed",
       checkedIn: "Checked In",
       checkedOut: "Checked Out",
       cancelled: "Cancelled",
-      pending: "Pending"
+      pending: "Pending",
+      
+      // Loading and Error States
+      loading: "Loading booking details...",
+      authenticationRequired: "Authentication required",
+      bookingNotFound: "Booking not found",
+      bookingNotFoundForId: "Booking not found for ID: {{id}}",
+      error: "Error",
+      
+      // Room Selection Dialog
+      selectRoomDialog: {
+        title: "Select Room",
+        warningTitle: "Important:",
+        warningMessage: "Rooms shown are generally available but may not be available for the specific dates ({{checkIn}} to {{checkOut}}). The system will verify availability when you save the assignment.",
+        noRoomsFound: "No available rooms found for the selected dates and room type.",
+        loadingRooms: "Loading available rooms...",
+        roomInfo: "Room {{roomNumber}} - {{roomType}}",
+        perNight: "/night",
+        capacity: "Capacity: {{capacity}} guests",
+        cancel: "Cancel"
+      },
+      
+      // Success Messages
+      success: {
+        statusUpdated: "Booking status updated successfully",
+        roomAssignmentUpdated: "Room assignment updated successfully",
+        roomDetailsUpdated: "Room details updated successfully",
+        statusAndRoomUpdated: "Booking status and room details updated successfully",
+        bookingUpdated: "Booking updated successfully",
+        noChanges: "No changes detected",
+        roomTypeAndDatesAndGuestUpdated: "Room type, booking dates, and guest information updated successfully",
+        roomTypeAndDatesUpdated: "Room type and booking dates updated successfully",
+        roomTypeAndGuestUpdated: "Room type and guest information updated successfully",
+        datesAndGuestUpdated: "Booking dates and guest information updated successfully",
+        roomTypeUpdated: "Room type updated successfully",
+        datesUpdated: "Booking dates updated successfully",
+        guestInfoUpdated: "Guest information updated successfully"
+      },
+      
+      // Error Messages
+      errors: {
+        cannotModifyStatus: "Cannot modify booking with status: {{status}}. Only confirmed, pending, or checked-in bookings can be modified.",
+        selectRoomTypeFirst: "Please select a room type first",
+        roomNotAvailable: "The selected room is not available for the booking dates ({{checkIn}} to {{checkOut}}). Please select a different room.",
+        hotelIdNotAvailable: "Hotel ID not available in user context. Please ensure you are properly logged in as a hotel user.",
+        failedToLoad: "Failed to load booking details",
+        failedToUpdate: "Failed to update booking",
+        failedToLoadRooms: "Failed to load available rooms"
+      },
+      
+      // Alerts
+      alerts: {
+        roomSelectionPending: "Room selection will be applied when you save the booking.",
+        calculatingPrice: "Calculating price changes...",
+        calculatingPricing: "Calculating new pricing for room type...",
+        pricesModified: "💰 Pricing has been modified during this editing session. Changes will be applied when you save."
+      }
+    },
+    
+    // Booking Management Table
+    management: {
+      title: "Booking Management",
+      searchPlaceholder: "Search by guest name, confirmation number, room, payment reference, or payment status...",
+      refresh: "Refresh",
+      noBookingsFound: "No bookings found",
+      loading: "Loading bookings...",
+      
+      // Table Headers
+      headers: {
+        confirmationNumber: "Confirmation #",
+        guest: "Guest",
+        room: "Room",
+        checkIn: "Check-in",
+        checkOut: "Check-out",
+        paymentRef: "Payment Ref",
+        paymentStatus: "Payment Status",
+        status: "Status",
+        actions: "Actions"
+      },
+      
+      // Actions
+      actions: {
+        view: "View",
+        edit: "Edit",
+        delete: "Delete",
+        checkIn: "Check In",
+        checkOut: "Check Out",
+        receipt: "Receipt",
+        cancel: "Cancel",
+        addGuest: "Add Guest"
+      },
+      
+      // Status Filter
+      statusFilter: {
+        all: "All Statuses",
+        confirmed: "Confirmed",
+        checkedIn: "Checked In",
+        checkedOut: "Checked Out",
+        cancelled: "Cancelled",
+        pending: "Pending",
+        noShow: "No Show"
+      },
+      
+      // Dialogs
+      dialogs: {
+        deleteConfirm: {
+          title: "Confirm Delete",
+          message: "Are you sure you want to delete the booking for {{guestName}}? This action cannot be undone.",
+          cancel: "Cancel",
+          delete: "Delete"
+        },
+        checkoutConfirm: {
+          title: "Confirm Guest Checkout",
+          message: "Are you sure you want to check out {{guestName}} from room {{roomNumber}}?",
+          subtitle: "This will mark the guest as checked out and generate a final receipt.",
+          cancel: "Cancel",
+          checkOut: "Check Out"
+        }
+      }
     }
   },
 

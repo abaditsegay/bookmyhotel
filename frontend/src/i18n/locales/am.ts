@@ -125,7 +125,8 @@ export const amTranslations = {
         staffCount: "የሰራተኞች ቁጥር",
         teamMembers: "የቡድን አባላት",
         occupancyRate: "ተሳፋሪነት መጠን",
-        currentOccupancyRate: "የአሁኑ ተሳፋሪነት መጠን"
+        currentOccupancyRate: "የአሁኑ ተሳፋሪነት መጠን",
+        confirmedBookings: "የተረጋገጡ ቦታ ማስያዞች"
       },
       
       // Sections
@@ -238,6 +239,68 @@ export const amTranslations = {
       checkedOut: "ከሆቴል ወጥቷል",
       cancelled: "ተሰርዟል",
       pending: "በመጠባበቅ ላይ"
+    },
+    
+    // Booking Management Table
+    management: {
+      title: "የቦታ ማስያዝ አማካሪ",
+      searchPlaceholder: "በእንግዳ ስም፣ ማረጋገጫ ቁጥር፣ ክፍል፣ የክፍያ ማመሳከሪያ ወይም የክፍያ ሁኔታ ይፈልጉ...",
+      refresh: "አድስ",
+      noBookingsFound: "ምንም ቦታ ማስያዝ አልተገኘም",
+      loading: "ቦታ ማስያዞች እየተጫኑ ነው...",
+      
+      // Table Headers
+      headers: {
+        confirmationNumber: "ማረጋገጫ ቁጥር",
+        guest: "እንግዳ",
+        room: "ክፍል",
+        checkIn: "መግባት",
+        checkOut: "መውጣት",
+        paymentRef: "የክፍያ ማመሳከሪያ",
+        paymentStatus: "የክፍያ ሁኔታ",
+        status: "ሁኔታ",
+        actions: "ድርጊቶች"
+      },
+      
+      // Actions
+      actions: {
+        view: "እይ",
+        edit: "አርም",
+        delete: "ሰርዝ",
+        checkIn: "ገባ",
+        checkOut: "ውጣ",
+        receipt: "ደረሰኝ",
+        cancel: "ሰርዝ",
+        addGuest: "እንግዳ ጨምር"
+      },
+      
+      // Status Filter
+      statusFilter: {
+        all: "ሁሉም ሁኔታዎች",
+        confirmed: "ተረጋግጧል",
+        checkedIn: "ወደ ሆቴል ገብቷል",
+        checkedOut: "ከሆቴል ወጥቷል",
+        cancelled: "ተሰርዟል",
+        pending: "በመጠባበቅ ላይ",
+        noShow: "አልመጣም"
+      },
+      
+      // Dialogs
+      dialogs: {
+        deleteConfirm: {
+          title: "መሰረዝን አረጋግጥ",
+          message: "የ{{guestName}}ን ቦታ ማስያዝ መሰረዝ እርግጠኛ ነዎት? ይህ ድርጊት መመለስ አይቻልም።",
+          cancel: "ሰርዝ",
+          delete: "ሰርዝ"
+        },
+        checkoutConfirm: {
+          title: "የእንግዳ መውጣትን አረጋግጥ",
+          message: "{{guestName}}ን ከክፍል {{roomNumber}} ማውጣት እርግጠኛ ነዎት?",
+          subtitle: "ይህ እንግዳውን እንደወጣ ይምዘገዝ እና የመጨረሻ ደረሰኝ ይሰጣል።",
+          cancel: "ሰርዝ",
+          checkOut: "ውጣ"
+        }
+      }
     }
   },
 

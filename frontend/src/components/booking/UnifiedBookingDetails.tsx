@@ -35,6 +35,7 @@ import {
   Room as RoomIcon,
 } from '@mui/icons-material';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTenant } from '../../contexts/TenantContext';
 import { hotelAdminApi, RoomResponse } from '../../services/hotelAdminApi';
@@ -70,14 +71,20 @@ interface UnifiedBookingDetailsProps {
 
 const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({ 
   mode = 'front-desk',
-  title = 'Booking Details'
+  title
 }) => {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
   const { token, user } = useAuth();
   const { tenant } = useTenant();
+  
+  // Get the appropriate title based on mode if not provided
+  const pageTitle = title || (mode === 'hotel-admin' 
+    ? t('booking.details.hotelAdminTitle') 
+    : t('booking.details.frontDeskTitle'));
   
   const [booking, setBooking] = useState<BookingData | null>(null);
   const [editedBooking, setEditedBooking] = useState<BookingData | null>(null);
@@ -113,7 +120,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
 
   const loadBooking = useCallback(async () => {
       if (!token) {
-        setError('Authentication required');
+        setError(t('booking.details.authenticationRequired'));
         setLoading(false);
         return;
       }
@@ -164,15 +171,15 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
           setEditedBooking({ ...mappedBooking });
         } else {
           console.log('Booking not found for reservation ID:', reservationId);
-          setError(result.message || `Booking not found for ID: ${reservationId}`);
+          setError(result.message || t('booking.details.bookingNotFoundForId', { id: reservationId }));
         }
       } catch (err) {
-        setError('Failed to load booking details');
+        setError(t('booking.details.errors.failedToLoad'));
         console.error('Error loading booking:', err);
       } finally {
         setLoading(false);
       }
-    }, [id, token, mode, tenant?.id]);
+    }, [id, token, mode, tenant?.id, t]);
 
   // Refresh function to reload booking data
   const refreshBooking = async () => {
@@ -219,7 +226,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
 
     // Check if booking can be modified based on its status
     if (!canModifyBooking(booking.status)) {
-      showErrorDialog(`Cannot modify booking with status: ${booking.status}. Only confirmed, pending, or checked-in bookings can be modified.`);
+      showErrorDialog(t('booking.details.errors.cannotModifyStatus', { status: booking.status }));
       return;
     }
 
@@ -238,7 +245,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
       
       setIsEditing(false);
     } catch (err) {
-      showErrorDialog(err instanceof Error ? err.message : 'Failed to update booking');
+      showErrorDialog(err instanceof Error ? err.message : t('booking.details.errors.failedToUpdate'));
       console.error('Error updating booking:', err);
     } finally {
       setPriceCalculating(false);
@@ -352,7 +359,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
             
             // Update final booking data and current state
             finalBookingData = { ...updatedBooking };
-            setSuccess('Room assignment updated successfully');
+            setSuccess(t('booking.details.success.roomAssignmentUpdated'));
             hasUpdates = true;
           } else {
             console.log('❌ Room assignment API failed:', result);
@@ -362,9 +369,12 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
           console.error('❌ Error updating room assignment:', err);
           
           // Check if the error is about room availability
-          const errorMessage = err instanceof Error ? err.message : 'Failed to update room assignment';
+          const errorMessage = err instanceof Error ? err.message : t('booking.details.errors.failedToLoadRooms');
           if (errorMessage.includes('not available') || errorMessage.includes('Selected room is not available')) {
-            throw new Error(`The selected room is not available for the booking dates (${editedBooking.checkInDate} to ${editedBooking.checkOutDate}). Please select a different room.`);
+            throw new Error(t('booking.details.errors.roomNotAvailable', { 
+              checkIn: editedBooking.checkInDate, 
+              checkOut: editedBooking.checkOutDate 
+            }));
           } else {
             throw new Error(errorMessage);
           }
@@ -379,7 +389,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
           // Get hotel ID from user context
           const hotelId = user?.hotelId ? parseInt(user.hotelId) : null;
           if (!hotelId) {
-            setError('Hotel ID not available in user context. Please ensure you are properly logged in as a hotel user.');
+            setError(t('booking.details.errors.hotelIdNotAvailable'));
             return;
           }
           
@@ -430,19 +440,19 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
             hasUpdates = true;
             
             if (roomTypeChanged && datesChanged && guestInfoChanged) {
-              setSuccess('Room type, booking dates, and guest information updated successfully');
+              setSuccess(t('booking.details.success.roomTypeAndDatesAndGuestUpdated'));
             } else if (roomTypeChanged && datesChanged) {
-              setSuccess('Room type and booking dates updated successfully');
+              setSuccess(t('booking.details.success.roomTypeAndDatesUpdated'));
             } else if (roomTypeChanged && guestInfoChanged) {
-              setSuccess('Room type and guest information updated successfully');
+              setSuccess(t('booking.details.success.roomTypeAndGuestUpdated'));
             } else if (datesChanged && guestInfoChanged) {
-              setSuccess('Booking dates and guest information updated successfully');
+              setSuccess(t('booking.details.success.datesAndGuestUpdated'));
             } else if (roomTypeChanged) {
-              setSuccess('Room type updated successfully');
+              setSuccess(t('booking.details.success.roomTypeUpdated'));
             } else if (datesChanged) {
-              setSuccess('Booking dates updated successfully');
+              setSuccess(t('booking.details.success.datesUpdated'));
             } else if (guestInfoChanged) {
-              setSuccess('Guest information updated successfully');
+              setSuccess(t('booking.details.success.guestInfoUpdated'));
             }
           } else {
             console.log('❌ Comprehensive booking update API failed:', result);
@@ -461,18 +471,18 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
         setSelectedRoomId(null);
         
         if (statusChanged && !roomAssignmentChanged && !roomTypeChanged && !datesChanged && !guestInfoChanged) {
-          setSuccess('Booking status updated successfully');
+          setSuccess(t('booking.details.success.statusUpdated'));
         } else if (!statusChanged && (roomAssignmentChanged || roomTypeChanged) && !datesChanged && !guestInfoChanged) {
-          setSuccess('Room details updated successfully');
+          setSuccess(t('booking.details.success.roomDetailsUpdated'));
         } else if (statusChanged && (roomAssignmentChanged || roomTypeChanged) && !datesChanged && !guestInfoChanged) {
-          setSuccess('Booking status and room details updated successfully');
+          setSuccess(t('booking.details.success.statusAndRoomUpdated'));
         } else if (!statusChanged && !roomAssignmentChanged && !roomTypeChanged && (datesChanged || guestInfoChanged)) {
           // Success message already set in comprehensive update section
         } else {
-          setSuccess('Booking updated successfully');
+          setSuccess(t('booking.details.success.bookingUpdated'));
         }
       } else {
-        setSuccess('No changes detected');
+        setSuccess(t('booking.details.success.noChanges'));
       }
     } catch (error) {
       console.error('🚨 Unified Save Error:', error);
@@ -504,7 +514,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
         if (result.success && result.data) {
           setAvailableRooms(result.data.content);
         } else {
-          setError('Failed to load available rooms');
+          setError(t('booking.details.errors.failedToLoadRooms'));
         }
       } else {
         // For front desk, use getRooms API
@@ -536,11 +546,11 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
           }));
           setAvailableRooms(convertedRooms);
         } else {
-          setError('Failed to load available rooms');
+          setError(t('booking.details.errors.failedToLoadRooms'));
         }
       }
     } catch (err) {
-      setError('Failed to load available rooms');
+      setError(t('booking.details.errors.failedToLoadRooms'));
       console.error('Error loading rooms:', err);
     } finally {
       setLoadingRooms(false);
@@ -615,7 +625,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
   // Open room selection dialog
   const handleSelectRoom = () => {
     if (!editedBooking?.roomType) {
-      showErrorDialog('Please select a room type first');
+      showErrorDialog(t('booking.details.errors.selectRoomTypeFirst'));
       return;
     }
     loadAvailableRooms(editedBooking.roomType);
@@ -752,7 +762,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
           <CircularProgress size={60} />
           <Typography variant="h6" sx={{ ml: 2 }}>
-            Loading booking details...
+            {t('booking.details.loading')}
           </Typography>
         </Box>
       </Container>
@@ -779,7 +789,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
       <Container maxWidth="lg">
         <Box sx={{ mt: 4 }}>
           <Alert severity="info" sx={{ mb: 2 }}>
-            Booking not found
+            {t('booking.details.bookingNotFound')}
           </Alert>
           <IconButton onClick={handleBack} sx={{ mr: 1 }}>
             <ArrowBackIcon />
@@ -808,7 +818,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
               <ArrowBackIcon />
             </IconButton>
             <Typography variant="h4" component="h1" sx={{ color: '#1976d2', fontWeight: 600 }}>
-              {title}
+              {pageTitle}
             </Typography>
           </Box>
           
@@ -830,7 +840,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                   }
                 }}
               >
-                Edit
+                {t('booking.details.edit')}
               </Button>
             ) : (
               <>
@@ -848,7 +858,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                     }
                   }}
                 >
-                  Cancel
+                  {t('booking.details.cancel')}
                 </Button>
                 <Button
                   variant="contained"
@@ -862,7 +872,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                     }
                   }}
                 >
-                  {priceCalculating ? 'Saving...' : 'Save'}
+                  {priceCalculating ? t('booking.details.saving') : t('booking.details.save')}
                 </Button>
               </>
             )}
@@ -882,7 +892,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
             }}>
               <CardContent>
                 <Typography variant="h6" gutterBottom sx={{ color: '#1976d2', fontWeight: 600 }}>
-                  Guest Information
+                  {t('booking.details.guestInformation')}
                 </Typography>
                 <Divider sx={{ mb: 2, borderColor: '#e3f2fd' }} />
                 
@@ -890,7 +900,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                   <Grid item xs={12}>
                     <TextField
                       fullWidth
-                      label="Guest Name"
+                      label={t('booking.details.guestName')}
                       value={currentBooking?.guestName || ''}
                       onChange={(e) => handleFieldChange('guestName', e.target.value)}
                       disabled={!isEditing}
@@ -913,7 +923,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                   <Grid item xs={12}>
                     <TextField
                       fullWidth
-                      label="Email"
+                      label={t('booking.details.email')}
                       value={currentBooking?.guestEmail || ''}
                       onChange={(e) => handleFieldChange('guestEmail', e.target.value)}
                       disabled={!isEditing}
@@ -949,7 +959,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
             }}>
               <CardContent>
                 <Typography variant="h6" gutterBottom sx={{ color: '#1976d2', fontWeight: 600 }}>
-                  Booking Details
+                  {t('booking.details.bookingDetails')}
                 </Typography>
                 <Divider sx={{ mb: 2, borderColor: '#e3f2fd' }} />
                 
@@ -957,7 +967,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                   <Grid item xs={12}>
                     <TextField
                       fullWidth
-                      label="Confirmation Number"
+                      label={t('booking.details.confirmationNumber')}
                       value={currentBooking?.confirmationNumber || ''}
                       disabled
                       variant="filled"
@@ -981,7 +991,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                           },
                         }}
                       >
-                        <InputLabel>Status</InputLabel>
+                        <InputLabel>{t('booking.details.status')}</InputLabel>
                         <Select
                           value={currentBooking?.status || ''}
                           onChange={(e) => handleFieldChange('status', e.target.value)}
@@ -996,7 +1006,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                     ) : (
                       <Box>
                         <Typography variant="caption" display="block" color="text.secondary">
-                          Status
+                          {t('booking.details.status')}
                         </Typography>
                         <Chip
                           label={currentBooking?.status?.replace('_', ' ')}
@@ -1009,7 +1019,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                   <Grid item xs={12} sm={6}>
                     <Box>
                       <Typography variant="caption" display="block" color="text.secondary">
-                        Payment Status
+                        {t('booking.details.paymentStatus')}
                       </Typography>
                       <Chip
                         label={currentBooking?.paymentStatus}
@@ -1034,7 +1044,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
             }}>
               <CardContent>
                 <Typography variant="h6" gutterBottom sx={{ color: '#1976d2', fontWeight: 600 }}>
-                  Hotel & Room Information
+                  {t('booking.details.hotelRoomInformation')}
                 </Typography>
                 <Divider sx={{ mb: 2, borderColor: '#e3f2fd' }} />
                 
@@ -1042,7 +1052,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                   <Grid item xs={12}>
                     <TextField
                       fullWidth
-                      label="Hotel Name"
+                      label={t('booking.details.hotelName')}
                       value={currentBooking?.hotelName || ''}
                       disabled
                       variant="filled"
@@ -1051,7 +1061,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                   <Grid item xs={12}>
                     <TextField
                       fullWidth
-                      label="Hotel Address"
+                      label={t('booking.details.hotelAddress')}
                       value={currentBooking?.hotelAddress || ''}
                       disabled
                       variant="filled"
@@ -1075,7 +1085,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                           },
                         }}
                       >
-                        <InputLabel>Room Type</InputLabel>
+                        <InputLabel>{t('booking.details.roomType')}</InputLabel>
                         <Select
                           value={currentBooking?.roomType || ''}
                           onChange={(e) => {
@@ -1094,7 +1104,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                     ) : (
                       <TextField
                         fullWidth
-                        label="Room Type"
+                        label={t('booking.details.roomType')}
                         value={currentBooking?.roomType || ''}
                         disabled
                         variant="filled"
@@ -1119,7 +1129,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                           }
                         }}
                       >
-                        Select Room
+                        {t('booking.details.selectRoom')}
                       </Button>
                     )}
                   </Grid>
@@ -1127,12 +1137,12 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                     {isEditing ? (
                       <TextField
                         fullWidth
-                        label="Room Number"
+                        label={t('booking.details.roomNumber')}
                         value={currentBooking?.roomNumber || ''}
                         onChange={(e) => handleFieldChange('roomNumber', e.target.value)}
                         variant="outlined"
-                        placeholder="Enter room number or use 'Select Room' button above"
-                        helperText="You can either type a room number or use the 'Select Room' button to choose from available rooms"
+                        placeholder={t('booking.details.roomNumberPlaceholder')}
+                        helperText={t('booking.details.roomNumberHelperText')}
                         sx={{
                           '& .MuiOutlinedInput-root': {
                             '&:hover fieldset': {
@@ -1150,8 +1160,8 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                     ) : (
                       <TextField
                         fullWidth
-                        label="Room Number"
-                        value={currentBooking?.roomNumber || 'TBA (To Be Assigned)'}
+                        label={t('booking.details.roomNumber')}
+                        value={currentBooking?.roomNumber || t('booking.details.roomNumberTBA')}
                         disabled
                         variant="filled"
                       />
@@ -1160,15 +1170,15 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                   {isEditing && selectedRoomId && (
                     <Grid item xs={12}>
                       <Alert severity="info">
-                        Room selection will be applied when you save the booking. 
-                        {priceCalculating && ' Calculating price changes...'}
+                        {t('booking.details.alerts.roomSelectionPending')}
+                        {priceCalculating && ` ${t('booking.details.alerts.calculatingPrice')}`}
                       </Alert>
                     </Grid>
                   )}
                   {isEditing && loadingRoomTypePricing && (
                     <Grid item xs={12}>
                       <Alert severity="info">
-                        Calculating new pricing for room type...
+                        {t('booking.details.alerts.calculatingPricing')}
                       </Alert>
                     </Grid>
                   )}
@@ -1185,7 +1195,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                           }
                         }}
                       >
-                        💰 Pricing has been modified during this editing session. Changes will be applied when you save.
+                        {t('booking.details.alerts.pricesModified')}
                       </Alert>
                     </Grid>
                   )}
@@ -1205,7 +1215,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
             }}>
               <CardContent>
                 <Typography variant="h6" gutterBottom sx={{ color: '#1976d2', fontWeight: 600 }}>
-                  Stay Information
+                  {t('booking.details.stayInformation')}
                 </Typography>
                 <Divider sx={{ mb: 2, borderColor: '#e3f2fd' }} />
                 
@@ -1213,7 +1223,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                   <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
-                      label="Check-in Date"
+                      label={t('booking.details.checkInDate')}
                       value={formatDateForInput(currentBooking?.checkInDate || '')}
                       type="date"
                       onChange={(e) => handleFieldChange('checkInDate', e.target.value)}
@@ -1238,7 +1248,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                   <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
-                      label="Check-out Date"
+                      label={t('booking.details.checkOutDate')}
                       value={formatDateForInput(currentBooking?.checkOutDate || '')}
                       type="date"
                       onChange={(e) => handleFieldChange('checkOutDate', e.target.value)}
@@ -1263,7 +1273,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                   <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
-                      label="Price per Night"
+                      label={t('booking.details.pricePerNight')}
                       value={formatCurrency(currentBooking?.pricePerNight || 0)}
                       disabled
                       variant="filled"
@@ -1272,7 +1282,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                   <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
-                      label="Total Amount"
+                      label={t('booking.details.totalAmount')}
                       value={formatCurrency(currentBooking?.totalAmount || 0)}
                       disabled
                       variant="filled"
@@ -1291,7 +1301,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                           }
                         }}
                       >
-                        💰 Pricing has been modified during this editing session. Changes will be applied when you save.
+                        {t('booking.details.alerts.pricesModified')}
                       </Alert>
                     </Grid>
                   )}
@@ -1311,7 +1321,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
             }}>
               <CardContent>
                 <Typography variant="h6" gutterBottom sx={{ color: '#1976d2', fontWeight: 600 }}>
-                  Additional Information
+                  {t('booking.details.additionalInformation')}
                 </Typography>
                 <Divider sx={{ mb: 2, borderColor: '#e3f2fd' }} />
                 
@@ -1319,7 +1329,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                   <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
-                      label="Booking Date"
+                      label={t('booking.details.bookingDate')}
                       value={currentBooking ? formatDate(currentBooking.createdAt) : ''}
                       disabled
                       variant="filled"
@@ -1328,7 +1338,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                   <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
-                      label="Payment Intent ID"
+                      label={t('booking.details.paymentIntentId')}
                       value={currentBooking?.paymentIntentId || 'N/A'}
                       disabled
                       variant="filled"
@@ -1354,7 +1364,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
           }}
         >
           <DialogTitle sx={{ color: '#1976d2', fontWeight: 600 }}>
-            Select Room
+            {t('booking.details.selectRoomDialog.title')}
             {loadingRooms && (
               <CircularProgress size={20} sx={{ ml: 2, color: '#1976d2' }} />
             )}
@@ -1362,9 +1372,10 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
           <DialogContent>
             <Alert severity="warning" sx={{ mb: 2 }}>
               <Typography variant="body2">
-                <strong>Important:</strong> Rooms shown are generally available but may not be available for the specific dates 
-                ({editedBooking?.checkInDate} to {editedBooking?.checkOutDate}). 
-                The system will verify availability when you save the assignment.
+                <strong>{t('booking.details.selectRoomDialog.warningTitle')}</strong> {t('booking.details.selectRoomDialog.warningMessage', {
+                  checkIn: editedBooking?.checkInDate,
+                  checkOut: editedBooking?.checkOutDate
+                })}
               </Typography>
             </Alert>
             {availableRooms.length > 0 ? (
@@ -1384,13 +1395,16 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                       <ListItemText
                         primary={
                           <Typography variant="body1" sx={{ color: '#1976d2', fontWeight: 500 }}>
-                            Room {room.roomNumber} - {room.roomType}
+                            {t('booking.details.selectRoomDialog.roomInfo', {
+                              roomNumber: room.roomNumber,
+                              roomType: room.roomType
+                            })}
                           </Typography>
                         }
                         secondary={
                           <span>
                             <Typography component="span" variant="body2" color="text.primary">
-                              {formatCurrency(room.pricePerNight || 0)}/night
+                              {formatCurrency(room.pricePerNight || 0)}{t('booking.details.selectRoomDialog.perNight')}
                             </Typography>
                             {room.description && (
                               <Typography component="span" variant="body2" sx={{ ml: 1 }}>
@@ -1398,7 +1412,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                               </Typography>
                             )}
                             <Typography component="span" variant="body2" sx={{ ml: 1 }}>
-                              • Capacity: {room.capacity} guests
+                              • {t('booking.details.selectRoomDialog.capacity', { capacity: room.capacity })}
                             </Typography>
                           </span>
                         }
@@ -1409,7 +1423,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
               </List>
             ) : (
               <Alert severity="info">
-                {loadingRooms ? 'Loading available rooms...' : 'No available rooms found for the selected dates and room type.'}
+                {loadingRooms ? t('booking.details.selectRoomDialog.loadingRooms') : t('booking.details.selectRoomDialog.noRoomsFound')}
               </Alert>
             )}
           </DialogContent>
@@ -1423,7 +1437,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                 }
               }}
             >
-              Cancel
+              {t('booking.details.selectRoomDialog.cancel')}
             </Button>
           </DialogActions>
         </Dialog>
@@ -1445,7 +1459,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
           }}
         >
           <DialogTitle sx={{ color: '#d32f2f', fontWeight: 600 }}>
-            Error
+            {t('booking.details.error')}
           </DialogTitle>
           <DialogContent>
             <Typography variant="body1" sx={{ mt: 1 }}>

@@ -41,6 +41,7 @@ import {
   Edit as EditIcon,
   Cancel as CancelIcon
 } from '@mui/icons-material';
+import { useTranslation } from 'react-i18next';
 import { useTenant } from '../../contexts/TenantContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme as useCustomTheme } from '../../contexts/ThemeContext';
@@ -50,7 +51,6 @@ import CheckoutReceiptDialog from '../receipts/CheckoutReceiptDialog';
 import CheckInDialog from './CheckInDialog';
 import { Booking } from '../../types/booking-shared';
 import { formatDateForDisplay } from '../../utils/dateUtils';
-import { formatCurrency } from '../../utils/currencyUtils';
 import BookingNotificationEvents from '../../utils/bookingNotificationEvents';
 import { logger } from '../../utils/logger';
 
@@ -75,6 +75,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
   currentTab = 0,
   refreshTrigger
 }) => {
+  const { t } = useTranslation();
   const { tenant, tenantId } = useTenant();
   const { token } = useAuth();
   const { themeMode } = useCustomTheme();
@@ -706,7 +707,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
         
         {/* Search Input */}
         <TextField
-          placeholder="Search by guest name, confirmation number, room, payment reference, or payment status..."
+          placeholder={t('booking.management.searchPlaceholder')}
           value={searchTerm}
           onChange={handleSearchChange}
           InputProps={searchInputProps}
@@ -727,7 +728,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
             onClick={() => loadBookings()}
             disabled={loading}
           >
-            Refresh
+            {t('booking.management.refresh')}
           </Button>
           {(mode === 'front-desk' || mode === 'hotel-admin') && onWalkInRequest && (
             <Button 
@@ -796,15 +797,15 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                   }
                 }}
               >
-                <TableCell><strong>Confirmation #</strong></TableCell>
-                <TableCell><strong>Guest</strong></TableCell>
-                <TableCell><strong>Room</strong></TableCell>
-                <TableCell><strong>Check-in</strong></TableCell>
-                <TableCell><strong>Check-out</strong></TableCell>
-                <TableCell><strong>Payment Ref</strong></TableCell>
-                <TableCell><strong>Payment Status</strong></TableCell>
-                <TableCell><strong>Status</strong></TableCell>
-                {showActions && <TableCell><strong>Actions</strong></TableCell>}
+                <TableCell><strong>{t('booking.management.headers.confirmationNumber')}</strong></TableCell>
+                <TableCell><strong>{t('booking.management.headers.guest')}</strong></TableCell>
+                <TableCell><strong>{t('booking.management.headers.room')}</strong></TableCell>
+                <TableCell><strong>{t('booking.management.headers.checkIn')}</strong></TableCell>
+                <TableCell><strong>{t('booking.management.headers.checkOut')}</strong></TableCell>
+                <TableCell><strong>{t('booking.management.headers.paymentRef')}</strong></TableCell>
+                <TableCell><strong>{t('booking.management.headers.paymentStatus')}</strong></TableCell>
+                <TableCell><strong>{t('booking.management.headers.status')}</strong></TableCell>
+                {showActions && <TableCell><strong>{t('booking.management.headers.actions')}</strong></TableCell>}
               </TableRow>
             </TableHead>
             <TableBody>
@@ -834,7 +835,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                     }}
                   >
                     <Typography color="text.secondary">
-                      No bookings found
+                      {t('booking.management.noBookingsFound')}
                     </Typography>
                   </TableCell>
                 </TableRow>
@@ -1065,7 +1066,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                     {showActions && (
                       <TableCell>
                         <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
-                          <Tooltip title="View Details" arrow>
+                          <Tooltip title={t('booking.management.actions.view')} arrow>
                             <IconButton 
                               size="small"
                               onClick={() => handleViewBookingDetails(booking)}
@@ -1089,7 +1090,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                           {showCheckInOut && (
                             <>
                               {(booking.status.toUpperCase() === 'CONFIRMED' || booking.status.toUpperCase() === 'ARRIVING') && (
-                                <Tooltip title="Check In" arrow>
+                                <Tooltip title={t('booking.management.actions.checkIn')} arrow>
                                   <IconButton 
                                     size="small" 
                                     onClick={() => handleBookingAction(booking, 'check-in')}
@@ -1108,7 +1109,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                                 </Tooltip>
                               )}
                               {(booking.status.toUpperCase() === 'CHECKED_IN') && (
-                                <Tooltip title="Check Out" arrow>
+                                <Tooltip title={t('booking.management.actions.checkOut')} arrow>
                                   <IconButton 
                                     size="small" 
                                     onClick={() => {
@@ -1129,7 +1130,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                                   </IconButton>
                                 </Tooltip>
                               )}
-                              <Tooltip title="Print Receipt" arrow>
+                              <Tooltip title={t('booking.management.actions.receipt')} arrow>
                                 <IconButton 
                                   size="small"
                                   onClick={() => handlePrintReceipt(booking)}
@@ -1150,7 +1151,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                           )}
                           
                           {(mode === 'hotel-admin' || mode === 'front-desk') && (
-                            <Tooltip title="Delete Booking">
+                            <Tooltip title={t('booking.management.actions.delete')}>
                               <IconButton 
                                 size="small"
                                 onClick={() => {
@@ -1235,21 +1236,20 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
-        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogTitle>{t('booking.management.dialogs.deleteConfirm.title')}</DialogTitle>
         <DialogContent>
           <Typography>
-            Are you sure you want to delete the booking for {selectedBooking?.guestName}?
-            This action cannot be undone.
+            {t('booking.management.dialogs.deleteConfirm.message', { guestName: selectedBooking?.guestName })}
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+          <Button onClick={() => setDeleteDialogOpen(false)}>{t('booking.management.dialogs.deleteConfirm.cancel')}</Button>
           <Button 
             onClick={handleDeleteBooking} 
             color="error" 
             variant="contained"
           >
-            Delete
+            {t('booking.management.dialogs.deleteConfirm.delete')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -1296,18 +1296,21 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Confirm Guest Checkout</DialogTitle>
+        <DialogTitle>{t('booking.management.dialogs.checkoutConfirm.title')}</DialogTitle>
         <DialogContent>
           <Typography>
-            Are you sure you want to check out <strong>{bookingForCheckout?.guestName}</strong> from room <strong>{bookingForCheckout?.roomNumber}</strong>?
+            {t('booking.management.dialogs.checkoutConfirm.message', { 
+              guestName: bookingForCheckout?.guestName, 
+              roomNumber: bookingForCheckout?.roomNumber 
+            })}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            This will mark the guest as checked out and generate a final receipt.
+            {t('booking.management.dialogs.checkoutConfirm.subtitle')}
           </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setCheckoutConfirmOpen(false)} color="inherit">
-            Cancel
+            {t('booking.management.dialogs.checkoutConfirm.cancel')}
           </Button>
           <Button 
             onClick={() => {
@@ -1320,7 +1323,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
             color="warning"
             variant="contained"
           >
-            Check Out
+            {t('booking.management.dialogs.checkoutConfirm.checkOut')}
           </Button>
         </DialogActions>
       </Dialog>
