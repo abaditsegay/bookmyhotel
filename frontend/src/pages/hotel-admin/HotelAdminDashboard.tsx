@@ -18,6 +18,7 @@ import {
   DialogActions,
   useTheme,
 } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -27,7 +28,7 @@ import RoomManagement from './RoomManagement';
 import StaffManagement from './StaffManagement';
 import StaffScheduleManagement from '../../components/StaffScheduleManagement';
 import HotelEditDialog from '../../components/hotel/HotelEditDialog';
-import HotelDetailsManagement from '../../components/hotel/HotelDetailsManagement';
+
 import WalkInBookingModal from '../../components/booking/WalkInBookingModal';
 import BookingManagementTable from '../../components/booking/BookingManagementTable';
 import OfflineWalkInBooking from '../../components/OfflineWalkInBooking';
@@ -64,6 +65,7 @@ function TabPanel(props: TabPanelProps) {
 
 const HotelAdminDashboard: React.FC = () => {
   const theme = useTheme();
+  const { t } = useTranslation();
   const { token, user } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -165,13 +167,13 @@ const HotelAdminDashboard: React.FC = () => {
       <Box sx={{ p: 3 }}>
         <Alert severity="error" sx={{ mb: 2 }}>
           <Typography variant="h6" gutterBottom>
-            Access Restricted
+            {t('dashboard.hotelAdmin.accessRestricted')}
           </Typography>
           <Typography variant="body1" gutterBottom>
-            You need HOTEL_ADMIN role to access the hotel administration dashboard.
+            {t('dashboard.hotelAdmin.needHotelAdminRole')}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Your current role is: <strong>{user?.roles?.[0] || user?.role || 'Unknown'}</strong>
+            {t('dashboard.hotelAdmin.currentRole')} <strong>{user?.roles?.[0] || user?.role || 'Unknown'}</strong>
           </Typography>
           <Box sx={{ mt: 2 }}>
             <Button 
@@ -179,14 +181,14 @@ const HotelAdminDashboard: React.FC = () => {
               onClick={() => navigate('/')}
               sx={{ mr: 1 }}
             >
-              Go to Home
+              {t('dashboard.hotelAdmin.goToHome')}
             </Button>
             {user?.roles?.includes('OPERATIONS_SUPERVISOR') && (
               <Button 
                 variant="outlined" 
                 onClick={() => navigate('/operations/dashboard')}
               >
-                Go to Operations Dashboard
+                {t('dashboard.hotelAdmin.goToOperations')}
               </Button>
             )}
             {user?.roles?.includes('FRONTDESK') && (
@@ -194,7 +196,7 @@ const HotelAdminDashboard: React.FC = () => {
                 variant="outlined" 
                 onClick={() => navigate('/frontdesk/dashboard')}
               >
-                Go to Front Desk Dashboard
+                {t('dashboard.hotelAdmin.goToFrontDesk')}
               </Button>
             )}
           </Box>
@@ -214,14 +216,14 @@ const HotelAdminDashboard: React.FC = () => {
     
     console.log(`🔄 HotelAdmin: Switching from tab ${activeTab} to tab ${newValue}`);
     console.log(`🔄 HotelAdmin: Tab ${newValue} corresponds to:`, 
-      newValue === 0 ? 'Hotel Detail' :
-      newValue === 1 ? 'Staff' :
-      newValue === 2 ? 'Rooms' :
-      newValue === 3 ? 'Bookings' :
-      newValue === 4 ? 'Staff Schedules' :
-      newValue === 5 ? 'Reports' :
-      newValue === 6 ? 'Pricing & Tax' :
-      newValue === 7 ? 'Offline Bookings' : 'Unknown');
+      newValue === 0 ? t('dashboard.hotelAdmin.tabs.hotelDetail') :
+      newValue === 1 ? t('dashboard.hotelAdmin.tabs.staff') :
+      newValue === 2 ? t('dashboard.hotelAdmin.tabs.rooms') :
+      newValue === 3 ? t('dashboard.hotelAdmin.tabs.bookings') :
+      newValue === 4 ? t('dashboard.hotelAdmin.tabs.staffSchedules') :
+      newValue === 5 ? t('dashboard.hotelAdmin.tabs.reports') :
+      newValue === 6 ? t('dashboard.hotelAdmin.tabs.pricingTax') :
+      newValue === 7 ? t('dashboard.hotelAdmin.tabs.offlineBookings') : 'Unknown');
     setActiveTab(newValue);
     
     // Update URL parameter to persist tab state
@@ -376,7 +378,7 @@ const HotelAdminDashboard: React.FC = () => {
     totalStaff: reportsData.hotelStats?.totalStaff || hotel.totalStaff || 0,
     activeStaff: reportsData.hotelStats?.activeStaff || hotel.totalStaff || 0,
   } : {
-    name: user?.hotelName || (hotelLoading ? 'Loading hotel...' : 'Hotel information not available'),
+    name: user?.hotelName || (hotelLoading ? t('dashboard.hotelAdmin.loadingHotel') : t('dashboard.hotelAdmin.hotelInfoNotAvailable')),
     totalRooms: reportsData.hotelStats?.totalRooms || 0,
     availableRooms: reportsData.hotelStats?.availableRooms || 0,
     confirmedBookings: reportsData.hotelStats?.confirmedBookings || 0,
@@ -387,12 +389,12 @@ const HotelAdminDashboard: React.FC = () => {
 
   const stats = [
     {
-      title: 'Total Rooms',
+      title: t('dashboard.hotelAdmin.metrics.totalRooms'),
       value: hotelData.totalRooms,
       color: 'primary',
     },
     {
-      title: 'Available Rooms',
+      title: t('dashboard.hotelAdmin.metrics.availableRooms'),
       value: hotelData.availableRooms,
       color: 'success',
     },
@@ -402,7 +404,7 @@ const HotelAdminDashboard: React.FC = () => {
       color: 'warning',
     },
     {
-      title: 'Total Staff',
+      title: t('dashboard.hotelAdmin.metrics.totalStaff'),
       value: hotelData.totalStaff,
       color: 'info',
     },
@@ -460,14 +462,14 @@ const HotelAdminDashboard: React.FC = () => {
               },
             }}
           >
-            <Tab label="Hotel Detail" />
-            <Tab label="Staff" />
-            <Tab label="Rooms" />
-            <Tab label="Bookings" />
-            <Tab label="Staff Schedules" />
-            <Tab label="Reports" />
-            <Tab label="Pricing & Tax" />
-            <Tab label="Offline Bookings" />
+            <Tab label={t('dashboard.hotelAdmin.tabs.hotelDetail')} />
+            <Tab label={t('dashboard.hotelAdmin.tabs.staff')} />
+            <Tab label={t('dashboard.hotelAdmin.tabs.rooms')} />
+            <Tab label={t('dashboard.hotelAdmin.tabs.bookings')} />
+            <Tab label={t('dashboard.hotelAdmin.tabs.staffSchedules')} />
+            <Tab label={t('dashboard.hotelAdmin.tabs.reports')} />
+            <Tab label={t('dashboard.hotelAdmin.tabs.pricingTax')} />
+            <Tab label={t('dashboard.hotelAdmin.tabs.offlineBookings')} />
           </Tabs>
         </Box>
 
@@ -494,8 +496,8 @@ const HotelAdminDashboard: React.FC = () => {
                   },
                 }}
               >
-                <Tab label="Hotel Details" />
-                <Tab label="Hotel Images" />
+                <Tab label={t('dashboard.hotelAdmin.hotelDetails.hotelDetails')} />
+                <Tab label={t('dashboard.hotelAdmin.hotelDetails.hotelImages')} />
               </Tabs>
             </Box>
 
@@ -520,7 +522,7 @@ const HotelAdminDashboard: React.FC = () => {
                       {hotel?.name || hotelData.name}
                     </Typography>
                     <Typography variant="subtitle1" color="text.secondary">
-                      Hotel Management Dashboard
+                      {t('dashboard.hotelAdmin.title')}
                     </Typography>
                   </Box>
                   <Button
@@ -538,7 +540,7 @@ const HotelAdminDashboard: React.FC = () => {
                       }
                     }}
                   >
-                    Edit Hotel Details
+                    {t('dashboard.hotelAdmin.editHotelDetails')}
                   </Button>
                 </Box>
                 
@@ -547,7 +549,7 @@ const HotelAdminDashboard: React.FC = () => {
                   <Box sx={{ display: 'flex', justifyContent: 'center', p: 6 }}>
                     <CircularProgress size={60} />
                     <Typography variant="h6" sx={{ ml: 2, alignSelf: 'center' }}>
-                      Loading hotel information...
+                      {t('dashboard.hotelAdmin.loadingHotelInfo')}
                     </Typography>
                   </Box>
                 )}
@@ -555,7 +557,7 @@ const HotelAdminDashboard: React.FC = () => {
                 {hotelError && (
                   <Alert severity="error" sx={{ mb: 4, borderRadius: 2 }}>
                     <Typography variant="h6" gutterBottom>
-                      Unable to Load Hotel Information
+                      {t('dashboard.hotelAdmin.unableToLoadHotel')}
                     </Typography>
                     {hotelError}
                   </Alert>
@@ -592,10 +594,10 @@ const HotelAdminDashboard: React.FC = () => {
                               {hotelData.totalRooms}
                             </Typography>
                             <Typography variant="body1" sx={{ fontWeight: 'medium' }}>
-                              Total Rooms
+                              {t('dashboard.hotelAdmin.metrics.totalRooms')}
                             </Typography>
                             <Typography variant="caption" color="text.secondary">
-                              Managed properties
+                              {t('dashboard.hotelAdmin.metrics.managedProperties')}
                             </Typography>
                           </CardContent>
                         </Card>
@@ -628,10 +630,10 @@ const HotelAdminDashboard: React.FC = () => {
                               {hotelData.availableRooms}
                             </Typography>
                             <Typography variant="body1" sx={{ fontWeight: 'medium' }}>
-                              Available
+                              {t('dashboard.hotelAdmin.metrics.available')}
                             </Typography>
                             <Typography variant="caption" color="text.secondary">
-                              Ready for booking
+                              {t('dashboard.hotelAdmin.metrics.readyForBooking')}
                             </Typography>
                           </CardContent>
                         </Card>
@@ -664,10 +666,10 @@ const HotelAdminDashboard: React.FC = () => {
                               {hotelData.bookedRooms}
                             </Typography>
                             <Typography variant="body1" sx={{ fontWeight: 'medium' }}>
-                              Occupied
+                              {t('dashboard.hotelAdmin.metrics.occupied')}
                             </Typography>
                             <Typography variant="caption" color="text.secondary">
-                              Currently booked
+                              {t('dashboard.hotelAdmin.metrics.currentlyBooked')}
                             </Typography>
                           </CardContent>
                         </Card>
@@ -700,10 +702,10 @@ const HotelAdminDashboard: React.FC = () => {
                               {hotelData.activeStaff}
                             </Typography>
                             <Typography variant="body1" sx={{ fontWeight: 'medium' }}>
-                              Active Staff
+                              {t('dashboard.hotelAdmin.metrics.activeStaff')}
                             </Typography>
                             <Typography variant="caption" color="text.secondary">
-                              Total: {hotelData.totalStaff} members
+                              {t('dashboard.hotelAdmin.metrics.totalMembers', { count: hotelData.totalStaff })}
                             </Typography>
                           </CardContent>
                         </Card>
@@ -742,13 +744,13 @@ const HotelAdminDashboard: React.FC = () => {
                                 </Typography>
                               </Box>
                               <Typography variant="h5" sx={{ fontWeight: 'bold', color: theme.palette.primary.main }}>
-                                Hotel Information
+                                {t('dashboard.hotelAdmin.sections.hotelInformation')}
                               </Typography>
                             </Box>
                             
                             <Box sx={{ mb: 3 }}>
                               <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 'medium', mb: 1 }}>
-                                Hotel Name
+                                {t('dashboard.hotelAdmin.form.hotelName')}
                               </Typography>
                               <Typography variant="h6" sx={{ fontWeight: 'medium' }}>
                                 {hotel?.name || hotelData.name}
@@ -757,20 +759,20 @@ const HotelAdminDashboard: React.FC = () => {
                             
                             <Box sx={{ mb: 3 }}>
                               <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 'medium', mb: 1 }}>
-                                Description
+                                {t('dashboard.hotelAdmin.form.description')}
                               </Typography>
                               <Typography variant="body1" sx={{ 
                                 lineHeight: 1.6,
                                 color: hotel?.description ? theme.palette.text.primary : theme.palette.text.secondary,
                                 fontStyle: hotel?.description ? 'normal' : 'italic'
                               }}>
-                                {hotel?.description || 'No description available'}
+                                {hotel?.description || t('dashboard.hotelAdmin.noDescriptionAvailable')}
                               </Typography>
                             </Box>
                             
                             <Box sx={{ mb: 3 }}>
                               <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 'medium', mb: 1 }}>
-                                Address
+                                {t('dashboard.hotelAdmin.form.address')}
                               </Typography>
                               <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
                                 {hotel?.address || 'Address not set'}
@@ -782,10 +784,10 @@ const HotelAdminDashboard: React.FC = () => {
                             {hotel?.isActive !== undefined && (
                               <Box>
                                 <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 'medium', mb: 1 }}>
-                                  Status
+                                  {t('dashboard.hotelAdmin.form.status')}
                                 </Typography>
                                 <Chip 
-                                  label={hotel.isActive ? 'Active' : 'Inactive'} 
+                                  label={hotel.isActive ? t('dashboard.hotelAdmin.form.active') : t('dashboard.hotelAdmin.form.inactive')} 
                                   sx={{ 
                                     backgroundColor: hotel.isActive ? theme.palette.success.main : theme.palette.error.main,
                                     color: 'white',
@@ -831,83 +833,83 @@ const HotelAdminDashboard: React.FC = () => {
                                 </Typography>
                               </Box>
                               <Typography variant="h5" sx={{ fontWeight: 'bold', color: theme.palette.secondary.main }}>
-                                Contact & Operations
+                                {t('dashboard.hotelAdmin.sections.contactOperations')}
                               </Typography>
                             </Box>
                             
                             <Box sx={{ mb: 3 }}>
                               <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 'medium', mb: 1 }}>
-                                Communication Phone
+                                {t('dashboard.hotelAdmin.contact.communicationPhone')}
                               </Typography>
                               <Typography variant="h6" sx={{ 
                                 fontWeight: 'medium',
                                 color: hotel?.phone ? theme.palette.text.primary : theme.palette.text.secondary,
                                 fontStyle: hotel?.phone ? 'normal' : 'italic'
                               }}>
-                                {hotel?.phone || 'Phone not set'}
+                                {hotel?.phone || t('dashboard.hotelAdmin.contact.phoneNotSet')}
                               </Typography>
                             </Box>
                             
                             <Box sx={{ mb: 3 }}>
                               <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 'medium', mb: 1 }}>
-                                Primary Payment Phone
+                                {t('dashboard.hotelAdmin.contact.primaryPaymentPhone')}
                               </Typography>
                               <Typography variant="h6" sx={{ 
                                 fontWeight: 'medium',
                                 color: hotel?.mobilePaymentPhone ? theme.palette.text.primary : theme.palette.text.secondary,
                                 fontStyle: hotel?.mobilePaymentPhone ? 'normal' : 'italic'
                               }}>
-                                {hotel?.mobilePaymentPhone || 'Payment phone not set'}
+                                {hotel?.mobilePaymentPhone || t('dashboard.hotelAdmin.contact.paymentPhoneNotSet')}
                               </Typography>
                             </Box>
                             
                             <Box sx={{ mb: 3 }}>
                               <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 'medium', mb: 1 }}>
-                                Secondary Payment Phone
+                                {t('dashboard.hotelAdmin.contact.secondaryPaymentPhone')}
                               </Typography>
                               <Typography variant="h6" sx={{ 
                                 fontWeight: 'medium',
                                 color: hotel?.mobilePaymentPhone2 ? theme.palette.text.primary : theme.palette.text.secondary,
                                 fontStyle: hotel?.mobilePaymentPhone2 ? 'normal' : 'italic'
                               }}>
-                                {hotel?.mobilePaymentPhone2 || 'Secondary payment phone not set'}
+                                {hotel?.mobilePaymentPhone2 || t('dashboard.hotelAdmin.contact.secondaryPaymentPhoneNotSet')}
                               </Typography>
                             </Box>
                             
                             <Box sx={{ mb: 3 }}>
                               <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 'medium', mb: 1 }}>
-                                Email Address
+                                {t('dashboard.hotelAdmin.contact.emailAddress')}
                               </Typography>
                               <Typography variant="h6" sx={{ 
                                 fontWeight: 'medium',
                                 color: hotel?.email ? theme.palette.text.primary : theme.palette.text.secondary,
                                 fontStyle: hotel?.email ? 'normal' : 'italic'
                               }}>
-                                {hotel?.email || 'Email not set'}
+                                {hotel?.email || t('dashboard.hotelAdmin.contact.emailNotSet')}
                               </Typography>
                             </Box>
                             
                             <Box sx={{ mb: 3 }}>
                               <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 'medium', mb: 1 }}>
-                                Room Capacity
+                                {t('dashboard.hotelAdmin.metrics.roomCapacity')}
                               </Typography>
                               <Typography variant="h6" sx={{ fontWeight: 'medium' }}>
-                                {hotelData.totalRooms} Total Rooms
+                                {hotelData.totalRooms}
                               </Typography>
                             </Box>
                             
                             <Box sx={{ mb: 3 }}>
                               <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 'medium', mb: 1 }}>
-                                Staff Count
+                                {t('dashboard.hotelAdmin.metrics.staffCount')}
                               </Typography>
                               <Typography variant="h6" sx={{ fontWeight: 'medium' }}>
-                                {hotelData.totalStaff} Team Members
+                                {hotelData.totalStaff} {t('dashboard.hotelAdmin.metrics.teamMembers')}
                               </Typography>
                             </Box>
                             
                             <Box>
                               <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 'medium', mb: 1 }}>
-                                Occupancy Rate
+                                {t('dashboard.hotelAdmin.metrics.occupancyRate')}
                               </Typography>
                               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                                 <Typography variant="h6" sx={{ fontWeight: 'bold', mr: 2 }}>
@@ -988,7 +990,7 @@ const HotelAdminDashboard: React.FC = () => {
                 fontWeight: 'bold',
                 color: theme.palette.primary.main 
               }}>
-                Hotel Reports & Analytics
+                {t('dashboard.hotelAdmin.reports.title')}
               </Typography>
               <Button
                 variant="outlined"
@@ -1003,7 +1005,7 @@ const HotelAdminDashboard: React.FC = () => {
                   }
                 }}
               >
-                Refresh Data
+                {t('dashboard.hotelAdmin.reports.refreshData')}
               </Button>
             </Box>
             
@@ -1011,7 +1013,7 @@ const HotelAdminDashboard: React.FC = () => {
               <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 4 }}>
                 <CircularProgress />
                 <Typography variant="body1" sx={{ ml: 2 }}>
-                  Loading analytics data...
+                  {t('dashboard.hotelAdmin.reports.loadingAnalytics')}
                 </Typography>
               </Box>
             )}
@@ -1036,10 +1038,10 @@ const HotelAdminDashboard: React.FC = () => {
                           {reportsData.hotelStats?.totalRooms || 0}
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                          Total Rooms
+                          {t('dashboard.hotelAdmin.metrics.totalRooms')}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
-                          {reportsData.hotelStats?.availableRooms || 0} Available • {reportsData.hotelStats?.bookedRooms || 0} Occupied
+                          {reportsData.hotelStats?.availableRooms || 0} {t('dashboard.hotelAdmin.metrics.available')} • {reportsData.hotelStats?.bookedRooms || 0} {t('dashboard.hotelAdmin.metrics.occupied')}
                         </Typography>
                       </CardContent>
                     </Card>
@@ -1093,7 +1095,7 @@ const HotelAdminDashboard: React.FC = () => {
                           {reportsData.hotelStats?.activeStaff || 0}
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                          Active Staff
+                          {t('dashboard.hotelAdmin.metrics.activeStaff')}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
                           Total Staff: {reportsData.hotelStats?.totalStaff || 0}
@@ -1113,10 +1115,10 @@ const HotelAdminDashboard: React.FC = () => {
                     }}>
                       <CardContent>
                         <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: theme.palette.primary.main }}>
-                          Booking Status Overview
+                          {t('dashboard.hotelAdmin.reports.bookingStatusOverview')}
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                          Current booking status distribution
+                          {t('dashboard.hotelAdmin.reports.currentBookingStatus')}
                         </Typography>
                         {reportsData.bookingStats?.statusBreakdown && Object.entries(reportsData.bookingStats.statusBreakdown).map(([status, count]) => (
                           <Box key={status} sx={{ 
@@ -1153,10 +1155,10 @@ const HotelAdminDashboard: React.FC = () => {
                     }}>
                       <CardContent>
                         <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: theme.palette.primary.main }}>
-                          Staff by Role
+                          {t('dashboard.hotelAdmin.reports.staffByRole')}
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                          Current staff distribution by role
+                          {t('dashboard.hotelAdmin.reports.currentStaffDistribution')}
                         </Typography>
                         {reportsData.hotelStats?.staffByRole && Object.entries(reportsData.hotelStats.staffByRole).map(([role, count]) => (
                           <Box key={role} sx={{ 
@@ -1194,7 +1196,7 @@ const HotelAdminDashboard: React.FC = () => {
                     }}>
                       <CardContent>
                         <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: theme.palette.primary.main }}>
-                          Today's Operations Summary
+                          {t('dashboard.hotelAdmin.reports.todaysOperations')}
                         </Typography>
                         <Grid container spacing={3}>
                           <Grid item xs={12} sm={4}>
@@ -1209,7 +1211,7 @@ const HotelAdminDashboard: React.FC = () => {
                                 {Math.round(((reportsData.hotelStats?.bookedRooms || 0) / (reportsData.hotelStats?.totalRooms || 1)) * 100)}%
                               </Typography>
                               <Typography variant="body2" color="text.secondary">
-                                Occupancy Rate
+                                {t('dashboard.hotelAdmin.reports.occupancyRate')}
                               </Typography>
                             </Box>
                           </Grid>
@@ -1225,7 +1227,7 @@ const HotelAdminDashboard: React.FC = () => {
                                 {reportsData.bookingStats?.upcomingCheckIns || 0}
                               </Typography>
                               <Typography variant="body2" color="text.secondary">
-                                Expected Check-ins
+                                {t('dashboard.hotelAdmin.reports.expectedCheckins')}
                               </Typography>
                             </Box>
                           </Grid>
@@ -1241,7 +1243,7 @@ const HotelAdminDashboard: React.FC = () => {
                                 {reportsData.bookingStats?.upcomingCheckOuts || 0}
                               </Typography>
                               <Typography variant="body2" color="text.secondary">
-                                Expected Check-outs
+                                {t('dashboard.hotelAdmin.reports.expectedCheckouts')}
                               </Typography>
                             </Box>
                           </Grid>
@@ -1260,10 +1262,10 @@ const HotelAdminDashboard: React.FC = () => {
                     }}>
                       <CardContent>
                         <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: theme.palette.primary.main }}>
-                          Current Month Performance
+                          {t('dashboard.hotelAdmin.reports.currentMonthPerformance')}
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                          Month-to-date metrics
+                          {t('dashboard.hotelAdmin.reports.monthToDateMetrics')}
                         </Typography>
                         <Box sx={{ mb: 2 }}>
                           <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
@@ -1275,12 +1277,12 @@ const HotelAdminDashboard: React.FC = () => {
                         </Box>
                         <Box sx={{ mb: 1 }}>
                           <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
-                            Occupancy Rate: {reportsData.hotelStats && reportsData.hotelStats.totalRooms > 0
+                            {t('dashboard.hotelAdmin.metrics.occupancyRate')}: {reportsData.hotelStats && reportsData.hotelStats.totalRooms > 0
                               ? Math.round((reportsData.hotelStats.bookedRooms / reportsData.hotelStats.totalRooms) * 100)
                               : 0}%
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
-                            {reportsData.hotelStats?.bookedRooms || 0} of {reportsData.hotelStats?.totalRooms || 0} rooms occupied
+                            {t('dashboard.hotelAdmin.metrics.roomsOccupied', { occupied: reportsData.hotelStats?.bookedRooms || 0, total: reportsData.hotelStats?.totalRooms || 0 })}
                           </Typography>
                         </Box>
                       </CardContent>
@@ -1297,19 +1299,19 @@ const HotelAdminDashboard: React.FC = () => {
                           Year-to-Date Revenue
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                          Total revenue for current year
+                          {t('dashboard.hotelAdmin.reports.totalRevenue')}
                         </Typography>
                         <Box sx={{ mb: 2 }}>
                           <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
                             ${reportsData.bookingStats?.currentYearRevenue?.toLocaleString() || '0'}
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
-                            Generated from bookings
+                            {t('dashboard.hotelAdmin.reports.generatedFromBookings')}
                           </Typography>
                         </Box>
                         <Box>
                           <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
-                            Monthly Average: ${Math.round((reportsData.bookingStats?.currentYearRevenue || 0) / 12).toLocaleString()}
+                            {t('dashboard.hotelAdmin.reports.monthlyAverage')}: ${Math.round((reportsData.bookingStats?.currentYearRevenue || 0) / 12).toLocaleString()}
                           </Typography>
                         </Box>
                       </CardContent>
@@ -1323,17 +1325,17 @@ const HotelAdminDashboard: React.FC = () => {
                     }}>
                       <CardContent>
                         <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: theme.palette.primary.main }}>
-                          Booking Analytics
+                          {t('dashboard.hotelAdmin.reports.bookingAnalytics')}
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                          Comprehensive booking metrics
+                          {t('dashboard.hotelAdmin.reports.comprehensiveBookingMetrics')}
                         </Typography>
                         <Box sx={{ mb: 2 }}>
                           <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
                             {reportsData.bookingStats?.totalBookings || 0}
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
-                            Total bookings
+                            {t('dashboard.hotelAdmin.reports.totalBookings')}
                           </Typography>
                         </Box>
                         <Box>
@@ -1461,7 +1463,7 @@ const HotelAdminDashboard: React.FC = () => {
                             ))
                           ) : (
                             <Typography variant="body2" color="text.secondary">
-                              No staff role data available
+                              {t('dashboard.hotelAdmin.noStaffRoleData')}
                             </Typography>
                           )}
                         </CardContent>
@@ -1519,7 +1521,7 @@ const HotelAdminDashboard: React.FC = () => {
                           </Typography>
                         </Box>
                         <Box>
-                          <Typography variant="body2" color="text.secondary">Current Occupancy Rate</Typography>
+                          <Typography variant="body2" color="text.secondary">{t('dashboard.hotelAdmin.metrics.currentOccupancyRate')}</Typography>
                           <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
                             {reportsData.hotelStats && reportsData.hotelStats.totalRooms > 0 
                               ? Math.round((reportsData.hotelStats.bookedRooms / reportsData.hotelStats.totalRooms) * 100)
@@ -1587,7 +1589,7 @@ const HotelAdminDashboard: React.FC = () => {
                                 {reportsData.hotelStats?.availableRooms || 0}
                               </Typography>
                               <Typography variant="body2" color="text.secondary">
-                                Available Rooms
+                                {t('dashboard.hotelAdmin.metrics.availableRooms')}
                               </Typography>
                             </Box>
                           </Grid>
@@ -1603,7 +1605,7 @@ const HotelAdminDashboard: React.FC = () => {
                                 {reportsData.hotelStats?.activeStaff || 0}
                               </Typography>
                               <Typography variant="body2" color="text.secondary">
-                                Active Staff
+                                {t('dashboard.hotelAdmin.metrics.activeStaff')}
                               </Typography>
                             </Box>
                           </Grid>
@@ -1708,7 +1710,7 @@ const HotelAdminDashboard: React.FC = () => {
               console.log('Offline booking created:', booking);
               setSnackbar({
                 open: true,
-                message: `Offline booking created successfully for ${booking.guestName}`,
+                message: t('dashboard.hotelAdmin.messages.offlineBookingSuccess', { guestName: booking.guestName }),
                 severity: 'success'
               });
               // Trigger booking table refresh
@@ -1728,7 +1730,7 @@ const HotelAdminDashboard: React.FC = () => {
           // Show success dialog
           setSuccessDialog({
             open: true,
-            message: `Walk-in booking created successfully! Confirmation: ${bookingData.confirmationNumber}`
+            message: t('dashboard.hotelAdmin.messages.walkInBookingSuccess', { confirmationNumber: bookingData.confirmationNumber })
           });
           // Trigger booking table refresh
           setBookingRefreshTrigger(prev => prev + 1);

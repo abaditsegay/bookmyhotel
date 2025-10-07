@@ -31,11 +31,13 @@ import {
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../hooks/useNotifications';
+import { useTranslation } from 'react-i18next';
 import NetworkStatusIndicator from '../NetworkStatusIndicator';
 import ThemeToggle from '../common/ThemeToggle';
 import LanguageSelector from '../common/LanguageSelector';
 
 const Navbar: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();

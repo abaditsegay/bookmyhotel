@@ -70,6 +70,126 @@ export const amTranslations = {
       guestRequests: "የእንግዳ ጥያቄዎች",
       maintenance: "ጥገና",
       housekeeping: "የቤት ጽዳት"
+    },
+    hotelAdmin: {
+      title: "የሆቴል አስተዳደር ዳሽቦርድ",
+      subtitle: "የሆቴል አስተዳደር",
+      editHotelDetails: "የሆቴል ዝርዝሮች ያርሙ",
+      loadingHotelInfo: "የሆቴል መረጃ በመጫን ላይ...",
+      unableToLoadHotel: "የሆቴል መረጃ መጫን አልተሳካም",
+      accessRestricted: "መዳረሻ ተከልክሏል",
+      needHotelAdminRole: "የሆቴል አስተዳደር ዳሽቦርድ ለመድረስ HOTEL_ADMIN ሚና ያስፈልግዎታል።",
+      currentRole: "የአሁኑ ሚናዎ:",
+      goToHome: "ወደ ቤት ይሂዱ",
+      goToOperations: "ወደ ኦፕሬሽን ዳሽቦርድ ይሂዱ",
+      goToFrontDesk: "ወደ ፊት ዴስክ ዳሽቦርድ ይሂዱ",
+      
+      // Main Tabs
+      tabs: {
+        hotelDetail: "የሆቴል ዝርዝር",
+        staff: "ሰራተኞች",
+        rooms: "ክፍሎች",
+        bookings: "ቦታ ማስያዞች",
+        staffSchedules: "የሰራተኞች መርሐ ግብር",
+        reports: "ሪፖርቶች",
+        pricingTax: "ዋጋ እና ግብር",
+        offlineBookings: "ከመስመር ውጭ ማስያዞች"
+      },
+      
+      // Hotel Details Sub-tabs
+      hotelDetails: {
+        hotelDetails: "የሆቴል ዝርዝሮች",
+        hotelImages: "የሆቴል ምስሎች"
+      },
+      
+      // Status
+      status: {
+        active: "ንቁ",
+        inactive: "ንቁ ያልሆነ"
+      },
+      
+      // Metrics
+      metrics: {
+        totalRooms: "የአጠቃላይ ክፍሎች",
+        availableRooms: "የተዘጋጁ ክፍሎች", 
+        totalStaff: "የአጠቃላይ ሰራተኞች",
+        activeStaff: "ንቁ ሰራተኞች",
+        available: "የተዘጋጁ",
+        occupied: "የተይዘ",
+        managedProperties: "የተተዳደሩ ሕንፃዎች",
+        readyForBooking: "ለቦታ ማስያዝ የተዘጋጁ",
+        currentlyBooked: "በአሁኑ ጊዜ የተይዙ",
+        totalMembers: "አጠቃላይ: {{count}} አባላት",
+        roomsOccupied: "{{occupied}} ከ{{total}} ክፍሎች የተይዙ",
+        roomCapacity: "የክፍል አቅም",
+        staffCount: "የሰራተኞች ቁጥር",
+        teamMembers: "የቡድን አባላት",
+        occupancyRate: "ተሳፋሪነት መጠን",
+        currentOccupancyRate: "የአሁኑ ተሳፋሪነት መጠን"
+      },
+      
+      // Sections
+      sections: {
+        hotelInformation: "የሆቴል መረጃ",
+        contactOperations: "የመገናኛ እና ኦፕሬሽን"
+      },
+      
+      // Contact Information
+      contact: {
+        communicationPhone: "የመገናኛ ስልክ",
+        primaryPaymentPhone: "መጀመሪያ የክፍያ ስልክ",
+        secondaryPaymentPhone: "ሁለተኛ የክፍያ ስልክ",
+        emailAddress: "የኢሜይል አድራሻ",
+        phoneNotSet: "ስልክ አልተቀመጠም",
+        paymentPhoneNotSet: "የክፍያ ስልክ አልተቀመጠም",
+        secondaryPaymentPhoneNotSet: "ሁለተኛ የክፍያ ስልክ አልተቀመጠም",
+        emailNotSet: "ኢሜይል አልተቀመጠም"
+      },
+      
+      // Form Fields
+      form: {
+        hotelName: 'የሆቴል ስም',
+        description: 'መግለጫ',
+        address: 'አድራሻ',
+        status: 'ሁኔታ',
+        active: 'ንቁ',
+        inactive: 'ንቁ ያልሆነ'
+      },
+      
+      // Reports
+      reports: {
+        title: 'የሆቴል ሪፖርቶች እና ትንታኔዎች',
+        refreshData: 'መረጃ አድስ',
+        loadingAnalytics: 'የትንታኔ መረጃ እየተጫነ ነው...',
+        bookingStatusOverview: 'የቦታ ማስያዝ ሁኔታ አጠቃላይ እይታ',
+        currentBookingStatus: 'የአሁኑ የቦታ ማስያዝ ሁኔታ ስርጭት',
+        staffByRole: 'በሚና ሰራተኞች',
+        currentStaffDistribution: 'አሁን ያለ የሰራተኞች በሚና ስርጭት',
+        todaysOperations: 'የዛሬ ስራዎች ማጠቃለያ',
+        occupancyRate: 'ተሳፋሪነት መጠን',
+        expectedCheckins: 'የሚጠበቁ ገቢዎች',
+        expectedCheckouts: 'የሚጠበቁ መውጫዎች',
+        currentMonthPerformance: 'የአሁኑ ወር አፈጻጸም',
+        monthToDateMetrics: 'ወር-እስከ-ዛሬ መለኪያዎች',
+        totalRevenue: 'ለአሁኑ ዓመት አጠቃላይ ገቢ',
+        generatedFromBookings: 'ከቦታ ማስያዝ የተፈጠረ',
+        monthlyAverage: 'ወራዊ አማካይ',
+        bookingAnalytics: 'የቦታ ማስያዝ ትንታኔዎች',
+        comprehensiveBookingMetrics: 'የሁሉን አቀፍ የቦታ ማስያዝ መለኪያዎች',
+        totalBookings: 'አጠቃላይ ቦታ ማስያዝ'
+      },
+      
+      // Success Messages
+      messages: {
+        offlineBookingSuccess: 'ለ{{guestName}} የከመስመር ውጭ ቦታ ማስያዝ በተሳካ ሁኔታ ተፈጠረ',
+        walkInBookingSuccess: 'የእግረኛ ቦታ ማስያዝ በተሳካ ሁኔታ ተፈጠረ! ማረጋገጫ: {{confirmationNumber}}'
+      },
+      
+      // Messages
+      noDescriptionAvailable: "ምንም መግለጫ አይገኝም",
+      noStaffRoleData: "የሰራተኞች ሚና መረጃ አይገኝም",
+      loadingHotel: "ሆቴል በመጫን ላይ...",
+      hotelInfoNotAvailable: "የሆቴል መረጃ አይገኝም"
     }
   },
 

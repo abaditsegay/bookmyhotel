@@ -42,16 +42,61 @@ export const enTranslations = {
   // Dashboard Pages
   dashboard: {
     system: {
-      title: "System Dashboard",
+      title: "System Administration Dashboard",
       overview: "Overview",
       analytics: "Analytics",
+      analyticsTitle: "Tenant Analytics",
+      analyticsVisualization: "System Analytics & Data Visualization",
       totalBookings: "Total Bookings",
       activeHotels: "Active Hotels",
       monthlyRevenue: "Monthly Revenue",
       systemUsers: "System Users",
       recentActivity: "Recent Activity",
       performanceMetrics: "Performance Metrics",
-      quickActions: "Quick Actions"
+      quickActions: "Quick Actions",
+      loadingStats: "Loading statistics...",
+      systemOverview: "System Overview",
+      monthlyRevenueChart: "Monthly Revenue Trend (ETB)",
+      bookingStatusChart: "Booking Status Distribution",
+      
+      // Management Actions
+      manageTenants: "Create and manage tenant organizations",
+      activeTenants: "Active Tenants",
+      manageHotels: "Review and approve hotel registrations",
+      totalHotels: "Total Hotels",
+      manageUsers: "Manage system users and permissions",
+      totalUsers: "Total Users",
+      
+      // System Overview Items
+      tenantManagement: "Tenant Management",
+      tenantManagementDesc: "Create and manage tenant organizations",
+      hotelApproval: "Hotel Registration Approval",
+      hotelApprovalDesc: "Review and approve/reject hotel registrations",
+      userAdministration: "User Administration",
+      userAdministrationDesc: "Manage system users and permissions",
+      globalConfiguration: "Global Configuration",
+      globalConfigurationDesc: "Configure system-wide settings and parameters",
+      
+      // Recent Activity
+      systemAdminLogin: "System Administration Login",
+      accountLogin: "Account Login",
+      accessedAt: "Accessed at {time}",
+      hotelRegistrationReview: "Hotel Registration Review",
+      hotelRegistrationReviewDesc: "Available hotel registrations pending approval",
+      tenantManagementActivity: "Tenant Management",
+      tenantManagementActivityDesc: "Active tenant organizations available for management",
+      systemConfiguration: "System Configuration",
+      systemConfigurationDesc: "Global settings and user permissions ready for review",
+      hotelSearchAvailable: "Hotel Search Available",
+      hotelSearchAvailableDesc: "Browse our network of partner hotels",
+      bookingManagement: "Booking Management",
+      bookingManagementDesc: "View and manage your reservation history"
+    },
+    customer: {
+      title: "User Dashboard",
+      searchHotels: "Search Hotels",
+      myBookings: "My Bookings",
+      profile: "Profile"
     },
     hotel: {
       title: "Hotel Dashboard",
@@ -61,6 +106,132 @@ export const enTranslations = {
       availableRooms: "Available Rooms",
       pendingReservations: "Pending Reservations",
       recentBookings: "Recent Bookings"
+    },
+    hotelAdmin: {
+      title: "Hotel Management Dashboard",
+      subtitle: "Hotel Administration",
+      editHotelDetails: "Edit Hotel Details",
+      loadingHotelInfo: "Loading hotel information...",
+      unableToLoadHotel: "Unable to Load Hotel Information",
+      accessRestricted: "Access Restricted",
+      needHotelAdminRole: "You need HOTEL_ADMIN role to access the hotel administration dashboard.",
+      currentRole: "Your current role is:",
+      goToHome: "Go to Home",
+      goToOperations: "Go to Operations Dashboard",
+      goToFrontDesk: "Go to Front Desk Dashboard",
+      
+      // Main Tabs
+      tabs: {
+        hotelDetail: "Hotel Detail",
+        staff: "Staff",
+        rooms: "Rooms",
+        bookings: "Bookings",
+        staffSchedules: "Staff Schedules",
+        reports: "Reports",
+        pricingTax: "Pricing & Tax",
+        offlineBookings: "Offline Bookings"
+      },
+      
+      // Hotel Details Sub-tabs
+      hotelDetails: {
+        hotelDetails: "Hotel Details",
+        hotelImages: "Hotel Images",
+        hotelName: 'Hotel Name',
+        description: 'Description',
+        address: 'Address',
+        status: 'Status',
+        addressNotSet: 'Address not set'
+      },
+      
+      // Status
+      status: {
+        active: "Active",
+        inactive: "Inactive"
+      },
+      
+      // Metrics
+      metrics: {
+        totalRooms: "Total Rooms",
+        availableRooms: "Available Rooms",
+        totalStaff: "Total Staff",
+        activeStaff: "Active Staff",
+        available: "Available",
+        occupied: "Occupied",
+        managedProperties: "Managed properties",
+        readyForBooking: "Ready for booking",
+        currentlyBooked: "Currently booked",
+        totalMembers: "Total: {{count}} members",
+        roomsOccupied: "{{occupied}} of {{total}} rooms occupied",
+        roomCapacity: "Room Capacity",
+        staffCount: "Staff Count",
+        teamMembers: "Team Members",
+        occupancyRate: "Occupancy Rate",
+        currentOccupancyRate: "Current Occupancy Rate"
+      },
+      
+      // Sections
+      sections: {
+        hotelInformation: "Hotel Information",
+        contactOperations: "Contact & Operations"
+      },
+      
+      // Contact Information
+      contact: {
+        communicationPhone: "Communication Phone",
+        primaryPaymentPhone: "Primary Payment Phone",
+        secondaryPaymentPhone: "Secondary Payment Phone",
+        emailAddress: "Email Address",
+        phoneNotSet: "Phone not set",
+        paymentPhoneNotSet: "Payment phone not set",
+        secondaryPaymentPhoneNotSet: "Secondary payment phone not set",
+        emailNotSet: "Email not set"
+      },
+      
+      // Form Fields
+      form: {
+        hotelName: 'Hotel Name',
+        description: 'Description',
+        address: 'Address',
+        status: 'Status',
+        active: 'Active',
+        inactive: 'Inactive',
+        addressNotSet: 'Address not set'
+      },
+      
+      // Reports
+      reports: {
+        title: 'Hotel Reports & Analytics',
+        refreshData: 'Refresh Data',
+        loadingAnalytics: 'Loading analytics data...',
+        bookingStatusOverview: 'Booking Status Overview',
+        currentBookingStatus: 'Current booking status distribution',
+        staffByRole: 'Staff by Role',
+        currentStaffDistribution: 'Current staff distribution by role',
+        todaysOperations: "Today's Operations Summary",
+        occupancyRate: 'Occupancy Rate',
+        expectedCheckins: 'Expected Check-ins',
+        expectedCheckouts: 'Expected Check-outs',
+        currentMonthPerformance: 'Current Month Performance',
+        monthToDateMetrics: 'Month-to-date metrics',
+        totalRevenue: 'Total revenue for current year',
+        generatedFromBookings: 'Generated from bookings',
+        monthlyAverage: 'Monthly Average',
+        bookingAnalytics: 'Booking Analytics',
+        comprehensiveBookingMetrics: 'Comprehensive booking metrics',
+        totalBookings: 'Total bookings'
+      },
+      
+      // Success Messages
+      messages: {
+        offlineBookingSuccess: 'Offline booking created successfully for {{guestName}}',
+        walkInBookingSuccess: 'Walk-in booking created successfully! Confirmation: {{confirmationNumber}}'
+      },
+      
+      // Messages
+      noDescriptionAvailable: "No description available",
+      noStaffRoleData: "No staff role data available",
+      loadingHotel: "Loading hotel...",
+      hotelInfoNotAvailable: "Hotel information not available"
     },
     frontDesk: {
       title: "Front Desk Dashboard",
@@ -309,6 +480,7 @@ export const enTranslations = {
       addTenant: "Add Tenant",
       editTenant: "Edit Tenant",
       deleteTenant: "Delete Tenant",
+      viewTenants: "Manage Tenants",
       tenantName: "Tenant Name",
       subdomain: "Subdomain",
       description: "Description",
@@ -322,6 +494,7 @@ export const enTranslations = {
       addUser: "Add User",
       editUser: "Edit User",
       deleteUser: "Delete User",
+      viewUsers: "Manage Users",
       createUser: "Create User",
       userDetails: "User Details",
       role: "Role",
@@ -337,6 +510,7 @@ export const enTranslations = {
       editHotel: "Edit Hotel",
       deleteHotel: "Delete Hotel",
       viewHotel: "View Hotel",
+      viewHotels: "Manage Hotels",
       hotelDetails: "Hotel Details",
       totalRooms: "Total Rooms",
       activateHotel: "Activate Hotel",
@@ -609,7 +783,23 @@ export const enTranslations = {
     add: "Add",
     view: "View",
     back: "Back",
-    refresh: "Refresh"
+    refresh: "Refresh",
+    
+    // Months
+    months: {
+      jan: "January",
+      feb: "February",
+      mar: "March",
+      apr: "April",
+      may: "May",
+      jun: "June",
+      jul: "July",
+      aug: "August",
+      sep: "September",
+      oct: "October",
+      nov: "November",
+      dec: "December"
+    }
   },
   navigation: {
     home: "Home",

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   IconButton,
   Menu,
@@ -11,6 +11,7 @@ import {
   Language as LanguageIcon,
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
+import { saveLanguage, getCurrentLanguage, isSupportedLanguage } from '../../utils/languageUtils';
 
 interface LanguageSelectorProps {
   variant?: 'icon' | 'text';
@@ -25,6 +26,14 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
+  // Ensure language is properly initialized on mount
+  useEffect(() => {
+    const savedLanguage = getCurrentLanguage();
+    if (savedLanguage && savedLanguage !== i18n.language) {
+      i18n.changeLanguage(savedLanguage);
+    }
+  }, [i18n]);
+
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -34,7 +43,16 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({
   };
 
   const handleLanguageChange = (languageCode: string) => {
+    // Validate language code
+    if (!isSupportedLanguage(languageCode)) {
+      console.warn(`Unsupported language code: ${languageCode}`);
+      return;
+    }
+    
+    // Change language and persist it
     i18n.changeLanguage(languageCode);
+    saveLanguage(languageCode);
+    
     handleClose();
   };
 

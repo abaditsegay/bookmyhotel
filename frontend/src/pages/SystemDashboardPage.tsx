@@ -34,6 +34,7 @@ import BookIcon from '@mui/icons-material/Book';
 import { designSystem } from '../theme/designSystem';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import TokenManager from '../utils/tokenManager';
 import { apiClient } from '../utils/apiClient';
 import { API_ENDPOINTS } from '../config/apiConfig';
@@ -69,6 +70,7 @@ function TabPanel(props: TabPanelProps) {
  * Shows different content based on user role
  */
 export const SystemDashboardPage: React.FC = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(0);
@@ -85,18 +87,18 @@ export const SystemDashboardPage: React.FC = () => {
 
   // Sample data for visualizations
   const revenueData = [
-    { label: 'Jan', value: 85000 },
-    { label: 'Feb', value: 92000 },
-    { label: 'Mar', value: 98000 },
-    { label: 'Apr', value: 89000 },
-    { label: 'May', value: 115000 },
-    { label: 'Jun', value: 124750 },
+    { label: t('common.months.jan'), value: 85000 },
+    { label: t('common.months.feb'), value: 92000 },
+    { label: t('common.months.mar'), value: 98000 },
+    { label: t('common.months.apr'), value: 89000 },
+    { label: t('common.months.may'), value: 115000 },
+    { label: t('common.months.jun'), value: 124750 },
   ];
 
   const bookingStatusData = [
-    { label: 'Confirmed', value: 68, color: '#4caf50' },
-    { label: 'Pending', value: 22, color: '#ff9800' },
-    { label: 'Cancelled', value: 10, color: '#f44336' },
+    { label: t('booking.details.confirmed'), value: 68, color: '#4caf50' },
+    { label: t('booking.details.pending'), value: 22, color: '#ff9800' },
+    { label: t('booking.details.cancelled'), value: 10, color: '#f44336' },
   ];
 
   // Fetch dashboard statistics
@@ -160,6 +162,61 @@ export const SystemDashboardPage: React.FC = () => {
     setActiveTab(newValue);
   };
 
+  // Handle refresh without full page reload to preserve language selection
+  const handleRefresh = () => {
+    // Reset loading state
+    setStats(prev => ({ ...prev, loading: true }));
+    
+    // Re-fetch data
+    const fetchStats = async () => {
+      try {
+        const token = TokenManager.getToken();
+        if (token) {
+          apiClient.setToken(token);
+        }
+
+        const hotelsResponse = await apiClient.get(API_ENDPOINTS.SYSTEM.HOTELS);
+        const usersResponse = await apiClient.get(API_ENDPOINTS.SYSTEM.USERS);
+        const tenantsResponse = await apiClient.get(API_ENDPOINTS.SYSTEM.TENANTS);
+
+        let hotelsCount = 0;
+        let usersCount = 0;
+        let tenantsCount = 0;
+
+        if (hotelsResponse.success && hotelsResponse.data) {
+          const hotelsData = hotelsResponse.data;
+          hotelsCount = Array.isArray(hotelsData) ? hotelsData.length : (hotelsData.totalElements || hotelsData.content?.length || 0);
+        }
+
+        if (usersResponse.success && usersResponse.data) {
+          const usersData = usersResponse.data;
+          usersCount = Array.isArray(usersData) ? usersData.length : (usersData.totalElements || usersData.content?.length || 0);
+        }
+
+        if (tenantsResponse.success && tenantsResponse.data) {
+          const tenantsData = tenantsResponse.data;
+          tenantsCount = Array.isArray(tenantsData) ? tenantsData.length : (tenantsData.totalElements || tenantsData.content?.length || 0);
+        }
+
+        setStats({
+          totalHotels: hotelsCount,
+          totalUsers: usersCount,
+          totalTenants: tenantsCount,
+          totalBookings: 1247,
+          revenue: 'ETB 124,750',
+          loading: false
+        });
+      } catch (error) {
+        console.error('Failed to refresh dashboard statistics:', error);
+        setStats(prev => ({ ...prev, loading: false }));
+      }
+    };
+
+    if (user && !user.tenantId) {
+      fetchStats();
+    }
+  };
+
   if (!user || user.tenantId) {
     // Redirect non-system users
     navigate('/dashboard');
@@ -171,65 +228,65 @@ export const SystemDashboardPage: React.FC = () => {
 
   const adminQuickActions = [
     {
-      title: 'Manage Tenants',
-      description: 'Manage tenant organizations and configurations',
+      title: t('admin.tenant.title'),
+      description: t('dashboard.system.manageTenants'),
       icon: <Business />,
       action: () => navigate('/system/tenants'),
       color: 'info' as const,
-      buttonText: 'View Tenants',
+      buttonText: t('admin.tenant.viewTenants'),
       stat: stats.totalTenants,
-      statLabel: 'Active Tenants'
+      statLabel: t('dashboard.system.activeTenants')
     },
     {
-      title: 'Manage Hotels',
-      description: 'View and manage all hotels in the system',
+      title: t('admin.hotel.title'),
+      description: t('dashboard.system.manageHotels'),
       icon: <Hotel />,
       action: () => navigate('/system/hotels'),
       color: 'primary' as const,
-      buttonText: 'View Hotels',
+      buttonText: t('admin.hotel.viewHotels'),
       stat: stats.totalHotels,
-      statLabel: 'Total Hotels'
+      statLabel: t('dashboard.system.totalHotels')
     },
     {
-      title: 'Manage Users',
-      description: 'Administer system-wide and tenant users',
+      title: t('admin.user.title'),
+      description: t('dashboard.system.manageUsers'),
       icon: <People />,
       action: () => navigate('/system/users'),
       color: 'secondary' as const,
-      buttonText: 'View Users',
+      buttonText: t('admin.user.viewUsers'),
       stat: stats.totalUsers,
-      statLabel: 'Total Users'
+      statLabel: t('dashboard.system.totalUsers')
     },
   ];
 
   const customerQuickActions = [
     {
-      title: 'Search Hotels',
-      description: 'Find and book hotels across all locations',
+      title: t('hotelSearch.title'),
+      description: t('dashboard.customer.searchHotels'),
       icon: <Hotel />,
       action: () => navigate('/search'),
       color: 'primary' as const,
-      buttonText: 'Start Search',
+      buttonText: t('dashboard.customer.startSearch'),
       stat: null,
       statLabel: null
     },
     {
-      title: 'My Bookings',
-      description: 'View and manage your booking history',
+      title: t('dashboard.customer.myBookings'),
+      description: t('dashboard.customer.viewBookings'),
       icon: <Dashboard />,
       action: () => navigate('/my-bookings'),
       color: 'secondary' as const,
-      buttonText: 'View Bookings',
+      buttonText: t('dashboard.customer.manageBookings'),
       stat: null,
       statLabel: null
     },
     {
-      title: 'Profile Settings',
-      description: 'Update your personal information',
+      title: t('dashboard.customer.profileSettings'),
+      description: t('dashboard.customer.updateProfile'),
       icon: <Settings />,
       action: () => navigate('/profile'),
       color: 'info' as const,
-      buttonText: 'Edit Profile',
+      buttonText: t('dashboard.customer.editProfile'),
       stat: null,
       statLabel: null
     },
@@ -251,7 +308,7 @@ export const SystemDashboardPage: React.FC = () => {
         >
           <CircularProgress size={60} />
           <Typography variant="h6" color="text.secondary">
-            Loading dashboard statistics...
+            {t('dashboard.system.loadingStats')}
           </Typography>
         </Box>
       </Box>
@@ -263,15 +320,16 @@ export const SystemDashboardPage: React.FC = () => {
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-          {isSystemAdmin ? 'System Administration Dashboard' : 'User Dashboard'}
+          {isSystemAdmin ? t('dashboard.system.title') : t('dashboard.customer.title')}
         </Typography>
         <Button
           variant="outlined"
           startIcon={<Refresh />}
-          onClick={() => window.location.reload()}
+          onClick={handleRefresh}
           data-testid="refresh-dashboard"
+          disabled={stats.loading}
         >
-          Refresh
+          {t('common.refresh')}
         </Button>
       </Box>
 
@@ -293,14 +351,14 @@ export const SystemDashboardPage: React.FC = () => {
         >
           <Tab 
             icon={<Dashboard />} 
-            label="Overview" 
+            label={t('dashboard.system.overview')} 
             iconPosition="start"
             sx={{ gap: 1 }}
           />
           {isSystemAdmin && (
             <Tab 
               icon={<BarChartIcon />} 
-              label="Analytics" 
+              label={t('dashboard.system.analytics')} 
               iconPosition="start"
               sx={{ gap: 1 }}
             />
@@ -386,7 +444,7 @@ export const SystemDashboardPage: React.FC = () => {
               <Paper sx={{ p: 3 }}>
                 <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
                   <TrendingUp sx={{ mr: 1 }} />
-                  System Overview
+                  {t('dashboard.system.systemOverview')}
                 </Typography>
                 <List dense>
                   <ListItem>
@@ -394,8 +452,8 @@ export const SystemDashboardPage: React.FC = () => {
                       <Business sx={{ color: 'info.main' }} />
                     </ListItemIcon>
                     <ListItemText 
-                      primary="Tenant Management" 
-                      secondary="Create and manage tenant organizations"
+                      primary={t('dashboard.system.tenantManagement')} 
+                      secondary={t('dashboard.system.tenantManagementDesc')}
                     />
                   </ListItem>
                   <Divider />
@@ -404,8 +462,8 @@ export const SystemDashboardPage: React.FC = () => {
                       <Hotel sx={{ color: 'primary.main' }} />
                     </ListItemIcon>
                     <ListItemText 
-                      primary="Hotel Registration Approval" 
-                      secondary="Review and approve/reject hotel registrations"
+                      primary={t('dashboard.system.hotelApproval')} 
+                      secondary={t('dashboard.system.hotelApprovalDesc')}
                     />
                   </ListItem>
                   <Divider />
@@ -414,8 +472,8 @@ export const SystemDashboardPage: React.FC = () => {
                       <People sx={{ color: 'secondary.main' }} />
                     </ListItemIcon>
                     <ListItemText 
-                      primary="User Administration" 
-                      secondary="Manage system users and permissions"
+                      primary={t('dashboard.system.userAdministration')} 
+                      secondary={t('dashboard.system.userAdministrationDesc')}
                     />
                   </ListItem>
                   <Divider />
@@ -424,8 +482,8 @@ export const SystemDashboardPage: React.FC = () => {
                       <Settings sx={{ color: 'warning.main' }} />
                     </ListItemIcon>
                     <ListItemText 
-                      primary="Global Configuration" 
-                      secondary="Configure system-wide settings and parameters"
+                      primary={t('dashboard.system.globalConfiguration')} 
+                      secondary={t('dashboard.system.globalConfigurationDesc')}
                     />
                   </ListItem>
                 </List>
@@ -437,13 +495,13 @@ export const SystemDashboardPage: React.FC = () => {
             <Paper sx={{ p: 3 }}>
               <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
                 <Dashboard sx={{ mr: 1 }} />
-                Recent Activity
+                {t('dashboard.system.recentActivity')}
               </Typography>
               <List dense data-testid="recent-activities">
                 <ListItem>
                   <ListItemText 
-                    primary={isSystemAdmin ? "System Administration Login" : "Account Login"}
-                    secondary={`Accessed at ${new Date().toLocaleString()}`}
+                    primary={isSystemAdmin ? t('dashboard.system.systemAdminLogin') : t('dashboard.system.accountLogin')}
+                    secondary={t('dashboard.system.accessedAt', { time: new Date().toLocaleString() })}
                   />
                 </ListItem>
                 <Divider />
@@ -451,22 +509,22 @@ export const SystemDashboardPage: React.FC = () => {
                   <>
                     <ListItem>
                       <ListItemText 
-                        primary="Hotel Registration Review"
-                        secondary="Available hotel registrations pending approval"
+                        primary={t('dashboard.system.hotelRegistrationReview')}
+                        secondary={t('dashboard.system.hotelRegistrationReviewDesc')}
                       />
                     </ListItem>
                     <Divider />
                     <ListItem>
                       <ListItemText 
-                        primary="Tenant Management"
-                        secondary="Active tenant organizations available for management"
+                        primary={t('dashboard.system.tenantManagementActivity')}
+                        secondary={t('dashboard.system.tenantManagementActivityDesc')}
                       />
                     </ListItem>
                     <Divider />
                     <ListItem>
                       <ListItemText 
-                        primary="System Configuration"
-                        secondary="Global settings and user permissions ready for review"
+                        primary={t('dashboard.system.systemConfiguration')}
+                        secondary={t('dashboard.system.systemConfigurationDesc')}
                       />
                     </ListItem>
                   </>
@@ -475,15 +533,15 @@ export const SystemDashboardPage: React.FC = () => {
                   <>
                     <ListItem>
                       <ListItemText 
-                        primary="Hotel Search Available"
-                        secondary="Browse our network of partner hotels"
+                        primary={t('dashboard.system.hotelSearchAvailable')}
+                        secondary={t('dashboard.system.hotelSearchAvailableDesc')}
                       />
                     </ListItem>
                     <Divider />
                     <ListItem>
                       <ListItemText 
-                        primary="Booking Management"
-                        secondary="View and manage your reservation history"
+                        primary={t('dashboard.system.bookingManagement')}
+                        secondary={t('dashboard.system.bookingManagementDesc')}
                       />
                     </ListItem>
                   </>
@@ -498,14 +556,14 @@ export const SystemDashboardPage: React.FC = () => {
       {isSystemAdmin && (
         <TabPanel value={activeTab} index={1}>
           <Typography variant="h5" sx={{ mb: 3, fontWeight: 'bold' }}>
-            System Analytics & Data Visualization
+            {t('dashboard.system.analyticsVisualization')}
           </Typography>
           
           {/* Metrics Cards */}
           <Grid container spacing={3} sx={{ mb: 4 }}>
             <Grid item xs={12} sm={6} lg={3}>
               <MetricCard
-                title="Total Bookings"
+                title={t('dashboard.system.totalBookings')}
                 value={stats.totalBookings}
                 trend="up"
                 trendValue={12}
@@ -515,7 +573,7 @@ export const SystemDashboardPage: React.FC = () => {
             </Grid>
             <Grid item xs={12} sm={6} lg={3}>
               <MetricCard
-                title="Active Hotels"
+                title={t('dashboard.system.activeHotels')}
                 value={stats.totalHotels}
                 trend="up"
                 trendValue={8}
@@ -525,7 +583,7 @@ export const SystemDashboardPage: React.FC = () => {
             </Grid>
             <Grid item xs={12} sm={6} lg={3}>
               <MetricCard
-                title="Monthly Revenue"
+                title={t('dashboard.system.monthlyRevenue')}
                 value={124750}
                 format="currency"
                 trend="up"
@@ -536,7 +594,7 @@ export const SystemDashboardPage: React.FC = () => {
             </Grid>
             <Grid item xs={12} sm={6} lg={3}>
               <MetricCard
-                title="System Users"
+                title={t('dashboard.system.systemUsers')}
                 value={stats.totalUsers}
                 trend="up"
                 trendValue={5}
@@ -551,7 +609,7 @@ export const SystemDashboardPage: React.FC = () => {
             <Grid item xs={12} lg={8}>
               <Paper sx={{ p: 3, borderRadius: designSystem.borderRadius.lg }}>
                 <Typography variant="h6" sx={{ mb: 3, fontWeight: 'bold' }}>
-                  Monthly Revenue Trend (ETB)
+                  {t('dashboard.system.monthlyRevenueChart')}
                 </Typography>
                 <BarChart
                   data={revenueData}
@@ -564,7 +622,7 @@ export const SystemDashboardPage: React.FC = () => {
             <Grid item xs={12} lg={4}>
               <Paper sx={{ p: 3, borderRadius: designSystem.borderRadius.lg, height: '100%' }}>
                 <Typography variant="h6" sx={{ mb: 3, fontWeight: 'bold' }}>
-                  Booking Status Distribution
+                  {t('dashboard.system.bookingStatusChart')}
                 </Typography>
                 <DonutChart
                   data={bookingStatusData}
