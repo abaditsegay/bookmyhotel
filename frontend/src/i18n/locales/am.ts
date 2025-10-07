@@ -353,25 +353,6 @@ export const amTranslations = {
           specialRequests: 'ልዩ ጥያቄዎች (አማራጭ)'
         },
         
-        // Confirmation
-        confirmation: {
-          title: 'የቦታ ማስያዝ ማረጋገጫ',
-          description: 'የቦታ ማስያዝ ዝርዝሮችን ይመልክቱ እና ያረጋግጡ',
-          bookingSummary: 'የቦታ ማስያዝ ሰራ',
-          guestInformationTitle: 'የእንግዳ ምሪጫ',
-          guestName: 'ስም: {{firstName}} {{lastName}}',
-          contactInfo: 'የችብረት ምሪጫ: {{email}} | {{phone}}',
-          stayDuration: 'ቆይታ: {{checkIn}} እስክ {{checkOut}} ({{nights}} ማታዎች)',
-          selectedRoom: 'ክፍል: {{roomNumber}} ({{roomType}})',
-          totalCost: 'ጠባይ ውጋ: {{total}}',
-          roomDetailsTitle: 'የክፍል ዝርዝሮች',
-          roomNumber: 'የክፍል ቁጥር: {{number}}',
-          roomType: 'የክፍል አይነት: {{type}}',
-          pricePerNight: 'በማታ ዋጋ: {{price}}',
-          totalNights: 'ጠባይ ማታዎች: {{nights}}',
-          subtotal: 'አጠቃላይ ጰምሪ: {{amount}}'
-        },
-        
         // Guest Search Dialog
         guestSearchDialog: {
           title: 'የበፍታ እንግዶችን መፍተሽ',
@@ -410,7 +391,18 @@ export const amTranslations = {
           fillAllFields: 'እባክዎ ሁሉንም አስፈላጊ ሜዳኖች ይሞሉ'
         },
         
-        // Room Selection\n        roomSelection: {\n          title: 'ክፍል ምርጫ',\n          description: 'ለእንግዳው የሚገኝ ክፍል ይምረጡ',\n          roomNumber: 'ክፍል {{number}}',\n          roomType: 'የክፍል አይነት: {{type}}',\n          capacity: 'አቅም: {{capacity}} እንግዶች',\n          pricePerNight: 'ዋጋ: {{price}} በማታ',\n          selectRoom: 'ክፍል ይምረጡ',\n          noRoomsAvailable: 'ለተመረጡት ቀናት ክፍሎች አይገኙም',\n          loadingRooms: 'የሚገኙ ክፍሎች በመጫን ላይ...'\n        },
+        // Room Selection
+        roomSelection: {
+          title: 'ክፍል ምርጫ',
+          description: 'ለእንግዳው የሚገኝ ክፍል ይምረጡ',
+          roomNumber: 'ክፍል {{number}}',
+          roomType: 'የክፍል አይነት: {{type}}',
+          capacity: 'አቅም: {{capacity}} እንግዶች',
+          pricePerNight: 'ዋጋ: {{price}} በማታ',
+          selectRoom: 'ክፍል ይምረጡ',
+          noRoomsAvailable: 'ለተመረጡት ቀናት ክፍሎች አይገኙም',
+          loadingRooms: 'የሚገኙ ክፍሎች በመጫን ላይ...'
+        },
         
         // Confirmation
         confirmation: {
