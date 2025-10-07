@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { API_CONFIG } from '../config/apiConfig';
 import {
   Box,
@@ -115,6 +116,7 @@ interface PricingConfiguration {
 
 const PricingConfigurationComponent: React.FC = () => {
   const { user, token } = useAuth();
+  const { t } = useTranslation();
   const theme = useTheme();
   const [config, setConfig] = useState<PricingConfiguration | null>(null);
   const [loading, setLoading] = useState(true);
@@ -406,9 +408,7 @@ const PricingConfigurationComponent: React.FC = () => {
         }}
       >
         <Typography variant="body2" sx={{ fontWeight: 500 }}>
-          <strong>Pricing Policy:</strong> Room prices are displayed without taxes. All applicable taxes 
-          (VAT, service tax, city tax) will be calculated and added during the booking process. This 
-          ensures transparent pricing for customers while maintaining compliance with tax regulations.
+          {t('dashboard.hotelAdmin.pricingConfiguration.pricingPolicy')}
         </Typography>
       </Alert>
 
@@ -438,10 +438,10 @@ const PricingConfigurationComponent: React.FC = () => {
                 <SettingsIcon sx={{ color: getInteractiveColor() }} />
                 <Box>
                   <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: getInteractiveColor() }}>
-                    General Settings
+                    {t('dashboard.hotelAdmin.pricingConfiguration.generalSettings.title')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Configure basic pricing policies and settings
+                    {t('dashboard.hotelAdmin.pricingConfiguration.generalSettings.description')}
                   </Typography>
                 </Box>
               </Box>
@@ -449,11 +449,11 @@ const PricingConfigurationComponent: React.FC = () => {
               <Grid container spacing={3}>
                 <Grid item xs={12} md={6}>
                   <FormControl fullWidth>
-                    <InputLabel>Pricing Strategy</InputLabel>
+                    <InputLabel>{t('dashboard.hotelAdmin.pricingConfiguration.generalSettings.pricingStrategy')}</InputLabel>
                     <Select
                       value={config.pricingStrategy}
                       onChange={(e) => handleInputChange('pricingStrategy', e.target.value)}
-                      label="Pricing Strategy"
+                      label={t('dashboard.hotelAdmin.pricingConfiguration.generalSettings.pricingStrategy')}
                       disabled // Always use Fixed Pricing
                       sx={{
                         '& .MuiOutlinedInput-root': {
@@ -471,16 +471,16 @@ const PricingConfigurationComponent: React.FC = () => {
                         }
                       }}
                     >
-                      <MenuItem value="FIXED">Fixed Pricing</MenuItem>
-                      <MenuItem value="SEASONAL" disabled>Seasonal Pricing (Contact Support)</MenuItem>
-                      <MenuItem value="DYNAMIC" disabled>Dynamic Pricing (Contact Support)</MenuItem>
+                      <MenuItem value="FIXED">{t('dashboard.hotelAdmin.pricingConfiguration.generalSettings.fixedPricing')}</MenuItem>
+                      <MenuItem value="SEASONAL" disabled>{t('dashboard.hotelAdmin.pricingConfiguration.generalSettings.seasonalPricing')}</MenuItem>
+                      <MenuItem value="DYNAMIC" disabled>{t('dashboard.hotelAdmin.pricingConfiguration.generalSettings.dynamicPricing')}</MenuItem>
                     </Select>
                   </FormControl>
                 </Grid>
                 <Grid item xs={12} md={6}>
                   <TextField
                     fullWidth
-                    label="Currency Code"
+                    label={t('dashboard.hotelAdmin.pricingConfiguration.generalSettings.currencyCode')}
                     value={config.currencyCode}
                     onChange={(e) => handleInputChange('currencyCode', e.target.value)}
                     placeholder="ETB"
@@ -512,10 +512,10 @@ const PricingConfigurationComponent: React.FC = () => {
                     label={
                       <Box>
                         <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          Tax Inclusive Pricing (prices shown include taxes)
+                          {t('dashboard.hotelAdmin.pricingConfiguration.generalSettings.taxInclusivePricing')}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
-                          Disabled: Taxes will be calculated and added during the booking process
+                          {t('dashboard.hotelAdmin.pricingConfiguration.generalSettings.taxInclusivePricingDescription')}
                         </Typography>
                       </Box>
                     }
@@ -532,10 +532,10 @@ const PricingConfigurationComponent: React.FC = () => {
                     label={
                       <Box>
                         <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          Enable Dynamic Pricing (adjust prices based on demand)
+                          {t('dashboard.hotelAdmin.pricingConfiguration.generalSettings.enableDynamicPricing')}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
-                          Disabled: Using fixed pricing strategy only
+                          {t('dashboard.hotelAdmin.pricingConfiguration.generalSettings.dynamicPricingDisabled')}
                         </Typography>
                       </Box>
                     }
@@ -571,10 +571,10 @@ const PricingConfigurationComponent: React.FC = () => {
                 <ReceiptIcon sx={{ color: getInteractiveColor() }} />
                 <Box>
                   <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: getInteractiveColor() }}>
-                    Tax Configuration
+                    {t('dashboard.hotelAdmin.pricingConfiguration.taxConfiguration.title')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Configure applicable tax rates for booking calculations
+                    {t('dashboard.hotelAdmin.pricingConfiguration.taxConfiguration.description')}
                   </Typography>
                 </Box>
               </Box>
@@ -589,8 +589,7 @@ const PricingConfigurationComponent: React.FC = () => {
                 }}
               >
                 <Typography variant="body2">
-                  These tax rates will be automatically applied during the booking process. 
-                  Room prices displayed to customers will not include these taxes.
+                  {t('dashboard.hotelAdmin.pricingConfiguration.taxConfiguration.taxAlert')}
                 </Typography>
               </Alert>
 
@@ -598,12 +597,12 @@ const PricingConfigurationComponent: React.FC = () => {
                 <Grid item xs={12} md={4}>
                   <TextField
                     fullWidth
-                    label="VAT Rate (%)"
+                    label={t('dashboard.hotelAdmin.pricingConfiguration.taxConfiguration.vatRate')}
                     type="number"
                     value={config.vatRate}
                     onChange={(e) => handleInputChange('vatRate', parseFloat(e.target.value) || 0)}
                     inputProps={{ min: 0, max: 100, step: 0.1 }}
-                    helperText={`Current VAT: ${calculateTaxPercentage(config.vatRate)} (Ethiopian standard: 15%)`}
+                    helperText={t('dashboard.hotelAdmin.pricingConfiguration.taxConfiguration.vatRateHelper', { rate: calculateTaxPercentage(config.vatRate) })}
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         backgroundColor: 'background.paper',
@@ -624,12 +623,12 @@ const PricingConfigurationComponent: React.FC = () => {
                 <Grid item xs={12} md={4}>
                   <TextField
                     fullWidth
-                    label="Service Tax Rate (%)"
+                    label={t('dashboard.hotelAdmin.pricingConfiguration.taxConfiguration.serviceTaxRate')}
                     type="number"
                     value={config.serviceTaxRate}
                     onChange={(e) => handleInputChange('serviceTaxRate', parseFloat(e.target.value) || 0)}
                     inputProps={{ min: 0, max: 100, step: 0.1 }}
-                    helperText={`Current service tax: ${calculateTaxPercentage(config.serviceTaxRate)} (Ethiopian standard: 5%)`}
+                    helperText={t('dashboard.hotelAdmin.pricingConfiguration.taxConfiguration.serviceTaxRateHelper', { rate: calculateTaxPercentage(config.serviceTaxRate) })}
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         backgroundColor: 'background.paper',
@@ -650,12 +649,12 @@ const PricingConfigurationComponent: React.FC = () => {
                 <Grid item xs={12} md={4}>
                   <TextField
                     fullWidth
-                    label="City Tax Rate (%)"
+                    label={t('dashboard.hotelAdmin.pricingConfiguration.taxConfiguration.cityTaxRate')}
                     type="number"
                     value={config.cityTaxRate}
                     onChange={(e) => handleInputChange('cityTaxRate', parseFloat(e.target.value) || 0)}
                     inputProps={{ min: 0, max: 100, step: 0.1 }}
-                    helperText={`Current city tax: ${calculateTaxPercentage(config.cityTaxRate)} (Usually 0% in Ethiopia)`}
+                    helperText={t('dashboard.hotelAdmin.pricingConfiguration.taxConfiguration.cityTaxRateHelper', { rate: calculateTaxPercentage(config.cityTaxRate) })}
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         backgroundColor: 'background.paper',

@@ -30,6 +30,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { format, addDays } from 'date-fns';
 import { useAuth } from '../contexts/AuthContext';
 import { useTenant } from '../contexts/TenantContext';
+import { useTranslation } from 'react-i18next';
 import { API_CONFIG } from '../config/apiConfig';
 import { offlineStorage, OfflineBooking, GuestInfo, CachedRoom } from '../services/OfflineStorageService';
 import { syncManager } from '../services/SyncManager';
@@ -61,8 +62,6 @@ interface OfflineWalkInBookingProps {
   onBookingComplete?: (booking: OfflineBooking) => void;
 }
 
-const steps = ['Guest Information', 'Room Selection', 'Confirmation'];
-
 // Room types and payment methods for dropdowns (can be added back if needed for future features)
 
 const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
@@ -71,7 +70,14 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
 }) => {
   const { token, user } = useAuth(); // Match exact order from main component
   const { tenantId } = useTenant(); // Match exact usage from main component
+  const { t } = useTranslation();
   const theme = useTheme(); // Add theme hook
+  
+  const steps = [
+    t('dashboard.hotelAdmin.offlineBooking.steps.guestInformation'),
+    t('dashboard.hotelAdmin.offlineBooking.steps.roomSelection'), 
+    t('dashboard.hotelAdmin.offlineBooking.steps.confirmation')
+  ];
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   
   // API base URL for backend calls (same as main component)
@@ -195,7 +201,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
     if (activeStep === 0) {
       // Validate guest information
       if (!guestInfo.firstName || !guestInfo.lastName || !guestInfo.email || !guestInfo.phone) {
-        setError('Please fill in all guest information fields');
+        setError(t('dashboard.hotelAdmin.offlineBooking.validationErrors.fillGuestInfo'));
         return;
       }
       if (!guestInfo.email.includes('@')) {
@@ -205,7 +211,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
     } else if (activeStep === 1) {
       // Validate room selection
       if (!selectedRoom) {
-        setError('Please select a room');
+        setError(t('dashboard.hotelAdmin.offlineBooking.validationErrors.selectRoom'));
         return;
       }
     }
@@ -254,10 +260,10 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
               }}>
                 <Box>
                   <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: COLORS.PRIMARY }}>
-                    Guest Information
+                    {t('dashboard.hotelAdmin.offlineBooking.guestInformation.title')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Please provide the guest's contact details
+                    {t('dashboard.hotelAdmin.offlineBooking.guestInformation.description')}
                   </Typography>
                 </Box>
               </Box>
@@ -266,7 +272,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
-                    label="First Name *"
+                    label={t('dashboard.hotelAdmin.offlineBooking.guestInformation.firstName')}
                     value={guestInfo.firstName}
                     onChange={handleGuestInfoChange('firstName')}
                     required
@@ -290,7 +296,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
-                    label="Last Name *"
+                    label={t('dashboard.hotelAdmin.offlineBooking.guestInformation.lastName')}
                     value={guestInfo.lastName}
                     onChange={handleGuestInfoChange('lastName')}
                     required
@@ -314,7 +320,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
-                    label="Email Address *"
+                    label={t('dashboard.hotelAdmin.offlineBooking.guestInformation.email')}
                     type="email"
                     value={guestInfo.email}
                     onChange={handleGuestInfoChange('email')}
@@ -339,7 +345,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
-                    label="Phone Number *"
+                    label={t('dashboard.hotelAdmin.offlineBooking.guestInformation.phone')}
                     value={guestInfo.phone}
                     onChange={handleGuestInfoChange('phone')}
                     required
@@ -657,7 +663,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                     }
                   }}
                 >
-                  BACK
+                  {t('dashboard.hotelAdmin.offlineBooking.actions.back')}
                 </Button>
                 <Button 
                   variant="contained" 
@@ -677,7 +683,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                     }
                   }}
                 >
-                  {roomsLoading ? 'Loading...' : 'NEXT'}
+                  {roomsLoading ? t('dashboard.hotelAdmin.offlineBooking.actions.loading') : t('dashboard.hotelAdmin.offlineBooking.actions.next')}
                 </Button>
               </Box>
             </Box>
@@ -1417,7 +1423,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3, gap: 2 }}>
           {activeStep > 0 && (
             <Button onClick={handleBack} disabled={loading}>
-              Back
+              {t('dashboard.hotelAdmin.offlineBooking.actions.back')}
             </Button>
           )}
           
@@ -1427,7 +1433,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
               onClick={handleNext}
               disabled={loading}
             >
-              Next
+              {t('dashboard.hotelAdmin.offlineBooking.actions.next')}
             </Button>
           ) : (
             <Button 
@@ -1435,7 +1441,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
               onClick={handleCreateBooking}
               disabled={loading || !selectedRoom}
             >
-              {loading ? 'Creating Booking...' : 'Create Booking'}
+              {loading ? t('dashboard.hotelAdmin.offlineBooking.actions.creatingBooking') : t('dashboard.hotelAdmin.offlineBooking.actions.createBooking')}
             </Button>
           )}
         </Box>
