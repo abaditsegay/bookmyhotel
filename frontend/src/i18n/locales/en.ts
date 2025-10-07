@@ -586,6 +586,16 @@ export const enTranslations = {
           cleaning: "Cleaning",
           dirty: "Dirty"
         },
+        noGuest: "No guest",
+        guests: "guests",
+        available: "Available",
+        unavailable: "Unavailable",
+        updateStatus: "Update Status",
+        updateRoomStatus: "Update Room Status",
+        roomInfo: "Room: {{roomNumber}} ({{roomType}})",
+        status: "Status",
+        cancel: "Cancel",
+        update: "Update",
         editRoom: {
           title: "Edit Room",
           roomNumber: "Room Number",
@@ -639,16 +649,28 @@ export const enTranslations = {
       
       // Room Management
       roomManagement: {
+        tabs: {
+          roomList: "Room List",
+          pricing: "Room Type Pricing",
+          bulkUpload: "Bulk Upload"
+        },
+        actions: {
+          refresh: "Refresh",
+          addRoom: "Add Room",
+          viewDetails: "View Details",
+          editStatus: "Edit Status"
+        },
         searchRooms: "Search rooms",
         statusFilter: "Status Filter",
         allStatuses: "All Statuses",
+        guestPresent: "Guest Present",
         tableHeaders: {
           roomNumber: "Room Number",
           type: "Type",
           status: "Status",
           currentGuest: "Current Guest",
           capacity: "Capacity",
-          pricePerNight: "Price/Night",
+          price: "Price/Night",
           available: "Available",
           actions: "Actions"
         },
@@ -669,6 +691,14 @@ export const enTranslations = {
           maintenance: "Maintenance", 
           cleaning: "Cleaning",
           dirty: "Dirty"
+        },
+        editRoom: {
+          title: "Edit Room",
+          roomNumber: "Room Number",
+          status: "Status",
+          available: "Available",
+          cancel: "Cancel",
+          save: "Save"
         }
       }
     }

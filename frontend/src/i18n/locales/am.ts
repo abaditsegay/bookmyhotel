@@ -105,16 +105,28 @@ export const amTranslations = {
       
       // Room Management
       roomManagement: {
+        tabs: {
+          roomList: "ክፍሎች ዝርዝር",
+          pricing: "የክፍል አይነት ዋጋ",
+          bulkUpload: "በጅምላ መስቀል"
+        },
+        actions: {
+          refresh: "አደስ",
+          addRoom: "ክፍል ጨምር",
+          viewDetails: "ዝርዝሮች ተመልከት",
+          editStatus: "ሁኔታ ቀይር"
+        },
         searchRooms: "ክፍሎችን ፈልግ",
         statusFilter: "የሁኔታ ማጣሪያ",
         allStatuses: "ሁሉም ሁኔታዎች",
+        guestPresent: "እንግዳ አለ",
         tableHeaders: {
           roomNumber: "የክፍል ቁጥር",
           type: "አይነት",
           status: "ሁኔታ",
           currentGuest: "አሁን ያለ እንግዳ",
           capacity: "አቅም",
-          pricePerNight: "በሌሊት ዋጋ",
+          price: "በሌሊት ዋጋ",
           available: "ይገኛል",
           actions: "ድርጊቶች"
         },
@@ -135,6 +147,14 @@ export const amTranslations = {
           maintenance: "በጥገና ላይ",
           cleaning: "በጽዳት ላይ",
           dirty: "ቆሻሻ"
+        },
+        editRoom: {
+          title: "ክፍል ቀይር",
+          roomNumber: "የክፍል ቁጥር",
+          status: "ሁኔታ",
+          available: "ይገኛል",
+          cancel: "ሰርዝ",
+          save: "አስቀምጥ"
         }
       }
     },
@@ -582,51 +602,61 @@ export const amTranslations = {
         invalidDates: 'የመውጫ ቀን ከመግቢያ ቀን በኋላ መሆን አለበት',
         fillAllFields: 'እባክዎ ሁሉንም የሚያስፈልጉ መስኮች ይሙሉ',
         creatingBooking: 'የእንግዳ ቦታ ማስያዝ በመፍጠር ላይ...'
-      }
-    },
+      },
 
-    // Room Management
-    roomManagement: {
-      tabs: {
-        roomList: "ክፍሎች ዝርዝር",
-        pricing: "የክፍል አይነት ዋጋ",
-        bulkUpload: "በጅምላ መስቀል"
-      },
-      actions: {
-        refresh: "አደስ",
-        addRoom: "ክፍል ጨምር",
-        viewDetails: "ዝርዝሮች ተመልከት",
-        editStatus: "ሁኔታ ቀይር"
-      },
-      tableHeaders: {
-        roomNumber: "የክፍል ቁጥር",
-        type: "አይነት",
+      // Room Management
+      roomManagement: {
+        tabs: {
+          roomList: "ክፍሎች ዝርዝር",
+          pricing: "የክፍል አይነት ዋጋ",
+          bulkUpload: "በጅምላ መስቀል"
+        },
+        actions: {
+          refresh: "አደስ",
+          addRoom: "ክፍል ጨምር",
+          viewDetails: "ዝርዝሮች ተመልከት",
+          editStatus: "ሁኔታ ቀይር"
+        },
+        tableHeaders: {
+          roomNumber: "የክፍል ቁጥር",
+          type: "አይነት",
+          status: "ሁኔታ",
+          currentGuest: "አሁን ያለ እንግዳ",
+          capacity: "አቅም",
+          price: "ዋጋ/ሌሊት",
+          available: "ይገኛል",
+          actions: "ተግባራት"
+        },
+        searchRooms: "ክፍሎችን ፈልግ...",
+        statusFilter: "የሁኔታ ማጣሪያ",
+        allStatuses: "ሁሉም ሁኔታዎች",
+        guestPresent: "እንግዳ አለ",
+        roomStatuses: {
+          available: "ይገኛል",
+          occupied: "ተይዞ",
+          outOfOrder: "ከስራ ወጪ",
+          maintenance: "ጥገና",
+          cleaning: "ንፅህና",
+          dirty: "የቆሸሸ"
+        },
+        noGuest: "እንግዳ የለም",
+        guests: "እንግዶች",
+        available: "ይገኛል",
+        unavailable: "አይገኝም",
+        updateStatus: "ሁኔታ አዘምን",
+        updateRoomStatus: "የክፍል ሁኔታ አዘምን",
+        roomInfo: "ክፍል: {{roomNumber}} ({{roomType}})",
         status: "ሁኔታ",
-        currentGuest: "አሁን ያለ እንግዳ",
-        capacity: "አቅም",
-        price: "ዋጋ/ሌሊት",
-        available: "ይገኛል",
-        actions: "ተግባራት"
-      },
-      searchRooms: "ክፍሎችን ፈልግ...",
-      statusFilter: "የሁኔታ ማጣሪያ",
-      allStatuses: "ሁሉም ሁኔታዎች",
-      guestPresent: "እንግዳ አለ",
-      roomStatuses: {
-        available: "ይገኛል",
-        occupied: "ተይዞ",
-        outOfOrder: "ከስራ ወጪ",
-        maintenance: "ጥገና",
-        cleaning: "ንፅህና",
-        dirty: "የቆሸሸ"
-      },
-      editRoom: {
-        title: "ክፍል ቀይር",
-        roomNumber: "የክፍል ቁጥር",
-        status: "ሁኔታ",
-        available: "ይገኛል",
         cancel: "ሰርዝ",
-        save: "አስቀምጥ"
+        update: "አዘምን",
+        editRoom: {
+          title: "ክፍል ቀይር",
+          roomNumber: "የክፍል ቁጥር",
+          status: "ሁኔታ",
+          available: "ይገኛል",
+          cancel: "ሰርዝ",
+          save: "አስቀምጥ"
+        }
       }
     }
   },

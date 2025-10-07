@@ -80,7 +80,12 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
   onRoomUpdate 
 }) => {
   const { t } = useTranslation();
-  const { token, user } = useAuth();
+  const { token } = useAuth();
+  
+  // Determine translation key prefix based on mode
+  const translationPrefix = mode === 'hotel-admin' 
+    ? 'dashboard.hotelAdmin.roomManagement' 
+    : 'dashboard.frontDesk.roomManagement';
   
   const [rooms, setRooms] = useState<RoomResponse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -95,88 +100,13 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
 
   // Room status options
   const ROOM_STATUS_OPTIONS = [
-    { value: 'AVAILABLE', label: t('dashboard.frontDesk.roomManagement.roomStatuses.available'), color: 'success' as const },
-    { value: 'OCCUPIED', label: t('dashboard.frontDesk.roomManagement.roomStatuses.occupied'), color: 'info' as const },
-    { value: 'OUT_OF_ORDER', label: t('dashboard.frontDesk.roomManagement.roomStatuses.outOfOrder'), color: 'error' as const },
-    { value: 'MAINTENANCE', label: t('dashboard.frontDesk.roomManagement.roomStatuses.maintenance'), color: 'warning' as const },
-    { value: 'CLEANING', label: t('dashboard.frontDesk.roomManagement.roomStatuses.cleaning'), color: 'secondary' as const },
-    { value: 'DIRTY', label: t('dashboard.frontDesk.roomManagement.roomStatuses.dirty'), color: 'default' as const }
+    { value: 'AVAILABLE', label: t(`${translationPrefix}.roomStatuses.available`), color: 'success' as const },
+    { value: 'OCCUPIED', label: t(`${translationPrefix}.roomStatuses.occupied`), color: 'info' as const },
+    { value: 'OUT_OF_ORDER', label: t(`${translationPrefix}.roomStatuses.outOfOrder`), color: 'error' as const },
+    { value: 'MAINTENANCE', label: t(`${translationPrefix}.roomStatuses.maintenance`), color: 'warning' as const },
+    { value: 'CLEANING', label: t(`${translationPrefix}.roomStatuses.cleaning`), color: 'secondary' as const },
+    { value: 'DIRTY', label: t(`${translationPrefix}.roomStatuses.dirty`), color: 'default' as const }
   ];
-
-  // API service based on mode
-  const roomApi = {
-    getAllRooms: async (token: string, hotelId?: string) => {
-      const url = mode === 'front-desk' 
-        ? buildApiUrl(`/api/front-desk/hotels/${hotelId || user?.hotelId}/rooms`)
-        : buildApiUrl('/api/hotel-admin/rooms');
-      
-      const response = await fetch(url, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch rooms: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      return { success: true, data };
-    },
-
-    updateRoomStatus: async (token: string, roomId: number, status: string) => {
-      const url = mode === 'front-desk'
-        ? buildApiUrl(`/api/front-desk/rooms/${roomId}/status`)
-        : buildApiUrl(`/api/hotel-admin/rooms/${roomId}`);
-
-      const body = mode === 'front-desk' 
-        ? { status }
-        : { status };
-
-      const response = await fetch(url, {
-        method: mode === 'front-desk' ? 'PATCH' : 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to update room status: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      return { success: true, data };
-    },
-
-    toggleRoomAvailability: async (token: string, roomId: number, isAvailable: boolean) => {
-      const url = mode === 'front-desk'
-        ? buildApiUrl(`/api/front-desk/rooms/${roomId}/availability`)
-        : buildApiUrl(`/api/hotel-admin/rooms/${roomId}`);
-
-      const body = mode === 'front-desk'
-        ? { isAvailable }
-        : { isAvailable };
-
-      const response = await fetch(url, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to toggle room availability: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      return { success: true, data };
-    }
-  };
 
   const loadRooms = useCallback(async () => {
     if (!token) return;
@@ -185,9 +115,8 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
       setLoading(true);
       setError(null);
 
-      const url = mode === 'front-desk' 
-        ? buildApiUrl(`/api/front-desk/hotels/${user?.hotelId}/rooms`)
-        : buildApiUrl('/api/hotel-admin/rooms');
+      // Use front-desk rooms endpoint for both modes - it supports both FRONTDESK and HOTEL_ADMIN roles
+      const url = buildApiUrl('/front-desk/rooms');
       
       const response = await fetch(url, {
         headers: {
@@ -203,7 +132,9 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
       const data = await response.json();
       
       if (data) {
-        setRooms(Array.isArray(data) ? data : []);
+        // Handle both paginated response (from front-desk) and direct array
+        const roomsData = data.content || data;
+        setRooms(Array.isArray(roomsData) ? roomsData : []);
       } else {
         setError('Failed to load rooms');
       }
@@ -213,7 +144,7 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [token, user?.hotelId, mode]);
+  }, [token]);
 
   useEffect(() => {
     loadRooms();
@@ -251,15 +182,24 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
     if (!token) return;
 
     try {
-      const result = await roomApi.updateRoomStatus(token, roomId, status);
-      
-      if (result.success) {
-        await loadRooms();
-        if (onRoomUpdate) {
-          onRoomUpdate(result.data);
-        }
-      } else {
-        setError('Failed to update room status');
+      // Use front-desk room status endpoint for both modes
+      const url = buildApiUrl(`/front-desk/rooms/${roomId}/status?status=${encodeURIComponent(status)}`);
+
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to update room status: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      await loadRooms();
+      if (onRoomUpdate) {
+        onRoomUpdate(data);
       }
     } catch (error) {
       console.error('Failed to update room status:', error);
@@ -271,15 +211,24 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
     if (!token) return;
 
     try {
-      const result = await roomApi.toggleRoomAvailability(token, roomId, isAvailable);
-      
-      if (result.success) {
-        await loadRooms();
-        if (onRoomUpdate) {
-          onRoomUpdate(result.data);
-        }
-      } else {
-        setError('Failed to update room availability');
+      // Use front-desk room availability endpoint for both modes
+      const url = buildApiUrl(`/front-desk/rooms/${roomId}/availability?available=${isAvailable}`);
+
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to toggle room availability: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      await loadRooms();
+      if (onRoomUpdate) {
+        onRoomUpdate(data);
       }
     } catch (error) {
       console.error('Failed to update room availability:', error);
@@ -304,9 +253,9 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
     return (
       <>
         <Tabs value={activeTab} onChange={handleTabChange} sx={{ mb: 2 }}>
-          <Tab label={t('dashboard.hotelAdmin.roomManagement.tabs.roomList')} />
-          {RoomTypePricing && <Tab label={t('dashboard.hotelAdmin.roomManagement.tabs.pricing')} />}
-          {RoomBulkUpload && <Tab label={t('dashboard.hotelAdmin.roomManagement.tabs.bulkUpload')} />}
+          <Tab label={t(`${translationPrefix}.tabs.roomList`)} />
+          {RoomTypePricing && <Tab label={t(`${translationPrefix}.tabs.pricing`)} />}
+          {RoomBulkUpload && <Tab label={t(`${translationPrefix}.tabs.bulkUpload`)} />}
         </Tabs>
 
         {activeTab === 1 && RoomTypePricing && (
@@ -343,7 +292,7 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
           {/* Search and Filter Controls */}
           <Box sx={{ mb: 2, display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
             <TextField
-              placeholder={t('dashboard.frontDesk.roomManagement.searchRooms')}
+              placeholder={t(`${translationPrefix}.searchRooms`)}
               value={searchTerm}
               onChange={handleSearchChange}
               InputProps={{
@@ -357,13 +306,13 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
             />
 
             <FormControl sx={{ minWidth: 200 }}>
-              <InputLabel>{t('dashboard.frontDesk.roomManagement.statusFilter')}</InputLabel>
+              <InputLabel>{t(`${translationPrefix}.statusFilter`)}</InputLabel>
               <Select
                 value={statusFilter}
-                label={t('dashboard.frontDesk.roomManagement.statusFilter')}
+                label={t(`${translationPrefix}.statusFilter`)}
                 onChange={handleStatusFilterChange}
               >
-                <MenuItem value="ALL">{t('dashboard.frontDesk.roomManagement.allStatuses')}</MenuItem>
+                <MenuItem value="ALL">{t(`${translationPrefix}.allStatuses`)}</MenuItem>
                 {ROOM_STATUS_OPTIONS.map((status) => (
                   <MenuItem key={status.value} value={status.value}>
                     {status.label}
@@ -377,7 +326,7 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
               onClick={loadRooms}
               variant="outlined"
             >
-              {t('dashboard.frontDesk.roomManagement.actions.refresh')}
+              {t(`${translationPrefix}.actions.refresh`)}
             </Button>
 
             {mode === 'hotel-admin' && onNavigateToRoom && (
@@ -386,7 +335,7 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
                 onClick={() => onNavigateToRoom(0)}
                 variant="contained"
               >
-                {t('dashboard.frontDesk.roomManagement.actions.addRoom')}
+                {t(`${translationPrefix}.actions.addRoom`)}
               </Button>
             )}
           </Box>
@@ -396,14 +345,14 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>{t('dashboard.frontDesk.roomManagement.tableHeaders.roomNumber')}</TableCell>
-                  <TableCell>{t('dashboard.frontDesk.roomManagement.tableHeaders.type')}</TableCell>
-                  <TableCell>{t('dashboard.frontDesk.roomManagement.tableHeaders.status')}</TableCell>
-                  <TableCell>{t('dashboard.frontDesk.roomManagement.tableHeaders.currentGuest')}</TableCell>
-                  <TableCell>{t('dashboard.frontDesk.roomManagement.tableHeaders.capacity')}</TableCell>
-                  <TableCell>{t('dashboard.frontDesk.roomManagement.tableHeaders.price')}</TableCell>
-                  <TableCell>{t('dashboard.frontDesk.roomManagement.tableHeaders.available')}</TableCell>
-                  <TableCell>{t('dashboard.frontDesk.roomManagement.tableHeaders.actions')}</TableCell>
+                  <TableCell>{t(`${translationPrefix}.tableHeaders.roomNumber`)}</TableCell>
+                  <TableCell>{t(`${translationPrefix}.tableHeaders.type`)}</TableCell>
+                  <TableCell>{t(`${translationPrefix}.tableHeaders.status`)}</TableCell>
+                  <TableCell>{t(`${translationPrefix}.tableHeaders.currentGuest`)}</TableCell>
+                  <TableCell>{t(`${translationPrefix}.tableHeaders.capacity`)}</TableCell>
+                  <TableCell>{t(`${translationPrefix}.tableHeaders.price`)}</TableCell>
+                  <TableCell>{t(`${translationPrefix}.tableHeaders.available`)}</TableCell>
+                  <TableCell>{t(`${translationPrefix}.tableHeaders.actions`)}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -436,7 +385,7 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
                     </TableCell>
                     <TableCell>
                       <Typography variant="body2" color="text.secondary">
-                        {room.status === 'OCCUPIED' ? t('dashboard.frontDesk.roomManagement.guestPresent') : '-'}
+                        {room.status === 'OCCUPIED' ? t(`${translationPrefix}.guestPresent`) : '-'}
                       </Typography>
                     </TableCell>
                     <TableCell>{room.capacity}</TableCell>
@@ -451,7 +400,7 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
                     <TableCell>
                       <Box sx={{ display: 'flex', gap: 1 }}>
                         {mode === 'hotel-admin' && onNavigateToRoom && (
-                          <Tooltip title={t('dashboard.frontDesk.roomManagement.actions.viewDetails')}>
+                          <Tooltip title={t(`${translationPrefix}.actions.viewDetails`)}>
                             <IconButton
                               size="small"
                               onClick={() => onNavigateToRoom(room.id)}
@@ -460,7 +409,7 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
                             </IconButton>
                           </Tooltip>
                         )}
-                        <Tooltip title={t('dashboard.frontDesk.roomManagement.actions.editStatus')}>
+                        <Tooltip title={t(`${translationPrefix}.actions.editStatus`)}>
                           <IconButton
                             size="small"
                             onClick={() => handleEditRoom(room)}
@@ -489,17 +438,17 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
 
       {/* Edit Room Dialog */}
       <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>{t('dashboard.frontDesk.roomManagement.editRoom.title')}</DialogTitle>
+        <DialogTitle>{t(`${translationPrefix}.editRoom.title`)}</DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 2 }}>
             <Typography variant="body1" sx={{ mb: 2 }}>
-              {t('dashboard.frontDesk.roomManagement.editRoom.roomNumber')}: {editingRoom.roomNumber}
+              {t(`${translationPrefix}.editRoom.roomNumber`)}: {editingRoom.roomNumber}
             </Typography>
             <FormControl fullWidth sx={{ mb: 2 }}>
-              <InputLabel>{t('dashboard.frontDesk.roomManagement.editRoom.status')}</InputLabel>
+              <InputLabel>{t(`${translationPrefix}.editRoom.status`)}</InputLabel>
               <Select
                 value={editingRoom.status || ''}
-                label={t('dashboard.frontDesk.roomManagement.editRoom.status')}
+                label={t(`${translationPrefix}.editRoom.status`)}
                 onChange={(e) => setEditingRoom({ ...editingRoom, status: e.target.value })}
               >
                 {ROOM_STATUS_OPTIONS.map((status) => (
@@ -520,13 +469,13 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
                   onChange={(e) => setEditingRoom({ ...editingRoom, isAvailable: e.target.checked })}
                 />
               }
-              label={t('dashboard.frontDesk.roomManagement.editRoom.available')}
+              label={t(`${translationPrefix}.editRoom.available`)}
             />
           </Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setEditDialogOpen(false)}>
-            {t('dashboard.frontDesk.roomManagement.editRoom.cancel')}
+            {t(`${translationPrefix}.editRoom.cancel`)}
           </Button>
           <Button
             variant="contained"
@@ -540,7 +489,7 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
               }
             }}
           >
-            {t('dashboard.frontDesk.roomManagement.editRoom.save')}
+            {t(`${translationPrefix}.editRoom.save`)}
           </Button>
         </DialogActions>
       </Dialog>
