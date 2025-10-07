@@ -37,6 +37,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { buildApiUrl } from '../../config/apiConfig';
 import { roomCacheService } from '../../services/RoomCacheService';
 import { CachedRoom } from '../../services/OfflineStorageService';
+import { getRoomTypeLabel } from '../../constants/roomTypes';
 
 interface RoomResponse {
   id: number;
@@ -501,7 +502,7 @@ const FrontDeskRoomManagement: React.FC<FrontDeskRoomManagementProps> = ({ onRoo
                       {room.roomNumber}
                     </Typography>
                   </TableCell>
-                  <TableCell>{room.roomType}</TableCell>
+                  <TableCell>{getRoomTypeLabel(room.roomType)}</TableCell>
                   <TableCell>
                     <Chip 
                       label={statusConfig.label}

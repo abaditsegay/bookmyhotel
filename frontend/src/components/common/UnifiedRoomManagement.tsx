@@ -43,6 +43,8 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import { formatCurrency } from '../../utils/currencyUtils';
 import { buildApiUrl } from '../../config/apiConfig';
+import { hotelAdminApi, RoomCreateRequest } from '../../services/hotelAdminApi';
+import { ROOM_TYPES, getRoomTypeLabel } from '../../constants/roomTypes';
 
 // Import hotel admin specific components conditionally
 let RoomTypePricing: any = null;
@@ -97,6 +99,16 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingRoom, setEditingRoom] = useState<Partial<RoomResponse>>({});
   const [activeTab, setActiveTab] = useState(0);
+  
+  // Create room dialog state
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [roomForm, setRoomForm] = useState<RoomCreateRequest>({
+    roomNumber: '',
+    roomType: 'STANDARD',
+    pricePerNight: 0,
+    capacity: 1,
+    description: '',
+  });
 
   // Room status options
   const ROOM_STATUS_OPTIONS = [
@@ -236,6 +248,35 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
     }
   };
 
+  // Create room function
+  const handleCreateRoom = async () => {
+    if (!token) return;
+    
+    try {
+      setLoading(true);
+      const response = await hotelAdminApi.createRoom(token, roomForm);
+      if (response.success) {
+        setCreateDialogOpen(false);
+        setRoomForm({
+          roomNumber: '',
+          roomType: 'STANDARD',
+          pricePerNight: 0,
+          capacity: 1,
+          description: '',
+        });
+        await loadRooms();
+        setError(null);
+      } else {
+        setError(response.message || 'Failed to create room. Please check the room number is unique.');
+      }
+    } catch (err) {
+      console.error('Error creating room:', err);
+      setError('Failed to create room. Please check the room number is unique.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Filter and paginate rooms
   const filteredRooms = rooms.filter(room => {
     const matchesSearch = room.roomNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -329,10 +370,10 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
               {t(`${translationPrefix}.actions.refresh`)}
             </Button>
 
-            {mode === 'hotel-admin' && onNavigateToRoom && (
+            {mode === 'hotel-admin' && (
               <Button
                 startIcon={<AddIcon />}
-                onClick={() => onNavigateToRoom(0)}
+                onClick={() => setCreateDialogOpen(true)}
                 variant="contained"
               >
                 {t(`${translationPrefix}.actions.addRoom`)}
@@ -363,7 +404,7 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
                         {room.roomNumber}
                       </Typography>
                     </TableCell>
-                    <TableCell>{room.roomType}</TableCell>
+                    <TableCell>{getRoomTypeLabel(room.roomType)}</TableCell>
                     <TableCell>
                       <FormControl size="small" sx={{ minWidth: 120 }}>
                         <Select
@@ -435,6 +476,74 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
           </TableContainer>
         </>
       )}
+
+      {/* Create Room Dialog */}
+      <Dialog open={createDialogOpen} onClose={() => setCreateDialogOpen(false)} maxWidth="md" fullWidth>
+        <DialogTitle>{t(`${translationPrefix}.createRoom.title`)}</DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
+            <TextField
+              fullWidth
+              label={t(`${translationPrefix}.createRoom.roomNumber`)}
+              value={roomForm.roomNumber}
+              onChange={(e) => setRoomForm({ ...roomForm, roomNumber: e.target.value })}
+              required
+            />
+            <FormControl fullWidth required>
+              <InputLabel>{t(`${translationPrefix}.createRoom.roomType`)}</InputLabel>
+              <Select
+                value={roomForm.roomType}
+                label={t(`${translationPrefix}.createRoom.roomType`)}
+                onChange={(e) => setRoomForm({ ...roomForm, roomType: e.target.value })}
+              >
+                {ROOM_TYPES.map((roomType) => (
+                  <MenuItem key={roomType.value} value={roomType.value}>
+                    {roomType.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <TextField
+              fullWidth
+              label={t(`${translationPrefix}.createRoom.pricePerNight`)}
+              type="number"
+              value={roomForm.pricePerNight}
+              onChange={(e) => setRoomForm({ ...roomForm, pricePerNight: parseFloat(e.target.value) || 0 })}
+              required
+              inputProps={{ min: 0, step: 0.01 }}
+            />
+            <TextField
+              fullWidth
+              label={t(`${translationPrefix}.createRoom.capacity`)}
+              type="number"
+              value={roomForm.capacity}
+              onChange={(e) => setRoomForm({ ...roomForm, capacity: parseInt(e.target.value) || 1 })}
+              required
+              inputProps={{ min: 1, max: 10 }}
+            />
+            <TextField
+              fullWidth
+              label={t(`${translationPrefix}.createRoom.description`)}
+              multiline
+              rows={3}
+              value={roomForm.description}
+              onChange={(e) => setRoomForm({ ...roomForm, description: e.target.value })}
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCreateDialogOpen(false)}>
+            {t(`${translationPrefix}.createRoom.cancel`)}
+          </Button>
+          <Button 
+            onClick={handleCreateRoom}
+            variant="contained"
+            disabled={loading || !roomForm.roomNumber || !roomForm.pricePerNight}
+          >
+            {t(`${translationPrefix}.createRoom.create`)}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Edit Room Dialog */}
       <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} maxWidth="sm" fullWidth>

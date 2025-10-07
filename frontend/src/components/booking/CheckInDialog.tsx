@@ -30,6 +30,7 @@ import {
   CalendarToday as CalendarIcon,
 } from '@mui/icons-material';
 import { formatCurrency } from '../../utils/currencyUtils';
+import { getRoomTypeLabel } from '../../constants/roomTypes';
 import { frontDeskApiService } from '../../services/frontDeskApi';
 import { hotelAdminApi } from '../../services/hotelAdminApi';
 import { useAuth } from '../../contexts/AuthContext';
@@ -1018,7 +1019,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                                 color: 'primary.dark',
                                 mb: 0.5 
                               }}>
-                                {room.roomType}
+                                {getRoomTypeLabel(room.roomType)}
                               </Typography>
                               <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
                                 Capacity: {room.capacity} guests • {room.description}
@@ -1283,7 +1284,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                         Room {room.roomNumber}
                       </Typography>
                       <Typography variant="body2" color="text.secondary" gutterBottom>
-                        Type: {room.roomType}
+                        Type: {getRoomTypeLabel(room.roomType)}
                       </Typography>
                       <Typography variant="body2" color="text.secondary" gutterBottom>
                         Capacity: {room.capacity} guests

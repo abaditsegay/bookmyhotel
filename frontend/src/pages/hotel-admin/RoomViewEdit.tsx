@@ -47,11 +47,7 @@ const RoomViewEdit: React.FC = () => {
 
   useEffect(() => {
     const loadRoom = async () => {
-      if (!token) {
-        setError('Authentication required');
-        setLoading(false);
-        return;
-      }
+      if (!token) return;
 
       try {
         setLoading(true);

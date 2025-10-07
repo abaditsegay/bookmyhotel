@@ -603,6 +603,16 @@ export const enTranslations = {
           available: "Available",
           cancel: "Cancel",
           save: "Save"
+        },
+        createRoom: {
+          title: "Add New Room",
+          roomNumber: "Room Number",
+          roomType: "Room Type",
+          pricePerNight: "Price per Night",
+          capacity: "Capacity",
+          description: "Description",
+          cancel: "Cancel",
+          create: "Create Room"
         }
       }
     },

@@ -656,6 +656,16 @@ export const amTranslations = {
           available: "ይገኛል",
           cancel: "ሰርዝ",
           save: "አስቀምጥ"
+        },
+        createRoom: {
+          title: "አዲስ ክፍል ጨምር",
+          roomNumber: "የክፍል ቁጥር",
+          roomType: "የክፍል አይነት",
+          pricePerNight: "ዋጋ በሌሊት",
+          capacity: "አቅም",
+          description: "መግለጫ",
+          cancel: "ሰርዝ",
+          create: "ክፍል ፍጠር"
         }
       }
     }
