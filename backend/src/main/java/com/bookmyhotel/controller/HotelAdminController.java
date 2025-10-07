@@ -736,16 +736,16 @@ public class HotelAdminController {
     public ResponseEntity<Map<String, Object>> fixRoomStatusConsistency(Authentication auth) {
         try {
             hotelAdminService.fixRoomStatusConsistency(auth.getName());
-            
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("message", "Room status consistency check completed. Note: Automated status synchronization runs every 5 minutes.");
+            response.put("message",
+                    "Room status consistency check completed. Note: Automated status synchronization runs every 5 minutes.");
             response.put("automatedSystem", Map.of(
-                "enabled", true,
-                "scheduleInterval", "5 minutes",
-                "realTimeChecks", true,
-                "description", "Room statuses are automatically synchronized with booking statuses"
-            ));
+                    "enabled", true,
+                    "scheduleInterval", "5 minutes",
+                    "realTimeChecks", true,
+                    "description", "Room statuses are automatically synchronized with booking statuses"));
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             Map<String, Object> response = new HashMap<>();
@@ -764,25 +764,20 @@ public class HotelAdminController {
         response.put("success", true);
         response.put("automationEnabled", true);
         response.put("features", Map.of(
-            "scheduledSync", Map.of(
-                "enabled", true,
-                "interval", "5 minutes",
-                "description", "Automatically syncs room statuses with booking statuses"
-            ),
-            "realTimeSync", Map.of(
-                "enabled", true,
-                "description", "Triggers immediate consistency checks when bookings change"
-            ),
-            "checkoutMaintenance", Map.of(
-                "enabled", true,
-                "interval", "1 hour", 
-                "description", "Automatically sets rooms to maintenance after checkout"
-            ),
-            "manualTrigger", Map.of(
-                "enabled", true,
-                "description", "Fix Status button available for immediate sync"
-            )
-        ));
+                "scheduledSync", Map.of(
+                        "enabled", true,
+                        "interval", "5 minutes",
+                        "description", "Automatically syncs room statuses with booking statuses"),
+                "realTimeSync", Map.of(
+                        "enabled", true,
+                        "description", "Triggers immediate consistency checks when bookings change"),
+                "checkoutMaintenance", Map.of(
+                        "enabled", true,
+                        "interval", "1 hour",
+                        "description", "Automatically sets rooms to maintenance after checkout"),
+                "manualTrigger", Map.of(
+                        "enabled", true,
+                        "description", "Fix Status button available for immediate sync")));
         response.put("message", "Automated room status management is active");
         return ResponseEntity.ok(response);
     }

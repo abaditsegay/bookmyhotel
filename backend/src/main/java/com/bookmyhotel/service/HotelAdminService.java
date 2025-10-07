@@ -808,10 +808,10 @@ public class HotelAdminService {
         System.out.println("🔍 Hotel Statistics Debug - Hotel ID: " + hotel.getId());
         System.out.println("🔍 Total reservations found: " + allReservations.size());
         System.out.println("🔍 Today's date: " + today);
-        
+
         for (Reservation r : allReservations) {
-            System.out.println("🔍 Reservation " + r.getId() + " - Status: " + r.getStatus() + 
-                ", Check-in: " + r.getCheckInDate() + ", Check-out: " + r.getCheckOutDate());
+            System.out.println("🔍 Reservation " + r.getId() + " - Status: " + r.getStatus() +
+                    ", Check-in: " + r.getCheckInDate() + ", Check-out: " + r.getCheckOutDate());
         }
 
         // Count confirmed bookings (CONFIRMED status or CHECKED_IN status)
@@ -819,30 +819,32 @@ public class HotelAdminService {
         // and all CHECKED_IN bookings regardless of dates
         long confirmedBookings = allReservations.stream()
                 .filter(r -> {
-                    System.out.println("🔍 Processing reservation " + r.getId() + " - Status: " + r.getStatus() + 
-                        ", Check-in: " + r.getCheckInDate() + ", Check-out: " + r.getCheckOutDate());
-                    
+                    System.out.println("🔍 Processing reservation " + r.getId() + " - Status: " + r.getStatus() +
+                            ", Check-in: " + r.getCheckInDate() + ", Check-out: " + r.getCheckOutDate());
+
                     // Count CHECKED_IN bookings regardless of dates (current guests)
                     if (r.getStatus() == ReservationStatus.CHECKED_IN) {
                         System.out.println("🔍 Reservation " + r.getId() + " included - CHECKED_IN guest");
                         return true;
                     }
-                    
+
                     // Count CONFIRMED bookings that haven't passed their checkout date
                     if (r.getStatus() == ReservationStatus.CONFIRMED) {
                         // Use isAfter instead of !isBefore to be more explicit
                         // A booking is still valid if checkout date is today or in the future
-                        boolean isValidBooking = r.getCheckOutDate().isAfter(today) || r.getCheckOutDate().isEqual(today);
-                        System.out.println("🔍 Reservation " + r.getId() + " - CONFIRMED booking, checkout date check: " + 
-                            r.getCheckOutDate() + " >= " + today + " = " + isValidBooking);
+                        boolean isValidBooking = r.getCheckOutDate().isAfter(today)
+                                || r.getCheckOutDate().isEqual(today);
+                        System.out
+                                .println("🔍 Reservation " + r.getId() + " - CONFIRMED booking, checkout date check: " +
+                                        r.getCheckOutDate() + " >= " + today + " = " + isValidBooking);
                         return isValidBooking;
                     }
-                    
+
                     System.out.println("🔍 Reservation " + r.getId() + " excluded - status: " + r.getStatus());
                     return false;
                 })
                 .count();
-        
+
         System.out.println("🔍 Confirmed bookings calculated: " + confirmedBookings);
         stats.put("confirmedBookings", confirmedBookings);
 
@@ -853,12 +855,12 @@ public class HotelAdminService {
                     if (r.getStatus() == ReservationStatus.CHECKED_IN) {
                         return true;
                     }
-                    
+
                     // Count CONFIRMED bookings that haven't passed their checkout date
                     if (r.getStatus() == ReservationStatus.CONFIRMED) {
                         return r.getCheckOutDate().isAfter(today) || r.getCheckOutDate().isEqual(today);
                     }
-                    
+
                     return false;
                 })
                 .filter(r -> r.getRoom() != null) // Filter out reservations without assigned rooms
@@ -1513,7 +1515,7 @@ public class HotelAdminService {
         }
 
         logger.info("🔧 Manual fix requested by admin: {} for hotel: {}", adminEmail, hotel.getName());
-        
+
         // Delegate to the automated service which handles the actual logic
         automatedRoomStatusService.triggerImmediateConsistencyCheck();
     }

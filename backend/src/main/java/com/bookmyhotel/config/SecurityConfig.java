@@ -55,17 +55,17 @@ public class SecurityConfig {
                                 .policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
                         .contentSecurityPolicy(csp -> csp
                                 .policyDirectives("default-src 'self'; " +
-                                    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com; " +
-                                    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
-                                    "font-src 'self' https://fonts.gstatic.com; " +
-                                    "img-src 'self' data: https: blob:; " +
-                                    "connect-src 'self' https: wss: ws: http://localhost:* http://127.0.0.1:*; " +
-                                    "worker-src 'self' blob:; " +
-                                    "child-src 'self'; " +
-                                    "object-src 'none'; " +
-                                    "base-uri 'self'; " +
-                                    "form-action 'self'; " +
-                                    "frame-ancestors 'none'")))
+                                        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com; " +
+                                        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+                                        "font-src 'self' https://fonts.gstatic.com; " +
+                                        "img-src 'self' data: https: blob:; " +
+                                        "connect-src 'self' https: wss: ws: http://localhost:* http://127.0.0.1:*; " +
+                                        "worker-src 'self' blob:; " +
+                                        "child-src 'self'; " +
+                                        "object-src 'none'; " +
+                                        "base-uri 'self'; " +
+                                        "form-action 'self'; " +
+                                        "frame-ancestors 'none'")))
 
                 // Authorization rules
                 .authorizeHttpRequests(auth -> auth
