@@ -69,7 +69,74 @@ export const amTranslations = {
       roomStatus: "የክፍል ሁኔታ",
       guestRequests: "የእንግዳ ጥያቄዎች",
       maintenance: "ጥገና",
-      housekeeping: "የቤት ጽዳት"
+      housekeeping: "የቤት ጽዳት",
+      
+      // Dashboard Statistics
+      stats: {
+        arrivalsToday: "ዛሬ የመጡ እንግዶች",
+        departuresToday: "ዛሬ የሄዱ እንግዶች",
+        currentOccupancy: "አሁን ያሉ እንግዶች",
+        outOfOrder: "ከአገልግሎት ውጭ",
+        underMaintenance: "በጥገና ላይ",
+        availableRooms: "ያሉ ክፍሎች"
+      },
+      
+      // Tab Labels
+      tabs: {
+        bookings: "ቦታ ማስያዝ",
+        rooms: "ክፍሎች",
+        housekeeping: "የቤት ጽዳት",
+        offlineBookings: "ኦፍላይን ቦታ ማስያዝ"
+      },
+      
+      // Housekeeping Module
+      housekeepingModule: {
+        title: "የቤት ጽዳት ሞጁል",
+        description: "የቤት ጽዳት ባህሪዎች በወደፊት እትሞች ይኖራሉ።\nአሁን፣ የክፍል ሁኔታ ለውጦች በክፍል አስተዳደር ትር ውስጥ ማስተዳደር ይችላሉ።"
+      },
+      
+      // Success Messages
+      success: {
+        title: "ተሳክቷል",
+        walkInBookingCreated: "የእንግዳ ቦታ ማስያዝ በተሳካ ሁኔታ ተፈጠረ! ማረጋገጫ: {{confirmationNumber}}",
+        offlineBookingCreated: "ኦፍላይን ቦታ ማስያዝ በተሳካ ሁኔታ ተፈጠረ {{guestName}}",
+        okButton: "እሺ"
+      },
+      
+      // Room Management
+      roomManagement: {
+        searchRooms: "ክፍሎችን ፈልግ",
+        statusFilter: "የሁኔታ ማጣሪያ",
+        allStatuses: "ሁሉም ሁኔታዎች",
+        tableHeaders: {
+          roomNumber: "የክፍል ቁጥር",
+          type: "አይነት",
+          status: "ሁኔታ",
+          currentGuest: "አሁን ያለ እንግዳ",
+          capacity: "አቅም",
+          pricePerNight: "በሌሊት ዋጋ",
+          available: "ይገኛል",
+          actions: "ድርጊቶች"
+        },
+        noGuest: "እንግዳ የለም",
+        guests: "እንግዶች",
+        available: "ይገኛል",
+        unavailable: "አይገኝም",
+        updateStatus: "ሁኔታ አዘምን",
+        updateRoomStatus: "የክፍል ሁኔታ አዘምን",
+        roomInfo: "ክፍል: {{roomNumber}} ({{roomType}})",
+        status: "ሁኔታ",
+        cancel: "ሰርዝ",
+        update: "አዘምን",
+        roomStatuses: {
+          available: "ይገኛል",
+          occupied: "ተያዟል",
+          outOfOrder: "ከአገልግሎት ውጭ",
+          maintenance: "በጥገና ላይ",
+          cleaning: "በጽዳት ላይ",
+          dirty: "ቆሻሻ"
+        }
+      }
     },
     hotelAdmin: {
       title: "የሆቴል አስተዳደር ዳሽቦርድ",
@@ -412,13 +479,13 @@ export const amTranslations = {
         // Booking Details
         bookingDetails: {
           title: 'የቦታ ማስያዝ ዝርዝሮች',
+          stayDetailsTitle: 'የመቆየት ዝርዝሮች',
           checkInDate: 'የመግቢያ ቀን',
           checkOutDate: 'የመውጫ ቀን',
           numberOfGuests: 'የእንግዶች ቁጥር',
-          specialRequests: 'ልዩ ጥያቄዎች (አማራጭ)'
-        },
-        
-        // Guest Search Dialog
+          specialRequests: 'ልዩ ጥያቄዎች (አማራጭ)',
+          availableRoomsTitle: 'ያሉ ክፍሎች'
+        },        // Guest Search Dialog
         guestSearchDialog: {
           title: 'የበፍታ እንግዶችን መፍተሽ',
           searchPlaceholder: 'በስም፣ ኢሜል ወይም ስልክ ተፍተሽ',
@@ -442,7 +509,10 @@ export const amTranslations = {
         // Validation Errors
         validationErrors: {
           fillGuestInfo: 'እባክዎ ሁሉንም የእንግዳ ምሪጫ ሜዳኖችን ይሞሉ',
-          selectRoom: 'እባክዎ ክፍል ይምረጡ'
+          selectRoom: 'እባክዎ ክፍል ይምረጡ',
+          invalidEmail: 'እባክዎ ትክክለኛ የኢሜይል አድራሻ ያስገቡ',
+          selectDatesAndGuests: 'ቀናትን እና የእንግዶች ቁጥር ይምረጡ',
+          noRoomsAvailable: 'ለ{{guests}} እንግዳ{{plural}} ከ{{checkIn}} እስከ {{checkOut}} ክፍሎች አይገኙም። እባክዎ ሌሎች ቀናት ይሞክሩ ወይም የእንግዶች ቁጥር ይቀንሱ።'
         },
         
         // Messages
@@ -460,10 +530,13 @@ export const amTranslations = {
         roomSelection: {
           title: 'ክፍል ምርጫ',
           description: 'ለእንግዳው የሚገኝ ክፍል ይምረጡ',
+          numberOfGuests: 'የእንግዶች ቁጥር',
           roomNumber: 'ክፍል {{number}}',
           roomType: 'የክፍል አይነት: {{type}}',
           capacity: 'አቅም: {{capacity}} እንግዶች',
           pricePerNight: 'ዋጋ: {{price}} በማታ',
+          pricePerNightShort: '/ማታ',
+          pricingCalculation: '{{pricePerNight}}/ማታ × {{nights}} ማታ',
           selectRoom: 'ክፍል ይምረጡ',
           noRoomsAvailable: 'ለተመረጡት ቀናት ክፍሎች አይገኙም',
           loadingRooms: 'የሚገኙ ክፍሎች በመጫን ላይ...'
@@ -474,13 +547,26 @@ export const amTranslations = {
           title: 'የቦታ ማስያዝ ማረጋገጫ',
           description: 'የቦታ ማስያዝ ዝርዝሮችን ይገምግሙ እና ያረጋግጡ',
           bookingSummary: 'የቦታ ማስያዝ ማጠቃለያ',
+          guestInformationTitle: 'የእንግዳ መረጃ',
+          roomDetailsTitle: 'የክፍል ዝርዝሮች',
           guestName: 'እንግዳ: {{firstName}} {{lastName}}',
           contactInfo: 'ዕውቅና: {{email}} | {{phone}}',
           stayDuration: 'ቆይታ: {{checkIn}} እስከ {{checkOut}} ({{nights}} ማታዎች)',
           selectedRoom: 'ክፍል: {{roomNumber}} ({{roomType}})',
           totalCost: 'አጠቃላይ ወጪ: {{total}}',
           confirmBooking: 'ቦታ ማስያዝን አረጋግጥ',
-          backToRoomSelection: 'ወደ ክፍል ምርጫ ተመለስ'
+          backToRoomSelection: 'ወደ ክፍል ምርጫ ተመለስ',
+          // Additional labels for confirmation section
+          emailLabel: 'ኢሜል:',
+          phoneLabel: 'ስልክ:',
+          roomLabel: 'ክፍል:',
+          checkInLabel: 'መግቢያ:',
+          checkOutLabel: 'መውጫ:',
+          guestsLabel: 'እንግዶች:',
+          specialRequestsLabel: 'ልዩ ጥያቄዎች:',
+          pricingSummaryTitle: 'የዋጋ ማጠቃለያ',
+          totalAmountTitle: 'አጠቃላይ መጠን',
+          paymentNote: 'ክፍያ በሪሴፕሽን ይከናወናል (ኦፍላይን ሁነታ)'
         },
         
         // Actions
@@ -494,7 +580,8 @@ export const amTranslations = {
         willSyncWhenOnline: 'ይህ ቦታ ማስያዝ የበይነመረብ ግንኙነት ሲመለስ ይመሳሰላል።',
         bookingFailed: 'ቦታ ማስያዝ መፍጠር አልተሳካም። እባክዎ እንደገና ይሞክሩ።',
         invalidDates: 'የመውጫ ቀን ከመግቢያ ቀን በኋላ መሆን አለበት',
-        fillAllFields: 'እባክዎ ሁሉንም የሚያስፈልጉ መስኮች ይሙሉ'
+        fillAllFields: 'እባክዎ ሁሉንም የሚያስፈልጉ መስኮች ይሙሉ',
+        creatingBooking: 'የእንግዳ ቦታ ማስያዝ በመፍጠር ላይ...'
       }
     }
   },

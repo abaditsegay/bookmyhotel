@@ -205,7 +205,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
         return;
       }
       if (!guestInfo.email.includes('@')) {
-        setError('Please enter a valid email address');
+        setError(t('dashboard.hotelAdmin.offlineBooking.validationErrors.invalidEmail'));
         return;
       }
     } else if (activeStep === 1) {
@@ -383,10 +383,10 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
               }}>
                 <Box>
                   <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5, color: COLORS.PRIMARY }}>
-                    Stay Details
+                    {t('dashboard.hotelAdmin.offlineBooking.bookingDetails.stayDetailsTitle')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Select dates and number of guests
+                    {t('dashboard.hotelAdmin.offlineBooking.validationErrors.selectDatesAndGuests')}
                   </Typography>
                 </Box>
               </Box>
@@ -395,7 +395,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                 <Grid item xs={12} sm={4}>
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker
-                      label="Check-in Date"
+                      label={t('dashboard.hotelAdmin.offlineBooking.bookingDetails.checkInDate')}
                       value={checkInDate}
                       onChange={(newValue) => newValue && setCheckInDate(newValue)}
                       minDate={new Date()}
@@ -425,7 +425,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                 <Grid item xs={12} sm={4}>
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker
-                      label="Check-out Date"
+                      label={t('dashboard.hotelAdmin.offlineBooking.bookingDetails.checkOutDate')}
                       value={checkOutDate}
                       onChange={(newValue) => newValue && setCheckOutDate(newValue)}
                       minDate={addDays(checkInDate, 1)}
@@ -458,7 +458,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                     onChange={handleGuestsChange}
                     min={1}
                     max={10}
-                    label="Number of Guests"
+                    label={t('dashboard.hotelAdmin.offlineBooking.roomSelection.numberOfGuests')}
                     fullWidth
                   />
                 </Grid>
@@ -477,7 +477,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                 color: COLORS.PRIMARY,
                 mb: 1
               }}>
-                Available Rooms
+                {t('dashboard.hotelAdmin.offlineBooking.bookingDetails.availableRoomsTitle')}
               </Typography>
               <Typography variant="body2" color="text.secondary" gutterBottom>
                 {format(checkInDate, 'MMM dd, yyyy')} - {format(checkOutDate, 'MMM dd, yyyy')} • {guests} Guest{guests !== 1 ? 's' : ''}
@@ -516,8 +516,12 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                 </Box>
               ) : availableRooms.length === 0 ? (
                 <Alert severity="warning">
-                  No rooms available for {guests} guest{guests !== 1 ? 's' : ''} from {format(checkInDate, 'MMM dd')} to {format(checkOutDate, 'MMM dd')}. 
-                  Please try different dates or reduce the number of guests.
+                  {t('dashboard.hotelAdmin.offlineBooking.validationErrors.noRoomsAvailable', {
+                    guests,
+                    plural: guests !== 1 ? 's' : '',
+                    checkIn: format(checkInDate, 'MMM dd'),
+                    checkOut: format(checkOutDate, 'MMM dd')
+                  })}
                 </Alert>
               ) : (
                 <>
@@ -568,7 +572,10 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                               mb: 1,
                               fontSize: '0.875rem'
                             }}>
-                              Capacity: {room.capacity} guest{room.capacity !== 1 ? 's' : ''}
+                              {t('dashboard.hotelAdmin.offlineBooking.roomSelection.capacity', { 
+                                capacity: room.capacity,
+                                plural: room.capacity !== 1 ? 's' : ''
+                              })}
                             </Typography>
                             {room.description && (
                               <Typography variant="body2" sx={{ 
@@ -585,7 +592,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                               fontWeight: 'bold',
                               fontSize: '1.2rem'
                             }}>
-                              {formatCurrency(room.pricePerNight || 0)}/night
+                              {formatCurrency(room.pricePerNight || 0)}{t('dashboard.hotelAdmin.offlineBooking.roomSelection.pricePerNightShort')}
                             </Typography>
                           </CardContent>
                         </Card>
@@ -597,7 +604,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                     <Box sx={{ mt: 3, mb: 2 }}>
                       <TextField
                         fullWidth
-                        label="Special Requests (Optional)"
+                        label={t('dashboard.hotelAdmin.offlineBooking.bookingDetails.specialRequests')}
                         multiline
                         rows={3}
                         value={specialRequests}
@@ -705,13 +712,13 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                       {t('dashboard.hotelAdmin.offlineBooking.confirmation.guestInformationTitle')}
                     </Typography>
                     <Typography variant="body2">
-                      {t('dashboard.hotelAdmin.offlineBooking.confirmation.guestName', { firstName: guestInfo.firstName, lastName: guestInfo.lastName })}
+                      {guestInfo.firstName} {guestInfo.lastName}
                     </Typography>
                     <Typography variant="body2">
-                      <strong>Email:</strong> {guestInfo.email}
+                      <strong>{t('dashboard.hotelAdmin.offlineBooking.confirmation.emailLabel')}</strong> {guestInfo.email}
                     </Typography>
                     <Typography variant="body2">
-                      <strong>Phone:</strong> {guestInfo.phone}
+                      <strong>{t('dashboard.hotelAdmin.offlineBooking.confirmation.phoneLabel')}</strong> {guestInfo.phone}
                     </Typography>
                   </CardContent>
                 </Card>
@@ -724,20 +731,20 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                       {t('dashboard.hotelAdmin.offlineBooking.confirmation.roomDetailsTitle')}
                     </Typography>
                     <Typography variant="body2">
-                      <strong>Room:</strong> {selectedRoom?.roomNumber} ({selectedRoom?.roomType})
+                      <strong>{t('dashboard.hotelAdmin.offlineBooking.confirmation.roomLabel')}</strong> {selectedRoom?.roomNumber} ({selectedRoom?.roomType})
                     </Typography>
                     <Typography variant="body2">
-                      <strong>Check-in:</strong> {format(checkInDate, 'MMM dd, yyyy')}
+                      <strong>{t('dashboard.hotelAdmin.offlineBooking.confirmation.checkInLabel')}</strong> {format(checkInDate, 'MMM dd, yyyy')}
                     </Typography>
                     <Typography variant="body2">
-                      <strong>Check-out:</strong> {format(checkOutDate, 'MMM dd, yyyy')}
+                      <strong>{t('dashboard.hotelAdmin.offlineBooking.confirmation.checkOutLabel')}</strong> {format(checkOutDate, 'MMM dd, yyyy')}
                     </Typography>
                     <Typography variant="body2">
-                      <strong>Guests:</strong> {guests}
+                      <strong>{t('dashboard.hotelAdmin.offlineBooking.confirmation.guestsLabel')}</strong> {guests}
                     </Typography>
                     {specialRequests && (
                       <Typography variant="body2">
-                        <strong>Special Requests:</strong> {specialRequests}
+                        <strong>{t('dashboard.hotelAdmin.offlineBooking.confirmation.specialRequestsLabel')}</strong> {specialRequests}
                       </Typography>
                     )}
                   </CardContent>
@@ -748,11 +755,18 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                 <Card>
                   <CardContent>
                     <Typography variant="subtitle1" gutterBottom>
-                      Pricing Summary
+                      {t('dashboard.hotelAdmin.offlineBooking.confirmation.pricingSummaryTitle')}
                     </Typography>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                       <Typography variant="body2">
-                        {formatCurrency(selectedRoom?.pricePerNight || 0)}/night × {Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24))} night{Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)) !== 1 ? 's' : ''}
+                        {(() => {
+                          const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24));
+                          return t('dashboard.hotelAdmin.offlineBooking.roomSelection.pricingCalculation', {
+                            pricePerNight: formatCurrency(selectedRoom?.pricePerNight || 0),
+                            nights,
+                            nightsPlural: nights !== 1 ? 's' : ''
+                          });
+                        })()}
                       </Typography>
                       <Typography variant="body2">
                         {formatCurrency(calculateTotalAmount() || 0)}
@@ -761,14 +775,14 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                     <Divider />
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
                       <Typography variant="h6">
-                        Total Amount
+                        {t('dashboard.hotelAdmin.offlineBooking.confirmation.totalAmountTitle')}
                       </Typography>
                       <Typography variant="h6" color="primary.main">
                         {formatCurrency(calculateTotalAmount() || 0)}
                       </Typography>
                     </Box>
                     <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                      Payment will be processed at the front desk (Offline Mode)
+                      {t('dashboard.hotelAdmin.offlineBooking.confirmation.paymentNote')}
                     </Typography>
                   </CardContent>
                 </Card>
@@ -1046,7 +1060,12 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
 - Cached rooms with sufficient capacity: ${cachedRooms.filter(r => r.capacity >= guests).length}
 - Available cached rooms: ${cachedRooms.filter(r => r.isAvailable).length}`);
           
-          setError(`No rooms available for ${guests} guest${guests > 1 ? 's' : ''} from ${format(checkInDate, 'MMM dd')} to ${format(checkOutDate, 'MMM dd')}. Please try different dates or reduce the number of guests.`);
+          setError(t('dashboard.hotelAdmin.offlineBooking.validationErrors.noRoomsAvailable', {
+            guests,
+            plural: guests > 1 ? 's' : '',
+            checkIn: format(checkInDate, 'MMM dd'),
+            checkOut: format(checkOutDate, 'MMM dd')
+          }));
         } else {
           setError(null);
           if (dataSource === 'api') {
@@ -1067,7 +1086,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
     if (activeStep === 1 && checkInDate && checkOutDate) {
       loadAvailableRooms();
     }
-  }, [activeStep, checkInDate, checkOutDate, guests, cachedRooms, hotelId, token, tenantId, user?.role, user?.roles, user?.hotelId, API_BASE_URL]);
+  }, [activeStep, checkInDate, checkOutDate, guests, cachedRooms, hotelId, token, tenantId, user?.role, user?.roles, user?.hotelId, API_BASE_URL, t]);
 
   // Monitor online/offline status
   useEffect(() => {
@@ -1295,17 +1314,17 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                       mb: 0.5,
                     }}
                   >
-                    Offline Guest Booking
+                    {t('dashboard.hotelAdmin.offlineBooking.title')}
                   </Typography>
                   <Typography variant="body1" color="text.secondary">
-                    Complete the guest booking process step by step
+                    {t('dashboard.hotelAdmin.offlineBooking.description')}
                   </Typography>
                 </Box>
               </Box>
               
               <Box sx={{ display: 'flex', gap: 1 }}>
                 <Chip
-                  label="Offline Mode"
+                  label={t('dashboard.hotelAdmin.offlineBooking.offlineMode')}
                   variant="outlined"
                   sx={{ 
                     fontWeight: 'bold',
@@ -1408,7 +1427,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
             <Box sx={{ textAlign: 'center' }}>
               <CircularProgress size={40} />
               <Typography variant="body2" sx={{ mt: 2 }}>
-                Creating walk-in booking...
+                {t('dashboard.hotelAdmin.offlineBooking.messages.creatingBooking')}
               </Typography>
             </Box>
           </Box>

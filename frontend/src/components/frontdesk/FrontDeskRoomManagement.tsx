@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Box,
   Typography,
@@ -201,17 +202,18 @@ interface FrontDeskRoomManagementProps {
   onRoomUpdate?: (room: RoomResponse) => void;
 }
 
-const ROOM_STATUS_OPTIONS = [
-  { value: 'AVAILABLE', label: 'Available', color: 'success' as const },
-  { value: 'OCCUPIED', label: 'Occupied', color: 'info' as const },
-  { value: 'OUT_OF_ORDER', label: 'Out of Order', color: 'error' as const },
-  { value: 'MAINTENANCE', label: 'Maintenance', color: 'warning' as const },
-  { value: 'CLEANING', label: 'Cleaning', color: 'secondary' as const },
-  { value: 'DIRTY', label: 'Dirty', color: 'default' as const }
-];
-
 const FrontDeskRoomManagement: React.FC<FrontDeskRoomManagementProps> = ({ onRoomUpdate }) => {
+  const { t } = useTranslation();
   const { token } = useAuth();
+
+  const ROOM_STATUS_OPTIONS = [
+    { value: 'AVAILABLE', label: t('dashboard.frontDesk.roomManagement.roomStatuses.available'), color: 'success' as const },
+    { value: 'OCCUPIED', label: t('dashboard.frontDesk.roomManagement.roomStatuses.occupied'), color: 'info' as const },
+    { value: 'OUT_OF_ORDER', label: t('dashboard.frontDesk.roomManagement.roomStatuses.outOfOrder'), color: 'error' as const },
+    { value: 'MAINTENANCE', label: t('dashboard.frontDesk.roomManagement.roomStatuses.maintenance'), color: 'warning' as const },
+    { value: 'CLEANING', label: t('dashboard.frontDesk.roomManagement.roomStatuses.cleaning'), color: 'secondary' as const },
+    { value: 'DIRTY', label: t('dashboard.frontDesk.roomManagement.roomStatuses.dirty'), color: 'default' as const }
+  ];
   const [rooms, setRooms] = useState<RoomResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -451,7 +453,7 @@ const FrontDeskRoomManagement: React.FC<FrontDeskRoomManagementProps> = ({ onRoo
       {/* Filters */}
       <Box sx={{ mb: 3, display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
         <TextField
-          label="Search rooms"
+          label={t('dashboard.frontDesk.roomManagement.searchRooms')}
           value={searchQuery}
           onChange={handleSearchChange}
           size="small"
@@ -459,13 +461,13 @@ const FrontDeskRoomManagement: React.FC<FrontDeskRoomManagementProps> = ({ onRoo
         />
         
         <FormControl size="small" sx={{ minWidth: 150 }}>
-          <InputLabel>Status Filter</InputLabel>
+          <InputLabel>{t('dashboard.frontDesk.roomManagement.statusFilter')}</InputLabel>
           <Select
             value={statusFilter}
-            label="Status Filter"
+            label={t('dashboard.frontDesk.roomManagement.statusFilter')}
             onChange={handleStatusFilterChange}
           >
-            <MenuItem value="ALL">All Statuses</MenuItem>
+            <MenuItem value="ALL">{t('dashboard.frontDesk.roomManagement.allStatuses')}</MenuItem>
             {ROOM_STATUS_OPTIONS.map((status) => (
               <MenuItem key={status.value} value={status.value}>
                 {status.label}
@@ -479,14 +481,14 @@ const FrontDeskRoomManagement: React.FC<FrontDeskRoomManagementProps> = ({ onRoo
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Room Number</TableCell>
-              <TableCell>Type</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Current Guest</TableCell>
-              <TableCell>Capacity</TableCell>
-              <TableCell>Price/Night</TableCell>
-              <TableCell>Available</TableCell>
-              <TableCell>Actions</TableCell>
+              <TableCell>{t('dashboard.frontDesk.roomManagement.tableHeaders.roomNumber')}</TableCell>
+              <TableCell>{t('dashboard.frontDesk.roomManagement.tableHeaders.type')}</TableCell>
+              <TableCell>{t('dashboard.frontDesk.roomManagement.tableHeaders.status')}</TableCell>
+              <TableCell>{t('dashboard.frontDesk.roomManagement.tableHeaders.currentGuest')}</TableCell>
+              <TableCell>{t('dashboard.frontDesk.roomManagement.tableHeaders.capacity')}</TableCell>
+              <TableCell>{t('dashboard.frontDesk.roomManagement.tableHeaders.pricePerNight')}</TableCell>
+              <TableCell>{t('dashboard.frontDesk.roomManagement.tableHeaders.available')}</TableCell>
+              <TableCell>{t('dashboard.frontDesk.roomManagement.tableHeaders.actions')}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -514,11 +516,11 @@ const FrontDeskRoomManagement: React.FC<FrontDeskRoomManagementProps> = ({ onRoo
                       </Typography>
                     ) : (
                       <Typography variant="body2" color="text.secondary">
-                        No guest
+                        {t('dashboard.frontDesk.roomManagement.noGuest')}
                       </Typography>
                     )}
                   </TableCell>
-                  <TableCell>{room.capacity} guests</TableCell>
+                  <TableCell>{room.capacity} {t('dashboard.frontDesk.roomManagement.guests')}</TableCell>
                   <TableCell>ETB {room.pricePerNight?.toFixed(0)}</TableCell>
                   <TableCell>
                     <FormControlLabel
@@ -529,11 +531,11 @@ const FrontDeskRoomManagement: React.FC<FrontDeskRoomManagementProps> = ({ onRoo
                           disabled={availabilityUpdating[room.id]}
                         />
                       }
-                      label={room.isAvailable ? 'Available' : 'Unavailable'}
+                      label={room.isAvailable ? t('dashboard.frontDesk.roomManagement.available') : t('dashboard.frontDesk.roomManagement.unavailable')}
                     />
                   </TableCell>
                   <TableCell>
-                    <Tooltip title="Update Status">
+                    <Tooltip title={t('dashboard.frontDesk.roomManagement.updateStatus')}>
                       <IconButton
                         size="small"
                         onClick={() => handleStatusUpdate(room)}
@@ -561,18 +563,21 @@ const FrontDeskRoomManagement: React.FC<FrontDeskRoomManagementProps> = ({ onRoo
 
       {/* Status Update Dialog */}
       <Dialog open={statusDialogOpen} onClose={handleStatusDialogClose}>
-        <DialogTitle>Update Room Status</DialogTitle>
+        <DialogTitle>{t('dashboard.frontDesk.roomManagement.updateRoomStatus')}</DialogTitle>
         <DialogContent>
           {selectedRoom && (
             <Box sx={{ pt: 1 }}>
               <Typography variant="body2" sx={{ mb: 2 }}>
-                Room: {selectedRoom.roomNumber} ({selectedRoom.roomType})
+                {t('dashboard.frontDesk.roomManagement.roomInfo', { 
+                  roomNumber: selectedRoom.roomNumber, 
+                  roomType: selectedRoom.roomType 
+                })}
               </Typography>
               <FormControl fullWidth>
-                <InputLabel>Status</InputLabel>
+                <InputLabel>{t('dashboard.frontDesk.roomManagement.status')}</InputLabel>
                 <Select
                   value={newStatus}
-                  label="Status"
+                  label={t('dashboard.frontDesk.roomManagement.status')}
                   onChange={(e) => setNewStatus(e.target.value)}
                 >
                   {ROOM_STATUS_OPTIONS.map((status) => (
@@ -586,13 +591,13 @@ const FrontDeskRoomManagement: React.FC<FrontDeskRoomManagementProps> = ({ onRoo
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleStatusDialogClose}>Cancel</Button>
+          <Button onClick={handleStatusDialogClose}>{t('dashboard.frontDesk.roomManagement.cancel')}</Button>
           <Button
             onClick={handleStatusConfirm}
             variant="contained"
             disabled={statusUpdating || !newStatus}
           >
-            {statusUpdating ? <CircularProgress size={20} /> : 'Update'}
+            {statusUpdating ? <CircularProgress size={20} /> : t('dashboard.frontDesk.roomManagement.update')}
           </Button>
         </DialogActions>
       </Dialog>

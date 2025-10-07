@@ -454,20 +454,25 @@ export const enTranslations = {
         // Booking Details
         bookingDetails: {
           title: 'Booking Details',
+          stayDetailsTitle: 'Stay Details',
           checkInDate: 'Check-in Date',
           checkOutDate: 'Check-out Date',
           numberOfGuests: 'Number of Guests',
-          specialRequests: 'Special Requests (Optional)'
+          specialRequests: 'Special Requests (Optional)',
+          availableRoomsTitle: 'Available Rooms'
         },
         
         // Room Selection
         roomSelection: {
           title: 'Room Selection',
           description: 'Choose an available room for the guest',
+          numberOfGuests: 'Number of Guests',
           roomNumber: 'Room {{number}}',
           roomType: 'Room Type: {{type}}',
-          capacity: 'Capacity: {{capacity}} guests',
+          capacity: 'Capacity: {{capacity}} guest{{plural}}',
           pricePerNight: 'Price: {{price}} per night',
+          pricePerNightShort: '/night',
+          pricingCalculation: '{{pricePerNight}}/night × {{nights}} night{{nightsPlural}}',
           selectRoom: 'Select Room',
           noRoomsAvailable: 'No rooms available for selected dates',
           loadingRooms: 'Loading available rooms...'
@@ -489,7 +494,18 @@ export const enTranslations = {
           roomType: 'Room Type: {{type}}',
           pricePerNight: 'Price per night: {{price}}',
           totalNights: 'Total nights: {{nights}}',
-          subtotal: 'Subtotal: {{amount}}'
+          subtotal: 'Subtotal: {{amount}}',
+          // Additional labels for confirmation section
+          emailLabel: 'Email:',
+          phoneLabel: 'Phone:',
+          roomLabel: 'Room:',
+          checkInLabel: 'Check-in:',
+          checkOutLabel: 'Check-out:',
+          guestsLabel: 'Guests:',
+          specialRequestsLabel: 'Special Requests:',
+          pricingSummaryTitle: 'Pricing Summary',
+          totalAmountTitle: 'Total Amount',
+          paymentNote: 'Payment will be processed at the front desk (Offline Mode)'
         },
         
         // Guest Search Dialog
@@ -516,7 +532,10 @@ export const enTranslations = {
         // Validation Errors
         validationErrors: {
           fillGuestInfo: 'Please fill in all guest information fields',
-          selectRoom: 'Please select a room'
+          selectRoom: 'Please select a room',
+          invalidEmail: 'Please enter a valid email address',
+          selectDatesAndGuests: 'Select dates and number of guests',
+          noRoomsAvailable: 'No rooms available for {{guests}} guest{{plural}} from {{checkIn}} to {{checkOut}}. Please try different dates or reduce the number of guests.'
         },
         
         // Messages
@@ -527,7 +546,8 @@ export const enTranslations = {
           willSyncWhenOnline: 'This booking will be synced when internet connection is restored.',
           bookingFailed: 'Failed to create booking. Please try again.',
           invalidDates: 'Check-out date must be after check-in date',
-          fillAllFields: 'Please fill in all required fields'
+          fillAllFields: 'Please fill in all required fields',
+          creatingBooking: 'Creating walk-in booking...'
         }
       }
     },
@@ -538,7 +558,74 @@ export const enTranslations = {
       roomStatus: "Room Status",
       guestRequests: "Guest Requests",
       maintenance: "Maintenance",
-      housekeeping: "Housekeeping"
+      housekeeping: "Housekeeping",
+      
+      // Dashboard Statistics
+      stats: {
+        arrivalsToday: "Arrivals Today",
+        departuresToday: "Departures Today",
+        currentOccupancy: "Current Occupancy",
+        outOfOrder: "Out of Order",
+        underMaintenance: "Under Maintenance",
+        availableRooms: "Available Rooms"
+      },
+      
+      // Tab Labels
+      tabs: {
+        bookings: "Bookings",
+        rooms: "Rooms",
+        housekeeping: "Housekeeping",
+        offlineBookings: "Offline Bookings"
+      },
+      
+      // Housekeeping Module
+      housekeepingModule: {
+        title: "Housekeeping Module",
+        description: "Housekeeping features will be available in future releases.\nCurrently, room status changes can be managed through the Room Management tab."
+      },
+      
+      // Success Messages
+      success: {
+        title: "Success",
+        walkInBookingCreated: "Walk-in booking created successfully! Confirmation: {{confirmationNumber}}",
+        offlineBookingCreated: "Offline booking created successfully for {{guestName}}",
+        okButton: "OK"
+      },
+      
+      // Room Management
+      roomManagement: {
+        searchRooms: "Search rooms",
+        statusFilter: "Status Filter",
+        allStatuses: "All Statuses",
+        tableHeaders: {
+          roomNumber: "Room Number",
+          type: "Type",
+          status: "Status",
+          currentGuest: "Current Guest",
+          capacity: "Capacity",
+          pricePerNight: "Price/Night",
+          available: "Available",
+          actions: "Actions"
+        },
+        noGuest: "No guest",
+        guests: "guests",
+        available: "Available",
+        unavailable: "Unavailable",
+        updateStatus: "Update Status",
+        updateRoomStatus: "Update Room Status",
+        roomInfo: "Room: {{roomNumber}} ({{roomType}})",
+        status: "Status",
+        cancel: "Cancel",
+        update: "Update",
+        roomStatuses: {
+          available: "Available",
+          occupied: "Occupied",
+          outOfOrder: "Out of Order",
+          maintenance: "Maintenance", 
+          cleaning: "Cleaning",
+          dirty: "Dirty"
+        }
+      }
     }
   },
 

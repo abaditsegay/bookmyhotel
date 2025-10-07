@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import {
   Box,
@@ -49,6 +50,7 @@ function TabPanel(props: TabPanelProps) {
 }
 
 const FrontDeskDashboard: React.FC = () => {
+  const { t } = useTranslation();
   const { token, user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const theme = useTheme();
@@ -186,7 +188,7 @@ const FrontDeskDashboard: React.FC = () => {
     // Show success dialog
     setSuccessDialog({
       open: true,
-      message: `Walk-in booking created successfully! Confirmation: ${bookingData.confirmationNumber}`
+      message: t('dashboard.frontDesk.success.walkInBookingCreated', { confirmationNumber: bookingData.confirmationNumber })
     });
     
     // Refresh stats and trigger booking list refresh
@@ -221,7 +223,7 @@ const FrontDeskDashboard: React.FC = () => {
                 {todayStats.todaysArrivals}
               </Typography>
               <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                Arrivals Today
+                {t('dashboard.frontDesk.stats.arrivalsToday')}
               </Typography>
             </CardContent>
           </Card>
@@ -233,7 +235,7 @@ const FrontDeskDashboard: React.FC = () => {
                 {todayStats.todaysDepartures}
               </Typography>
               <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                Departures Today
+                {t('dashboard.frontDesk.stats.departuresToday')}
               </Typography>
             </CardContent>
           </Card>
@@ -245,7 +247,7 @@ const FrontDeskDashboard: React.FC = () => {
                 {todayStats.currentOccupancy}
               </Typography>
               <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                Current Occupancy
+                {t('dashboard.frontDesk.stats.currentOccupancy')}
               </Typography>
             </CardContent>
           </Card>
@@ -257,7 +259,7 @@ const FrontDeskDashboard: React.FC = () => {
                 {todayStats.roomsOutOfOrder}
               </Typography>
               <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                Out of Order
+                {t('dashboard.frontDesk.stats.outOfOrder')}
               </Typography>
             </CardContent>
           </Card>
@@ -269,7 +271,7 @@ const FrontDeskDashboard: React.FC = () => {
                 {todayStats.roomsUnderMaintenance}
               </Typography>
               <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                Under Maintenance
+                {t('dashboard.frontDesk.stats.underMaintenance')}
               </Typography>
             </CardContent>
           </Card>
@@ -281,7 +283,7 @@ const FrontDeskDashboard: React.FC = () => {
                 {todayStats.availableRooms}
               </Typography>
               <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                Available Rooms
+                {t('dashboard.frontDesk.stats.availableRooms')}
               </Typography>
             </CardContent>
           </Card>
@@ -317,10 +319,10 @@ const FrontDeskDashboard: React.FC = () => {
             },
           }}
         >
-          <Tab label="Bookings" />
-          <Tab label="Rooms" />
-          <Tab label="Housekeeping" />
-          <Tab label="Offline Bookings" />
+          <Tab label={t('dashboard.frontDesk.tabs.bookings')} />
+          <Tab label={t('dashboard.frontDesk.tabs.rooms')} />
+          <Tab label={t('dashboard.frontDesk.tabs.housekeeping')} />
+          <Tab label={t('dashboard.frontDesk.tabs.offlineBookings')} />
         </Tabs>
       </Paper>
 
@@ -367,12 +369,10 @@ const FrontDeskDashboard: React.FC = () => {
       <TabPanel value={activeTab} index={2}>
         <Box sx={{ p: 3, textAlign: 'center' }}>
           <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>
-            Housekeeping Module
+            {t('dashboard.frontDesk.housekeepingModule.title')}
           </Typography>
-          <Typography color="text.secondary">
-            Housekeeping features will be available in future releases.
-            <br />
-            Currently, room status changes can be managed through the Room Management tab.
+          <Typography color="text.secondary" sx={{ whiteSpace: 'pre-line' }}>
+            {t('dashboard.frontDesk.housekeepingModule.description')}
           </Typography>
         </Box>
       </TabPanel>
@@ -384,7 +384,7 @@ const FrontDeskDashboard: React.FC = () => {
             console.log('Offline booking created:', booking);
             setSnackbar({
               open: true,
-              message: `Offline booking created successfully for ${booking.guestName}`,
+              message: t('dashboard.frontDesk.success.offlineBookingCreated', { guestName: booking.guestName }),
               severity: 'success'
             });
             // Refresh booking data
@@ -428,7 +428,7 @@ const FrontDeskDashboard: React.FC = () => {
         fullWidth
       >
         <DialogTitle sx={{ textAlign: 'center', color: COLORS.PRIMARY }}>
-          ✅ Success
+          ✅ {t('dashboard.frontDesk.success.title')}
         </DialogTitle>
         <DialogContent>
           <Typography variant="body1" sx={{ textAlign: 'center', py: 2 }}>
@@ -442,7 +442,7 @@ const FrontDeskDashboard: React.FC = () => {
             color="primary"
             sx={{ minWidth: 100 }}
           >
-            OK
+            {t('dashboard.frontDesk.success.okButton')}
           </Button>
         </DialogActions>
       </Dialog>
