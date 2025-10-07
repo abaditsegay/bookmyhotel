@@ -694,7 +694,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
         return (
           <Box>
             <Typography variant="h6" gutterBottom>
-              Booking Confirmation
+              {t('dashboard.hotelAdmin.offlineBooking.confirmation.title')}
             </Typography>
             
             <Grid container spacing={2}>
@@ -702,10 +702,10 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                 <Card>
                   <CardContent>
                     <Typography variant="subtitle1" gutterBottom>
-                      Guest Information
+                      {t('dashboard.hotelAdmin.offlineBooking.confirmation.guestInformationTitle')}
                     </Typography>
                     <Typography variant="body2">
-                      <strong>Name:</strong> {guestInfo.firstName} {guestInfo.lastName}
+                      {t('dashboard.hotelAdmin.offlineBooking.confirmation.guestName', { firstName: guestInfo.firstName, lastName: guestInfo.lastName })}
                     </Typography>
                     <Typography variant="body2">
                       <strong>Email:</strong> {guestInfo.email}
@@ -721,7 +721,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                 <Card>
                   <CardContent>
                     <Typography variant="subtitle1" gutterBottom>
-                      Stay Details
+                      {t('dashboard.hotelAdmin.offlineBooking.confirmation.roomDetailsTitle')}
                     </Typography>
                     <Typography variant="body2">
                       <strong>Room:</strong> {selectedRoom?.roomNumber} ({selectedRoom?.roomType})
@@ -1456,12 +1456,12 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Search Previous Guests</DialogTitle>
+        <DialogTitle>{t('dashboard.hotelAdmin.offlineBooking.guestSearchDialog.title')}</DialogTitle>
         <DialogContent>
           <Box sx={{ mb: 2 }}>
             <TextField
               fullWidth
-              label="Search by name, email, or phone"
+              label={t('dashboard.hotelAdmin.offlineBooking.guestSearchDialog.searchPlaceholder')}
               value={guestSearchQuery}
               onChange={(e) => setGuestSearchQuery(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleGuestSearch()}
@@ -1472,7 +1472,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
               onClick={handleGuestSearch}
               fullWidth
             >
-              Search
+              {t('dashboard.hotelAdmin.offlineBooking.guestSearchDialog.searchButton')}
             </Button>
           </Box>
 

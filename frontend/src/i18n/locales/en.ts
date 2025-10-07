@@ -270,7 +270,201 @@ export const enTranslations = {
       noDescriptionAvailable: "No description available",
       noStaffRoleData: "No staff role data available",
       loadingHotel: "Loading hotel...",
-      hotelInfoNotAvailable: "Hotel information not available"
+      hotelInfoNotAvailable: "Hotel information not available",
+      
+      // Pricing Configuration
+      pricingConfiguration: {
+        title: 'Pricing & Tax Configuration',
+        pricingPolicy: 'Pricing Policy: Room prices are displayed without taxes. All applicable taxes (VAT, service tax, city tax) will be calculated and added during the booking process. This ensures transparent pricing for customers while maintaining compliance with tax regulations.',
+        
+        // General Settings
+        generalSettings: {
+          title: 'General Settings',
+          description: 'Configure basic pricing policies and settings',
+          pricingStrategy: 'Pricing Strategy',
+          currencyCode: 'Currency Code',
+          fixedPricing: 'Fixed Pricing',
+          seasonalPricing: 'Seasonal Pricing (Contact Support)',
+          dynamicPricing: 'Dynamic Pricing (Contact Support)',
+          taxInclusivePricing: 'Tax Inclusive Pricing (prices shown include taxes)',
+          taxInclusivePricingDescription: 'Disabled: Taxes will be calculated and added during the booking process',
+          enableDynamicPricing: 'Enable Dynamic Pricing (adjust prices based on demand)',
+          dynamicPricingDisabled: 'Disabled: Using fixed pricing strategy only'
+        },
+        
+        // Tax Configuration
+        taxConfiguration: {
+          title: 'Tax Configuration',
+          description: 'Configure applicable tax rates for booking calculations',
+          taxAlert: 'These tax rates will be automatically applied during the booking process. Room prices displayed to customers will not include these taxes.',
+          vatRate: 'VAT Rate (%)',
+          vatRateHelper: 'Current VAT: {{rate}} (Ethiopian standard: 15%)',
+          serviceTaxRate: 'Service Tax Rate (%)',
+          serviceTaxRateHelper: 'Current service tax: {{rate}} (Ethiopian standard: 5%)',
+          cityTaxRate: 'City Tax Rate (%)',
+          cityTaxRateHelper: 'Current city tax: {{rate}} (Usually 0% in Ethiopia)'
+        },
+        
+        // Booking Policies
+        bookingPolicies: {
+          title: 'Booking Policies',
+          description: 'Set minimum stay requirements and advance booking limits',
+          minimumStayNights: 'Minimum Stay (nights)',
+          minimumAdvanceBookingHours: 'Minimum Advance Booking (hours)',
+          maximumAdvanceBookingDays: 'Maximum Advance Booking (days)'
+        },
+        
+        // Discount Configuration
+        discountConfiguration: {
+          title: 'Discount Configuration',
+          description: 'Configure early booking and loyalty discounts',
+          earlyBookingDaysThreshold: 'Early Booking Threshold (days)',
+          earlyBookingDiscountRate: 'Early Booking Discount (%)',
+          loyaltyDiscountRate: 'Loyalty Discount (%)'
+        },
+        
+        // Fee Configuration
+        feeConfiguration: {
+          title: 'Fee Configuration',
+          description: 'Configure cancellation, modification, and penalty fees',
+          cancellationFeeRate: 'Cancellation Fee (%)',
+          modificationFeeRate: 'Modification Fee (%)',
+          noShowPenaltyRate: 'No-Show Penalty (%)'
+        },
+        
+        // Refund Policy
+        refundPolicy: {
+          title: 'Refund Policy',
+          description: 'Configure refund percentages based on cancellation timing',
+          refundPolicy7PlusDays: 'Refund Rate (7+ days before) (%)',
+          refundPolicy3To7Days: 'Refund Rate (3-7 days before) (%)',
+          refundPolicy1To2Days: 'Refund Rate (1-2 days before) (%)',
+          refundPolicySameDay: 'Refund Rate (same day) (%)'
+        },
+        
+        // Actions
+        actions: {
+          saveConfiguration: 'Save Configuration',
+          refreshConfiguration: 'Refresh Configuration',
+          saving: 'Saving...',
+          loading: 'Loading...'
+        },
+        
+        // Messages
+        messages: {
+          loadingConfiguration: 'Loading pricing configuration...',
+          savingConfiguration: 'Saving configuration...',
+          configurationSaved: 'Pricing configuration saved successfully!',
+          failedToLoad: 'Failed to load pricing configuration. Please try refreshing the page.',
+          failedToSave: 'Failed to save pricing configuration',
+          taxInfo: 'These tax rates will be automatically applied during the booking process. Room prices displayed to customers will not include these taxes.'
+        }
+      },
+      
+      // Offline Booking
+      offlineBooking: {
+        title: 'Offline Guest Booking',
+        description: 'Complete the guest booking process step by step',
+        offlineMode: 'Offline Mode',
+        pendingSync: '{{count}} pending sync',
+        
+        // Steps
+        steps: {
+          guestInformation: 'Guest Information',
+          roomSelection: 'Room Selection',
+          confirmation: 'Confirmation'
+        },
+        
+        // Guest Information
+        guestInformation: {
+          title: 'Guest Information',
+          description: 'Enter guest details for the booking',
+          firstName: 'First Name',
+          lastName: 'Last Name',
+          email: 'Email Address',
+          phone: 'Phone Number',
+          required: 'This field is required'
+        },
+        
+        // Booking Details
+        bookingDetails: {
+          title: 'Booking Details',
+          checkInDate: 'Check-in Date',
+          checkOutDate: 'Check-out Date',
+          numberOfGuests: 'Number of Guests',
+          specialRequests: 'Special Requests (Optional)'
+        },
+        
+        // Room Selection
+        roomSelection: {
+          title: 'Room Selection',
+          description: 'Choose an available room for the guest',
+          roomNumber: 'Room {{number}}',
+          roomType: 'Room Type: {{type}}',
+          capacity: 'Capacity: {{capacity}} guests',
+          pricePerNight: 'Price: {{price}} per night',
+          selectRoom: 'Select Room',
+          noRoomsAvailable: 'No rooms available for selected dates',
+          loadingRooms: 'Loading available rooms...'
+        },
+        
+        // Confirmation
+        confirmation: {
+          title: 'Booking Confirmation',
+          description: 'Review and confirm the booking details',
+          bookingSummary: 'Booking Summary',
+          guestInformationTitle: 'Guest Information',
+          guestName: 'Name: {{firstName}} {{lastName}}',
+          contactInfo: 'Contact: {{email}} | {{phone}}',
+          stayDuration: 'Stay: {{checkIn}} to {{checkOut}} ({{nights}} nights)',
+          selectedRoom: 'Room: {{roomNumber}} ({{roomType}})',
+          totalCost: 'Total Cost: {{total}}',
+          roomDetailsTitle: 'Room Details',
+          roomNumber: 'Room Number: {{number}}',
+          roomType: 'Room Type: {{type}}',
+          pricePerNight: 'Price per night: {{price}}',
+          totalNights: 'Total nights: {{nights}}',
+          subtotal: 'Subtotal: {{amount}}'
+        },
+        
+        // Guest Search Dialog
+        guestSearchDialog: {
+          title: 'Search Previous Guests',
+          searchPlaceholder: 'Search by name, email, or phone',
+          searchButton: 'Search',
+          close: 'Close',
+          noGuestsFound: 'No guests found',
+          selectGuest: 'Select Guest'
+        },
+        
+        // Actions
+        actions: {
+          back: 'Back',
+          next: 'Next',
+          loading: 'Loading...',
+          createBooking: 'Create Booking',
+          creatingBooking: 'Creating Booking...',
+          confirmBooking: 'Confirm Booking',
+          backToRoomSelection: 'Back to Room Selection'
+        },
+        
+        // Validation Errors
+        validationErrors: {
+          fillGuestInfo: 'Please fill in all guest information fields',
+          selectRoom: 'Please select a room'
+        },
+        
+        // Messages
+        messages: {
+          startOver: 'Start Over',
+          bookingCreated: 'Booking created successfully!',
+          confirmationNumber: 'Confirmation Number: {{number}}',
+          willSyncWhenOnline: 'This booking will be synced when internet connection is restored.',
+          bookingFailed: 'Failed to create booking. Please try again.',
+          invalidDates: 'Check-out date must be after check-in date',
+          fillAllFields: 'Please fill in all required fields'
+        }
+      }
     },
     frontDesk: {
       title: "Front Desk Dashboard",

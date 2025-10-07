@@ -228,7 +228,217 @@ export const amTranslations = {
       noDescriptionAvailable: "ምንም መግለጫ አይገኝም",
       noStaffRoleData: "የሰራተኞች ሚና መረጃ አይገኝም",
       loadingHotel: "ሆቴል በመጫን ላይ...",
-      hotelInfoNotAvailable: "የሆቴል መረጃ አይገኝም"
+      hotelInfoNotAvailable: "የሆቴል መረጃ አይገኝም",
+      
+      // Pricing Configuration
+      pricingConfiguration: {
+        title: 'የዋጋ እና ግብር ማዋቀሪያ',
+        pricingPolicy: 'የዋጋ ፖሊሲ: የክፍል ዋጋዎች ያለግብር ይታያሉ። ሁሉም ተገቢ ግብሮች (ተ.እ.ግ፣ የአገልግሎት ግብር፣ የከተማ ግብር) በቦታ ማስያዝ ሂደት ውስጥ ይሰላሉ እና ይጨመራሉ። ይህ ለደንበኞች ግልጽ ዋጋ ሰጪነትን በማረጋገጥ ከግብር ደንቦች ጋር መስማማትን ያረጋግጣል።',
+        
+        // General Settings
+        generalSettings: {
+          title: 'አጠቃላይ ቅንብሮች',
+          description: 'መሰረታዊ የዋጋ ፖሊሲዎችን እና ቅንብሮችን ያዋቅሩ',
+          pricingStrategy: 'የዋጋ ስትራቴጂ',
+          currencyCode: 'የገንዘብ ምልክት',
+          fixedPricing: 'ቋሚ ዋጋ',
+          seasonalPricing: 'ሰራዊ ዋጋ (ድጋፍ ያግኙ)',
+          dynamicPricing: 'ተለዋዋጭ ዋጋ (ድጋፍ ያግኙ)',
+          taxInclusivePricing: 'ግብር ያካተተ ዋጋ (ዋጋዎች ግብር ያካትታሉ)',
+          taxInclusivePricingDescription: 'ተቦዝሟል: ግብሮች በቦታ ማስያዝ ሂደት ውስጥ ይሰላሉ እና ይጨመራሉ',
+          enableDynamicPricing: 'ተለዋዋጭ ዋጋን አንቃ (ዋጋዎችን በፍላጎት መሰረት አስተካክል)',
+          dynamicPricingDisabled: 'ተቦዝሟል: ቋሚ የዋጋ ስትራቴጂ ብቻ በመጠቀም ላይ'
+        },
+        
+        // Tax Configuration
+        taxConfiguration: {
+          title: 'የግብር ማዋቀሪያ',
+          description: 'ለቦታ ማስያዝ ስሌቶች ተግባራዊ የሚሆኑ የግብር መጠኖችን ያዋቅሩ',
+          taxAlert: 'እነዚህ የግብር መጠኖች በቦታ ማስያዝ ሂደት ውስጥ በአውቶማቲክ ይተገበራሉ። ለደንበኞች የሚታዩ የክፍል ዋጋዎች እነዚህን ግብሮች አያካትቱም።',
+          vatRate: 'የተ.እ.ግ መጠን (%)',
+          vatRateHelper: 'አሁን ያለው ተ.እ.ግ: {{rate}} (የኢትዮጵያ ደረጃ: 15%)',
+          serviceTaxRate: 'የአገልግሎት ግብር መጠን (%)',
+          serviceTaxRateHelper: 'አሁን ያለው የአገልግሎት ግብር: {{rate}} (የኢትዮጵያ ደረጃ: 5%)',
+          cityTaxRate: 'የከተማ ግብር መጠን (%)',
+          cityTaxRateHelper: 'አሁን ያለው የከተማ ግብር: {{rate}} (በኢትዮጵያ ውስጥ ብዙውን ጊዜ 0%)'
+        },
+        
+        // Booking Policies
+        bookingPolicies: {
+          title: 'የቦታ ማስያዝ ፖሊሲዎች',
+          description: 'ዝቅተኛ የቆይታ መስፈርቶችን እና የቅድመ ቦታ ማስያዝ ገደቦችን ያስቀምጡ',
+          minimumStayNights: 'ዝቅተኛ ቆይታ (ማታዎች)',
+          minimumAdvanceBookingHours: 'ዝቅተኛ ቅድመ ቦታ ማስያዝ (ሰዓታት)',
+          maximumAdvanceBookingDays: 'ከፍተኛ ቅድመ ቦታ ማስያዝ (ቀናት)'
+        },
+        
+        // Discount Configuration
+        discountConfiguration: {
+          title: 'የቅናሽ ማዋቀሪያ',
+          description: 'የቀደመ ቦታ ማስያዝ እና የታማኝነት ቅናሾችን ያዋቅሩ',
+          earlyBookingDaysThreshold: 'የቀደመ ቦታ ማስያዝ ደረጃ (ቀናት)',
+          earlyBookingDiscountRate: 'የቀደመ ቦታ ማስያዝ ቅናሽ (%)',
+          loyaltyDiscountRate: 'የታማኝነት ቅናሽ (%)'
+        },
+        
+        // Fee Configuration
+        feeConfiguration: {
+          title: 'የክፍያ ማዋቀሪያ',
+          description: 'የሰረዝ፣ የለውጥ እና የቅጣት ክፍያዎችን ያዋቅሩ',
+          cancellationFeeRate: 'የሰረዝ ክፍያ (%)',
+          modificationFeeRate: 'የለውጥ ክፍያ (%)',
+          noShowPenaltyRate: 'ያለመምጣት ቅጣት (%)'
+        },
+        
+        // Refund Policy
+        refundPolicy: {
+          title: 'የመመለሻ ፖሊሲ',
+          description: 'በሰረዝ ጊዜ ላይ በመመርኮዝ የመመለሻ መጠኖችን ያዋቅሩ',
+          refundPolicy7PlusDays: 'የመመለሻ መጠን (ከ7+ ቀናት በፊት) (%)',
+          refundPolicy3To7Days: 'የመመለሻ መጠን (ከ3-7 ቀናት በፊት) (%)',
+          refundPolicy1To2Days: 'የመመለሻ መጠን (ከ1-2 ቀናት በፊት) (%)',
+          refundPolicySameDay: 'የመመለሻ መጠን (በተመሳሳይ ቀን) (%)'
+        },
+        
+        // Actions
+        actions: {
+          saveConfiguration: 'ማዋቀሪያን አስቀምጥ',
+          refreshConfiguration: 'ማዋቀሪያን አድስ',
+          saving: 'በመቀመጥ ላይ...',
+          loading: 'በመጫን ላይ...'
+        },
+        
+        // Messages
+        messages: {
+          loadingConfiguration: 'የዋጋ ማዋቀሪያ በመጫን ላይ...',
+          savingConfiguration: 'ማዋቀሪያ በመቀመጥ ላይ...',
+          configurationSaved: 'የዋጋ ማዋቀሪያ በተሳካ ሁኔታ ተቀምጧል!',
+          failedToLoad: 'የዋጋ ማዋቀሪያ መጫን አልተሳካም። እባክዎ ገጹን ማደስ ይሞክሩ።',
+          failedToSave: 'የዋጋ ማዋቀሪያ ማስቀመጥ አልተሳካም',
+          taxInfo: 'እነዚህ የግብር መጠኖች በቦታ ማስያዝ ሂደት ውስጥ በአውቶማቲክ ይተገበራሉ። ለደንበኞች የሚታዩ የክፍል ዋጋዎች እነዚህን ግብሮች አያካትቱም።'
+        }
+      },
+      
+      // Offline Booking
+      offlineBooking: {
+        title: 'ከመስመር ውጭ የእንግዳ ቦታ ማስያዝ',
+        description: 'የእንግዳ ቦታ ማስያዝ ሂደትን ደረጃ በደረጃ ያጠናቁ',
+        offlineMode: 'ከመስመር ውጭ ሁኔታ',
+        pendingSync: '{{count}} በመመሳሰል ላይ',
+        
+        // Steps
+        steps: {
+          guestInformation: 'የእንግዳ መረጃ',
+          roomSelection: 'ክፍል ምርጫ',
+          confirmation: 'ማረጋገጫ'
+        },
+        
+        // Guest Information
+        guestInformation: {
+          title: 'የእንግዳ መረጃ',
+          description: 'ለቦታ ማስያዝ የእንግዳ ዝርዝሮችን ያስገቡ',
+          firstName: 'የመጀመሪያ ስም',
+          lastName: 'የመጨረሻ ስም',
+          email: 'ኢሜል አድራሻ',
+          phone: 'ስልክ ቁጥር',
+          required: 'ይህ መስክ ያስፈልጋል'
+        },
+        
+        // Booking Details
+        bookingDetails: {
+          title: 'የቦታ ማስያዝ ዝርዝሮች',
+          checkInDate: 'የመግቢያ ቀን',
+          checkOutDate: 'የመውጫ ቀን',
+          numberOfGuests: 'የእንግዶች ቁጥር',
+          specialRequests: 'ልዩ ጥያቄዎች (አማራጭ)'
+        },
+        
+        // Confirmation
+        confirmation: {
+          title: 'የቦታ ማስያዝ ማረጋገጫ',
+          description: 'የቦታ ማስያዝ ዝርዝሮችን ይመልክቱ እና ያረጋግጡ',
+          bookingSummary: 'የቦታ ማስያዝ ሰራ',
+          guestInformationTitle: 'የእንግዳ ምሪጫ',
+          guestName: 'ስም: {{firstName}} {{lastName}}',
+          contactInfo: 'የችብረት ምሪጫ: {{email}} | {{phone}}',
+          stayDuration: 'ቆይታ: {{checkIn}} እስክ {{checkOut}} ({{nights}} ማታዎች)',
+          selectedRoom: 'ክፍል: {{roomNumber}} ({{roomType}})',
+          totalCost: 'ጠባይ ውጋ: {{total}}',
+          roomDetailsTitle: 'የክፍል ዝርዝሮች',
+          roomNumber: 'የክፍል ቁጥር: {{number}}',
+          roomType: 'የክፍል አይነት: {{type}}',
+          pricePerNight: 'በማታ ዋጋ: {{price}}',
+          totalNights: 'ጠባይ ማታዎች: {{nights}}',
+          subtotal: 'አጠቃላይ ጰምሪ: {{amount}}'
+        },
+        
+        // Guest Search Dialog
+        guestSearchDialog: {
+          title: 'የበፍታ እንግዶችን መፍተሽ',
+          searchPlaceholder: 'በስም፣ ኢሜል ወይም ስልክ ተፍተሽ',
+          searchButton: 'መፍተሽ',
+          close: 'ዝጋ',
+          noGuestsFound: 'እንግዶች አልተገኙም',
+          selectGuest: 'እንግዳ ይምረጡ'
+        },
+        
+        // Actions
+        actions: {
+          back: 'ወደ ሕላ',
+          next: 'ወደ ፍርጽ',
+          loading: 'በመጫን ላይ...',
+          createBooking: 'ቦታ ማስያዝ ፍጠር',
+          creatingBooking: 'ቦታ ማስያዝ በፍጠር ላይ...',
+          confirmBooking: 'ቦታ ማስያዝ ማረጋገጫ',
+          backToRoomSelection: 'ወደ ክፍል ምርጫ መለስ'
+        },
+        
+        // Validation Errors
+        validationErrors: {
+          fillGuestInfo: 'እባክዎ ሁሉንም የእንግዳ ምሪጫ ሜዳኖችን ይሞሉ',
+          selectRoom: 'እባክዎ ክፍል ይምረጡ'
+        },
+        
+        // Messages
+        messages: {
+          startOver: 'እንደገና ይጀምሩ',
+          bookingCreated: 'ቦታ ማስያዝ በተሳካ ሁኔታ ተፍጠረ!',
+          confirmationNumber: 'የማረጋገጫ ቁጥር: {{number}}',
+          willSyncWhenOnline: 'የኢንተርነት ክብር ስይፎረ ይህ ቦታ ማስያዝ ይመሳሰል።',
+          bookingFailed: 'ቦታ ማስያዝ ፍጠር አልተሳካም። እባክዎ እንደገና ይሞክሩ።',
+          invalidDates: 'የመውጫ ቀን ከመግቢያ ቀን በሐላ ሞሆን አለበት',
+          fillAllFields: 'እባክዎ ሁሉንም አስፈላጊ ሜዳኖች ይሞሉ'
+        },
+        
+        // Room Selection\n        roomSelection: {\n          title: 'ክፍል ምርጫ',\n          description: 'ለእንግዳው የሚገኝ ክፍል ይምረጡ',\n          roomNumber: 'ክፍል {{number}}',\n          roomType: 'የክፍል አይነት: {{type}}',\n          capacity: 'አቅም: {{capacity}} እንግዶች',\n          pricePerNight: 'ዋጋ: {{price}} በማታ',\n          selectRoom: 'ክፍል ይምረጡ',\n          noRoomsAvailable: 'ለተመረጡት ቀናት ክፍሎች አይገኙም',\n          loadingRooms: 'የሚገኙ ክፍሎች በመጫን ላይ...'\n        },
+        
+        // Confirmation
+        confirmation: {
+          title: 'የቦታ ማስያዝ ማረጋገጫ',
+          description: 'የቦታ ማስያዝ ዝርዝሮችን ይገምግሙ እና ያረጋግጡ',
+          bookingSummary: 'የቦታ ማስያዝ ማጠቃለያ',
+          guestName: 'እንግዳ: {{firstName}} {{lastName}}',
+          contactInfo: 'ዕውቅና: {{email}} | {{phone}}',
+          stayDuration: 'ቆይታ: {{checkIn}} እስከ {{checkOut}} ({{nights}} ማታዎች)',
+          selectedRoom: 'ክፍል: {{roomNumber}} ({{roomType}})',
+          totalCost: 'አጠቃላይ ወጪ: {{total}}',
+          confirmBooking: 'ቦታ ማስያዝን አረጋግጥ',
+          backToRoomSelection: 'ወደ ክፍል ምርጫ ተመለስ'
+        },
+        
+        // Actions
+        nextStep: 'ቀጣይ ደረጃ',
+        previousStep: 'ቀደም ያለ ደረጃ',
+        startOver: 'እንደገና ጀምር',
+        
+        // Messages
+        bookingCreated: 'ቦታ ማስያዝ በተሳካ ሁኔታ ተፈጠረ!',
+        confirmationNumber: 'የማረጋገጫ ቁጥር: {{number}}',
+        willSyncWhenOnline: 'ይህ ቦታ ማስያዝ የበይነመረብ ግንኙነት ሲመለስ ይመሳሰላል።',
+        bookingFailed: 'ቦታ ማስያዝ መፍጠር አልተሳካም። እባክዎ እንደገና ይሞክሩ።',
+        invalidDates: 'የመውጫ ቀን ከመግቢያ ቀን በኋላ መሆን አለበት',
+        fillAllFields: 'እባክዎ ሁሉንም የሚያስፈልጉ መስኮች ይሙሉ'
+      }
     }
   },
 

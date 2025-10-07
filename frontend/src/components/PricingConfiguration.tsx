@@ -374,7 +374,7 @@ const PricingConfigurationComponent: React.FC = () => {
             }
           }}
         >
-          {saving ? 'Saving...' : 'Save Configuration'}
+          {saving ? t('dashboard.hotelAdmin.pricingConfiguration.actions.saving') : t('dashboard.hotelAdmin.pricingConfiguration.actions.saveConfiguration')}
         </Button>
       </Box>
 
