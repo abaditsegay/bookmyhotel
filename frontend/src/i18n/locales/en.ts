@@ -344,10 +344,16 @@ export const enTranslations = {
         
         // Actions
         actions: {
-          saveConfiguration: 'Save Configuration',
-          refreshConfiguration: 'Refresh Configuration',
-          saving: 'Saving...',
-          loading: 'Loading...'
+          saveChanges: 'Save Changes',
+          reset: 'Reset to Default',
+          exportConfig: 'Export Configuration',
+          importConfig: 'Import Configuration',
+          refreshConfiguration: 'Refresh Configuration'
+        },
+        
+        refundPolicyNote: {
+          title: 'Note:',
+          description: 'These refund policies will replace the existing hardcoded cancellation rules. Make sure to set policies that align with your business requirements and local regulations.'
         },
         
         // Messages

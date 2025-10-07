@@ -327,7 +327,7 @@ const PricingConfigurationComponent: React.FC = () => {
     }}>
       {/* Action Buttons */}
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mb: 3 }}>
-        <Tooltip title="Refresh Configuration">
+        <Tooltip title={t('dashboard.hotelAdmin.pricingConfiguration.actions.refreshConfiguration')}>
           <IconButton 
             onClick={fetchConfiguration} 
             disabled={loading}
@@ -1257,8 +1257,7 @@ const PricingConfigurationComponent: React.FC = () => {
                 }}
               >
                 <Typography variant="body2">
-                  <strong>Note:</strong> These refund policies will replace the existing hardcoded cancellation rules. 
-                  Make sure to set policies that align with your business requirements and local regulations.
+                  <strong>{t('dashboard.hotelAdmin.pricingConfiguration.refundPolicyNote.title')}</strong> {t('dashboard.hotelAdmin.pricingConfiguration.refundPolicyNote.description')}
                 </Typography>
               </Alert>
             </CardContent>

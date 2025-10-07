@@ -308,6 +308,12 @@ export const amTranslations = {
           loading: 'በመጫን ላይ...'
         },
         
+        // Refund Policy Note
+        refundPolicyNote: {
+          title: 'ማስታወሻ:',
+          description: 'እነዚህ የመመለሻ ፖሊሲዎች የነበሩትን ግትር የስረዛ ደንቦች ይተካላሉ። ከእርስዎ የንግድ መስፈርቶች እና የአካባቢ ደንቦች ጋር የሚጣጣሙ ፖሊሲዎችን ማስተካከል እንዲያረጋግጡ።'
+        },
+        
         // Messages
         messages: {
           loadingConfiguration: 'የዋጋ ማዋቀሪያ በመጫን ላይ...',
