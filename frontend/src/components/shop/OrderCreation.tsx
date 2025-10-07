@@ -105,12 +105,12 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
         setProducts(data.content.filter(p => p.isActive)); // Only filter by isActive, keep all stock levels
         setError(null);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load products');
+        setError(err instanceof Error ? err.message : t('shop.orders.creation.failedToLoadProducts'));
       }
     };
     
     loadData();
-  }, [hotelId, token, user?.tenantId]);
+  }, [hotelId, token, user?.tenantId, t]);
 
   const addProductToOrder = (product: Product) => {
     // Prevent adding out-of-stock products
@@ -154,7 +154,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
 
   const handleCreateOrder = async () => {
     if (orderItems.length === 0) {
-      setError('Cart is empty');
+      setError(t('shop.orders.creation.cartIsEmpty'));
       return;
     }
     
@@ -228,7 +228,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
       setPaymentReference(null);
       
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create order');
+      setError(err instanceof Error ? err.message : t('shop.orders.creation.failedToCreateOrder'));
     } finally {
       setLoading(false);
     }
@@ -418,7 +418,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                 <Grid item xs={12} md={8}>
                   <TextField
                     fullWidth
-                    label="Search Products"
+                    label={t('shop.orders.creation.searchProducts')}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     InputProps={{
@@ -432,13 +432,13 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                 </Grid>
                 <Grid item xs={12} md={4}>
                   <FormControl fullWidth>
-                    <InputLabel>Category</InputLabel>
+                    <InputLabel>{t('shop.orders.creation.category')}</InputLabel>
                     <Select
                       value={categoryFilter}
-                      label="Category"
+                      label={t('shop.orders.creation.category')}
                       onChange={(e) => setCategoryFilter(e.target.value)}
                     >
-                      <MenuItem value="ALL">All Categories</MenuItem>
+                      <MenuItem value="ALL">{t('shop.orders.creation.allCategories')}</MenuItem>
                       {Object.values(ProductCategory).map((category) => (
                         <MenuItem key={category} value={category}>
                           {category.replace('_', ' ')}
@@ -452,7 +452,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
               {/* Stock Status Legend */}
               <Box sx={{ mb: 2, display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
                 <Typography variant="caption" color="text.secondary">
-                  Stock Status:
+                  {t('shop.orders.creation.stockStatus')}
                 </Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                   <Box 
@@ -463,7 +463,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                       borderRadius: '2px' 
                     }} 
                   />
-                  <Typography variant="caption">In Stock</Typography>
+                  <Typography variant="caption">{t('shop.orders.creation.inStock')}</Typography>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                   <Box 
@@ -474,7 +474,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                       borderRadius: '2px' 
                     }} 
                   />
-                  <Typography variant="caption">Low Stock</Typography>
+                  <Typography variant="caption">{t('shop.orders.creation.lowStock')}</Typography>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                   <Box 
@@ -485,7 +485,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                       borderRadius: '2px' 
                     }} 
                   />
-                  <Typography variant="caption">Out of Stock</Typography>
+                  <Typography variant="caption">{t('shop.orders.creation.outOfStock')}</Typography>
                 </Box>
               </Box>
 
@@ -611,7 +611,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                                 fontWeight: 'medium'
                               }}
                             >
-                              Stock: {product.stockQuantity}
+                              {t('shop.orders.creation.stock')} {product.stockQuantity}
                             </Typography>
                             {stockStatus === 'LOW_STOCK' && (
                               <Typography 
@@ -621,7 +621,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                                   fontSize: '0.65rem'
                                 }}
                               >
-                                Min: {product.minimumStockLevel}
+                                {t('shop.orders.creation.min')} {product.minimumStockLevel}
                               </Typography>
                             )}
                           </Box>
@@ -636,7 +636,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                                 fontWeight: 'medium'
                               }}
                             >
-                              Selected: {selectedQuantity} item{selectedQuantity !== 1 ? 's' : ''}
+                              {t('shop.orders.creation.selected')} {selectedQuantity} {selectedQuantity !== 1 ? t('shop.orders.creation.itemPlural') : t('shop.orders.creation.itemSingular')}
                             </Typography>
                           )}
 
@@ -651,7 +651,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                                 fontStyle: 'italic'
                               }}
                             >
-                              Currently unavailable
+                              {t('shop.orders.creation.unavailable')}
                             </Typography>
                           )}
                         </CardContent>
@@ -680,17 +680,17 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
             <CardContent>
               <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <ReceiptIcon color="primary" />
-                Order Summary
+                {t('shop.orders.creation.orderSummary')}
               </Typography>
 
               {/* Purchase Type */}
               <Box sx={{ mb: 3 }}>
-                <Typography variant="subtitle2" gutterBottom>Purchase Type</Typography>
+                <Typography variant="subtitle2" gutterBottom>{t('shop.orders.creation.purchaseType')}</Typography>
                 <FormControl fullWidth sx={{ mb: 2 }}>
-                  <InputLabel>Purchase Type</InputLabel>
+                  <InputLabel>{t('shop.orders.creation.purchaseType')}</InputLabel>
                   <Select
                     value={purchaseType}
-                    label="Purchase Type"
+                    label={t('shop.orders.creation.purchaseType')}
                     onChange={(e) => {
                       const newPurchaseType = e.target.value as 'ROOM_CHARGE' | 'ANONYMOUS';
                       setPurchaseType(newPurchaseType);
@@ -706,8 +706,8 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                       }
                     }}
                   >
-                    <MenuItem value="ANONYMOUS">Anonymous Sale (Cash/Card)</MenuItem>
-                    <MenuItem value="ROOM_CHARGE">Charge to Room</MenuItem>
+                    <MenuItem value="ANONYMOUS">{t('shop.orders.creation.anonymousSale')}</MenuItem>
+                    <MenuItem value="ROOM_CHARGE">{t('shop.orders.creation.roomCharge')}</MenuItem>
                   </Select>
                 </FormControl>
 
@@ -715,11 +715,11 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                 {purchaseType === 'ROOM_CHARGE' && (
                   <TextField
                     fullWidth
-                    label="Room Number"
+                    label={t('shop.orders.creation.roomNumber')}
                     value={roomNumber}
                     onChange={(e) => setRoomNumber(e.target.value)}
                     required
-                    placeholder="Enter room number"
+                    placeholder={t('shop.orders.creation.roomNumberPlaceholder')}
                     sx={{ mb: 2 }}
                   />
                 )}
@@ -727,7 +727,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
 
               {/* Delivery Options */}
               <Box sx={{ mb: 3 }}>
-                <Typography variant="subtitle2" gutterBottom>Delivery Options</Typography>
+                <Typography variant="subtitle2" gutterBottom>{t('shop.orders.creation.deliveryOptions')}</Typography>
                 <FormControlLabel
                   control={
                     <Switch
@@ -735,16 +735,16 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                       onChange={(e) => setIsDelivery(e.target.checked)}
                     />
                   }
-                  label="Delivery Required"
+                  label={t('shop.orders.creation.deliveryRequired')}
                 />
 
                 {isDelivery && (
                   <Box sx={{ mt: 2 }}>
                     <FormControl fullWidth sx={{ mb: 2 }}>
-                      <InputLabel>Delivery Type</InputLabel>
+                      <InputLabel>{t('shop.orders.creation.deliveryType')}</InputLabel>
                       <Select
                         value={deliveryType}
-                        label="Delivery Type"
+                        label={t('shop.orders.creation.deliveryType')}
                         onChange={(e) => setDeliveryType(e.target.value as DeliveryType)}
                       >
                         {Object.values(DeliveryType).map((type) => (
@@ -756,7 +756,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                     </FormControl>
                     <TextField
                       fullWidth
-                      label="Delivery Address"
+                      label={t('shop.orders.creation.deliveryAddress')}
                       value={deliveryAddress}
                       onChange={(e) => setDeliveryAddress(e.target.value)}
                       multiline
@@ -768,20 +768,20 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
 
               {/* Order Items */}
               <Box sx={{ mb: 3 }}>
-                <Typography variant="subtitle2" gutterBottom>Order Items</Typography>
+                <Typography variant="subtitle2" gutterBottom>{t('shop.orders.creation.orderItems')}</Typography>
                 {orderItems.length === 0 ? (
                   <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 2 }}>
-                    No items selected
+                    {t('shop.orders.creation.noItems')}
                   </Typography>
                 ) : (
                   <TableContainer>
                     <Table size="small">
                       <TableHead>
                         <TableRow>
-                          <TableCell>Item</TableCell>
-                          <TableCell align="center">Qty</TableCell>
-                          <TableCell align="right">Price</TableCell>
-                          <TableCell align="center">Action</TableCell>
+                          <TableCell>{t('shop.orders.creation.item')}</TableCell>
+                          <TableCell align="center">{t('shop.orders.creation.qty')}</TableCell>
+                          <TableCell align="right">{t('shop.orders.creation.price')}</TableCell>
+                          <TableCell align="center">{t('shop.orders.creation.action')}</TableCell>
                         </TableRow>
                       </TableHead>
                       <TableBody>
@@ -837,20 +837,18 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                 <Box sx={{ mb: 2, p: 2, border: 1, borderColor: 'success.main', borderRadius: 1, bgcolor: 'success.light' }}>
                   <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'success.dark' }}>
                     <CheckIcon fontSize="small" />
-                    Payment completed via {ShopOrderUtils.formatPaymentMethod(completedPaymentMethod)}
+                    {t('shop.orders.creation.paymentCompleted', { method: ShopOrderUtils.formatPaymentMethod(completedPaymentMethod) })}
                     {paymentReference && (
                       <Typography component="span" variant="caption" sx={{ ml: 1 }}>
-                        (Ref: {paymentReference})
+                        ({t('shop.orders.creation.paymentReference', { reference: paymentReference })})
                       </Typography>
                     )}
                   </Typography>
                 </Box>
-              )}
-
-              {/* Total */}
+              )}              {/* Total */}
               <Divider sx={{ mb: 2 }} />
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                <Typography variant="h6">Total:</Typography>
+                <Typography variant="h6">{t('shop.orders.creation.total')}</Typography>
                 <Typography variant="h6" color="primary">
                   ETB {calculateTotal()?.toFixed(0)}
                 </Typography>
@@ -868,10 +866,10 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                 disabled={loading || orderItems.length === 0}
               >
                 {loading 
-                  ? 'Processing...' 
+                  ? t('shop.orders.creation.processing')
                   : purchaseType === 'ROOM_CHARGE' 
-                    ? `Charge to Room ${roomNumber || ''}` 
-                    : 'Create Order'
+                    ? `${t('shop.orders.creation.chargeToRoom')} ${roomNumber || ''}` 
+                    : t('shop.orders.creation.createOrder')
                 }
               </Button>
             </CardContent>

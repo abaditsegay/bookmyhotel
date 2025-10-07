@@ -1386,6 +1386,62 @@ export const amTranslations = {
         updated: "ትዕዛዝ በተሳካ ሁኔታ ተዘምኗል",
         cancelled: "ትዕዛዝ በተሳካ ሁኔታ ተሰርዟል",
         loadError: "ትዕዛዞችን መሸከም አልተሳካም"
+      },
+      creation: {
+        orderSummary: "የትዕዛዝ ማጠቃለያ",
+        purchaseType: "የግዢ አይነት",
+        deliveryOptions: "የመላኪያ አማራጮች",
+        deliveryRequired: "መላኪያ ያስፈልጋል",
+        orderItems: "የትዕዛዝ እቃዎች",
+        noItems: "ምንም እቃዎች አልተመረጡም",
+        total: "ጠቅላላ:",
+        createOrder: "ትዕዛዝ ፍጠር",
+        processing: "በሂደት ላይ...",
+        chargeToRoom: "ለክፍል ክፍያ",
+        
+        // Purchase types
+        anonymousSale: "የማንነት ሽያጭ (ጥሬ ገንዘብ/ካርድ)",
+        roomCharge: "ለክፍል ክፍያ",
+        
+        // Table headers
+        item: "እቃ",
+        qty: "ብዛት",
+        price: "ዋጋ",
+        action: "ድርጊት",
+        
+        // Form fields
+        roomNumber: "የክፍል ቁጥር",
+        roomNumberPlaceholder: "የክፍል ቁጥር አስገባ",
+        deliveryType: "የመላኪያ አይነት",
+        deliveryAddress: "የመላኪያ አድራሻ",
+        
+        // Payment status
+        paymentCompleted: "ክፍያ በ{{method}} ተጠናቅቋል",
+        paymentReference: "ማመሳከሪያ: {{reference}}",
+        
+        // Filters and search
+        searchProducts: "ምርቶችን ፈልግ",
+        category: "ምድብ",
+        allCategories: "ሁሉም ምድቦች",
+        
+        // Stock status legend
+        stockStatus: "የእቃ ሁኔታ:",
+        inStock: "በመጋዘን ውስጥ",
+        lowStock: "ዝቅተኛ መጋዘን",
+        outOfStock: "ከመጋዘን ወጥቷል",
+        
+        // Product details
+        stock: "መጋዘን:",
+        min: "ዝቅተኛ:",
+        selected: "የተመረጠ:",
+        itemSingular: "እቃ",
+        itemPlural: "እቃዎች",
+        unavailable: "አሁን አይገኝም",
+        
+        // Error messages
+        cartIsEmpty: "ጋሪ ባዶ ነው",
+        failedToLoadProducts: "ምርቶችን መሸከም አልተሳካም",
+        failedToCreateOrder: "ትዕዛዝ መፍጠር አልተሳካም"
       }
     },
     payment: {

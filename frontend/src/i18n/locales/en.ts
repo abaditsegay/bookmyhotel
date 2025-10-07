@@ -1508,6 +1508,62 @@ export const enTranslations = {
         updated: "Order updated successfully",
         cancelled: "Order cancelled successfully",
         loadError: "Failed to load orders"
+      },
+      creation: {
+        orderSummary: "Order Summary",
+        purchaseType: "Purchase Type",
+        deliveryOptions: "Delivery Options",
+        deliveryRequired: "Delivery Required",
+        orderItems: "Order Items",
+        noItems: "No items selected",
+        total: "Total:",
+        createOrder: "Create Order",
+        processing: "Processing...",
+        chargeToRoom: "Charge to Room",
+        
+        // Purchase types
+        anonymousSale: "Anonymous Sale (Cash/Card)",
+        roomCharge: "Charge to Room",
+        
+        // Table headers
+        item: "Item",
+        qty: "Qty", 
+        price: "Price",
+        action: "Action",
+        
+        // Form fields
+        roomNumber: "Room Number",
+        roomNumberPlaceholder: "Enter room number",
+        deliveryType: "Delivery Type",
+        deliveryAddress: "Delivery Address",
+        
+        // Payment status
+        paymentCompleted: "Payment completed via {{method}}",
+        paymentReference: "Ref: {{reference}}",
+        
+        // Filters and search
+        searchProducts: "Search Products",
+        category: "Category", 
+        allCategories: "All Categories",
+        
+        // Stock status legend
+        stockStatus: "Stock Status:",
+        inStock: "In Stock",
+        lowStock: "Low Stock", 
+        outOfStock: "Out of Stock",
+        
+        // Product details
+        stock: "Stock:",
+        min: "Min:",
+        selected: "Selected:",
+        itemSingular: "item",
+        itemPlural: "items",
+        unavailable: "Currently unavailable",
+        
+        // Error messages
+        cartIsEmpty: "Cart is empty",
+        failedToLoadProducts: "Failed to load products",
+        failedToCreateOrder: "Failed to create order"
       }
     },
     payment: {
