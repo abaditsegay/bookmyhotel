@@ -23,7 +23,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { frontDeskApiService, FrontDeskStats } from '../../services/frontDeskApi';
 import BookingManagementTable from '../../components/booking/BookingManagementTable';
 import WalkInBookingModal from '../../components/booking/WalkInBookingModal';
-import FrontDeskRoomManagement from '../../components/frontdesk/FrontDeskRoomManagement';
+import UnifiedRoomManagement from '../../components/common/UnifiedRoomManagement';
 import OfflineWalkInBooking from '../../components/OfflineWalkInBooking';
 import { roomCacheService } from '../../services/RoomCacheService';
 import { COLORS } from '../../theme/themeColors';
@@ -349,8 +349,9 @@ const FrontDeskDashboard: React.FC = () => {
 
       {/* Room Management Tab */}
       <TabPanel value={activeTab} index={1}>
-        <FrontDeskRoomManagement
-          onRoomUpdate={(room) => {
+        <UnifiedRoomManagement
+          mode="front-desk"
+          onRoomUpdate={(room: any) => {
             console.log('Room updated:', room);
             // Refresh stats when room is updated
             loadStats();

@@ -583,6 +583,51 @@ export const amTranslations = {
         fillAllFields: 'እባክዎ ሁሉንም የሚያስፈልጉ መስኮች ይሙሉ',
         creatingBooking: 'የእንግዳ ቦታ ማስያዝ በመፍጠር ላይ...'
       }
+    },
+
+    // Room Management
+    roomManagement: {
+      tabs: {
+        roomList: "ክፍሎች ዝርዝር",
+        pricing: "የክፍል አይነት ዋጋ",
+        bulkUpload: "በጅምላ መስቀል"
+      },
+      actions: {
+        refresh: "አደስ",
+        addRoom: "ክፍል ጨምር",
+        viewDetails: "ዝርዝሮች ተመልከት",
+        editStatus: "ሁኔታ ቀይር"
+      },
+      tableHeaders: {
+        roomNumber: "የክፍል ቁጥር",
+        type: "አይነት",
+        status: "ሁኔታ",
+        currentGuest: "አሁን ያለ እንግዳ",
+        capacity: "አቅም",
+        price: "ዋጋ/ሌሊት",
+        available: "ይገኛል",
+        actions: "ተግባራት"
+      },
+      searchRooms: "ክፍሎችን ፈልግ...",
+      statusFilter: "የሁኔታ ማጣሪያ",
+      allStatuses: "ሁሉም ሁኔታዎች",
+      guestPresent: "እንግዳ አለ",
+      roomStatuses: {
+        available: "ይገኛል",
+        occupied: "ተይዞ",
+        outOfOrder: "ከስራ ወጪ",
+        maintenance: "ጥገና",
+        cleaning: "ንፅህና",
+        dirty: "የቆሸሸ"
+      },
+      editRoom: {
+        title: "ክፍል ቀይር",
+        roomNumber: "የክፍል ቁጥር",
+        status: "ሁኔታ",
+        available: "ይገኛል",
+        cancel: "ሰርዝ",
+        save: "አስቀምጥ"
+      }
     }
   },
 

@@ -549,6 +549,51 @@ export const enTranslations = {
           fillAllFields: 'Please fill in all required fields',
           creatingBooking: 'Creating walk-in booking...'
         }
+      },
+
+      // Room Management
+      roomManagement: {
+        tabs: {
+          roomList: "Room List",
+          pricing: "Room Type Pricing",
+          bulkUpload: "Bulk Upload"
+        },
+        actions: {
+          refresh: "Refresh",
+          addRoom: "Add Room",
+          viewDetails: "View Details",
+          editStatus: "Edit Status"
+        },
+        tableHeaders: {
+          roomNumber: "Room Number",
+          type: "Type",
+          status: "Status",
+          currentGuest: "Current Guest",
+          capacity: "Capacity",
+          price: "Price/Night",
+          available: "Available",
+          actions: "Actions"
+        },
+        searchRooms: "Search rooms...",
+        statusFilter: "Status Filter",
+        allStatuses: "All Statuses",
+        guestPresent: "Guest Present",
+        roomStatuses: {
+          available: "Available",
+          occupied: "Occupied",
+          outOfOrder: "Out of Order",
+          maintenance: "Maintenance",
+          cleaning: "Cleaning",
+          dirty: "Dirty"
+        },
+        editRoom: {
+          title: "Edit Room",
+          roomNumber: "Room Number",
+          status: "Status",
+          available: "Available",
+          cancel: "Cancel",
+          save: "Save"
+        }
       }
     },
     frontDesk: {

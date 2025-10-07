@@ -24,7 +24,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { hotelAdminApi, BookingStats, HotelStatistics } from '../../services/hotelAdminApi';
 import { Hotel } from '../../types/hotel';
-import RoomManagement from './RoomManagement';
+import UnifiedRoomManagement from '../../components/common/UnifiedRoomManagement';
 import StaffManagement from './StaffManagement';
 import StaffScheduleManagement from '../../components/StaffScheduleManagement';
 import HotelEditDialog from '../../components/hotel/HotelEditDialog';
@@ -954,7 +954,10 @@ const HotelAdminDashboard: React.FC = () => {
 
         <TabPanel value={activeTab} index={2}>
           {/* Room Management Tab */}
-          <RoomManagement onNavigateToRoom={handleRoomNavigation} />
+          <UnifiedRoomManagement 
+            mode="hotel-admin"
+            onNavigateToRoom={handleRoomNavigation} 
+          />
         </TabPanel>
 
         <TabPanel value={activeTab} index={3}>
