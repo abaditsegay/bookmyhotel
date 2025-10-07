@@ -177,7 +177,45 @@ export const amTranslations = {
         monthlyAverage: 'ወራዊ አማካይ',
         bookingAnalytics: 'የቦታ ማስያዝ ትንታኔዎች',
         comprehensiveBookingMetrics: 'የሁሉን አቀፍ የቦታ ማስያዝ መለኪያዎች',
-        totalBookings: 'አጠቃላይ ቦታ ማስያዝ'
+        totalBookings: 'አጠቃላይ ቦታ ማስያዝ',
+        
+        // Distribution and Analysis
+        roomTypeDistribution: 'የክፍል አይነት ስርጭት',
+        upcomingActivity: 'መጪ እንቅስቃሴዎች',
+        upcomingCheckInsWeek: 'መጪ ገቢዎች (ቀጣይ 7 ቀናት)',
+        upcomingCheckOutsWeek: 'መጪ መውጫዎች (ቀጣይ 7 ቀናት)',
+        dailyOperationsSummary: 'የዕለት ተዕለት ስራዎች ማጠቃለያ',
+        todaysCheckIns: 'የዛሬ ገቢዎች',
+        todaysCheckOuts: 'የዛሬ መውጫዎች',
+        weeklyActivityTrends: 'የሳምንት እንቅስቃሴ አዝማሚያዎች',
+        checkInsNext7Days: 'ገቢዎች (ቀጣይ 7 ቀናት)',
+        checkOutsNext7Days: 'መውጫዎች (ቀጣይ 7 ቀናት)',
+        
+        // Quick Actions
+        quickActionsNavigation: 'ፈጣን እርምጃዎች እና አሰሳ',
+        viewAllBookings: 'ሁሉንም ቦታ ማስያዝ ተመልከት',
+        manageRooms: 'ክፍሎችን አስተዳድር',
+        manageStaff: 'ሰራተኞችን አስተዳድር',
+        staffSchedules: 'የሰራተኞች መርሐ ግብሮች',
+        
+        // Units and counts
+        roomsCount: '{{count}} ክፍሎች',
+        staffCount: '{{count}} ሰራተኞች',
+        guestsCount: '{{count}} እንግዶች',
+        expectedCount: '{{count}} የሚጠበቁ',
+        
+        // Revenue and financial
+        yearRevenue: 'የዓመት ገቢ',
+        yearToDateRevenue: 'የዓመት-እስከ-ዛሬ ገቢ',
+        
+        // Activity summaries
+        thisMonthBookings: 'በዚህ ወር: {{count}} ቦታ ማስያዝ',
+        bookingsThisMonth: 'በዚህ ወር ቦታ ማስያዝ',
+        checkInsToday: 'የዛሬ ገቢዎች: {{checkIns}} • መውጫዎች: {{checkOuts}}',
+        totalStaffCount: 'አጠቃላይ ሰራተኞች: {{count}}',
+        thisMonth: 'በዚህ ወር: {{count}}',
+        pendingCheckIns: 'በመጠባበቅ ላይ ያሉ ገቢዎች: {{count}}',
+        thisMonthShort: 'በዚህ ወር: {{count}}'
       },
       
       // Success Messages

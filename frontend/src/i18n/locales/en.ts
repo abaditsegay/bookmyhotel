@@ -219,7 +219,45 @@ export const enTranslations = {
         monthlyAverage: 'Monthly Average',
         bookingAnalytics: 'Booking Analytics',
         comprehensiveBookingMetrics: 'Comprehensive booking metrics',
-        totalBookings: 'Total bookings'
+        totalBookings: 'Total bookings',
+        
+        // Distribution and Analysis
+        roomTypeDistribution: 'Room Type Distribution',
+        upcomingActivity: 'Upcoming Activity',
+        upcomingCheckInsWeek: 'Upcoming Check-ins (Next 7 days)',
+        upcomingCheckOutsWeek: 'Upcoming Check-outs (Next 7 days)',
+        dailyOperationsSummary: 'Daily Operations Summary',
+        todaysCheckIns: "Today's Check-ins",
+        todaysCheckOuts: "Today's Check-outs",
+        weeklyActivityTrends: 'Weekly Activity Trends',
+        checkInsNext7Days: 'Check-ins (Next 7 days)',
+        checkOutsNext7Days: 'Check-outs (Next 7 days)',
+        
+        // Quick Actions
+        quickActionsNavigation: 'Quick Actions & Navigation',
+        viewAllBookings: 'View All Bookings',
+        manageRooms: 'Manage Rooms',
+        manageStaff: 'Manage Staff',
+        staffSchedules: 'Staff Schedules',
+        
+        // Units and counts
+        roomsCount: '{{count}} rooms',
+        staffCount: '{{count}} staff',
+        guestsCount: '{{count}} guests',
+        expectedCount: '{{count}} expected',
+        
+        // Revenue and financial
+        yearRevenue: 'Year Revenue',
+        yearToDateRevenue: 'Year-to-Date Revenue',
+        
+        // Activity summaries
+        thisMonthBookings: 'This Month: {{count}} bookings',
+        bookingsThisMonth: 'Bookings this month',
+        checkInsToday: 'Check-ins today: {{checkIns}} • Check-outs: {{checkOuts}}',
+        totalStaffCount: 'Total Staff: {{count}}',
+        thisMonth: 'This Month: {{count}}',
+        pendingCheckIns: 'Pending Check-ins: {{count}}',
+        thisMonthShort: 'This month: {{count}}'
       },
       
       // Success Messages

@@ -1057,10 +1057,10 @@ const HotelAdminDashboard: React.FC = () => {
                           ${reportsData.bookingStats?.currentYearRevenue?.toLocaleString() || '0'}
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                          Year Revenue
+                          {t('dashboard.hotelAdmin.reports.yearRevenue')}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
-                          This Month: {reportsData.bookingStats?.thisMonthBookings || 0} bookings
+                          {t('dashboard.hotelAdmin.reports.thisMonthBookings', { count: reportsData.bookingStats?.thisMonthBookings || 0 })}
                         </Typography>
                       </CardContent>
                     </Card>
@@ -1076,10 +1076,13 @@ const HotelAdminDashboard: React.FC = () => {
                           {reportsData.bookingStats?.totalBookings || 0}
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                          Total Bookings
+                          {t('dashboard.hotelAdmin.reports.totalBookings')}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
-                          Check-ins today: {reportsData.bookingStats?.upcomingCheckIns || 0} • Check-outs: {reportsData.bookingStats?.upcomingCheckOuts || 0}
+                          {t('dashboard.hotelAdmin.reports.checkInsToday', { 
+                            checkIns: reportsData.bookingStats?.upcomingCheckIns || 0, 
+                            checkOuts: reportsData.bookingStats?.upcomingCheckOuts || 0 
+                          })}
                         </Typography>
                       </CardContent>
                     </Card>
@@ -1098,7 +1101,7 @@ const HotelAdminDashboard: React.FC = () => {
                           {t('dashboard.hotelAdmin.metrics.activeStaff')}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
-                          Total Staff: {reportsData.hotelStats?.totalStaff || 0}
+                          {t('dashboard.hotelAdmin.reports.totalStaffCount', { count: reportsData.hotelStats?.totalStaff || 0 })}
                         </Typography>
                       </CardContent>
                     </Card>
@@ -1272,7 +1275,7 @@ const HotelAdminDashboard: React.FC = () => {
                             {reportsData.bookingStats?.thisMonthBookings || 0}
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
-                            Bookings this month
+                            {t('dashboard.hotelAdmin.reports.bookingsThisMonth')}
                           </Typography>
                         </Box>
                         <Box sx={{ mb: 1 }}>
@@ -1296,7 +1299,7 @@ const HotelAdminDashboard: React.FC = () => {
                     }}>
                       <CardContent>
                         <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: theme.palette.primary.main }}>
-                          Year-to-Date Revenue
+                          {t('dashboard.hotelAdmin.reports.yearToDateRevenue')}
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                           {t('dashboard.hotelAdmin.reports.totalRevenue')}
@@ -1340,13 +1343,13 @@ const HotelAdminDashboard: React.FC = () => {
                         </Box>
                         <Box>
                           <Typography variant="body2" sx={{ fontWeight: 'medium', mb: 0.5 }}>
-                            This Month: {reportsData.bookingStats?.thisMonthBookings || 0}
+                            {t('dashboard.hotelAdmin.reports.thisMonth', { count: reportsData.bookingStats?.thisMonthBookings || 0 })}
                           </Typography>
                           <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
-                            Pending Check-ins: {reportsData.bookingStats?.upcomingCheckIns || 0}
+                            {t('dashboard.hotelAdmin.reports.pendingCheckIns', { count: reportsData.bookingStats?.upcomingCheckIns || 0 })}
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
-                            This month: {reportsData.bookingStats?.thisMonthBookings || 0}
+                            {t('dashboard.hotelAdmin.reports.thisMonthShort', { count: reportsData.bookingStats?.thisMonthBookings || 0 })}
                           </Typography>
                         </Box>
                       </CardContent>
@@ -1363,7 +1366,7 @@ const HotelAdminDashboard: React.FC = () => {
                   }}>
                     <CardContent>
                       <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3, color: theme.palette.primary.main }}>
-                        Booking Status Overview
+                        {t('dashboard.hotelAdmin.reports.bookingStatusOverview')}
                       </Typography>
                       <Grid container spacing={2}>
                         {Object.entries(reportsData.bookingStats.statusBreakdown).map(([status, count]) => (
@@ -1405,13 +1408,13 @@ const HotelAdminDashboard: React.FC = () => {
                       }}>
                         <CardContent>
                           <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3, color: theme.palette.primary.main }}>
-                            Room Type Distribution
+                            {t('dashboard.hotelAdmin.reports.roomTypeDistribution')}
                           </Typography>
                           {Object.entries(reportsData.hotelStats.roomsByType).map(([roomType, count]) => (
                             <Box key={roomType} sx={{ mb: 2 }}>
                               <Typography variant="body2" sx={{ display: 'flex', justifyContent: 'space-between' }}>
                                 <span>{roomType.replace('_', ' ')}</span>
-                                <span><strong>{count} rooms</strong></span>
+                                <span><strong>{t('dashboard.hotelAdmin.reports.roomsCount', { count })}</strong></span>
                               </Typography>
                               <Box sx={{ width: '100%', bgcolor: theme.palette.action.hover, borderRadius: 1, mt: 0.5 }}>
                                 <Box 
@@ -1438,14 +1441,14 @@ const HotelAdminDashboard: React.FC = () => {
                       }}>
                         <CardContent>
                           <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3, color: theme.palette.primary.main }}>
-                            Staff by Role
+                            {t('dashboard.hotelAdmin.reports.staffByRole')}
                           </Typography>
                           {reportsData.hotelStats?.staffByRole && Object.keys(reportsData.hotelStats.staffByRole).length > 0 ? (
                             Object.entries(reportsData.hotelStats.staffByRole).map(([role, count]) => (
                               <Box key={role} sx={{ mb: 2 }}>
                                 <Typography variant="body2" sx={{ display: 'flex', justifyContent: 'space-between' }}>
                                   <span>{role.replace('_', ' ')}</span>
-                                  <span><strong>{count} staff</strong></span>
+                                  <span><strong>{t('dashboard.hotelAdmin.reports.staffCount', { count })}</strong></span>
                                 </Typography>
                                 <Box sx={{ width: '100%', bgcolor: theme.palette.action.hover, borderRadius: 1, mt: 0.5 }}>
                                   <Box 
@@ -1481,18 +1484,18 @@ const HotelAdminDashboard: React.FC = () => {
                     }}>
                       <CardContent>
                         <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3, color: theme.palette.primary.main }}>
-                          Upcoming Activity
+                          {t('dashboard.hotelAdmin.reports.upcomingActivity')}
                         </Typography>
                         <Box sx={{ mb: 2 }}>
-                          <Typography variant="body2" color="text.secondary">Upcoming Check-ins (Next 7 days)</Typography>
+                          <Typography variant="body2" color="text.secondary">{t('dashboard.hotelAdmin.reports.upcomingCheckInsWeek')}</Typography>
                           <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                            {reportsData.bookingStats?.upcomingCheckIns || 0} guests
+                            {t('dashboard.hotelAdmin.reports.guestsCount', { count: reportsData.bookingStats?.upcomingCheckIns || 0 })}
                           </Typography>
                         </Box>
                         <Box>
-                          <Typography variant="body2" color="text.secondary">Upcoming Check-outs (Next 7 days)</Typography>
+                          <Typography variant="body2" color="text.secondary">{t('dashboard.hotelAdmin.reports.upcomingCheckOutsWeek')}</Typography>
                           <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                            {reportsData.bookingStats?.upcomingCheckOuts || 0} guests
+                            {t('dashboard.hotelAdmin.reports.guestsCount', { count: reportsData.bookingStats?.upcomingCheckOuts || 0 })}
                           </Typography>
                         </Box>
                       </CardContent>
@@ -1506,18 +1509,18 @@ const HotelAdminDashboard: React.FC = () => {
                     }}>
                       <CardContent>
                         <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3, color: theme.palette.primary.main }}>
-                          Daily Operations Summary
+                          {t('dashboard.hotelAdmin.reports.dailyOperationsSummary')}
                         </Typography>
                         <Box sx={{ mb: 2 }}>
-                          <Typography variant="body2" color="text.secondary">Today's Check-ins</Typography>
+                          <Typography variant="body2" color="text.secondary">{t('dashboard.hotelAdmin.reports.todaysCheckIns')}</Typography>
                           <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                            {Math.round((reportsData.bookingStats?.upcomingCheckIns || 0) / 7)} expected
+                            {t('dashboard.hotelAdmin.reports.expectedCount', { count: Math.round((reportsData.bookingStats?.upcomingCheckIns || 0) / 7) })}
                           </Typography>
                         </Box>
                         <Box sx={{ mb: 2 }}>
-                          <Typography variant="body2" color="text.secondary">Today's Check-outs</Typography>
+                          <Typography variant="body2" color="text.secondary">{t('dashboard.hotelAdmin.reports.todaysCheckOuts')}</Typography>
                           <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                            {Math.round((reportsData.bookingStats?.upcomingCheckOuts || 0) / 7)} expected
+                            {t('dashboard.hotelAdmin.reports.expectedCount', { count: Math.round((reportsData.bookingStats?.upcomingCheckOuts || 0) / 7) })}
                           </Typography>
                         </Box>
                         <Box>
@@ -1542,7 +1545,7 @@ const HotelAdminDashboard: React.FC = () => {
                     }}>
                       <CardContent>
                         <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3, color: theme.palette.primary.main }}>
-                          Weekly Activity Trends
+                          {t('dashboard.hotelAdmin.reports.weeklyActivityTrends')}
                         </Typography>
                         <Grid container spacing={2}>
                           <Grid item xs={12} md={3}>
@@ -1557,7 +1560,7 @@ const HotelAdminDashboard: React.FC = () => {
                                 {reportsData.bookingStats?.upcomingCheckIns || 0}
                               </Typography>
                               <Typography variant="body2" color="text.secondary">
-                                Check-ins (Next 7 days)
+                                {t('dashboard.hotelAdmin.reports.checkInsNext7Days')}
                               </Typography>
                             </Box>
                           </Grid>
@@ -1573,7 +1576,7 @@ const HotelAdminDashboard: React.FC = () => {
                                 {reportsData.bookingStats?.upcomingCheckOuts || 0}
                               </Typography>
                               <Typography variant="body2" color="text.secondary">
-                                Check-outs (Next 7 days)
+                                {t('dashboard.hotelAdmin.reports.checkOutsNext7Days')}
                               </Typography>
                             </Box>
                           </Grid>
@@ -1624,7 +1627,7 @@ const HotelAdminDashboard: React.FC = () => {
                     >
                       <CardContent>
                         <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3, color: theme.palette.primary.main }}>
-                          Quick Actions & Navigation
+                          {t('dashboard.hotelAdmin.reports.quickActionsNavigation')}
                         </Typography>
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
                           <Button 
@@ -1640,7 +1643,7 @@ const HotelAdminDashboard: React.FC = () => {
                               }
                             }}
                           >
-                            View All Bookings
+                            {t('dashboard.hotelAdmin.reports.viewAllBookings')}
                           </Button>
                           <Button 
                             variant="outlined" 
@@ -1655,7 +1658,7 @@ const HotelAdminDashboard: React.FC = () => {
                               }
                             }}
                           >
-                            Manage Rooms
+                            {t('dashboard.hotelAdmin.reports.manageRooms')}
                           </Button>
                           <Button 
                             variant="outlined" 
@@ -1670,7 +1673,7 @@ const HotelAdminDashboard: React.FC = () => {
                               }
                             }}
                           >
-                            Manage Staff
+                            {t('dashboard.hotelAdmin.reports.manageStaff')}
                           </Button>
                           <Button 
                             variant="outlined" 
@@ -1685,7 +1688,7 @@ const HotelAdminDashboard: React.FC = () => {
                               }
                             }}
                           >
-                            Staff Schedules
+                            {t('dashboard.hotelAdmin.reports.staffSchedules')}
                           </Button>
                         </Box>
                       </CardContent>
