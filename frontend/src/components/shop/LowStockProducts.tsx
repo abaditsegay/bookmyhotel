@@ -138,13 +138,13 @@ const LowStockProducts: React.FC = () => {
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
         <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <WarningIcon color="warning" />
-          Low Stock Products ({filteredProducts.length})
+          {t('shop.lowStock.title')} ({filteredProducts.length})
         </Typography>
         <Box display="flex" gap={1} alignItems="center">
           <Typography variant="caption" color="text.secondary">
-            Products at or below minimum stock level
+            {t('shop.lowStock.subtitle')}
           </Typography>
-          <Tooltip title="Refresh">
+          <Tooltip title={t('shop.lowStock.refresh')}>
             <IconButton onClick={loadLowStockProducts} size="small">
               <RefreshIcon />
             </IconButton>
@@ -181,13 +181,13 @@ const LowStockProducts: React.FC = () => {
         <Table size="small">
           <TableHead>
             <TableRow>
-              <TableCell>Product</TableCell>
-              <TableCell>Category</TableCell>
-              <TableCell>SKU</TableCell>
-              <TableCell align="center">Current Stock</TableCell>
-              <TableCell align="center">Min Stock</TableCell>
-              <TableCell align="center">Reorder Qty</TableCell>
-              <TableCell align="center">Status</TableCell>
+              <TableCell>{t('shop.lowStock.table.product')}</TableCell>
+              <TableCell>{t('shop.lowStock.table.category')}</TableCell>
+              <TableCell>{t('shop.lowStock.table.sku')}</TableCell>
+              <TableCell align="center">{t('shop.lowStock.table.currentStock')}</TableCell>
+              <TableCell align="center">{t('shop.lowStock.table.minStock')}</TableCell>
+              <TableCell align="center">{t('shop.lowStock.table.reorderQty')}</TableCell>
+              <TableCell align="center">{t('shop.lowStock.table.status')}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -196,8 +196,8 @@ const LowStockProducts: React.FC = () => {
                 <TableCell colSpan={7} align="center">
                   <Typography color="text.secondary" sx={{ py: 4 }}>
                     {searchTerm 
-                      ? "No products match your search criteria"
-                      : "No low stock products found. All products are well stocked!"
+                      ? t('shop.lowStock.noSearchResults')
+                      : t('shop.lowStock.noProducts')
                     }
                   </Typography>
                 </TableCell>
@@ -258,13 +258,13 @@ const LowStockProducts: React.FC = () => {
                     <TableCell align="center">
                       {product.stockQuantity === 0 ? (
                         <Chip 
-                          label="Out of Stock" 
+                          label={t('shop.products.status.outOfStock')} 
                           color="error" 
                           size="small" 
                         />
                       ) : (
                         <Chip 
-                          label="Low Stock" 
+                          label={t('shop.products.status.lowStock')} 
                           color="warning" 
                           size="small" 
                         />

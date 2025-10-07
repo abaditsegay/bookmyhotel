@@ -706,6 +706,101 @@ export const enTranslations = {
 
   // Booking Management
   booking: {
+    guestBooking: "Guest Booking",
+    
+    // Guest Booking Page
+    page: {
+      roomDetails: "Room Details",
+      roomType: "Room Type",
+      hotel: "Hotel",
+      pricePerNight: "Price per Night", 
+      totalAmount: "Total Amount",
+      checkInDate: "Check-in Date",
+      checkOutDate: "Check-out Date",
+      numberOfGuests: "Number of Guests",
+      guestInformation: "Guest Information",
+      guestDetails: "Guest Details",
+      fullName: "Full Name",
+      emailAddress: "Email Address",
+      phoneNumber: "Phone Number",
+      nights: "night",
+      nightsPlural: "nights",
+      hotelInformation: "Hotel Information",
+      fullNamePlaceholder: "Enter your full name",
+      emailPlaceholder: "Enter your email address",
+      phonePlaceholder: "Enter your phone number (optional)",
+      checkOutAfterCheckIn: "Check-out date must be after check-in date",
+      
+      // Navigation and Breadcrumbs
+      hotelSearch: "Hotel Search",
+      searchResults: "Search Results", 
+      bookYourStay: "Book Your Stay",
+      backToSearchResults: "← Back to search results",
+      
+      // Status and Notices
+      noAccountRequired: "No account required!",
+      secureInformation: "🔒 Your information is secure and will only be used for this booking",
+      
+      // Payment Methods
+      paymentMethod: "Payment Method",
+      creditCard: "Credit Card",
+      mobileMoney: "Mobile Money",
+      payWithMobile: "Pay with your Mobile", 
+      payAtFrontDesk: "Pay at Front Desk",
+      mBirr: "M-Birr",
+      
+      // Booking Actions
+      bookNow: "Book Now",
+      book: "Book",
+      booking: "Booking...",
+      bookNowWithAmount: "Book Now - ETB {{amount}}",
+      bookWithAmount: "Book - ETB {{amount}}",
+      processing: "Processing...",
+      
+      // Security and Payment Info
+      securePayment: "Secure SSL encrypted payment processing. All major cards accepted.",
+      paymentInstructions: "Bring valid ID and booking confirmation. Payment methods: Cash, Card, Mobile.",
+      
+      // Error Messages
+      fillAllRequiredFields: "Please fill in all required fields",
+      provideGuestNameAndEmail: "Please provide guest name and email",
+      provideValidEmail: "Please provide a valid email address",
+      fillCreditCardDetails: "Please fill in all credit card details",
+      provideMobileNumber: "Please provide mobile number",
+      provideMobileReference: "Please provide mobile transfer reference number",
+      enterValidMobileNumber: "Please enter a valid mobile number",
+      provideEthiopianMobile: "Please provide your Ethiopian mobile number",
+      
+      // Payment Component Labels
+      creditCardPayment: "Credit Card Payment",
+      cardholderName: "Cardholder Name",
+      cardNumber: "Card Number",
+      expiryDate: "Expiry Date",
+      cvv: "CVV",
+      mobileMoneyTransfer: "Mobile Money Transfer",
+      payWithYourMobile: "Pay with your Mobile",
+      completeMobileTransfer: "Complete mobile money transfer using your preferred mobile payment app.",
+      transferToMobileOnly: "Transfer To (Mobile Money Only)",
+      yourMobileNumber: "Your Mobile Number",
+      mobileTransferReference: "Mobile Transfer Reference Number",
+      enterReferenceNumber: "Enter reference number from your mobile transfer",
+      provideReferenceHelp: "Provide the reference number you received after completing the mobile money transfer",
+      transferExactAmount: "Transfer exact amount:",
+      toMobileNumberAbove: "to the mobile number above, then enter your transfer reference number.",
+      payAtFrontDeskPayment: "Pay at Front Desk",
+      reservationConfirmed: "Your reservation will be confirmed. Pay when you arrive at the hotel.",
+      bringValidId: "Bring valid ID and booking confirmation. Payment methods: Cash, Card, Mobile.",
+      alternative: "Alternative",
+      
+      // Special Requests
+      specialRequests: "Special Requests (Optional)",
+      specialRequestsPlaceholder: "Any special accommodations or requests?",
+      
+      // Ethiopian Phone Number (for mobile payments)
+      ethiopianPhoneLabel: "Ethiopian Phone Number",
+      ethiopianPhonePlaceholder: "Enter Ethiopian phone number for mobile payment"
+    },
+    
     details: {
       title: "Booking Details",
       hotelAdminTitle: "Hotel Admin - Booking Details",
@@ -1190,6 +1285,115 @@ export const enTranslations = {
       networkError: "Network error. Please check your connection."
     }
   },
+  walkInBooking: {
+    title: 'Walk-in Guest Booking',
+    subtitle: 'Complete the guest booking process step by step',
+    steps: {
+      guestInformation: 'Guest Information',
+      roomSelection: 'Room Selection', 
+      confirmation: 'Confirmation'
+    },
+    guestInformation: {
+      title: 'Guest Information',
+      firstName: 'First Name',
+      lastName: 'Last Name',
+      email: 'Email Address',
+      phone: 'Phone Number',
+      description: 'Please provide the guest contact information'
+    },
+    stayDetails: {
+      title: 'Stay Details',
+      checkIn: 'Check-in Date',
+      checkOut: 'Check-out Date',
+      nights: 'Nights',
+      guests: 'Number of Guests',
+      checkInDate: 'Check-in Date',
+      checkOutDate: 'Check-out Date',
+      numberOfGuests: 'Number of Guests',
+      description: 'Select your check-in and check-out dates'
+    },
+    roomSelection: {
+      title: 'Room Selection',
+      selectRoom: 'Select Room',
+      roomType: 'Room Type',
+      pricePerNight: 'Price per Night',
+      totalAmount: 'Total Amount',
+      noRoomsAvailable: 'No rooms available for selected dates',
+      description: 'Available rooms for {{guests}} guest{{guestsPlural}} from {{checkIn}} to {{checkOut}}',
+      loadingRooms: 'Loading available rooms...',
+      specialRequests: 'Special Requests (Optional)',
+      specialRequestsPlaceholder: 'Any special requests or notes for the guest stay...',
+      roomNumber: 'Room',
+      capacity: 'Capacity',
+      capacityText: '{{count}} guest',
+      capacityTextPlural: '{{count}} guests',
+      perNightShort: '/night'
+    },
+    confirmation: {
+      title: 'Booking Confirmation',
+      guestDetails: 'Guest Details',
+      stayDetails: 'Stay Details',
+      roomDetails: 'Room Details',
+      totalCost: 'Total Cost',
+      paymentMethod: 'Payment Method',
+      bookingConfirmationTitle: 'Booking Confirmation',
+      reviewDetails: 'Please review your booking details before confirming',
+      guestInformation: 'Guest Information',
+      fullName: 'FULL NAME',
+      emailAddress: 'EMAIL ADDRESS',
+      phoneNumber: 'PHONE NUMBER',
+      checkInDate: 'CHECK-IN DATE',
+      checkOutDate: 'CHECK-OUT DATE',
+      numberOfGuests: 'NUMBER OF GUESTS',
+      numberOfNights: 'NUMBER OF NIGHTS',
+      roomType: 'ROOM TYPE',
+      roomNumber: 'ROOM NUMBER',
+      pricePerNight: 'PRICE PER NIGHT',
+      totalAmount: 'TOTAL AMOUNT',
+      nights: 'nights',
+      room: 'ROOM',
+      checkInCheckOut: 'CHECK-IN / CHECK-OUT',
+      guests: 'GUESTS',
+      specialRequests: 'SPECIAL REQUESTS',
+      guest: 'guest',
+      guestPlural: 'guests',
+      pricingSummary: 'Pricing Summary',
+      perNight: '/night',
+      night: 'night',
+      nightPlural: 'nights'
+    },
+    actions: {
+      next: 'Next',
+      previous: 'Previous',
+      confirm: 'Confirm Booking',
+      cancel: 'Cancel',
+      startOver: 'Start Over',
+      back: 'Back',
+      loadingRooms: 'Loading Rooms...'
+    },
+    validationErrors: {
+      firstNameRequired: 'First name is required',
+      lastNameRequired: 'Last name is required',
+      emailRequired: 'Email is required',
+      emailInvalid: 'Email is invalid',
+      phoneRequired: 'Phone number is required',
+      checkInRequired: 'Check-in date is required',
+      checkOutRequired: 'Check-out date is required',
+      invalidDateRange: 'Check-out date must be after check-in date',
+      guestsRequired: 'Number of guests is required',
+      roomRequired: 'Please select a room'
+    },
+    messages: {
+      bookingCreated: 'Booking created successfully!',
+      confirmationNumber: 'Confirmation Number: {{number}}',
+      willSyncWhenOnline: 'This booking will be synced when internet connection is restored.',
+      bookingFailed: 'Failed to create booking. Please try again.',
+      creatingBooking: 'Creating walk-in booking...',
+      failedToLoadHotel: 'Failed to load hotel information',
+      failedToLoadHotelPermissions: 'Failed to load hotel information. Please ensure you are logged in with appropriate permissions.',
+      failedToLoadRooms: 'Failed to load available rooms. Please try again.'
+    }
+  },
   shop: {
     dashboard: {
       title: "Shop Management",
@@ -1197,6 +1401,7 @@ export const enTranslations = {
       tabs: {
         newOrder: "New Order",
         products: "Products",
+        lowStock: "Low Stock",
         orders: "Orders"
       },
       stats: {
@@ -1240,14 +1445,34 @@ export const enTranslations = {
       status: {
         available: "Available",
         unavailable: "Unavailable",
-        outOfStock: "Out of Stock"
+        outOfStock: "Out of Stock",
+        inStock: "In Stock",
+        lowStock: "Low Stock",
+        unknown: "Unknown"
       },
       messages: {
         created: "Product created successfully",
         updated: "Product updated successfully",
         deleted: "Product deleted successfully",
         loadError: "Failed to load products",
-        saveError: "Failed to save product"
+        saveError: "Failed to save product",
+        outOfStockError: "\"{{productName}}\" is out of stock and cannot be added to the order."
+      }
+    },
+    lowStock: {
+      title: "Low Stock Products",
+      subtitle: "Products at or below minimum stock level",
+      refresh: "Refresh",
+      noProducts: "No low stock products found. All products are well stocked!",
+      noSearchResults: "No products match your search criteria",
+      table: {
+        category: "Category",
+        sku: "SKU",
+        currentStock: "Current Stock",
+        minStock: "Min Stock",
+        reorderQty: "Reorder Qty",
+        status: "Status",
+        product: "Product"
       }
     },
     orders: {
@@ -1396,6 +1621,124 @@ export const enTranslations = {
       nov: "November",
       dec: "December"
     }
+  },
+  // Shop Payment Dialog
+  shopPayment: {
+    completePayment: "Complete Payment",
+    selectPaymentMethod: "Select Payment Method",
+    paymentSuccessful: "Payment Successful!",
+    paymentProcessedSuccessfully: "Payment has been processed successfully",
+    referenceNumber: "Reference Number:",
+    completingYourOrder: "Completing your order...",
+    processing: "Processing...",
+    cancel: "Cancel",
+    pay: "Pay",
+    
+    // Payment Methods
+    cashPayment: "Cash Payment",
+    cashDescription: "Pay with cash at the hotel reception",
+    creditDebitCard: "Credit/Debit Card",
+    cardDescription: "Pay securely with your card",
+    mobileMoney: "Mobile Money",
+    mobileDescription: "Mobile money payment",
+    
+    // Card Payment
+    secureCardPayment: "Secure Card Payment",
+    sslEncrypted: "SSL encrypted payment processing",
+    amountLabel: "Amount:",
+    cardholderNamePlaceholder: "Cardholder Name (e.g., John Doe)",
+    cardNumberPlaceholder: "Card Number (1234 5678 9012 3456)",
+    expiryPlaceholder: "Expiry (MM/YY)",
+    cvvPlaceholder: "CVV (123)",
+    
+    // Mobile Money Payment
+    mobileMoneyPayment: "Mobile Money Payment",
+    paySecurelyMobile: "Pay securely with your mobile money account",
+    selectMobileProvider: "Select Mobile Money Provider",
+    phoneNumberPlaceholder: "Phone Number (+251 9XX XXX XXX)",
+    
+    // Cash Payment
+    collectCashPayment: "Please collect cash payment from customer at the counter.",
+    amountToCollect: "Amount to collect",
+    
+    // Pay at Front Desk
+    payAtFrontDesk: "Pay at Front Desk",
+    customerPaysFrontDesk: "Customer will complete payment at the front desk.",
+    totalAmount: "Total amount",
+    
+    // Validation Messages
+    fillAllCardDetails: "Please fill in all card details",
+    enterValidCardNumber: "Please enter a valid card number",
+    fillMobileDetails: "Please fill in mobile money details",
+    paymentProcessingFailed: "Payment processing failed",
+  },
+  // Shop Receipt Dialog
+  shopReceipt: {
+    title: "Shop Purchase Receipt",
+    anonymousCustomer: "Anonymous Customer",
+    printReceipt: "Print Receipt",
+    downloadReceipt: "Download Receipt",
+    close: "Close",
+    hotelName: "Grand Plaza Hotel",
+    taxId: "Tax ID:",
+    receiptNumber: "Shop Purchase Receipt #",
+    
+    // Status labels
+    paid: "PAID",
+    chargedToRoom: "CHARGED TO ROOM",
+    processing: "PROCESSING",
+    completed: "COMPLETED",
+    pending: "PENDING",
+    confirmed: "CONFIRMED",
+    preparing: "PREPARING",
+    ready: "READY",
+    cancelled: "CANCELLED",
+    
+    // Sections
+    customerInformation: "Customer Information",
+    orderDetails: "Order Details",
+    orderSummary: "Order Summary",
+    orderNotes: "Order Notes",
+    
+    // Customer fields
+    name: "Name:",
+    email: "Email:",
+    phone: "Phone:",
+    room: "Room:",
+    
+    // Order fields
+    orderDate: "Order Date:",
+    paymentMethod: "Payment Method:",
+    delivery: "Delivery:",
+    completedAt: "Completed:",
+    address: "Address:",
+    cash: "CASH",
+    yesDelivery: "Yes",
+    noPickup: "No (Pickup)",
+    
+    // Table headers
+    product: "Product",
+    sku: "SKU",
+    qty: "Qty",
+    unitPrice: "Unit Price",
+    total: "Total",
+    totalLabel: "Total",
+    note: "Note:",
+    tax: "Tax",
+    subtotal: "Subtotal",
+    
+    // Footer
+    thankYou: "Thank You for Your Purchase!",
+    roomDeliveryMessage: "Your order will be delivered to your room.",
+    pickupMessage: "Please collect your order from the shop.",
+    receiptGenerated: "Receipt generated on:",
+    frontDeskPerson: "Front Desk Person:",
+    
+    // Actions
+    continueToPayment: "Continue to Payment",
+    closeContinue: "Close & Continue",
+    closeAndContinue: "Close & Continue",
+    download: "Download",
   },
   navigation: {
     home: "Home",

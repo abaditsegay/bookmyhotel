@@ -258,7 +258,7 @@ const ShopDashboard: React.FC = () => {
         >
           <Tab label={t('shop.dashboard.tabs.newOrder')} />
           <Tab label={t('shop.dashboard.tabs.products')} />
-          <Tab label="Low Stock" />
+          <Tab label={t('shop.dashboard.tabs.lowStock')} />
           <Tab label={t('shop.dashboard.tabs.orders')} />
         </Tabs>
       </Paper>

@@ -35,6 +35,7 @@ import {
   CheckCircle as CheckIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { shopApiService } from '../../services/shopApi';
 import { Product, ShopOrderCreateRequest, PaymentMethod, DeliveryType, ProductCategory, ShopOrder, ShopOrderUtils } from '../../types/shop';
@@ -53,6 +54,7 @@ interface OrderCreationProps {
 const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
   const navigate = useNavigate();
   const { user, token } = useAuth();
+  const { t } = useTranslation();
   const theme = useTheme();
   const [products, setProducts] = useState<Product[]>([]);
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
@@ -75,6 +77,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
 
   // Payment dialog state
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [paymentCompleted, setPaymentCompleted] = useState(false);
   const [completedPaymentMethod, setCompletedPaymentMethod] = useState<PaymentMethod | null>(null);
   const [paymentReference, setPaymentReference] = useState<string | null>(null);
@@ -112,7 +115,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
   const addProductToOrder = (product: Product) => {
     // Prevent adding out-of-stock products
     if (product.stockQuantity === 0) {
-      setError(`"${product.name}" is out of stock and cannot be added to the order.`);
+      setError(t('shop.products.messages.outOfStockError', { productName: product.name }));
       // Clear error after 3 seconds
       setTimeout(() => setError(null), 3000);
       return;
@@ -234,9 +237,19 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
   const handlePaymentComplete = async (method: PaymentMethod, reference?: string) => {
     setCompletedPaymentMethod(method);
     setPaymentReference(reference || null);
+    setPaymentSuccess(true); // Show success dialog first
+    setError(null);
+    
+    // Delay the order completion to allow success dialog to show
+    setTimeout(async () => {
+      await completeOrderAfterPayment(method);
+    }, 2000); // 2 second delay to show success
+  };
+
+  const completeOrderAfterPayment = async (method: PaymentMethod) => {
     setPaymentCompleted(true);
     setPaymentDialogOpen(false);
-    setError(null);
+    setPaymentSuccess(false);
     
     // Automatically complete the sale after successful payment
     if (createdOrder) {
@@ -300,6 +313,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
 
   const handlePaymentDialogClose = () => {
     setPaymentDialogOpen(false);
+    setPaymentSuccess(false); // Reset success state when dialog closes
     // Don't reset payment state here in case user wants to try again
   };
 
@@ -376,10 +390,10 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
 
   const getStockStatusLabel = (stockStatus: string) => {
     switch (stockStatus) {
-      case 'OUT_OF_STOCK': return 'Out of Stock';
-      case 'LOW_STOCK': return 'Low Stock';
-      case 'IN_STOCK': return 'In Stock';
-      default: return 'Unknown';
+      case 'OUT_OF_STOCK': return t('shop.products.status.outOfStock');
+      case 'LOW_STOCK': return t('shop.products.status.lowStock');
+      case 'IN_STOCK': return t('shop.products.status.inStock');
+      default: return t('shop.products.status.unknown');
     }
   };
 
@@ -889,6 +903,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
         onPaymentComplete={handlePaymentComplete}
         totalAmount={calculateTotal()}
         selectedPaymentMethod={paymentMethod}
+        showSuccess={paymentSuccess}
       />
     </Box>
   );

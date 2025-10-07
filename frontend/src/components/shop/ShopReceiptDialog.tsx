@@ -24,6 +24,7 @@ import {
   Download as DownloadIcon,
   Close as CloseIcon,
 } from '@mui/icons-material';
+import { useTranslation } from 'react-i18next';
 import { ShopOrder } from '../../types/shop';
 import { COLORS } from '../../theme/themeColors';
 
@@ -52,6 +53,8 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
   onPaymentRequired,
   requiresPayment = false,
 }) => {
+  const { t } = useTranslation();
+  
   if (!order) return null;
 
   // Use order.hotelName if available, otherwise fall back to prop or default
@@ -61,15 +64,23 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
   const getReceiptStatus = (status: string, paymentMethod: string) => {
     // For customer receipts, show more friendly status
     if (status === 'PENDING' && paymentMethod === 'ROOM_CHARGE') {
-      return 'CHARGED TO ROOM';
+      return t('shopReceipt.chargedToRoom');
     }
     if (status === 'PENDING') {
-      return 'PROCESSING';
+      return t('shopReceipt.processing');
     }
     if (status === 'COMPLETED') {
-      return 'PAID';
+      return t('shopReceipt.paid');
     }
-    return status;
+    // Map other statuses
+    switch (status.toUpperCase()) {
+      case 'PAID': return t('shopReceipt.paid');
+      case 'CONFIRMED': return t('shopReceipt.confirmed');
+      case 'PREPARING': return t('shopReceipt.preparing');
+      case 'READY': return t('shopReceipt.ready');
+      case 'CANCELLED': return t('shopReceipt.cancelled');
+      default: return status;
+    }
   };
 
   const receiptStatus = getReceiptStatus(order.status, order.paymentMethod || '');
@@ -258,10 +269,10 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
           }}
         >
           <Typography variant="h6" sx={{ fontWeight: 600 }}>
-            Shop Purchase Receipt - {order.customerName || 'Anonymous Customer'}
+            {t('shopReceipt.title')} - {order.customerName || t('shopReceipt.anonymousCustomer')}
           </Typography>
           <Box>
-            <Tooltip title="Print Receipt">
+            <Tooltip title={t('shopReceipt.printReceipt')}>
               <IconButton 
                 onClick={handlePrint} 
                 sx={{ mr: 1, color: 'white' }}
@@ -270,7 +281,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                 <PrintIcon />
               </IconButton>
             </Tooltip>
-            <Tooltip title="Download Receipt">
+            <Tooltip title={t('shopReceipt.downloadReceipt')}>
               <IconButton 
                 onClick={handleDownload} 
                 sx={{ mr: 1, color: 'white' }}
@@ -279,7 +290,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                 <DownloadIcon />
               </IconButton>
             </Tooltip>
-            <Tooltip title="Close">
+            <Tooltip title={t('shopReceipt.close')}>
               <IconButton 
                 onClick={onClose} 
                 sx={{ color: 'white' }}
@@ -319,7 +330,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                 </Typography>
               )}
               <Typography variant="h6" sx={{ mt: 2, fontWeight: 600 }}>
-                Shop Purchase Receipt #{order.orderNumber}
+                {t('shopReceipt.receiptNumber')}{order.orderNumber}
               </Typography>
               <Box sx={{ mt: 2 }}>
                 <Typography 
@@ -363,18 +374,18 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                         alignItems: 'center',
                       }}
                     >
-                      Customer Information
+                      {t('shopReceipt.customerInformation')}
                     </Typography>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Typography variant="body2" color="text.secondary">Name:</Typography>
+                        <Typography variant="body2" color="text.secondary">{t('shopReceipt.name')}</Typography>
                         <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          {order.customerName || 'Anonymous Customer'}
+                          {order.customerName || t('shopReceipt.anonymousCustomer')}
                         </Typography>
                       </Box>
                       {order.customerEmail && (
                         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <Typography variant="body2" color="text.secondary">Email:</Typography>
+                          <Typography variant="body2" color="text.secondary">{t('shopReceipt.email')}</Typography>
                           <Typography variant="body2" sx={{ fontWeight: 500 }}>
                             {order.customerEmail}
                           </Typography>
@@ -382,7 +393,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                       )}
                       {order.customerPhone && (
                         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <Typography variant="body2" color="text.secondary">Phone:</Typography>
+                          <Typography variant="body2" color="text.secondary">{t('shopReceipt.phone')}</Typography>
                           <Typography variant="body2" sx={{ fontWeight: 500 }}>
                             {order.customerPhone}
                           </Typography>
@@ -390,7 +401,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                       )}
                       {order.roomNumber && (
                         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <Typography variant="body2" color="text.secondary">Room:</Typography>
+                          <Typography variant="body2" color="text.secondary">{t('shopReceipt.room')}</Typography>
                           <Typography variant="body2" sx={{ fontWeight: 500 }}>
                             {order.roomNumber}
                           </Typography>
@@ -421,30 +432,30 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                         alignItems: 'center',
                       }}
                     >
-                      Order Details
+                      {t('shopReceipt.orderDetails')}
                     </Typography>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Typography variant="body2" color="text.secondary">Order Date:</Typography>
+                        <Typography variant="body2" color="text.secondary">{t('shopReceipt.orderDate')}</Typography>
                         <Typography variant="body2" sx={{ fontWeight: 500 }}>
                           {formatDate(order.orderDate)}
                         </Typography>
                       </Box>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Typography variant="body2" color="text.secondary">Payment Method:</Typography>
+                        <Typography variant="body2" color="text.secondary">{t('shopReceipt.paymentMethod')}</Typography>
                         <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          {order.paymentMethod || 'Cash'}
+                          {order.paymentMethod === 'CASH' ? t('shopReceipt.cash') : (order.paymentMethod || t('shopReceipt.cash'))}
                         </Typography>
                       </Box>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Typography variant="body2" color="text.secondary">Delivery:</Typography>
+                        <Typography variant="body2" color="text.secondary">{t('shopReceipt.delivery')}</Typography>
                         <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          {order.isDelivery ? `Yes (${order.deliveryType})` : 'No (Pickup)'}
+                          {order.isDelivery ? `${t('shopReceipt.yesDelivery')} (${order.deliveryType})` : t('shopReceipt.noPickup')}
                         </Typography>
                       </Box>
                       {order.completedAt && (
                         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <Typography variant="body2" color="text.secondary">Completed:</Typography>
+                          <Typography variant="body2" color="text.secondary">{t('shopReceipt.completedAt')}</Typography>
                           <Typography variant="body2" sx={{ fontWeight: 500 }}>
                             {formatDate(order.completedAt)}
                           </Typography>
@@ -452,7 +463,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                       )}
                       {order.isDelivery && order.deliveryAddress && (
                         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <Typography variant="body2" color="text.secondary">Address:</Typography>
+                          <Typography variant="body2" color="text.secondary">{t('shopReceipt.address')}</Typography>
                           <Typography variant="body2" sx={{ fontWeight: 500, maxWidth: '60%', textAlign: 'right' }}>
                             {order.deliveryAddress}
                           </Typography>
@@ -477,7 +488,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                           fontWeight: 600,
                         }}
                       >
-                        Product
+                        {t('shopReceipt.product')}
                       </TableCell>
                       <TableCell 
                         align="center"
@@ -487,7 +498,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                           fontWeight: 600,
                         }}
                       >
-                        SKU
+                        {t('shopReceipt.sku')}
                       </TableCell>
                       <TableCell 
                         align="center"
@@ -497,7 +508,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                           fontWeight: 600,
                         }}
                       >
-                        Qty
+                        {t('shopReceipt.qty')}
                       </TableCell>
                       <TableCell 
                         align="right"
@@ -507,7 +518,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                           fontWeight: 600,
                         }}
                       >
-                        Unit Price
+                        {t('shopReceipt.unitPrice')}
                       </TableCell>
                       <TableCell 
                         align="right"
@@ -517,7 +528,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                           fontWeight: 600,
                         }}
                       >
-                        Total
+                        {t('shopReceipt.total')}
                       </TableCell>
                     </TableRow>
                   </TableHead>
@@ -639,18 +650,18 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                 <Card className="print-card" sx={{ border: '1px solid', borderColor: 'grey.200' }}>
                   <CardContent>
                     <Typography variant="h6" sx={{ color: '#1e3a8a', fontWeight: 600, mb: 2 }}>
-                      Order Summary
+                      {t('shopReceipt.orderSummary')}
                     </Typography>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Typography variant="body2">Subtotal:</Typography>
+                        <Typography variant="body2">{t('shopReceipt.subtotal')}:</Typography>
                         <Typography variant="body2" sx={{ fontWeight: 500 }}>
                           {formatCurrency((order.totalAmount || 0) - (order.taxAmount || 0))}
                         </Typography>
                       </Box>
                       {(order.taxAmount || 0) > 0 && (
                         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <Typography variant="body2">Tax:</Typography>
+                          <Typography variant="body2">{t('shopReceipt.tax')}:</Typography>
                           <Typography variant="body2" sx={{ fontWeight: 500 }}>
                             {formatCurrency(order.taxAmount || 0)}
                           </Typography>
@@ -658,7 +669,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                       )}
                       <Divider sx={{ my: 1 }} />
                       <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Typography variant="h6" sx={{ fontWeight: 700 }}>Total:</Typography>
+                        <Typography variant="h6" sx={{ fontWeight: 700 }}>{t('shopReceipt.totalLabel')}:</Typography>
                         <Typography variant="h6" sx={{ fontWeight: 700, color: '#1e3a8a' }}>
                           {formatCurrency(order.totalAmount || 0)}
                         </Typography>
@@ -672,20 +683,20 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
             {/* Professional Footer */}
             <Box sx={{ textAlign: 'center', mt: 4, pt: 3, borderTop: '1px solid #e0e0e0' }}>
               <Typography variant="h6" sx={{ color: '#1e3a8a', fontWeight: 600, mb: 1 }}>
-                Thank You for Your Purchase!
+                {t('shopReceipt.thankYou')}
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
                 {order.isDelivery && order.deliveryType === 'ROOM_DELIVERY' 
-                  ? 'Your order will be delivered to your room.' 
-                  : 'Please collect your order from the shop.'
+                  ? t('shopReceipt.roomDeliveryMessage')
+                  : t('shopReceipt.pickupMessage')
                 }
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                Receipt generated on: {formatDate(new Date().toISOString())}
+                {t('shopReceipt.receiptGenerated')} {formatDate(new Date().toISOString())}
               </Typography>
               {frontDeskPerson && (
                 <Typography variant="body2" color="text.secondary">
-                  Front Desk Person: {frontDeskPerson}
+                  {t('shopReceipt.frontDeskPerson')} {frontDeskPerson}
                 </Typography>
               )}
             </Box>
@@ -705,7 +716,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
             variant="outlined"
             sx={{ color: '#1e3a8a', borderColor: '#1e3a8a' }}
           >
-            Print Receipt
+            {t('shopReceipt.printReceipt')}
           </Button>
           <Button 
             onClick={handleDownload} 
@@ -713,7 +724,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
             variant="outlined"
             sx={{ color: '#1e3a8a', borderColor: '#1e3a8a' }}
           >
-            Download
+            {t('shopReceipt.download')}
           </Button>
           <Button 
             onClick={handleCloseAndRefresh} 
@@ -725,7 +736,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
               }
             }}
           >
-            {requiresPayment ? 'Continue to Payment' : 'Close & Continue'}
+            {requiresPayment ? t('shopReceipt.continueToPayment') : t('shopReceipt.closeContinue')}
           </Button>
         </DialogActions>
       </Dialog>

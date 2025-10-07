@@ -39,6 +39,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs, { Dayjs } from 'dayjs';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
 import { useAuthenticatedApi } from '../hooks/useAuthenticatedApi';
 import { AvailableRoom, HotelSearchRequest } from '../types/hotel';
 import { useMockPayment, MockPaymentRequest } from '../services/mockPaymentGateway';
@@ -61,6 +62,7 @@ const BookingPage: React.FC = () => {
   const location = useLocation();
   const { user, isAuthenticated } = useAuth();
   const { hotelApiService } = useAuthenticatedApi();
+  const { t } = useTranslation();
   
   // Mobile responsiveness
   const theme = useTheme();
@@ -219,25 +221,25 @@ const BookingPage: React.FC = () => {
     setError('');
 
     if (!checkInDate || !checkOutDate) {
-      setError('Please fill in all required fields');
+      setError(t('booking.page.fillAllRequiredFields'));
       return;
     }
 
     if (checkInDate >= checkOutDate) {
-      setError('Check-out date must be after check-in date');
+      setError(t('booking.page.checkOutAfterCheckIn'));
       return;
     }
 
     // Validate guest information for guest booking flow
     if (isGuestBookingFlow) {
       if (!guestName.trim() || !guestEmail.trim()) {
-        setError('Please provide guest name and email');
+        setError(t('booking.page.provideGuestNameAndEmail'));
         return;
       }
 
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(guestEmail)) {
-        setError('Please provide a valid email address');
+        setError(t('booking.page.provideValidEmail'));
         return;
       }
     }
@@ -245,7 +247,7 @@ const BookingPage: React.FC = () => {
     // Payment validation
     if (paymentMethod === 'credit_card') {
       if (!creditCardNumber || !expiryDate || !cvv || !cardholderName) {
-        setError('Please fill in all credit card details');
+        setError(t('booking.page.fillCreditCardDetails'));
         return;
       }
       // Basic credit card number validation (16 digits)
@@ -268,23 +270,23 @@ const BookingPage: React.FC = () => {
 
     if (paymentMethod === 'mobile_money') {
       if (!mobileNumber) {
-        setError('Please provide mobile number');
+        setError(t('booking.page.provideMobileNumber'));
         return;
       }
       if (!mobileTransferReference) {
-        setError('Please provide mobile transfer reference number');
+        setError(t('booking.page.provideMobileReference'));
         return;
       }
       // Basic mobile number validation
       if (!/^\+?\d{10,15}$/.test(mobileNumber.replace(/\s/g, ''))) {
-        setError('Please enter a valid mobile number');
+        setError(t('booking.page.enterValidMobileNumber'));
         return;
       }
     }
 
     if (paymentMethod === 'mbirr' || paymentMethod === 'telebirr') {
       if (!ethiopianPhoneNumber) {
-        setError('Please provide your Ethiopian mobile number');
+        setError(t('booking.page.provideEthiopianMobile'));
         return;
       }
       // Ethiopian phone number validation (09xxxxxxxx)
@@ -472,7 +474,7 @@ const BookingPage: React.FC = () => {
                       },
                     }}
                   >
-                    Hotel Search
+                    {t('booking.page.hotelSearch')}
                   </Link>
                   <Link 
                     component="button" 
@@ -486,7 +488,7 @@ const BookingPage: React.FC = () => {
                       },
                     }}
                   >
-                    Search Results
+                    {t('booking.page.searchResults')}
                   </Link>
                   <Typography 
                     variant="body2" 
@@ -495,7 +497,7 @@ const BookingPage: React.FC = () => {
                       fontWeight: 600,
                     }}
                   >
-                    Book Your Stay
+                    {t('booking.page.bookYourStay')}
                   </Typography>
                 </Breadcrumbs>
               )}
@@ -508,7 +510,7 @@ const BookingPage: React.FC = () => {
                     color: 'text.secondary',
                   }}
                 >
-                  ← Back to search results
+                  ← {t('booking.page.backToSearchResults').substring(2)}
                 </Typography>
               )}
             </Box>
@@ -548,7 +550,7 @@ const BookingPage: React.FC = () => {
                 gap: 0.5,
               }}>
                 <Chip 
-                  label="Guest Booking" 
+                  label={t('booking.guestBooking')} 
                   size="small"
                   sx={{ 
                     bgcolor: 'info.main',
@@ -564,7 +566,7 @@ const BookingPage: React.FC = () => {
                     textAlign: isMobile ? 'left' : 'right',
                   }}
                 >
-                  No account required!
+                  {t('booking.page.noAccountRequired')}
                 </Typography>
               </Box>
             )}
@@ -598,7 +600,7 @@ const BookingPage: React.FC = () => {
                     variant={isMobile ? 'subtitle1' : 'h6'} 
                     sx={{ fontWeight: 600, color: COLORS.PRIMARY }}
                   >
-                    Room Details
+                    {t('booking.page.roomDetails')}
                   </Typography>
                 </Box>
 
@@ -611,7 +613,7 @@ const BookingPage: React.FC = () => {
                       border: `1px solid ${alpha(COLORS.PRIMARY, 0.1)}`,
                     }}>
                       <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>
-                        Room Type
+                        {t('booking.page.roomType')}
                       </Typography>
                       <Typography variant="h6" sx={{ fontWeight: 600, mt: 0.5, color: COLORS.PRIMARY }}>
                         {roomData.roomType}
@@ -627,10 +629,10 @@ const BookingPage: React.FC = () => {
                       border: `1px solid ${alpha(COLORS.PRIMARY, 0.1)}`,
                     }}>
                       <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>
-                        Hotel
+                        {t('booking.page.hotel')}
                       </Typography>
                       <Typography variant="h6" sx={{ fontWeight: 600, mt: 0.5, color: COLORS.PRIMARY }}>
-                        {hotelName || 'Hotel Information'}
+                        {hotelName || t('booking.page.hotelInformation')}
                       </Typography>
                     </Box>
                   </Grid>
@@ -643,7 +645,7 @@ const BookingPage: React.FC = () => {
                       border: `1px solid ${alpha(COLORS.PRIMARY, 0.1)}`,
                     }}>
                       <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>
-                        Price per Night
+                        {t('booking.page.pricePerNight')}
                       </Typography>
                       <Typography variant="h6" sx={{ fontWeight: 600, mt: 0.5, color: COLORS.PRIMARY }}>
                         💰 {formatCurrency(roomData.pricePerNight || 0)}
@@ -659,12 +661,12 @@ const BookingPage: React.FC = () => {
                       border: `1px solid ${alpha(COLORS.PRIMARY, 0.1)}`,
                     }}>
                       <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>
-                        Total Amount
+                        {t('booking.page.totalAmount')}
                       </Typography>
                       {nights > 0 ? (
                         <Box>
                           <Typography variant="body2" sx={{ mt: 0.5, color: 'text.secondary' }}>
-                            📅 {nights} night{nights !== 1 ? 's' : ''}
+                            📅 {nights} {nights !== 1 ? t('booking.page.nightsPlural') : t('booking.page.nights')}
                           </Typography>
                           <Typography variant="h6" sx={{ fontWeight: 700, color: COLORS.PRIMARY }}>
                             {formatCurrency(totalAmount || 0)}
@@ -696,7 +698,7 @@ const BookingPage: React.FC = () => {
               {/* Dates and Guests - stacked on mobile */}
               <Grid item xs={12} sm={4}>
                 <DatePicker
-                  label="Check-in Date"
+                  label={t('booking.page.checkInDate')}
                   value={checkInDate}
                   onChange={setCheckInDate}
                   minDate={dayjs()}
@@ -719,7 +721,7 @@ const BookingPage: React.FC = () => {
 
               <Grid item xs={12} sm={4}>
                 <DatePicker
-                  label="Check-out Date"
+                  label={t('booking.page.checkOutDate')}
                   value={checkOutDate}
                   onChange={setCheckOutDate}
                   minDate={checkInDate || dayjs()}
@@ -743,10 +745,10 @@ const BookingPage: React.FC = () => {
               <Grid item xs={12} sm={4}>
                 <NumberStepper
                   value={guests}
-                  onChange={handleGuestsChange}
+                  onChange={setGuests}
                   min={1}
                   max={roomData.capacity || 10}
-                  label="Number of Guests"
+                  label={t('booking.page.numberOfGuests')}
                   fullWidth
                 />
               </Grid>
@@ -770,7 +772,7 @@ const BookingPage: React.FC = () => {
                         variant={isMobile ? 'subtitle1' : 'h6'} 
                         sx={{ fontWeight: 600, color: COLORS.PRIMARY }}
                       >
-                        Guest Information
+                        {t('booking.page.guestInformation')}
                       </Typography>
                     </Box>
 
@@ -823,26 +825,26 @@ const BookingPage: React.FC = () => {
                           color: COLORS.PRIMARY,
                           mb: 1.5,
                         }}>
-                          Guest Details
+                          {t('booking.page.guestDetails')}
                         </Typography>
                         
                         <Grid container spacing={isMobile ? 1.5 : 2}>
                           <Grid item xs={12} sm={6}>
                             <TextField
-                              label="Full Name"
+                              label={t('booking.page.fullName')}
                               value={guestName}
                               onChange={handleGuestNameChange}
                               fullWidth
                               required
                               size="small"
                               variant="outlined"
-                              placeholder="Enter your full name"
+                              placeholder={t('booking.page.fullNamePlaceholder')}
                             />
                           </Grid>
 
                           <Grid item xs={12} sm={6}>
                             <TextField
-                              label="Email Address"
+                              label={t('booking.page.emailAddress')}
                               type="email"
                               value={guestEmail}
                               onChange={handleGuestEmailChange}
@@ -850,19 +852,19 @@ const BookingPage: React.FC = () => {
                               required
                               size="small"
                               variant="outlined"
-                              placeholder="Enter your email address"
+                              placeholder={t('booking.page.emailPlaceholder')}
                             />
                           </Grid>
 
                           <Grid item xs={12} sm={6}>
                             <TextField
-                              label="Phone Number"
+                              label={t('booking.page.phoneNumber')}
                               value={guestPhone}
                               onChange={handleGuestPhoneChange}
                               fullWidth
                               size="small"
                               variant="outlined"
-                              placeholder="Enter your phone number (optional)"
+                              placeholder={t('booking.page.phonePlaceholder')}
                             />
                           </Grid>
                         </Grid>
@@ -872,7 +874,7 @@ const BookingPage: React.FC = () => {
                           display: 'block',
                           color: 'text.secondary'
                         }}>
-                          🔒 Your information is secure and will only be used for this booking
+                          🔒 {t('booking.page.secureInformation').substring(2)}
                         </Typography>
                       </Box>
                     )}
@@ -983,7 +985,7 @@ const BookingPage: React.FC = () => {
                             mb: 1,
                           }}
                         >
-                          Payment Method
+                          {t('booking.page.paymentMethod')}
                         </FormLabel>
                         <RadioGroup
                           row={!isMobile}
@@ -1008,7 +1010,7 @@ const BookingPage: React.FC = () => {
                                 }}
                               >
                                 <CreditCardIcon sx={{ mr: 1, fontSize: 20 }} />
-                                Credit Card
+                                {t('booking.page.creditCard')}
                               </Box>
                             }
                             sx={{ mr: isMobile ? 0 : 2 }}
@@ -1027,7 +1029,7 @@ const BookingPage: React.FC = () => {
                               >
                                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                                   <PhoneIcon sx={{ mr: 1, fontSize: 20 }} />
-                                  Mobile Money
+                                  {t('booking.page.mobileMoney')}
                                 </Box>
                                 <Typography 
                                   variant="caption" 
@@ -1039,7 +1041,7 @@ const BookingPage: React.FC = () => {
                                     ml: 3,
                                   }}
                                 >
-                                  Pay with your Mobile
+                                  {t('booking.page.payWithMobile')}
                                 </Typography>
                               </Box>
                             }
@@ -1057,7 +1059,7 @@ const BookingPage: React.FC = () => {
                                 }}
                               >
                                 <HotelIcon sx={{ mr: 1, fontSize: 20 }} />
-                                Pay at Front Desk
+                                {t('booking.page.payAtFrontDesk')}
                               </Box>
                             }
                             sx={{ mr: isMobile ? 0 : 2 }}
@@ -1123,14 +1125,14 @@ const BookingPage: React.FC = () => {
                             color: theme.palette.text.primary,
                             fontWeight: 600,
                           }}>
-                            Credit Card Payment - ETB {totalAmount?.toFixed(0)}
+                            {t('booking.page.creditCardPayment')} - ETB {totalAmount?.toFixed(0)}
                           </Typography>
                         </Box>
                         
                         <Grid container spacing={isMobile ? 1.5 : 2}>
                           <Grid item xs={12}>
                             <TextField
-                              label="Cardholder Name"
+                              label={t('booking.page.cardholderName')}
                               value={cardholderName}
                               onChange={handleCardholderNameChange}
                               fullWidth
@@ -1141,7 +1143,7 @@ const BookingPage: React.FC = () => {
                           </Grid>
                           <Grid item xs={12}>
                             <TextField
-                              label="Card Number"
+                              label={t('booking.page.cardNumber')}
                               value={creditCardNumber}
                               onChange={(e) => {
                                 // Format card number with spaces
@@ -1168,7 +1170,7 @@ const BookingPage: React.FC = () => {
                           </Grid>
                           <Grid item xs={6}>
                             <TextField
-                              label="Expiry Date"
+                              label={t('booking.page.expiryDate')}
                               value={expiryDate}
                               onChange={(e) => {
                                 // Format expiry date MM/YY
@@ -1187,7 +1189,7 @@ const BookingPage: React.FC = () => {
                           </Grid>
                           <Grid item xs={6}>
                             <TextField
-                              label="CVV"
+                              label={t('booking.page.cvv')}
                               value={cvv}
                               onChange={(e) => {
                                 const value = e.target.value.replace(/\D/g, '');
@@ -1206,7 +1208,7 @@ const BookingPage: React.FC = () => {
                           <Grid item xs={12}>
                             <Alert severity="info" sx={{ py: 0.5 }}>
                               <Typography variant="caption">
-                                Secure SSL encrypted payment processing. All major cards accepted.
+                                {t('booking.page.securePayment')}
                               </Typography>
                             </Alert>
                           </Grid>
@@ -1233,20 +1235,20 @@ const BookingPage: React.FC = () => {
                             fontWeight: 700,
                             mb: 0.5,
                           }}>
-                            Mobile Money Transfer - ETB {totalAmount?.toFixed(0)}
+                            {t('booking.page.mobileMoneyTransfer')} - ETB {totalAmount?.toFixed(0)}
                           </Typography>
                           <Typography variant="body1" sx={{ 
                             color: COLORS.PRIMARY,
                             fontWeight: 600,
                             fontSize: '1.1rem',
                           }}>
-                            Pay with your Mobile
+                            {t('booking.page.payWithYourMobile')}
                           </Typography>
                         </Box>
                         
                         <Alert severity="info" sx={{ mb: 2, py: 1 }}>
                           <Typography variant="body2">
-                            Complete mobile money transfer using your preferred mobile payment app.
+                            {t('booking.page.completeMobileTransfer')}
                           </Typography>
                         </Alert>
                         
@@ -1265,7 +1267,7 @@ const BookingPage: React.FC = () => {
                             textTransform: 'uppercase',
                             letterSpacing: 0.5,
                           }}>
-                            Transfer To (Mobile Money Only)
+                            {t('booking.page.transferToMobileOnly')}
                           </Typography>
                           <Box sx={{ display: 'flex', alignItems: 'center' }}>
                             <PhoneIcon sx={{ 
@@ -1293,7 +1295,7 @@ const BookingPage: React.FC = () => {
                                 fontFamily: 'monospace',
                                 letterSpacing: 1,
                               }}>
-                                {hotelData.mobilePaymentPhone2} (Alternative)
+                                {hotelData.mobilePaymentPhone2} ({t('booking.page.alternative')})
                               </Typography>
                             </Box>
                           )}
@@ -1302,7 +1304,7 @@ const BookingPage: React.FC = () => {
                         <Grid container spacing={isMobile ? 1.5 : 2}>
                           <Grid item xs={12}>
                             <TextField
-                              label="Your Mobile Number"
+                              label={t('booking.page.yourMobileNumber')}
                               value={mobileNumber}
                               onChange={handleMobileNumberChange}
                               fullWidth
@@ -1320,20 +1322,20 @@ const BookingPage: React.FC = () => {
                           </Grid>
                           <Grid item xs={12}>
                             <TextField
-                              label="Mobile Transfer Reference Number"
+                              label={t('booking.page.mobileTransferReference')}
                               value={mobileTransferReference}
                               onChange={handleMobileTransferReferenceChange}
                               fullWidth
                               required
                               size="medium"
-                              placeholder="Enter reference number from your mobile transfer"
-                              helperText="Provide the reference number you received after completing the mobile money transfer"
+                              placeholder={t('booking.page.enterReferenceNumber')}
+                              helperText={t('booking.page.provideReferenceHelp')}
                             />
                           </Grid>
                           <Grid item xs={12}>
                             <Alert severity="success" sx={{ py: 1 }}>
                               <Typography variant="body2">
-                                Transfer exact amount: <strong>ETB {totalAmount?.toFixed(0)}</strong> to the mobile number above, then enter your transfer reference number.
+                                {t('booking.page.transferExactAmount')} <strong>ETB {totalAmount?.toFixed(0)}</strong> {t('booking.page.toMobileNumberAbove')}
                               </Typography>
                             </Alert>
                           </Grid>
@@ -1359,19 +1361,19 @@ const BookingPage: React.FC = () => {
                             color: theme.palette.text.primary,
                             fontWeight: 600,
                           }}>
-                            Pay at Front Desk - ETB {totalAmount?.toFixed(0)}
+                            {t('booking.page.payAtFrontDeskPayment')} - ETB {totalAmount?.toFixed(0)}
                           </Typography>
                         </Box>
                         
                         <Alert severity="info" sx={{ mb: 1.5, py: 0.5 }}>
                           <Typography variant="caption">
-                            Your reservation will be confirmed. Pay when you arrive at the hotel.
+                            {t('booking.page.reservationConfirmed')}
                           </Typography>
                         </Alert>
                         
                         <Alert severity="warning" sx={{ py: 0.5 }}>
                           <Typography variant="caption">
-                            Bring valid ID and booking confirmation. Payment methods: Cash, Card, Mobile.
+                            {t('booking.page.bringValidId')}
                           </Typography>
                         </Alert>
                       </Box>
@@ -1529,10 +1531,10 @@ const BookingPage: React.FC = () => {
               startIcon={loading ? <CircularProgress size={16} /> : undefined}
             >
               {loading 
-                ? 'Booking...' 
+                ? t('booking.page.booking')
                 : isMobile 
-                  ? `Book - ETB ${totalAmount?.toFixed(0)}`
-                  : `Book Now - ETB ${totalAmount?.toFixed(0)}`
+                  ? t('booking.page.bookWithAmount', { amount: totalAmount?.toFixed(0) })
+                  : t('booking.page.bookNowWithAmount', { amount: totalAmount?.toFixed(0) })
               }
             </Button>
           </Box>

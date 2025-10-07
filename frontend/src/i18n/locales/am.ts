@@ -663,6 +663,101 @@ export const amTranslations = {
 
   // Booking Management
   booking: {
+    guestBooking: "የእንግዳ ቦታ ማስያዝ",
+    
+    // Guest Booking Page
+    page: {
+      roomDetails: "የክፍል ዝርዝሮች",
+      roomType: "የክፍል አይነት",
+      hotel: "ሆቴል",
+      pricePerNight: "በማታ ዋጋ",
+      totalAmount: "አጠቃላይ መጠን",
+      checkInDate: "የመግቢያ ቀን",
+      checkOutDate: "የመውጫ ቀን",
+      numberOfGuests: "የእንግዶች ቁጥር",
+      guestInformation: "የእንግዳ መረጃ",
+      guestDetails: "የእንግዳ ዝርዝሮች",
+      fullName: "ሙሉ ስም",
+      emailAddress: "ኢሜይል አድራሻ",
+      phoneNumber: "ስልክ ቁጥር",
+      nights: "ሌሊት",
+      nightsPlural: "ሌሊቶች",
+      hotelInformation: "የሆቴል መረጃ",
+      fullNamePlaceholder: "ሙሉ ስምዎን ያስገቡ",
+      emailPlaceholder: "ኢሜይል አድራሻዎን ያስገቡ", 
+      phonePlaceholder: "ስልክ ቁጥርዎን ያስገቡ (አማራጭ)",
+      checkOutAfterCheckIn: "የመውጫ ቀን ከመግቢያ ቀን በኋላ መሆን አለበት",
+      
+      // Navigation and Breadcrumbs
+      hotelSearch: "የሆቴል ፍለጋ",
+      searchResults: "የፍለጋ ውጤቶች",
+      bookYourStay: "የእርስዎን ቆይታ ያስያዙ",
+      backToSearchResults: "← ወደ ፍለጋ ውጤቶች ተመለስ",
+      
+      // Status and Notices  
+      noAccountRequired: "መለያ አያስፈልግም!",
+      secureInformation: "🔒 መረጃዎ በደህንነት የተጠበቀ ሲሆን ለዚህ ቦታ ማስያዝ ብቻ ይጠቅማል",
+      
+      // Payment Methods
+      paymentMethod: "የክፍያ ዘዴ",
+      creditCard: "ክሬዲት ካርድ", 
+      mobileMoney: "ሞባይል ገንዘብ",
+      payWithMobile: "በስልክዎ ይክፈሉ",
+      payAtFrontDesk: "በሪሴፕሽን ይክፈሉ",
+      mBirr: "ኤም-ብር",
+      
+      // Booking Actions
+      bookNow: "አሁን ያስያዙ",
+      book: "ያስያዙ",
+      booking: "በመያዝ ላይ...",
+      bookNowWithAmount: "አሁን ያስያዙ - {{amount}} ብር",
+      bookWithAmount: "ያስያዙ - {{amount}} ብር",
+      processing: "በሂደት ላይ...",
+      
+      // Security and Payment Info
+      securePayment: "በSSL የተመሰጠረ ደህንነታማ የክፍያ ሂደት። ሁሉም ዋና ካርዶች ይቀበላሉ።",
+      paymentInstructions: "የመታወቂያ ካርድ እና የቦታ ማስያዝ ማረጋገጫ ይዘው ይምጡ። የክፍያ ዘዴዎች: ጥሬ ገንዘብ፣ ካርድ፣ ሞባይል።",
+      
+      // Error Messages
+      fillAllRequiredFields: "እባክዎ ሁሉንም አስፈላጊ መረጃዎች ይሙሉ",
+      provideGuestNameAndEmail: "እባክዎ የእንግዳ ስም እና ኢሜይል ያቅርቡ",
+      provideValidEmail: "እባክዎ ትክክለኛ ኢሜይል አድራሻ ያቅርቡ",
+      fillCreditCardDetails: "እባክዎ ሁሉንም የክሬዲት ካርድ ዝርዝሮች ይሙሉ",
+      provideMobileNumber: "እባክዎ የሞባይል ቁጥር ያቅርቡ",
+      provideMobileReference: "እባክዎ የሞባይል ማስተላለፊያ ማጣቀሻ ቁጥር ያቅርቡ",
+      enterValidMobileNumber: "እባክዎ ትክክለኛ የሞባይል ቁጥር ያስገቡ",
+      provideEthiopianMobile: "እባክዎ የኢትዮጵያ ሞባይል ቁጥርዎን ያቅርቡ",
+      
+      // Payment Component Labels
+      creditCardPayment: "የክሬዲት ካርድ ክፍያ",
+      cardholderName: "የካርድ ባለቤት ስም",
+      cardNumber: "የካርድ ቁጥር",
+      expiryDate: "የማለቂያ ቀን",
+      cvv: "ሲቪቪ",
+      mobileMoneyTransfer: "የሞባይል ገንዘብ ማስተላለፊያ",
+      payWithYourMobile: "በስልክዎ ይክፈሉ",
+      completeMobileTransfer: "በሚመርጡት የሞባይል ክፍያ መተግበሪያ የሞባይል ገንዘብ ማስተላለፊያውን ይጨርሱ።",
+      transferToMobileOnly: "ማስተላለፊያ ወደ (ሞባይል ገንዘብ ብቻ)",
+      yourMobileNumber: "የእርስዎ ሞባይል ቁጥር",
+      mobileTransferReference: "የሞባይል ማስተላለፊያ ማጣቀሻ ቁጥር",
+      enterReferenceNumber: "ከሞባይል ማስተላለፊያዎ የተሰጠዎትን ማጣቀሻ ቁጥር ያስገቡ",
+      provideReferenceHelp: "የሞባይል ገንዘብ ማስተላለፊያውን ከጨረሱ በኋላ የተሰጠዎትን ማጣቀሻ ቁጥር ያቅርቡ",
+      transferExactAmount: "ትክክለኛውን መጠን ያስተላልፉ:",
+      toMobileNumberAbove: "ወደ ላይ ያለው ሞባይል ቁጥር፣ ከዚያም የማስተላለፊያ ማጣቀሻ ቁጥርዎን ያስገቡ።",
+      payAtFrontDeskPayment: "በሪሴፕሽን ክፍያ",
+      reservationConfirmed: "ቦታ ማስያዝዎ ይረጋገጣል። ወደ ሆቴሉ ሲመጡ ይክፈሉ።",
+      bringValidId: "የመታወቂያ ካርድ እና የቦታ ማስያዝ ማረጋገጫ ይዘው ይምጡ። የክፍያ ዘዴዎች: ጥሬ ገንዘብ፣ ካርድ፣ ሞባይል።",
+      alternative: "አማራጭ",
+      
+      // Special Requests
+      specialRequests: "ልዩ ጥያቄዎች (አማራጭ)",
+      specialRequestsPlaceholder: "ማንኛውም ልዩ አገልግሎት ወይም ጥያቄ?",
+      
+      // Ethiopian Phone Number (for mobile payments)
+      ethiopianPhoneLabel: "የኢትዮጵያ ስልክ ቁጥር",
+      ethiopianPhonePlaceholder: "ለሞባይል ክፍያ የኢትዮጵያ ስልክ ቁጥር ያስገቡ"
+    },
+    
     details: {
       title: "የቦታ ማስያዝ ዝርዝሮች",
       guestInformation: "የእንግዳ መረጃ",
@@ -1068,6 +1163,115 @@ export const amTranslations = {
       networkError: "የኔትወርክ ስህተት። እባክዎ ግንኙነትዎን ይመልከቱ።"
     }
   },
+  walkInBooking: {
+    title: 'የእንግዳ ቦታ ማስያዝ',
+    subtitle: 'የእንግዳ ቦታ ማስያዝ ሂደትን ደረጃ በደረጃ ያጠናቅቁ',
+    steps: {
+      guestInformation: 'የእንግዳ መረጃ',
+      roomSelection: 'ክፍል ምርጫ',
+      confirmation: 'ማረጋገጫ'
+    },
+    guestInformation: {
+      title: 'የእንግዳ መረጃ',
+      firstName: 'የመጀመሪያ ስም',
+      lastName: 'የአባት ስም',
+      email: 'የኢሜይል አድራሻ',
+      phone: 'ስልክ ቁጥር',
+      description: 'እባክዎ የእንግዳው የመገናኛ መረጃ ያቅርቡ'
+    },
+    stayDetails: {
+      title: 'የመቆያ ዝርዝሮች',
+      checkIn: 'የመግቢያ ቀን',
+      checkOut: 'የመውጫ ቀን',
+      nights: 'ሌሊቶች',
+      guests: 'የእንግዶች ቁጥር',
+      checkInDate: 'የመግቢያ ቀን',
+      checkOutDate: 'የመውጫ ቀን',
+      numberOfGuests: 'የእንግዶች ቁጥር',
+      description: 'የመግቢያ እና የመውጫ ቀናትዎን ይምረጡ'
+    },
+    roomSelection: {
+      title: 'ክፍል ምርጫ',
+      selectRoom: 'ክፍል ምረጥ',
+      roomType: 'የክፍል አይነት',
+      pricePerNight: 'በአንድ ሌሊት ዋጋ',
+      totalAmount: 'ጠቅላላ ዋጋ',
+      noRoomsAvailable: 'ለተመረጡት ቀናት ክፍሎች የሉም',
+      description: 'ለ{{guests}} እንግዳ{{guestsPlural}} ከ{{checkIn}} እስከ {{checkOut}} ያሉ ክፍሎች',
+      loadingRooms: 'የሚገኙ ክፍሎች በመጫን ላይ...',
+      specialRequests: 'ልዩ ጥያቄዎች (አማራጭ)',
+      specialRequestsPlaceholder: 'ለእንግዳው መቆያ ማንኛውም ልዩ ጥያቄዎች ወይም ማስታወሻዎች...',
+      roomNumber: 'ክፍል',
+      capacity: 'አቅም',
+      capacityText: '{{count}} እንግዳ',
+      capacityTextPlural: '{{count}} እንግዶች',
+      perNightShort: '/ሌሊት'
+    },
+    confirmation: {
+      title: 'የቦታ ማስያዝ ማረጋገጫ',
+      guestDetails: 'የእንግዳ ዝርዝሮች',
+      stayDetails: 'የመቆያ ዝርዝሮች',
+      roomDetails: 'የክፍል ዝርዝሮች',
+      totalCost: 'ጠቅላላ ወጪ',
+      paymentMethod: 'የመክፈያ መንገድ',
+      bookingConfirmationTitle: 'የቦታ ማስያዝ ማረጋገጫ',
+      reviewDetails: 'እባክዎ ከማረጋገጥዎ በፊት የቦታ ማስያዝ ዝርዝሮችዎን ይገምግሙ',
+      guestInformation: 'የእንግዳ መረጃ',
+      fullName: 'ሙሉ ስም',
+      emailAddress: 'የኢሜይል አድራሻ',
+      phoneNumber: 'ስልክ ቁጥር',
+      checkInDate: 'የመግቢያ ቀን',
+      checkOutDate: 'የመውጫ ቀን',
+      numberOfGuests: 'የእንግዶች ቁጥር',
+      numberOfNights: 'የሌሊቶች ቁጥር',
+      roomType: 'የክፍል አይነት',
+      roomNumber: 'የክፍል ቁጥር',
+      pricePerNight: 'በአንድ ሌሊት ዋጋ',
+      totalAmount: 'ጠቅላላ ዋጋ',
+      nights: 'ሌሊቶች',
+      room: 'ክፍል',
+      checkInCheckOut: 'የመግቢያ / የመውጫ',
+      guests: 'እንግዶች',
+      specialRequests: 'ልዩ ጥያቄዎች',
+      guest: 'እንግዳ',
+      guestPlural: 'እንግዶች',
+      pricingSummary: 'የዋጋ ማጠቃለያ',
+      perNight: '/ሌሊት',
+      night: 'ሌሊት',
+      nightPlural: 'ሌሊቶች'
+    },
+    actions: {
+      next: 'ቀጣይ',
+      previous: 'ቀዳሚ',
+      confirm: 'ቦታ ማስያዝ አረጋግጥ',
+      cancel: 'ሰርዝ',
+      startOver: 'እንደገና ጀምር',
+      back: 'ተመለስ',
+      loadingRooms: 'ክፍሎች በመጫን ላይ...'
+    },
+    validationErrors: {
+      firstNameRequired: 'የመጀመሪያ ስም ያስፈልጋል',
+      lastNameRequired: 'የአባት ስም ያስፈልጋል',
+      emailRequired: 'ኢሜይል ያስፈልጋል',
+      emailInvalid: 'ኢሜይል ትክክል አይደለም',
+      phoneRequired: 'ስልክ ቁጥር ያስፈልጋል',
+      checkInRequired: 'የመግቢያ ቀን ያስፈልጋል',
+      checkOutRequired: 'የመውጫ ቀን ያስፈልጋል',
+      invalidDateRange: 'የመውጫ ቀን ከመግቢያ ቀን በኋላ መሆን አለበት',
+      guestsRequired: 'የእንግዶች ቁጥር ያስፈልጋል',
+      roomRequired: 'እባክዎ ክፍል ይምረጡ'
+    },
+    messages: {
+      bookingCreated: 'ቦታ ማስያዝ በተሳካ ሁኔታ ተፈጥሯል!',
+      confirmationNumber: 'የማረጋገጫ ቁጥር: {{number}}',
+      willSyncWhenOnline: 'ይህ ቦታ ማስያዝ የበይነመረብ ግንኙነት ሲመለስ ይመሳሰላል።',
+      bookingFailed: 'ቦታ ማስያዝ መፍጠር አልተሳካም። እባክዎ እንደገና ይሞክሩ።',
+      creatingBooking: 'የእንግዳ ቦታ ማስያዝ በመፍጠር ላይ...',
+      failedToLoadHotel: 'የሆቴል መረጃ መጫን አልተሳካም',
+      failedToLoadHotelPermissions: 'የሆቴል መረጃ መጫን አልተሳካም። እባክዎ ተገቢ ፈቃዶች ኖሯዎት መግባትዎን ያረጋግጡ።',
+      failedToLoadRooms: 'የሚገኙ ክፍሎች መጫን አልተሳካም። እባክዎ እንደገና ይሞክሩ።'
+    }
+  },
   shop: {
     dashboard: {
       title: "የሱቅ አስተዳደር",
@@ -1075,6 +1279,7 @@ export const amTranslations = {
       tabs: {
         newOrder: "አዲስ ትዕዛዝ",
         products: "ምርቶች",
+        lowStock: "ዝቅተኛ መጋዘን",
         orders: "ትዕዛዞች"
       },
       stats: {
@@ -1118,14 +1323,34 @@ export const amTranslations = {
       status: {
         available: "ይገኛል",
         unavailable: "አይገኝም",
-        outOfStock: "ከመጋዘን ወጥቷል"
+        outOfStock: "ከመጋዘን ወጥቷል",
+        inStock: "በመጋዘን ውስጥ",
+        lowStock: "ዝቅተኛ መጋዘን",
+        unknown: "አይታወቅም"
       },
       messages: {
         created: "ምርት በተሳካ ሁኔታ ተፈጥሯል",
         updated: "ምርት በተሳካ ሁኔታ ተዘምኗል",
         deleted: "ምርት በተሳካ ሁኔታ ተሰርዟል",
         loadError: "ምርቶችን መሸከም አልተሳካም",
-        saveError: "ምርትን ማስቀመጥ አልተሳካም"
+        saveError: "ምርትን ማስቀመጥ አልተሳካም",
+        outOfStockError: "\"{{productName}}\" ከመጋዘን ውጥቷል እና ወደ ትዕዛዝ ሊጨመር አይችልም።"
+      }
+    },
+    lowStock: {
+      title: "ዝቅተኛ መጋዘን ምርቶች",
+      subtitle: "ከአነስተኛ መጋዘን መጠን በታች ወይም እኩል የሆኑ ምርቶች",
+      refresh: "አድስ",
+      noProducts: "ዝቅተኛ መጋዘን ምርቶች አልተገኙም። ሁሉም ምርቶች በቂ መጋዘን አላቸው!",
+      noSearchResults: "ከፍለጋዎ መስፈርት ጋር የሚመሳሰሉ ምርቶች የሉም",
+      table: {
+        category: "ምድብ",
+        sku: "የምርት ኮድ",
+        currentStock: "የአሁን መጋዘን",
+        minStock: "አነስተኛ መጋዘን",
+        reorderQty: "እንደገና ማዘዝ ብዛት",
+        status: "ሁኔታ",
+        product: "ምርት"
       }
     },
     orders: {
@@ -1258,6 +1483,124 @@ export const amTranslations = {
     view: "ተመልከት",
     back: "ተመለስ",
     refresh: "አድስ"
+  },
+  // Shop Payment Dialog
+  shopPayment: {
+    completePayment: "ክፍያ ይጨርሱ",
+    selectPaymentMethod: "የክፍያ ዘዴ ይምረጡ",
+    paymentSuccessful: "ክፍያ ተሳክቷል!",
+    paymentProcessedSuccessfully: "ክፍያው በተሳካ ሁኔታ ተሰራ",
+    referenceNumber: "ማጣቀሻ ቁጥር:",
+    completingYourOrder: "ትዕዛዝዎን እያጠናቀቅን ነው...",
+    processing: "በሂደት ላይ...",
+    cancel: "ሰርዝ",
+    pay: "ክፈል",
+    
+    // Payment Methods
+    cashPayment: "የጥሬ ገንዘብ ክፍያ",
+    cashDescription: "በሆቴል ሪሴፕሽን በጥሬ ገንዘብ ይክፈሉ",
+    creditDebitCard: "ክሬዲት/ዴቢት ካርድ",
+    cardDescription: "በካርድዎ በደህንነት ይክፈሉ",
+    mobileMoney: "ሞባይል ገንዘብ",
+    mobileDescription: "የሞባይል ገንዘብ ክፍያ",
+    
+    // Card Payment
+    secureCardPayment: "ደህንነታማ የካርድ ክፍያ",
+    sslEncrypted: "በSSL የተመሰጠረ የክፍያ ሂደት",
+    amountLabel: "መጠን:",
+    cardholderNamePlaceholder: "የካርድ ባለቤት ስም (ምሳሌ፣ ጆን ዶ)",
+    cardNumberPlaceholder: "የካርድ ቁጥር (1234 5678 9012 3456)",
+    expiryPlaceholder: "የማለቂያ ቀን (ወ/ዓ)",
+    cvvPlaceholder: "ሲቪቪ (123)",
+    
+    // Mobile Money Payment
+    mobileMoneyPayment: "የሞባይል ገንዘብ ክፍያ",
+    paySecurelyMobile: "በሞባይል ገንዘብ መለያዎ በደህንነት ይክፈሉ",
+    selectMobileProvider: "የሞባይል ገንዘብ አቅራቢ ይምረጡ",
+    phoneNumberPlaceholder: "የስልክ ቁጥር (+251 9XX XXX XXX)",
+    
+    // Cash Payment
+    collectCashPayment: "እባክዎ ከደንበኛው የጥሬ ገንዘብ ክፍያ በሰሌዳው ላይ ይሰብስቡ።",
+    amountToCollect: "የሚሰበሰብ መጠን",
+    
+    // Pay at Front Desk
+    payAtFrontDesk: "በሪሴፕሽን ክፍያ",
+    customerPaysFrontDesk: "ደንበኛው ክፍያውን በሪሴፕሽን ይፈጽማል።",
+    totalAmount: "ጠቅላላ መጠን",
+    
+    // Validation Messages
+    fillAllCardDetails: "እባክዎ ሁሉንም የካርድ ዝርዝሮች ይሙሉ",
+    enterValidCardNumber: "እባክዎ ትክክለኛ የካርድ ቁጥር ያስገቡ",
+    fillMobileDetails: "እባክዎ የሞባይል ገንዘብ ዝርዝሮች ይሙሉ",
+    paymentProcessingFailed: "የክፍያ ሂደቱ አልተሳካም",
+  },
+  // Shop Receipt Dialog
+  shopReceipt: {
+    title: "የሱቅ ግዢ ደረሰኝ",
+    anonymousCustomer: "ማንነታቸው ያልታወቀ ደንበኛ",
+    printReceipt: "ደረሰኝ አተምም",
+    downloadReceipt: "ደረሰኝ አውርድ",
+    close: "ዝጋ",
+    hotelName: "ግራንድ ፕላዛ ሆቴል",
+    taxId: "የታክስ መታወቂያ:",
+    receiptNumber: "የሱቅ ግዢ ደረሰኝ #",
+    
+    // Status labels
+    paid: "ተከፍሏል",
+    chargedToRoom: "በክፍል ተከፍሏል",
+    processing: "በሂደት ላይ",
+    completed: "ተጠናቅቋል",
+    pending: "በመጠባበቅ ላይ",
+    confirmed: "ተረጋግጧል",
+    preparing: "በዝግጅት ላይ",
+    ready: "ዝግጁ",
+    cancelled: "ተሰርዟል",
+    
+    // Sections
+    customerInformation: "የደንበኛ መረጃ",
+    orderDetails: "የትዕዛዝ ዝርዝሮች",
+    orderSummary: "የትዕዛዝ ማጠቃለያ",
+    orderNotes: "የትዕዛዝ ማስታወሻዎች",
+    
+    // Customer fields
+    name: "ስም:",
+    email: "ኢሜይል:",
+    phone: "ስልክ:",
+    room: "ክፍል:",
+    
+    // Order fields
+    orderDate: "የትዕዛዝ ቀን:",
+    paymentMethod: "የክፍያ ዘዴ:",
+    delivery: "ማድረስ:",
+    completedAt: "ተጠናቅቋል:",
+    address: "አድራሻ:",
+    cash: "ጥሬ ገንዘብ",
+    yesDelivery: "አዎ",
+    noPickup: "አይ (መውሰድ)",
+    
+    // Table headers
+    product: "ምርት",
+    sku: "ምርት ኮድ",
+    qty: "ብዛት",
+    unitPrice: "የአንድ ዋጋ",
+    total: "ጠቅላላ",
+    totalLabel: "ጠቅላላ",
+    note: "ማስታወሻ:",
+    tax: "ታክስ",
+    subtotal: "ንዑስ ጠቅላላ",
+    
+    // Footer
+    thankYou: "ለግዢዎ እናመሰግናለን!",
+    roomDeliveryMessage: "ትዕዛዝዎ ወደ ክፍልዎ ይደርሳል።",
+    pickupMessage: "እባክዎ ትዕዛዝዎን ከሱቁ ይውሰዱ።",
+    receiptGenerated: "ደረሰኝ የተፈጠረበት ቀን:",
+    frontDeskPerson: "የቅድሚያ ጠረጴዛ ሰራተኛ:",
+    
+    // Actions
+    continueToPayment: "ወደ ክፍያ ቀጥል",
+    closeContinue: "ዝጋና ቀጥል",
+    closeAndContinue: "ዝጋና ቀጥል",
+    download: "አውርድ",
   },
   navigation: {
     home: "ቤት",

@@ -27,6 +27,7 @@ import {
   Payment as PaymentIcon,
   CheckCircle as CheckIcon,
 } from '@mui/icons-material';
+import { useTranslation } from 'react-i18next';
 import { PaymentMethod } from '../../types/shop';
 import { COLORS } from '../../theme/themeColors';
 import { StandardButton } from '../common';
@@ -60,6 +61,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const mockPayment = useMockPayment();
+  const { t } = useTranslation();
   
   const [currentPaymentMethod, setCurrentPaymentMethod] = useState<PaymentMethod>(
     selectedPaymentMethod || PaymentMethod.CASH
@@ -83,24 +85,24 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
   const paymentMethods: PaymentMethodOption[] = [
     {
       value: PaymentMethod.CASH,
-      label: 'Cash Payment',
+      label: t('shopPayment.cashPayment'),
       icon: <CashIcon />,
       color: COLORS.PRIMARY_HOVER,
-      description: 'Pay with cash at the hotel reception'
+      description: t('shopPayment.cashDescription')
     },
     {
       value: PaymentMethod.CARD,
-      label: 'Credit/Debit Card',
+      label: t('shopPayment.creditDebitCard'),
       icon: <CreditCardIcon />,
       color: COLORS.PRIMARY,
-      description: 'Pay securely with your card'
+      description: t('shopPayment.cardDescription')
     },
     {
       value: PaymentMethod.MOBILE_MONEY,
-      label: 'Mobile Money',
+      label: t('shopPayment.mobileMoney'),
       icon: <MobileIcon />,
       color: COLORS.SECONDARY,
-      description: 'Mobile money payment'
+      description: t('shopPayment.mobileDescription')
     }
   ];  const formatCurrency = (amount: number) => {
     if (amount == null || isNaN(amount)) return 'ETB 0';
@@ -128,18 +130,18 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
     switch (currentPaymentMethod) {
       case PaymentMethod.CARD:
         if (!cardNumber.trim() || !cardExpiry.trim() || !cardCvv.trim() || !cardName.trim()) {
-          setError('Please fill in all card details');
+          setError(t('shopPayment.fillAllCardDetails'));
           return false;
         }
         if (cardNumber.replace(/[\s-]/g, '').length < 16) {
-          setError('Please enter a valid card number');
+          setError(t('shopPayment.enterValidCardNumber'));
           return false;
         }
         break;
 
       case PaymentMethod.MOBILE_MONEY:
         if (!phoneNumber.trim() || !mobileProvider.trim()) {
-          setError('Please fill in mobile money details');
+          setError(t('shopPayment.fillMobileDetails'));
           return false;
         }
         break;
@@ -195,7 +197,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
         
         // Check if payment failed
         if (!paymentResult.success) {
-          throw new Error(paymentResult.message || 'Payment processing failed');
+          throw new Error(paymentResult.message || t('shopPayment.paymentProcessingFailed'));
         }
         
         reference = paymentResult.paymentReference;
@@ -210,7 +212,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
       }, 1500);
 
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Payment processing failed');
+      setError(err instanceof Error ? err.message : t('shopPayment.paymentProcessingFailed'));
     } finally {
       setProcessing(false);
     }
@@ -260,14 +262,14 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                     mb: 0.5,
                     textShadow: '0 2px 4px rgba(0,0,0,0.1)',
                   }}>
-                    Secure Card Payment
+                    {t('shopPayment.secureCardPayment')}
                   </Typography>
                   <Typography variant="body2" sx={{ 
                     color: '#1e40af',
                     mb: 2,
                     opacity: 0.8,
                   }}>
-                    SSL encrypted payment processing
+                    {t('shopPayment.sslEncrypted')}
                   </Typography>
                   <Typography variant="h6" sx={{ 
                     color: '#1e40af',
@@ -275,7 +277,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                     fontSize: '1.4rem',
                     textShadow: '0 2px 4px rgba(0,0,0,0.1)',
                   }}>
-                    Amount: {formatCurrency(totalAmount)}
+                    {t('shopPayment.amountLabel')} {formatCurrency(totalAmount)}
                   </Typography>
                 </Box>
                 
@@ -286,7 +288,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                       fullWidth
                       value={cardName}
                       onChange={(e) => setCardName(e.target.value)}
-                      placeholder="Cardholder Name (e.g., John Doe)"
+                      placeholder={t('shopPayment.cardholderNamePlaceholder')}
                       variant="outlined"
                       sx={{
                         '& .MuiOutlinedInput-root': {
@@ -323,7 +325,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                         const formatted = value.replace(/(\d{4})(?=\d)/g, '$1 ');
                         setCardNumber(formatted);
                       }}
-                      placeholder="Card Number (1234 5678 9012 3456)"
+                      placeholder={t('shopPayment.cardNumberPlaceholder')}
                       inputProps={{ maxLength: 19 }}
                       variant="outlined"
                       sx={{
@@ -361,7 +363,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                         const formatted = value.replace(/(\d{2})(\d{2})/, '$1/$2');
                         setCardExpiry(formatted);
                       }}
-                      placeholder="Expiry (MM/YY)"
+                      placeholder={t('shopPayment.expiryPlaceholder')}
                       inputProps={{ maxLength: 5 }}
                       variant="outlined"
                       sx={{
@@ -395,7 +397,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                       fullWidth
                       value={cardCvv}
                       onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, ''))}
-                      placeholder="CVV (123)"
+                      placeholder={t('shopPayment.cvvPlaceholder')}
                       inputProps={{ maxLength: 4 }}
                       variant="outlined"
                       sx={{
@@ -473,13 +475,13 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                     mb: 0.5,
                     textShadow: '0 2px 4px rgba(0,0,0,0.1)',
                   }}>
-                    Mobile Money Payment
+                    {t('shopPayment.mobileMoneyPayment')}
                   </Typography>
                   <Typography variant="body2" sx={{ 
                     color: 'rgba(30, 64, 175, 0.8)',
                     mb: 2
                   }}>
-                    Pay securely with your mobile money account
+                    {t('shopPayment.paySecurelyMobile')}
                   </Typography>
                   <Typography variant="h6" sx={{ 
                     color: '#1e40af',
@@ -487,7 +489,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                     fontSize: '1.4rem',
                     textShadow: '0 2px 4px rgba(0,0,0,0.1)',
                   }}>
-                    Amount: {formatCurrency(totalAmount)}
+                    {t('shopPayment.amountLabel')} {formatCurrency(totalAmount)}
                   </Typography>
                 </Box>
                 
@@ -523,7 +525,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                         }}
                       >
                         <MenuItem value="" disabled sx={{ color: 'rgba(30, 64, 175, 0.5)' }}>
-                          Select Mobile Money Provider
+                          {t('shopPayment.selectMobileProvider')}
                         </MenuItem>
                         <MenuItem value="M-birr">
                           🇪🇹 M-birr
@@ -542,7 +544,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                       fullWidth
                       value={phoneNumber}
                       onChange={(e) => setPhoneNumber(e.target.value)}
-                      placeholder="Phone Number (+251 9XX XXX XXX)"
+                      placeholder={t('shopPayment.phoneNumberPlaceholder')}
                       variant="outlined"
                       sx={{
                         '& .MuiOutlinedInput-root': {
@@ -621,14 +623,14 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                   mb: 2,
                   textShadow: '0 2px 4px rgba(0,0,0,0.1)',
                 }}>
-                  Cash Payment
+                  {t('shopPayment.cashPayment')}
                 </Typography>
                 <Typography variant="body1" sx={{ 
                   color: 'rgba(30, 64, 175, 0.8)',
                   mb: 3,
                   fontSize: '1.1rem',
                 }}>
-                  Please collect cash payment from customer at the counter.
+                  {t('shopPayment.collectCashPayment')}
                 </Typography>
                 <Box sx={{ 
                   backgroundColor: 'rgba(255, 255, 255, 0.7)',
@@ -648,7 +650,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                     color: 'rgba(30, 64, 175, 0.8)',
                     mt: 1,
                   }}>
-                    Amount to collect
+                    {t('shopPayment.amountToCollect')}
                   </Typography>
                 </Box>
               </CardContent>
@@ -700,14 +702,14 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                   mb: 2,
                   textShadow: '0 2px 4px rgba(0,0,0,0.1)',
                 }}>
-                  Pay at Front Desk
+                  {t('shopPayment.payAtFrontDesk')}
                 </Typography>
                 <Typography variant="body1" sx={{ 
                   color: 'rgba(30, 64, 175, 0.8)',
                   mb: 3,
                   fontSize: '1.1rem',
                 }}>
-                  Customer will complete payment at the front desk.
+                  {t('shopPayment.customerPaysFrontDesk')}
                 </Typography>
                 <Box sx={{ 
                   backgroundColor: 'rgba(255, 255, 255, 0.7)',
@@ -727,7 +729,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                     color: 'rgba(30, 64, 175, 0.8)',
                     mt: 1,
                   }}>
-                    Total amount
+                    {t('shopPayment.totalAmount')}
                   </Typography>
                 </Box>
               </CardContent>
@@ -740,7 +742,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
     }
   };
 
-  if (paymentSuccess) {
+  if (showSuccess || paymentSuccess) {
     return (
       <Dialog 
         open={open} 
@@ -777,14 +779,14 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
             mb: 2,
             textShadow: '0 2px 4px rgba(0,0,0,0.3)',
           }}>
-            Payment Successful!
+            {t('shopPayment.paymentSuccessful')}
           </Typography>
           <Typography variant="body1" sx={{ 
             color: 'rgba(255, 255, 255, 0.9)',
             fontSize: '1.2rem',
             mb: 3,
           }}>
-            Payment has been processed successfully
+            {t('shopPayment.paymentProcessedSuccessfully')}
           </Typography>
           {paymentReference && (
             <Box sx={{ 
@@ -799,7 +801,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                 color: 'rgba(255, 255, 255, 0.8)',
                 mb: 0.5 
               }}>
-                Reference Number:
+                {t('shopPayment.referenceNumber')}
               </Typography>
               <Typography variant="h6" sx={{ 
                 color: '#ffffff',
@@ -819,7 +821,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
               color: 'rgba(255, 255, 255, 0.9)',
               fontSize: '1rem',
             }}>
-              Completing your order...
+              {t('shopPayment.completingYourOrder')}
             </Typography>
           </Box>
         </DialogContent>
@@ -877,7 +879,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
               textShadow: '0 2px 4px rgba(0,0,0,0.3)',
               mb: 0.5,
             }}>
-              Complete Payment
+              {t('shopPayment.completePayment')}
             </Typography>
             <Typography variant="h6" sx={{ 
               color: 'rgba(255, 255, 255, 0.9)',
@@ -903,7 +905,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
           color: '#1e3a8a',
           fontWeight: 700,
         }}>
-          Select Payment Method
+          {t('shopPayment.selectPaymentMethod')}
         </Typography>
         
         <FormControl fullWidth sx={{ mb: { xs: 2, md: 3 } }}>
@@ -948,7 +950,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
             }}
           >
             <MenuItem value="" disabled sx={{ color: 'rgba(30, 58, 138, 0.5)' }}>
-              Select Payment Method
+              {t('shopPayment.selectPaymentMethod')}
             </MenuItem>
             {paymentMethods.map((method) => (
               <MenuItem 
@@ -1042,7 +1044,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
             }
           }}
         >
-          Cancel
+          {t('shopPayment.cancel')}
         </StandardButton>
         <StandardButton
           onClick={handleProcessPayment}
@@ -1065,7 +1067,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
             }
           }}
         >
-          {processing ? 'Processing...' : `Pay ${formatCurrency(totalAmount)}`}
+          {processing ? t('shopPayment.processing') : `${t('shopPayment.pay')} ${formatCurrency(totalAmount)}`}
         </StandardButton>
       </DialogActions>
     </Dialog>

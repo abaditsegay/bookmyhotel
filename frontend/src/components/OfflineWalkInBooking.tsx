@@ -553,7 +553,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                                 color: 'text.primary',
                                 fontSize: '1.1rem'
                               }}>
-                                Room {room.roomNumber}
+                                {t('dashboard.hotelAdmin.offlineBooking.roomSelection.roomNumber', { number: room.roomNumber })}
                               </Typography>
                               <Chip 
                                 label={room.roomType.toUpperCase()} 
@@ -700,90 +700,206 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
       case 2:
         return (
           <Box>
-            <Typography variant="h6" gutterBottom>
-              {t('dashboard.hotelAdmin.offlineBooking.confirmation.title')}
-            </Typography>
+            {/* Confirmation Header */}
+            <Box sx={{ 
+              textAlign: 'center',
+              mb: 4,
+              p: 3,
+              backgroundColor: theme.palette.background.paper,
+              borderRadius: 2,
+              border: `2px solid ${theme.palette.divider}`,
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+            }}>
+              <Typography variant="h5" sx={{ 
+                fontWeight: 700,
+                color: theme.palette.text.primary,
+                mb: 1,
+              }}>
+                {t('dashboard.hotelAdmin.offlineBooking.confirmation.title')}
+              </Typography>
+              <Typography variant="body1" sx={{ color: theme.palette.text.secondary }}>
+                {t('dashboard.hotelAdmin.offlineBooking.confirmation.description')}
+              </Typography>
+            </Box>
             
-            <Grid container spacing={2}>
+            <Grid container spacing={3}>
+              {/* Guest Information */}
               <Grid item xs={12} sm={6}>
-                <Card>
-                  <CardContent>
-                    <Typography variant="subtitle1" gutterBottom>
-                      {t('dashboard.hotelAdmin.offlineBooking.confirmation.guestInformationTitle')}
-                    </Typography>
-                    <Typography variant="body2">
-                      {guestInfo.firstName} {guestInfo.lastName}
-                    </Typography>
-                    <Typography variant="body2">
-                      <strong>{t('dashboard.hotelAdmin.offlineBooking.confirmation.emailLabel')}</strong> {guestInfo.email}
-                    </Typography>
-                    <Typography variant="body2">
-                      <strong>{t('dashboard.hotelAdmin.offlineBooking.confirmation.phoneLabel')}</strong> {guestInfo.phone}
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-              
-              <Grid item xs={12} sm={6}>
-                <Card>
-                  <CardContent>
-                    <Typography variant="subtitle1" gutterBottom>
-                      {t('dashboard.hotelAdmin.offlineBooking.confirmation.roomDetailsTitle')}
-                    </Typography>
-                    <Typography variant="body2">
-                      <strong>{t('dashboard.hotelAdmin.offlineBooking.confirmation.roomLabel')}</strong> {selectedRoom?.roomNumber} ({selectedRoom?.roomType})
-                    </Typography>
-                    <Typography variant="body2">
-                      <strong>{t('dashboard.hotelAdmin.offlineBooking.confirmation.checkInLabel')}</strong> {format(checkInDate, 'MMM dd, yyyy')}
-                    </Typography>
-                    <Typography variant="body2">
-                      <strong>{t('dashboard.hotelAdmin.offlineBooking.confirmation.checkOutLabel')}</strong> {format(checkOutDate, 'MMM dd, yyyy')}
-                    </Typography>
-                    <Typography variant="body2">
-                      <strong>{t('dashboard.hotelAdmin.offlineBooking.confirmation.guestsLabel')}</strong> {guests}
-                    </Typography>
-                    {specialRequests && (
-                      <Typography variant="body2">
-                        <strong>{t('dashboard.hotelAdmin.offlineBooking.confirmation.specialRequestsLabel')}</strong> {specialRequests}
-                      </Typography>
-                    )}
-                  </CardContent>
-                </Card>
-              </Grid>
-              
-              <Grid item xs={12}>
-                <Card>
-                  <CardContent>
-                    <Typography variant="subtitle1" gutterBottom>
-                      {t('dashboard.hotelAdmin.offlineBooking.confirmation.pricingSummaryTitle')}
-                    </Typography>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                      <Typography variant="body2">
-                        {(() => {
-                          const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24));
-                          return t('dashboard.hotelAdmin.offlineBooking.roomSelection.pricingCalculation', {
-                            pricePerNight: formatCurrency(selectedRoom?.pricePerNight || 0),
-                            nights,
-                            nightsPlural: nights !== 1 ? 's' : ''
-                          });
-                        })()}
-                      </Typography>
-                      <Typography variant="body2">
-                        {formatCurrency(calculateTotalAmount() || 0)}
+                <Card elevation={2} sx={{ 
+                  backgroundColor: theme.palette.background.paper,
+                  border: `2px solid ${theme.palette.divider}`,
+                  borderRadius: 2,
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                }}>
+                  <CardContent sx={{ p: 3 }}>
+                    <Box sx={{ 
+                      display: 'flex', 
+                      alignItems: 'center',
+                      mb: 2,
+                    }}>
+                      <Typography variant="h6" sx={{ fontWeight: 700, color: COLORS.PRIMARY }}>
+                        {t('dashboard.hotelAdmin.offlineBooking.confirmation.guestInformationTitle')}
                       </Typography>
                     </Box>
-                    <Divider />
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
-                      <Typography variant="h6">
+                    <Box sx={{ space: 1.5 }}>
+                      <Box sx={{ mb: 1.5 }}>
+                        <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700 }}>
+                          {t('walkInBooking.confirmation.fullName')}
+                        </Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                          {guestInfo.firstName} {guestInfo.lastName}
+                        </Typography>
+                      </Box>
+                      <Box sx={{ mb: 1.5 }}>
+                        <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700 }}>
+                          {t('dashboard.hotelAdmin.offlineBooking.confirmation.emailLabel')}
+                        </Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                          {guestInfo.email}
+                        </Typography>
+                      </Box>
+                      <Box>
+                        <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700 }}>
+                          {t('dashboard.hotelAdmin.offlineBooking.confirmation.phoneLabel')}
+                        </Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                          {guestInfo.phone}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+              
+              {/* Stay Details */}
+              <Grid item xs={12} sm={6}>
+                <Card elevation={2} sx={{ 
+                  backgroundColor: theme.palette.background.paper,
+                  border: `2px solid ${theme.palette.divider}`,
+                  borderRadius: 2,
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                }}>
+                  <CardContent sx={{ p: 3 }}>
+                    <Box sx={{ 
+                      display: 'flex',
+                      alignItems: 'center',
+                      mb: 2,
+                    }}>
+                      <Typography variant="h6" sx={{ fontWeight: 700, color: COLORS.PRIMARY }}>
+                        {t('dashboard.hotelAdmin.offlineBooking.confirmation.roomDetailsTitle')}
+                      </Typography>
+                    </Box>
+                    
+                    <Box sx={{ space: 1.5 }}>
+                      <Box sx={{ mb: 1.5 }}>
+                        <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700 }}>
+                          {t('dashboard.hotelAdmin.offlineBooking.confirmation.roomLabel')}
+                        </Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                          {selectedRoom?.roomNumber} ({selectedRoom?.roomType})
+                        </Typography>
+                      </Box>
+                      <Box sx={{ mb: 1.5 }}>
+                        <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700 }}>
+                          {t('dashboard.hotelAdmin.offlineBooking.confirmation.checkInLabel')} - {t('dashboard.hotelAdmin.offlineBooking.confirmation.checkOutLabel')}
+                        </Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                          {format(checkInDate, 'MMM dd, yyyy')} - {format(checkOutDate, 'MMM dd, yyyy')}
+                        </Typography>
+                      </Box>
+                      <Box sx={{ mb: 1.5 }}>
+                        <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700 }}>
+                          {t('dashboard.hotelAdmin.offlineBooking.confirmation.guestsLabel')}
+                        </Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                          {guests} {guests !== 1 ? t('walkInBooking.confirmation.guestPlural') : t('walkInBooking.confirmation.guest')}
+                        </Typography>
+                      </Box>
+                      {specialRequests && (
+                        <Box>
+                          <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700 }}>
+                            {t('dashboard.hotelAdmin.offlineBooking.confirmation.specialRequestsLabel')}
+                          </Typography>
+                          <Typography variant="body2" sx={{ fontWeight: 600, fontStyle: 'italic' }}>
+                            {specialRequests}
+                          </Typography>
+                        </Box>
+                      )}
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+              
+              {/* Pricing Summary */}
+              <Grid item xs={12}>
+                <Card elevation={3} sx={{ 
+                  backgroundColor: theme.palette.background.paper,
+                  border: `2px solid ${theme.palette.divider}`,
+                  borderRadius: 2,
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                }}>
+                  <CardContent sx={{ p: 3 }}>
+                    <Box sx={{ 
+                      display: 'flex',
+                      alignItems: 'center',
+                      mb: 3,
+                    }}>
+                      <Typography variant="h6" sx={{ fontWeight: 700, color: COLORS.PRIMARY }}>
+                        {t('dashboard.hotelAdmin.offlineBooking.confirmation.pricingSummaryTitle')}
+                      </Typography>
+                    </Box>
+                    
+                    <Box sx={{ 
+                      p: 2,
+                      bgcolor: theme.palette.action.hover,
+                      borderRadius: 2,
+                      mb: 2,
+                      border: `1px solid ${theme.palette.divider}`,
+                    }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                        <Typography variant="body1">
+                          {(() => {
+                            const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24));
+                            return `${formatCurrency(selectedRoom?.pricePerNight || 0)}/night × ${nights} ${nights !== 1 ? 'nights' : 'night'}`;
+                          })()}
+                        </Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                          {formatCurrency(calculateTotalAmount() || 0)}
+                        </Typography>
+                      </Box>
+                    </Box>
+                    
+                    <Divider sx={{ my: 2 }} />
+                    
+                    <Box sx={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center',
+                      p: 2,
+                      bgcolor: COLORS.PRIMARY,
+                      borderRadius: 2,
+                      mb: 2,
+                    }}>
+                      <Typography variant="h5" sx={{ color: 'white', fontWeight: 700 }}>
                         {t('dashboard.hotelAdmin.offlineBooking.confirmation.totalAmountTitle')}
                       </Typography>
-                      <Typography variant="h6" color="primary.main">
+                      <Typography variant="h4" sx={{ color: 'white', fontWeight: 700 }}>
                         {formatCurrency(calculateTotalAmount() || 0)}
                       </Typography>
                     </Box>
-                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                      {t('dashboard.hotelAdmin.offlineBooking.confirmation.paymentNote')}
-                    </Typography>
+                    
+                    <Box sx={{
+                      p: 2,
+                      bgcolor: addAlpha(COLORS.PRIMARY, 0.1),
+                      color: COLORS.PRIMARY,
+                      borderRadius: 2,
+                      textAlign: 'center',
+                      border: `1px solid ${theme.palette.divider}`,
+                    }}>
+                      <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                        {t('dashboard.hotelAdmin.offlineBooking.confirmation.paymentNote')}
+                      </Typography>
+                    </Box>
                   </CardContent>
                 </Card>
               </Grid>

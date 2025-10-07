@@ -24,6 +24,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { format, addDays } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTenant } from '../../contexts/TenantContext';
 import { hotelApiService } from '../../services/hotelApi';
@@ -62,19 +63,23 @@ interface WalkInBookingModalProps {
   apiContext?: 'frontdesk' | 'hotel-admin'; // To distinguish which API to use
 }
 
-const steps = ['Guest Information', 'Room Selection', 'Confirmation'];
-
 const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
   open,
   onClose,
   onSuccess,
   apiContext = 'frontdesk', // Default to frontdesk for backwards compatibility
 }) => {
-  console.log('WalkInBookingModal render - open:', open); // Debug log
-  
+  const { t } = useTranslation();
   const { token, user } = useAuth();
   const { tenantId } = useTenant();
   const theme = useTheme();
+  
+  // Get translated steps
+  const steps = [
+    t('walkInBooking.steps.guestInformation'),
+    t('walkInBooking.steps.roomSelection'),
+    t('walkInBooking.steps.confirmation')
+  ];
   
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -157,12 +162,12 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
           }
         } catch (hotelError) {
           console.error('Failed to fetch hotel information:', hotelError);
-          setError('Failed to load hotel information. Please ensure you are logged in with appropriate permissions.');
+          setError(t('walkInBooking.messages.failedToLoadHotelPermissions'));
           return;
         }
       } catch (error) {
         console.error('Failed to load hotel info:', error);
-        setError('Failed to load hotel information');
+        setError(t('walkInBooking.messages.failedToLoadHotel'));
       }
     };
 
@@ -185,7 +190,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
       // Get hotel ID from user context - we'll need to add this to the front desk API
       loadHotelInfo();
     }
-  }, [open, token, tenantId, user?.role, user?.roles]);
+  }, [open, token, tenantId, user?.role, user?.roles, t]);
 
   // Load available rooms when dates/guests change and we're on step 1
   useEffect(() => {
@@ -304,7 +309,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
         setSelectedRoom(null);
       } catch (error) {
         console.error('Failed to load available rooms:', error);
-        setError('Failed to load available rooms. Please try again.');
+        setError(t('walkInBooking.messages.failedToLoadRooms'));
         setAvailableRooms([]);
       } finally {
         setRoomsLoading(false);
@@ -314,23 +319,23 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
     if (activeStep === 1 && hotelId && checkInDate && checkOutDate) {
       loadAvailableRooms();
     }
-  }, [activeStep, hotelId, checkInDate, checkOutDate, guests, token, user?.role, user?.roles, tenantId]);
+  }, [activeStep, hotelId, checkInDate, checkOutDate, guests, token, user?.role, user?.roles, tenantId, t]);
 
   const handleNext = () => {
     if (activeStep === 0) {
       // Validate guest information
       if (!guestInfo.firstName || !guestInfo.lastName || !guestInfo.email || !guestInfo.phone) {
-        setError('Please fill in all guest information fields');
+        setError(t('walkInBooking.validationErrors.fillAllFields'));
         return;
       }
       if (!guestInfo.email.includes('@')) {
-        setError('Please enter a valid email address');
+        setError(t('walkInBooking.validationErrors.invalidEmail'));
         return;
       }
     } else if (activeStep === 1) {
       // Validate room selection
       if (!selectedRoom) {
-        setError('Please select a room');
+        setError(t('walkInBooking.validationErrors.selectRoom'));
         return;
       }
     }
@@ -496,10 +501,10 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                       color: COLORS.PRIMARY,
                       mb: 0.5,
                     }}>
-                      Guest Information
+                      {t('walkInBooking.guestInformation.title')}
                     </Typography>
                     <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
-                      Please provide the guest's contact details
+                      {t('walkInBooking.guestInformation.description')}
                     </Typography>
                   </Box>
                 </Box>
@@ -508,7 +513,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                   <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
-                      label="First Name"
+                      label={t('walkInBooking.guestInformation.firstName')}
                       value={guestInfo.firstName}
                       onChange={handleGuestInfoChange('firstName')}
                       required
@@ -535,7 +540,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                   <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
-                      label="Last Name"
+                      label={t('walkInBooking.guestInformation.lastName')}
                       value={guestInfo.lastName}
                       onChange={handleGuestInfoChange('lastName')}
                       required
@@ -562,7 +567,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                   <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
-                      label="Email Address"
+                      label={t('walkInBooking.guestInformation.email')}
                       type="email"
                       value={guestInfo.email}
                       onChange={handleGuestInfoChange('email')}
@@ -590,7 +595,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                   <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
-                      label="Phone Number"
+                      label={t('walkInBooking.guestInformation.phone')}
                       value={guestInfo.phone}
                       onChange={handleGuestInfoChange('phone')}
                       required
@@ -640,10 +645,10 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                       color: COLORS.PRIMARY,
                       mb: 0.5,
                     }}>
-                      Stay Details
+                      {t('walkInBooking.stayDetails.title')}
                     </Typography>
                     <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
-                      Select dates and number of guests
+                      {t('walkInBooking.stayDetails.description')}
                     </Typography>
                   </Box>
                 </Box>
@@ -652,7 +657,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                   <Grid item xs={12} sm={4}>
                     <LocalizationProvider dateAdapter={AdapterDateFns}>
                       <DatePicker
-                        label="Check-in Date"
+                        label={t('walkInBooking.stayDetails.checkInDate')}
                         value={checkInDate}
                         onChange={(newValue) => newValue && setCheckInDate(newValue)}
                         minDate={new Date()}
@@ -684,7 +689,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                   <Grid item xs={12} sm={4}>
                     <LocalizationProvider dateAdapter={AdapterDateFns}>
                       <DatePicker
-                        label="Check-out Date"
+                        label={t('walkInBooking.stayDetails.checkOutDate')}
                         value={checkOutDate}
                         onChange={(newValue) => newValue && setCheckOutDate(newValue)}
                         minDate={addDays(checkInDate, 1)}
@@ -719,7 +724,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                       onChange={handleGuestsChange}
                       min={1}
                       max={10}
-                      label="Number of Guests"
+                      label={t('walkInBooking.stayDetails.numberOfGuests')}
                       fullWidth
                     />
                   </Grid>
@@ -733,23 +738,32 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
         return (
           <Box>
             <Typography variant="h6" gutterBottom sx={{ fontWeight: 700, color: COLORS.PRIMARY }}>
-              Available Rooms
+              {t('walkInBooking.roomSelection.title')}
             </Typography>
             <Typography variant="body2" sx={{ color: theme.palette.text.secondary }} gutterBottom>
-              {format(checkInDate, 'MMM dd, yyyy')} - {format(checkOutDate, 'MMM dd, yyyy')} • {guests} Guest{guests !== 1 ? 's' : ''}
+              {t('walkInBooking.roomSelection.description', { 
+                checkIn: format(checkInDate, 'MMM dd, yyyy'),
+                checkOut: format(checkOutDate, 'MMM dd, yyyy'),
+                guests: guests,
+                guestsPlural: guests !== 1 ? 's' : ''
+              })}
             </Typography>
             
             {roomsLoading ? (
               <Box sx={{ textAlign: 'center', py: 4 }}>
                 <CircularProgress size={40} />
                 <Typography variant="body2" sx={{ mt: 2 }}>
-                  Loading available rooms...
+                  {t('walkInBooking.roomSelection.loadingRooms')}
                 </Typography>
               </Box>
             ) : availableRooms.length === 0 ? (
               <Alert severity="warning">
-                No rooms available for {guests} guest{guests !== 1 ? 's' : ''} from {format(checkInDate, 'MMM dd')} to {format(checkOutDate, 'MMM dd')}. 
-                Please try different dates or reduce the number of guests.
+                {t('walkInBooking.roomSelection.noRoomsAvailable', {
+                  guests: guests,
+                  guestsPlural: guests !== 1 ? 's' : '',
+                  checkIn: format(checkInDate, 'MMM dd'),
+                  checkOut: format(checkOutDate, 'MMM dd')
+                })}
               </Alert>
             ) : (
               <Grid container spacing={2} sx={{ mt: 1 }}>
@@ -782,7 +796,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                             fontWeight: 600,
                             color: selectedRoom?.id === room.id ? COLORS.PRIMARY : 'inherit'
                           }}>
-                            Room {room.roomNumber}
+                            {t('walkInBooking.roomSelection.roomNumber')} {room.roomNumber}
                           </Typography>
                           <Chip 
                             label={room.roomType} 
@@ -798,7 +812,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                           color: theme.palette.text.secondary,
                           mb: 1
                         }}>
-                          Capacity: {room.capacity} guest{room.capacity !== 1 ? 's' : ''}
+                          {t('walkInBooking.roomSelection.capacity')}: {t(room.capacity === 1 ? 'walkInBooking.roomSelection.capacityText' : 'walkInBooking.roomSelection.capacityTextPlural', { count: room.capacity })}
                         </Typography>
                         {room.description && (
                           <Typography variant="body2" sx={{ 
@@ -812,7 +826,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                           color: COLORS.PRIMARY,
                           fontWeight: 700
                         }}>
-                          {formatCurrency(room.pricePerNight || 0)}/night
+                          {formatCurrency(room.pricePerNight || 0)}{t('walkInBooking.roomSelection.perNightShort')}
                         </Typography>
                       </CardContent>
                     </Card>
@@ -825,12 +839,12 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
               <Box sx={{ mt: 2 }}>
                 <TextField
                   fullWidth
-                  label="Special Requests (Optional)"
+                  label={t('walkInBooking.roomSelection.specialRequests')}
                   multiline
                   rows={3}
                   value={specialRequests}
                   onChange={handleSpecialRequestsChange}
-                  placeholder="Any special requests or notes for the guest stay..."
+                  placeholder={t('walkInBooking.roomSelection.specialRequestsPlaceholder')}
                   sx={{
                     '& .MuiInputBase-root': {
                       backgroundColor: theme.palette.background.paper,
@@ -872,10 +886,10 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                 color: theme.palette.text.primary,
                 mb: 1,
               }}>
-                Booking Confirmation
+                {t('walkInBooking.confirmation.bookingConfirmationTitle')}
               </Typography>
               <Typography variant="body1" sx={{ color: theme.palette.text.secondary }}>
-                Please review the details before creating the booking
+                {t('walkInBooking.confirmation.reviewDetails')}
               </Typography>
             </Box>
             
@@ -890,19 +904,17 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                 }}>
                   <CardContent sx={{ p: 3 }}>
                     <Box sx={{ 
-                      display: 'flex',
+                      display: 'flex', 
                       alignItems: 'center',
                       mb: 2,
                     }}>
                       <Typography variant="h6" sx={{ fontWeight: 700, color: COLORS.PRIMARY }}>
-                        Guest Information
+                        {t('walkInBooking.confirmation.guestInformation')}
                       </Typography>
-                    </Box>
-                    
-                    <Box sx={{ space: 1.5 }}>
+                    </Box>                    <Box sx={{ space: 1.5 }}>
                       <Box sx={{ mb: 1.5 }}>
                         <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700 }}>
-                          FULL NAME
+                          {t('walkInBooking.confirmation.fullName')}
                         </Typography>
                         <Typography variant="body1" sx={{ fontWeight: 600 }}>
                           {guestInfo.firstName} {guestInfo.lastName}
@@ -910,7 +922,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                       </Box>
                       <Box sx={{ mb: 1.5 }}>
                         <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700 }}>
-                          EMAIL ADDRESS
+                          {t('walkInBooking.confirmation.emailAddress')}
                         </Typography>
                         <Typography variant="body1" sx={{ fontWeight: 600 }}>
                           {guestInfo.email}
@@ -918,7 +930,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                       </Box>
                       <Box>
                         <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700 }}>
-                          PHONE NUMBER
+                          {t('walkInBooking.confirmation.phoneNumber')}
                         </Typography>
                         <Typography variant="body1" sx={{ fontWeight: 600 }}>
                           {guestInfo.phone}
@@ -944,14 +956,14 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                       mb: 2,
                     }}>
                       <Typography variant="h6" sx={{ fontWeight: 700, color: COLORS.PRIMARY }}>
-                        Stay Details
+                        {t('walkInBooking.confirmation.stayDetails')}
                       </Typography>
                     </Box>
                     
                     <Box sx={{ space: 1.5 }}>
                       <Box sx={{ mb: 1.5 }}>
                         <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700 }}>
-                          ROOM
+                          {t('walkInBooking.confirmation.room')}
                         </Typography>
                         <Typography variant="body1" sx={{ fontWeight: 600 }}>
                           {selectedRoom?.roomNumber} ({selectedRoom?.roomType})
@@ -959,7 +971,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                       </Box>
                       <Box sx={{ mb: 1.5 }}>
                         <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700 }}>
-                          CHECK-IN / CHECK-OUT
+                          {t('walkInBooking.confirmation.checkInCheckOut')}
                         </Typography>
                         <Typography variant="body1" sx={{ fontWeight: 600 }}>
                           {format(checkInDate, 'MMM dd, yyyy')} - {format(checkOutDate, 'MMM dd, yyyy')}
@@ -967,16 +979,16 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                       </Box>
                       <Box sx={{ mb: 1.5 }}>
                         <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700 }}>
-                          GUESTS
+                          {t('walkInBooking.confirmation.guests')}
                         </Typography>
                         <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                          {guests} guest{guests !== 1 ? 's' : ''}
+                          {guests} {guests !== 1 ? t('walkInBooking.confirmation.guestPlural') : t('walkInBooking.confirmation.guest')}
                         </Typography>
                       </Box>
                       {specialRequests && (
                         <Box>
                           <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700 }}>
-                            SPECIAL REQUESTS
+                            {t('walkInBooking.confirmation.specialRequests')}
                           </Typography>
                           <Typography variant="body2" sx={{ fontWeight: 600, fontStyle: 'italic' }}>
                             {specialRequests}
@@ -1003,7 +1015,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                       mb: 3,
                     }}>
                       <Typography variant="h6" sx={{ fontWeight: 700, color: COLORS.PRIMARY }}>
-                        Pricing Summary
+                        {t('walkInBooking.confirmation.pricingSummary')}
                       </Typography>
                     </Box>
                     
@@ -1016,7 +1028,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                     }}>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                         <Typography variant="body1">
-                          {formatCurrency(selectedRoom?.pricePerNight || 0)}/night × {Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24))} night{Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)) !== 1 ? 's' : ''}
+                          {formatCurrency(selectedRoom?.pricePerNight || 0)}{t('walkInBooking.confirmation.perNight')} × {Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24))} {Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)) !== 1 ? t('walkInBooking.confirmation.nightPlural') : t('walkInBooking.confirmation.night')}
                         </Typography>
                         <Typography variant="body1" sx={{ fontWeight: 600 }}>
                           {formatCurrency(calculateTotalAmount() || 0)}
@@ -1036,14 +1048,14 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                       mb: 2,
                     }}>
                       <Typography variant="h5" sx={{ color: 'white', fontWeight: 700 }}>
-                        Total Amount
+                        {t('walkInBooking.confirmation.totalAmount')}
                       </Typography>
                       <Typography variant="h4" sx={{ color: 'white', fontWeight: 700 }}>
                         {formatCurrency(calculateTotalAmount() || 0)}
                       </Typography>
                     </Box>
                     
-                    <Box sx={{ 
+                    <Box sx={{
                       p: 2,
                       bgcolor: addAlpha(COLORS.PRIMARY, 0.1),
                       color: COLORS.PRIMARY,
@@ -1052,7 +1064,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                       border: `1px solid ${theme.palette.divider}`,
                     }}>
                       <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                        Payment will be processed at the front desk
+                        {t('walkInBooking.confirmation.paymentNote')}
                       </Typography>
                     </Box>
                   </CardContent>
@@ -1101,10 +1113,10 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                 color: COLORS.PRIMARY,
               }}
             >
-              Walk-in Guest Booking
+              {t('walkInBooking.title')}
             </Typography>
             <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
-              Complete the guest booking process step by step
+              {t('walkInBooking.subtitle')}
             </Typography>
           </Box>
         </Box>
@@ -1193,7 +1205,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
             },
           }}
         >
-          Cancel
+          {t('walkInBooking.actions.cancel')}
         </Button>
         
         {activeStep > 0 && (
@@ -1209,7 +1221,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
               },
             }}
           >
-            Back
+            {t('walkInBooking.actions.back')}
           </Button>
         )}
         
@@ -1231,7 +1243,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
               },
             }}
           >
-            {roomsLoading && activeStep === 1 ? 'Loading Rooms...' : 'Next'}
+            {roomsLoading && activeStep === 1 ? t('walkInBooking.actions.loadingRooms') : t('walkInBooking.actions.next')}
           </Button>
         ) : (
           <Button 
@@ -1251,7 +1263,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
               },
             }}
           >
-            {loading ? 'Creating Booking...' : 'Create Booking'}
+            {loading ? t('walkInBooking.messages.creatingBooking') : t('walkInBooking.actions.confirm')}
           </Button>
         )}
       </DialogActions>
