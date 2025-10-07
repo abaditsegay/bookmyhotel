@@ -1,4 +1,374 @@
 export const amTranslations = {
+  // Authentication & User Management
+  auth: {
+    login: {
+      title: "ሸገሮም ሆቴል ቦታ ማስያዝ አስተዳደር",
+      signIn: "ግባ",
+      signInSubtitle: "እንኳን ደህና መጣህ! እባክህ ወደ መለያህ ግባ",
+      createAccount: "መለያ ፍጠር",
+      createAccountSubtitle: "ዛሬ ከእኛ ጋር ተቀላቀል! መለያህን ፍጠር ለመጀመር",
+      signInToBook: "ለ {hotelName} ቦታ ማስያዝህን ለማጠናቀቅ ግባ",
+      emailLabel: "የኢሜል አድራሻ",
+      passwordLabel: "የይለፍ ቃል",
+      firstNameLabel: "የመጀመሪያ ስም",
+      lastNameLabel: "የአባት ስም",
+      phoneLabel: "ስልክ ቁጥር (አማራጭ)",
+      confirmPasswordLabel: "የይለፍ ቃል አረጋግጥ",
+      signingIn: "በመግባት ላይ...",
+      signInButton: "ግባ",
+      createAccountButton: "መለያ ፍጠር",
+      creating: "መለያ በመፍጠር ላይ...",
+      alreadyHaveAccount: "ቀደም ሲል መለያ አለህ?",
+      needAccount: "መለያ ይጠፈልግሃል?",
+      forgotPassword: "የይለፍ ቃል ረሳህ?",
+      
+      // Sample Users Section
+      sampleUsers: "ፈጣን መግቢያ (ቅድመ ዕይታ)",
+      systemAdmin: "የስርዓት አስተዳዳሪ",
+      hotelAdmin: "የሆቴል አስተዳዳሪ",
+      frontDesk: "የመቀበያ ዴስክ",
+      customer: "ደንበኛ",
+      
+      // Validation Messages
+      passwordTooShort: "የይለፍ ቃል ቢያንስ 6 ቁምፊዎች ሊኖረው ይገባል",
+      invalidEmail: "እባክህ ትክክለኛ ኢሜል አድራሻ ስጥ",
+      passwordsNoMatch: "የይለፍ ቃሎች አይመሳሰሉም",
+      registrationSuccess: "መመዝገብ በተሳካ ሁኔታ ተጠናቋል! በማዞር ላይ...",
+      loginFailed: "መግባት አልተሳካም",
+      registrationFailed: "መመዝገብ አልተሳካም"
+    }
+  },
+
+  // Dashboard Pages
+  dashboard: {
+    system: {
+      title: "የስርዓት ዳሽቦርድ",
+      overview: "አጠቃላይ እይታ",
+      analytics: "ትንታኔ",
+      totalBookings: "ጠቅላላ ቦታ ማስያዞች",
+      activeHotels: "ንቁ ሆቴሎች",
+      monthlyRevenue: "ወርሃዊ ገቢ",
+      systemUsers: "የስርዓት ተጠቃሚዎች",
+      recentActivity: "የቅርብ ጊዜ እንቅስቃሴ",
+      performanceMetrics: "የአፈጻጸም መለኪያዎች",
+      quickActions: "ፈጣን እርምጃዎች"
+    },
+    hotel: {
+      title: "የሆቴል ዳሽቦርድ",
+      todaysCheckIns: "የዛሬ ወደ ሆቴል መግቢያዎች",
+      todaysCheckOuts: "የዛሬ ከሆቴል መውጫዎች",
+      occupancyRate: "የመኖሪያ መጠን",
+      availableRooms: "ክፍት ክፍሎች",
+      pendingReservations: "በመጠባበቅ ላይ ያሉ ማስያዝ",
+      recentBookings: "የቅርብ ጊዜ ቦታ ማስያዞች"
+    },
+    frontDesk: {
+      title: "የመቀበያ ዴስክ ዳሽቦርድ",
+      checkinRequests: "የወደ ሆቴል መግቢያ ጥያቄዎች",
+      checkoutRequests: "የከሆቴል መውጫ ጥያቄዎች",
+      roomStatus: "የክፍል ሁኔታ",
+      guestRequests: "የእንግዳ ጥያቄዎች",
+      maintenance: "ጥገና",
+      housekeeping: "የቤት ጽዳት"
+    }
+  },
+
+  // Booking Management
+  booking: {
+    details: {
+      title: "የቦታ ማስያዝ ዝርዝሮች",
+      guestInformation: "የእንግዳ መረጃ",
+      guestName: "የእንግዳ ስም",
+      email: "ኢሜል",
+      phone: "ስልክ",
+      confirmationNumber: "የማረጋገጫ ቁጥር",
+      
+      hotelInformation: "የሆቴል መረጃ",
+      hotelName: "የሆቴል ስም",
+      hotelAddress: "የሆቴል አድራሻ",
+      
+      roomDetails: "የክፍል ዝርዝሮች",
+      roomType: "የክፍል አይነት",
+      roomNumber: "የክፍል ቁጥር",
+      roomNumberPlaceholder: "የክፍል ቁጥር ያስገቡ ወይም በመግቢያ ጊዜ ይመድቡ",
+      
+      stayDetails: "የመቆየት ዝርዝሮች",
+      checkInDate: "የመግቢያ ቀን",
+      checkOutDate: "የመውጫ ቀን",
+      pricePerNight: "በሌሊት ዋጋ",
+      totalAmount: "ጠቅላላ መጠን",
+      guests: "እንግዶች",
+      duration: "ጊዜ",
+      
+      paymentDetails: "የክፍያ ዝርዝሮች",
+      bookingDate: "የቦታ ማስያዝ ቀን",
+      paymentIntentId: "የክፍያ ማንነት ID",
+      paymentStatus: "የክፍያ ሁኔታ",
+      
+      // Actions
+      checkIn: "ወደ ሆቴል ግባ",
+      checkOut: "ከሆቴል ውጣ",
+      cancel: "ቦታ ማስያዙን ሰርዝ",
+      modify: "ቦታ ማስያዙን ቀይር",
+      sendConfirmation: "ማረጋገጫ ላክ",
+      
+      // Status
+      confirmed: "ተረጋግጧል",
+      checkedIn: "ወደ ሆቴል ገብቷል",
+      checkedOut: "ከሆቴል ወጥቷል",
+      cancelled: "ተሰርዟል",
+      pending: "በመጠባበቅ ላይ"
+    }
+  },
+
+  // Hotel Management
+  hotel: {
+    registration: {
+      title: "የሆቴል መመዝገቢያ",
+      subtitle: "ሆቴልዎን በእኛ መድረክ ይመዝግቡ",
+      
+      basicInfo: "መሠረታዊ መረጃ",
+      hotelName: "የሆቴል ስም",
+      hotelNamePlaceholder: "የሆቴልዎን ስም ያስገቡ",
+      contactPerson: "የመገናኛ ሰው",
+      contactPersonPlaceholder: "የመገናኛ ሰው ስም ያስገቡ",
+      description: "መግለጫ",
+      descriptionPlaceholder: "ሆቴልዎን ይግለጹ",
+      
+      location: "አካባቢ",
+      address: "አድራሻ",
+      addressPlaceholder: "የሆቴልዎን አድራሻ ያስገቡ",
+      city: "ከተማ",
+      cityPlaceholder: "ከተማ ያስገቡ",
+      country: "ሀገር",
+      countryPlaceholder: "ሀገር ያስገቡ",
+      
+      contact: "የመገናኛ መረጃ",
+      communicationPhone: "ስልክ (መገናኛ)",
+      communicationPhonePlaceholder: "የመገናኛ ስልክ ቁጥር ያስገቡ",
+      communicationPhoneHelper: "ለአጠቃላይ መገናኛ ዋና ስልክ",
+      mobilePaymentPhone: "የሞባይል ክፍያ ስልክ",
+      mobilePaymentPhonePlaceholder: "የሞባይል ክፍያ ስልክ ቁጥር ያስገቡ",
+      mobilePaymentPhoneHelper: "ለክፍያዎች ዋና የሞባይል ገንዘብ መለያ",
+      mobilePaymentPhone2: "የሞባይል ክፍያ ስልክ 2 (አማራጭ)",
+      mobilePaymentPhone2Placeholder: "ሁለተኛ የሞባይል ክፍያ ስልክ ያስገቡ",
+      mobilePaymentPhone2Helper: "አማራጭ ሁለተኛ የሞባይል ገንዘብ መለያ",
+      contactEmail: "የመገናኛ ኢሜል",
+      
+      pricing: "የዋጋ አወጣጥ",
+      currency: "ምንዛሬ",
+      basePrice: "መሠረታዊ ዋጋ በሌሊት",
+      taxRate: "የግብር መጠን (%)",
+      
+      submitButton: "ሆቴል መዝግብ",
+      submitting: "በመመዝገብ ላይ...",
+      success: "ሆቴል በተሳካ ሁኔታ ተመዝግቧል!",
+      error: "መመዝገብ አልተሳካም። እባክዎ እንደገና ይሞክሩ።"
+    },
+    management: {
+      title: "የሆቴል አስተዳደር",
+      addHotel: "ሆቴል ጨምር",
+      editHotel: "ሆቴል ቀይር",
+      deleteHotel: "ሆቴል ሰርዝ",
+      viewHotel: "ሆቴል ተመልከት",
+      hotelDetails: "የሆቴል ዝርዝሮች",
+      totalRooms: "ጠቅላላ ክፍሎች",
+      activateHotel: "ሆቴል አንቃ",
+      deactivateHotel: "ሆቴል አቦዝ"
+    }
+  },
+
+  // Room Management
+  rooms: {
+    management: {
+      title: "የክፍል አስተዳደር",
+      addRoom: "ክፍል ጨምር",
+      editRoom: "ክፍል ቀይር",
+      deleteRoom: "ክፍል ሰርዝ",
+      roomNumber: "የክፍል ቁጥር",
+      roomType: "የክፍል አይነት",
+      capacity: "አቅም",
+      basePrice: "መሠረታዊ ዋጋ",
+      amenities: "አገልግሎቶች",
+      status: "ሁኔታ",
+      
+      // Room Status
+      available: "ክፍት",
+      occupied: "ተይዟል",
+      maintenance: "ጥገና",
+      outOfOrder: "ከሥራ ውጪ",
+      cleaning: "ጽዳት",
+      
+      // Room Types
+      standard: "መደበኛ",
+      deluxe: "ዴሉክስ",
+      suite: "ስዊት",
+      premium: "ፕሪሚየም",
+      
+      // Actions
+      assignGuest: "እንግዳ መድብ",
+      markMaintenance: "ለጥገና ምልክት አድርግ",
+      markCleaning: "ለጽዳት ምልክት አድርግ",
+      markAvailable: "ክፍት ምልክት አድርግ",
+      fixStatus: "🤖 ሁኔታ አስተሳስር"
+    }
+  },
+
+  // Staff Management
+  staff: {
+    management: {
+      title: "የሰራተኛ አስተዳደር",
+      addStaff: "ሰራተኛ ጨምር",
+      editStaff: "ሰራተኛ ቀይር",
+      deleteStaff: "ሰራተኛ ሰርዝ",
+      
+      personalInfo: "ግላዊ መረጃ",
+      firstName: "የመጀመሪያ ስም",
+      lastName: "የአባት ስም",
+      email: "ኢሜል",
+      phone: "ስልክ",
+      role: "ሚና",
+      department: "ክፍል",
+      hireDate: "የመቅጠር ቀን",
+      
+      // Staff Roles
+      manager: "አስተዳዳሪ",
+      frontDesk: "የመቀበያ ዴስክ",
+      housekeeping: "የቤት ጽዳት",
+      maintenance: "ጥገና",
+      security: "ደህንነት",
+      
+      // Schedule
+      schedule: "መርሃ ግብር",
+      shift: "ዘለት",
+      morningShift: "የጥዋት ዘለት",
+      afternoonShift: "የከሰዓት ዘለት",
+      nightShift: "የሌሊት ዘለት",
+      
+      workingHours: "የሥራ ሰዓቶች",
+      startTime: "የመጀመሪያ ሰዓት",
+      endTime: "የመጨረሻ ሰዓት"
+    }
+  },
+
+  // Notifications & Alerts
+  notifications: {
+    title: "ማሳወቂያዎች",
+    markAllRead: "ሁሉንም እንደተነበበ ምልክት አድርግ",
+    noNotifications: "አዲስ ማሳወቂያ የለም",
+    
+    types: {
+      booking: "አዲስ ቦታ ማስያዝ",
+      checkin: "መግቢያ ዝግጁ",
+      checkout: "መውጫ ጥያቄ",
+      payment: "ክፍያ ተቀብሏል",
+      maintenance: "ጥገና ያስፈልጋል",
+      system: "የስርዓት ማንቂያ"
+    },
+    
+    actions: {
+      view: "ተመልከት",
+      dismiss: "አስወግድ",
+      markRead: "እንደተነበበ ምልክት አድርግ"
+    }
+  },
+
+  // Receipts & Billing
+  receipts: {
+    official: "ይፋዊ ደረሰኝ",
+    guestInformation: "የእንግዳ መረጃ",
+    fullName: "ሙሉ ስም",
+    email: "ኢሜል",
+    phone: "ስልክ",
+    confirmation: "ማረጋገጫ",
+    guests: "እንግዶች",
+    
+    stayDetails: "የመቆየት ዝርዝሮች",
+    room: "ክፍል",
+    checkIn: "መግቢያ",
+    checkOut: "መውጫ",
+    duration: "ጊዜ",
+    ratePerNight: "በሌሊት ተመን",
+    
+    billing: {
+      description: "መግለጫ",
+      qty: "ብዛት",
+      unitPrice: "የአንድ ዋጋ",
+      amount: "መጠን",
+      subtotal: "ንዑስ ድምር",
+      taxesAndFees: "ግብሮች እና ክፍያዎች ንዑስ ድምር",
+      totalAmount: "ጠቅላላ መጠን",
+      officialReceipt: "ይህ ለመቆየትዎ ይፋዊ ደረሰኝ ነው።"
+    }
+  },
+
+  // Admin Interfaces
+  admin: {
+    tenant: {
+      title: "የተከራይ አስተዳደር",
+      addTenant: "ተከራይ ጨምር",
+      editTenant: "ተከራይ ቀይር",
+      deleteTenant: "ተከራይ ሰርዝ",
+      tenantName: "የተከራይ ስም",
+      subdomain: "ንዑስ ዶሜይን",
+      description: "መግለጫ",
+      status: "ሁኔታ",
+      active: "ንቁ",
+      inactive: "ንቁ ያልሆነ"
+    },
+    
+    user: {
+      title: "የተጠቃሚ አስተዳደር",
+      addUser: "ተጠቃሚ ጨምር",
+      editUser: "ተጠቃሚ ቀይር",
+      deleteUser: "ተጠቃሚ ሰርዝ",
+      createUser: "ተጠቃሚ ፍጠር",
+      userDetails: "የተጠቃሚ ዝርዝሮች",
+      role: "ሚና",
+      permissions: "ፈቃዶች",
+      lastLogin: "የመጨረሻ መግቢያ",
+      activateUser: "ተጠቃሚ አንቃ",
+      deactivateUser: "ተጠቃሚ አቦዝ"
+    },
+    
+    hotel: {
+      title: "የሆቴል አስተዳደር",
+      addHotel: "ሆቴል ጨምር",
+      editHotel: "ሆቴል ቀይር",
+      deleteHotel: "ሆቴል ሰርዝ",
+      viewHotel: "ሆቴል ተመልከት",
+      hotelDetails: "የሆቴል ዝርዝሮች",
+      totalRooms: "ጠቅላላ ክፍሎች",
+      activateHotel: "ሆቴል አንቃ",
+      deactivateHotel: "ሆቴል አቦዝ"
+    }
+  },
+
+  // Error Handling & Messages
+  errors: {
+    pageNotFound: "ገጽ አልተገኘም",
+    sessionExpired: "ክፍለ ጊዜ አልቋል",
+    loading: "በመጫን ላይ...",
+    networkError: "የአውታረ መረብ ስህተት",
+    serverError: "የአገልጋይ ስህተት",
+    unauthorized: "ያልተፈቀደ መዳረሻ",
+    accessDenied: "መዳረሻ ተከልክሏል",
+    
+    // Form Validation
+    required: "ይህ መስክ ያስፈልጋል",
+    invalidEmail: "እባክዎ ትክክለኛ ኢሜል አድራሻ ያስገቡ",
+    invalidPhone: "እባክዎ ትክክለኛ ስልክ ቁጥር ያስገቡ",
+    passwordTooShort: "የይለፍ ቃል ቢያንስ {min} ቁምፊዎች ሊኖረው ይገባል",
+    passwordsNoMatch: "የይለፍ ቃሎች አይመሳሰሉም",
+    
+    // API Errors
+    loadFailed: "መረጃ መጫን አልተሳካም",
+    saveFailed: "ማስቀመጥ አልተሳካም",
+    deleteFailed: "ማጥፋት አልተሳካም",
+    updateFailed: "ማዘመን አልተሳካም",
+    searchFailed: "ፍለጋ አልተሳካም። እባክዎ እንደገና ይሞክሩ።",
+    invalidDates: "እባክዎ ቀኖችዎን ይፈትሹ።"
+  },
   hotelSearch: {
     title: "ሆቴል ፍለጋ",
     subtitle: "በዓለም ዙሪያ የፍለጋዎን ፍጹም መቆያ ይፈልጉ እና ይመዝግቡ",

@@ -33,6 +33,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../hooks/useNotifications';
 import NetworkStatusIndicator from '../NetworkStatusIndicator';
 import ThemeToggle from '../common/ThemeToggle';
+import LanguageSelector from '../common/LanguageSelector';
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
@@ -475,6 +476,9 @@ const Navbar: React.FC = () => {
             
             {/* Theme Toggle - After mobile menu */}
             <ThemeToggle variant="icon" size="small" />
+            
+            {/* Language Selector - After theme toggle */}
+            <LanguageSelector variant="icon" size="small" />
             
             {/* Logo */}
             <Box 

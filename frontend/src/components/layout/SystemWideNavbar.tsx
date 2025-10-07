@@ -33,6 +33,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useTenant } from '../../contexts/TenantContext';
 import { useNavigate } from 'react-router-dom';
 import ThemeToggle from '../common/ThemeToggle';
+import LanguageSelector from '../common/LanguageSelector';
 
 /**
  * Navigation bar for system-wide users (CUSTOMER and ADMIN roles)
@@ -116,6 +117,9 @@ export const SystemWideNavbar: React.FC = () => {
           
           {/* Theme Toggle - After mobile menu */}
           <ThemeToggle variant="icon" size="medium" />
+          
+          {/* Language Selector - After theme toggle */}
+          <LanguageSelector variant="icon" size="medium" />
           
           {/* Logo and App Name */}
           <AdminPanelSettings sx={{ ml: 2, mr: 2 }} />

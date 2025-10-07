@@ -16,11 +16,13 @@ import {
 } from '@mui/material';
 import {
 } from '@mui/icons-material';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { API_CONFIG } from '../config/apiConfig';
 
 const LoginPage: React.FC = () => {
+  const { t } = useTranslation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
@@ -92,18 +94,18 @@ const LoginPage: React.FC = () => {
 
     // Validation
     if (registerPassword !== confirmPassword) {
-      setError('Passwords do not match');
+      setError(t('auth.login.passwordsNoMatch'));
       return;
     }
 
     if (registerPassword.length < 6) {
-      setError('Password must be at least 6 characters long');
+      setError(t('auth.login.passwordTooShort'));
       return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(registerEmail)) {
-      setError('Please provide a valid email address');
+      setError(t('auth.login.invalidEmail'));
       return;
     }
 
@@ -151,7 +153,7 @@ const LoginPage: React.FC = () => {
       localStorage.setItem('auth_token', registrationData.token);
       localStorage.setItem('auth_user', JSON.stringify(user));
 
-      setSuccess('Registration successful! Redirecting...');
+      setSuccess(t('auth.login.registrationSuccess'));
 
       // Small delay to show success message
       setTimeout(() => {
@@ -162,7 +164,7 @@ const LoginPage: React.FC = () => {
         }
       }, 1500);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registration failed');
+      setError(err instanceof Error ? err.message : t('auth.login.registrationFailed'));
     } finally {
       setLoading(false);
     }
@@ -194,7 +196,7 @@ const LoginPage: React.FC = () => {
             gap: 2,
           }}
         >
-          <Typography variant="h6">Loading...</Typography>
+          <Typography variant="h6">{t('errors.loading')}</Typography>
         </Box>
       </Container>
     );
@@ -226,7 +228,7 @@ const LoginPage: React.FC = () => {
           px: 2,
         }}
       >
-        Shegeroom Hotel Reservation Management
+        {t('auth.login.title')}
       </Typography>
       
       <Container maxWidth="lg">
@@ -259,7 +261,7 @@ const LoginPage: React.FC = () => {
             {bookingData && (
               <Alert severity="info" sx={{ mb: 3 }}>
                 <Typography variant="body2">
-                  Sign in to complete your booking for <strong>{bookingData.hotelName}</strong>
+                  {t('auth.login.signInToBook', { hotelName: bookingData.hotelName })}
                 </Typography>
               </Alert>
             )}
@@ -275,12 +277,12 @@ const LoginPage: React.FC = () => {
                   mb: 1,
                 }}
               >
-                {!showSignUp ? 'Sign In' : 'Create Account'}{bookingData ? ' to Book' : ''}
+                {!showSignUp ? t('auth.login.signIn') : t('auth.login.createAccount')}{bookingData ? ' to Book' : ''}
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 {!showSignUp 
-                  ? 'Welcome back! Please sign in to your account' 
-                  : 'Join us today! Create your account to get started'
+                  ? t('auth.login.signInSubtitle')
+                  : t('auth.login.createAccountSubtitle')
                 }
               </Typography>
             </Box>
@@ -302,7 +304,7 @@ const LoginPage: React.FC = () => {
               <Box component="form" onSubmit={handleSubmit} data-testid="login-form">
                 <TextField
                   fullWidth
-                  label="Email Address"
+                  label={t('auth.login.emailLabel')}
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -328,7 +330,7 @@ const LoginPage: React.FC = () => {
                 />
                 <TextField
                   fullWidth
-                  label="Password"
+                  label={t('auth.login.passwordLabel')}
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -376,7 +378,7 @@ const LoginPage: React.FC = () => {
                     },
                   }}
                 >
-                  {loading ? 'Signing In...' : 'Sign In'}
+                  {loading ? t('auth.login.signingIn') : t('auth.login.signInButton')}
                 </Button>
               </Box>
             ) : (
@@ -385,7 +387,7 @@ const LoginPage: React.FC = () => {
                 <Stack direction="row" spacing={2}>
                   <TextField
                     fullWidth
-                    label="First Name"
+                    label={t('auth.login.firstNameLabel')}
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
                     margin="normal"
@@ -407,7 +409,7 @@ const LoginPage: React.FC = () => {
                   />
                   <TextField
                     fullWidth
-                    label="Last Name"
+                    label={t('auth.login.lastNameLabel')}
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
                     margin="normal"
@@ -430,7 +432,7 @@ const LoginPage: React.FC = () => {
                 </Stack>
                 <TextField
                   fullWidth
-                  label="Email Address"
+                  label={t('auth.login.emailLabel')}
                   type="email"
                   value={registerEmail}
                   onChange={(e) => setRegisterEmail(e.target.value)}
@@ -454,7 +456,7 @@ const LoginPage: React.FC = () => {
                 />
                 <TextField
                   fullWidth
-                  label="Phone Number (optional)"
+                  label={t('auth.login.phoneLabel')}
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   margin="normal"
@@ -475,7 +477,7 @@ const LoginPage: React.FC = () => {
                 />
                 <TextField
                   fullWidth
-                  label="Password"
+                  label={t('auth.login.passwordLabel')}
                   type="password"
                   value={registerPassword}
                   onChange={(e) => setRegisterPassword(e.target.value)}
@@ -499,7 +501,7 @@ const LoginPage: React.FC = () => {
                 />
                 <TextField
                   fullWidth
-                  label="Confirm Password"
+                  label={t('auth.login.confirmPasswordLabel')}
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
@@ -545,7 +547,7 @@ const LoginPage: React.FC = () => {
                     },
                   }}
                 >
-                  {loading ? 'Creating Account...' : 'Create Account'}
+                  {loading ? t('auth.login.creating') : t('auth.login.createAccountButton')}
                 </Button>
               </Box>
             )}
@@ -553,7 +555,7 @@ const LoginPage: React.FC = () => {
             <Typography variant="body2" color="textSecondary" align="center" sx={{ mt: 2 }}>
               {!showSignUp ? (
                 <>
-                  Don't have an account?{' '}
+                  {t('auth.login.needAccount')}{' '}
                   <Button 
                     variant="text" 
                     onClick={() => setShowSignUp(true)}
@@ -564,7 +566,7 @@ const LoginPage: React.FC = () => {
                 </>
               ) : (
                 <>
-                  Already have an account?{' '}
+                  {t('auth.login.alreadyHaveAccount')}{' '}
                   <Button 
                     variant="text" 
                     onClick={() => setShowSignUp(false)}
@@ -625,7 +627,7 @@ const LoginPage: React.FC = () => {
                     gap: 1,
                   }}
                 >
-                  🚀 Quick Login
+                  🚀 {t('auth.login.sampleUsers')}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   Click any button below to auto-fill test credentials
@@ -659,7 +661,7 @@ const LoginPage: React.FC = () => {
                     },
                   }}
                 >
-                  <Typography variant="body2" fontWeight="bold" color="primary.main">⚡ SYSTEM ADMIN</Typography>
+                  <Typography variant="body2" fontWeight="bold" color="primary.main">⚡ {t('auth.login.systemAdmin')}</Typography>
                   <Typography variant="caption" color="textSecondary" sx={{ mt: 0.5 }}>
                     admin@bookmyhotel.com
                   </Typography>
@@ -701,7 +703,7 @@ const LoginPage: React.FC = () => {
                     },
                   }}
                 >
-                  <Typography variant="body2" fontWeight="bold">🏨 Hotel Admin - Grand Plaza</Typography>
+                  <Typography variant="body2" fontWeight="bold">🏨 {t('auth.login.hotelAdmin')} - Grand Plaza</Typography>
                   <Typography variant="caption" color="textSecondary" sx={{ mt: 0.5 }}>
                     admin.grandplaza@bookmyhotel.com
                   </Typography>
@@ -719,7 +721,7 @@ const LoginPage: React.FC = () => {
                   onClick={() => fillSampleUser('frontdesk.grandplaza@bookmyhotel.com', 'front123')}
                   sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
                 >
-                  <Typography variant="body2" fontWeight="bold">🎯 Front Desk - Grand Plaza</Typography>
+                  <Typography variant="body2" fontWeight="bold">🎯 {t('auth.login.frontDesk')} - Grand Plaza</Typography>
                   <Typography variant="caption" color="textSecondary" sx={{ mt: 0.5 }}>
                     frontdesk.grandplaza@bookmyhotel.com
                   </Typography>
@@ -761,7 +763,7 @@ const LoginPage: React.FC = () => {
                     },
                   }}
                 >
-                  <Typography variant="body2" fontWeight="bold">🏨 Hotel Admin - Sam's Hotel at Bole</Typography>
+                  <Typography variant="body2" fontWeight="bold">🏨 {t('auth.login.hotelAdmin')} - Sam's Hotel at Bole</Typography>
                   <Typography variant="caption" color="textSecondary" sx={{ mt: 0.5 }}>
                     samhotel.admin@samhotel.com
                   </Typography>
@@ -798,7 +800,7 @@ const LoginPage: React.FC = () => {
                     },
                   }}
                 >
-                  <Typography variant="body2" fontWeight="bold">🎯 Front Desk - Sam's Hotel at Bole</Typography>
+                  <Typography variant="body2" fontWeight="bold">🎯 {t('auth.login.frontDesk')} - Sam's Hotel at Bole</Typography>
                   <Typography variant="caption" color="textSecondary" sx={{ mt: 0.5 }}>
                     samhotel.frontdesk@samhotel.com
                   </Typography>
