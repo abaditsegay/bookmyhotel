@@ -372,19 +372,22 @@ export const enTranslations = {
 
   // Existing sections (shop, hotelSearch, etc.)
   hotelSearch: {
-    title: "Hotel Search",
-    subtitle: "Find and book your perfect stay worldwide",
+    title: "Find Your Perfect Stay",
+    subtitle: "Search and book your ideal hotel room",
     form: {
       destination: "Destination",
       destinationPlaceholder: "Where are you going?",
+      destinationHelper: "Enter city, hotel name, or landmark",
       checkin: "Check-in Date",
       checkout: "Check-out Date",
       guests: "Guests",
       guestsPlaceholder: "Number of guests",
+      guestsHelper: "Maximum 10 guests per search",
+      guestsValidation: "Guests must be between 1 and 10",
       rooms: "Rooms",
       roomsPlaceholder: "Number of rooms",
       searchButton: "Search Hotels",
-      searching: "Searching..."
+      searching: "Searching for hotels..."
     },
     alreadyHaveBooking: {
       title: "Already Have a Booking?",

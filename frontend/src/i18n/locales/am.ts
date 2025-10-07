@@ -370,19 +370,22 @@ export const amTranslations = {
     invalidDates: "እባክዎ ቀኖችዎን ይፈትሹ።"
   },
   hotelSearch: {
-    title: "ሆቴል ፍለጋ",
-    subtitle: "በዓለም ዙሪያ የፍለጋዎን ፍጹም መቆያ ይፈልጉ እና ይመዝግቡ",
+    title: "የሚፈልጉትን ፍጹም መቆየት ያግኙ",
+    subtitle: "ፍለጋ እና የምትፈልጉትን ተስማሚ የሆቴል ክፍል ይቦዩ",
     form: {
-      destination: "መድረሻ",
-      destinationPlaceholder: "የት እየሄዱ ነው?",
-      checkin: "መግቢያ ቀን",
-      checkout: "መውጫ ቀን",
+      destination: "መዳረሻ",
+      destinationPlaceholder: "የት ትሄዳለህ?",
+      destinationHelper: "ከተማ፣ የሆቴል ስም፣ ወይም መርሃግብር ያስገቡ",
+      checkin: "የመግቢያ ቀን",
+      checkout: "የመውጫ ቀን",
       guests: "እንግዶች",
       guestsPlaceholder: "የእንግዶች ቁጥር",
+      guestsHelper: "ከፍተኛው 10 እንግዶች በፍለጋ",
+      guestsValidation: "እንግዶች ከ1 እስከ 10 መሆን አለባቸው",
       rooms: "ክፍሎች",
       roomsPlaceholder: "የክፍሎች ቁጥር",
       searchButton: "ሆቴሎች ፈልግ",
-      searching: "እየፈለገ..."
+      searching: "ሆቴሎችን በመፈለግ ላይ..."
     },
     alreadyHaveBooking: {
       title: "ቀደም ሲል ያስያዝ ነበር?",

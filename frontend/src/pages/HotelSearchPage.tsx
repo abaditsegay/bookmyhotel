@@ -154,10 +154,10 @@ const HotelSearchPage: React.FC = () => {
             border: `1px solid rgba(224, 224, 224, 0.3)`,
           }}>
             <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>
-              Search Hotels
+              {t('hotelSearch.title')}
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              Enter your travel details to find available hotels
+              {t('hotelSearch.subtitle')}
             </Typography>
           </Box>
 
@@ -178,7 +178,7 @@ const HotelSearchPage: React.FC = () => {
 
           <StandardLoading
             loading={loading}
-            message="Searching for hotels..."
+            message={t('hotelSearch.form.searching')}
             size="large"
             overlay={false}
           />

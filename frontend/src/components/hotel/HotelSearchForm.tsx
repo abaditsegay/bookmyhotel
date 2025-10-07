@@ -41,8 +41,8 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
     if (!checkInDate || !checkOutDate) {
       showNotification({
         type: 'warning',
-        title: 'Missing Dates',
-        message: 'Please select check-in and check-out dates',
+        title: t('errors.required'),
+        message: t('hotelSearch.errors.invalidDates'),
       });
       return;
     }
@@ -50,8 +50,8 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
     if (checkInDate >= checkOutDate) {
       showNotification({
         type: 'error',
-        title: 'Invalid Dates',
-        message: 'Check-out date must be after check-in date',
+        title: t('errors.required'),
+        message: t('hotelSearch.errors.invalidDates'),
       });
       return;
     }
@@ -116,7 +116,7 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
               mb: 1,
             }}
           >
-            Find Your Perfect Stay
+            {t('hotelSearch.title')}
           </Typography>
           {isMobile && (
             <Typography 
@@ -127,7 +127,7 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
                 px: 2,
               }}
             >
-              Search and book your ideal hotel room
+              {t('hotelSearch.subtitle')}
             </Typography>
           )}
         </Box>
@@ -142,7 +142,7 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
                 value={location}
                 onChange={setLocation}
                 icon={<LocationOnIcon />}
-                helperText="Enter city, hotel name, or landmark"
+                helperText={t('hotelSearch.form.destinationHelper')}
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     minHeight: { xs: '48px', md: '52px' },
@@ -163,10 +163,10 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
                 validationRules={[
                   {
                     validate: (value) => Number(value) >= 1 && Number(value) <= 10,
-                    message: 'Guests must be between 1 and 10',
+                    message: t('hotelSearch.form.guestsValidation'),
                   }
                 ]}
-                helperText="Maximum 10 guests per search"
+                helperText={t('hotelSearch.form.guestsHelper')}
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     minHeight: { xs: '48px', md: '52px' },
