@@ -332,6 +332,65 @@ export const enTranslations = {
           noShowPenaltyRate: 'No-Show Penalty (%)'
         },
         
+        // Seasonal Pricing Multipliers
+        seasonalMultipliers: {
+          title: 'Seasonal Pricing Multipliers',
+          description: 'Configure pricing adjustments for peak and off seasons',
+          note: 'Seasonal multipliers are set to 1.0 (no change) by default. Adjust these values if you want to modify prices during peak or off seasons.',
+          peakSeasonMultiplier: 'Peak Season Multiplier',
+          offSeasonMultiplier: 'Off Season Multiplier',
+          peakSeasonHelper: '{{value}} = {{percentage}} during peak season',
+          offSeasonHelper: '{{value}} = {{percentage}} during off season'
+        },
+        
+        // Booking Rules
+        bookingRules: {
+          title: 'Booking Rules',
+          description: 'Configure booking restrictions and requirements',
+          minimumStayNights: 'Minimum Stay (nights)',
+          minimumAdvanceBookingHours: 'Minimum Advance Booking (hours)',
+          maximumAdvanceBookingDays: 'Maximum Advance Booking (days)'
+        },
+        
+        // Discounts & Fees
+        discountsFees: {
+          title: 'Discounts & Fees',
+          description: 'Configure discount rates and penalty fees',
+          earlyBookingDaysThreshold: 'Early Booking Days Threshold',
+          earlyBookingDaysHelperText: 'Days in advance to qualify for early booking discount',
+          earlyBookingDiscountRate: 'Early Booking Discount Rate (%)',
+          loyaltyDiscountRate: 'Loyalty Discount Rate (%)',
+          cancellationFeeRate: 'Cancellation Fee Rate (%)',
+          modificationFeeRate: 'Modification Fee Rate (%)',
+          noShowPenaltyRate: 'No-Show Penalty Rate (%)',
+          discountHelper: '{{value}} = {{percentage}}',
+          feeHelper: '{{value}} = {{percentage}}',
+          penaltyHelper: '{{value}} = {{percentage}} penalty'
+        },
+        
+        // Cancellation Refund Policies
+        cancellationRefundPolicies: {
+          title: 'Cancellation Refund Policies',
+          description: 'Configure refund percentages based on cancellation timing',
+          alertDescription: 'Set the refund percentage customers receive when they cancel their booking at different time periods before check-in. These policies will be automatically applied when processing cancellations.',
+          refund7PlusDays: '7+ Days Before Check-in',
+          refund3To7Days: '3-7 Days Before Check-in',
+          refund1To2Days: '1-2 Days Before Check-in',
+          refundSameDay: 'Same Day Cancellation',
+          refundHelper7Plus: 'Current: {{value}}% refund (recommended: 100%)',
+          refundHelper3To7: 'Current: {{value}}% refund (recommended: 50%)',
+          refundHelper1To2: 'Current: {{value}}% refund (recommended: 25%)',
+          refundHelperSameDay: 'Current: {{value}}% refund (recommended: 0%)'
+        },
+        
+        // Additional Notes
+        additionalNotes: {
+          title: 'Additional Notes',
+          description: 'Add any additional configuration notes or comments',
+          configurationNotes: 'Configuration Notes',
+          placeholder: 'Add any notes about this pricing configuration...'
+        },
+        
         // Refund Policy
         refundPolicy: {
           title: 'Refund Policy',

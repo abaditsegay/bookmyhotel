@@ -290,6 +290,65 @@ export const amTranslations = {
           noShowPenaltyRate: 'ያለመምጣት ቅጣት (%)'
         },
         
+        // Seasonal Pricing Multipliers
+        seasonalMultipliers: {
+          title: 'የወቅታዊ ዋጋ ማባዛት',
+          description: 'ለከፍተኛ እና ዝቅተኛ ወቅቶች የዋጋ ማስተካከያዎችን ያዋቅሩ',
+          note: 'የወቅታዊ ማባዛት ወደ 1.0 (ምንም ለውጥ) በነባሪ ተዘጋጅተዋል። በከፍተኛ ወይም ዝቅተኛ ወቅቶች ዋጋዎችን መቀየር ከፈለጉ እነዚህን እሴቶች ማስተካከል ይችላሉ።',
+          peakSeasonMultiplier: 'የከፍተኛ ወቅት ማባዛት',
+          offSeasonMultiplier: 'የዝቅተኛ ወቅት ማባዛት',
+          peakSeasonHelper: '{{value}} = {{percentage}} በከፍተኛ ወቅት',
+          offSeasonHelper: '{{value}} = {{percentage}} በዝቅተኛ ወቅት'
+        },
+        
+        // Booking Rules
+        bookingRules: {
+          title: 'የቦታ ማስያዝ ደንቦች',
+          description: 'የቦታ ማስያዝ ገደቦች እና መስፈርቶችን ያዋቅሩ',
+          minimumStayNights: 'ዝቅተኛ ቆይታ (ማታዎች)',
+          minimumAdvanceBookingHours: 'ዝቅተኛ ቅድመ ቦታ ማስያዝ (ሰአቶች)',
+          maximumAdvanceBookingDays: 'ከፍተኛ ቅድመ ቦታ ማስያዝ (ቀናት)'
+        },
+        
+        // Discounts & Fees
+        discountsFees: {
+          title: 'ቅናሾች እና ክፍያዎች',
+          description: 'የቅናሽ መጠኖች እና የቅጣት ክፍያዎችን ያዋቅሩ',
+          earlyBookingDaysThreshold: 'የቅድመ ቦታ ማስያዝ ቀናት ማስታወሻ',
+          earlyBookingDaysHelperText: 'ለቅድመ ቦታ ማስያዝ ቅናሽ ለማግኘት በቅድሚያ ቀናት',
+          earlyBookingDiscountRate: 'የቅድመ ቦታ ማስያዝ ቅናሽ መጠን (%)',
+          loyaltyDiscountRate: 'የታማኝነት ቅናሽ መጠን (%)',
+          cancellationFeeRate: 'የሰረዝ ክፍያ መጠን (%)',
+          modificationFeeRate: 'የለውጥ ክፍያ መጠን (%)',
+          noShowPenaltyRate: 'የአለመጣት ቅጣት መጠን (%)',
+          discountHelper: '{{value}} = {{percentage}}',
+          feeHelper: '{{value}} = {{percentage}}',
+          penaltyHelper: '{{value}} = {{percentage}} ቅጣት'
+        },
+        
+        // Cancellation Refund Policies
+        cancellationRefundPolicies: {
+          title: 'የሰረዝ መመለሻ ፖሊሲዎች',
+          description: 'በሰረዝ ጊዜ ላይ ተመስርተው የመመለሻ መጠኖችን ያዋቅሩ',
+          alertDescription: 'ደንበኞች ቦታ ማስያዝዎቻቸውን ከመግቢያ በፊት በተለያዩ ጊዜ ወቅቶች ሲሰርዙ የሚቀበሉትን የመመለሻ መጠኖብ ያስቀምጡ። እነዚህ ፖሊሲዎች ሰረዛዎችን በሚያስተናግዱበት ጊዜ በራሳቸው ይተገበራሉ።',
+          refund7PlusDays: 'ከ7+ ቀናት በፊት ከመግቢያ',
+          refund3To7Days: 'ከ3-7 ቀናት በፊት ከመግቢያ',
+          refund1To2Days: 'ከ1-2 ቀናት በፊት ከመግቢያ',
+          refundSameDay: 'በተመሳሳይ ቀን ሰረዝ',
+          refundHelper7Plus: 'አሁን: {{value}}% መመለሻ (የሚመከር: 100%)',
+          refundHelper3To7: 'አሁን: {{value}}% መመለሻ (የሚመከር: 50%)',
+          refundHelper1To2: 'አሁን: {{value}}% መመለሻ (የሚመከር: 25%)',
+          refundHelperSameDay: 'አሁን: {{value}}% መመለሻ (የሚመከር: 0%)'
+        },
+        
+        // Additional Notes
+        additionalNotes: {
+          title: 'ተጨማሪ ማስታወሻዎች',
+          description: 'ማንኛውም ተጨማሪ የማዋቀሪያ ማስታወሻዎች ወይም አስተያየቶች ያክሉ',
+          configurationNotes: 'የማዋቀሪያ ማስታወሻዎች',
+          placeholder: 'ስለዚህ የዋጋ ማዋቀሪያ ማንኛውም ማስታወሻዎች ያክሉ...'
+        },
+        
         // Refund Policy
         refundPolicy: {
           title: 'የመመለሻ ፖሊሲ',

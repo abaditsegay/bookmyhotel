@@ -702,10 +702,10 @@ const PricingConfigurationComponent: React.FC = () => {
                 <DiscountIcon sx={{ color: getInteractiveColor() }} />
                 <Box>
                   <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: getInteractiveColor() }}>
-                    Seasonal Pricing Multipliers
+                    {t('dashboard.hotelAdmin.pricingConfiguration.seasonalMultipliers.title')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Configure pricing adjustments for peak and off seasons
+                    {t('dashboard.hotelAdmin.pricingConfiguration.seasonalMultipliers.description')}
                   </Typography>
                 </Box>
               </Box>
@@ -720,8 +720,7 @@ const PricingConfigurationComponent: React.FC = () => {
                 }}
               >
                 <Typography variant="body2">
-                  <strong>Note:</strong> Seasonal multipliers are set to 1.0 (no change) by default. 
-                  Adjust these values if you want to modify prices during peak or off seasons.
+                  <strong>{t('dashboard.hotelAdmin.pricingConfiguration.refundPolicyNote.title')}</strong> {t('dashboard.hotelAdmin.pricingConfiguration.seasonalMultipliers.note')}
                 </Typography>
               </Alert>
 
@@ -729,12 +728,12 @@ const PricingConfigurationComponent: React.FC = () => {
                 <Grid item xs={12} md={6}>
                   <TextField
                     fullWidth
-                    label="Peak Season Multiplier"
+                    label={t('dashboard.hotelAdmin.pricingConfiguration.seasonalMultipliers.peakSeasonMultiplier')}
                     type="number"
                     value={config.peakSeasonMultiplier}
                     onChange={(e) => handleInputChange('peakSeasonMultiplier', parseFloat(e.target.value) || 1)}
                     inputProps={{ min: 0.1, step: 0.1 }}
-                    helperText={`${config.peakSeasonMultiplier.toFixed(1)} = ${calculatePercentageChange(config.peakSeasonMultiplier)} during peak season`}
+                    helperText={t('dashboard.hotelAdmin.pricingConfiguration.seasonalMultipliers.peakSeasonHelper', { value: config.peakSeasonMultiplier.toFixed(1), percentage: calculatePercentageChange(config.peakSeasonMultiplier) })}
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         backgroundColor: 'background.paper',
@@ -755,12 +754,12 @@ const PricingConfigurationComponent: React.FC = () => {
                 <Grid item xs={12} md={6}>
                   <TextField
                     fullWidth
-                    label="Off Season Multiplier"
+                    label={t('dashboard.hotelAdmin.pricingConfiguration.seasonalMultipliers.offSeasonMultiplier')}
                     type="number"
                     value={config.offSeasonMultiplier}
                     onChange={(e) => handleInputChange('offSeasonMultiplier', parseFloat(e.target.value) || 1)}
                     inputProps={{ min: 0.1, step: 0.1 }}
-                    helperText={`${config.offSeasonMultiplier.toFixed(1)} = ${calculatePercentageChange(config.offSeasonMultiplier)} during off season`}
+                    helperText={t('dashboard.hotelAdmin.pricingConfiguration.seasonalMultipliers.offSeasonHelper', { value: config.offSeasonMultiplier.toFixed(1), percentage: calculatePercentageChange(config.offSeasonMultiplier) })}
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         backgroundColor: 'background.paper',
@@ -808,10 +807,10 @@ const PricingConfigurationComponent: React.FC = () => {
                 <SettingsIcon sx={{ color: getInteractiveColor() }} />
                 <Box>
                   <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: getInteractiveColor() }}>
-                    Booking Rules
+                    {t('dashboard.hotelAdmin.pricingConfiguration.bookingRules.title')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Configure booking restrictions and requirements
+                    {t('dashboard.hotelAdmin.pricingConfiguration.bookingRules.description')}
                   </Typography>
                 </Box>
               </Box>
@@ -820,7 +819,7 @@ const PricingConfigurationComponent: React.FC = () => {
                 <Grid item xs={12} md={4}>
                   <TextField
                     fullWidth
-                    label="Minimum Stay (nights)"
+                    label={t('dashboard.hotelAdmin.pricingConfiguration.bookingRules.minimumStayNights')}
                     type="number"
                     value={config.minimumStayNights}
                     onChange={(e) => handleInputChange('minimumStayNights', parseInt(e.target.value) || 1)}
@@ -845,7 +844,7 @@ const PricingConfigurationComponent: React.FC = () => {
                 <Grid item xs={12} md={4}>
                   <TextField
                     fullWidth
-                    label="Minimum Advance Booking (hours)"
+                    label={t('dashboard.hotelAdmin.pricingConfiguration.bookingRules.minimumAdvanceBookingHours')}
                     type="number"
                     value={config.minimumAdvanceBookingHours}
                     onChange={(e) => handleInputChange('minimumAdvanceBookingHours', parseInt(e.target.value) || 0)}
@@ -870,7 +869,7 @@ const PricingConfigurationComponent: React.FC = () => {
                 <Grid item xs={12} md={4}>
                   <TextField
                     fullWidth
-                    label="Maximum Advance Booking (days)"
+                    label={t('dashboard.hotelAdmin.pricingConfiguration.bookingRules.maximumAdvanceBookingDays')}
                     type="number"
                     value={config.maximumAdvanceBookingDays}
                     onChange={(e) => handleInputChange('maximumAdvanceBookingDays', parseInt(e.target.value) || 365)}
@@ -922,10 +921,10 @@ const PricingConfigurationComponent: React.FC = () => {
                 <DiscountIcon sx={{ color: getInteractiveColor() }} />
                 <Box>
                   <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: getInteractiveColor() }}>
-                    Discounts & Fees
+                    {t('dashboard.hotelAdmin.pricingConfiguration.discountsFees.title')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Configure discount rates and penalty fees
+                    {t('dashboard.hotelAdmin.pricingConfiguration.discountsFees.description')}
                   </Typography>
                 </Box>
               </Box>
@@ -934,12 +933,12 @@ const PricingConfigurationComponent: React.FC = () => {
                 <Grid item xs={12} md={6}>
                   <TextField
                     fullWidth
-                    label="Early Booking Days Threshold"
+                    label={t('dashboard.hotelAdmin.pricingConfiguration.discountsFees.earlyBookingDaysThreshold')}
                     type="number"
                     value={config.earlyBookingDaysThreshold}
                     onChange={(e) => handleInputChange('earlyBookingDaysThreshold', parseInt(e.target.value) || 30)}
                     inputProps={{ min: 1 }}
-                    helperText="Days in advance to qualify for early booking discount"
+                    helperText={t('dashboard.hotelAdmin.pricingConfiguration.discountsFees.earlyBookingDaysHelperText')}
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         backgroundColor: 'background.paper',
@@ -960,12 +959,12 @@ const PricingConfigurationComponent: React.FC = () => {
                 <Grid item xs={12} md={6}>
                   <TextField
                     fullWidth
-                    label="Early Booking Discount Rate (%)"
+                    label={t('dashboard.hotelAdmin.pricingConfiguration.discountsFees.earlyBookingDiscountRate')}
                     type="number"
                     value={config.earlyBookingDiscountRate}
                     onChange={(e) => handleInputChange('earlyBookingDiscountRate', parseFloat(e.target.value) || 0)}
                     inputProps={{ min: 0, max: 100, step: 0.1 }}
-                    helperText={`${config.earlyBookingDiscountRate.toFixed(1)} = ${calculateDiscountPercentage(config.earlyBookingDiscountRate)}`}
+                    helperText={t('dashboard.hotelAdmin.pricingConfiguration.discountsFees.discountHelper', { value: config.earlyBookingDiscountRate.toFixed(1), percentage: calculateDiscountPercentage(config.earlyBookingDiscountRate) })}
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         backgroundColor: 'background.paper',
@@ -986,12 +985,12 @@ const PricingConfigurationComponent: React.FC = () => {
                 <Grid item xs={12} md={6}>
                   <TextField
                     fullWidth
-                    label="Loyalty Discount Rate (%)"
+                    label={t('dashboard.hotelAdmin.pricingConfiguration.discountsFees.loyaltyDiscountRate')}
                     type="number"
                     value={config.loyaltyDiscountRate}
                     onChange={(e) => handleInputChange('loyaltyDiscountRate', parseFloat(e.target.value) || 0)}
                     inputProps={{ min: 0, max: 100, step: 0.1 }}
-                    helperText={`${config.loyaltyDiscountRate.toFixed(1)} = ${calculateDiscountPercentage(config.loyaltyDiscountRate)}`}
+                    helperText={t('dashboard.hotelAdmin.pricingConfiguration.discountsFees.discountHelper', { value: config.loyaltyDiscountRate.toFixed(1), percentage: calculateDiscountPercentage(config.loyaltyDiscountRate) })}
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         backgroundColor: 'background.paper',
@@ -1012,12 +1011,12 @@ const PricingConfigurationComponent: React.FC = () => {
                 <Grid item xs={12} md={6}>
                   <TextField
                     fullWidth
-                    label="Cancellation Fee Rate (%)"
+                    label={t('dashboard.hotelAdmin.pricingConfiguration.discountsFees.cancellationFeeRate')}
                     type="number"
                     value={config.cancellationFeeRate}
                     onChange={(e) => handleInputChange('cancellationFeeRate', parseFloat(e.target.value) || 0)}
                     inputProps={{ min: 0, max: 100, step: 0.1 }}
-                    helperText={`${config.cancellationFeeRate.toFixed(1)} = ${calculateFeePercentage(config.cancellationFeeRate)}`}
+                    helperText={t('dashboard.hotelAdmin.pricingConfiguration.discountsFees.feeHelper', { value: config.cancellationFeeRate.toFixed(1), percentage: calculateFeePercentage(config.cancellationFeeRate) })}
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         backgroundColor: 'background.paper',
@@ -1038,12 +1037,12 @@ const PricingConfigurationComponent: React.FC = () => {
                 <Grid item xs={12} md={6}>
                   <TextField
                     fullWidth
-                    label="Modification Fee Rate (%)"
+                    label={t('dashboard.hotelAdmin.pricingConfiguration.discountsFees.modificationFeeRate')}
                     type="number"
                     value={config.modificationFeeRate}
                     onChange={(e) => handleInputChange('modificationFeeRate', parseFloat(e.target.value) || 0)}
                     inputProps={{ min: 0, max: 100, step: 0.1 }}
-                    helperText={`${config.modificationFeeRate.toFixed(1)} = ${calculateFeePercentage(config.modificationFeeRate)}`}
+                    helperText={t('dashboard.hotelAdmin.pricingConfiguration.discountsFees.feeHelper', { value: config.modificationFeeRate.toFixed(1), percentage: calculateFeePercentage(config.modificationFeeRate) })}
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         backgroundColor: 'background.paper',
@@ -1064,12 +1063,12 @@ const PricingConfigurationComponent: React.FC = () => {
                 <Grid item xs={12} md={6}>
                   <TextField
                     fullWidth
-                    label="No-Show Penalty Rate (%)"
+                    label={t('dashboard.hotelAdmin.pricingConfiguration.discountsFees.noShowPenaltyRate')}
                     type="number"
                     value={config.noShowPenaltyRate}
                     onChange={(e) => handleInputChange('noShowPenaltyRate', parseFloat(e.target.value) || 1)}
                     inputProps={{ min: 0, max: 100, step: 0.1 }}
-                    helperText={`${config.noShowPenaltyRate.toFixed(1)} = ${calculateFeePercentage(config.noShowPenaltyRate)} penalty`}
+                    helperText={t('dashboard.hotelAdmin.pricingConfiguration.discountsFees.penaltyHelper', { value: config.noShowPenaltyRate.toFixed(1), percentage: calculateFeePercentage(config.noShowPenaltyRate) })}
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         backgroundColor: 'background.paper',
@@ -1117,10 +1116,10 @@ const PricingConfigurationComponent: React.FC = () => {
                 <ReceiptIcon sx={{ color: getInteractiveColor() }} />
                 <Box>
                   <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: getInteractiveColor() }}>
-                    Cancellation Refund Policies
+                    {t('dashboard.hotelAdmin.pricingConfiguration.cancellationRefundPolicies.title')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Configure refund percentages based on cancellation timing
+                    {t('dashboard.hotelAdmin.pricingConfiguration.cancellationRefundPolicies.description')}
                   </Typography>
                 </Box>
               </Box>
@@ -1135,8 +1134,7 @@ const PricingConfigurationComponent: React.FC = () => {
                 }}
               >
                 <Typography variant="body2">
-                  Set the refund percentage customers receive when they cancel their booking at different time periods before check-in. 
-                  These policies will be automatically applied when processing cancellations.
+                  {t('dashboard.hotelAdmin.pricingConfiguration.cancellationRefundPolicies.alertDescription')}
                 </Typography>
               </Alert>
 
@@ -1144,12 +1142,12 @@ const PricingConfigurationComponent: React.FC = () => {
                 <Grid item xs={12} sm={6} md={3}>
                   <TextField
                     fullWidth
-                    label="7+ Days Before Check-in"
+                    label={t('dashboard.hotelAdmin.pricingConfiguration.cancellationRefundPolicies.refund7PlusDays')}
                     type="number"
                     value={config.refundPolicy7PlusDays || 100}
                     onChange={(e) => handleInputChange('refundPolicy7PlusDays', parseFloat(e.target.value) || 0)}
                     inputProps={{ min: 0, max: 100, step: 1 }}
-                    helperText={`Current: ${config.refundPolicy7PlusDays || 100}% refund (recommended: 100%)`}
+                    helperText={t('dashboard.hotelAdmin.pricingConfiguration.cancellationRefundPolicies.refundHelper7Plus', { value: config.refundPolicy7PlusDays || 100 })}
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         backgroundColor: 'background.paper',
@@ -1170,12 +1168,12 @@ const PricingConfigurationComponent: React.FC = () => {
                 <Grid item xs={12} sm={6} md={3}>
                   <TextField
                     fullWidth
-                    label="3-7 Days Before Check-in"
+                    label={t('dashboard.hotelAdmin.pricingConfiguration.cancellationRefundPolicies.refund3To7Days')}
                     type="number"
                     value={config.refundPolicy3To7Days || 50}
                     onChange={(e) => handleInputChange('refundPolicy3To7Days', parseFloat(e.target.value) || 0)}
                     inputProps={{ min: 0, max: 100, step: 1 }}
-                    helperText={`Current: ${config.refundPolicy3To7Days || 50}% refund (recommended: 50%)`}
+                    helperText={t('dashboard.hotelAdmin.pricingConfiguration.cancellationRefundPolicies.refundHelper3To7', { value: config.refundPolicy3To7Days || 50 })}
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         backgroundColor: 'background.paper',
@@ -1196,12 +1194,12 @@ const PricingConfigurationComponent: React.FC = () => {
                 <Grid item xs={12} sm={6} md={3}>
                   <TextField
                     fullWidth
-                    label="1-2 Days Before Check-in"
+                    label={t('dashboard.hotelAdmin.pricingConfiguration.cancellationRefundPolicies.refund1To2Days')}
                     type="number"
                     value={config.refundPolicy1To2Days || 25}
                     onChange={(e) => handleInputChange('refundPolicy1To2Days', parseFloat(e.target.value) || 0)}
                     inputProps={{ min: 0, max: 100, step: 1 }}
-                    helperText={`Current: ${config.refundPolicy1To2Days || 25}% refund (recommended: 25%)`}
+                    helperText={t('dashboard.hotelAdmin.pricingConfiguration.cancellationRefundPolicies.refundHelper1To2', { value: config.refundPolicy1To2Days || 25 })}
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         backgroundColor: 'background.paper',
@@ -1222,12 +1220,12 @@ const PricingConfigurationComponent: React.FC = () => {
                 <Grid item xs={12} sm={6} md={3}>
                   <TextField
                     fullWidth
-                    label="Same Day Cancellation"
+                    label={t('dashboard.hotelAdmin.pricingConfiguration.cancellationRefundPolicies.refundSameDay')}
                     type="number"
                     value={config.refundPolicySameDay || 0}
                     onChange={(e) => handleInputChange('refundPolicySameDay', parseFloat(e.target.value) || 0)}
                     inputProps={{ min: 0, max: 100, step: 1 }}
-                    helperText={`Current: ${config.refundPolicySameDay || 0}% refund (recommended: 0%)`}
+                    helperText={t('dashboard.hotelAdmin.pricingConfiguration.cancellationRefundPolicies.refundHelperSameDay', { value: config.refundPolicySameDay || 0 })}
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         backgroundColor: 'background.paper',
@@ -1289,22 +1287,22 @@ const PricingConfigurationComponent: React.FC = () => {
                 <InfoIcon sx={{ color: getInteractiveColor() }} />
                 <Box>
                   <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: getInteractiveColor() }}>
-                    Additional Notes
+                    {t('dashboard.hotelAdmin.pricingConfiguration.additionalNotes.title')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Add any additional configuration notes or comments
+                    {t('dashboard.hotelAdmin.pricingConfiguration.additionalNotes.description')}
                   </Typography>
                 </Box>
               </Box>
 
               <TextField
                 fullWidth
-                label="Configuration Notes"
+                label={t('dashboard.hotelAdmin.pricingConfiguration.additionalNotes.configurationNotes')}
                 multiline
                 rows={3}
                 value={config.notes || ''}
                 onChange={(e) => handleInputChange('notes', e.target.value)}
-                placeholder="Add any notes about this pricing configuration..."
+                placeholder={t('dashboard.hotelAdmin.pricingConfiguration.additionalNotes.placeholder')}
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     backgroundColor: 'background.paper',
