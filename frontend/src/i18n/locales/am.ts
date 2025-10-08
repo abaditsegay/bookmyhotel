@@ -1847,6 +1847,7 @@ export const amTranslations = {
     
     // Detailed sections
     sections: {
+      bookingDetails: "የማስያዝ ዝርዝሮች",
       hotelInformation: "የሆቴል መረጃ",
       roomInformation: "የክፍል መረጃ",
       guestInformation: "የእንግዳ መረጃ",

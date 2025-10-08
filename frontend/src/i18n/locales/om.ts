@@ -1966,6 +1966,7 @@ export const omTranslations = {
     
     // Detailed sections
     sections: {
+      bookingDetails: "Bal'ina Bakka Buusi",
       hotelInformation: "Odeeffannoo Hooteelaa",
       roomInformation: "Odeeffannoo Kutaa",
       guestInformation: "Odeeffannoo Keessummaa",

@@ -774,7 +774,7 @@ const BookingConfirmationPage: React.FC = () => {
                 mb: isMobile ? 1 : 'initial',
               }}
             >
-              Booking Details
+              {t('bookingConfirmation.sections.bookingDetails')}
             </Typography>
           </Box>
           <Box 

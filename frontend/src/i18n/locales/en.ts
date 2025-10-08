@@ -1986,6 +1986,7 @@ export const enTranslations = {
     
     // Detailed sections
     sections: {
+      bookingDetails: "Booking Details",
       hotelInformation: "Hotel Information",
       roomInformation: "Room Information",
       guestInformation: "Guest Information",
