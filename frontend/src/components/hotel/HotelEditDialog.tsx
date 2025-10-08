@@ -15,6 +15,7 @@ import {
   Select,
   MenuItem,
   SelectChangeEvent,
+  FormHelperText,
 } from '@mui/material';
 import { Hotel } from '../../types/hotel';
 import { adminApiService, TenantDTO } from '../../services/adminApi';
@@ -89,7 +90,27 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
       const hasSystemAdminRole = user?.roles?.includes('SYSTEM_ADMIN') || user?.roles?.includes('ADMIN');
       
       if (!hasSystemAdminRole) {
-        console.warn('User does not have SYSTEM_ADMIN or ADMIN role. Skipping tenant loading.');
+        // For hotel admins, they should edit their own hotel without tenant selection
+        const isHotelAdmin = user?.roles?.includes('HOTEL_ADMIN') || user?.roles?.includes('HOTEL_MANAGER');
+        
+        if (isHotelAdmin && user?.tenantId) {
+          // Auto-populate tenant for hotel admins
+          setFormData(prev => ({
+            ...prev,
+            tenantId: user.tenantId!
+          }));
+          setTenants([{ 
+            id: 1, // Dummy ID for UI
+            tenantId: user.tenantId!, 
+            name: user.hotelName || 'Current Hotel',
+            isActive: true,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          }]);
+          return;
+        }
+        
+        console.warn('User does not have permissions to access tenant management or is not associated with a hotel.');
         setTenants([]);
         return;
       }
@@ -228,7 +249,7 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
             </Grid>
             
             <Grid item xs={12} sm={6}>
-              <FormControl fullWidth disabled={saving || loadingTenants}>
+              <FormControl fullWidth disabled={saving || loadingTenants || (user?.roles?.includes('HOTEL_ADMIN') || user?.roles?.includes('HOTEL_MANAGER'))}>
                 <InputLabel>Tenant *</InputLabel>
                 <Select
                   value={formData.tenantId || ''}
@@ -244,6 +265,9 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
                     </MenuItem>
                   ))}
                 </Select>
+                {(user?.roles?.includes('HOTEL_ADMIN') || user?.roles?.includes('HOTEL_MANAGER')) && (
+                  <FormHelperText>Hotel admins can only edit their own hotel</FormHelperText>
+                )}
               </FormControl>
             </Grid>
             
