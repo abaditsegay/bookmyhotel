@@ -1057,6 +1057,56 @@ export const amTranslations = {
       markCleaning: "ለጽዳት ምልክት አድርግ",
       markAvailable: "ክፍት ምልክት አድርግ",
       fixStatus: "🤖 ሁኔታ አስተሳስር"
+    },
+    
+    // Room Details
+    details: {
+      title: "የክፍል ዝርዝሮች",
+      edit: "ቀይር",
+      
+      // Basic Information
+      basicInformation: "መሠረታዊ መረጃ",
+      roomNumber: "የክፍል ቁጥር",
+      roomType: "የክፍል አይነት",
+      roomId: "የክፍል መለያ",
+      capacity: "አቅም",
+      
+      // Pricing & Availability
+      pricingAndAvailability: "ዋጋ እና ተገኝነት",
+      pricePerNight: "ለአንድ ሌሊት ዋጋ",
+      availabilityStatus: "የተገኝነት ሁኔታ",
+      available: "ክፍት",
+      unavailable: "ክፍት አይደለም",
+      currentRate: "አሁን ያለው ዋጋ",
+      
+      // Description
+      description: "መግለጫ",
+      roomDescription: "የክፍል መግለጫ",
+      
+      // Hotel Information
+      hotelInformation: "የሆቴል መረጃ",
+      hotelName: "የሆቴል ስም",
+      hotelId: "የሆቴል መለያ",
+      
+      // Actions
+      cancel: "ሰርዝ",
+      save: "ወደ ፋይል አስቀምጥ",
+      loading: "በመጫን ላይ...",
+      
+      // Error Messages
+      errors: {
+        invalidRoomId: "ልክ ያልሆነ የክፍል መለያ",
+        failedToLoad: "የክፍል ዝርዝሮች መጫን አልተሳካም",
+        failedToUpdate: "ክፍሉን ማዘመን አልተሳካም",
+        roomNotFound: "ክፍሉ አልተገኘም",
+        apiNotSupported: "የክፍል ተገኝነት መቀያየር በአሁኑ API አይደገፍም",
+        failedToUpdateStatus: "የክፍል ሁኔታ ማዘመን አልተሳካም"
+      },
+      
+      // Success Messages
+      success: {
+        roomUpdated: "ክፍሉ በተሳካ ሁኔታ ዘምኗል"
+      }
     }
   },
 

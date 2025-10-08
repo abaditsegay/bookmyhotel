@@ -28,11 +28,13 @@ import {
   Cancel as CancelIcon,
 } from '@mui/icons-material';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { hotelAdminApi, RoomResponse } from '../../services/hotelAdminApi';
 import { ROOM_TYPES } from '../../constants/roomTypes';
 
 const RoomViewEdit: React.FC = () => {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -55,7 +57,7 @@ const RoomViewEdit: React.FC = () => {
         
         const roomId = parseInt(id || '0');
         if (!roomId) {
-          setError('Invalid room ID');
+          setError(t('rooms.details.errors.invalidRoomId'));
           return;
         }
 
@@ -72,7 +74,7 @@ const RoomViewEdit: React.FC = () => {
           setError(result.message || `Room not found for ID: ${roomId}`);
         }
       } catch (err) {
-        setError('Failed to load room details');
+        setError(t('rooms.details.errors.failedToLoad'));
         console.error('Error loading room:', err);
       } finally {
         setLoading(false);
@@ -82,7 +84,7 @@ const RoomViewEdit: React.FC = () => {
     if (id) {
       loadRoom();
     }
-  }, [id, token]);
+  }, [id, token, t]);
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -109,12 +111,12 @@ const RoomViewEdit: React.FC = () => {
         setRoom(result.data);
         setEditedRoom({ ...result.data });
         setIsEditing(false);
-        setSuccess('Room updated successfully');
+        setSuccess(t('rooms.details.success.roomUpdated'));
       } else {
-        setError(result.message || 'Failed to update room');
+        setError(result.message || t('rooms.details.errors.failedToUpdate'));
       }
     } catch (err) {
-      setError('Failed to update room');
+      setError(t('rooms.details.errors.failedToUpdate'));
       console.error('Error updating room:', err);
     }
   };
@@ -134,9 +136,9 @@ const RoomViewEdit: React.FC = () => {
     try {
       // Note: Room availability toggle would need a separate API endpoint
       // For now, just show a message that this feature is not implemented
-      setError('Room availability toggle is not supported by the current API');
+      setError(t('rooms.details.errors.apiNotSupported'));
     } catch (err) {
-      setError('Failed to update room status');
+      setError(t('rooms.details.errors.failedToUpdateStatus'));
       console.error('Error updating room status:', err);
     }
   };
@@ -212,7 +214,7 @@ const RoomViewEdit: React.FC = () => {
               <ArrowBackIcon />
             </IconButton>
             <Typography variant="h4" component="h1">
-              Room Details
+              {t('rooms.details.title')}
             </Typography>
           </Box>
           
@@ -223,7 +225,7 @@ const RoomViewEdit: React.FC = () => {
                 startIcon={<EditIcon />}
                 onClick={handleEdit}
               >
-                Edit
+                {t('rooms.details.edit')}
               </Button>
             ) : (
               <>
@@ -232,14 +234,14 @@ const RoomViewEdit: React.FC = () => {
                   startIcon={<CancelIcon />}
                   onClick={handleCancel}
                 >
-                  Cancel
+                  {t('rooms.details.cancel')}
                 </Button>
                 <Button
                   variant="contained"
                   startIcon={<SaveIcon />}
                   onClick={handleSave}
                 >
-                  Save
+                  {t('rooms.details.save')}
                 </Button>
               </>
             )}
@@ -253,7 +255,7 @@ const RoomViewEdit: React.FC = () => {
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  Basic Information
+                  {t('rooms.details.basicInformation')}
                 </Typography>
                 <Divider sx={{ mb: 2 }} />
                 
@@ -261,7 +263,7 @@ const RoomViewEdit: React.FC = () => {
                   <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
-                      label="Room Number"
+                      label={t('rooms.details.roomNumber')}
                       value={currentRoom?.roomNumber || ''}
                       onChange={(e) => handleFieldChange('roomNumber', e.target.value)}
                       disabled={!isEditing}
@@ -271,7 +273,7 @@ const RoomViewEdit: React.FC = () => {
                   <Grid item xs={12} sm={6}>
                     {isEditing ? (
                       <FormControl fullWidth>
-                        <InputLabel>Room Type</InputLabel>
+                        <InputLabel>{t('rooms.details.roomType')}</InputLabel>
                         <Select
                           value={currentRoom?.roomType || ''}
                           onChange={(e) => handleFieldChange('roomType', e.target.value)}
@@ -286,7 +288,7 @@ const RoomViewEdit: React.FC = () => {
                     ) : (
                       <TextField
                         fullWidth
-                        label="Room Type"
+                        label={t('rooms.details.roomType')}
                         value={currentRoom?.roomType || ''}
                         disabled
                         variant="filled"
@@ -296,7 +298,7 @@ const RoomViewEdit: React.FC = () => {
                   <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
-                      label="Room ID"
+                      label={t('rooms.details.roomId')}
                       value={currentRoom?.id || ''}
                       disabled
                       variant="filled"
@@ -305,7 +307,7 @@ const RoomViewEdit: React.FC = () => {
                   <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
-                      label="Capacity"
+                      label={t('rooms.details.capacity')}
                       type="number"
                       value={currentRoom?.capacity || ''}
                       onChange={(e) => handleFieldChange('capacity', parseInt(e.target.value))}
@@ -323,7 +325,7 @@ const RoomViewEdit: React.FC = () => {
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  Pricing & Availability
+                  {t('rooms.details.pricingAndAvailability')}
                 </Typography>
                 <Divider sx={{ mb: 2 }} />
                 
@@ -331,7 +333,7 @@ const RoomViewEdit: React.FC = () => {
                   <Grid item xs={12}>
                     <TextField
                       fullWidth
-                      label="Price per Night"
+                      label={t('rooms.details.pricePerNight')}
                       type="number"
                       value={currentRoom?.pricePerNight || ''}
                       onChange={(e) => handleFieldChange('pricePerNight', parseFloat(e.target.value))}
@@ -345,11 +347,11 @@ const RoomViewEdit: React.FC = () => {
                   <Grid item xs={12}>
                     <Box>
                       <Typography variant="caption" display="block" color="text.secondary">
-                        Availability Status
+                        {t('rooms.details.availabilityStatus')}
                       </Typography>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <Chip
-                          label={currentRoom?.isAvailable ? 'Available' : 'Unavailable'}
+                          label={currentRoom?.isAvailable ? t('rooms.details.available') : t('rooms.details.unavailable')}
                           color={currentRoom?.isAvailable ? 'success' : 'error'}
                           variant="filled"
                         />
@@ -361,7 +363,7 @@ const RoomViewEdit: React.FC = () => {
                               disabled={isEditing}
                             />
                           }
-                          label={currentRoom?.isAvailable ? 'Available' : 'Unavailable'}
+                          label={currentRoom?.isAvailable ? t('rooms.details.available') : t('rooms.details.unavailable')}
                         />
                       </Box>
                     </Box>
@@ -369,7 +371,7 @@ const RoomViewEdit: React.FC = () => {
                   <Grid item xs={12}>
                     <TextField
                       fullWidth
-                      label="Current Rate"
+                      label={t('rooms.details.currentRate')}
                       value={currentRoom ? formatCurrency(currentRoom.pricePerNight) : ''}
                       disabled
                       variant="filled"
@@ -385,7 +387,7 @@ const RoomViewEdit: React.FC = () => {
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  Description
+                  {t('rooms.details.description')}
                 </Typography>
                 <Divider sx={{ mb: 2 }} />
                 
@@ -393,7 +395,7 @@ const RoomViewEdit: React.FC = () => {
                   <Grid item xs={12}>
                     <TextField
                       fullWidth
-                      label="Room Description"
+                      label={t('rooms.details.roomDescription')}
                       multiline
                       rows={4}
                       value={currentRoom?.description || ''}
@@ -412,7 +414,7 @@ const RoomViewEdit: React.FC = () => {
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  Hotel Information
+                  {t('rooms.details.hotelInformation')}
                 </Typography>
                 <Divider sx={{ mb: 2 }} />
                 
@@ -420,7 +422,7 @@ const RoomViewEdit: React.FC = () => {
                   <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
-                      label="Hotel Name"
+                      label={t('rooms.details.hotelName')}
                       value={currentRoom?.hotelName || ''}
                       disabled
                       variant="filled"
@@ -429,7 +431,7 @@ const RoomViewEdit: React.FC = () => {
                   <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
-                      label="Hotel ID"
+                      label={t('rooms.details.hotelId')}
                       value={currentRoom?.hotelId || ''}
                       disabled
                       variant="filled"

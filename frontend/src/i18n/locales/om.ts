@@ -1175,6 +1175,56 @@ export const omTranslations = {
       markCleaning: "Qulqullinaaf Mallattoo Godhuu",
       markAvailable: "Akka Jirutti Mallattoo Godhuu",
       fixStatus: "🤖 Haala Walsimsiisuuf"
+    },
+    
+    // Bal'ina Kutaa
+    details: {
+      title: "Bal'ina Kutaa",
+      edit: "Gulaaluu",
+      
+      // Odeeffannoo Bu'uuraa
+      basicInformation: "Odeeffannoo Bu'uuraa",
+      roomNumber: "Lakkoofsa Kutaa",
+      roomType: "Gosa Kutaa",
+      roomId: "Eenyummaa Kutaa",
+      capacity: "Dandeettii",
+      
+      // Gatii fi Jiraachuu
+      pricingAndAvailability: "Gatii fi Jiraachuu",
+      pricePerNight: "Gatii Halkan Tokkoof",
+      availabilityStatus: "Haala Jiraachuu",
+      available: "Jira",
+      unavailable: "Hin Jiru",
+      currentRate: "Gatii Amma",
+      
+      // Ibsa
+      description: "Ibsa",
+      roomDescription: "Ibsa Kutaa",
+      
+      // Odeeffannoo Hotela
+      hotelInformation: "Odeeffannoo Hotela",
+      hotelName: "Maqaa Hotela",
+      hotelId: "Eenyummaa Hotela",
+      
+      // Gochaalee
+      cancel: "Dhiisuu",
+      save: "Olkaau",
+      loading: "Fe'aa jira...",
+      
+      // Dogoggorawwan
+      errors: {
+        invalidRoomId: "Eenyummaan kutaa sirrii miti",
+        failedToLoad: "Bal'ina kutaa fe'uun dadhabee",
+        failedToUpdate: "Kutaa haaromsuu dadhabee",
+        roomNotFound: "Kutaan hin argamne",
+        apiNotSupported: "Jijjiirraan argamuu kutaa API ammaa irratti hin deeggaru",
+        failedToUpdateStatus: "Haala kutaa haaromsuu dadhabee"
+      },
+      
+      // Ergalee Milkaa'inaa
+      success: {
+        roomUpdated: "Kutaan milkaa'inaan haaromfame"
+      }
     }
   },
 

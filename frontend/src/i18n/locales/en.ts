@@ -1175,6 +1175,56 @@ export const enTranslations = {
       markCleaning: "Mark for Cleaning",
       markAvailable: "Mark Available",
       fixStatus: "🤖 Sync Status"
+    },
+    
+    // Room Details
+    details: {
+      title: "Room Details",
+      edit: "Edit",
+      
+      // Basic Information
+      basicInformation: "Basic Information",
+      roomNumber: "Room Number",
+      roomType: "Room Type",
+      roomId: "Room ID",
+      capacity: "Capacity",
+      
+      // Pricing & Availability
+      pricingAndAvailability: "Pricing & Availability",
+      pricePerNight: "Price per Night",
+      availabilityStatus: "Availability Status",
+      available: "Available",
+      unavailable: "Unavailable",
+      currentRate: "Current Rate",
+      
+      // Description
+      description: "Description",
+      roomDescription: "Room Description",
+      
+      // Hotel Information
+      hotelInformation: "Hotel Information",
+      hotelName: "Hotel Name",
+      hotelId: "Hotel ID",
+      
+      // Actions
+      cancel: "Cancel",
+      save: "Save",
+      loading: "Loading...",
+      
+      // Error Messages
+      errors: {
+        invalidRoomId: "Invalid room ID",
+        failedToLoad: "Failed to load room details",
+        failedToUpdate: "Failed to update room",
+        roomNotFound: "Room not found",
+        apiNotSupported: "Room availability toggle is not supported by the current API",
+        failedToUpdateStatus: "Failed to update room status"
+      },
+      
+      // Success Messages
+      success: {
+        roomUpdated: "Room updated successfully"
+      }
     }
   },
 
