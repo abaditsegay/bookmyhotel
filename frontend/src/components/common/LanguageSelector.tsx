@@ -61,6 +61,7 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({
   const languages = [
     { code: 'en', name: t('language.english'), flag: '🇺🇸' },
     { code: 'am', name: t('language.amharic'), flag: '🇪🇹' },
+    { code: 'om', name: t('language.oromo'), flag: '🇪🇹' },
   ];
 
   const getCurrentLanguageName = () => {

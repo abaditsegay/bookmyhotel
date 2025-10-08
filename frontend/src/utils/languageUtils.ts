@@ -46,6 +46,6 @@ export const getCurrentLanguage = (): string => {
  * Check if language is supported
  */
 export const isSupportedLanguage = (languageCode: string): boolean => {
-  const supportedLanguages = ['en', 'am'];
+  const supportedLanguages = ['en', 'am', 'om'];
   return supportedLanguages.includes(languageCode);
 };

@@ -1912,6 +1912,7 @@ export const enTranslations = {
   language: {
     english: "English",
     amharic: "አማርኛ",
+    oromo: "Afaan Oromoo",
     changeLanguage: "Change Language"
   }
 };

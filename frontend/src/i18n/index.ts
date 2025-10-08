@@ -5,6 +5,7 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 // Import translation objects
 import { enTranslations } from './locales/en';
 import { amTranslations } from './locales/am';
+import { omTranslations } from './locales/om';
 
 const resources = {
   en: {
@@ -12,6 +13,9 @@ const resources = {
   },
   am: {
     translation: amTranslations,
+  },
+  om: {
+    translation: omTranslations,
   },
 };
 

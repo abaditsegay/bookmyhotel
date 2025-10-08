@@ -1773,6 +1773,7 @@ export const amTranslations = {
   language: {
     english: "English",
     amharic: "አማርኛ",
+    oromo: "Afaan Oromoo",
     changeLanguage: "ቋንቋ ቀይር"
   }
 };
