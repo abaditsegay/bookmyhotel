@@ -31,13 +31,11 @@ import {
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../hooks/useNotifications';
-import { useTranslation } from 'react-i18next';
 import NetworkStatusIndicator from '../NetworkStatusIndicator';
 import ThemeToggle from '../common/ThemeToggle';
 import LanguageSelector from '../common/LanguageSelector';
 
 const Navbar: React.FC = () => {
-  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
@@ -115,6 +113,26 @@ const Navbar: React.FC = () => {
       'GUEST': 'secondary' // Anonymous guests
     };
     return colorMap[role] || 'primary';
+  };
+
+  // Helper function to get hotel-specific logo
+  const getHotelLogo = () => {
+    if (!user || !user.hotelName) {
+      return '/logo.svg'; // Default BookMyHotel logo for non-hotel users
+    }
+    
+    // Map hotel names to their specific logos
+    const hotelLogos: { [key: string]: string } = {
+      'Grand Plaza Hotel': '/logos/grand-plaza-hotel-logo.svg',
+      'Sam\'s Hotel at Bole': '/logos/sams-hotel-at-bole-logo.svg',
+      'Sams Hotel at Bole': '/logos/sams-hotel-at-bole-logo.svg', // Alternative naming
+      'Addis Sunshine Hotel': '/logos/addis-sunshine-hotel-logo.svg',
+      'Addis Sunshine': '/logos/addis-sunshine-hotel-logo.svg', // Alternative naming
+      // Add more hotel logos as needed
+    };
+    
+    // Return hotel-specific logo or default hotel logo
+    return hotelLogos[user.hotelName] || '/logos/default-hotel-logo.svg';
   };
 
   // Helper function to determine if hotel name should be shown
@@ -222,16 +240,19 @@ const Navbar: React.FC = () => {
             mx: 0.5,
             borderRadius: 2,
             fontSize: '0.8rem', // Smaller font size
+            fontWeight: user ? 'bold' : 'normal', // Bold for authenticated users
             textTransform: 'none', // Disable all caps
-            color: getTextColor(), // Use dynamic text color
-            backgroundColor: item.path && isActivePath(item.path) 
-              ? getActiveBackground()
-              : 'transparent',
-            border: item.label === 'Shop' ? '1px solid red' : 'none',
+            color: item.label === 'Shop' ? '#333' : getTextColor(), // Dark text for Shop button, white for others
+            backgroundColor: item.label === 'Shop' 
+              ? '#FFD700' // Yellow background for Shop button
+              : item.path && isActivePath(item.path) 
+                ? getActiveBackground()
+                : 'transparent',
             '&:hover': {
-              backgroundColor: getHoverBackground(),
-              color: getTextColor(), // Maintain dynamic color on hover
-              border: item.label === 'Shop' ? '1px solid rgba(255, 0, 0, 0.8)' : 'none',
+              backgroundColor: item.label === 'Shop' 
+                ? '#FFC107' // Darker yellow on hover for Shop button
+                : getHoverBackground(),
+              color: item.label === 'Shop' ? '#222' : getTextColor(), // Darker text on hover for Shop button
             },
             // Ensure proper stacking and boundaries
             position: 'relative',
@@ -288,17 +309,23 @@ const Navbar: React.FC = () => {
             onClick={() => handleItemClick(item)}
             sx={{
               cursor: 'pointer',
-              backgroundColor: item.path && isActivePath(item.path) 
-                ? theme.palette.action.selected 
-                : 'transparent',
-              border: item.label === 'Shop' ? '1px solid red' : 'none',
+              backgroundColor: item.label === 'Shop' 
+                ? '#FFD700' // Yellow background for Shop button
+                : item.path && isActivePath(item.path) 
+                  ? theme.palette.action.selected 
+                  : 'transparent',
               '&:hover': {
-                backgroundColor: theme.palette.action.hover,
-                border: item.label === 'Shop' ? '1px solid rgba(255, 0, 0, 0.8)' : 'none',
+                backgroundColor: item.label === 'Shop' 
+                  ? '#FFC107' // Darker yellow on hover for Shop button
+                  : theme.palette.action.hover,
               },
             }}
           >
-            <ListItemIcon sx={{ color: item.path && isActivePath(item.path) ? theme.palette.primary.main : 'inherit' }}>
+            <ListItemIcon sx={{ 
+              color: item.label === 'Shop' 
+                ? '#333' // Dark icon for Shop button
+                : item.path && isActivePath(item.path) ? theme.palette.primary.main : 'inherit' 
+            }}>
               {item.icon}
             </ListItemIcon>
             <ListItemText 
@@ -306,7 +333,9 @@ const Navbar: React.FC = () => {
               sx={{ 
                 '& .MuiListItemText-primary': {
                   fontWeight: item.path && isActivePath(item.path) ? 600 : 400,
-                  color: item.path && isActivePath(item.path) ? theme.palette.primary.main : 'inherit',
+                  color: item.label === 'Shop' 
+                    ? '#333' // Dark text for Shop button
+                    : item.path && isActivePath(item.path) ? theme.palette.primary.main : 'inherit',
                 }
               }}
             />
@@ -390,29 +419,21 @@ const Navbar: React.FC = () => {
 
   // Helper function to get hover background based on authentication state
   const getHoverBackground = () => {
-    // For authenticated users with gray background, use darker gray
-    if (user) {
-      return 'rgba(0, 0, 0, 0.04)';
-    }
-    // For guest booking with blue background, use white overlay
+    // Use white overlay for all users with the blue background
     return 'rgba(255, 255, 255, 0.1)';
   };
 
   // Helper function to get active background based on authentication state
   const getActiveBackground = () => {
-    // For authenticated users with gray background, use slightly darker gray
-    if (user) {
-      return 'rgba(0, 0, 0, 0.08)';
-    }
-    // For guest booking with blue background, use white overlay
-    return 'rgba(255, 255, 255, 0.1)';
+    // Use white overlay for all users with the blue background
+    return 'rgba(255, 255, 255, 0.2)';
   };
 
   // Helper function to get text color based on authentication state
   const getTextColor = () => {
     // For both authenticated users and guests with dark backgrounds, use white text
     if (user) {
-      return 'white'; // White text on dark blue-gray background
+      return 'white'; // White text on navy blue background
     }
     // For guest booking with blue background, use white text
     return 'white';
@@ -420,14 +441,7 @@ const Navbar: React.FC = () => {
 
   // Helper function to get navbar background based on authentication state
   const getNavbarBackground = () => {
-    // For authenticated users, use dark slate gray like table headers
-    if (user) {
-      return {
-        backgroundColor: '#37474f', // Dark blue-gray color matching table header
-        backgroundImage: 'linear-gradient(135deg, #37474f 0%, #263238 100%)', // Darker gradient for depth
-      };
-    }
-    // For guest booking, keep the blue gradient
+    // Use the same blue gradient for both authenticated and guest users
     return {
       backgroundColor: theme.palette.primary.main,
       backgroundImage: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
@@ -496,8 +510,8 @@ const Navbar: React.FC = () => {
             >
               <Box
                 component="img"
-                src="/logo.svg" 
-                alt="BookMyHotel" 
+                src={getHotelLogo()} 
+                alt={user && user.hotelName ? user.hotelName : "BookMyHotel"} 
                 sx={{ 
                   height: 32, // Compact logo for compact navbar
                   width: 'auto', // Maintain aspect ratio
@@ -521,10 +535,10 @@ const Navbar: React.FC = () => {
                 component="div" 
                 sx={{ 
                   fontWeight: 'bold',
-                  color: user ? 'white' : '#FFD700', // White for authenticated users, gold for guests
+                  color: 'white', // Always white for better contrast on navy blue
                   textAlign: 'center',
                   fontSize: { md: '1.5rem', lg: '1.8rem' }, // Slightly smaller to fit on one line
-                  textShadow: user ? '0 1px 2px rgba(0,0,0,0.5)' : '0 2px 4px rgba(0,0,0,0.3)', // Add shadow for white text on dark background
+                  textShadow: '0 1px 2px rgba(0,0,0,0.7)', // Add shadow for white text on navy blue background
                   // Keep on single line
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
@@ -597,6 +611,7 @@ const Navbar: React.FC = () => {
                       sx={{
                         borderRadius: 2,
                         fontSize: '0.8rem', // Smaller font size
+                        fontWeight: user ? 'bold' : 'normal', // Bold for authenticated users
                         textTransform: 'none', // Disable all caps
                         '&:hover': { backgroundColor: 'action.hover' },
                       }}
@@ -609,6 +624,7 @@ const Navbar: React.FC = () => {
                       sx={{
                         borderRadius: 2,
                         fontSize: '0.8rem', // Smaller font size
+                        fontWeight: user ? 'bold' : 'normal', // Bold for authenticated users
                         textTransform: 'none', // Disable all caps
                         '&:hover': { backgroundColor: getHoverBackground() },
                       }}
@@ -623,6 +639,7 @@ const Navbar: React.FC = () => {
                   sx={{
                     borderRadius: 2,
                     fontSize: '0.8rem', // Smaller font size
+                    fontWeight: user ? 'bold' : 'normal', // Bold for authenticated users
                     textTransform: 'none', // Disable all caps
                     '&:hover': { backgroundColor: getHoverBackground() },
                   }}
