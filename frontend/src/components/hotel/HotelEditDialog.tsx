@@ -56,7 +56,7 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
   const [tenants, setTenants] = useState<TenantDTO[]>([]);
   const [loadingTenants, setLoadingTenants] = useState(false);
   
-  const { token } = useAuth();
+  const { token, user } = useAuth();
 
   // Update form data when hotel prop changes
   useEffect(() => {
@@ -77,14 +77,6 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
     }
   }, [hotel]);
 
-  // Clear errors when dialog opens and load tenants
-  useEffect(() => {
-    if (open) {
-      setLocalError('');
-      loadTenants();
-    }
-  }, [open]);
-
   // Load active tenants for selection
   const loadTenants = useCallback(async () => {
     if (!token) return;
@@ -92,15 +84,33 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
     try {
       setLoadingTenants(true);
       adminApiService.setToken(token);
+      
+      // Check if user has permission to access tenants
+      const hasSystemAdminRole = user?.roles?.includes('SYSTEM_ADMIN') || user?.roles?.includes('ADMIN');
+      
+      if (!hasSystemAdminRole) {
+        console.warn('User does not have SYSTEM_ADMIN or ADMIN role. Skipping tenant loading.');
+        setTenants([]);
+        return;
+      }
+      
       const activeTenants = await adminApiService.getActiveTenants();
       setTenants(activeTenants);
     } catch (err) {
       console.error('Error loading tenants:', err);
-      setLocalError('Failed to load tenants');
+      setLocalError('Failed to load tenants. You may not have sufficient permissions.');
     } finally {
       setLoadingTenants(false);
     }
-  }, [token]);
+  }, [token, user]);
+
+  // Clear errors when dialog opens and load tenants
+  useEffect(() => {
+    if (open) {
+      setLocalError('');
+      loadTenants();
+    }
+  }, [open, loadTenants]);
 
   const handleInputChange = (field: keyof Hotel) => (
     event: React.ChangeEvent<HTMLInputElement>
