@@ -19,6 +19,7 @@ import { AvailableRoom } from '../../types/hotel';
 import { useAuth } from '../../contexts/AuthContext';
 import { COLORS, addAlpha } from '../../theme/themeColors';
 import { formatCurrency } from '../../utils/currencyUtils';
+import { getRoomBedInfo, getRoomTypeLabel } from '../../constants/roomTypes';
 
 interface RoomCardProps {
   room: AvailableRoom;
@@ -98,7 +99,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
                 Room {room.roomNumber}
               </Typography>
               <Chip 
-                label={room.roomType} 
+                label={getRoomTypeLabel(room.roomType)} 
                 variant="outlined" 
                 size="small"
                 sx={{ 
@@ -145,7 +146,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
                 Room {room.roomNumber}
               </Typography>
               <Chip 
-                label={room.roomType} 
+                label={getRoomTypeLabel(room.roomType)} 
                 variant="outlined" 
                 size="small"
                 sx={{ 
@@ -191,11 +192,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
                 color="text.secondary"
                 sx={{ fontSize: isSmallMobile ? '0.7rem' : '0.75rem' }}
               >
-                {room.roomType === 'SINGLE' ? '1 bed' : 
-                 room.roomType === 'DOUBLE' ? '2 beds' :
-                 room.roomType === 'SUITE' ? 'Multiple rooms' :
-                 room.roomType === 'DELUXE' ? 'King bed' :
-                 'Luxury suite'}
+                {getRoomBedInfo(room.roomType)}
               </Typography>
             </Box>
           </Stack>
@@ -207,11 +204,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
             </Typography>
             <BedIcon sx={{ fontSize: 16, ml: 2, mr: 1, color: 'text.secondary' }} />
             <Typography variant="caption" color="text.secondary">
-              {room.roomType === 'SINGLE' ? '1 bed' : 
-               room.roomType === 'DOUBLE' ? '2 beds' :
-               room.roomType === 'SUITE' ? 'Multiple rooms' :
-               room.roomType === 'DELUXE' ? 'King bed' :
-               'Luxury suite'}
+              {getRoomBedInfo(room.roomType)}
             </Typography>
           </Box>
         )}

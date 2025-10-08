@@ -596,7 +596,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                 Original Room Type
               </Typography>
               <Typography variant="body1" sx={{ color: 'text.primary' }}>
-                {booking.roomType}
+                {getRoomTypeLabel(booking.roomType)}
               </Typography>
             </Grid>
             <Grid item xs={12} md={6}>
@@ -669,7 +669,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                     Room Type
                   </Typography>
                   <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary' }}>
-                    {currentRoomType || booking.roomType}
+                    {getRoomTypeLabel(currentRoomType || booking.roomType)}
                   </Typography>
                 </Grid>
                 <Grid item xs={12}>
@@ -904,7 +904,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                               }
                             }}
                           >
-                            {roomType}
+                            {getRoomTypeLabel(roomType)}
                           </MenuItem>
                         );
                       })}

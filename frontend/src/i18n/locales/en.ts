@@ -716,6 +716,98 @@ export const enTranslations = {
 
   // Booking Management
   booking: {
+    find: {
+      title: "Enter Your Booking Details",
+      subtitle: "Both fields are required to find your booking",
+      fields: {
+        confirmationNumber: "Reference Number",
+        email: "Email Address",
+        confirmationNumberPlaceholder: "Enter confirmation number",
+        emailPlaceholder: "Enter email address"
+      },
+      buttons: {
+        findBooking: "Find Booking",
+        searching: "Searching..."
+      },
+      errors: {
+        bothFieldsRequired: "Both confirmation number and email are required",
+        bookingNotFound: "Booking not found. Please check your confirmation number and email address."
+      },
+      found: {
+        title: "Booking Found!",
+        confirmation: "Confirmation: {{confirmationNumber}}",
+        manageBooking: "Manage Booking",
+        labels: {
+          guestName: "Guest Name",
+          roomType: "Room Type",
+          checkIn: "Check-in",
+          checkOut: "Check-out",
+          totalAmount: "Total Amount",
+          status: "Status",
+          paymentStatus: "Payment Status",
+          paymentReference: "Payment Reference"
+        }
+      },
+      help: {
+        title: "Need Help?",
+        description: "To find your booking, you'll need both your reference number and the email address used when making the booking. The reference number can be found in your booking confirmation email. If you can't find your booking, please contact the hotel directly."
+      }
+    },
+    manage: {
+      title: "Manage Your Booking",
+      confirmationLabel: "Confirmation",
+      sendingEmail: "Sending Email...",
+      modifyBooking: "Modify Booking",
+      cancelBooking: "Cancel Booking",
+      bookingDetails: "Booking Details",
+      stayDetails: "Stay Details",
+      checkIn: "Check-in",
+      checkOut: "Check-out", 
+      duration: "Duration",
+      totalAmount: "Total Amount",
+      hotelAndRoom: "Hotel & Room Type",
+      hotel: "Hotel",
+      roomType: "Room Type",
+      roomAssignment: "Room Assignment",
+      roomAssignmentNote: "Room will be assigned at check-in",
+      rate: "Rate",
+      guestInformation: "Guest Information",
+      name: "Name",
+      email: "Email",
+      numberOfGuests: "Number of Guests",
+      paymentInformation: "Payment Information",
+      paymentStatus: "Payment Status",
+      paymentReference: "Payment Reference",
+      modifyDialogTitle: "Modify Your Booking",
+      guestName: "Guest Name",
+      guestNameHelp: "Update the primary guest name for this booking",
+      emailAddress: "Email Address",
+      emailHelp: "Update your email address if needed for confirmations",
+      checkInDate: "Check-in Date",
+      checkOutDate: "Check-out Date",
+      numberOfGuestsHelp: "Update the number of guests for your booking",
+      selectRoomType: "Select Room Type",
+      reasonForModification: "Reason for Modification",
+      reasonHelp: "Optional: Help us understand why you're making changes",
+      cancel: "Cancel",
+      modifying: "Modifying...",
+      modifyBookingAction: "Modify Booking",
+      cancelDialogTitle: "Cancel Your Booking",
+      cancellationPolicy: "Cancellation Policy",
+      cancellationPolicyDetails: "• More than 7 days before check-in: 100% refund\n• 3-7 days before: 50% refund\n• 1-2 days before: 25% refund\n• Same day: No refund",
+      reasonForCancellation: "Reason for Cancellation",
+      cancellationReasonHelp: "Optional: Help us understand why you're cancelling",
+      keepBooking: "Keep Booking",
+      cancelling: "Cancelling...",
+      cancelBookingAction: "Cancel Booking"
+    },
+    paymentStatus: {
+      completed: "COMPLETED",
+      pending: "PENDING", 
+      processing: "PROCESSING",
+      failed: "FAILED"
+    },
+
     guestBooking: "Guest Booking",
     
     // Guest Booking Page

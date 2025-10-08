@@ -18,6 +18,7 @@ import {
 import { RoomTypeAvailability } from '../../types/hotel';
 import { useAuth } from '../../contexts/AuthContext';
 import { COLORS } from '../../theme/themeColors';
+import { getRoomBedInfo } from '../../constants/roomTypes';
 
 interface RoomTypeCardProps {
   roomType: RoomTypeAvailability;
@@ -303,11 +304,7 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
                 color="text.secondary"
                 sx={{ fontSize: '0.75rem' }}
               >
-                {roomType.roomType === 'SINGLE' ? '1 bed' : 
-                 roomType.roomType === 'DOUBLE' ? '2 beds' :
-                 roomType.roomType === 'SUITE' ? 'Multiple rooms' :
-                 roomType.roomType === 'DELUXE' ? 'King bed' :
-                 'Luxury suite'}
+                {getRoomBedInfo(roomType.roomType)}
               </Typography>
             </Box>
           </Box>
@@ -319,11 +316,7 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
             </Typography>
             <BedIcon sx={{ fontSize: 16, ml: 2, mr: 1, color: 'text.secondary' }} />
             <Typography variant="caption" color="text.secondary">
-              {roomType.roomType === 'SINGLE' ? '1 bed' : 
-               roomType.roomType === 'DOUBLE' ? '2 beds' :
-               roomType.roomType === 'SUITE' ? 'Multiple rooms' :
-               roomType.roomType === 'DELUXE' ? 'King bed' :
-               'Luxury suite'}
+              {getRoomBedInfo(roomType.roomType)}
             </Typography>
           </Box>
         )}

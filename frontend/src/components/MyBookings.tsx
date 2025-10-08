@@ -16,17 +16,16 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Paper,
   TextField,
   MenuItem,
   FormControl,
   InputLabel,
   Select,
   Tooltip,
-  Stack,
   useTheme,
   useMediaQuery,
 } from '@mui/material';
+import { ROOM_TYPES, getRoomTypeLabel } from '../constants/roomTypes';
 import {
   Hotel,
   CalendarToday,
@@ -425,7 +424,7 @@ const MyBookings: React.FC = () => {
                         <Box display="flex" alignItems="center" gap={1} mb={1}>
                           <Hotel fontSize="small" />
                           <Typography variant="body2">
-                            Room {booking.roomNumber} - {booking.roomType}
+                            Room {booking.roomNumber} - {getRoomTypeLabel(booking.roomType)}
                           </Typography>
                         </Box>
                         <Box display="flex" alignItems="center" gap={1}>
@@ -694,14 +693,15 @@ const MyBookings: React.FC = () => {
                         label="Room Type"
                         onChange={(e) => setNewRoomType(e.target.value as string)}
                       >
-                        <MenuItem value="STANDARD">Standard Room</MenuItem>
-                        <MenuItem value="DELUXE">Deluxe Room</MenuItem>
-                        <MenuItem value="SUITE">Suite</MenuItem>
-                        <MenuItem value="PRESIDENTIAL">Presidential Suite</MenuItem>
+                        {ROOM_TYPES.map((roomType) => (
+                          <MenuItem key={roomType.value} value={roomType.value}>
+                            {roomType.label}
+                          </MenuItem>
+                        ))}
                       </Select>
                     </FormControl>
                     <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-                      Current: {selectedBooking.roomType}
+                      Current: {getRoomTypeLabel(selectedBooking.roomType)}
                     </Typography>
                   </Grid>
                   <Grid item xs={12}>

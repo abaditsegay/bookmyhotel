@@ -2,13 +2,10 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Container,
-  Paper,
   Typography,
   Box,
   Grid,
   Button,
-  Card,
-  CardContent,
   Chip,
   Alert,
   Dialog,
@@ -20,8 +17,11 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  CircularProgress
+  CircularProgress,
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
+import StandardCard from '../components/common/StandardCard';
 import {
   Edit as EditIcon,
   Cancel as CancelIcon,
@@ -30,10 +30,12 @@ import {
   Hotel as HotelIcon,
   Person as PersonIcon
 } from '@mui/icons-material';
+import { useTranslation } from 'react-i18next';
 import { bookingApiService } from '../services/bookingApi';
 import { buildApiUrl, API_CONFIG } from '../config/apiConfig';
-import { ROOM_TYPES } from '../constants/roomTypes';
+import { ROOM_TYPES, getRoomTypeLabel } from '../constants/roomTypes';
 import { formatDateForInput, formatDateForAPI, formatDateForDisplay } from '../utils/dateUtils';
+import { COLORS } from '../theme/themeColors';
 
 // Get today's date in YYYY-MM-DD format (avoiding timezone issues)
 const getTodayForInput = (): string => {
@@ -66,8 +68,11 @@ interface BookingData {
 }
 
 const GuestBookingManagementPage: React.FC = () => {
+  const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [searchParams] = useSearchParams();
   
   const initialBooking: BookingData = location.state?.booking;
@@ -298,30 +303,67 @@ const GuestBookingManagementPage: React.FC = () => {
 
   if (loading) {
     return (
-      <Container maxWidth="md" sx={{ py: 4, textAlign: 'center' }}>
-        <CircularProgress />
-        <Typography variant="h6" sx={{ mt: 2 }}>
-          Loading your booking...
-        </Typography>
-      </Container>
+      <Box
+        sx={{
+          minHeight: '100vh',
+          background: theme.palette.mode === 'dark' 
+            ? 'linear-gradient(135deg, #121212 0%, #1e1e1e 100%)'
+            : 'linear-gradient(135deg, #ffffff 0%, #ffffff 100%)',
+          py: 4,
+        }}
+      >
+        <Container maxWidth="lg" sx={{ textAlign: 'center' }}>
+          <StandardCard cardVariant="elevated">
+            <Box sx={{ p: isMobile ? 3 : 5 }}>
+              <CircularProgress />
+              <Typography variant="h6" sx={{ mt: 2 }}>
+                Loading your booking...
+              </Typography>
+            </Box>
+          </StandardCard>
+        </Container>
+      </Box>
     );
   }
 
   if (!booking) {
     return (
-      <Container maxWidth="md" sx={{ py: 4 }}>
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {errorMessage || 'No booking information available. Please search for your booking first.'}
-        </Alert>
-        <Box sx={{ textAlign: 'center' }}>
-          <Button
-            variant="contained"
-            onClick={() => navigate('/guest-auth')}
-          >
-            Find My Booking
-          </Button>
-        </Box>
-      </Container>
+      <Box
+        sx={{
+          minHeight: '100vh',
+          background: theme.palette.mode === 'dark' 
+            ? 'linear-gradient(135deg, #121212 0%, #1e1e1e 100%)'
+            : 'linear-gradient(135deg, #ffffff 0%, #ffffff 100%)',
+          py: 4,
+        }}
+      >
+        <Container maxWidth="lg">
+          <StandardCard cardVariant="elevated">
+            <Box sx={{ p: isMobile ? 3 : 5 }}>
+              <Alert 
+                severity="error" 
+                sx={{ 
+                  mb: 3,
+                  borderRadius: 0,
+                  backgroundColor: theme.palette.mode === 'dark' 
+                    ? 'rgba(244, 67, 54, 0.1)' 
+                    : 'rgba(244, 67, 54, 0.04)',
+                }}
+              >
+                {errorMessage || 'No booking information available. Please search for your booking first.'}
+              </Alert>
+              <Box sx={{ textAlign: 'center' }}>
+                <Button
+                  variant="contained"
+                  onClick={() => navigate('/guest-auth')}
+                >
+                  Find My Booking
+                </Button>
+              </Box>
+            </Box>
+          </StandardCard>
+        </Container>
+      </Box>
     );
   }
 
@@ -598,54 +640,111 @@ const GuestBookingManagementPage: React.FC = () => {
   const nights = calculateNights(booking.checkInDate, booking.checkOutDate);
 
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
-      {/* Success/Error Messages */}
-      {successMessage && (
-        <Alert severity="success" sx={{ mb: 3 }} onClose={() => setSuccessMessage('')}>
-          {successMessage}
-        </Alert>
-      )}
-      {errorMessage && (
-        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setErrorMessage('')}>
-          {errorMessage}
-        </Alert>
-      )}
+    <Box
+      sx={{
+        minHeight: '100vh',
+        background: theme.palette.mode === 'dark' 
+          ? 'linear-gradient(135deg, #121212 0%, #1e1e1e 100%)'
+          : 'linear-gradient(135deg, #ffffff 0%, #ffffff 100%)',
+        py: 4,
+      }}
+    >
+      <Container maxWidth="lg">
+        {/* Success/Error Messages */}
+        {successMessage && (
+          <Alert 
+            severity="success" 
+            sx={{ 
+              mb: 3,
+              borderRadius: 0,
+              backgroundColor: theme.palette.mode === 'dark' 
+                ? 'rgba(76, 175, 80, 0.1)' 
+                : 'rgba(76, 175, 80, 0.04)',
+            }} 
+            onClose={() => setSuccessMessage('')}
+          >
+            {successMessage}
+          </Alert>
+        )}
+        {errorMessage && (
+          <Alert 
+            severity="error" 
+            sx={{ 
+              mb: 3,
+              borderRadius: 0,
+              backgroundColor: theme.palette.mode === 'dark' 
+                ? 'rgba(244, 67, 54, 0.1)' 
+                : 'rgba(244, 67, 54, 0.04)',
+            }} 
+            onClose={() => setErrorMessage('')}
+          >
+            {errorMessage}
+          </Alert>
+        )}
 
-      {/* Cancelled Booking Notice */}
-      {booking.status.toLowerCase() === 'cancelled' && (
-        <Alert severity="info" sx={{ mb: 3 }}>
-          <Typography variant="h6" gutterBottom>
-            Booking Cancelled
-          </Typography>
-          <Typography variant="body2">
-            This booking has been cancelled. If you need to make a new reservation, please visit our booking page.
-            If you have questions about refunds, please contact the hotel directly.
-          </Typography>
-        </Alert>
-      )}
-
-      {/* Booking Header */}
-      <Paper sx={{ p: 3, mb: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-          <Box>
-            <Typography variant="h4" gutterBottom>
-              Manage Your Booking
+        {/* Cancelled Booking Notice */}
+        {booking.status.toLowerCase() === 'cancelled' && (
+          <Alert 
+            severity="info" 
+            sx={{ 
+              mb: 3,
+              borderRadius: 0,
+              backgroundColor: theme.palette.mode === 'dark' 
+                ? 'rgba(33, 150, 243, 0.1)' 
+                : 'rgba(33, 150, 243, 0.04)',
+            }}
+          >
+            <Typography variant="h6" gutterBottom>
+              Booking Cancelled
             </Typography>
-            <Typography variant="h6" color="primary">
-              Confirmation: {booking.confirmationNumber}
+            <Typography variant="body2">
+              This booking has been cancelled. If you need to make a new reservation, please visit our booking page.
+              If you have questions about refunds, please contact the hotel directly.
             </Typography>
-          </Box>
-          <Chip
-            label={booking.status}
-            color={getStatusColor(booking.status) as any}
-            variant="filled"
-          />
-        </Box>
+          </Alert>
+        )}
 
-        {/* Action Buttons */}
-        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-          <Button
-            variant="contained"
+        {/* Booking Header */}
+        <StandardCard 
+          cardVariant="elevated"
+          sx={{ 
+            mb: 4,
+          }}
+        >
+          <Box sx={{ p: isMobile ? 3 : 5 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+              <Box>
+                <Typography 
+                  variant="h4" 
+                  gutterBottom
+                  sx={{
+                    fontWeight: 'bold',
+                    color: 'primary.main',
+                  }}
+                >
+                  {t('booking.manage.title')}
+                </Typography>
+                <Typography 
+                  variant="h6" 
+                  color="primary"
+                  sx={{
+                    fontWeight: 'bold',
+                  }}
+                >
+                  {t('booking.manage.confirmationLabel')}: {booking.confirmationNumber}
+                </Typography>
+              </Box>
+              <Chip
+                label={booking.status}
+                color={getStatusColor(booking.status) as any}
+                variant="filled"
+              />
+            </Box>
+
+            {/* Action Buttons */}
+            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+              <Button
+                variant="contained"
             startIcon={<EditIcon />}
             onClick={() => {
               if (token) {
@@ -662,7 +761,7 @@ const GuestBookingManagementPage: React.FC = () => {
             }}
             disabled={!canModifyBooking() || authLoading}
           >
-            {authLoading && pendingAction === 'modify' ? 'Sending Email...' : 'Modify Booking'}
+            {authLoading && pendingAction === 'modify' ? t('booking.manage.sendingEmail') : t('booking.manage.modifyBooking')}
           </Button>
           <Button
             variant="outlined"
@@ -679,7 +778,7 @@ const GuestBookingManagementPage: React.FC = () => {
             }}
             disabled={!canCancelBooking() || authLoading}
           >
-            {authLoading && pendingAction === 'cancel' ? 'Sending Email...' : 'Cancel Booking'}
+            {authLoading && pendingAction === 'cancel' ? t('booking.manage.sendingEmail') : t('booking.manage.cancelBooking')}
           </Button>
         </Box>
 
@@ -693,140 +792,187 @@ const GuestBookingManagementPage: React.FC = () => {
           </Alert>
         )}
 
-        {!canModifyBooking() && booking.status.toLowerCase() === 'confirmed' && (
-          <Alert severity="info" sx={{ mt: 2 }}>
-            Modifications must be made at least 24 hours before check-in.
-          </Alert>
-        )}
-      </Paper>
+            {!canModifyBooking() && booking.status.toLowerCase() === 'confirmed' && (
+              <Alert 
+                severity="info" 
+                sx={{ 
+                  mt: 2,
+                  borderRadius: 0,
+                  backgroundColor: theme.palette.mode === 'dark' 
+                    ? 'rgba(33, 150, 243, 0.1)' 
+                    : 'rgba(33, 150, 243, 0.04)',
+                }}
+              >
+                Modifications must be made at least 24 hours before check-in.
+              </Alert>
+            )}
+          </Box>
+        </StandardCard>
 
-      {/* Booking Details Accordion */}
-      <Accordion defaultExpanded>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="h6">Booking Details</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
+        {/* Booking Details Accordion */}
+        <StandardCard 
+          cardVariant="elevated"
+          sx={{ 
+            mb: 4,
+          }}
+        >
+          <Accordion defaultExpanded sx={{ boxShadow: 'none' }}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h6">{t('booking.manage.bookingDetails')}</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
           <Grid container spacing={3}>
             {/* Dates */}
             <Grid item xs={12} md={6}>
-              <Card variant="outlined">
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <EventIcon sx={{ mr: 1 }} />
-                    <Typography variant="h6">Stay Details</Typography>
-                  </Box>
-                  <Typography variant="body1">
-                    <strong>Check-in:</strong> {formatDate(booking.checkInDate)}
+              <Box 
+                sx={{
+                  p: 2,
+                  borderRadius: 0,
+                  background: theme.palette.background.paper,
+                  border: `1px solid rgba(224, 224, 224, 0.3)`,
+                  boxShadow: 'none',
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                  <EventIcon sx={{ mr: 1, color: 'primary.main' }} />
+                  <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold' }}>
+                    {t('booking.manage.stayDetails')}
                   </Typography>
-                  <Typography variant="body1">
-                    <strong>Check-out:</strong> {formatDate(booking.checkOutDate)}
-                  </Typography>
-                  <Typography variant="body1">
-                    <strong>Duration:</strong> {nights} night{nights !== 1 ? 's' : ''}
-                  </Typography>
-                  <Typography variant="body1" color="primary">
-                    <strong>Total Amount:</strong> ETB {booking.totalAmount?.toFixed(0)}
-                  </Typography>
-                </CardContent>
-              </Card>
+                </Box>
+                <Typography variant="body1" sx={{ mb: 1 }}>
+                  <strong>{t('booking.manage.checkIn')}:</strong> {formatDate(booking.checkInDate)}
+                </Typography>
+                <Typography variant="body1" sx={{ mb: 1 }}>
+                  <strong>{t('booking.manage.checkOut')}:</strong> {formatDate(booking.checkOutDate)}
+                </Typography>
+                <Typography variant="body1" sx={{ mb: 1 }}>
+                  <strong>{t('booking.manage.duration')}:</strong> {nights} night{nights !== 1 ? 's' : ''}
+                </Typography>
+                <Typography variant="body1" color={COLORS.PRIMARY} sx={{ fontWeight: 'bold' }}>
+                  <strong>{t('booking.manage.totalAmount')}:</strong> ETB {booking.totalAmount?.toFixed(0)}
+                </Typography>
+              </Box>
             </Grid>
 
             {/* Hotel & Room */}
             <Grid item xs={12} md={6}>
-              <Card variant="outlined">
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <HotelIcon sx={{ mr: 1 }} />
-                    <Typography variant="h6">Hotel & Room Type</Typography>
-                  </Box>
-                  <Typography variant="body1">
-                    <strong>Hotel:</strong> {booking.hotelName}
+              <Box 
+                sx={{
+                  p: 2,
+                  borderRadius: 0,
+                  background: theme.palette.background.paper,
+                  border: `1px solid rgba(224, 224, 224, 0.3)`,
+                  boxShadow: 'none',
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                  <HotelIcon sx={{ mr: 1, color: 'primary.main' }} />
+                  <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold' }}>
+                    {t('booking.manage.hotelAndRoom')}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {booking.hotelAddress}
-                  </Typography>
-                  <Typography variant="body1">
-                    <strong>Room Type:</strong> {booking.roomType}
-                  </Typography>
-                  <Typography variant="body1" sx={{ color: 'success.main', fontWeight: 'bold' }}>
-                    <strong>Room Assignment:</strong> Room will be assigned at check-in
-                  </Typography>
-                  <Typography variant="body1">
-                    <strong>Rate:</strong> ETB {booking.pricePerNight?.toFixed(0)}/night
-                  </Typography>
-                </CardContent>
-              </Card>
+                </Box>
+                <Typography variant="body1" sx={{ mb: 1 }}>
+                  <strong>{t('booking.manage.hotel')}:</strong> {booking.hotelName}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                  {booking.hotelAddress}
+                </Typography>
+                <Typography variant="body1" sx={{ mb: 1 }}>
+                  <strong>{t('booking.manage.roomType')}:</strong> {getRoomTypeLabel(booking.roomType)}
+                </Typography>
+                <Typography variant="body1" sx={{ color: 'success.main', fontWeight: 'bold', mb: 1 }}>
+                  <strong>{t('booking.manage.roomAssignment')}:</strong> {t('booking.manage.roomAssignmentNote')}
+                </Typography>
+                <Typography variant="body1">
+                  <strong>{t('booking.manage.rate')}:</strong> ETB {booking.pricePerNight?.toFixed(0)}/night
+                </Typography>
+              </Box>
             </Grid>
 
             {/* Guest Information */}
             <Grid item xs={12}>
-              <Card variant="outlined">
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <PersonIcon sx={{ mr: 1 }} />
-                    <Typography variant="h6">Guest Information</Typography>
-                  </Box>
-                  <Grid container spacing={2}>
-                    <Grid item xs={12} sm={6}>
-                      <Typography variant="body1">
-                        <strong>Name:</strong> {booking.guestName}
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <Typography variant="body1">
-                        <strong>Email:</strong> {booking.guestEmail}
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <Typography variant="body1">
-                        <strong>Number of Guests:</strong> {booking.numberOfGuests || 1}
-                      </Typography>
-                    </Grid>
+              <Box 
+                sx={{
+                  p: 2,
+                  borderRadius: 0,
+                  background: theme.palette.background.paper,
+                  border: `1px solid rgba(224, 224, 224, 0.3)`,
+                  boxShadow: 'none',
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                  <PersonIcon sx={{ mr: 1, color: 'primary.main' }} />
+                  <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold' }}>
+                    {t('booking.manage.guestInformation')}
+                  </Typography>
+                </Box>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="body1" sx={{ mb: 1 }}>
+                      <strong>{t('booking.manage.name')}:</strong> {booking.guestName}
+                    </Typography>
                   </Grid>
-                </CardContent>
-              </Card>
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="body1" sx={{ mb: 1 }}>
+                      <strong>{t('booking.manage.email')}:</strong> {booking.guestEmail}
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="body1">
+                      <strong>{t('booking.manage.numberOfGuests')}:</strong> {booking.numberOfGuests || 1}
+                    </Typography>
+                  </Grid>
+                </Grid>
+              </Box>
             </Grid>
 
             {/* Payment Information */}
             <Grid item xs={12}>
-              <Card variant="outlined">
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <Typography variant="h6">Payment Information</Typography>
-                  </Box>
-                  <Grid container spacing={2}>
+              <Box 
+                sx={{
+                  p: 2,
+                  borderRadius: 0,
+                  background: theme.palette.background.paper,
+                  border: `1px solid rgba(224, 224, 224, 0.3)`,
+                  boxShadow: 'none',
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                  <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold' }}>
+                    {t('booking.manage.paymentInformation')}
+                  </Typography>
+                </Box>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="body1" sx={{ mb: 1 }}>
+                      <strong>{t('booking.manage.paymentStatus')}:</strong>{' '}
+                      <Typography 
+                        component="span" 
+                        sx={{ 
+                          color: getPaymentStatusColor(booking.paymentStatus),
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        {booking.paymentStatus || 'PENDING'}
+                      </Typography>
+                    </Typography>
+                  </Grid>
+                  {booking.paymentReference && (
                     <Grid item xs={12} sm={6}>
                       <Typography variant="body1">
-                        <strong>Payment Status:</strong>{' '}
-                        <Typography 
-                          component="span" 
-                          sx={{ 
-                            color: getPaymentStatusColor(booking.paymentStatus),
-                            fontWeight: 'bold' 
-                          }}
-                        >
-                          {booking.paymentStatus || 'PENDING'}
-                        </Typography>
+                        <strong>{t('booking.manage.paymentReference')}:</strong> {booking.paymentReference}
                       </Typography>
                     </Grid>
-                    {booking.paymentReference && (
-                      <Grid item xs={12} sm={6}>
-                        <Typography variant="body1">
-                          <strong>Payment Reference:</strong> {booking.paymentReference}
-                        </Typography>
-                      </Grid>
-                    )}
-                  </Grid>
-                </CardContent>
-              </Card>
+                  )}
+                </Grid>
+              </Box>
             </Grid>
           </Grid>
         </AccordionDetails>
       </Accordion>
-
-      {/* Modification Dialog */}
+    </StandardCard>      {/* Modification Dialog */}
       <Dialog open={modifyDialogOpen} onClose={handleCloseModifyDialog} maxWidth="md" fullWidth>
-        <DialogTitle>Modify Your Booking</DialogTitle>
+        <DialogTitle>{t('booking.manage.modifyDialogTitle')}</DialogTitle>
         <DialogContent>
           {/* Price Change Indicator - Large and Prominent */}
           {pricesModified && originalPricing && currentCalculatedTotal !== null && (
@@ -879,28 +1025,28 @@ const GuestBookingManagementPage: React.FC = () => {
           <Grid container spacing={2} sx={{ mt: 1 }}>
             <Grid item xs={12}>
               <TextField
-                label="Guest Name"
+                label={t('booking.manage.guestName')}
                 fullWidth
                 value={modificationData.newGuestName}
                 onChange={(e) => setModificationData({ ...modificationData, newGuestName: e.target.value })}
-                helperText="Update the primary guest name for this booking"
+                helperText={t('booking.manage.guestNameHelp')}
                 required
               />
             </Grid>
             <Grid item xs={12}>
               <TextField
-                label="Email Address"
+                label={t('booking.manage.emailAddress')}
                 type="email"
                 fullWidth
                 value={modificationData.newGuestEmail}
                 onChange={(e) => setModificationData({ ...modificationData, newGuestEmail: e.target.value })}
-                helperText="Update your email address if needed for confirmations"
+                helperText={t('booking.manage.emailHelp')}
                 required
               />
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
-                label="Check-in Date"
+                label={t('booking.manage.checkInDate')}
                 type="date"
                 fullWidth
                 value={modificationData.newCheckInDate}
@@ -911,7 +1057,7 @@ const GuestBookingManagementPage: React.FC = () => {
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
-                label="Check-out Date"
+                label={t('booking.manage.checkOutDate')}
                 type="date"
                 fullWidth
                 value={modificationData.newCheckOutDate}
@@ -922,81 +1068,78 @@ const GuestBookingManagementPage: React.FC = () => {
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
-                label="Number of Guests"
+                label={t('booking.manage.numberOfGuests')}
                 type="number"
                 fullWidth
                 value={modificationData.newNumberOfGuests}
                 onChange={(e) => setModificationData({ ...modificationData, newNumberOfGuests: parseInt(e.target.value) || 1 })}
                 inputProps={{ min: 1, max: 10 }}
-                helperText="Update the number of guests for your booking"
+                helperText={t('booking.manage.numberOfGuestsHelp')}
               />
             </Grid>
             <Grid item xs={12}>
               <TextField
-                label="Room Type"
+                label={t('booking.manage.roomType')}
                 fullWidth
                 select
                 value={modificationData.newRoomType}
                 onChange={(e) => setModificationData({ ...modificationData, newRoomType: e.target.value })}
               >
-                <MenuItem value="">Select Room Type</MenuItem>
+                <MenuItem value="">{t('booking.manage.selectRoomType')}</MenuItem>
                 {ROOM_TYPES.map((roomType) => (
                   <MenuItem key={roomType.value} value={roomType.value}>
-                    {roomType.value}
+                    {getRoomTypeLabel(roomType.value)}
                   </MenuItem>
                 ))}
               </TextField>
             </Grid>
             <Grid item xs={12}>
               <TextField
-                label="Reason for Modification"
+                label={t('booking.manage.reasonForModification')}
                 fullWidth
                 value={modificationData.modificationReason}
                 onChange={(e) => setModificationData({ ...modificationData, modificationReason: e.target.value })}
-                helperText="Optional: Help us understand why you're making changes"
+                helperText={t('booking.manage.reasonHelp')}
               />
             </Grid>
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseModifyDialog}>Cancel</Button>
+          <Button onClick={handleCloseModifyDialog}>{t('booking.manage.cancel')}</Button>
           <Button
             onClick={handleModifyBooking}
             variant="contained"
             disabled={loading}
             startIcon={loading ? <CircularProgress size={20} /> : <EditIcon />}
           >
-            {loading ? 'Modifying...' : 'Modify Booking'}
+            {loading ? t('booking.manage.modifying') : t('booking.manage.modifyBookingAction')}
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* Cancellation Dialog */}
       <Dialog open={cancelDialogOpen} onClose={() => setCancelDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Cancel Your Booking</DialogTitle>
+        <DialogTitle>{t('booking.manage.cancelDialogTitle')}</DialogTitle>
         <DialogContent>
           <Alert severity="warning" sx={{ mb: 2 }}>
             <Typography variant="body2">
-              <strong>Cancellation Policy:</strong><br />
-              • More than 7 days before check-in: 100% refund<br />
-              • 3-7 days before: 50% refund<br />
-              • 1-2 days before: 25% refund<br />
-              • Same day: No refund
+              <strong>{t('booking.manage.cancellationPolicy')}:</strong><br />
+              {t('booking.manage.cancellationPolicyDetails')}
             </Typography>
           </Alert>
           <TextField
-            label="Reason for Cancellation"
+            label={t('booking.manage.reasonForCancellation')}
             fullWidth
             multiline
             rows={3}
             value={cancellationReason}
             onChange={(e) => setCancellationReason(e.target.value)}
             sx={{ mt: 2 }}
-            helperText="Optional: Help us understand why you're cancelling"
+            helperText={t('booking.manage.cancellationReasonHelp')}
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setCancelDialogOpen(false)}>Keep Booking</Button>
+          <Button onClick={() => setCancelDialogOpen(false)}>{t('booking.manage.keepBooking')}</Button>
           <Button
             onClick={handleCancelBooking}
             variant="contained"
@@ -1004,7 +1147,7 @@ const GuestBookingManagementPage: React.FC = () => {
             disabled={loading}
             startIcon={loading ? <CircularProgress size={20} /> : <CancelIcon />}
           >
-            {loading ? 'Cancelling...' : 'Cancel Booking'}
+            {loading ? t('booking.manage.cancelling') : t('booking.manage.cancelBookingAction')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -1050,7 +1193,8 @@ const GuestBookingManagementPage: React.FC = () => {
         )}
       </Box>
     </Container>
-  );
+  </Box>
+);
 };
 
 export default GuestBookingManagementPage;

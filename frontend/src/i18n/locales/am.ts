@@ -673,6 +673,97 @@ export const amTranslations = {
 
   // Booking Management
   booking: {
+    find: {
+      title: "የመያዣ ዝርዝሮችዎን ያስገቡ",
+      subtitle: "መያዣዎን ለማግኘት ሁለቱም መስኮች ያስፈልጋሉ",
+      fields: {
+        confirmationNumber: "ማጣቀሻ ቁጥር",
+        email: "ኢሜይል አድራሻ",
+        confirmationNumberPlaceholder: "የማረጋገጫ ቁጥር ያስገቡ",
+        emailPlaceholder: "ኢሜይል አድራሻ ያስገቡ"
+      },
+      buttons: {
+        findBooking: "መያዣ ይፈልጉ",
+        searching: "በመፈለግ ላይ..."
+      },
+      errors: {
+        bothFieldsRequired: "የማረጋገጫ ቁጥር እና ኢሜይል ሁለቱም ያስፈልጋሉ",
+        bookingNotFound: "መያዣ አልተገኘም። እባክዎ የማረጋገጫ ቁጥርዎን እና ኢሜይል አድራሻዎን ይፈትሹ።"
+      },
+      found: {
+        title: "መያዣ ተገኝቷል!",
+        confirmation: "ማረጋገጫ: {{confirmationNumber}}",
+        manageBooking: "መያዣ ያስተዳድሩ",
+        labels: {
+          guestName: "የእንግዳ ስም",
+          roomType: "የክፍል አይነት",
+          checkIn: "መግቢያ",
+          checkOut: "መውጫ",
+          totalAmount: "ጠቅላላ መጠን",
+          status: "ሁኔታ",
+          paymentStatus: "የክፍያ ሁኔታ",
+          paymentReference: "የክፍያ ማጣቀሻ"
+        }
+      },
+      help: {
+        title: "እርዳታ ይፈልጋሉ?",
+        description: "መያዣዎን ለማግኘት የማጣቀሻ ቁጥርዎ እና ማስያዝ ሲያደርጉ የተጠቀሙበት ኢሜይል አድራሻ ሁለቱም ያስፈልግዎታል። የማጣቀሻ ቁጥሩ በመያዣ ማረጋገጫ ኢሜይልዎ ውስጥ ሊገኝ ይችላል። መያዣዎን ማግኘት ካልቻሉ እባክዎ ሆቴሉን በቀጥታ ያግኙ።"
+      }
+    },
+    manage: {
+      title: "መያዣዎን ያስተዳድሩ",
+      confirmationLabel: "ማረጋገጫ",
+      sendingEmail: "ኢሜይል በመላክ ላይ...",
+      modifyBooking: "መያዣ ይቀይሩ",
+      cancelBooking: "መያዣ ይሰርዙ",
+      bookingDetails: "የመያዣ ዝርዝሮች",
+      stayDetails: "የመቆያ ዝርዝሮች",
+      checkIn: "መግቢያ",
+      checkOut: "መውጫ", 
+      duration: "ጊዜ",
+      totalAmount: "ጠቅላላ መጠን",
+      hotelAndRoom: "ሆቴል እና የክፍል አይነት",
+      hotel: "ሆቴል",
+      roomType: "የክፍል አይነት",
+      roomAssignment: "የክፍል ምደባ",
+      roomAssignmentNote: "ክፍል በመግቢያ ጊዜ ይመደባል",
+      rate: "ዋጋ",
+      guestInformation: "የእንግዳ መረጃ",
+      name: "ስም",
+      email: "ኢሜይል",
+      numberOfGuests: "የእንግዶች ቁጥር",
+      paymentInformation: "የክፍያ መረጃ",
+      paymentStatus: "የክፍያ ሁኔታ",
+      paymentReference: "የክፍያ ማጣቀሻ",
+      modifyDialogTitle: "መያዣዎን ይቀይሩ",
+      guestName: "የእንግዳ ስም",
+      guestNameHelp: "ለዚህ መያዣ ዋናውን የእንግዳ ስም ያዘምኑ",
+      emailAddress: "ኢሜይል አድራሻ",
+      emailHelp: "ለማረጋገጫዎች የሚያስፈልግ ከሆነ ኢሜይል አድራሻዎን ያዘምኑ",
+      checkInDate: "የመግቢያ ቀን",
+      checkOutDate: "የመውጫ ቀን",
+      numberOfGuestsHelp: "ለመያዣዎ የእንግዶች ቁጥር ያዘምኑ",
+      selectRoomType: "የክፍል አይነት ይምረጡ",
+      reasonForModification: "የመቀየሪያ ምክንያት",
+      reasonHelp: "አማራጭ: ለምን እየቀየሩ እንደሆነ እንድንረዳ ይርዱን",
+      cancel: "ይሰርዙ",
+      modifying: "በመቀየር ላይ...",
+      modifyBookingAction: "መያዣ ይቀይሩ",
+      cancelDialogTitle: "መያዣዎን ይሰርዙ",
+      cancellationPolicy: "የሰረዝ ፖሊሲ",
+      cancellationPolicyDetails: "• ከመግቢያ ወጣት በላይ ከ7 ቀናት በፊት: 100% ተመላሽ\n• ከ3-7 ቀናት በፊት: 50% ተመላሽ\n• ከ1-2 ቀናት በፊት: 25% ተመላሽ\n• ተመሳሳይ ቀን: ተመላሽ የለም",
+      reasonForCancellation: "የሰረዝ ምክንያት",
+      cancellationReasonHelp: "አማራጭ: ለምን እየሰረዙ እንደሆነ እንድንረዳ ይርዱን",
+      keepBooking: "መያዣ ይቀጥሉ",
+      cancelling: "በመሰረዝ ላይ...",
+      cancelBookingAction: "መያዣ ይሰርዙ"
+    },
+    paymentStatus: {
+      completed: "ተጠናቅቋል",
+      pending: "በመጠባበቅ ላይ", 
+      processing: "በሂደት ላይ",
+      failed: "ተወዳድሯል"
+    },
     guestBooking: "የእንግዳ ቦታ ማስያዝ",
     
     // Guest Booking Page

@@ -11,6 +11,7 @@ import {
   useMediaQuery,
   Stack,
 } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 import StandardCard from '../components/common/StandardCard';
 import StandardButton from '../components/common/StandardButton';
 // Icons removed for neutral design
@@ -19,6 +20,7 @@ import { hotelApiService } from '../services/hotelApi';
 import { BookingResponse } from '../types/hotel';
 import { formatDateForDisplay } from '../utils/dateUtils';
 import { COLORS } from '../theme/themeColors';
+import { getRoomTypeLabel } from '../constants/roomTypes';
 
 // Helper function to get payment status color
 const getPaymentStatusColor = (status?: string): string => {
@@ -34,6 +36,7 @@ const getPaymentStatusColor = (status?: string): string => {
 };
 
 const FindBookingPage: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -61,7 +64,7 @@ const FindBookingPage: React.FC = () => {
     try {
       // Both reference number and email are required
       if (!confirmationNumber.trim() || !email.trim()) {
-        setError('Please enter both reference number and email address');
+        setError(t('booking.find.errors.bothFieldsRequired'));
         setLoading(false);
         return;
       }
@@ -74,7 +77,7 @@ const FindBookingPage: React.FC = () => {
       
       setBooking(result);
     } catch (err) {
-      setError('Booking not found. Please check your reference number and email address and try again.');
+      setError(t('booking.find.errors.bookingNotFound'));
     } finally {
       setLoading(false);
     }
@@ -130,10 +133,10 @@ const FindBookingPage: React.FC = () => {
                 textAlign: 'center',
               }}
             >
-              Enter Your Booking Details
+              {t('booking.find.title')}
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              Both fields are required to find your booking
+              {t('booking.find.subtitle')}
             </Typography>
           </Box>
 
@@ -141,10 +144,10 @@ const FindBookingPage: React.FC = () => {
             <Stack spacing={3} direction={{ xs: 'column', md: 'row' }}>
               <TextField
                 fullWidth
-                label="Reference Number *"
+                label={t('booking.find.fields.confirmationNumber')}
                 value={confirmationNumber}
                 onChange={handleConfirmationNumberChange}
-                placeholder="Enter your booking reference number"
+                placeholder={t('booking.find.fields.confirmationNumberPlaceholder')}
                 required
                 sx={{
                   '& .MuiOutlinedInput-root': {
@@ -161,11 +164,11 @@ const FindBookingPage: React.FC = () => {
               />
               <TextField
                 fullWidth
-                label="Email Address *"
+                label={t('booking.find.fields.email')}
                 type="email"
                 value={email}
                 onChange={handleEmailChange}
-                placeholder="Enter the email used for booking"
+                placeholder={t('booking.find.fields.emailPlaceholder')}
                 required
                 sx={{
                   '& .MuiOutlinedInput-root': {
@@ -212,7 +215,7 @@ const FindBookingPage: React.FC = () => {
                   fontWeight: 500,
                 }}
               >
-                {loading ? 'Searching...' : 'Find Booking'}
+                {loading ? t('booking.find.buttons.searching') : t('booking.find.buttons.findBooking')}
               </StandardButton>
             </Box>
           </form>
@@ -248,10 +251,10 @@ const FindBookingPage: React.FC = () => {
                     mb: 1,
                   }}
                 >
-                  Booking Found
+                  {t('booking.find.found.title')}
                 </Typography>
                 <Typography variant="h6" color="text.secondary">
-                  Confirmation #{booking.confirmationNumber}
+                  {t('booking.find.found.confirmation', { confirmationNumber: booking.confirmationNumber })}
                 </Typography>
               </Box>
             </Box>
@@ -289,7 +292,7 @@ const FindBookingPage: React.FC = () => {
                   }}
                 >
                   <Typography variant="subtitle1" color="primary.main" sx={{ fontWeight: 'bold', mb: 1 }}>
-                    Guest Name
+                    {t('booking.find.found.labels.guestName')}
                   </Typography>
                   <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
                     {booking.guestName}
@@ -306,10 +309,10 @@ const FindBookingPage: React.FC = () => {
                   }}
                 >
                   <Typography variant="subtitle1" color="primary.main" sx={{ fontWeight: 'bold', mb: 1 }}>
-                    Room Type
+                    {t('booking.find.found.labels.roomType')}
                   </Typography>
                   <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                    {booking.roomType}
+                    {getRoomTypeLabel(booking.roomType)}
                   </Typography>
                 </Box>
                 
@@ -323,13 +326,13 @@ const FindBookingPage: React.FC = () => {
                   }}
                 >
                   <Typography variant="body2" color="primary.main" sx={{ fontWeight: 'bold', mb: 0.5 }}>
-                    Check-in
+                    {t('booking.find.found.labels.checkIn')}
                   </Typography>
                   <Typography variant="body1" sx={{ fontWeight: 'bold', mb: 1.5 }}>
                     {formatDateForDisplay(booking.checkInDate)}
                   </Typography>
                   <Typography variant="body2" color="primary.main" sx={{ fontWeight: 'bold', mb: 0.5 }}>
-                    Check-out
+                    {t('booking.find.found.labels.checkOut')}
                   </Typography>
                   <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
                     {formatDateForDisplay(booking.checkOutDate)}
@@ -345,7 +348,7 @@ const FindBookingPage: React.FC = () => {
                   }}
                 >
                   <Typography variant="subtitle1" color={COLORS.PRIMARY} sx={{ fontWeight: 'bold', mb: 1 }}>
-                    Total Amount
+                    {t('booking.find.found.labels.totalAmount')}
                   </Typography>
                   <Typography 
                     variant="h5" 
@@ -368,7 +371,7 @@ const FindBookingPage: React.FC = () => {
                   }}
                 >
                   <Typography variant="subtitle1" color="primary.main" sx={{ fontWeight: 'bold', mb: 1 }}>
-                    Status
+                    {t('booking.find.found.labels.status')}
                   </Typography>
                   <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
                     {booking.status}
@@ -385,7 +388,7 @@ const FindBookingPage: React.FC = () => {
                   }}
                 >
                   <Typography variant="subtitle1" color="primary.main" sx={{ fontWeight: 'bold', mb: 1 }}>
-                    Payment Status
+                    {t('booking.find.found.labels.paymentStatus')}
                   </Typography>
                   <Typography 
                     variant="h6" 
@@ -409,7 +412,7 @@ const FindBookingPage: React.FC = () => {
                     }}
                   >
                     <Typography variant="subtitle1" color="primary.main" sx={{ fontWeight: 'bold', mb: 1 }}>
-                      Payment Reference
+                      {t('booking.find.found.labels.paymentReference')}
                     </Typography>
                     <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
                       {booking.paymentReference}
@@ -432,7 +435,7 @@ const FindBookingPage: React.FC = () => {
                   fontWeight: 500,
                 }}
               >
-                Manage Booking
+                {t('booking.find.found.manageBooking')}
               </StandardButton>
             </Box>
           </Box>
@@ -465,13 +468,11 @@ const FindBookingPage: React.FC = () => {
                 color: 'info.main',
               }}
             >
-              Need Help?
+              {t('booking.find.help.title')}
             </Typography>
           </Box>
           <Typography variant="body1" color="text.secondary" sx={{ fontSize: '1.1rem', lineHeight: 1.6 }}>
-            To find your booking, you'll need both your <strong>reference number</strong> and the <strong>email address</strong> used when making the booking.
-            The reference number can be found in your booking confirmation email.
-            If you can't find your booking, please contact the hotel directly.
+            {t('booking.find.help.description')}
           </Typography>
         </Box>
       </StandardCard>

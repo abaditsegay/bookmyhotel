@@ -36,8 +36,53 @@ export const getRoomTypeLabel = (roomType: string): string => {
 };
 
 /**
+ * Get bed information based on room type
+ */
+export const getRoomBedInfo = (roomType: string): string => {
+  const bedInfo: { [key: string]: string } = {
+    SINGLE: '1 bed',
+    DOUBLE: '2 beds',
+    STANDARD: '2 beds',
+    DELUXE: 'King bed',
+    SUITE: 'Multiple rooms',
+    FAMILY: 'Multiple beds',
+    ACCESSIBLE: 'Accessible bed',
+    PRESIDENTIAL: 'Luxury suite'
+  };
+  return bedInfo[roomType] || 'Luxury suite';
+};
+
+/**
  * Check if a room type is valid
  */
 export const isValidRoomType = (roomType: string): boolean => {
   return ROOM_TYPE_VALUES.includes(roomType);
+};
+
+/**
+ * Get all room types as options for dropdowns
+ */
+export const getRoomTypeOptions = (): RoomTypeOption[] => {
+  return ROOM_TYPES;
+};
+
+/**
+ * Get room type enum values (for backend compatibility)
+ */
+export const getRoomTypeEnumValues = (): string[] => {
+  return ROOM_TYPE_VALUES;
+};
+
+/**
+ * Simple function that returns the room type enum that the backend supports
+ * This function can be used anywhere in the application where room types are needed
+ */
+export const getSupportedRoomTypes = () => {
+  return {
+    values: ROOM_TYPE_VALUES,
+    options: ROOM_TYPES,
+    getLabel: getRoomTypeLabel,
+    getBedInfo: getRoomBedInfo,
+    isValid: isValidRoomType
+  };
 };
