@@ -1948,6 +1948,125 @@ export const enTranslations = {
     closeAndContinue: "Close & Continue",
     download: "Download",
   },
+  
+  // Booking Confirmation Page
+  bookingConfirmation: {
+    title: "Booking Confirmed!",
+    subtitle: "Your reservation has been successfully created",
+    confirmationLabel: "Confirmation: {{confirmationNumber}}",
+    
+    // Loading states
+    loading: "Loading booking confirmation...",
+    loadingSubtitle: "Please wait while we retrieve your booking details",
+    
+    // Error states
+    errorNotFound: "Booking not found",
+    errorDescription: "We couldn't find your booking information. Please check your confirmation number or try again.",
+    
+    // Action buttons
+    actions: {
+      emailConfirmation: "EMAIL CONFIRMATION",
+      emailConfirmationShort: "EMAIL",
+      print: "PRINT",
+      downloadPdf: "DOWNLOAD PDF",
+      downloadPdfShort: "PDF",
+      downloading: "DOWNLOADING...",
+      returnHome: "Return Home",
+      searchHotels: "Search More Hotels",
+      searchHotelsShort: "Search Hotels"
+    },
+    
+    // Quick info cards
+    quickInfo: {
+      checkIn: "Check-in",
+      checkOut: "Check-out", 
+      nights: "Nights",
+      totalAmount: "Total Amount"
+    },
+    
+    // Detailed sections
+    sections: {
+      hotelInformation: "Hotel Information",
+      roomInformation: "Room Information",
+      guestInformation: "Guest Information",
+      bookingSummary: "Booking Summary"
+    },
+    
+    // Room details
+    room: {
+      roomType: "Room Type:",
+      rate: "Rate:",
+      perNight: "/night",
+      roomAssignment: "Room Assignment:",
+      roomAssignmentMessage: "Room will be assigned at check-in"
+    },
+    
+    // Guest details
+    guest: {
+      name: "Name:",
+      email: "Email:",
+      numberOfGuests: "Number of Guests:"
+    },
+    
+    // Booking summary
+    summary: {
+      bookedOn: "Booked on:",
+      duration: "Duration:",
+      nightSingle: "night",
+      nightPlural: "nights"
+    },
+    
+    // Status labels
+    status: {
+      bookingStatus: "BOOKING STATUS",
+      paymentStatus: "PAYMENT STATUS",
+      confirmed: "CONFIRMED",
+      pending: "PENDING",
+      cancelled: "CANCELLED",
+      checkedIn: "CHECKED IN",
+      checkedOut: "CHECKED OUT",
+      paid: "Paid",
+      payAtFrontDesk: "Pay at Front Desk",
+      failed: "Failed",
+      refunded: "Refunded"
+    },
+    
+    // Important information
+    importantInfo: {
+      title: "Important Information",
+      roomAssignment: "Your specific room number will be assigned at check-in",
+      bringId: "Please bring a valid ID for check-in",
+      checkInTime: "Check-in time: 3:00 PM | Check-out time: 11:00 AM",
+      changesContact: "For any changes or cancellations, please contact the hotel directly",
+      keepConfirmation: "Keep your confirmation number for reference"
+    },
+    
+    // Email dialog
+    emailDialog: {
+      title: "Email Booking Confirmation",
+      emailLabel: "Email Address",
+      includeItinerary: "Include detailed itinerary",
+      cancel: "Cancel",
+      sendEmail: "Send Email",
+      sending: "Sending..."
+    },
+    
+    // Success/Error messages
+    messages: {
+      emailSuccess: "Email sent successfully!",
+      emailError: "Failed to send email.",
+      emailErrorServer: "The server encountered an internal error. Please try again later.",
+      emailErrorInvalid: "Invalid email address.",
+      emailErrorRetry: "Please try again later.",
+      pdfSuccess: "PDF downloaded successfully!",
+      pdfError: "Failed to download PDF.",
+      pdfErrorServer: "The server encountered an internal error. Please try again later or contact support.",
+      pdfErrorNotFound: "PDF not found for this booking.",
+      pdfErrorAuth: "You are not authorized to download this PDF.",
+      pdfErrorRetry: "Please try again later."
+    }
+  },
+  
   navigation: {
     home: "Home",
     hotels: "Hotels",

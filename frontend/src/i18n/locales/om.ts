@@ -1928,6 +1928,125 @@ export const omTranslations = {
     closeAndContinue: "Cufii & Itti Fufi",
     download: "Download",
   },
+  
+  // Booking Confirmation Page
+  bookingConfirmation: {
+    title: "Bakka Buusi Mirkanaa'e!",
+    subtitle: "Bakka buusni keessan milkaa'inaan uumame",
+    confirmationLabel: "Mirkaneessuu: {{confirmationNumber}}",
+    
+    // Loading states
+    loading: "Mirkaneessuu bakka buusi fe'amaa jira...",
+    loadingSubtitle: "Maaloo obsaa yeroo nu odeeffannoo bakka buusi keessanii fiddanuu",
+    
+    // Error states
+    errorNotFound: "Bakka buusi hin argamne",
+    errorDescription: "Odeeffannoo bakka buusi keessanii argachuu hin dandeenye. Maaloo lakkoofsa mirkaneessuu keessanii mirkaneessaa yookaan irra deebi'aa yaala.",
+    
+    // Action buttons
+    actions: {
+      emailConfirmation: "MIRKANEESSUU EMAIL",
+      emailConfirmationShort: "EMAIL",
+      print: "MAXXANSUU",
+      downloadPdf: "PDF DOWNLOAD",
+      downloadPdfShort: "PDF",
+      downloading: "DOWNLOADING...",
+      returnHome: "Manaatti Deebi'uu",
+      searchHotels: "Hoteelota Dabalataa Barbaaduun",
+      searchHotelsShort: "Hoteelota Barbaaduun"
+    },
+    
+    // Quick info cards
+    quickInfo: {
+      checkIn: "Seensaa",
+      checkOut: "Ba'uu", 
+      nights: "Halkanootaa",
+      totalAmount: "Gatii Waliigala"
+    },
+    
+    // Detailed sections
+    sections: {
+      hotelInformation: "Odeeffannoo Hooteelaa",
+      roomInformation: "Odeeffannoo Kutaa",
+      guestInformation: "Odeeffannoo Keessummaa",
+      bookingSummary: "Cuunfaa Bakka Buusi"
+    },
+    
+    // Room details
+    room: {
+      roomType: "Gosa Kutaa:",
+      rate: "Gatii:",
+      perNight: "/halkan",
+      roomAssignment: "Ramaddii Kutaa:",
+      roomAssignmentMessage: "Kutaan yeroo seensaatti ramadama"
+    },
+    
+    // Guest details
+    guest: {
+      name: "Maqaa:",
+      email: "Email:",
+      numberOfGuests: "Lakkoofsa Keessummootaa:"
+    },
+    
+    // Booking summary
+    summary: {
+      bookedOn: "Bakka buufame:",
+      duration: "Yeroo:",
+      nightSingle: "halkan",
+      nightPlural: "halkanootaa"
+    },
+    
+    // Status labels
+    status: {
+      bookingStatus: "HAALA BAKKA BUUSI",
+      paymentStatus: "HAALA KAFFALTII",
+      confirmed: "MIRKANAA'E",
+      pending: "EEGAMAA",
+      cancelled: "HAQAME",
+      checkedIn: "SEENE",
+      checkedOut: "BA'E",
+      paid: "Kaffalame",
+      payAtFrontDesk: "Simannaa Duratti Kaffali",
+      failed: "Kufe",
+      refunded: "Deebifame"
+    },
+    
+    // Important information
+    importantInfo: {
+      title: "Odeeffannoo Barbaachisaa",
+      roomAssignment: "Lakkoofsi kutaa keessanii addaa yeroo seensaatti kennama",
+      bringId: "Maaloo seensaaf ragaa sirrii ta'e fidaa",
+      checkInTime: "Yeroo seensaa: 3:00 PM | Yeroo ba'uu: 11:00 AM",
+      changesContact: "Jijjiirama yookaan haqaaf, maaloo kallattiin hooteelaa quunnamaa",
+      keepConfirmation: "Lakkoofsa mirkaneessuu keessanii yaadannoof qabaadhaa"
+    },
+    
+    // Email dialog
+    emailDialog: {
+      title: "Mirkaneessuu Bakka Buusi Email",
+      emailLabel: "Teessoo Email",
+      includeItinerary: "Sagantaa bal'aa dabali",
+      cancel: "Haquu",
+      sendEmail: "Email Erguu",
+      sending: "Ergamaa..."
+    },
+    
+    // Success/Error messages
+    messages: {
+      emailSuccess: "Email milkaa'inaan ergame!",
+      emailError: "Email erguu kufe.",
+      emailErrorServer: "Sarvaricha dogongora keessoo muddate. Maaloo booda yaala.",
+      emailErrorInvalid: "Teessoo email sirrii miti.",
+      emailErrorRetry: "Maaloo booda yaala.",
+      pdfSuccess: "PDF milkaa'inaan download taasifame!",
+      pdfError: "PDF download taasifachuu kufe.",
+      pdfErrorServer: "Sarvaricha dogongora keessoo muddate. Maaloo booda yaala yookaan deggeraa quunnamaa.",
+      pdfErrorNotFound: "PDF bakka buusi kanaaf hin argamne.",
+      pdfErrorAuth: "PDF kana download taasifachuuf hayyama hin qabdu.",
+      pdfErrorRetry: "Maaloo booda yaala."
+    }
+  },
+  
   navigation: {
     home: "Mana",
     hotels: "Hoteelota",

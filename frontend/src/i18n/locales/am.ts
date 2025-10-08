@@ -1809,6 +1809,125 @@ export const amTranslations = {
     closeAndContinue: "ዝጋና ቀጥል",
     download: "አውርድ",
   },
+  
+  // Booking Confirmation Page
+  bookingConfirmation: {
+    title: "ማስያዝ ተረጋግጧል!",
+    subtitle: "የቦታ ማስያዝዎ በተሳካ ሁኔታ ተፈጥሯል",
+    confirmationLabel: "ማረጋገጫ: {{confirmationNumber}}",
+    
+    // Loading states
+    loading: "የማስያዝ ማረጋገጫ በመጫን ላይ...",
+    loadingSubtitle: "የቦታ ማስያዝዎን ዝርዝሮች በምናገኝበት ጊዜ እባክዎ ይጠብቁ",
+    
+    // Error states
+    errorNotFound: "ማስያዝ አልተገኘም",
+    errorDescription: "የቦታ ማስያዝዎን መረጃ ማግኘት አልቻልንም። እባክዎ የማረጋገጫ ቁጥርዎን ያረጋግጡ ወይም እንደገና ይሞክሩ።",
+    
+    // Action buttons
+    actions: {
+      emailConfirmation: "ማረጋገጫ በኢሜይል ላክ",
+      emailConfirmationShort: "ኢሜይል",
+      print: "አትም",
+      downloadPdf: "PDF አውርድ",
+      downloadPdfShort: "PDF",
+      downloading: "በማውረድ ላይ...",
+      returnHome: "ወደ ቤት ተመለስ",
+      searchHotels: "ተጨማሪ ሆቴሎችን ፈልግ",
+      searchHotelsShort: "ሆቴሎችን ፈልግ"
+    },
+    
+    // Quick info cards
+    quickInfo: {
+      checkIn: "መግቢያ",
+      checkOut: "መውጫ", 
+      nights: "ምሽቶች",
+      totalAmount: "ጠቅላላ መጠን"
+    },
+    
+    // Detailed sections
+    sections: {
+      hotelInformation: "የሆቴል መረጃ",
+      roomInformation: "የክፍል መረጃ",
+      guestInformation: "የእንግዳ መረጃ",
+      bookingSummary: "የማስያዝ ማጠቃለያ"
+    },
+    
+    // Room details
+    room: {
+      roomType: "የክፍል አይነት:",
+      rate: "ዋጋ:",
+      perNight: "/ለምሽት",
+      roomAssignment: "የክፍል ምደባ:",
+      roomAssignmentMessage: "ክፍል በመግቢያ ጊዜ ይመደባል"
+    },
+    
+    // Guest details
+    guest: {
+      name: "ስም:",
+      email: "ኢሜይል:",
+      numberOfGuests: "የእንግዶች ቁጥር:"
+    },
+    
+    // Booking summary
+    summary: {
+      bookedOn: "የተያዘበት ቀን:",
+      duration: "ጊዜ:",
+      nightSingle: "ምሽት",
+      nightPlural: "ምሽቶች"
+    },
+    
+    // Status labels
+    status: {
+      bookingStatus: "የማስያዝ ሁኔታ",
+      paymentStatus: "የክፍያ ሁኔታ",
+      confirmed: "ተረጋግጧል",
+      pending: "በመጠባበቅ ላይ",
+      cancelled: "ተሰርዟል",
+      checkedIn: "ገብቷል",
+      checkedOut: "ወጥቷል",
+      paid: "ተከፍሏል",
+      payAtFrontDesk: "በሪሴፕሽን ክፈል",
+      failed: "አልተሳካም",
+      refunded: "ተመልሷል"
+    },
+    
+    // Important information
+    importantInfo: {
+      title: "አስፈላጊ መረጃ",
+      roomAssignment: "የእርስዎ ልዩ የክፍል ቁጥር በመግቢያ ጊዜ ይመደባል",
+      bringId: "እባክዎ ለመግቢያ ትክክለኛ መታወቂያ ይዘው ይምጡ",
+      checkInTime: "የመግቢያ ጊዜ: 3:00 ከሰዓት | የመውጫ ጊዜ: 11:00 ጠዋት",
+      changesContact: "ለማንኛውም ለውጥ ወይም ሰረዝ፣ እባክዎ በቀጥታ ሆቴሉን ያናግሩ",
+      keepConfirmation: "የማረጋገጫ ቁጥርዎን ለመመሳከሪያ ያስቀምጡ"
+    },
+    
+    // Email dialog
+    emailDialog: {
+      title: "የማስያዝ ማረጋገጫ በኢሜይል ላክ",
+      emailLabel: "የኢሜይል አድራሻ",
+      includeItinerary: "ዝርዝር መርሃ ግብርን አካትት",
+      cancel: "ሰርዝ",
+      sendEmail: "ኢሜይል ላክ",
+      sending: "በመላክ ላይ..."
+    },
+    
+    // Success/Error messages
+    messages: {
+      emailSuccess: "ኢሜይል በተሳካ ሁኔታ ተልኳል!",
+      emailError: "ኢሜይል መላክ አልተሳካም።",
+      emailErrorServer: "ሰርቨሩ የውስጥ ስህተት አጋጥሞታል። እባክዎ በኋላ ይሞክሩ።",
+      emailErrorInvalid: "ልክ ያልሆነ የኢሜይል አድራሻ።",
+      emailErrorRetry: "እባክዎ በኋላ ይሞክሩ።",
+      pdfSuccess: "PDF በተሳካ ሁኔታ ተወርዷል!",
+      pdfError: "PDF ማውረድ አልተሳካም።",
+      pdfErrorServer: "ሰርቨሩ የውስጥ ስህተት አጋጥሞታል። እባክዎ በኋላ ይሞክሩ ወይም ድጋፍን ያናግሩ።",
+      pdfErrorNotFound: "ለዚህ ማስያዝ PDF አልተገኘም።",
+      pdfErrorAuth: "ይህንን PDF ለማውረድ ፍቃድ የለዎትም።",
+      pdfErrorRetry: "እባክዎ በኋላ ይሞክሩ።"
+    }
+  },
+  
   navigation: {
     home: "ቤት",
     hotels: "ሆቴሎች",

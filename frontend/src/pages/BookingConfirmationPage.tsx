@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   Container,
   Paper,
@@ -181,6 +182,7 @@ const BookingConfirmationPage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { hotelApiService } = useAuthenticatedApi();
+  const { t } = useTranslation();
   
   // Mobile responsiveness
   const theme = useTheme();
@@ -301,11 +303,11 @@ const BookingConfirmationPage: React.FC = () => {
 
   const formatPaymentStatus = (status: string) => {
     switch (status.toUpperCase()) {
-      case 'PAY_AT_FRONTDESK': return 'Pay at Front Desk';
-      case 'PAID': return 'Paid';
-      case 'PENDING': return 'Pending';
-      case 'FAILED': return 'Failed';
-      case 'REFUNDED': return 'Refunded';
+      case 'PAY_AT_FRONTDESK': return t('bookingConfirmation.status.payAtFrontDesk');
+      case 'PAID': return t('bookingConfirmation.status.paid');
+      case 'PENDING': return t('bookingConfirmation.status.pending');
+      case 'FAILED': return t('bookingConfirmation.status.failed');
+      case 'REFUNDED': return t('bookingConfirmation.status.refunded');
       default: return status;
     }
   };
@@ -323,20 +325,20 @@ const BookingConfirmationPage: React.FC = () => {
       setSendingEmail(true);
       await hotelApiService.sendBookingEmail(booking.reservationId, emailAddress, includeItinerary);
       setEmailDialogOpen(false);
-      setSnackbarMessage('Email sent successfully!');
+      setSnackbarMessage(t('bookingConfirmation.messages.emailSuccess'));
       setSnackbarSeverity('success');
       setSnackbarOpen(true);
     } catch (err) {
       console.error('Error sending email:', err);
-      let errorMessage = 'Failed to send email. ';
+      let errorMessage = t('bookingConfirmation.messages.emailError') + ' ';
       
       if (err instanceof Error) {
         if (err.message.includes('500')) {
-          errorMessage += 'The server encountered an internal error. Please try again later.';
+          errorMessage += t('bookingConfirmation.messages.emailErrorServer');
         } else if (err.message.includes('400')) {
-          errorMessage += 'Invalid email address.';
+          errorMessage += t('bookingConfirmation.messages.emailErrorInvalid');
         } else {
-          errorMessage += 'Please try again later.';
+          errorMessage += t('bookingConfirmation.messages.emailErrorRetry');
         }
       }
       
@@ -354,22 +356,22 @@ const BookingConfirmationPage: React.FC = () => {
     try {
       setDownloadingPDF(true);
       await hotelApiService.downloadBookingPDF(booking.reservationId);
-      setSnackbarMessage('PDF downloaded successfully!');
+      setSnackbarMessage(t('bookingConfirmation.messages.pdfSuccess'));
       setSnackbarSeverity('success');
       setSnackbarOpen(true);
     } catch (err) {
       console.error('Error downloading PDF:', err);
-      let errorMessage = 'Failed to download PDF. ';
+      let errorMessage = t('bookingConfirmation.messages.pdfError') + ' ';
       
       if (err instanceof Error) {
         if (err.message.includes('500')) {
-          errorMessage += 'The server encountered an internal error. Please try again later or contact support.';
+          errorMessage += t('bookingConfirmation.messages.pdfErrorServer');
         } else if (err.message.includes('404')) {
-          errorMessage += 'PDF not found for this booking.';
+          errorMessage += t('bookingConfirmation.messages.pdfErrorNotFound');
         } else if (err.message.includes('401') || err.message.includes('403')) {
-          errorMessage += 'You are not authorized to download this PDF.';
+          errorMessage += t('bookingConfirmation.messages.pdfErrorAuth');
         } else {
-          errorMessage += 'Please try again later.';
+          errorMessage += t('bookingConfirmation.messages.pdfErrorRetry');
         }
       }
       
@@ -418,7 +420,7 @@ const BookingConfirmationPage: React.FC = () => {
                 textAlign: 'center',
               }}
             >
-              Loading booking confirmation...
+              {t('bookingConfirmation.loading')}
             </Typography>
             <Typography 
               variant="body1" 
@@ -428,7 +430,7 @@ const BookingConfirmationPage: React.FC = () => {
                 px: isMobile ? 2 : 0,
               }}
             >
-              Please wait while we retrieve your booking details
+              {t('bookingConfirmation.loadingSubtitle')}
             </Typography>
           </Box>
         </Paper>
@@ -457,10 +459,10 @@ const BookingConfirmationPage: React.FC = () => {
               variant={isMobile ? 'subtitle1' : 'h6'} 
               sx={{ fontWeight: 'bold', mb: 1 }}
             >
-              {error || 'Booking not found'}
+              {error || t('bookingConfirmation.errorNotFound')}
             </Typography>
             <Typography variant="body2">
-              We couldn't find your booking information. Please check your confirmation number or try again.
+              {t('bookingConfirmation.errorDescription')}
             </Typography>
           </Alert>
           <Box sx={{ textAlign: 'center' }}>
@@ -476,7 +478,7 @@ const BookingConfirmationPage: React.FC = () => {
                 background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
               }}
             >
-              Return Home
+              {t('bookingConfirmation.actions.returnHome')}
             </Button>
           </Box>
         </Paper>
@@ -619,7 +621,7 @@ const BookingConfirmationPage: React.FC = () => {
             mb: 1.5,
           }}
         >
-          Booking Confirmed!
+          {t('bookingConfirmation.title')}
         </Typography>
         <Typography 
           variant="body1" 
@@ -629,7 +631,7 @@ const BookingConfirmationPage: React.FC = () => {
             fontSize: isMobile ? '0.95rem' : '1rem',
           }}
         >
-          Your reservation has been successfully created
+          {t('bookingConfirmation.subtitle')}
         </Typography>
         <Box 
           sx={{ 
@@ -640,7 +642,7 @@ const BookingConfirmationPage: React.FC = () => {
           }}
         >
           <Chip
-            label={`Confirmation: ${booking.confirmationNumber}`}
+            label={t('bookingConfirmation.confirmationLabel', { confirmationNumber: booking.confirmationNumber })}
             variant="filled"
             className="print-chip"
             sx={{ 
@@ -691,7 +693,7 @@ const BookingConfirmationPage: React.FC = () => {
             }
           }}
         >
-          {isMobile ? 'EMAIL' : 'EMAIL CONFIRMATION'}
+          {isMobile ? t('bookingConfirmation.actions.emailConfirmationShort') : t('bookingConfirmation.actions.emailConfirmation')}
         </Button>
         <Button
           variant="outlined"
@@ -710,7 +712,7 @@ const BookingConfirmationPage: React.FC = () => {
             }
           }}
         >
-          PRINT
+          {t('bookingConfirmation.actions.print')}
         </Button>
         <Button
           variant="outlined"
@@ -735,8 +737,8 @@ const BookingConfirmationPage: React.FC = () => {
           }}
         >
           {downloadingPDF 
-            ? (isMobile ? 'DOWNLOADING...' : 'DOWNLOADING...') 
-            : (isMobile ? 'PDF' : 'DOWNLOAD PDF')
+            ? t('bookingConfirmation.actions.downloading')
+            : (isMobile ? t('bookingConfirmation.actions.downloadPdfShort') : t('bookingConfirmation.actions.downloadPdf'))
           }
         </Button>
       </Box>
@@ -797,7 +799,7 @@ const BookingConfirmationPage: React.FC = () => {
                   letterSpacing: '0.5px',
                 }}
               >
-                Booking Status
+                {t('bookingConfirmation.status.bookingStatus')}
               </Typography>
               <Chip
                 label={booking.status.toUpperCase()}
@@ -823,7 +825,7 @@ const BookingConfirmationPage: React.FC = () => {
                   letterSpacing: '0.5px',
                 }}
               >
-                Payment Status
+                {t('bookingConfirmation.status.paymentStatus')}
               </Typography>
               <Chip
                 label={formatPaymentStatus(booking.paymentStatus)}
@@ -878,7 +880,7 @@ const BookingConfirmationPage: React.FC = () => {
                     mb: 1,
                   }}
                 >
-                  Check-in
+                  {t('bookingConfirmation.quickInfo.checkIn')}
                 </Typography>
                 <Typography 
                   variant={isMobile ? 'body2' : 'h6'} 
@@ -923,7 +925,7 @@ const BookingConfirmationPage: React.FC = () => {
                     mb: 1,
                   }}
                 >
-                  Check-out
+                  {t('bookingConfirmation.quickInfo.checkOut')}
                 </Typography>
                 <Typography 
                   variant={isMobile ? 'body2' : 'h6'} 
@@ -968,7 +970,7 @@ const BookingConfirmationPage: React.FC = () => {
                     mb: 1,
                   }}
                 >
-                  Nights
+                  {t('bookingConfirmation.quickInfo.nights')}
                 </Typography>
                 <Typography 
                   variant={isMobile ? 'body2' : 'h6'} 
@@ -1012,7 +1014,7 @@ const BookingConfirmationPage: React.FC = () => {
                     mb: 1,
                   }}
                 >
-                  Total Amount
+                  {t('bookingConfirmation.quickInfo.totalAmount')}
                 </Typography>
                 <Typography 
                   variant={isMobile ? 'subtitle1' : 'h5'} 
@@ -1052,7 +1054,7 @@ const BookingConfirmationPage: React.FC = () => {
                   mb: isMobile ? 1.5 : 2,
                 }}
               >
-                Hotel Information
+                {t('bookingConfirmation.sections.hotelInformation')}
               </Typography>
               <Box sx={{ mb: 2 }}>
                 <Typography 
@@ -1099,7 +1101,7 @@ const BookingConfirmationPage: React.FC = () => {
                   mb: isMobile ? 1.5 : 2,
                 }}
               >
-                Room Information
+                {t('bookingConfirmation.sections.roomInformation')}
               </Typography>
               <Box sx={{ mb: 2 }}>
                 <Typography 
@@ -1109,7 +1111,7 @@ const BookingConfirmationPage: React.FC = () => {
                     fontSize: isMobile ? '0.9rem' : '1rem',
                   }}
                 >
-                  <strong>Room Type:</strong> {booking.roomType}
+                  <strong>{t('bookingConfirmation.room.roomType')}</strong> {booking.roomType}
                 </Typography>
                 <Typography 
                   variant="body1" 
@@ -1118,7 +1120,7 @@ const BookingConfirmationPage: React.FC = () => {
                     fontSize: isMobile ? '0.9rem' : '1rem',
                   }}
                 >
-                  <strong>Rate:</strong> {formatCurrency(booking.pricePerNight || 0)}/night
+                  <strong>{t('bookingConfirmation.room.rate')}</strong> {formatCurrency(booking.pricePerNight || 0)}{t('bookingConfirmation.room.perNight')}
                 </Typography>
                 <Typography 
                   variant="body1" 
@@ -1128,7 +1130,7 @@ const BookingConfirmationPage: React.FC = () => {
                     fontSize: isMobile ? '0.9rem' : '1rem',
                   }}
                 >
-                  <strong>Room Assignment:</strong> Room will be assigned at check-in
+                  <strong>{t('bookingConfirmation.room.roomAssignment')}</strong> {t('bookingConfirmation.room.roomAssignmentMessage')}
                 </Typography>
               </Box>
             </Box>
@@ -1153,7 +1155,7 @@ const BookingConfirmationPage: React.FC = () => {
                   mb: isMobile ? 1.5 : 2,
                 }}
               >
-                Guest Information
+                {t('bookingConfirmation.sections.guestInformation')}
               </Typography>
               <Box sx={{ mb: 2 }}>
                 <Typography 
@@ -1163,7 +1165,7 @@ const BookingConfirmationPage: React.FC = () => {
                     fontSize: isMobile ? '0.9rem' : '1rem',
                   }}
                 >
-                  <strong>Name:</strong> {booking.guestName}
+                  <strong>{t('bookingConfirmation.guest.name')}</strong> {booking.guestName}
                 </Typography>
                 <Typography 
                   variant="body1" 
@@ -1173,13 +1175,13 @@ const BookingConfirmationPage: React.FC = () => {
                     wordBreak: 'break-word',
                   }}
                 >
-                  <strong>Email:</strong> {booking.guestEmail}
+                  <strong>{t('bookingConfirmation.guest.email')}</strong> {booking.guestEmail}
                 </Typography>
                 <Typography 
                   variant="body1"
                   sx={{ fontSize: isMobile ? '0.9rem' : '1rem' }}
                 >
-                  <strong>Number of Guests:</strong> {booking.numberOfGuests || 1}
+                  <strong>{t('bookingConfirmation.guest.numberOfGuests')}</strong> {booking.numberOfGuests || 1}
                 </Typography>
               </Box>
             </Box>
@@ -1204,7 +1206,7 @@ const BookingConfirmationPage: React.FC = () => {
                   mb: isMobile ? 1.5 : 2,
                 }}
               >
-                Booking Summary
+                {t('bookingConfirmation.sections.bookingSummary')}
               </Typography>
               <Box sx={{ mb: 2 }}>
                 <Typography 
@@ -1214,7 +1216,7 @@ const BookingConfirmationPage: React.FC = () => {
                     fontSize: isMobile ? '0.9rem' : '1rem',
                   }}
                 >
-                  <strong>Booked on:</strong> {formatDateTimeLong(booking.createdAt)}
+                  <strong>{t('bookingConfirmation.summary.bookedOn')}</strong> {formatDateTimeLong(booking.createdAt)}
                 </Typography>
                 <Typography 
                   variant="body1" 
@@ -1223,7 +1225,7 @@ const BookingConfirmationPage: React.FC = () => {
                     fontSize: isMobile ? '0.9rem' : '1rem',
                   }}
                 >
-                  <strong>Duration:</strong> {nights} night{nights !== 1 ? 's' : ''}
+                  <strong>{t('bookingConfirmation.summary.duration')}</strong> {nights} {nights !== 1 ? t('bookingConfirmation.summary.nightPlural') : t('bookingConfirmation.summary.nightSingle')}
                 </Typography>
               </Box>
             </Box>
@@ -1244,28 +1246,28 @@ const BookingConfirmationPage: React.FC = () => {
         }}
       >
         <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
-          Important Information
+          {t('bookingConfirmation.importantInfo.title')}
         </Typography>
         <Box sx={{ '& > div': { mb: 1 } }}>
           <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
             <Box component="span" sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: COLORS.PRIMARY, mr: 2, flexShrink: 0 }} />
-            <strong>Your specific room number will be assigned at check-in</strong>
+            <strong>{t('bookingConfirmation.importantInfo.roomAssignment')}</strong>
           </Typography>
           <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
             <Box component="span" sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: COLORS.PRIMARY, mr: 2, flexShrink: 0 }} />
-            Please bring a valid ID for check-in
+            {t('bookingConfirmation.importantInfo.bringId')}
           </Typography>
           <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
             <Box component="span" sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: COLORS.PRIMARY, mr: 2, flexShrink: 0 }} />
-            Check-in time: 3:00 PM | Check-out time: 11:00 AM
+            {t('bookingConfirmation.importantInfo.checkInTime')}
           </Typography>
           <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
             <Box component="span" sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: COLORS.PRIMARY, mr: 2, flexShrink: 0 }} />
-            For any changes or cancellations, please contact the hotel directly
+            {t('bookingConfirmation.importantInfo.changesContact')}
           </Typography>
           <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center' }}>
             <Box component="span" sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: COLORS.PRIMARY, mr: 2, flexShrink: 0 }} />
-            Keep your confirmation number for reference
+            {t('bookingConfirmation.importantInfo.keepConfirmation')}
           </Typography>
         </Box>
       </Alert>
@@ -1298,7 +1300,7 @@ const BookingConfirmationPage: React.FC = () => {
             }
           }}
         >
-          Return Home
+          {t('bookingConfirmation.actions.returnHome')}
         </Button>
         <Button
           variant="outlined"
@@ -1318,7 +1320,7 @@ const BookingConfirmationPage: React.FC = () => {
             }
           }}
         >
-          {isMobile ? 'Search Hotels' : 'Search More Hotels'}
+          {isMobile ? t('bookingConfirmation.actions.searchHotelsShort') : t('bookingConfirmation.actions.searchHotels')}
         </Button>
       </Box>
 
@@ -1346,14 +1348,14 @@ const BookingConfirmationPage: React.FC = () => {
               color: COLORS.PRIMARY,
             }}
           >
-            Email Booking Confirmation
+            {t('bookingConfirmation.emailDialog.title')}
           </Typography>
         </DialogTitle>
         <DialogContent sx={{ pb: 2 }}>
           <TextField
             autoFocus={!isMobile}
             margin="dense"
-            label="Email Address"
+            label={t('bookingConfirmation.emailDialog.emailLabel')}
             type="email"
             fullWidth
             variant="outlined"
@@ -1380,7 +1382,7 @@ const BookingConfirmationPage: React.FC = () => {
                 }}
               />
             }
-            label="Include detailed itinerary"
+            label={t('bookingConfirmation.emailDialog.includeItinerary')}
             sx={{ 
               mb: 1,
               '& .MuiFormControlLabel-label': {
@@ -1405,7 +1407,7 @@ const BookingConfirmationPage: React.FC = () => {
               width: isMobile ? '100%' : 'auto',
             }}
           >
-            Cancel
+            {t('bookingConfirmation.emailDialog.cancel')}
           </Button>
           <Button
             onClick={handleEmailBooking}
@@ -1422,7 +1424,7 @@ const BookingConfirmationPage: React.FC = () => {
               }
             }}
           >
-            {sendingEmail ? 'Sending...' : 'Send Email'}
+            {sendingEmail ? t('bookingConfirmation.emailDialog.sending') : t('bookingConfirmation.emailDialog.sendEmail')}
           </Button>
         </DialogActions>
       </Dialog>
