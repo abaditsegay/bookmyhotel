@@ -15,16 +15,16 @@ import {
   InputLabel,
   SelectChangeEvent,
   useTheme,
+  Paper,
 } from '@mui/material';
 import {
   Add as AddIcon,
   Delete as DeleteIcon,
   Circle as CircleIcon,
 } from '@mui/icons-material';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { Todo, useTodoApi } from '../../services/todoApi';
-import { designSystem } from '../../theme/designSystem';
-import { COLORS } from '../../theme/themeColors';
 
 interface TodosWidgetProps {
   width?: string | number;
@@ -38,6 +38,7 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
   const { user } = useAuth();
   const todoApi = useTodoApi();
   const theme = useTheme();
+  const { t } = useTranslation();
   
   const [todos, setTodos] = useState<Todo[]>([]);
   const [loading, setLoading] = useState(true);
@@ -61,12 +62,12 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
       const fetchedTodos = await todoApi.getTodos();
       setTodos(fetchedTodos);
     } catch (err) {
-      setError('Failed to load todos');
+      setError(t('widgets.todos.failedToLoad'));
       console.error('Error loading todos:', err);
     } finally {
       setLoading(false);
     }
-  }, [todoApi, hasAccess]);
+  }, [todoApi, hasAccess, t]);
 
   useEffect(() => {
     if (user && hasAccess) {
@@ -97,7 +98,7 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
       setNewTodoTitle('');
       setSeverity('MEDIUM');
     } catch (err) {
-      setError('Failed to create todo');
+      setError(t('widgets.todos.failedToCreate'));
       console.error('Error creating todo:', err);
     }
   };
@@ -109,7 +110,7 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
         todo.id === id ? updatedTodo : todo
       ));
     } catch (err) {
-      setError('Failed to update todo');
+      setError(t('widgets.todos.failedToUpdate'));
       console.error('Error updating todo:', err);
     }
   };
@@ -119,7 +120,7 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
       await todoApi.deleteTodo(id);
       setTodos(prev => prev.filter(todo => todo.id !== id));
     } catch (err) {
-      setError('Failed to delete todo');
+      setError(t('widgets.todos.failedToDelete'));
       console.error('Error deleting todo:', err);
     }
   };
@@ -130,11 +131,11 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
     
     switch (normalizedSeverity) {
       case 'HIGH': 
-        return <CircleIcon sx={{ fontSize: '16px', color: theme.palette.error.main }} />;
+        return <CircleIcon sx={{ fontSize: '16px', color: '#f44336' }} />; // Red
       case 'MEDIUM': 
-        return <CircleIcon sx={{ fontSize: '16px', color: COLORS.SECONDARY }} />;
+        return <CircleIcon sx={{ fontSize: '16px', color: '#ff9800' }} />; // Orange/Yellow
       case 'LOW': 
-        return <CircleIcon sx={{ fontSize: '16px', color: COLORS.PRIMARY }} />;
+        return <CircleIcon sx={{ fontSize: '16px', color: '#4caf50' }} />; // Green
       default: 
         return <CircleIcon sx={{ fontSize: '16px', color: theme.palette.info.main }} />;
     }
@@ -147,19 +148,31 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
   if (loading) {
     return (
       <Box sx={{ width, height, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <Typography>Loading todos...</Typography>
+        <Typography>{t('widgets.todos.loadingTodos')}</Typography>
       </Box>
     );
   }
 
   return (
-    <Box sx={{ width, height, display: 'flex', flexDirection: 'column' }}>
+    <Paper
+      elevation={0}
+      sx={{
+        width,
+        height,
+        display: 'flex',
+        flexDirection: 'column',
+        backgroundColor: 'transparent', // Transparent to inherit parent background
+        p: 2,
+        borderRadius: 2,
+        overflow: 'hidden',
+      }}
+    >
       {/* Header */}
-      <Typography variant="h6" sx={{ mb: 2 }}>TODOs</Typography>
+      <Typography variant="h6" sx={{ mb: 2, color: '#333333' }}>{t('widgets.todos.title')}</Typography>
 
       {/* Error display */}
       {error && (
-        <Typography color="error" variant="body2" sx={{ mb: 1 }}>
+        <Typography color="error" variant="body2" sx={{ mb: 1, color: '#d32f2f' }}>
           {error}
         </Typography>
       )}
@@ -168,7 +181,7 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
       <Box sx={{ mb: 2 }}>
         <TextField
           size="small"
-          placeholder="Add a new TODO..."
+          placeholder={t('widgets.todos.addPlaceholder')}
           value={newTodoTitle}
           onChange={(e) => setNewTodoTitle(e.target.value)}
           onKeyPress={(e) => {
@@ -176,32 +189,80 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
               handleAddTodo();
             }
           }}
-          sx={{ width: '100%', mb: 1 }}
+          sx={{ 
+            width: '100%', 
+            mb: 1,
+            '& .MuiOutlinedInput-root': {
+              backgroundColor: '#f0f0f0', // Very light gray
+              '& fieldset': {
+                borderColor: '#b0b0b0', // Medium gray border
+              },
+              '&:hover fieldset': {
+                borderColor: '#909090', // Darker on hover
+              },
+              '&.Mui-focused fieldset': {
+                borderColor: '#5a8a8a', // Teal focus
+              },
+            },
+            '& .MuiInputBase-input': {
+              color: '#333333', // Dark text
+            },
+            '& .MuiInputBase-input::placeholder': {
+              color: '#666666', // Medium gray placeholder
+              opacity: 1,
+            },
+          }}
         />
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-          <FormControl size="small" sx={{ minWidth: 100 }}>
-            <InputLabel>Priority</InputLabel>
+          <FormControl 
+            size="small" 
+            sx={{ 
+              minWidth: 100,
+              '& .MuiOutlinedInput-root': {
+                backgroundColor: '#f0f0f0', // Very light gray
+                '& fieldset': {
+                  borderColor: '#b0b0b0', // Medium gray border
+                },
+                '&:hover fieldset': {
+                  borderColor: '#909090', // Darker on hover
+                },
+                '&.Mui-focused fieldset': {
+                  borderColor: '#5a8a8a', // Teal focus
+                },
+              },
+              '& .MuiInputLabel-root': {
+                color: '#555555', // Medium dark gray label
+              },
+              '& .MuiSelect-select': {
+                color: '#333333', // Dark text
+              },
+              '& .MuiSvgIcon-root': {
+                color: '#555555', // Medium dark gray icon
+              },
+            }}
+          >
+            <InputLabel sx={{ color: '#555555' }}>{t('widgets.todos.priority')}</InputLabel>
             <Select
               value={severity}
-              label="Priority"
+              label={t('widgets.todos.priority')}
               onChange={handleSeverityChange}
             >
               <MenuItem value="HIGH">
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <CircleIcon sx={{ fontSize: '14px', color: theme.palette.error.main }} />
-                  High
+                  <CircleIcon sx={{ fontSize: '14px', color: '#f44336' }} />
+                  {t('widgets.todos.priorityHigh')}
                 </Box>
               </MenuItem>
               <MenuItem value="MEDIUM">
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <CircleIcon sx={{ fontSize: '14px', color: COLORS.SECONDARY }} />
-                  Medium
+                  <CircleIcon sx={{ fontSize: '14px', color: '#ff9800' }} />
+                  {t('widgets.todos.priorityMedium')}
                 </Box>
               </MenuItem>
               <MenuItem value="LOW">
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <CircleIcon sx={{ fontSize: '14px', color: COLORS.PRIMARY }} />
-                  Low
+                  <CircleIcon sx={{ fontSize: '14px', color: '#4caf50' }} />
+                  {t('widgets.todos.priorityLow')}
                 </Box>
               </MenuItem>
             </Select>
@@ -213,7 +274,7 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
             onClick={handleAddTodo}
             disabled={!newTodoTitle.trim()}
           >
-            Add
+            {t('widgets.todos.addButton')}
           </Button>
         </Box>
       </Box>
@@ -223,7 +284,10 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
         <List dense>
           {todos.length === 0 ? (
             <ListItem>
-              <ListItemText primary="No todos yet. Add one above!" />
+              <ListItemText 
+                primary={t('widgets.todos.noTodos')} 
+                sx={{ '& .MuiListItemText-primary': { color: '#666666' } }} // Medium gray text
+              />
             </ListItem>
           ) : (
             todos.map((todo) => (
@@ -231,27 +295,17 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
                 key={todo.id}
                 sx={{
                   border: '1px solid',
-                  borderColor: theme.palette.mode === 'dark' 
-                    ? 'rgba(255, 255, 255, 0.12)' 
-                    : 'divider',
+                  borderColor: '#b0b0b0', // Medium gray border
                   borderRadius: 1,
                   mb: 1,
                   backgroundColor: todo.completed 
-                    ? theme.palette.mode === 'dark' 
-                      ? 'rgba(255, 255, 255, 0.03)' 
-                      : 'grey.50'
-                    : theme.palette.mode === 'dark'
-                      ? 'rgba(255, 255, 255, 0.05)'
-                      : 'background.paper',
+                    ? '#c0c0c0' // Light gray completed background
+                    : '#f0f0f0', // Very light gray default background
                   transition: 'all 0.2s ease',
                   '&:hover': {
                     backgroundColor: todo.completed
-                      ? theme.palette.mode === 'dark'
-                        ? 'rgba(255, 255, 255, 0.05)'
-                        : 'grey.100'
-                      : theme.palette.mode === 'dark'
-                        ? 'rgba(255, 255, 255, 0.08)'
-                        : 'grey.50',
+                      ? '#b0b0b0' // Slightly darker completed hover
+                      : '#e0e0e0', // Slightly darker default hover
                   },
                   cursor: 'pointer'
                 }}
@@ -288,7 +342,7 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
           )}
         </List>
       </Box>
-    </Box>
+    </Paper>
   );
 };
 

@@ -12,6 +12,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from '@mui/icons-material';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface CalendarEvent {
@@ -26,6 +27,7 @@ interface CalendarEvent {
 const CalendarWidget: React.FC = () => {
   const theme = useTheme();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [events, setEvents] = useState<CalendarEvent[]>([]);
@@ -182,7 +184,7 @@ const CalendarWidget: React.FC = () => {
 
   return (
     <Paper
-      elevation={2}
+      elevation={0}
       sx={{
         p: 0,
         height: 'fit-content',
@@ -190,7 +192,7 @@ const CalendarWidget: React.FC = () => {
         overflow: 'hidden',
         position: 'relative',
         zIndex: 'auto',
-        backgroundColor: 'white',
+        backgroundColor: 'transparent', // Transparent to inherit parent background
         border: 'none',
       }}
     >
@@ -202,7 +204,7 @@ const CalendarWidget: React.FC = () => {
           justifyContent: 'center',
           py: 2,
           px: 2,
-          backgroundColor: '#4A9B9B', // Teal color matching the design
+          backgroundColor: '#5a8a8a', // Lighter teal color
           color: 'white',
           position: 'relative',
         }}
@@ -256,18 +258,26 @@ const CalendarWidget: React.FC = () => {
       <Box
         sx={{
           display: 'flex',
-          backgroundColor: '#ffffff',
-          borderBottom: '1px solid #e0e0e0',
+          backgroundColor: 'rgba(255, 255, 255, 0.1)', // Very subtle background
+          borderBottom: '1px solid rgba(0, 0, 0, 0.1)', // Subtle border
         }}
       >
-          {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
+          {[
+            t('widgets.calendar.weekdays.sunday'),
+            t('widgets.calendar.weekdays.monday'),
+            t('widgets.calendar.weekdays.tuesday'),
+            t('widgets.calendar.weekdays.wednesday'),
+            t('widgets.calendar.weekdays.thursday'),
+            t('widgets.calendar.weekdays.friday'),
+            t('widgets.calendar.weekdays.saturday')
+          ].map((day, index) => (
             <Box
               key={index}
               sx={{
                 flex: 1,
                 py: 1.5,
                 textAlign: 'center',
-                borderRight: index < 6 ? '1px solid #e0e0e0' : 'none',
+                borderRight: index < 6 ? '1px solid rgba(0, 0, 0, 0.1)' : 'none', // Subtle border
               }}
             >
               <Typography
@@ -275,7 +285,7 @@ const CalendarWidget: React.FC = () => {
                 sx={{
                   fontSize: '0.75rem',
                   fontWeight: 600,
-                  color: '#666',
+                  color: '#555555', // Dark gray text for contrast
                   textTransform: 'uppercase',
                 }}
               >
@@ -298,7 +308,7 @@ const CalendarWidget: React.FC = () => {
               sx={{
                 display: 'flex',
                 borderBottom: weekIndex < Math.ceil(calendarDays.length / 7) - 1 
-                  ? '1px solid #e0e0e0' 
+                  ? '1px solid rgba(0, 0, 0, 0.1)' // Subtle border
                   : 'none',
               }}
             >
@@ -314,17 +324,17 @@ const CalendarWidget: React.FC = () => {
                     alignItems: 'center',
                     justifyContent: 'center',
                     cursor: date ? 'pointer' : 'default',
-                    borderRight: dayIndex < 6 ? '1px solid #e0e0e0' : 'none',
+                    borderRight: dayIndex < 6 ? '1px solid rgba(0, 0, 0, 0.1)' : 'none', // Subtle border
                     backgroundColor: date ? (
                       isSelected(date) 
-                        ? '#4A9B9B'
+                        ? '#5a8a8a' // Lighter teal for selected
                         : isToday(date) 
-                          ? '#e8f4f4'
-                          : 'white'
-                    ) : '#ffffff',
+                          ? 'rgba(255, 255, 255, 0.3)' // Subtle highlight for today
+                          : 'transparent' // Transparent to inherit parent background
+                    ) : 'transparent', // Transparent for empty cells
                     transition: 'all 0.2s ease',
                     '&:hover': date ? {
-                      backgroundColor: isSelected(date) ? '#4A9B9B' : '#ffffff',
+                      backgroundColor: isSelected(date) ? '#5a8a8a' : 'rgba(255, 255, 255, 0.2)', // Subtle hover effect
                     } : {},
                   }}
                 >
@@ -337,8 +347,8 @@ const CalendarWidget: React.FC = () => {
                           color: isSelected(date) 
                             ? 'white'
                             : isToday(date)
-                            ? '#4A9B9B'
-                            : '#333',
+                            ? '#2d5a5a' // Darker teal for today
+                            : '#333333', // Dark gray text for better contrast
                           fontSize: '0.9rem',
                           mb: 0.25,
                         }}

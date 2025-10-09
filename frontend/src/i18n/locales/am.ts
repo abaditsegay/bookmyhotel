@@ -1940,6 +1940,46 @@ export const amTranslations = {
     products: "ምርቶች",
     orders: "ትዕዛዞች"
   },
+  
+  // Widgets
+  widgets: {
+    todos: {
+      title: "ተግባራት",
+      addPlaceholder: "አዲስ ተግባር ጨምር...",
+      priority: "ቅድሚያ",
+      priorityHigh: "ከፍተኛ",
+      priorityMedium: "መካከለኛ",
+      priorityLow: "ዝቅተኛ",
+      addButton: "ጨምር",
+      noTodos: "እስካሁን ተግባራት የሉም። ከላይ አንዱን ጨምር!",
+      loadingTodos: "ተግባራት በመጫን ላይ...",
+      failedToLoad: "ተግባራት መጫን አልተሳካም",
+      failedToCreate: "ተግባር መፍጠር አልተሳካም",
+      failedToUpdate: "ተግባር ማዘመን አልተሳካም",
+      failedToDelete: "ተግባር መሰረዝ አልተሳካም"
+    },
+    calendar: {
+      title: "የቀን መቁጠሪያ",
+      weekdays: {
+        sunday: "እ",
+        monday: "ሰ",
+        tuesday: "ማ",
+        wednesday: "ረ",
+        thursday: "ሐ",
+        friday: "ዓ",
+        saturday: "ቅ"
+      },
+      eventTypes: {
+        booking: "ማስያዝ",
+        checkin: "መግቢያ",
+        checkout: "መውጫ",
+        maintenance: "ጥገና",
+        meeting: "ስብሰባ",
+        reminder: "ማሳሰቢያ"
+      }
+    }
+  },
+  
   language: {
     english: "English",
     amharic: "አማርኛ",

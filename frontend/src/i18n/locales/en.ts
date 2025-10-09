@@ -2079,6 +2079,46 @@ export const enTranslations = {
     products: "Products",
     orders: "Orders"
   },
+  
+  // Widgets
+  widgets: {
+    todos: {
+      title: "TODOs",
+      addPlaceholder: "Add a new TODO...",
+      priority: "Priority",
+      priorityHigh: "High",
+      priorityMedium: "Medium",
+      priorityLow: "Low",
+      addButton: "Add",
+      noTodos: "No todos yet. Add one above!",
+      loadingTodos: "Loading todos...",
+      failedToLoad: "Failed to load todos",
+      failedToCreate: "Failed to create todo",
+      failedToUpdate: "Failed to update todo",
+      failedToDelete: "Failed to delete todo"
+    },
+    calendar: {
+      title: "Calendar",
+      weekdays: {
+        sunday: "S",
+        monday: "M",
+        tuesday: "T",
+        wednesday: "W",
+        thursday: "T",
+        friday: "F",
+        saturday: "S"
+      },
+      eventTypes: {
+        booking: "Booking",
+        checkin: "Check-in",
+        checkout: "Check-out",
+        maintenance: "Maintenance",
+        meeting: "Meeting",
+        reminder: "Reminder"
+      }
+    }
+  },
+  
   language: {
     english: "English",
     amharic: "አማርኛ",

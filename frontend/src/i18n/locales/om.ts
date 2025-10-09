@@ -2059,6 +2059,46 @@ export const omTranslations = {
     products: "Oomishaalee",
     orders: "Ajajjii"
   },
+  
+  // Widgets
+  widgets: {
+    todos: {
+      title: "Hojiiwwan",
+      addPlaceholder: "Hojii haaraa dabaluu...",
+      priority: "Dursa",
+      priorityHigh: "Ol'aanaa",
+      priorityMedium: "Giddu galeessa",
+      priorityLow: "Gadi aanaa",
+      addButton: "Dabali",
+      noTodos: "Hojiin amma hin jiru. Gubbaa irraa tokko dabalaa!",
+      loadingTodos: "Hojiiwwan fe'amaa...",
+      failedToLoad: "Hojiiwwan fe'uu dadhabe",
+      failedToCreate: "Hojii uumuu dadhabe",
+      failedToUpdate: "Hojii haaromsuu dadhabe",
+      failedToDelete: "Hojii haquu dadhabe"
+    },
+    calendar: {
+      title: "Kaaleendara",
+      weekdays: {
+        sunday: "D",
+        monday: "W",
+        tuesday: "Q",
+        wednesday: "R",
+        thursday: "K",
+        friday: "J",
+        saturday: "S"
+      },
+      eventTypes: {
+        booking: "Bakka Buusuu",
+        checkin: "Seensaa",
+        checkout: "Ba'uu",
+        maintenance: "Suphaa",
+        meeting: "Walgahii",
+        reminder: "Yaadachiisa"
+      }
+    }
+  },
+  
   language: {
     english: "Ingliziffaa",
     amharic: "Amaariffaa",
