@@ -1,6 +1,7 @@
 package com.bookmyhotel.service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -213,15 +214,18 @@ public class RoomTypePricingService {
 
         if (config != null) {
             // Calculate weekend price
-            BigDecimal weekendPrice = basePricePerNight.multiply(config.getWeekendMultiplier());
+            BigDecimal weekendPrice = basePricePerNight.multiply(config.getWeekendMultiplier())
+                    .setScale(2, RoundingMode.HALF_UP);
             pricing.setWeekendPrice(weekendPrice);
 
             // Calculate holiday price
-            BigDecimal holidayPrice = basePricePerNight.multiply(config.getHolidayMultiplier());
+            BigDecimal holidayPrice = basePricePerNight.multiply(config.getHolidayMultiplier())
+                    .setScale(2, RoundingMode.HALF_UP);
             pricing.setHolidayPrice(holidayPrice);
 
             // Calculate peak season price
-            BigDecimal peakSeasonPrice = basePricePerNight.multiply(config.getPeakSeasonMultiplier());
+            BigDecimal peakSeasonPrice = basePricePerNight.multiply(config.getPeakSeasonMultiplier())
+                    .setScale(2, RoundingMode.HALF_UP);
             pricing.setPeakSeasonPrice(peakSeasonPrice);
         } else {
             // Fallback to base price if no configuration

@@ -26,7 +26,11 @@ import {
   Settings,
   Business,
   Refresh,
-  BarChart as BarChartIcon
+  BarChart as BarChartIcon,
+  Description as ApiIcon,
+  Launch as LaunchIcon,
+  Code as CodeIcon,
+  Info as InfoIcon
 } from '@mui/icons-material';
 import { MetricCard, BarChart, DonutChart } from '../components/common/DataVisualization';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
@@ -363,6 +367,14 @@ export const SystemDashboardPage: React.FC = () => {
               sx={{ gap: 1 }}
             />
           )}
+          {isSystemAdmin && (
+            <Tab 
+              icon={<ApiIcon />} 
+              label="API Documentation" 
+              iconPosition="start"
+              sx={{ gap: 1 }}
+            />
+          )}
         </Tabs>
       </Paper>
 
@@ -630,6 +642,188 @@ export const SystemDashboardPage: React.FC = () => {
                   thickness={40}
                 />
               </Paper>
+            </Grid>
+          </Grid>
+        </TabPanel>
+      )}
+
+      {/* API Documentation Tab */}
+      {isSystemAdmin && (
+        <TabPanel value={activeTab} index={2}>
+          <Typography variant="h5" sx={{ mb: 3, fontWeight: 'bold' }}>
+            API Documentation
+          </Typography>
+          
+          <Grid container spacing={3}>
+            {/* API Documentation Card */}
+            <Grid item xs={12} lg={8}>
+              <Card sx={{ height: '100%' }}>
+                <CardContent>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <ApiIcon sx={{ mr: 1, color: 'primary.main' }} />
+                    <Typography variant="h6" component="h2">
+                      API Documentation
+                    </Typography>
+                    <Box sx={{ flexGrow: 1 }} />
+                    <Button
+                      startIcon={<LaunchIcon />}
+                      onClick={() => {
+                        const baseUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080';
+                        window.open(`${baseUrl}/swagger-ui/index.html`, '_blank');
+                      }}
+                      size="small"
+                      variant="outlined"
+                    >
+                      Open Swagger UI
+                    </Button>
+                  </Box>
+                  
+                  <Typography variant="body2" color="textSecondary" sx={{ mb: 3 }}>
+                    Complete API reference for the BookMyHotel application. All endpoints support JWT authentication.
+                  </Typography>
+
+                  <List dense sx={{ maxHeight: 400, overflow: 'auto' }}>
+                    {[
+                      { method: 'GET', path: '/api/hotels', description: 'Get all hotels with filtering' },
+                      { method: 'POST', path: '/api/hotels', description: 'Create new hotel' },
+                      { method: 'GET', path: '/api/hotels/{id}', description: 'Get hotel by ID' },
+                      { method: 'PUT', path: '/api/hotels/{id}', description: 'Update hotel' },
+                      { method: 'DELETE', path: '/api/hotels/{id}', description: 'Delete hotel' },
+                      { method: 'GET', path: '/api/bookings', description: 'Get bookings with filtering' },
+                      { method: 'POST', path: '/api/bookings', description: 'Create new booking' },
+                      { method: 'GET', path: '/api/bookings/{id}', description: 'Get booking by ID' },
+                      { method: 'PUT', path: '/api/bookings/{id}', description: 'Update booking' },
+                      { method: 'POST', path: '/api/auth/login', description: 'User authentication' },
+                      { method: 'POST', path: '/api/auth/logout', description: 'User logout' },
+                      { method: 'GET', path: '/api/users', description: 'Get users (admin only)' },
+                      { method: 'POST', path: '/api/users', description: 'Create user (admin only)' },
+                      { method: 'GET', path: '/api/admin/tenants', description: 'Manage tenants' },
+                      { method: 'GET', path: '/actuator/health', description: 'Health check endpoint' },
+                      { method: 'GET', path: '/actuator/metrics', description: 'Application metrics' }
+                    ].map((endpoint, index) => (
+                      <React.Fragment key={index}>
+                        <ListItem>
+                          <ListItemIcon>
+                            <Box
+                              component="span"
+                              sx={{
+                                display: 'inline-block',
+                                minWidth: 60,
+                                textAlign: 'center',
+                                px: 1,
+                                py: 0.25,
+                                borderRadius: 1,
+                                fontSize: '0.75rem',
+                                fontWeight: 'bold',
+                                color: 'white',
+                                bgcolor: 
+                                  endpoint.method === 'GET' ? 'success.main' :
+                                  endpoint.method === 'POST' ? 'warning.main' :
+                                  endpoint.method === 'PUT' ? 'info.main' :
+                                  endpoint.method === 'DELETE' ? 'error.main' : 'grey.500'
+                              }}
+                            >
+                              {endpoint.method}
+                            </Box>
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={
+                              <Typography variant="body2" component="code" sx={{ fontFamily: 'monospace' }}>
+                                {endpoint.path}
+                              </Typography>
+                            }
+                            secondary={endpoint.description}
+                          />
+                        </ListItem>
+                        {index < 15 && <Divider />}
+                      </React.Fragment>
+                    ))}
+                  </List>
+                </CardContent>
+                <CardActions>
+                  <Button 
+                    startIcon={<CodeIcon />} 
+                    onClick={() => {
+                      const baseUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080';
+                      window.open(`${baseUrl}/swagger-ui/index.html`, '_blank');
+                    }}
+                    variant="contained"
+                    color="primary"
+                  >
+                    Open Swagger UI
+                  </Button>
+                  <Button 
+                    startIcon={<InfoIcon />} 
+                    onClick={() => {
+                      const baseUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080';
+                      window.open(`${baseUrl}/actuator`, '_blank');
+                    }}
+                    variant="outlined"
+                  >
+                    System Metrics
+                  </Button>
+                </CardActions>
+              </Card>
+            </Grid>
+
+            {/* System Status Card */}
+            <Grid item xs={12} lg={4}>
+              <Card sx={{ height: '100%' }}>
+                <CardContent>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <Settings sx={{ mr: 1, color: 'secondary.main' }} />
+                    <Typography variant="h6" component="h2">
+                      System Status
+                    </Typography>
+                  </Box>
+                  
+                  <List dense>
+                    <ListItem>
+                      <ListItemIcon>
+                        <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'success.main' }} />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary="Security"
+                        secondary="JWT Authentication Active"
+                      />
+                    </ListItem>
+                    
+                    <ListItem>
+                      <ListItemIcon>
+                        <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'success.main' }} />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary="Database"
+                        secondary="Multi-tenant MySQL"
+                      />
+                    </ListItem>
+                    
+                    <ListItem>
+                      <ListItemIcon>
+                        <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'info.main' }} />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary="Monitoring"
+                        secondary="Actuator Endpoints"
+                      />
+                    </ListItem>
+
+                    <ListItem>
+                      <ListItemIcon>
+                        <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'success.main' }} />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary="API Documentation"
+                        secondary="Swagger UI Available"
+                      />
+                    </ListItem>
+                  </List>
+
+                  <Typography variant="body2" color="textSecondary" sx={{ mt: 2 }}>
+                    System administration features and API monitoring capabilities.
+                  </Typography>
+                </CardContent>
+              </Card>
             </Grid>
           </Grid>
         </TabPanel>

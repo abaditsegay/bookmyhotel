@@ -1,6 +1,7 @@
 package com.bookmyhotel.service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -216,7 +217,8 @@ public class CheckoutReceiptService {
         // Calculate total room charges based on actual stay or reservation dates (base
         // rate only)
         long nights = receipt.getNumberOfNights();
-        BigDecimal totalRoomCharges = baseRatePerNight.multiply(BigDecimal.valueOf(nights));
+        BigDecimal totalRoomCharges = baseRatePerNight.multiply(BigDecimal.valueOf(nights))
+                .setScale(2, RoundingMode.HALF_UP);
         receipt.setTotalRoomCharges(totalRoomCharges);
 
         logger.debug("Receipt room charges: {} per night × {} nights = {} (base rate before taxes)",
@@ -249,10 +251,11 @@ public class CheckoutReceiptService {
             BigDecimal totalTaxRate = hotelPricingConfigService.getTotalTaxRate(hotelId);
 
             // Calculate subtotal (room charges + additional charges, excluding taxes)
-            BigDecimal subtotal = receipt.getTotalRoomCharges().add(receipt.getTotalAdditionalCharges());
+            BigDecimal subtotal = receipt.getTotalRoomCharges().add(receipt.getTotalAdditionalCharges())
+                    .setScale(2, RoundingMode.HALF_UP);
 
             // Calculate tax amount based on subtotal
-            BigDecimal taxAmount = subtotal.multiply(totalTaxRate);
+            BigDecimal taxAmount = subtotal.multiply(totalTaxRate).setScale(2, RoundingMode.HALF_UP);
 
             if (taxAmount.compareTo(BigDecimal.ZERO) > 0) {
                 // Format tax rate as percentage for display
@@ -323,15 +326,18 @@ public class CheckoutReceiptService {
     private void calculateTotals(ConsolidatedReceiptResponse receipt) {
         // Calculate subtotal (room charges + additional charges)
         BigDecimal subtotal = receipt.getTotalRoomCharges()
-                .add(receipt.getTotalAdditionalCharges());
+                .add(receipt.getTotalAdditionalCharges())
+                .setScale(2, RoundingMode.HALF_UP);
         receipt.setSubtotal(subtotal);
 
         // Calculate grand total (subtotal + taxes and fees)
-        BigDecimal grandTotal = subtotal.add(receipt.getTotalTaxesAndFees());
+        BigDecimal grandTotal = subtotal.add(receipt.getTotalTaxesAndFees())
+                .setScale(2, RoundingMode.HALF_UP);
         receipt.setGrandTotal(grandTotal);
 
         // Calculate balance due
-        BigDecimal balanceDue = grandTotal.subtract(receipt.getTotalPayments());
+        BigDecimal balanceDue = grandTotal.subtract(receipt.getTotalPayments())
+                .setScale(2, RoundingMode.HALF_UP);
         receipt.setBalanceDue(balanceDue);
     }
 
@@ -396,7 +402,8 @@ public class CheckoutReceiptService {
         item.setQuantity(orderItem.getQuantity());
 
         // Calculate proportional amount for this item
-        BigDecimal itemTotal = orderItem.getUnitPrice().multiply(BigDecimal.valueOf(orderItem.getQuantity()));
+        BigDecimal itemTotal = orderItem.getUnitPrice().multiply(BigDecimal.valueOf(orderItem.getQuantity()))
+                .setScale(2, RoundingMode.HALF_UP);
         item.setAmount(itemTotal);
 
         item.setChargeType(roomCharge.getChargeType().getDisplayName());

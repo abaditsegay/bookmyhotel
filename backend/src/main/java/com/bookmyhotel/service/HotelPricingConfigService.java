@@ -1,6 +1,7 @@
 package com.bookmyhotel.service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -92,7 +93,7 @@ public class HotelPricingConfigService {
         config.setVersion(1); // Start with version 1
         config.setPricingStrategy(PricingStrategy.FIXED);
         config.setServiceTaxRate(new BigDecimal("0.05"));
-        config.setVatRate(new BigDecimal("0.17"));
+        config.setVatRate(new BigDecimal("0.15"));
         config.setCancellationFeeRate(new BigDecimal("0.50"));
         config.setNoShowPenaltyRate(new BigDecimal("1.00"));
         config.setModificationFeeRate(new BigDecimal("0.00"));
@@ -235,7 +236,7 @@ public class HotelPricingConfigService {
         BigDecimal vatRate = config.getVatRate();
         BigDecimal serviceRate = config.getServiceTaxRate();
 
-        BigDecimal totalRate = vatRate.add(serviceRate);
+        BigDecimal totalRate = vatRate.add(serviceRate).setScale(4, RoundingMode.HALF_UP);
         logger.debug("Total tax rate for hotel {}: {}% (VAT: {}%, Service: {}%)",
                 hotelId, totalRate.multiply(new BigDecimal("100")),
                 config.getVatRate().multiply(new BigDecimal("100")),

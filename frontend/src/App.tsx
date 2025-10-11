@@ -56,6 +56,9 @@ import PublicHotelRegistration from './pages/PublicHotelRegistration';
 import UserDebugPage from './pages/UserDebugPage';
 import NotificationsPage from './pages/NotificationsPage';
 
+// Lazy load SystemModule for better performance
+const SystemModule = React.lazy(() => import('./modules/SystemModule'));
+
 // Role-based Router Component - redirects based on user role
 const RoleBasedRouter: React.FC = () => {
   const { user, isAuthenticated, isInitializing } = useAuth();
@@ -292,6 +295,13 @@ function App() {
         <Route path="/system-dashboard" element={
           <ProtectedRoute>
             <SystemDashboardPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/system/*" element={
+          <ProtectedRoute requiredRole="ADMIN">
+            <React.Suspense fallback={<div>Loading...</div>}>
+              <SystemModule />
+            </React.Suspense>
           </ProtectedRoute>
         } />
         <Route path="/system/hotels" element={

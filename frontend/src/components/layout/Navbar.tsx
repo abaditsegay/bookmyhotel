@@ -149,9 +149,12 @@ const Navbar: React.FC = () => {
     // No base navigation items for guests - they will use guest action buttons instead
 
     if (user) {
-      // For system admin and admin, show minimal navigation
+      // For system admin and admin, show minimal navigation with system dashboard
       if (user.role === 'SYSTEM_ADMIN' || user.role === 'ADMIN') {
-        return [...baseItems];
+        const adminItems = [
+          { label: 'System Dashboard', path: '/system', icon: <BusinessIcon /> },
+        ];
+        return [...baseItems, ...adminItems];
       }
 
       // For hotel admin, show notifications and shop navigation

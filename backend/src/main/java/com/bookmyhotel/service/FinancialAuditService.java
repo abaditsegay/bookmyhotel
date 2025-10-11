@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -266,17 +267,20 @@ public class FinancialAuditService {
                 if (reservation.getTotalAmount() != null) {
                     // Calculate expected tax (this is simplified - you might have more complex tax
                     // logic)
-                    BigDecimal reservationTax = reservation.getTotalAmount().multiply(totalTaxRate);
-                    expectedTax = expectedTax.add(reservationTax);
+                    BigDecimal reservationTax = reservation.getTotalAmount().multiply(totalTaxRate)
+                            .setScale(2, RoundingMode.HALF_UP);
+                    expectedTax = expectedTax.add(reservationTax).setScale(2, RoundingMode.HALF_UP);
 
                     // For now, assume tax was collected (you might have actual tax collection data)
-                    totalTaxCollected = totalTaxCollected.add(reservationTax);
+                    totalTaxCollected = totalTaxCollected.add(reservationTax)
+                            .setScale(2, RoundingMode.HALF_UP);
                 }
             }
 
             reconciliation.setTotalTaxCollected(totalTaxCollected);
             reconciliation.setExpectedTax(expectedTax);
-            reconciliation.setTaxDiscrepancy(expectedTax.subtract(totalTaxCollected));
+            reconciliation.setTaxDiscrepancy(expectedTax.subtract(totalTaxCollected)
+                    .setScale(2, RoundingMode.HALF_UP));
 
         } catch (Exception e) {
             logger.warn("Failed to calculate tax information for hotel {}: {}", hotelId, e.getMessage());
@@ -299,7 +303,8 @@ public class FinancialAuditService {
             if (reservation.getTotalAmount() != null && reservation.getPricePerNight() != null) {
                 long nights = java.time.temporal.ChronoUnit.DAYS.between(
                         reservation.getCheckInDate(), reservation.getCheckOutDate());
-                BigDecimal expectedAmount = reservation.getPricePerNight().multiply(BigDecimal.valueOf(nights));
+                BigDecimal expectedAmount = reservation.getPricePerNight().multiply(BigDecimal.valueOf(nights))
+                        .setScale(2, RoundingMode.HALF_UP);
 
                 if (reservation.getTotalAmount().compareTo(expectedAmount) != 0) {
                     PaymentDiscrepancyDto discrepancy = new PaymentDiscrepancyDto(
