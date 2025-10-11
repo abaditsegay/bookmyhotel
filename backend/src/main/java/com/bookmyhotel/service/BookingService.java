@@ -2379,34 +2379,36 @@ public class BookingService {
         BigDecimal totalAmount = baseAmount.add(taxAmount).add(serviceFee)
                 .setScale(2, RoundingMode.HALF_UP);
 
-        logger.debug("Calculated total amount for hotel {} for {} nights: base={}, VAT={}%, tax={}, service={}%, serviceFee={}, total={}",
-                hotelId, nights, baseAmount, vatRate.multiply(new BigDecimal("100")), taxAmount, 
+        logger.debug(
+                "Calculated total amount for hotel {} for {} nights: base={}, VAT={}%, tax={}, service={}%, serviceFee={}, total={}",
+                hotelId, nights, baseAmount, vatRate.multiply(new BigDecimal("100")), taxAmount,
                 serviceFeeRate.multiply(new BigDecimal("100")), serviceFee, totalAmount);
 
         return totalAmount;
     }
 
     /**
-     * Fallback calculation with default Ethiopian rates when hotel configuration is unavailable
+     * Fallback calculation with default Ethiopian rates when hotel configuration is
+     * unavailable
      */
     private BigDecimal calculateWithDefaultRates(BigDecimal pricePerNight, long nights) {
         BigDecimal baseAmount = pricePerNight.multiply(BigDecimal.valueOf(nights))
                 .setScale(2, RoundingMode.HALF_UP);
-        
+
         // Ethiopian standard VAT rate: 15%
         BigDecimal defaultVatRate = new BigDecimal("0.15");
         BigDecimal taxAmount = baseAmount.multiply(defaultVatRate).setScale(2, RoundingMode.HALF_UP);
-        
+
         // Standard service fee: 5%
         BigDecimal defaultServiceRate = new BigDecimal("0.05");
         BigDecimal serviceFee = baseAmount.multiply(defaultServiceRate).setScale(2, RoundingMode.HALF_UP);
-        
+
         BigDecimal totalAmount = baseAmount.add(taxAmount).add(serviceFee)
                 .setScale(2, RoundingMode.HALF_UP);
-                
+
         logger.debug("Using default rates for {} nights: base={}, VAT=15%, tax={}, service=5%, serviceFee={}, total={}",
                 nights, baseAmount, taxAmount, serviceFee, totalAmount);
-                
+
         return totalAmount;
     }
 

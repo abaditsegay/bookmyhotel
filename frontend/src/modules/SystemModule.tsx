@@ -6,47 +6,40 @@ import {
   Grid, 
   Card, 
   CardContent, 
-  CardActions, 
-  Button, 
   Chip,
   List,
   ListItem,
   ListItemText,
   ListItemIcon,
-  Divider,
-  IconButton,
-  Tooltip
+  Divider
 } from '@mui/material';
 import {
   Description as ApiIcon,
-  Launch as LaunchIcon,
   Security as SecurityIcon,
   Storage as DatabaseIcon,
   Timeline as MetricsIcon,
-  Settings as SystemIcon,
-  Code as CodeIcon,
-  Info as InfoIcon
+  Settings as SystemIcon
 } from '@mui/icons-material';
 
 // System dashboard for system administrators
 const SystemDashboard: React.FC = () => {
   const apiEndpoints = [
-    { method: 'GET', path: '/api/hotels', description: 'Get all hotels with filtering' },
-    { method: 'POST', path: '/api/hotels', description: 'Create new hotel' },
-    { method: 'GET', path: '/api/hotels/{id}', description: 'Get hotel by ID' },
-    { method: 'PUT', path: '/api/hotels/{id}', description: 'Update hotel' },
-    { method: 'DELETE', path: '/api/hotels/{id}', description: 'Delete hotel' },
-    { method: 'GET', path: '/api/bookings', description: 'Get bookings with filtering' },
-    { method: 'POST', path: '/api/bookings', description: 'Create new booking' },
-    { method: 'GET', path: '/api/bookings/{id}', description: 'Get booking by ID' },
-    { method: 'PUT', path: '/api/bookings/{id}', description: 'Update booking' },
-    { method: 'POST', path: '/api/auth/login', description: 'User authentication' },
-    { method: 'POST', path: '/api/auth/logout', description: 'User logout' },
-    { method: 'GET', path: '/api/users', description: 'Get users (admin only)' },
-    { method: 'POST', path: '/api/users', description: 'Create user (admin only)' },
-    { method: 'GET', path: '/api/admin/tenants', description: 'Manage tenants' },
-    { method: 'GET', path: '/actuator/health', description: 'Health check endpoint' },
-    { method: 'GET', path: '/actuator/metrics', description: 'Application metrics' }
+    { method: 'GET', path: '/managemyhotel/api/hotels', description: 'Get all hotels with filtering' },
+    { method: 'POST', path: '/managemyhotel/api/hotels', description: 'Create new hotel' },
+    { method: 'GET', path: '/managemyhotel/api/hotels/{id}', description: 'Get hotel by ID' },
+    { method: 'PUT', path: '/managemyhotel/api/hotels/{id}', description: 'Update hotel' },
+    { method: 'DELETE', path: '/managemyhotel/api/hotels/{id}', description: 'Delete hotel' },
+    { method: 'GET', path: '/managemyhotel/api/bookings', description: 'Get bookings with filtering' },
+    { method: 'POST', path: '/managemyhotel/api/bookings', description: 'Create new booking' },
+    { method: 'GET', path: '/managemyhotel/api/bookings/{id}', description: 'Get booking by ID' },
+    { method: 'PUT', path: '/managemyhotel/api/bookings/{id}', description: 'Update booking' },
+    { method: 'POST', path: '/managemyhotel/api/auth/login', description: 'User authentication' },
+    { method: 'POST', path: '/managemyhotel/api/auth/logout', description: 'User logout' },
+    { method: 'GET', path: '/managemyhotel/api/users', description: 'Get users (admin only)' },
+    { method: 'POST', path: '/managemyhotel/api/users', description: 'Create user (admin only)' },
+    { method: 'GET', path: '/managemyhotel/api/admin/tenants', description: 'Manage tenants' },
+    { method: 'GET', path: '/managemyhotel/actuator/health', description: 'Health check endpoint' },
+    { method: 'GET', path: '/managemyhotel/actuator/metrics', description: 'Application metrics' }
   ];
 
   const getMethodColor = (method: string) => {
@@ -57,16 +50,6 @@ const SystemDashboard: React.FC = () => {
       case 'DELETE': return 'error';
       default: return 'default';
     }
-  };
-
-  const handleOpenSwagger = () => {
-    const baseUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080';
-    window.open(`${baseUrl}/swagger-ui/index.html`, '_blank');
-  };
-
-  const handleOpenActuator = () => {
-    const baseUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080';
-    window.open(`${baseUrl}/actuator`, '_blank');
   };
 
   return (
@@ -85,12 +68,6 @@ const SystemDashboard: React.FC = () => {
                 <Typography variant="h6" component="h2">
                   API Documentation
                 </Typography>
-                <Box sx={{ flexGrow: 1 }} />
-                <Tooltip title="Open Swagger UI">
-                  <IconButton onClick={handleOpenSwagger} size="small">
-                    <LaunchIcon />
-                  </IconButton>
-                </Tooltip>
               </Box>
               
               <Typography variant="body2" color="textSecondary" sx={{ mb: 3 }}>
@@ -123,23 +100,6 @@ const SystemDashboard: React.FC = () => {
                 ))}
               </List>
             </CardContent>
-            <CardActions>
-              <Button 
-                startIcon={<CodeIcon />} 
-                onClick={handleOpenSwagger}
-                variant="contained"
-                color="primary"
-              >
-                Open Swagger UI
-              </Button>
-              <Button 
-                startIcon={<InfoIcon />} 
-                onClick={handleOpenActuator}
-                variant="outlined"
-              >
-                System Metrics
-              </Button>
-            </CardActions>
           </Card>
         </Grid>
 

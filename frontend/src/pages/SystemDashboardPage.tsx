@@ -27,10 +27,7 @@ import {
   Business,
   Refresh,
   BarChart as BarChartIcon,
-  Description as ApiIcon,
-  Launch as LaunchIcon,
-  Code as CodeIcon,
-  Info as InfoIcon
+  Description as ApiIcon
 } from '@mui/icons-material';
 import { MetricCard, BarChart, DonutChart } from '../components/common/DataVisualization';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
@@ -664,18 +661,6 @@ export const SystemDashboardPage: React.FC = () => {
                     <Typography variant="h6" component="h2">
                       API Documentation
                     </Typography>
-                    <Box sx={{ flexGrow: 1 }} />
-                    <Button
-                      startIcon={<LaunchIcon />}
-                      onClick={() => {
-                        const baseUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080';
-                        window.open(`${baseUrl}/swagger-ui/index.html`, '_blank');
-                      }}
-                      size="small"
-                      variant="outlined"
-                    >
-                      Open Swagger UI
-                    </Button>
                   </Box>
                   
                   <Typography variant="body2" color="textSecondary" sx={{ mb: 3 }}>
@@ -684,22 +669,22 @@ export const SystemDashboardPage: React.FC = () => {
 
                   <List dense sx={{ maxHeight: 400, overflow: 'auto' }}>
                     {[
-                      { method: 'GET', path: '/api/hotels', description: 'Get all hotels with filtering' },
-                      { method: 'POST', path: '/api/hotels', description: 'Create new hotel' },
-                      { method: 'GET', path: '/api/hotels/{id}', description: 'Get hotel by ID' },
-                      { method: 'PUT', path: '/api/hotels/{id}', description: 'Update hotel' },
-                      { method: 'DELETE', path: '/api/hotels/{id}', description: 'Delete hotel' },
-                      { method: 'GET', path: '/api/bookings', description: 'Get bookings with filtering' },
-                      { method: 'POST', path: '/api/bookings', description: 'Create new booking' },
-                      { method: 'GET', path: '/api/bookings/{id}', description: 'Get booking by ID' },
-                      { method: 'PUT', path: '/api/bookings/{id}', description: 'Update booking' },
-                      { method: 'POST', path: '/api/auth/login', description: 'User authentication' },
-                      { method: 'POST', path: '/api/auth/logout', description: 'User logout' },
-                      { method: 'GET', path: '/api/users', description: 'Get users (admin only)' },
-                      { method: 'POST', path: '/api/users', description: 'Create user (admin only)' },
-                      { method: 'GET', path: '/api/admin/tenants', description: 'Manage tenants' },
-                      { method: 'GET', path: '/actuator/health', description: 'Health check endpoint' },
-                      { method: 'GET', path: '/actuator/metrics', description: 'Application metrics' }
+                      { method: 'GET', path: '/managemyhotel/api/hotels', description: 'Get all hotels with filtering' },
+                      { method: 'POST', path: '/managemyhotel/api/hotels', description: 'Create new hotel' },
+                      { method: 'GET', path: '/managemyhotel/api/hotels/{id}', description: 'Get hotel by ID' },
+                      { method: 'PUT', path: '/managemyhotel/api/hotels/{id}', description: 'Update hotel' },
+                      { method: 'DELETE', path: '/managemyhotel/api/hotels/{id}', description: 'Delete hotel' },
+                      { method: 'GET', path: '/managemyhotel/api/bookings', description: 'Get bookings with filtering' },
+                      { method: 'POST', path: '/managemyhotel/api/bookings', description: 'Create new booking' },
+                      { method: 'GET', path: '/managemyhotel/api/bookings/{id}', description: 'Get booking by ID' },
+                      { method: 'PUT', path: '/managemyhotel/api/bookings/{id}', description: 'Update booking' },
+                      { method: 'POST', path: '/managemyhotel/api/auth/login', description: 'User authentication' },
+                      { method: 'POST', path: '/managemyhotel/api/auth/logout', description: 'User logout' },
+                      { method: 'GET', path: '/managemyhotel/api/users', description: 'Get users (admin only)' },
+                      { method: 'POST', path: '/managemyhotel/api/users', description: 'Create user (admin only)' },
+                      { method: 'GET', path: '/managemyhotel/api/admin/tenants', description: 'Manage tenants' },
+                      { method: 'GET', path: '/managemyhotel/actuator/health', description: 'Health check endpoint' },
+                      { method: 'GET', path: '/managemyhotel/actuator/metrics', description: 'Application metrics' }
                     ].map((endpoint, index) => (
                       <React.Fragment key={index}>
                         <ListItem>
@@ -740,29 +725,6 @@ export const SystemDashboardPage: React.FC = () => {
                     ))}
                   </List>
                 </CardContent>
-                <CardActions>
-                  <Button 
-                    startIcon={<CodeIcon />} 
-                    onClick={() => {
-                      const baseUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080';
-                      window.open(`${baseUrl}/swagger-ui/index.html`, '_blank');
-                    }}
-                    variant="contained"
-                    color="primary"
-                  >
-                    Open Swagger UI
-                  </Button>
-                  <Button 
-                    startIcon={<InfoIcon />} 
-                    onClick={() => {
-                      const baseUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080';
-                      window.open(`${baseUrl}/actuator`, '_blank');
-                    }}
-                    variant="outlined"
-                  >
-                    System Metrics
-                  </Button>
-                </CardActions>
               </Card>
             </Grid>
 

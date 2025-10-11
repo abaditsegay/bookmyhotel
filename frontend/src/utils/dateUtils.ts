@@ -1,6 +1,8 @@
 /**
  * Date utility functions for consistent date handling across the application
+ * Since all dates come from date pickers, these focus on formatting and calculation
  */
+import dayjs, { Dayjs } from 'dayjs';
 
 /**
  * Formats a date string for HTML date input (YYYY-MM-DD format)
@@ -95,4 +97,70 @@ export const isSameDate = (date1: string, date2: string): boolean => {
   const normalized2 = formatDateForInput(date2);
   
   return normalized1 === normalized2;
+};
+
+/**
+ * Calculate number of nights between two dates
+ * Uses dayjs for consistent calculation
+ */
+export const calculateNights = (checkInDate: string | Dayjs, checkOutDate: string | Dayjs): number => {
+  const checkIn = typeof checkInDate === 'string' ? dayjs(checkInDate) : checkInDate;
+  const checkOut = typeof checkOutDate === 'string' ? dayjs(checkOutDate) : checkOutDate;
+  
+  if (!checkIn.isValid() || !checkOut.isValid()) {
+    return 0; // Return 0 for invalid dates instead of throwing
+  }
+  
+  const nights = checkOut.diff(checkIn, 'day');
+  return Math.max(0, nights); // Ensure non-negative result
+};
+
+/**
+ * Get default booking dates (tomorrow and day after)
+ */
+export const getDefaultBookingDates = () => {
+  const checkIn = dayjs().add(1, 'day');
+  const checkOut = checkIn.add(1, 'day');
+  
+  return {
+    checkInDate: checkIn,
+    checkOutDate: checkOut,
+    checkInString: checkIn.format('YYYY-MM-DD'),
+    checkOutString: checkOut.format('YYYY-MM-DD'),
+    nights: 1
+  };
+};
+
+/**
+ * Format date for display with time
+ */
+export const formatDateTimeForDisplay = (dateString: string): string => {
+  if (!dateString) return '';
+  
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return '';
+  
+  return date.toLocaleString();
+};
+
+/**
+ * Check if a date is within peak season (configurable months)
+ */
+export const isWithinPeakSeason = (checkInDate: string | Dayjs, checkOutDate: string | Dayjs, peakMonths: number[] = [6, 7, 8, 12]): boolean => {
+  const checkIn = typeof checkInDate === 'string' ? dayjs(checkInDate) : checkInDate;
+  const checkOut = typeof checkOutDate === 'string' ? dayjs(checkOutDate) : checkOutDate;
+  
+  if (!checkIn.isValid() || !checkOut.isValid()) {
+    return false;
+  }
+  
+  let current = checkIn;
+  while (current.isBefore(checkOut) || current.isSame(checkOut, 'day')) {
+    if (peakMonths.includes(current.month() + 1)) { // dayjs months are 0-indexed
+      return true;
+    }
+    current = current.add(1, 'day');
+  }
+  
+  return false;
 };
