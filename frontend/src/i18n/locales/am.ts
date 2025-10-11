@@ -778,12 +778,16 @@ export const amTranslations = {
       numberOfGuests: "የእንግዶች ቁጥር",
       guestInformation: "የእንግዳ መረጃ",
       guestDetails: "የእንግዳ ዝርዝሮች",
+      firstName: "የመጀመሪያ ስም",
+      lastName: "የመጨረሻ ስም",
       fullName: "ሙሉ ስም",
       emailAddress: "ኢሜይል አድራሻ",
       phoneNumber: "ስልክ ቁጥር",
       nights: "ሌሊት",
       nightsPlural: "ሌሊቶች",
       hotelInformation: "የሆቴል መረጃ",
+      firstNamePlaceholder: "የመጀመሪያ ስምዎን ያስገቡ",
+      lastNamePlaceholder: "የመጨረሻ ስምዎን ያስገቡ",
       fullNamePlaceholder: "ሙሉ ስምዎን ያስገቡ",
       emailPlaceholder: "ኢሜይል አድራሻዎን ያስገቡ", 
       phonePlaceholder: "ስልክ ቁጥርዎን ያስገቡ (አማራጭ)",
@@ -964,6 +968,31 @@ export const amTranslations = {
           checkOut: "ውጣ"
         }
       }
+    },
+
+    // Booking Summary
+    summary: {
+      title: "የመያዣ ማጠቃለያ",
+      hotel: "ሆቴል",
+      roomType: "የክፍል አይነት",
+      checkIn: "መግቢያ",
+      checkOut: "መውጫ",
+      guests: "እንግዶች",
+      guest: "እንግዳ",
+      guestsPlural: "እንግዶች",
+      priceBreakdown: "የዋጋ ዝርዝር",
+      pricePerNight: "{{price}} × {{nights}} ሌሊቶች",
+      taxesAndFees: "ግብሮች እና ክፍያዎች",
+      total: "ጠቅላላ",
+      cancellationPolicy: "ከመግቢያ 24 ሰዓት በፊት ነፃ ሰረዝ",
+      paymentMethod: "የክፍያ ዘዴ",
+      creditCard: "ክሬዲት ካርድ",
+      mobileMoney: "ሞባይል ገንዘብ",
+      payAtFrontDesk: "በሪሴፕሽን ክፈል",
+      bookNow: "አሁን ያዙ",
+      nights: "ሌሊቶች",
+      night: "ሌሊት",
+      nightsPlural: "ሌሊቶች"
     }
   },
 
@@ -1868,14 +1897,6 @@ export const amTranslations = {
       name: "ስም:",
       email: "ኢሜይል:",
       numberOfGuests: "የእንግዶች ቁጥር:"
-    },
-    
-    // Booking summary
-    summary: {
-      bookedOn: "የተያዘበት ቀን:",
-      duration: "ጊዜ:",
-      nightSingle: "ምሽት",
-      nightPlural: "ምሽቶች"
     },
     
     // Status labels

@@ -32,7 +32,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../hooks/useNotifications';
 import NetworkStatusIndicator from '../NetworkStatusIndicator';
-import ThemeToggle from '../common/ThemeToggle';
 import LanguageSelector from '../common/LanguageSelector';
 
 const Navbar: React.FC = () => {
@@ -487,10 +486,7 @@ const Navbar: React.FC = () => {
               </IconButton>
             )}
             
-            {/* Theme Toggle - After mobile menu */}
-            <ThemeToggle variant="icon" size="small" />
-            
-            {/* Language Selector - After theme toggle */}
+            {/* Language Selector - After mobile menu */}
             <LanguageSelector variant="icon" size="small" />
             
             {/* Logo */}

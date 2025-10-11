@@ -822,12 +822,16 @@ export const omTranslations = {
       numberOfGuests: "Lakkoofsa Keessummaa",
       guestInformation: "Odeeffannoo Keessummaa",
       guestDetails: "Bal'ina Keessummaa",
+      firstName: "Maqaa Jalqabaa",
+      lastName: "Maqaa Maatii",
       fullName: "Maqaa Guutuu",
       emailAddress: "Teessoo Imeelii",
       phoneNumber: "Lakkoofsa Bilbilaa",
       nights: "halkan",
       nightsPlural: "halkan",
       hotelInformation: "Odeeffannoo Hotela",
+      firstNamePlaceholder: "Maqaa jalqabaa keessanii galchaa",
+      lastNamePlaceholder: "Maqaa maatii keessanii galchaa",
       fullNamePlaceholder: "Maqaa keessan guutuu galchaa",
       emailPlaceholder: "Teessoo imeelii keessanii galchaa",
       phonePlaceholder: "Lakkoofsa bilbilaa keessanii galchaa (filannoo)",
@@ -1082,6 +1086,25 @@ export const omTranslations = {
           checkOut: "Ba'uu"
         }
       }
+    },
+
+    // Cuunfaa Buufataa
+    summary: {
+      title: "Cuunfaa Buufataa",
+      hotel: "Hotela",
+      roomType: "Gosa Kutaa",
+      checkIn: "Galuu",
+      checkOut: "Ba'uu",
+      guests: "Keessummoota",
+      guest: "keessummaa",
+      guestsPlural: "keessummoota",
+      nights: "Halkoota",
+      night: "halkan",
+      nightsPlural: "halkoota",
+      pricePerNight: "{{price}} × {{nights}} halkoota",
+      taxesAndFees: "Gibiroota fi kaffaltiiwwan",
+      total: "Hundumaa",
+      cancellationPolicy: "Galuu dura sa'aatii 24 keessatti bilisaan dhiisuu"
     }
   },
 

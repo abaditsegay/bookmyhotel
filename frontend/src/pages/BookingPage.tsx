@@ -46,6 +46,7 @@ import { useMockPayment, MockPaymentRequest } from '../services/mockPaymentGatew
 import { formatCurrency } from '../utils/currencyUtils';
 import { PaymentMethod } from '../types/shop';
 import NumberStepper from '../components/common/NumberStepper';
+import BookingSummary from '../components/booking/BookingSummary';
 import { COLORS } from '../theme/themeColors';
 
 interface BookingPageState {
@@ -79,7 +80,8 @@ const BookingPage: React.FC = () => {
     bookingData?.searchRequest?.checkOutDate ? dayjs(bookingData.searchRequest.checkOutDate) : dayjs().add(1, 'day')
   );
   const [guests, setGuests] = useState(bookingData?.searchRequest?.guests || 1);
-  const [guestName, setGuestName] = useState(user ? `${user.firstName} ${user.lastName}` : '');
+  const [firstName, setFirstName] = useState(user?.firstName || '');
+  const [lastName, setLastName] = useState(user?.lastName || '');
   const [guestEmail, setGuestEmail] = useState(user?.email || '');
   const [guestPhone, setGuestPhone] = useState(user?.phone || '');
   const [specialRequests, setSpecialRequests] = useState('');
@@ -104,8 +106,12 @@ const BookingPage: React.FC = () => {
   const [hotelData, setHotelData] = useState<any>(null);
 
   // Memoized change handlers to prevent input focus loss
-  const handleGuestNameChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setGuestName(e.target.value);
+  const handleFirstNameChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setFirstName(e.target.value);
+  }, []);
+
+  const handleLastNameChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setLastName(e.target.value);
   }, []);
 
   const handleGuestEmailChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -132,10 +138,6 @@ const BookingPage: React.FC = () => {
     setMobileTransferReference(e.target.value);
   }, []);
 
-  const handleGuestsChange = React.useCallback((newValue: number) => {
-    setGuests(newValue);
-  }, []);
-
   const handlePaymentMethodChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const newMethod = e.target.value as 'credit_card' | 'mobile_money' | 'pay_at_frontdesk' | 'mbirr' | 'telebirr';
     setPaymentMethod(newMethod);
@@ -153,7 +155,8 @@ const BookingPage: React.FC = () => {
   // Update guest information when user data loads
   useEffect(() => {
     if (user && user.firstName && user.lastName) {
-      setGuestName(`${user.firstName} ${user.lastName}`);
+      setFirstName(user.firstName);
+      setLastName(user.lastName);
       setGuestEmail(user.email || '');
     }
   }, [user]);
@@ -232,7 +235,7 @@ const BookingPage: React.FC = () => {
 
     // Validate guest information for guest booking flow
     if (isGuestBookingFlow) {
-      if (!guestName.trim() || !guestEmail.trim()) {
+      if (!firstName.trim() || !lastName.trim() || !guestEmail.trim()) {
         setError(t('booking.page.provideGuestNameAndEmail'));
         return;
       }
@@ -313,7 +316,7 @@ const BookingPage: React.FC = () => {
                         paymentMethod === 'telebirr' ? PaymentMethod.MOBILE_MONEY :
                         PaymentMethod.CASH,
           customerInfo: {
-            name: guestName.trim() || cardholderName || 'Guest',
+            name: `${firstName.trim()} ${lastName.trim()}`.trim() || cardholderName || 'Guest',
             email: guestEmail.trim(),
             phone: guestPhone.trim() || mobileNumber || ethiopianPhoneNumber,
           },
@@ -360,7 +363,7 @@ const BookingPage: React.FC = () => {
         paymentReference: paymentResult?.paymentReference,
         transactionId: paymentResult?.transactionId,
         // Include guest information - always send if provided, regardless of auth status
-        guestName: guestName.trim() || undefined,
+        guestName: `${firstName.trim()} ${lastName.trim()}`.trim() || undefined,
         guestEmail: guestEmail.trim() || undefined,
         guestPhone: guestPhone.trim() || undefined,
         // Include Ethiopian phone number for Ethiopian payment methods
@@ -419,10 +422,12 @@ const BookingPage: React.FC = () => {
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Container 
-        maxWidth="md" 
+        maxWidth={false}
         sx={{ 
           py: isMobile ? 2 : 4,
-          px: isMobile ? 1 : 3,
+          px: isMobile ? 2 : 6,
+          maxWidth: '1400px',
+          mx: 'auto',
         }}
       >
         {/* Compact Header Section */}
@@ -551,11 +556,17 @@ const BookingPage: React.FC = () => {
               }}>
                 <Chip 
                   label={t('booking.guestBooking')} 
-                  size="small"
+                  size="medium"
                   sx={{ 
-                    bgcolor: 'info.main',
-                    color: 'info.contrastText',
-                    fontWeight: 600,
+                    bgcolor: '#4caf50',
+                    color: 'white',
+                    fontWeight: 700,
+                    fontSize: '1rem',
+                    height: '40px',
+                    '& .MuiChip-label': {
+                      fontSize: '1rem',
+                      fontWeight: 700,
+                    },
                   }}
                 />
                 
@@ -580,15 +591,19 @@ const BookingPage: React.FC = () => {
           </Alert>
         )}
 
-        {/* Room Details Section */}
-        <Grid container spacing={isMobile ? 1.5 : 2} sx={{ mb: 3 }}>
-          <Grid item xs={12}>
-            <Card
-              sx={{
-                backgroundColor: alpha(COLORS.PRIMARY, 0.05),
-                border: `1px solid ${alpha(COLORS.PRIMARY, 0.2)}`,
-              }}
-            >
+        {/* Main Content - Room Details, Form and Summary */}
+        <Grid container spacing={isMobile ? 3 : 6}>
+          {/* Left Column - Room Details and Booking Form */}
+          <Grid item xs={12} md={8} lg={8}>
+            {/* Room Details Section */}
+            <Grid container spacing={isMobile ? 1.5 : 2} sx={{ mb: 3 }}>
+              <Grid item xs={12}>
+                <Card
+                  sx={{
+                    backgroundColor: alpha(COLORS.PRIMARY, 0.05),
+                    border: `1px solid ${alpha(COLORS.PRIMARY, 0.2)}`,
+                  }}
+                >
               <CardContent>
                 <Box sx={{ 
                   display: 'flex', 
@@ -685,8 +700,8 @@ const BookingPage: React.FC = () => {
           </Grid>
         </Grid>
 
-        {/* Booking Form */}
-        <form onSubmit={handleSubmit}>
+            {/* Booking Form */}
+            <form onSubmit={handleSubmit}>
           <Box sx={{ 
             p: isMobile ? 1.5 : 2, 
             backgroundColor: theme.palette.background.paper,
@@ -831,14 +846,27 @@ const BookingPage: React.FC = () => {
                         <Grid container spacing={isMobile ? 1.5 : 2}>
                           <Grid item xs={12} sm={6}>
                             <TextField
-                              label={t('booking.page.fullName')}
-                              value={guestName}
-                              onChange={handleGuestNameChange}
+                              label={t('booking.page.firstName')}
+                              value={firstName}
+                              onChange={handleFirstNameChange}
                               fullWidth
                               required
                               size="small"
                               variant="outlined"
-                              placeholder={t('booking.page.fullNamePlaceholder')}
+                              placeholder={t('booking.page.firstNamePlaceholder')}
+                            />
+                          </Grid>
+
+                          <Grid item xs={12} sm={6}>
+                            <TextField
+                              label={t('booking.page.lastName')}
+                              value={lastName}
+                              onChange={handleLastNameChange}
+                              fullWidth
+                              required
+                              size="small"
+                              variant="outlined"
+                              placeholder={t('booking.page.lastNamePlaceholder')}
                             />
                           </Grid>
 
@@ -1539,6 +1567,21 @@ const BookingPage: React.FC = () => {
             </Button>
           </Box>
         </form>
+          </Grid>
+
+          {/* Right Column - Booking Summary */}
+          <Grid item xs={12} md={4} lg={4}>
+            <BookingSummary
+              hotelName={hotelName}
+              roomData={roomData}
+              checkInDate={checkInDate}
+              checkOutDate={checkOutDate}
+              guests={guests}
+              nights={nights}
+              totalAmount={totalAmount || 0}
+            />
+          </Grid>
+        </Grid>
       </Container>
     </LocalizationProvider>
   );

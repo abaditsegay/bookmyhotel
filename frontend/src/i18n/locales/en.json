@@ -188,6 +188,23 @@
       "cancelling": "Cancelling...",
       "cancelBookingAction": "Cancel Booking"
     },
+    "summary": {
+      "title": "Booking Summary",
+      "hotel": "Hotel",
+      "roomType": "Room Type",
+      "checkIn": "Check-in",
+      "checkOut": "Check-out",
+      "guests": "Guests",
+      "guest": "guest",
+      "guestsPlural": "guests",
+      "nights": "Nights",
+      "night": "night",
+      "nightsPlural": "nights",
+      "pricePerNight": "{{price}} × {{nights}} nights",
+      "taxesAndFees": "Taxes & fees",
+      "total": "Total",
+      "cancellationPolicy": "Free cancellation until 24 hours before check-in"
+    },
     "paymentStatus": {
       "completed": "COMPLETED",
       "pending": "PENDING", 

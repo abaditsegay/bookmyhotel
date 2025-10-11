@@ -140,6 +140,23 @@
       "cancelling": "በመሰረዝ ላይ...",
       "cancelBookingAction": "መያዣ ይሰርዙ"
     },
+    "summary": {
+      "title": "የመያዣ ማጠቃለያ",
+      "hotel": "ሆቴል",
+      "roomType": "የክፍል አይነት",
+      "checkIn": "መግቢያ",
+      "checkOut": "መውጫ",
+      "guests": "እንግዶች",
+      "guest": "እንግዳ",
+      "guestsPlural": "እንግዶች",
+      "nights": "ሌሊቶች",
+      "night": "ሌሊት",
+      "nightsPlural": "ሌሊቶች",
+      "pricePerNight": "{{price}} × {{nights}} ሌሊቶች",
+      "taxesAndFees": "ግብሮች እና ክፍያዎች",
+      "total": "ጠቅላላ",
+      "cancellationPolicy": "ከመግቢያ 24 ሰዓት በፊት ነፃ ሰረዝ"
+    },
     "paymentStatus": {
       "completed": "ተጠናቅቋል",
       "pending": "በመጠባበቅ ላይ", 

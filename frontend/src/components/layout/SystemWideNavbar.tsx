@@ -32,7 +32,6 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import { useTenant } from '../../contexts/TenantContext';
 import { useNavigate } from 'react-router-dom';
-import ThemeToggle from '../common/ThemeToggle';
 import LanguageSelector from '../common/LanguageSelector';
 
 /**
@@ -115,10 +114,7 @@ export const SystemWideNavbar: React.FC = () => {
             </IconButton>
           )}
           
-          {/* Theme Toggle - After mobile menu */}
-          <ThemeToggle variant="icon" size="medium" />
-          
-          {/* Language Selector - After theme toggle */}
+          {/* Language Selector - After mobile menu */}
           <LanguageSelector variant="icon" size="medium" />
           
           {/* Logo and App Name */}

@@ -822,12 +822,16 @@ export const enTranslations = {
       numberOfGuests: "Number of Guests",
       guestInformation: "Guest Information",
       guestDetails: "Guest Details",
+      firstName: "First Name",
+      lastName: "Last Name",
       fullName: "Full Name",
       emailAddress: "Email Address",
       phoneNumber: "Phone Number",
       nights: "night",
       nightsPlural: "nights",
       hotelInformation: "Hotel Information",
+      firstNamePlaceholder: "Enter your first name",
+      lastNamePlaceholder: "Enter your last name",
       fullNamePlaceholder: "Enter your full name",
       emailPlaceholder: "Enter your email address",
       phonePlaceholder: "Enter your phone number (optional)",
@@ -1082,6 +1086,31 @@ export const enTranslations = {
           checkOut: "Check Out"
         }
       }
+    },
+
+    // Booking Summary
+    summary: {
+      title: "Booking Summary",
+      hotel: "Hotel",
+      roomType: "Room Type",
+      checkIn: "Check-in",
+      checkOut: "Check-out",
+      guests: "Guests",
+      guest: "guest",
+      guestsPlural: "guests", 
+      priceBreakdown: "Price Breakdown",
+      pricePerNight: "{{price}} × {{nights}} nights",
+      taxesAndFees: "Taxes & fees",
+      total: "Total",
+      cancellationPolicy: "Free cancellation until 24 hours before check-in",
+      paymentMethod: "Payment Method",
+      creditCard: "Credit Card",
+      mobileMoney: "Mobile Money",
+      payAtFrontDesk: "Pay at Front Desk",
+      bookNow: "Book Now",
+      nights: "Nights",
+      night: "night",
+      nightsPlural: "nights"
     }
   },
 
@@ -2007,14 +2036,6 @@ export const enTranslations = {
       name: "Name:",
       email: "Email:",
       numberOfGuests: "Number of Guests:"
-    },
-    
-    // Booking summary
-    summary: {
-      bookedOn: "Booked on:",
-      duration: "Duration:",
-      nightSingle: "night",
-      nightPlural: "nights"
     },
     
     // Status labels
