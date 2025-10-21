@@ -26,7 +26,6 @@ import {
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { ShopOrder } from '../../types/shop';
-import { COLORS } from '../../theme/themeColors';
 
 interface ShopReceiptDialogProps {
   open: boolean;
@@ -140,16 +139,16 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
   const getStatusColor = (status: string) => {
     const friendlyStatus = getReceiptStatus(status, order?.paymentMethod || '');
     switch (friendlyStatus.toUpperCase()) {
-      case 'PAID': return '#4caf50';
-      case 'CHARGED TO ROOM': return '#2196f3';
-      case 'PROCESSING': return '#ff9800';
-      case 'COMPLETED': return '#4caf50';
-      case 'PENDING': return '#ff9800';
-      case 'CONFIRMED': return '#2196f3';
-      case 'PREPARING': return '#2196f3';
-      case 'READY': return '#1e3a8a';
-      case 'CANCELLED': return '#f44336';
-      default: return '#757575';
+      case 'PAID': return '#16a34a'; // Professional green
+      case 'CHARGED TO ROOM': return '#475569'; // Muted slate
+      case 'PROCESSING': return '#ea580c'; // Professional orange
+      case 'COMPLETED': return '#16a34a'; // Professional green
+      case 'PENDING': return '#ea580c'; // Professional orange
+      case 'CONFIRMED': return '#475569'; // Muted slate
+      case 'PREPARING': return '#475569'; // Muted slate
+      case 'READY': return '#475569'; // Muted slate
+      case 'CANCELLED': return '#dc2626'; // Professional red
+      default: return '#6b7280'; // Professional gray
     }
   };
 
@@ -178,7 +177,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
             }
             
             .print-header {
-              background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%) !important;
+              background: linear-gradient(135deg, #475569 0%, #64748b 100%) !important;
               -webkit-print-color-adjust: exact !important;
               color-adjust: exact !important;
               print-color-adjust: exact !important;
@@ -196,7 +195,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
             }
             
             .print-table th {
-              background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%) !important;
+              background: linear-gradient(135deg, #475569 0%, #64748b 100%) !important;
               -webkit-print-color-adjust: exact !important;
               color-adjust: exact !important;
               print-color-adjust: exact !important;
@@ -263,7 +262,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
             justifyContent: 'space-between',
             alignItems: 'center',
             p: 2,
-            background: 'linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)',
+            background: 'linear-gradient(135deg, #475569 0%, #64748b 100%)',
             color: 'white',
             '@media print': { display: 'none' },
           }}
@@ -308,7 +307,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
             <Box 
               className="print-header"
               sx={{
-                background: 'linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)',
+                background: 'linear-gradient(135deg, #475569 0%, #64748b 100%)',
                 color: 'white',
                 p: 3,
                 borderRadius: 2,
@@ -367,7 +366,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                     <Typography 
                       variant="h6" 
                       sx={{ 
-                        color: '#1e3a8a', 
+                        color: '#475569', 
                         fontWeight: 600, 
                         mb: 2,
                         display: 'flex',
@@ -425,7 +424,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                     <Typography 
                       variant="h6" 
                       sx={{ 
-                        color: '#1e3a8a', 
+                        color: '#475569', 
                         fontWeight: 600, 
                         mb: 2,
                         display: 'flex',
@@ -483,7 +482,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                     <TableRow>
                       <TableCell 
                         sx={{ 
-                          background: 'linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)',
+                          background: 'linear-gradient(135deg, #475569 0%, #64748b 100%)',
                           color: 'white',
                           fontWeight: 600,
                         }}
@@ -493,7 +492,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                       <TableCell 
                         align="center"
                         sx={{ 
-                          background: 'linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)',
+                          background: 'linear-gradient(135deg, #475569 0%, #64748b 100%)',
                           color: 'white',
                           fontWeight: 600,
                         }}
@@ -503,7 +502,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                       <TableCell 
                         align="center"
                         sx={{ 
-                          background: 'linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)',
+                          background: 'linear-gradient(135deg, #475569 0%, #64748b 100%)',
                           color: 'white',
                           fontWeight: 600,
                         }}
@@ -513,7 +512,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                       <TableCell 
                         align="right"
                         sx={{ 
-                          background: 'linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)',
+                          background: 'linear-gradient(135deg, #475569 0%, #64748b 100%)',
                           color: 'white',
                           fontWeight: 600,
                         }}
@@ -523,7 +522,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                       <TableCell 
                         align="right"
                         sx={{ 
-                          background: 'linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)',
+                          background: 'linear-gradient(135deg, #475569 0%, #64748b 100%)',
                           color: 'white',
                           fontWeight: 600,
                         }}
@@ -553,7 +552,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                             <Typography 
                               variant="caption" 
                               sx={{ 
-                                color: '#1e3a8a', 
+                                color: '#475569', 
                                 fontStyle: 'italic',
                                 display: 'block',
                                 mt: 0.5
@@ -607,7 +606,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                     <TableRow 
                       className="print-total-row"
                       sx={{
-                        backgroundColor: '#1e3a8a',
+                        backgroundColor: '#475569',
                         '& .MuiTableCell-root': {
                           color: 'white',
                           fontWeight: 700,
@@ -636,7 +635,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                 {order.notes && (
                   <Card className="print-card" sx={{ border: '1px solid', borderColor: 'grey.200' }}>
                     <CardContent>
-                      <Typography variant="h6" sx={{ color: '#1e3a8a', fontWeight: 600, mb: 2 }}>
+                      <Typography variant="h6" sx={{ color: '#475569', fontWeight: 600, mb: 2 }}>
                         Order Notes
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
@@ -649,7 +648,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
               <Grid item xs={12} md={4}>
                 <Card className="print-card" sx={{ border: '1px solid', borderColor: 'grey.200' }}>
                   <CardContent>
-                    <Typography variant="h6" sx={{ color: '#1e3a8a', fontWeight: 600, mb: 2 }}>
+                    <Typography variant="h6" sx={{ color: '#475569', fontWeight: 600, mb: 2 }}>
                       {t('shopReceipt.orderSummary')}
                     </Typography>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -670,7 +669,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                       <Divider sx={{ my: 1 }} />
                       <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                         <Typography variant="h6" sx={{ fontWeight: 700 }}>{t('shopReceipt.totalLabel')}:</Typography>
-                        <Typography variant="h6" sx={{ fontWeight: 700, color: '#1e3a8a' }}>
+                        <Typography variant="h6" sx={{ fontWeight: 700, color: '#475569' }}>
                           {formatCurrency(order.totalAmount || 0)}
                         </Typography>
                       </Box>
@@ -682,7 +681,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
 
             {/* Professional Footer */}
             <Box sx={{ textAlign: 'center', mt: 4, pt: 3, borderTop: '1px solid #e0e0e0' }}>
-              <Typography variant="h6" sx={{ color: '#1e3a8a', fontWeight: 600, mb: 1 }}>
+              <Typography variant="h6" sx={{ color: '#475569', fontWeight: 600, mb: 1 }}>
                 {t('shopReceipt.thankYou')}
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
@@ -714,7 +713,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
             onClick={handlePrint} 
             startIcon={<PrintIcon />} 
             variant="outlined"
-            sx={{ color: '#1e3a8a', borderColor: '#1e3a8a' }}
+            sx={{ color: '#475569', borderColor: '#475569' }}
           >
             {t('shopReceipt.printReceipt')}
           </Button>
@@ -722,7 +721,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
             onClick={handleDownload} 
             startIcon={<DownloadIcon />} 
             variant="outlined"
-            sx={{ color: '#1e3a8a', borderColor: '#1e3a8a' }}
+            sx={{ color: '#475569', borderColor: '#475569' }}
           >
             {t('shopReceipt.download')}
           </Button>
@@ -730,9 +729,9 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
             onClick={handleCloseAndRefresh} 
             variant="contained"
             sx={{ 
-              background: 'linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)',
+              background: 'linear-gradient(135deg, #475569 0%, #64748b 100%)',
               '&:hover': {
-                background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)',
+                background: 'linear-gradient(135deg, #334155 0%, #475569 100%)',
               }
             }}
           >
