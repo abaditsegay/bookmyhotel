@@ -2,22 +2,22 @@ export const amTranslations = {
   // Authentication & User Management
   auth: {
     login: {
-      title: "ሸገሮም ሆቴል ቦታ ማስያዝ አስተዳደር",
-      signIn: "ግባ",
-      signInSubtitle: "እንኳን ደህና መጣህ! እባክህ ወደ መለያህ ግባ",
+      title: "ሸገሮም ሆቴል መያዣ አስተዳደር",
+      signIn: "ይግቡ",
+      signInSubtitle: "እንኳን ደህና መጣህ! እባክዎ ወደ መለያህ ይግቡ",
       createAccount: "መለያ ፍጠር",
       createAccountSubtitle: "ዛሬ ከእኛ ጋር ተቀላቀል! መለያህን ፍጠር ለመጀመር",
-      signInToBook: "ለ {hotelName} ቦታ ማስያዝህን ለማጠናቀቅ ግባ",
-      emailLabel: "የኢሜል አድራሻ",
+      signInToBook: "ለ {hotelName} መያዣህን ለማጠናቀቅ ይግቡ",
+      emailLabel: "የኢሜይል አድራሻ",
       passwordLabel: "የይለፍ ቃል",
       firstNameLabel: "የመጀመሪያ ስም",
       lastNameLabel: "የአባት ስም",
       phoneLabel: "ስልክ ቁጥር (አማራጭ)",
       confirmPasswordLabel: "የይለፍ ቃል አረጋግጥ",
-      signingIn: "በመግባት ላይ...",
-      signInButton: "ግባ",
+      signingIn: "በመይግቡት ላይ...",
+      signInButton: "ይግቡ",
       createAccountButton: "መለያ ፍጠር",
-      creating: "መለያ በመፍጠር ላይ...",
+      creating: "መለያ በመፍጠር ሂደት ላይ...",
       alreadyHaveAccount: "ቀደም ሲል መለያ አለህ?",
       needAccount: "መለያ ይጠፈልግሃል?",
       forgotPassword: "የይለፍ ቃል ረሳህ?",
@@ -31,10 +31,10 @@ export const amTranslations = {
       
       // Validation Messages
       passwordTooShort: "የይለፍ ቃል ቢያንስ 6 ቁምፊዎች ሊኖረው ይገባል",
-      invalidEmail: "እባክህ ትክክለኛ ኢሜል አድራሻ ስጥ",
+      invalidEmail: "እባክዎ ትክክለኛ ኢሜይል አድራሻ ስጥ",
       passwordsNoMatch: "የይለፍ ቃሎች አይመሳሰሉም",
       registrationSuccess: "መመዝገብ በተሳካ ሁኔታ ተጠናቋል! በማዞር ላይ...",
-      loginFailed: "መግባት አልተሳካም",
+      loginFailed: "መይግቡት አልተሳካም",
       registrationFailed: "መመዝገብ አልተሳካም"
     }
   },
@@ -42,7 +42,7 @@ export const amTranslations = {
   // Dashboard Pages
   dashboard: {
     system: {
-      title: "የስርዓት ዳሽቦርድ",
+      title: "የስርዓት መቆጣጠሪያ ገፅ",
       overview: "አጠቃላይ እይታ",
       analytics: "ትንታኔ",
       totalBookings: "ጠቅላላ ቦታ ማስያዞች",
@@ -54,7 +54,7 @@ export const amTranslations = {
       quickActions: "ፈጣን እርምጃዎች"
     },
     hotel: {
-      title: "የሆቴል ዳሽቦርድ",
+      title: "የሆቴል መቆጣጠሪያ ገፅ",
       todaysCheckIns: "የዛሬ ወደ ሆቴል መግቢያዎች",
       todaysCheckOuts: "የዛሬ ከሆቴል መውጫዎች",
       occupancyRate: "የመኖሪያ መጠን",
@@ -63,7 +63,7 @@ export const amTranslations = {
       recentBookings: "የቅርብ ጊዜ ቦታ ማስያዞች"
     },
     frontDesk: {
-      title: "የመቀበያ ዴስክ ዳሽቦርድ",
+      title: "የመቀበያ ዴስክ መቆጣጠሪያ ገፅ",
       checkinRequests: "የወደ ሆቴል መግቢያ ጥያቄዎች",
       checkoutRequests: "የከሆቴል መውጫ ጥያቄዎች",
       roomStatus: "የክፍል ሁኔታ",
@@ -76,17 +76,17 @@ export const amTranslations = {
         arrivalsToday: "ዛሬ የመጡ እንግዶች",
         departuresToday: "ዛሬ የሄዱ እንግዶች",
         currentOccupancy: "አሁን ያሉ እንግዶች",
-        outOfOrder: "ከአገልግሎት ውጭ",
+        outOfOrder: "ከሥራ ውጭ",
         underMaintenance: "በጥገና ላይ",
         availableRooms: "ያሉ ክፍሎች"
       },
       
       // Tab Labels
       tabs: {
-        bookings: "ቦታ ማስያዝ",
+        bookings: "መያዣ",
         rooms: "ክፍሎች",
         housekeeping: "የቤት ጽዳት",
-        offlineBookings: "ኦፍላይን ቦታ ማስያዝ"
+        offlineBookings: "ከመስመር ውጭ (Offline) መያዣ"
       },
       
       // Housekeeping Module
@@ -98,8 +98,8 @@ export const amTranslations = {
       // Success Messages
       success: {
         title: "ተሳክቷል",
-        walkInBookingCreated: "የእንግዳ ቦታ ማስያዝ በተሳካ ሁኔታ ተፈጠረ! ማረጋገጫ: {{confirmationNumber}}",
-        offlineBookingCreated: "ኦፍላይን ቦታ ማስያዝ በተሳካ ሁኔታ ተፈጠረ {{guestName}}",
+        walkInBookingCreated: "የእንግዳ መያዣ በተሳካ ሁኔታ ተፈጠረ! ማረጋገጫ: {{confirmationNumber}}",
+        offlineBookingCreated: "ከመስመር ውጭ (Offline) መያዣ በተሳካ ሁኔታ ተፈጠረ {{guestName}}",
         okButton: "እሺ"
       },
       
@@ -142,11 +142,11 @@ export const amTranslations = {
         update: "አዘምን",
         roomStatuses: {
           available: "ይገኛል",
-          occupied: "ተያዟል",
-          outOfOrder: "ከአገልግሎት ውጭ",
+          occupied: "ተይዞ",
+          outOfOrder: "ከሥራ ውጭ",
           maintenance: "በጥገና ላይ",
-          cleaning: "በጽዳት ላይ",
-          dirty: "ቆሻሻ"
+          cleaning: "በንፅህና ሂደት ላይ",
+          dirty: "የቆሸሸ"
         },
         editRoom: {
           title: "ክፍል ቀይር",
@@ -159,17 +159,17 @@ export const amTranslations = {
       }
     },
     hotelAdmin: {
-      title: "የሆቴል አስተዳደር ዳሽቦርድ",
+      title: "የሆቴል አስተዳደር መቆጣጠሪያ ገፅ",
       subtitle: "የሆቴል አስተዳደር",
       editHotelDetails: "የሆቴል ዝርዝሮች ያርሙ",
-      loadingHotelInfo: "የሆቴል መረጃ በመጫን ላይ...",
+      loadingHotelInfo: "የሆቴል መረጃ በመጫን ሂደት ላይ...",
       unableToLoadHotel: "የሆቴል መረጃ መጫን አልተሳካም",
       accessRestricted: "መዳረሻ ተከልክሏል",
-      needHotelAdminRole: "የሆቴል አስተዳደር ዳሽቦርድ ለመድረስ HOTEL_ADMIN ሚና ያስፈልግዎታል።",
+      needHotelAdminRole: "የሆቴል አስተዳደር መቆጣጠሪያ ገፅ ለመድረስ HOTEL_ADMIN ሚና ያስፈልግዎታል።",
       currentRole: "የአሁኑ ሚናዎ:",
       goToHome: "ወደ ቤት ይሂዱ",
-      goToOperations: "ወደ ኦፕሬሽን ዳሽቦርድ ይሂዱ",
-      goToFrontDesk: "ወደ ፊት ዴስክ ዳሽቦርድ ይሂዱ",
+      goToOperations: "ወደ ኦፕሬሽን መቆጣጠሪያ ገፅ ይሂዱ",
+      goToFrontDesk: "ወደ ፊት ዴስክ መቆጣጠሪያ ገፅ ይሂዱ",
       
       // Main Tabs
       tabs: {
@@ -204,7 +204,7 @@ export const amTranslations = {
         available: "የተዘጋጁ",
         occupied: "የተይዘ",
         managedProperties: "የተተዳደሩ ሕንፃዎች",
-        readyForBooking: "ለቦታ ማስያዝ የተዘጋጁ",
+        readyForBooking: "ለመያዣ የተዘጋጁ",
         currentlyBooked: "በአሁኑ ጊዜ የተይዙ",
         totalMembers: "አጠቃላይ: {{count}} አባላት",
         roomsOccupied: "{{occupied}} ከ{{total}} ክፍሎች የተይዙ",
@@ -249,8 +249,8 @@ export const amTranslations = {
         title: 'የሆቴል ሪፖርቶች እና ትንታኔዎች',
         refreshData: 'መረጃ አድስ',
         loadingAnalytics: 'የትንታኔ መረጃ እየተጫነ ነው...',
-        bookingStatusOverview: 'የቦታ ማስያዝ ሁኔታ አጠቃላይ እይታ',
-        currentBookingStatus: 'የአሁኑ የቦታ ማስያዝ ሁኔታ ስርጭት',
+        bookingStatusOverview: 'የመያዣ ሁኔታ አጠቃላይ እይታ',
+        currentBookingStatus: 'የአሁኑ የመያዣ ሁኔታ ስርጭት',
         staffByRole: 'በሚና ሰራተኞች',
         currentStaffDistribution: 'አሁን ያለ የሰራተኞች በሚና ስርጭት',
         todaysOperations: 'የዛሬ ስራዎች ማጠቃለያ',
@@ -260,11 +260,11 @@ export const amTranslations = {
         currentMonthPerformance: 'የአሁኑ ወር አፈጻጸም',
         monthToDateMetrics: 'ወር-እስከ-ዛሬ መለኪያዎች',
         totalRevenue: 'ለአሁኑ ዓመት አጠቃላይ ገቢ',
-        generatedFromBookings: 'ከቦታ ማስያዝ የተፈጠረ',
+        generatedFromBookings: 'ከመያዣ የተፈጠረ',
         monthlyAverage: 'ወራዊ አማካይ',
-        bookingAnalytics: 'የቦታ ማስያዝ ትንታኔዎች',
-        comprehensiveBookingMetrics: 'የሁሉን አቀፍ የቦታ ማስያዝ መለኪያዎች',
-        totalBookings: 'አጠቃላይ ቦታ ማስያዝ',
+        bookingAnalytics: 'የመያዣ ትንታኔዎች',
+        comprehensiveBookingMetrics: 'የሁሉን አቀፍ የመያዣ መለኪያዎች',
+        totalBookings: 'አጠቃላይ መያዣ',
         
         // Distribution and Analysis
         roomTypeDistribution: 'የክፍል አይነት ስርጭት',
@@ -280,7 +280,7 @@ export const amTranslations = {
         
         // Quick Actions
         quickActionsNavigation: 'ፈጣን እርምጃዎች እና አሰሳ',
-        viewAllBookings: 'ሁሉንም ቦታ ማስያዝ ተመልከት',
+        viewAllBookings: 'ሁሉንም መያዣ ተመልከት',
         manageRooms: 'ክፍሎችን አስተዳድር',
         manageStaff: 'ሰራተኞችን አስተዳድር',
         staffSchedules: 'የሰራተኞች መርሐ ግብሮች',
@@ -296,8 +296,8 @@ export const amTranslations = {
         yearToDateRevenue: 'የዓመት-እስከ-ዛሬ ገቢ',
         
         // Activity summaries
-        thisMonthBookings: 'በዚህ ወር: {{count}} ቦታ ማስያዝ',
-        bookingsThisMonth: 'በዚህ ወር ቦታ ማስያዝ',
+        thisMonthBookings: 'በዚህ ወር: {{count}} መያዣ',
+        bookingsThisMonth: 'በዚህ ወር መያዣ',
         checkInsToday: 'የዛሬ ገቢዎች: {{checkIns}} • መውጫዎች: {{checkOuts}}',
         totalStaffCount: 'አጠቃላይ ሰራተኞች: {{count}}',
         thisMonth: 'በዚህ ወር: {{count}}',
@@ -307,20 +307,20 @@ export const amTranslations = {
       
       // Success Messages
       messages: {
-        offlineBookingSuccess: 'ለ{{guestName}} የከመስመር ውጭ ቦታ ማስያዝ በተሳካ ሁኔታ ተፈጠረ',
-        walkInBookingSuccess: 'የእግረኛ ቦታ ማስያዝ በተሳካ ሁኔታ ተፈጠረ! ማረጋገጫ: {{confirmationNumber}}'
+        offlineBookingSuccess: 'ለ{{guestName}} የከመስመር ውጭ መያዣ በተሳካ ሁኔታ ተፈጠረ',
+        walkInBookingSuccess: 'የእግረኛ መያዣ በተሳካ ሁኔታ ተፈጠረ! ማረጋገጫ: {{confirmationNumber}}'
       },
       
       // Messages
       noDescriptionAvailable: "ምንም መግለጫ አይገኝም",
       noStaffRoleData: "የሰራተኞች ሚና መረጃ አይገኝም",
-      loadingHotel: "ሆቴል በመጫን ላይ...",
+      loadingHotel: "ሆቴል በመጫን ሂደት ላይ...",
       hotelInfoNotAvailable: "የሆቴል መረጃ አይገኝም",
       
       // Pricing Configuration
       pricingConfiguration: {
         title: 'የዋጋ እና ግብር ማዋቀሪያ',
-        pricingPolicy: 'የዋጋ ፖሊሲ: የክፍል ዋጋዎች ያለግብር ይታያሉ። ሁሉም ተገቢ ግብሮች (ተ.እ.ግ፣ የአገልግሎት ግብር፣ የከተማ ግብር) በቦታ ማስያዝ ሂደት ውስጥ ይሰላሉ እና ይጨመራሉ። ይህ ለደንበኞች ግልጽ ዋጋ ሰጪነትን በማረጋገጥ ከግብር ደንቦች ጋር መስማማትን ያረጋግጣል።',
+        pricingPolicy: 'የዋጋ ፖሊሲ: የክፍል ዋጋዎች ያለግብር ይታያሉ። ሁሉም ተገቢ ግብሮች (ተ.እ.ግ፣ የአገልግሎት ግብር፣ የከተማ ግብር) በመያዣ ሂደት ውስጥ ይሰላሉ እና ይጨመራሉ። ይህ ለደንበኞች ግልጽ ዋጋ ሰጪነትን በማረጋገጥ ከግብር ደንቦች ጋር መስማማትን ያረጋግጣል።',
         
         // General Settings
         generalSettings: {
@@ -332,7 +332,7 @@ export const amTranslations = {
           seasonalPricing: 'ሰራዊ ዋጋ (ድጋፍ ያግኙ)',
           dynamicPricing: 'ተለዋዋጭ ዋጋ (ድጋፍ ያግኙ)',
           taxInclusivePricing: 'ግብር ያካተተ ዋጋ (ዋጋዎች ግብር ያካትታሉ)',
-          taxInclusivePricingDescription: 'ተቦዝሟል: ግብሮች በቦታ ማስያዝ ሂደት ውስጥ ይሰላሉ እና ይጨመራሉ',
+          taxInclusivePricingDescription: 'ተቦዝሟል: ግብሮች በመያዣ ሂደት ውስጥ ይሰላሉ እና ይጨመራሉ',
           enableDynamicPricing: 'ተለዋዋጭ ዋጋን አንቃ (ዋጋዎችን በፍላጎት መሰረት አስተካክል)',
           dynamicPricingDisabled: 'ተቦዝሟል: ቋሚ የዋጋ ስትራቴጂ ብቻ በመጠቀም ላይ'
         },
@@ -340,8 +340,8 @@ export const amTranslations = {
         // Tax Configuration
         taxConfiguration: {
           title: 'የግብር ማዋቀሪያ',
-          description: 'ለቦታ ማስያዝ ስሌቶች ተግባራዊ የሚሆኑ የግብር መጠኖችን ያዋቅሩ',
-          taxAlert: 'እነዚህ የግብር መጠኖች በቦታ ማስያዝ ሂደት ውስጥ በአውቶማቲክ ይተገበራሉ። ለደንበኞች የሚታዩ የክፍል ዋጋዎች እነዚህን ግብሮች አያካትቱም።',
+          description: 'ለመያዣ ስሌቶች ተይግቡራዊ የሚሆኑ የግብር መጠኖችን ያዋቅሩ',
+          taxAlert: 'እነዚህ የግብር መጠኖች በመያዣ ሂደት ውስጥ በአውቶማቲክ ይተገበራሉ። ለደንበኞች የሚታዩ የክፍል ዋጋዎች እነዚህን ግብሮች አያካትቱም።',
           vatRate: 'የተ.እ.ግ መጠን (%)',
           vatRateHelper: 'አሁን ያለው ተ.እ.ግ: {{rate}} (የኢትዮጵያ ደረጃ: 15%)',
           serviceTaxRate: 'የአገልግሎት ግብር መጠን (%)',
@@ -352,19 +352,19 @@ export const amTranslations = {
         
         // Booking Policies
         bookingPolicies: {
-          title: 'የቦታ ማስያዝ ፖሊሲዎች',
-          description: 'ዝቅተኛ የቆይታ መስፈርቶችን እና የቅድመ ቦታ ማስያዝ ገደቦችን ያስቀምጡ',
+          title: 'የመያዣ ፖሊሲዎች',
+          description: 'ዝቅተኛ የቆይታ መስፈርቶችን እና የቅድመ መያዣ ገደቦችን ያስቀምጡ',
           minimumStayNights: 'ዝቅተኛ ቆይታ (ማታዎች)',
-          minimumAdvanceBookingHours: 'ዝቅተኛ ቅድመ ቦታ ማስያዝ (ሰዓታት)',
-          maximumAdvanceBookingDays: 'ከፍተኛ ቅድመ ቦታ ማስያዝ (ቀናት)'
+          minimumAdvanceBookingHours: 'ዝቅተኛ ቅድመ መያዣ (ሰዓታት)',
+          maximumAdvanceBookingDays: 'ከፍተኛ ቅድመ መያዣ (ቀናት)'
         },
         
         // Discount Configuration
         discountConfiguration: {
           title: 'የቅናሽ ማዋቀሪያ',
-          description: 'የቀደመ ቦታ ማስያዝ እና የታማኝነት ቅናሾችን ያዋቅሩ',
-          earlyBookingDaysThreshold: 'የቀደመ ቦታ ማስያዝ ደረጃ (ቀናት)',
-          earlyBookingDiscountRate: 'የቀደመ ቦታ ማስያዝ ቅናሽ (%)',
+          description: 'የቀደመ መያዣ እና የታማኝነት ቅናሾችን ያዋቅሩ',
+          earlyBookingDaysThreshold: 'የቀደመ መያዣ ደረጃ (ቀናት)',
+          earlyBookingDiscountRate: 'የቀደመ መያዣ ቅናሽ (%)',
           loyaltyDiscountRate: 'የታማኝነት ቅናሽ (%)'
         },
         
@@ -390,20 +390,20 @@ export const amTranslations = {
         
         // Booking Rules
         bookingRules: {
-          title: 'የቦታ ማስያዝ ደንቦች',
-          description: 'የቦታ ማስያዝ ገደቦች እና መስፈርቶችን ያዋቅሩ',
+          title: 'የመያዣ ደንቦች',
+          description: 'የመያዣ ገደቦች እና መስፈርቶችን ያዋቅሩ',
           minimumStayNights: 'ዝቅተኛ ቆይታ (ማታዎች)',
-          minimumAdvanceBookingHours: 'ዝቅተኛ ቅድመ ቦታ ማስያዝ (ሰአቶች)',
-          maximumAdvanceBookingDays: 'ከፍተኛ ቅድመ ቦታ ማስያዝ (ቀናት)'
+          minimumAdvanceBookingHours: 'ዝቅተኛ ቅድመ መያዣ (ሰአቶች)',
+          maximumAdvanceBookingDays: 'ከፍተኛ ቅድመ መያዣ (ቀናት)'
         },
         
         // Discounts & Fees
         discountsFees: {
           title: 'ቅናሾች እና ክፍያዎች',
           description: 'የቅናሽ መጠኖች እና የቅጣት ክፍያዎችን ያዋቅሩ',
-          earlyBookingDaysThreshold: 'የቅድመ ቦታ ማስያዝ ቀናት ማስታወሻ',
-          earlyBookingDaysHelperText: 'ለቅድመ ቦታ ማስያዝ ቅናሽ ለማግኘት በቅድሚያ ቀናት',
-          earlyBookingDiscountRate: 'የቅድመ ቦታ ማስያዝ ቅናሽ መጠን (%)',
+          earlyBookingDaysThreshold: 'የቅድመ መያዣ ቀናት ማስታወሻ',
+          earlyBookingDaysHelperText: 'ለቅድመ መያዣ ቅናሽ ለማግኘት በቅድሚያ ቀናት',
+          earlyBookingDiscountRate: 'የቅድመ መያዣ ቅናሽ መጠን (%)',
           loyaltyDiscountRate: 'የታማኝነት ቅናሽ መጠን (%)',
           cancellationFeeRate: 'የሰረዝ ክፍያ መጠን (%)',
           modificationFeeRate: 'የለውጥ ክፍያ መጠን (%)',
@@ -417,7 +417,7 @@ export const amTranslations = {
         cancellationRefundPolicies: {
           title: 'የሰረዝ መመለሻ ፖሊሲዎች',
           description: 'በሰረዝ ጊዜ ላይ ተመስርተው የመመለሻ መጠኖችን ያዋቅሩ',
-          alertDescription: 'ደንበኞች ቦታ ማስያዝዎቻቸውን ከመግቢያ በፊት በተለያዩ ጊዜ ወቅቶች ሲሰርዙ የሚቀበሉትን የመመለሻ መጠኖብ ያስቀምጡ። እነዚህ ፖሊሲዎች ሰረዛዎችን በሚያስተናግዱበት ጊዜ በራሳቸው ይተገበራሉ።',
+          alertDescription: 'ደንበኞች መያዣዎቻቸውን ከመግቢያ በፊት በተለያዩ ጊዜ ወቅቶች ሲሰርዙ የሚቀበሉትን የመመለሻ መጠኖብ ያስቀምጡ። እነዚህ ፖሊሲዎች ሰረዛዎችን በሚያስተናግዱበት ጊዜ በራሳቸው ይተገበራሉ።',
           refund7PlusDays: 'ከ7+ ቀናት በፊት ከመግቢያ',
           refund3To7Days: 'ከ3-7 ቀናት በፊት ከመግቢያ',
           refund1To2Days: 'ከ1-2 ቀናት በፊት ከመግቢያ',
@@ -451,7 +451,7 @@ export const amTranslations = {
           saveConfiguration: 'ማዋቀሪያን አስቀምጥ',
           refreshConfiguration: 'ማዋቀሪያን አድስ',
           saving: 'በመቀመጥ ላይ...',
-          loading: 'በመጫን ላይ...'
+          loading: 'በመጫን ሂደት ላይ...'
         },
         
         // Refund Policy Note
@@ -462,19 +462,19 @@ export const amTranslations = {
         
         // Messages
         messages: {
-          loadingConfiguration: 'የዋጋ ማዋቀሪያ በመጫን ላይ...',
+          loadingConfiguration: 'የዋጋ ማዋቀሪያ በመጫን ሂደት ላይ...',
           savingConfiguration: 'ማዋቀሪያ በመቀመጥ ላይ...',
           configurationSaved: 'የዋጋ ማዋቀሪያ በተሳካ ሁኔታ ተቀምጧል!',
           failedToLoad: 'የዋጋ ማዋቀሪያ መጫን አልተሳካም። እባክዎ ገጹን ማደስ ይሞክሩ።',
           failedToSave: 'የዋጋ ማዋቀሪያ ማስቀመጥ አልተሳካም',
-          taxInfo: 'እነዚህ የግብር መጠኖች በቦታ ማስያዝ ሂደት ውስጥ በአውቶማቲክ ይተገበራሉ። ለደንበኞች የሚታዩ የክፍል ዋጋዎች እነዚህን ግብሮች አያካትቱም።'
+          taxInfo: 'እነዚህ የግብር መጠኖች በመያዣ ሂደት ውስጥ በአውቶማቲክ ይተገበራሉ። ለደንበኞች የሚታዩ የክፍል ዋጋዎች እነዚህን ግብሮች አያካትቱም።'
         }
       },
       
       // Offline Booking
       offlineBooking: {
-        title: 'ከመስመር ውጭ የእንግዳ ቦታ ማስያዝ',
-        description: 'የእንግዳ ቦታ ማስያዝ ሂደትን ደረጃ በደረጃ ያጠናቁ',
+        title: 'ከመስመር ውጭ የእንግዳ መያዣ',
+        description: 'የእንግዳ መያዣ ሂደትን ደረጃ በደረጃ ያጠናቁ',
         offlineMode: 'ከመስመር ውጭ ሁኔታ',
         pendingSync: '{{count}} በመመሳሰል ላይ',
         
@@ -488,17 +488,17 @@ export const amTranslations = {
         // Guest Information
         guestInformation: {
           title: 'የእንግዳ መረጃ',
-          description: 'ለቦታ ማስያዝ የእንግዳ ዝርዝሮችን ያስገቡ',
+          description: 'ለመያዣ የእንግዳ ዝርዝሮችን ያስገቡ',
           firstName: 'የመጀመሪያ ስም',
-          lastName: 'የመጨረሻ ስም',
-          email: 'ኢሜል አድራሻ',
+          lastName: 'የአባት ስም',
+          email: 'ኢሜይል አድራሻ',
           phone: 'ስልክ ቁጥር',
           required: 'ይህ መስክ ያስፈልጋል'
         },
         
         // Booking Details
         bookingDetails: {
-          title: 'የቦታ ማስያዝ ዝርዝሮች',
+          title: 'የመያዣ ዝርዝሮች',
           stayDetailsTitle: 'የመቆየት ዝርዝሮች',
           checkInDate: 'የመግቢያ ቀን',
           checkOutDate: 'የመውጫ ቀን',
@@ -508,7 +508,7 @@ export const amTranslations = {
         },        // Guest Search Dialog
         guestSearchDialog: {
           title: 'የበፍታ እንግዶችን መፍተሽ',
-          searchPlaceholder: 'በስም፣ ኢሜል ወይም ስልክ ተፍተሽ',
+          searchPlaceholder: 'በስም፣ ኢሜይል ወይም ስልክ ተፍተሽ',
           searchButton: 'መፍተሽ',
           close: 'ዝጋ',
           noGuestsFound: 'እንግዶች አልተገኙም',
@@ -519,16 +519,16 @@ export const amTranslations = {
         actions: {
           back: 'ወደ ሕላ',
           next: 'ወደ ፍርጽ',
-          loading: 'በመጫን ላይ...',
-          createBooking: 'ቦታ ማስያዝ ፍጠር',
-          creatingBooking: 'ቦታ ማስያዝ በፍጠር ላይ...',
-          confirmBooking: 'ቦታ ማስያዝ ማረጋገጫ',
+          loading: 'በመጫን ሂደት ላይ...',
+          createBooking: 'መያዣ ፍጠር',
+          creatingBooking: 'መያዣ በፍጠር ላይ...',
+          confirmBooking: 'መያዣ ማረጋገጫ',
           backToRoomSelection: 'ወደ ክፍል ምርጫ መለስ'
         },
         
         // Validation Errors
         validationErrors: {
-          fillGuestInfo: 'እባክዎ ሁሉንም የእንግዳ ምሪጫ ሜዳኖችን ይሞሉ',
+          fillGuestInfo: 'እባክዎ ሁሉንም የእንግዳ ምሪጫ ሜዳኖችን ይሙሉ',
           selectRoom: 'እባክዎ ክፍል ይምረጡ',
           invalidEmail: 'እባክዎ ትክክለኛ የኢሜይል አድራሻ ያስገቡ',
           selectDatesAndGuests: 'ቀናትን እና የእንግዶች ቁጥር ይምረጡ',
@@ -538,12 +538,12 @@ export const amTranslations = {
         // Messages
         messages: {
           startOver: 'እንደገና ይጀምሩ',
-          bookingCreated: 'ቦታ ማስያዝ በተሳካ ሁኔታ ተፍጠረ!',
+          bookingCreated: 'መያዣ በተሳካ ሁኔታ ተፍጠረ!',
           confirmationNumber: 'የማረጋገጫ ቁጥር: {{number}}',
-          willSyncWhenOnline: 'የኢንተርነት ክብር ስይፎረ ይህ ቦታ ማስያዝ ይመሳሰል።',
-          bookingFailed: 'ቦታ ማስያዝ ፍጠር አልተሳካም። እባክዎ እንደገና ይሞክሩ።',
+          willSyncWhenOnline: 'የኢንተርነት ክብር ስይፎረ ይህ መያዣ ይመሳሰል።',
+          bookingFailed: 'መያዣ ፍጠር አልተሳካም። እባክዎ እንደገና ይሞክሩ።',
           invalidDates: 'የመውጫ ቀን ከመግቢያ ቀን በሐላ ሞሆን አለበት',
-          fillAllFields: 'እባክዎ ሁሉንም አስፈላጊ ሜዳኖች ይሞሉ'
+          fillAllFields: 'እባክዎ ሁሉንም አስፈላጊ ሜዳኖች ይሙሉ'
         },
         
         // Room Selection
@@ -559,14 +559,14 @@ export const amTranslations = {
           pricingCalculation: '{{pricePerNight}}/ማታ × {{nights}} ማታ',
           selectRoom: 'ክፍል ይምረጡ',
           noRoomsAvailable: 'ለተመረጡት ቀናት ክፍሎች አይገኙም',
-          loadingRooms: 'የሚገኙ ክፍሎች በመጫን ላይ...'
+          loadingRooms: 'የሚገኙ ክፍሎች በመጫን ሂደት ላይ...'
         },
         
         // Confirmation
         confirmation: {
-          title: 'የቦታ ማስያዝ ማረጋገጫ',
-          description: 'የቦታ ማስያዝ ዝርዝሮችን ይገምግሙ እና ያረጋግጡ',
-          bookingSummary: 'የቦታ ማስያዝ ማጠቃለያ',
+          title: 'የመያዣ ማረጋገጫ',
+          description: 'የመያዣ ዝርዝሮችን ይገምግሙ እና ያረጋግጡ',
+          bookingSummary: 'የመያዣ ማጠቃለያ',
           guestInformationTitle: 'የእንግዳ መረጃ',
           roomDetailsTitle: 'የክፍል ዝርዝሮች',
           guestName: 'እንግዳ: {{firstName}} {{lastName}}',
@@ -574,10 +574,10 @@ export const amTranslations = {
           stayDuration: 'ቆይታ: {{checkIn}} እስከ {{checkOut}} ({{nights}} ማታዎች)',
           selectedRoom: 'ክፍል: {{roomNumber}} ({{roomType}})',
           totalCost: 'አጠቃላይ ወጪ: {{total}}',
-          confirmBooking: 'ቦታ ማስያዝን አረጋግጥ',
+          confirmBooking: 'መያዣን አረጋግጥ',
           backToRoomSelection: 'ወደ ክፍል ምርጫ ተመለስ',
           // Additional labels for confirmation section
-          emailLabel: 'ኢሜል:',
+          emailLabel: 'ኢሜይል:',
           phoneLabel: 'ስልክ:',
           roomLabel: 'ክፍል:',
           checkInLabel: 'መግቢያ:',
@@ -586,7 +586,7 @@ export const amTranslations = {
           specialRequestsLabel: 'ልዩ ጥያቄዎች:',
           pricingSummaryTitle: 'የዋጋ ማጠቃለያ',
           totalAmountTitle: 'አጠቃላይ መጠን',
-          paymentNote: 'ክፍያ በሪሴፕሽን ይከናወናል (ኦፍላይን ሁነታ)'
+          paymentNote: 'ክፍያ በሪሴፕሽን ይከናወናል (ከመስመር ውጭ (Offline) ሁነታ)'
         },
         
         // Actions
@@ -595,13 +595,13 @@ export const amTranslations = {
         startOver: 'እንደገና ጀምር',
         
         // Messages
-        bookingCreated: 'ቦታ ማስያዝ በተሳካ ሁኔታ ተፈጠረ!',
+        bookingCreated: 'መያዣ በተሳካ ሁኔታ ተፈጠረ!',
         confirmationNumber: 'የማረጋገጫ ቁጥር: {{number}}',
-        willSyncWhenOnline: 'ይህ ቦታ ማስያዝ የበይነመረብ ግንኙነት ሲመለስ ይመሳሰላል።',
-        bookingFailed: 'ቦታ ማስያዝ መፍጠር አልተሳካም። እባክዎ እንደገና ይሞክሩ።',
+        willSyncWhenOnline: 'ይህ መያዣ የበይነመረብ ግንኙነት ሲመለስ ይመሳሰላል።',
+        bookingFailed: 'መያዣ መፍጠር አልተሳካም። እባክዎ እንደገና ይሞክሩ።',
         invalidDates: 'የመውጫ ቀን ከመግቢያ ቀን በኋላ መሆን አለበት',
         fillAllFields: 'እባክዎ ሁሉንም የሚያስፈልጉ መስኮች ይሙሉ',
-        creatingBooking: 'የእንግዳ ቦታ ማስያዝ በመፍጠር ላይ...'
+        creatingBooking: 'የእንግዳ መያዣ በመፍጠር ሂደት ላይ...'
       },
 
       // Room Management
@@ -623,9 +623,9 @@ export const amTranslations = {
           status: "ሁኔታ",
           currentGuest: "አሁን ያለ እንግዳ",
           capacity: "አቅም",
-          price: "ዋጋ/ሌሊት",
+          price: "በሌሊት ዋጋ",
           available: "ይገኛል",
-          actions: "ተግባራት"
+          actions: "ተይግቡራት"
         },
         searchRooms: "ክፍሎችን ፈልግ...",
         statusFilter: "የሁኔታ ማጣሪያ",
@@ -677,14 +677,14 @@ export const amTranslations = {
       title: "የመያዣ ዝርዝሮችዎን ያስገቡ",
       subtitle: "መያዣዎን ለማግኘት ሁለቱም መስኮች ያስፈልጋሉ",
       fields: {
-        confirmationNumber: "ማጣቀሻ ቁጥር",
+        confirmationNumber: "የማረጋገጫ ቁጥር",
         email: "ኢሜይል አድራሻ",
         confirmationNumberPlaceholder: "የማረጋገጫ ቁጥር ያስገቡ",
         emailPlaceholder: "ኢሜይል አድራሻ ያስገቡ"
       },
       buttons: {
         findBooking: "መያዣ ይፈልጉ",
-        searching: "በመፈለግ ላይ..."
+        searching: "በመፈለግ ሂደት ላይ..."
       },
       errors: {
         bothFieldsRequired: "የማረጋገጫ ቁጥር እና ኢሜይል ሁለቱም ያስፈልጋሉ",
@@ -702,12 +702,12 @@ export const amTranslations = {
           totalAmount: "ጠቅላላ መጠን",
           status: "ሁኔታ",
           paymentStatus: "የክፍያ ሁኔታ",
-          paymentReference: "የክፍያ ማጣቀሻ"
+          paymentReference: "የክፍያ ማረጋገጫ"
         }
       },
       help: {
         title: "እርዳታ ይፈልጋሉ?",
-        description: "መያዣዎን ለማግኘት የማጣቀሻ ቁጥርዎ እና ማስያዝ ሲያደርጉ የተጠቀሙበት ኢሜይል አድራሻ ሁለቱም ያስፈልግዎታል። የማጣቀሻ ቁጥሩ በመያዣ ማረጋገጫ ኢሜይልዎ ውስጥ ሊገኝ ይችላል። መያዣዎን ማግኘት ካልቻሉ እባክዎ ሆቴሉን በቀጥታ ያግኙ።"
+        description: "መያዣዎን ለማግኘት የየማረጋገጫ ቁጥርዎ እና ማስያዝ ሲያደርጉ የተጠቀሙበት ኢሜይል አድራሻ ሁለቱም ያስፈልግዎታል። የማረጋገጫ ቁጥሩ በመያዣ ማረጋገጫ ኢሜይልዎ ውስጥ ሊገኝ ይችላል። መያዣዎን ማግኘት ካልቻሉ እባክዎ ሆቴሉን በቀጥታ ያግኙ።"
       }
     },
     manage: {
@@ -734,7 +734,7 @@ export const amTranslations = {
       numberOfGuests: "የእንግዶች ቁጥር",
       paymentInformation: "የክፍያ መረጃ",
       paymentStatus: "የክፍያ ሁኔታ",
-      paymentReference: "የክፍያ ማጣቀሻ",
+      paymentReference: "የክፍያ ማረጋገጫ",
       modifyDialogTitle: "መያዣዎን ይቀይሩ",
       guestName: "የእንግዳ ስም",
       guestNameHelp: "ለዚህ መያዣ ዋናውን የእንግዳ ስም ያዘምኑ",
@@ -764,7 +764,7 @@ export const amTranslations = {
       processing: "በሂደት ላይ",
       failed: "ተወዳድሯል"
     },
-    guestBooking: "የእንግዳ ቦታ ማስያዝ",
+    guestBooking: "የእንግዳ መያዣ",
     
     // Guest Booking Page
     page: {
@@ -779,7 +779,7 @@ export const amTranslations = {
       guestInformation: "የእንግዳ መረጃ",
       guestDetails: "የእንግዳ ዝርዝሮች",
       firstName: "የመጀመሪያ ስም",
-      lastName: "የመጨረሻ ስም",
+      lastName: "የአባት ስም",
       fullName: "ሙሉ ስም",
       emailAddress: "ኢሜይል አድራሻ",
       phoneNumber: "ስልክ ቁጥር",
@@ -787,7 +787,7 @@ export const amTranslations = {
       nightsPlural: "ሌሊቶች",
       hotelInformation: "የሆቴል መረጃ",
       firstNamePlaceholder: "የመጀመሪያ ስምዎን ያስገቡ",
-      lastNamePlaceholder: "የመጨረሻ ስምዎን ያስገቡ",
+      lastNamePlaceholder: "የአባት ስምዎን ያስገቡ",
       fullNamePlaceholder: "ሙሉ ስምዎን ያስገቡ",
       emailPlaceholder: "ኢሜይል አድራሻዎን ያስገቡ", 
       phonePlaceholder: "ስልክ ቁጥርዎን ያስገቡ (አማራጭ)",
@@ -801,7 +801,7 @@ export const amTranslations = {
       
       // Status and Notices  
       noAccountRequired: "መለያ አያስፈልግም!",
-      secureInformation: "🔒 መረጃዎ በደህንነት የተጠበቀ ሲሆን ለዚህ ቦታ ማስያዝ ብቻ ይጠቅማል",
+      secureInformation: "🔒 መረጃዎ በደህንነት የተጠበቀ ሲሆን ለዚህ መያዣ ብቻ ይጠቅማል",
       
       // Payment Methods
       paymentMethod: "የክፍያ ዘዴ",
@@ -814,14 +814,14 @@ export const amTranslations = {
       // Booking Actions
       bookNow: "አሁን ያስያዙ",
       book: "ያስያዙ",
-      booking: "በመያዝ ላይ...",
+      booking: "በመያዣ ላይ...",
       bookNowWithAmount: "አሁን ያስያዙ - {{amount}} ብር",
       bookWithAmount: "ያስያዙ - {{amount}} ብር",
       processing: "በሂደት ላይ...",
       
       // Security and Payment Info
       securePayment: "በSSL የተመሰጠረ ደህንነታማ የክፍያ ሂደት። ሁሉም ዋና ካርዶች ይቀበላሉ።",
-      paymentInstructions: "የመታወቂያ ካርድ እና የቦታ ማስያዝ ማረጋገጫ ይዘው ይምጡ። የክፍያ ዘዴዎች: ጥሬ ገንዘብ፣ ካርድ፣ ሞባይል።",
+      paymentInstructions: "የመታወቂያ ካርድ እና የመያዣ ማረጋገጫ ይዘው ይምጡ። የክፍያ ዘዴዎች: ጥሬ ገንዘብ፣ ካርድ፣ ሞባይል።",
       
       // Error Messages
       fillAllRequiredFields: "እባክዎ ሁሉንም አስፈላጊ መረጃዎች ይሙሉ",
@@ -829,7 +829,7 @@ export const amTranslations = {
       provideValidEmail: "እባክዎ ትክክለኛ ኢሜይል አድራሻ ያቅርቡ",
       fillCreditCardDetails: "እባክዎ ሁሉንም የክሬዲት ካርድ ዝርዝሮች ይሙሉ",
       provideMobileNumber: "እባክዎ የሞባይል ቁጥር ያቅርቡ",
-      provideMobileReference: "እባክዎ የሞባይል ማስተላለፊያ ማጣቀሻ ቁጥር ያቅርቡ",
+      provideMobileReference: "እባክዎ የሞባይል ማስተላለፊያ የማረጋገጫ ቁጥር ያቅርቡ",
       enterValidMobileNumber: "እባክዎ ትክክለኛ የሞባይል ቁጥር ያስገቡ",
       provideEthiopianMobile: "እባክዎ የኢትዮጵያ ሞባይል ቁጥርዎን ያቅርቡ",
       
@@ -844,14 +844,14 @@ export const amTranslations = {
       completeMobileTransfer: "በሚመርጡት የሞባይል ክፍያ መተግበሪያ የሞባይል ገንዘብ ማስተላለፊያውን ይጨርሱ።",
       transferToMobileOnly: "ማስተላለፊያ ወደ (ሞባይል ገንዘብ ብቻ)",
       yourMobileNumber: "የእርስዎ ሞባይል ቁጥር",
-      mobileTransferReference: "የሞባይል ማስተላለፊያ ማጣቀሻ ቁጥር",
-      enterReferenceNumber: "ከሞባይል ማስተላለፊያዎ የተሰጠዎትን ማጣቀሻ ቁጥር ያስገቡ",
-      provideReferenceHelp: "የሞባይል ገንዘብ ማስተላለፊያውን ከጨረሱ በኋላ የተሰጠዎትን ማጣቀሻ ቁጥር ያቅርቡ",
+      mobileTransferReference: "የሞባይል ማስተላለፊያ የማረጋገጫ ቁጥር",
+      enterReferenceNumber: "ከሞባይል ማስተላለፊያዎ የተሰጠዎትን የማረጋገጫ ቁጥር ያስገቡ",
+      provideReferenceHelp: "የሞባይል ገንዘብ ማስተላለፊያውን ከጨረሱ በኋላ የተሰጠዎትን የማረጋገጫ ቁጥር ያቅርቡ",
       transferExactAmount: "ትክክለኛውን መጠን ያስተላልፉ:",
-      toMobileNumberAbove: "ወደ ላይ ያለው ሞባይል ቁጥር፣ ከዚያም የማስተላለፊያ ማጣቀሻ ቁጥርዎን ያስገቡ።",
+      toMobileNumberAbove: "ወደ ላይ ያለው ሞባይል ቁጥር፣ ከዚያም የማስተላለፊያ የማረጋገጫ ቁጥርዎን ያስገቡ።",
       payAtFrontDeskPayment: "በሪሴፕሽን ክፍያ",
-      reservationConfirmed: "ቦታ ማስያዝዎ ይረጋገጣል። ወደ ሆቴሉ ሲመጡ ይክፈሉ።",
-      bringValidId: "የመታወቂያ ካርድ እና የቦታ ማስያዝ ማረጋገጫ ይዘው ይምጡ። የክፍያ ዘዴዎች: ጥሬ ገንዘብ፣ ካርድ፣ ሞባይል።",
+      reservationConfirmed: "መያዣዎ ይረጋገጣል። ወደ ሆቴሉ ሲመጡ ይክፈሉ።",
+      bringValidId: "የመታወቂያ ካርድ እና የመያዣ ማረጋገጫ ይዘው ይምጡ። የክፍያ ዘዴዎች: ጥሬ ገንዘብ፣ ካርድ፣ ሞባይል።",
       alternative: "አማራጭ",
       
       // Special Requests
@@ -864,10 +864,10 @@ export const amTranslations = {
     },
     
     details: {
-      title: "የቦታ ማስያዝ ዝርዝሮች",
+      title: "የመያዣ ዝርዝሮች",
       guestInformation: "የእንግዳ መረጃ",
       guestName: "የእንግዳ ስም",
-      email: "ኢሜል",
+      email: "ኢሜይል",
       phone: "ስልክ",
       confirmationNumber: "የማረጋገጫ ቁጥር",
       
@@ -889,12 +889,12 @@ export const amTranslations = {
       duration: "ጊዜ",
       
       paymentDetails: "የክፍያ ዝርዝሮች",
-      bookingDate: "የቦታ ማስያዝ ቀን",
+      bookingDate: "የመያዣ ቀን",
       paymentIntentId: "የክፍያ ማንነት ID",
       paymentStatus: "የክፍያ ሁኔታ",
       
       // Actions
-      checkIn: "ወደ ሆቴል ግባ",
+      checkIn: "ወደ ሆቴል ይግቡ",
       checkOut: "ከሆቴል ውጣ",
       cancel: "ቦታ ማስያዙን ሰርዝ",
       modify: "ቦታ ማስያዙን ቀይር",
@@ -910,10 +910,10 @@ export const amTranslations = {
     
     // Booking Management Table
     management: {
-      title: "የቦታ ማስያዝ አማካሪ",
+      title: "የመያዣ አማካሪ",
       searchPlaceholder: "በእንግዳ ስም፣ ማረጋገጫ ቁጥር፣ ክፍል፣ የክፍያ ማመሳከሪያ ወይም የክፍያ ሁኔታ ይፈልጉ...",
       refresh: "አድስ",
-      noBookingsFound: "ምንም ቦታ ማስያዝ አልተገኘም",
+      noBookingsFound: "ምንም መያዣ አልተገኘም",
       loading: "ቦታ ማስያዞች እየተጫኑ ነው...",
       
       // Table Headers
@@ -921,7 +921,7 @@ export const amTranslations = {
         confirmationNumber: "ማረጋገጫ ቁጥር",
         guest: "እንግዳ",
         room: "ክፍል",
-        checkIn: "መግባት",
+        checkIn: "መይግቡት",
         checkOut: "መውጣት",
         paymentRef: "የክፍያ ማመሳከሪያ",
         paymentStatus: "የክፍያ ሁኔታ",
@@ -956,7 +956,7 @@ export const amTranslations = {
       dialogs: {
         deleteConfirm: {
           title: "መሰረዝን አረጋግጥ",
-          message: "የ{{guestName}}ን ቦታ ማስያዝ መሰረዝ እርግጠኛ ነዎት? ይህ ድርጊት መመለስ አይቻልም።",
+          message: "የ{{guestName}}ን መያዣ መሰረዝ እርግጠኛ ነዎት? ይህ ድርጊት መመለስ አይቻልም።",
           cancel: "ሰርዝ",
           delete: "ሰርዝ"
         },
@@ -1028,7 +1028,7 @@ export const amTranslations = {
       mobilePaymentPhone2: "የሞባይል ክፍያ ስልክ 2 (አማራጭ)",
       mobilePaymentPhone2Placeholder: "ሁለተኛ የሞባይል ክፍያ ስልክ ያስገቡ",
       mobilePaymentPhone2Helper: "አማራጭ ሁለተኛ የሞባይል ገንዘብ መለያ",
-      contactEmail: "የመገናኛ ኢሜል",
+      contactEmail: "የመገናኛ ኢሜይል",
       
       pricing: "የዋጋ አወጣጥ",
       currency: "ምንዛሬ",
@@ -1120,7 +1120,7 @@ export const amTranslations = {
       // Actions
       cancel: "ሰርዝ",
       save: "ወደ ፋይል አስቀምጥ",
-      loading: "በመጫን ላይ...",
+      loading: "በመጫን ሂደት ላይ...",
       
       // Error Messages
       errors: {
@@ -1150,7 +1150,7 @@ export const amTranslations = {
       personalInfo: "ግላዊ መረጃ",
       firstName: "የመጀመሪያ ስም",
       lastName: "የአባት ስም",
-      email: "ኢሜል",
+      email: "ኢሜይል",
       phone: "ስልክ",
       role: "ሚና",
       department: "ክፍል",
@@ -1183,7 +1183,7 @@ export const amTranslations = {
     noNotifications: "አዲስ ማሳወቂያ የለም",
     
     types: {
-      booking: "አዲስ ቦታ ማስያዝ",
+      booking: "አዲስ መያዣ",
       checkin: "መግቢያ ዝግጁ",
       checkout: "መውጫ ጥያቄ",
       payment: "ክፍያ ተቀብሏል",
@@ -1203,7 +1203,7 @@ export const amTranslations = {
     official: "ይፋዊ ደረሰኝ",
     guestInformation: "የእንግዳ መረጃ",
     fullName: "ሙሉ ስም",
-    email: "ኢሜል",
+    email: "ኢሜይል",
     phone: "ስልክ",
     confirmation: "ማረጋገጫ",
     guests: "እንግዶች",
@@ -1273,7 +1273,7 @@ export const amTranslations = {
   errors: {
     pageNotFound: "ገጽ አልተገኘም",
     sessionExpired: "ክፍለ ጊዜ አልቋል",
-    loading: "በመጫን ላይ...",
+    loading: "በመጫን ሂደት ላይ...",
     networkError: "የአውታረ መረብ ስህተት",
     serverError: "የአገልጋይ ስህተት",
     unauthorized: "ያልተፈቀደ መዳረሻ",
@@ -1281,7 +1281,7 @@ export const amTranslations = {
     
     // Form Validation
     required: "ይህ መስክ ያስፈልጋል",
-    invalidEmail: "እባክዎ ትክክለኛ ኢሜል አድራሻ ያስገቡ",
+    invalidEmail: "እባክዎ ትክክለኛ ኢሜይል አድራሻ ያስገቡ",
     invalidPhone: "እባክዎ ትክክለኛ ስልክ ቁጥር ያስገቡ",
     passwordTooShort: "የይለፍ ቃል ቢያንስ {min} ቁምፊዎች ሊኖረው ይገባል",
     passwordsNoMatch: "የይለፍ ቃሎች አይመሳሰሉም",
@@ -1310,7 +1310,7 @@ export const amTranslations = {
       rooms: "ክፍሎች",
       roomsPlaceholder: "የክፍሎች ቁጥር",
       searchButton: "ሆቴሎች ፈልግ",
-      searching: "ሆቴሎችን በመፈለግ ላይ..."
+      searching: "ሆቴሎችን በመፈለግ ሂደት ላይ..."
     },
     alreadyHaveBooking: {
       title: "ቀደም ሲል ያስያዝ ነበር?",
@@ -1344,8 +1344,8 @@ export const amTranslations = {
     }
   },
   walkInBooking: {
-    title: 'የእንግዳ ቦታ ማስያዝ',
-    subtitle: 'የእንግዳ ቦታ ማስያዝ ሂደትን ደረጃ በደረጃ ያጠናቅቁ',
+    title: 'የእንግዳ መያዣ',
+    subtitle: 'የእንግዳ መያዣ ሂደትን ደረጃ በደረጃ ያጠናቅቁ',
     steps: {
       guestInformation: 'የእንግዳ መረጃ',
       roomSelection: 'ክፍል ምርጫ',
@@ -1378,7 +1378,7 @@ export const amTranslations = {
       totalAmount: 'ጠቅላላ ዋጋ',
       noRoomsAvailable: 'ለተመረጡት ቀናት ክፍሎች የሉም',
       description: 'ለ{{guests}} እንግዳ{{guestsPlural}} ከ{{checkIn}} እስከ {{checkOut}} ያሉ ክፍሎች',
-      loadingRooms: 'የሚገኙ ክፍሎች በመጫን ላይ...',
+      loadingRooms: 'የሚገኙ ክፍሎች በመጫን ሂደት ላይ...',
       specialRequests: 'ልዩ ጥያቄዎች (አማራጭ)',
       specialRequestsPlaceholder: 'ለእንግዳው መቆያ ማንኛውም ልዩ ጥያቄዎች ወይም ማስታወሻዎች...',
       roomNumber: 'ክፍል',
@@ -1388,14 +1388,14 @@ export const amTranslations = {
       perNightShort: '/ሌሊት'
     },
     confirmation: {
-      title: 'የቦታ ማስያዝ ማረጋገጫ',
+      title: 'የመያዣ ማረጋገጫ',
       guestDetails: 'የእንግዳ ዝርዝሮች',
       stayDetails: 'የመቆያ ዝርዝሮች',
       roomDetails: 'የክፍል ዝርዝሮች',
       totalCost: 'ጠቅላላ ወጪ',
       paymentMethod: 'የመክፈያ መንገድ',
-      bookingConfirmationTitle: 'የቦታ ማስያዝ ማረጋገጫ',
-      reviewDetails: 'እባክዎ ከማረጋገጥዎ በፊት የቦታ ማስያዝ ዝርዝሮችዎን ይገምግሙ',
+      bookingConfirmationTitle: 'የመያዣ ማረጋገጫ',
+      reviewDetails: 'እባክዎ ከማረጋገጥዎ በፊት የመያዣ ዝርዝሮችዎን ይገምግሙ',
       guestInformation: 'የእንግዳ መረጃ',
       fullName: 'ሙሉ ስም',
       emailAddress: 'የኢሜይል አድራሻ',
@@ -1423,11 +1423,11 @@ export const amTranslations = {
     actions: {
       next: 'ቀጣይ',
       previous: 'ቀዳሚ',
-      confirm: 'ቦታ ማስያዝ አረጋግጥ',
+      confirm: 'መያዣ አረጋግጥ',
       cancel: 'ሰርዝ',
       startOver: 'እንደገና ጀምር',
       back: 'ተመለስ',
-      loadingRooms: 'ክፍሎች በመጫን ላይ...'
+      loadingRooms: 'ክፍሎች በመጫን ሂደት ላይ...'
     },
     validationErrors: {
       firstNameRequired: 'የመጀመሪያ ስም ያስፈልጋል',
@@ -1442,13 +1442,13 @@ export const amTranslations = {
       roomRequired: 'እባክዎ ክፍል ይምረጡ'
     },
     messages: {
-      bookingCreated: 'ቦታ ማስያዝ በተሳካ ሁኔታ ተፈጥሯል!',
+      bookingCreated: 'መያዣ በተሳካ ሁኔታ ተፈጥሯል!',
       confirmationNumber: 'የማረጋገጫ ቁጥር: {{number}}',
-      willSyncWhenOnline: 'ይህ ቦታ ማስያዝ የበይነመረብ ግንኙነት ሲመለስ ይመሳሰላል።',
-      bookingFailed: 'ቦታ ማስያዝ መፍጠር አልተሳካም። እባክዎ እንደገና ይሞክሩ።',
-      creatingBooking: 'የእንግዳ ቦታ ማስያዝ በመፍጠር ላይ...',
+      willSyncWhenOnline: 'ይህ መያዣ የበይነመረብ ግንኙነት ሲመለስ ይመሳሰላል።',
+      bookingFailed: 'መያዣ መፍጠር አልተሳካም። እባክዎ እንደገና ይሞክሩ።',
+      creatingBooking: 'የእንግዳ መያዣ በመፍጠር ሂደት ላይ...',
       failedToLoadHotel: 'የሆቴል መረጃ መጫን አልተሳካም',
-      failedToLoadHotelPermissions: 'የሆቴል መረጃ መጫን አልተሳካም። እባክዎ ተገቢ ፈቃዶች ኖሯዎት መግባትዎን ያረጋግጡ።',
+      failedToLoadHotelPermissions: 'የሆቴል መረጃ መጫን አልተሳካም። እባክዎ ተገቢ ፈቃዶች ኖሯዎት መይግቡትዎን ያረጋግጡ።',
       failedToLoadRooms: 'የሚገኙ ክፍሎች መጫን አልተሳካም። እባክዎ እንደገና ይሞክሩ።'
     }
   },
@@ -1726,7 +1726,7 @@ export const amTranslations = {
     selectPaymentMethod: "የክፍያ ዘዴ ይምረጡ",
     paymentSuccessful: "ክፍያ ተሳክቷል!",
     paymentProcessedSuccessfully: "ክፍያው በተሳካ ሁኔታ ተሰራ",
-    referenceNumber: "ማጣቀሻ ቁጥር:",
+    referenceNumber: "የማረጋገጫ ቁጥር:",
     completingYourOrder: "ትዕዛዝዎን እያጠናቀቅን ነው...",
     processing: "በሂደት ላይ...",
     cancel: "ሰርዝ",
@@ -1842,16 +1842,16 @@ export const amTranslations = {
   // Booking Confirmation Page
   bookingConfirmation: {
     title: "ማስያዝ ተረጋግጧል!",
-    subtitle: "የቦታ ማስያዝዎ በተሳካ ሁኔታ ተፈጥሯል",
+    subtitle: "የመያዣዎ በተሳካ ሁኔታ ተፈጥሯል",
     confirmationLabel: "ማረጋገጫ: {{confirmationNumber}}",
     
     // Loading states
-    loading: "የማስያዝ ማረጋገጫ በመጫን ላይ...",
-    loadingSubtitle: "የቦታ ማስያዝዎን ዝርዝሮች በምናገኝበት ጊዜ እባክዎ ይጠብቁ",
+    loading: "የማስያዝ ማረጋገጫ በመጫን ሂደት ላይ...",
+    loadingSubtitle: "የመያዣዎን ዝርዝሮች በምናገኝበት ጊዜ እባክዎ ይጠብቁ",
     
     // Error states
     errorNotFound: "ማስያዝ አልተገኘም",
-    errorDescription: "የቦታ ማስያዝዎን መረጃ ማግኘት አልቻልንም። እባክዎ የማረጋገጫ ቁጥርዎን ያረጋግጡ ወይም እንደገና ይሞክሩ።",
+    errorDescription: "የመያዣዎን መረጃ ማግኘት አልቻልንም። እባክዎ የማረጋገጫ ቁጥርዎን ያረጋግጡ ወይም እንደገና ይሞክሩ።",
     
     // Action buttons
     actions: {
@@ -1956,7 +1956,7 @@ export const amTranslations = {
     bookings: "ማስያዞች",
     profile: "መገለጫ",
     logout: "ውጣ",
-    dashboard: "ዳሽቦርድ",
+    dashboard: "መቆጣጠሪያ ገፅ",
     shop: "ሱቅ",
     products: "ምርቶች",
     orders: "ትዕዛዞች"
@@ -1965,19 +1965,19 @@ export const amTranslations = {
   // Widgets
   widgets: {
     todos: {
-      title: "ተግባራት",
-      addPlaceholder: "አዲስ ተግባር ጨምር...",
+      title: "ተይግቡራት",
+      addPlaceholder: "አዲስ ተይግቡር ጨምር...",
       priority: "ቅድሚያ",
       priorityHigh: "ከፍተኛ",
       priorityMedium: "መካከለኛ",
       priorityLow: "ዝቅተኛ",
       addButton: "ጨምር",
-      noTodos: "እስካሁን ተግባራት የሉም። ከላይ አንዱን ጨምር!",
-      loadingTodos: "ተግባራት በመጫን ላይ...",
-      failedToLoad: "ተግባራት መጫን አልተሳካም",
-      failedToCreate: "ተግባር መፍጠር አልተሳካም",
-      failedToUpdate: "ተግባር ማዘመን አልተሳካም",
-      failedToDelete: "ተግባር መሰረዝ አልተሳካም"
+      noTodos: "እስካሁን ተይግቡራት የሉም። ከላይ አንዱን ጨምር!",
+      loadingTodos: "ተይግቡራት በመጫን ሂደት ላይ...",
+      failedToLoad: "ተይግቡራት መጫን አልተሳካም",
+      failedToCreate: "ተይግቡር መፍጠር አልተሳካም",
+      failedToUpdate: "ተይግቡር ማዘመን አልተሳካም",
+      failedToDelete: "ተይግቡር መሰረዝ አልተሳካም"
     },
     calendar: {
       title: "የቀን መቁጠሪያ",
