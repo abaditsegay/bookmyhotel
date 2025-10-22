@@ -170,4 +170,37 @@ public class BookingNotificationResponse {
     public void setUpdatedBy(String updatedBy) {
         this.updatedBy = updatedBy;
     }
+
+    /**
+     * Calculate the net amount for this notification
+     * Positive values indicate customer owes money
+     * Negative values indicate refund is due
+     * Zero indicates no payment changes
+     */
+    public BigDecimal getNetAmount() {
+        BigDecimal charges = additionalCharges != null ? additionalCharges : BigDecimal.ZERO;
+        BigDecimal refund = refundAmount != null ? refundAmount : BigDecimal.ZERO;
+        return charges.subtract(refund);
+    }
+
+    /**
+     * Get a human-readable description of the net amount
+     */
+    public String getNetAmountDescription() {
+        BigDecimal netAmount = getNetAmount();
+        if (netAmount.compareTo(BigDecimal.ZERO) > 0) {
+            return "Customer owes: " + netAmount;
+        } else if (netAmount.compareTo(BigDecimal.ZERO) < 0) {
+            return "Refund due: " + netAmount.abs();
+        } else {
+            return "No payment changes";
+        }
+    }
+
+    /**
+     * Check if this notification has any financial implications
+     */
+    public boolean hasFinancialImplications() {
+        return getNetAmount().compareTo(BigDecimal.ZERO) != 0;
+    }
 }

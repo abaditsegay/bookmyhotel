@@ -5,8 +5,8 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -17,16 +17,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Caching;
 
 import com.bookmyhotel.config.CacheConfig;
-
 import com.bookmyhotel.dto.BookingCancellationRequest;
 import com.bookmyhotel.dto.BookingModificationRequest;
 import com.bookmyhotel.dto.BookingModificationResponse;
@@ -1382,6 +1381,7 @@ public class BookingService {
                         "Modifications must be made at least 24 hours before check-in");
             }
 
+            BigDecimal totalPriceDifference = BigDecimal.ZERO; // Track total net difference
             BigDecimal additionalCharges = BigDecimal.ZERO;
             BigDecimal refundAmount = BigDecimal.ZERO;
 
@@ -1423,15 +1423,10 @@ public class BookingService {
                     return new BookingModificationResponse(false, "Error calculating price difference");
                 }
 
-                if (priceDifference.compareTo(BigDecimal.ZERO) > 0) {
-                    additionalCharges = priceDifference.setScale(2, RoundingMode.HALF_UP);
-                    logger.info("Additional charges calculated: {} for reservation {}",
-                            additionalCharges, reservation.getConfirmationNumber());
-                } else if (priceDifference.compareTo(BigDecimal.ZERO) < 0) {
-                    refundAmount = priceDifference.abs().setScale(2, RoundingMode.HALF_UP);
-                    logger.info("Refund amount calculated: {} for reservation {}",
-                            refundAmount, reservation.getConfirmationNumber());
-                }
+                // Accumulate price difference (positive = customer owes, negative = refund due)
+                totalPriceDifference = totalPriceDifference.add(priceDifference);
+                logger.info("Date change price difference: {} for reservation {}, running total: {}",
+                        priceDifference, reservation.getConfirmationNumber(), totalPriceDifference);
 
                 // Update dates
                 reservation.setCheckInDate(newCheckIn);
@@ -1528,13 +1523,10 @@ public class BookingService {
                     logger.info("New room price: {} per night, total: {}, difference: {}",
                             newRoom.getPricePerNight(), newRoomTotal, roomPriceDifference);
 
-                    if (roomPriceDifference.compareTo(BigDecimal.ZERO) > 0) {
-                        additionalCharges = additionalCharges.add(roomPriceDifference);
-                        logger.info("Additional charges: {}", roomPriceDifference);
-                    } else if (roomPriceDifference.compareTo(BigDecimal.ZERO) < 0) {
-                        refundAmount = refundAmount.add(roomPriceDifference.abs());
-                        logger.info("Refund amount: {}", roomPriceDifference.abs());
-                    }
+                    // Accumulate room price difference to total
+                    totalPriceDifference = totalPriceDifference.add(roomPriceDifference);
+                    logger.info("Room price difference: {}, total difference so far: {}",
+                            roomPriceDifference, totalPriceDifference);
 
                     // Update room, room type, and total amount
                     Room oldRoom = reservation.getRoom();
@@ -1594,6 +1586,24 @@ public class BookingService {
 
             // Update modification timestamp
             reservation.setUpdatedAt(LocalDateTime.now());
+
+            // Calculate final amounts based on total price difference
+            if (totalPriceDifference.compareTo(BigDecimal.ZERO) > 0) {
+                // Customer owes additional amount
+                additionalCharges = totalPriceDifference;
+                refundAmount = BigDecimal.ZERO;
+                logger.info("Final calculation: Customer owes ${}", additionalCharges);
+            } else if (totalPriceDifference.compareTo(BigDecimal.ZERO) < 0) {
+                // Customer is owed a refund
+                additionalCharges = BigDecimal.ZERO;
+                refundAmount = totalPriceDifference.abs();
+                logger.info("Final calculation: Customer receives refund of ${}", refundAmount);
+            } else {
+                // No financial change
+                additionalCharges = BigDecimal.ZERO;
+                refundAmount = BigDecimal.ZERO;
+                logger.info("Final calculation: No financial implications");
+            }
 
             // Save the updated reservation
             reservation = reservationRepository.save(reservation);
@@ -1826,6 +1836,7 @@ public class BookingService {
 
             BigDecimal additionalCharges = BigDecimal.ZERO;
             BigDecimal refundAmount = BigDecimal.ZERO;
+            BigDecimal totalPriceDifference = BigDecimal.ZERO; // Track net price difference
 
             // Handle date modifications
             if (request.getNewCheckInDate() != null || request.getNewCheckOutDate() != null) {
@@ -1855,11 +1866,10 @@ public class BookingService {
                 BigDecimal priceDifference = reservation.getRoom().getPricePerNight()
                         .multiply(BigDecimal.valueOf(newNights - oldNights));
 
-                if (priceDifference.compareTo(BigDecimal.ZERO) > 0) {
-                    additionalCharges = priceDifference;
-                } else if (priceDifference.compareTo(BigDecimal.ZERO) < 0) {
-                    refundAmount = priceDifference.abs();
-                }
+                // Accumulate date price difference to total
+                totalPriceDifference = totalPriceDifference.add(priceDifference);
+                logger.info("Date price difference: {}, total difference so far: {}",
+                        priceDifference, totalPriceDifference);
 
                 // Update dates
                 reservation.setCheckInDate(newCheckIn);
@@ -1934,11 +1944,10 @@ public class BookingService {
                 BigDecimal newRoomTotal = newRoom.getPricePerNight().multiply(BigDecimal.valueOf(nights));
                 BigDecimal roomPriceDifference = newRoomTotal.subtract(oldRoomTotal);
 
-                if (roomPriceDifference.compareTo(BigDecimal.ZERO) > 0) {
-                    additionalCharges = additionalCharges.add(roomPriceDifference);
-                } else if (roomPriceDifference.compareTo(BigDecimal.ZERO) < 0) {
-                    refundAmount = refundAmount.add(roomPriceDifference.abs());
-                }
+                // Accumulate room price difference to total
+                totalPriceDifference = totalPriceDifference.add(roomPriceDifference);
+                logger.info("Room price difference: {}, total difference so far: {}",
+                        roomPriceDifference, totalPriceDifference);
 
                 // Update room and total amount
                 reservation.setRoom(newRoom);
@@ -1957,6 +1966,24 @@ public class BookingService {
 
             // Update modification timestamp
             reservation.setUpdatedAt(LocalDateTime.now());
+
+            // Calculate final amounts based on total price difference
+            if (totalPriceDifference.compareTo(BigDecimal.ZERO) > 0) {
+                // Customer owes additional amount
+                additionalCharges = totalPriceDifference;
+                refundAmount = BigDecimal.ZERO;
+                logger.info("Final calculation: Customer owes ${}", additionalCharges);
+            } else if (totalPriceDifference.compareTo(BigDecimal.ZERO) < 0) {
+                // Customer is owed a refund
+                additionalCharges = BigDecimal.ZERO;
+                refundAmount = totalPriceDifference.abs();
+                logger.info("Final calculation: Customer receives refund of ${}", refundAmount);
+            } else {
+                // No financial change
+                additionalCharges = BigDecimal.ZERO;
+                refundAmount = BigDecimal.ZERO;
+                logger.info("Final calculation: No financial implications");
+            }
 
             // Save the updated reservation
             reservation = reservationRepository.save(reservation);
