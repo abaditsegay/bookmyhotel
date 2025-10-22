@@ -131,11 +131,11 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
     
     switch (normalizedSeverity) {
       case 'HIGH': 
-        return <CircleIcon sx={{ fontSize: '16px', color: '#f44336' }} />; // Red
+        return <CircleIcon style={{ fontSize: '16px', color: '#f44336' }} />; // Red
       case 'MEDIUM': 
-        return <CircleIcon sx={{ fontSize: '16px', color: '#ff9800' }} />; // Orange/Yellow
+        return <CircleIcon style={{ fontSize: '16px', color: '#ff9800' }} />; // Orange/Yellow
       case 'LOW': 
-        return <CircleIcon sx={{ fontSize: '16px', color: '#4caf50' }} />; // Green
+        return <CircleIcon style={{ fontSize: '16px', color: '#4caf50' }} />; // Green
       default: 
         return <CircleIcon sx={{ fontSize: '16px', color: theme.palette.info.main }} />;
     }
@@ -246,22 +246,30 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
               value={severity}
               label={t('widgets.todos.priority')}
               onChange={handleSeverityChange}
+              renderValue={(value) => (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  {getSeverityBalloon(value)}
+                  {value === 'HIGH' ? t('widgets.todos.priorityHigh') : 
+                   value === 'MEDIUM' ? t('widgets.todos.priorityMedium') : 
+                   t('widgets.todos.priorityLow')}
+                </Box>
+              )}
             >
               <MenuItem value="HIGH">
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <CircleIcon sx={{ fontSize: '14px', color: '#f44336' }} />
+                  <CircleIcon style={{ fontSize: '14px', color: '#f44336' }} />
                   {t('widgets.todos.priorityHigh')}
                 </Box>
               </MenuItem>
               <MenuItem value="MEDIUM">
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <CircleIcon sx={{ fontSize: '14px', color: '#ff9800' }} />
+                  <CircleIcon style={{ fontSize: '14px', color: '#ff9800' }} />
                   {t('widgets.todos.priorityMedium')}
                 </Box>
               </MenuItem>
               <MenuItem value="LOW">
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <CircleIcon sx={{ fontSize: '14px', color: '#4caf50' }} />
+                  <CircleIcon style={{ fontSize: '14px', color: '#4caf50' }} />
                   {t('widgets.todos.priorityLow')}
                 </Box>
               </MenuItem>
