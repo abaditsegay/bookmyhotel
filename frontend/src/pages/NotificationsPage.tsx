@@ -218,53 +218,64 @@ const NotificationsPage: React.FC = () => {
               </TableCell>
               <TableCell>
                 <Box>
-                  {notification.refundAmount && notification.refundAmount > 0 && (
-                    <Typography 
-                      variant="body2" 
-                      color="success.main" 
-                      fontWeight={notification.status === 'UNREAD' ? 'bold' : 'normal'}
-                      sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
-                    >
-                      ↩️ Hotel owes: {formatCurrency(notification.refundAmount)}
-                    </Typography>
-                  )}
-                  {notification.additionalCharges && notification.additionalCharges > 0 && (
-                    <Typography 
-                      variant="body2" 
-                      color="warning.main" 
-                      fontWeight={notification.status === 'UNREAD' ? 'bold' : 'normal'}
-                      sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
-                    >
-                      💳 Guest owes: {formatCurrency(notification.additionalCharges)}
-                    </Typography>
-                  )}
-                  {/* Only show "No payment changes" if BOTH amounts are explicitly 0 or null AND this is a modification */}
-                  {notification.type === 'MODIFIED' &&
-                   (notification.refundAmount === 0 || !notification.refundAmount) && 
-                   (notification.additionalCharges === 0 || !notification.additionalCharges) && (
-                    <Typography variant="body2" color="text.secondary">
-                      No payment changes
-                    </Typography>
-                  )}
-                  {/* For cancellations, show appropriate refund status */}
-                  {notification.type === 'CANCELLED' && (
-                    <>
-                      {notification.refundAmount && notification.refundAmount > 0 ? (
-                        <Typography 
-                          variant="body2" 
-                          color="success.main" 
-                          fontWeight={notification.status === 'UNREAD' ? 'bold' : 'normal'}
-                          sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
-                        >
-                          ↩️ Refund due: {formatCurrency(notification.refundAmount)}
-                        </Typography>
-                      ) : (
-                        <Typography variant="body2" color="text.secondary">
-                          No refund applicable
-                        </Typography>
-                      )}
-                    </>
-                  )}
+                  {(() => {
+                    const refund = notification.refundAmount || 0;
+                    const charges = notification.additionalCharges || 0;
+                    const netAmount = charges - refund;
+                    
+                    if (notification.type === 'CANCELLED') {
+                      // For cancellations, only show refund status
+                      if (refund > 0) {
+                        return (
+                          <Typography 
+                            variant="body2" 
+                            color="success.main" 
+                            fontWeight={notification.status === 'UNREAD' ? 'bold' : 'normal'}
+                            sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                          >
+                            ↩️ Refund due: {formatCurrency(refund)}
+                          </Typography>
+                        );
+                      } else {
+                        return (
+                          <Typography variant="body2" color="text.secondary">
+                            No change
+                          </Typography>
+                        );
+                      }
+                    } else {
+                      // For modifications, show net amount
+                      if (netAmount > 0) {
+                        return (
+                          <Typography 
+                            variant="body2" 
+                            color="warning.main" 
+                            fontWeight={notification.status === 'UNREAD' ? 'bold' : 'normal'}
+                            sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                          >
+                            💳 Customer owes: {formatCurrency(netAmount)}
+                          </Typography>
+                        );
+                      } else if (netAmount < 0) {
+                        return (
+                          <Typography 
+                            variant="body2" 
+                            color="success.main" 
+                            fontWeight={notification.status === 'UNREAD' ? 'bold' : 'normal'}
+                            sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                          >
+                            ↩️ Refund due: {formatCurrency(Math.abs(netAmount))}
+                          </Typography>
+                        );
+                      } else {
+                        return (
+                          <Typography variant="body2" color="text.secondary">
+                            No payment changes
+                          </Typography>
+                        );
+                      }
+                    }
+                  })()}
                 </Box>
               </TableCell>
               <TableCell>
@@ -465,7 +476,7 @@ const NotificationsPage: React.FC = () => {
                   {(!selectedNotification.refundAmount || selectedNotification.refundAmount === 0) && (
                     <Alert severity="info" sx={{ mt: 2 }}>
                       <Typography>
-                        <strong>ℹ️ No Refund:</strong> No refund is required for this cancellation.
+                        <strong>ℹ️ No Change:</strong> No refund is required for this cancellation.
                       </Typography>
                     </Alert>
                   )}
@@ -486,29 +497,37 @@ const NotificationsPage: React.FC = () => {
                   
                   {/* Payment Information Section */}
                   <Box sx={{ mt: 2 }}>
-                    {selectedNotification.additionalCharges && selectedNotification.additionalCharges > 0 && (
-                      <Alert severity="warning" sx={{ mb: 1 }}>
-                        <Typography>
-                          <strong>💳 Additional Payment Required:</strong> The guest needs to pay an additional {formatCurrency(selectedNotification.additionalCharges)}.
-                        </Typography>
-                      </Alert>
-                    )}
-                    {selectedNotification.refundAmount && selectedNotification.refundAmount > 0 && (
-                      <Alert severity="success" sx={{ mb: 1 }}>
-                        <Typography>
-                          <strong>💰 Refund Due:</strong> The hotel must refund {formatCurrency(selectedNotification.refundAmount)} to the guest.
-                        </Typography>
-                      </Alert>
-                    )}
-                    {/* Fixed logic: Only show "No Payment Changes" if BOTH amounts are explicitly zero or null/undefined */}
-                    {((selectedNotification.additionalCharges ?? 0) <= 0) && 
-                     ((selectedNotification.refundAmount ?? 0) <= 0) && (
-                      <Alert severity="info">
-                        <Typography>
-                          <strong>ℹ️ No Payment Changes:</strong> This modification does not require any additional payment or refund.
-                        </Typography>
-                      </Alert>
-                    )}
+                    {(() => {
+                      const refund = selectedNotification.refundAmount || 0;
+                      const charges = selectedNotification.additionalCharges || 0;
+                      const netAmount = charges - refund;
+                      
+                      if (netAmount > 0) {
+                        return (
+                          <Alert severity="warning" sx={{ mb: 1 }}>
+                            <Typography>
+                              <strong>💳 Additional Payment Required:</strong> The customer needs to pay an additional {formatCurrency(netAmount)}.
+                            </Typography>
+                          </Alert>
+                        );
+                      } else if (netAmount < 0) {
+                        return (
+                          <Alert severity="success" sx={{ mb: 1 }}>
+                            <Typography>
+                              <strong>💰 Refund Due:</strong> The hotel must refund {formatCurrency(Math.abs(netAmount))} to the customer.
+                            </Typography>
+                          </Alert>
+                        );
+                      } else {
+                        return (
+                          <Alert severity="info">
+                            <Typography>
+                              <strong>ℹ️ No Payment Changes:</strong> This modification does not require any additional payment or refund.
+                            </Typography>
+                          </Alert>
+                        );
+                      }
+                    })()}
                   </Box>
 
                   {/* Complete Notification History Section */}
@@ -609,19 +628,47 @@ const NotificationsPage: React.FC = () => {
                                   </Typography>
                                 </TableCell>
                                 <TableCell>
-                                  {(notification.additionalCharges ?? 0) > 0 ? (
-                                    <Typography variant="body2" color="warning.main">
-                                      +ETB {notification.additionalCharges!.toFixed(2)}
-                                    </Typography>
-                                  ) : (notification.refundAmount ?? 0) > 0 ? (
-                                    <Typography variant="body2" color="success.main">
-                                      -ETB {notification.refundAmount!.toFixed(2)}
-                                    </Typography>
-                                  ) : (
-                                    <Typography variant="body2" color="textSecondary">
-                                      ETB {notification.checkInDate ? '0.00' : '-'}
-                                    </Typography>
-                                  )}
+                                  {(() => {
+                                    const refund = notification.refundAmount || 0;
+                                    const charges = notification.additionalCharges || 0;
+                                    const netAmount = charges - refund;
+                                    
+                                    if (notification.type === 'CANCELLED') {
+                                      if (refund > 0) {
+                                        return (
+                                          <Typography variant="body2" color="success.main">
+                                            -ETB {refund.toFixed(2)}
+                                          </Typography>
+                                        );
+                                      } else {
+                                        return (
+                                          <Typography variant="body2" color="textSecondary">
+                                            ETB 0.00
+                                          </Typography>
+                                        );
+                                      }
+                                    } else {
+                                      if (netAmount > 0) {
+                                        return (
+                                          <Typography variant="body2" color="warning.main">
+                                            +ETB {netAmount.toFixed(2)}
+                                          </Typography>
+                                        );
+                                      } else if (netAmount < 0) {
+                                        return (
+                                          <Typography variant="body2" color="success.main">
+                                            -ETB {Math.abs(netAmount).toFixed(2)}
+                                          </Typography>
+                                        );
+                                      } else {
+                                        return (
+                                          <Typography variant="body2" color="textSecondary">
+                                            ETB 0.00
+                                          </Typography>
+                                        );
+                                      }
+                                    }
+                                  })()}
                                 </TableCell>
                                 <TableCell>
                                   <Typography variant="body2">

@@ -277,10 +277,14 @@ const BookingViewEdit: React.FC = () => {
           setSelectedRoomId(null);
           
           let message = 'Booking updated successfully';
-          if (result.data.additionalCharges && result.data.additionalCharges > 0) {
-            message += ` (Additional charges: ETB ${result.data.additionalCharges?.toFixed(0)})`;
-          } else if (result.data.refundAmount && result.data.refundAmount > 0) {
-            message += ` (Refund amount: ETB ${result.data.refundAmount?.toFixed(0)})`;
+          const refund = result.data.refundAmount || 0;
+          const charges = result.data.additionalCharges || 0;
+          const netAmount = charges - refund;
+          
+          if (netAmount > 0) {
+            message += ` (Customer owes: ETB ${netAmount.toFixed(0)})`;
+          } else if (netAmount < 0) {
+            message += ` (Refund due: ETB ${Math.abs(netAmount).toFixed(0)})`;
           }
           setSuccess(message);
         } else {
