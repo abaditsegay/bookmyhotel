@@ -670,26 +670,11 @@ export const SystemDashboardPage: React.FC = () => {
       {/* API Documentation Tab */}
       {isSystemAdmin && (
         <TabPanel value={activeTab} index={2}>
-          <Typography variant="h5" sx={{ mb: 3, fontWeight: 'bold' }}>
-            API Documentation
-          </Typography>
-          
           <Grid container spacing={3}>
             {/* API Documentation Card */}
-            <Grid item xs={12} lg={8}>
+            <Grid item xs={12}>
               <Card sx={{ height: '100%' }}>
                 <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <ApiIcon sx={{ mr: 1, color: 'primary.main' }} />
-                    <Typography variant="h6" component="h2">
-                      API Documentation
-                    </Typography>
-                  </Box>
-                  
-                  <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
-                    Complete API reference for the BookMyHotel application. All endpoints support JWT authentication.
-                  </Typography>
-
                   {/* Search and Filter Controls */}
                   <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
                     {/* Search Field */}
@@ -918,66 +903,6 @@ export const SystemDashboardPage: React.FC = () => {
                         </Accordion>
                       ))}
                   </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-
-            {/* System Status Card */}
-            <Grid item xs={12} lg={4}>
-              <Card sx={{ height: '100%' }}>
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <Settings sx={{ mr: 1, color: 'secondary.main' }} />
-                    <Typography variant="h6" component="h2">
-                      System Status
-                    </Typography>
-                  </Box>
-                  
-                  <List dense>
-                    <ListItem>
-                      <ListItemIcon>
-                        <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'success.main' }} />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary="Security"
-                        secondary="JWT Authentication Active"
-                      />
-                    </ListItem>
-                    
-                    <ListItem>
-                      <ListItemIcon>
-                        <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'success.main' }} />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary="Database"
-                        secondary="Multi-tenant MySQL"
-                      />
-                    </ListItem>
-                    
-                    <ListItem>
-                      <ListItemIcon>
-                        <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'info.main' }} />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary="Monitoring"
-                        secondary="Actuator Endpoints"
-                      />
-                    </ListItem>
-
-                    <ListItem>
-                      <ListItemIcon>
-                        <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'success.main' }} />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary="API Documentation"
-                        secondary="Swagger UI Available"
-                      />
-                    </ListItem>
-                  </List>
-
-                  <Typography variant="body2" color="textSecondary" sx={{ mt: 2 }}>
-                    System administration features and API monitoring capabilities.
-                  </Typography>
                 </CardContent>
               </Card>
             </Grid>
