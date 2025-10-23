@@ -120,13 +120,13 @@ const CalendarWidget: React.FC = () => {
 
   const getEventTypeColor = (type: CalendarEvent['type']) => {
     switch (type) {
-      case 'booking': return theme.palette.primary.main;
-      case 'checkin': return theme.palette.success.main;
-      case 'checkout': return theme.palette.warning.main;
-      case 'maintenance': return theme.palette.error.main;
-      case 'meeting': return theme.palette.info.main;
-      case 'reminder': return theme.palette.secondary.main;
-      default: return theme.palette.grey[500];
+      case 'booking': return '#1976d2'; // Primary blue
+      case 'checkin': return '#1565c0'; // Darker blue
+      case 'checkout': return '#42a5f5'; // Light blue
+      case 'maintenance': return '#2196f3'; // Blue
+      case 'meeting': return '#0d47a1'; // Dark blue
+      case 'reminder': return '#64b5f6'; // Light blue
+      default: return '#90caf9'; // Very light blue
     }
   };
 
@@ -192,7 +192,7 @@ const CalendarWidget: React.FC = () => {
         overflow: 'hidden',
         position: 'relative',
         zIndex: 'auto',
-        backgroundColor: 'transparent', // Transparent to inherit parent background
+        backgroundColor: '#e3f2fd', // Light blue background
         border: 'none',
       }}
     >
@@ -204,7 +204,7 @@ const CalendarWidget: React.FC = () => {
           justifyContent: 'center',
           py: 2,
           px: 2,
-          backgroundColor: '#5a8a8a', // Lighter teal color
+          backgroundColor: '#1976d2', // Primary blue color
           color: 'white',
           position: 'relative',
         }}
@@ -327,14 +327,14 @@ const CalendarWidget: React.FC = () => {
                     borderRight: dayIndex < 6 ? '1px solid rgba(0, 0, 0, 0.1)' : 'none', // Subtle border
                     backgroundColor: date ? (
                       isSelected(date) 
-                        ? '#5a8a8a' // Lighter teal for selected
+                        ? '#1976d2' // Primary blue for selected
                         : isToday(date) 
-                          ? 'rgba(255, 255, 255, 0.3)' // Subtle highlight for today
+                          ? 'rgba(25, 118, 210, 0.3)' // Blue tint for today
                           : 'transparent' // Transparent to inherit parent background
                     ) : 'transparent', // Transparent for empty cells
                     transition: 'all 0.2s ease',
                     '&:hover': date ? {
-                      backgroundColor: isSelected(date) ? '#5a8a8a' : 'rgba(255, 255, 255, 0.2)', // Subtle hover effect
+                      backgroundColor: isSelected(date) ? '#1976d2' : 'rgba(25, 118, 210, 0.2)', // Blue hover effect
                     } : {},
                   }}
                 >

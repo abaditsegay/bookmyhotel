@@ -69,7 +69,7 @@ const EnhancedLayout: React.FC<EnhancedLayoutProps> = ({
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        bgcolor: '#f5f5f5', // Light gray background for the parent pane
+        bgcolor: '#e3f2fd', // Light blue background for the parent pane
         borderLeft: isDesktop ? `1px solid ${theme.palette.divider}` : 'none',
       }}
     >
@@ -83,12 +83,12 @@ const EnhancedLayout: React.FC<EnhancedLayoutProps> = ({
       )}
       
       {/* Calendar Widget */}
-      <Box sx={{ p: 2, borderBottom: `1px solid ${theme.palette.divider}` }}>
+      <Box sx={{ p: 2, borderBottom: `1px solid ${theme.palette.divider}`, bgcolor: '#bbdefb' }}>
         <CalendarWidget />
       </Box>
       
       {/* TODOs Widget */}
-      <Box sx={{ p: 2, flex: 1, overflow: 'auto' }}>
+      <Box sx={{ p: 2, flex: 1, overflow: 'auto', bgcolor: '#bbdefb' }}>
         <TodosWidget />
       </Box>
     </Box>
