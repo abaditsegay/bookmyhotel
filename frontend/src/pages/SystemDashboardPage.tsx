@@ -18,13 +18,21 @@ import {
   Tab,
   Container,
   TextField,
-  InputAdornment
+  InputAdornment,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails
 } from '@mui/material';
 import {
   Dashboard,
   Hotel,
   People,
   TrendingUp,
+  ExpandMore as ExpandMoreIcon,
   Settings,
   Business,
   Refresh,
@@ -42,6 +50,9 @@ import { useTranslation } from 'react-i18next';
 import TokenManager from '../utils/tokenManager';
 import { apiClient } from '../utils/apiClient';
 import { API_ENDPOINTS } from '../config/apiConfig';
+import { 
+  getAllEndpoints
+} from '../data/apiDocumentation';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -79,165 +90,14 @@ export const SystemDashboardPage: React.FC = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(0);
   const [apiSearchQuery, setApiSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
 
-  // Define all API endpoints
-  const allEndpoints = [
-    // Authentication & Session Management
-    { method: 'POST', path: '/managemyhotel/api/auth/login', description: 'User authentication' },
-    { method: 'POST', path: '/managemyhotel/api/auth/logout', description: 'User logout' },
-    { method: 'POST', path: '/managemyhotel/api/auth/register', description: 'User registration' },
-    { method: 'POST', path: '/managemyhotel/api/auth/refresh', description: 'Refresh JWT token' },
-    { method: 'POST', path: '/managemyhotel/api/auth/session-status', description: 'Check session status' },
-    
-    // System Admin - Hotel Management
-    { method: 'GET', path: '/managemyhotel/api/admin/hotels', description: 'Get all hotels (admin)' },
-    { method: 'POST', path: '/managemyhotel/api/admin/hotels', description: 'Create new hotel (admin)' },
-    { method: 'GET', path: '/managemyhotel/api/admin/hotels/{id}', description: 'Get hotel by ID (admin)' },
-    { method: 'PUT', path: '/managemyhotel/api/admin/hotels/{id}', description: 'Update hotel (admin)' },
-    { method: 'DELETE', path: '/managemyhotel/api/admin/hotels/{id}', description: 'Delete hotel (admin)' },
-    { method: 'GET', path: '/managemyhotel/api/admin/hotels/search', description: 'Search hotels (admin)' },
-    { method: 'POST', path: '/managemyhotel/api/admin/hotels/{id}/toggle-status', description: 'Toggle hotel status' },
-    
-    // System Admin - User Management
-    { method: 'GET', path: '/managemyhotel/api/admin/users', description: 'Get all users (admin)' },
-    { method: 'POST', path: '/managemyhotel/api/admin/users', description: 'Create user (admin)' },
-    { method: 'GET', path: '/managemyhotel/api/admin/users/{id}', description: 'Get user by ID (admin)' },
-    { method: 'PUT', path: '/managemyhotel/api/admin/users/{id}', description: 'Update user (admin)' },
-    { method: 'DELETE', path: '/managemyhotel/api/admin/users/{id}', description: 'Delete user (admin)' },
-    { method: 'GET', path: '/managemyhotel/api/admin/users/search', description: 'Search users (admin)' },
-    { method: 'POST', path: '/managemyhotel/api/admin/users/{id}/toggle-status', description: 'Toggle user status' },
-    
-    // System Admin - Tenant Management
-    { method: 'GET', path: '/managemyhotel/api/admin/tenants', description: 'Get all tenants (admin)' },
-    { method: 'POST', path: '/managemyhotel/api/admin/tenants', description: 'Create tenant (admin)' },
-    { method: 'GET', path: '/managemyhotel/api/admin/tenants/{id}', description: 'Get tenant by ID (admin)' },
-    { method: 'PUT', path: '/managemyhotel/api/admin/tenants/{id}', description: 'Update tenant (admin)' },
-    { method: 'DELETE', path: '/managemyhotel/api/admin/tenants/{id}', description: 'Delete tenant (admin)' },
-    { method: 'POST', path: '/managemyhotel/api/admin/tenants/{id}/toggle-status', description: 'Toggle tenant status' },
-    
-    // Hotel Registration Management
-    { method: 'GET', path: '/managemyhotel/api/admin/hotel-registrations', description: 'Get hotel registrations' },
-    { method: 'GET', path: '/managemyhotel/api/admin/hotel-registrations/pending', description: 'Get pending registrations' },
-    { method: 'POST', path: '/managemyhotel/api/admin/hotel-registrations/{id}/approve', description: 'Approve hotel registration' },
-    { method: 'POST', path: '/managemyhotel/api/admin/hotel-registrations/{id}/reject', description: 'Reject hotel registration' },
-    
-    // System User Management
-    { method: 'GET', path: '/managemyhotel/api/system-users', description: 'Get system users' },
-    { method: 'GET', path: '/managemyhotel/api/system-users/guests', description: 'Get global guests' },
-    { method: 'GET', path: '/managemyhotel/api/system-users/admins', description: 'Get system admins' },
-    { method: 'POST', path: '/managemyhotel/api/system-users/promote', description: 'Promote to system admin' },
-    { method: 'POST', path: '/managemyhotel/api/system-users/demote', description: 'Demote from system admin' },
-    
-    // Hotel Search & Public Access
-    { method: 'GET', path: '/managemyhotel/api/hotels', description: 'Get all hotels with filtering' },
-    { method: 'POST', path: '/managemyhotel/api/hotels/search', description: 'Search hotels' },
-    { method: 'GET', path: '/managemyhotel/api/hotels/{id}', description: 'Get hotel by ID' },
-    { method: 'GET', path: '/managemyhotel/api/hotels/{id}/rooms', description: 'Get hotel rooms' },
-    { method: 'GET', path: '/managemyhotel/api/hotels/random', description: 'Get random hotels' },
-    
-    // Booking Management
-    { method: 'GET', path: '/managemyhotel/api/bookings', description: 'Get bookings with filtering' },
-    { method: 'POST', path: '/managemyhotel/api/bookings', description: 'Create new booking' },
-    { method: 'GET', path: '/managemyhotel/api/bookings/{id}', description: 'Get booking by ID' },
-    { method: 'PUT', path: '/managemyhotel/api/bookings/{id}', description: 'Update booking' },
-    { method: 'DELETE', path: '/managemyhotel/api/bookings/{id}', description: 'Delete booking' },
-    { method: 'GET', path: '/managemyhotel/api/bookings/search', description: 'Search bookings' },
-    { method: 'PUT', path: '/managemyhotel/api/bookings/modify', description: 'Modify booking' },
-    { method: 'POST', path: '/managemyhotel/api/bookings/cancel', description: 'Cancel booking' },
-    
-    // Front Desk Operations
-    { method: 'GET', path: '/managemyhotel/api/front-desk/bookings', description: 'Get front desk bookings' },
-    { method: 'POST', path: '/managemyhotel/api/front-desk/bookings/{id}/checkin', description: 'Check-in guest' },
-    { method: 'POST', path: '/managemyhotel/api/front-desk/bookings/{id}/checkout', description: 'Check-out guest' },
-    { method: 'PUT', path: '/managemyhotel/api/front-desk/bookings/{id}/room-assignment', description: 'Assign room' },
-    { method: 'PUT', path: '/managemyhotel/api/front-desk/bookings/{id}/status', description: 'Update booking status' },
-    { method: 'GET', path: '/managemyhotel/api/front-desk/rooms', description: 'Get front desk rooms' },
-    { method: 'PUT', path: '/managemyhotel/api/front-desk/rooms/{id}/status', description: 'Update room status' },
-    { method: 'POST', path: '/managemyhotel/api/front-desk/walk-in-booking', description: 'Create walk-in booking' },
-    
-    // Hotel Admin Operations
-    { method: 'GET', path: '/managemyhotel/api/hotel-admin/hotel', description: 'Get hotel admin hotel' },
-    { method: 'PUT', path: '/managemyhotel/api/hotel-admin/hotel', description: 'Update hotel admin hotel' },
-    { method: 'GET', path: '/managemyhotel/api/hotel-admin/staff', description: 'Get hotel staff' },
-    { method: 'POST', path: '/managemyhotel/api/hotel-admin/staff', description: 'Create staff member' },
-    { method: 'GET', path: '/managemyhotel/api/hotel-admin/rooms', description: 'Get hotel admin rooms' },
-    { method: 'POST', path: '/managemyhotel/api/hotel-admin/rooms', description: 'Create room' },
-    { method: 'GET', path: '/managemyhotel/api/hotel-admin/statistics', description: 'Get hotel statistics' },
-    { method: 'GET', path: '/managemyhotel/api/hotel-admin/bookings', description: 'Get hotel bookings' },
-    
-    // Todo Management
-    { method: 'GET', path: '/managemyhotel/api/todos', description: 'Get todos' },
-    { method: 'POST', path: '/managemyhotel/api/todos', description: 'Create todo' },
-    { method: 'GET', path: '/managemyhotel/api/todos/{id}', description: 'Get todo by ID' },
-    { method: 'PUT', path: '/managemyhotel/api/todos/{id}', description: 'Update todo' },
-    { method: 'DELETE', path: '/managemyhotel/api/todos/{id}', description: 'Delete todo' },
-    { method: 'PATCH', path: '/managemyhotel/api/todos/{id}/toggle', description: 'Toggle todo status' },
-    { method: 'GET', path: '/managemyhotel/api/todos/filtered', description: 'Get filtered todos' },
-    { method: 'GET', path: '/managemyhotel/api/todos/overdue', description: 'Get overdue todos' },
-    
-    // Notification Management
-    { method: 'GET', path: '/managemyhotel/api/notifications', description: 'Get notifications' },
-    { method: 'GET', path: '/managemyhotel/api/notifications/recent', description: 'Get recent notifications' },
-    { method: 'GET', path: '/managemyhotel/api/notifications/unread-count', description: 'Get unread count' },
-    { method: 'PUT', path: '/managemyhotel/api/notifications/{id}/read', description: 'Mark notification as read' },
-    { method: 'PUT', path: '/managemyhotel/api/notifications/mark-all-read', description: 'Mark all as read' },
-    
-    // Room Charges & Pricing
-    { method: 'GET', path: '/managemyhotel/api/room-charges/hotel/{id}', description: 'Get room charges' },
-    { method: 'POST', path: '/managemyhotel/api/room-charges', description: 'Create room charge' },
-    { method: 'PUT', path: '/managemyhotel/api/room-charges/{id}/mark-paid', description: 'Mark charge as paid' },
-    { method: 'POST', path: '/managemyhotel/api/pricing/calculate', description: 'Calculate pricing' },
-    { method: 'GET', path: '/managemyhotel/api/pricing/validate-promo', description: 'Validate promo code' },
-    
-    // Hotel Pricing Configuration
-    { method: 'GET', path: '/managemyhotel/api/hotel-admin/pricing-config/hotel/{id}/active', description: 'Get active pricing config' },
-    { method: 'POST', path: '/managemyhotel/api/hotel-admin/pricing-config/hotel/{id}', description: 'Create pricing config' },
-    { method: 'PUT', path: '/managemyhotel/api/hotel-admin/pricing-config/{id}', description: 'Update pricing config' },
-    
-    // Shop & Inventory Management
-    { method: 'GET', path: '/managemyhotel/api/hotels/{id}/shop/orders', description: 'Get shop orders' },
-    { method: 'POST', path: '/managemyhotel/api/hotels/{id}/shop/orders', description: 'Create shop order' },
-    { method: 'GET', path: '/managemyhotel/api/hotels/{id}/shop/inventory/stock', description: 'Get inventory stock' },
-    { method: 'GET', path: '/managemyhotel/api/hotels/{id}/shop/inventory/low-stock', description: 'Get low stock items' },
-    
-    // Staff Management & Scheduling
-    { method: 'GET', path: '/managemyhotel/api/staff-schedules', description: 'Get staff schedules' },
-    { method: 'POST', path: '/managemyhotel/api/staff-schedules', description: 'Create staff schedule' },
-    { method: 'PUT', path: '/managemyhotel/api/staff-schedules/{id}', description: 'Update staff schedule' },
-    { method: 'DELETE', path: '/managemyhotel/api/staff-schedules/{id}', description: 'Delete staff schedule' },
-    { method: 'GET', path: '/managemyhotel/api/staff-schedules/my-schedule/today', description: 'Get my today schedule' },
-    
-    // Advertisements
-    { method: 'GET', path: '/managemyhotel/api/ads', description: 'Get advertisements' },
-    { method: 'POST', path: '/managemyhotel/api/ads', description: 'Create advertisement' },
-    { method: 'PUT', path: '/managemyhotel/api/ads/{id}', description: 'Update advertisement' },
-    { method: 'DELETE', path: '/managemyhotel/api/ads/{id}', description: 'Delete advertisement' },
-    { method: 'GET', path: '/managemyhotel/api/ads/active', description: 'Get active ads' },
-    
-    // Public Endpoints
-    { method: 'POST', path: '/managemyhotel/api/public/hotel-registration/submit', description: 'Submit hotel registration' },
-    { method: 'GET', path: '/managemyhotel/api/public/hotel-registration/status', description: 'Check registration status' },
-    { method: 'POST', path: '/managemyhotel/api/public/hotels/{id}/shop/orders', description: 'Create public shop order' },
-    
-    // Process Monitoring (Hotel Admin)
-    { method: 'GET', path: '/managemyhotel/api/hotel-admin/hotels/{id}/monitoring/live', description: 'Live monitoring data' },
-    { method: 'GET', path: '/managemyhotel/api/hotel-admin/hotels/{id}/monitoring/staff-activity', description: 'Staff activity monitoring' },
-    { method: 'GET', path: '/managemyhotel/api/hotel-admin/hotels/{id}/audit/logs', description: 'Get audit logs' },
-    { method: 'GET', path: '/managemyhotel/api/hotel-admin/hotels/{id}/dashboard/summary', description: 'Dashboard summary' },
-    
-    // User Profile Management
-    { method: 'GET', path: '/managemyhotel/api/users/{id}/profile', description: 'Get user profile' },
-    { method: 'PUT', path: '/managemyhotel/api/users/{id}/profile', description: 'Update user profile' },
-    { method: 'PUT', path: '/managemyhotel/api/users/{id}/password', description: 'Change user password' },
-    
-    // System Monitoring & Health
-    { method: 'GET', path: '/managemyhotel/actuator/health', description: 'Health check endpoint' },
-    { method: 'GET', path: '/managemyhotel/actuator/metrics', description: 'Application metrics' },
-    
-    // Cache Management (Testing)
-    { method: 'GET', path: '/managemyhotel/api/cache-test/stats', description: 'Cache statistics' },
-    { method: 'POST', path: '/managemyhotel/api/cache-test/clear-all', description: 'Clear all caches' }
-  ];
+  // Get all API endpoints from our organized documentation
+  const allEndpoints = getAllEndpoints();
+
+  // Get unique categories for the dropdown
+  const categories = ['All', ...Array.from(new Set(allEndpoints.map(endpoint => endpoint.category))).sort()];
+
 
   // State for dashboard statistics
   const [stats, setStats] = useState({
@@ -830,49 +690,69 @@ export const SystemDashboardPage: React.FC = () => {
                     Complete API reference for the BookMyHotel application. All endpoints support JWT authentication.
                   </Typography>
 
-                  {/* Search Field */}
-                  <TextField
-                    fullWidth
-                    variant="outlined"
-                    placeholder="Search API endpoints..."
-                    value={apiSearchQuery}
-                    onChange={(e) => setApiSearchQuery(e.target.value)}
-                    sx={{ mb: 1 }}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <SearchIcon />
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
+                  {/* Search and Filter Controls */}
+                  <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                    {/* Search Field */}
+                    <TextField
+                      fullWidth
+                      variant="outlined"
+                      placeholder="Search API endpoints..."
+                      value={apiSearchQuery}
+                      onChange={(e) => setApiSearchQuery(e.target.value)}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <SearchIcon />
+                          </InputAdornment>
+                        )
+                      }}
+                    />
+                    
+                    {/* Category Filter */}
+                    <FormControl sx={{ minWidth: 200 }}>
+                      <InputLabel>Category</InputLabel>
+                      <Select
+                        value={selectedCategory}
+                        label="Category"
+                        onChange={(e) => setSelectedCategory(e.target.value)}
+                      >
+                        {categories.map((category) => (
+                          <MenuItem key={category} value={category}>
+                            {category}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Box>
 
                   {/* Endpoint Count */}
                   <Typography variant="caption" color="textSecondary" sx={{ mb: 2, display: 'block' }}>
                     {(() => {
                       const filteredCount = allEndpoints.filter(endpoint => 
-                        apiSearchQuery === '' || 
+                        (apiSearchQuery === '' || 
                         endpoint.path.toLowerCase().includes(apiSearchQuery.toLowerCase()) ||
                         endpoint.description.toLowerCase().includes(apiSearchQuery.toLowerCase()) ||
-                        endpoint.method.toLowerCase().includes(apiSearchQuery.toLowerCase())
+                        endpoint.method.toLowerCase().includes(apiSearchQuery.toLowerCase())) &&
+                        (selectedCategory === 'All' || endpoint.category === selectedCategory)
                       ).length;
                       
                       return `Showing ${filteredCount} of ${allEndpoints.length} endpoints`;
                     })()}
                   </Typography>
 
-                  <List dense sx={{ maxHeight: 400, overflow: 'auto' }}>
+                  <Box sx={{ maxHeight: 600, overflow: 'auto' }}>
                     {allEndpoints
                       .filter(endpoint => 
-                        apiSearchQuery === '' || 
+                        (apiSearchQuery === '' || 
                         endpoint.path.toLowerCase().includes(apiSearchQuery.toLowerCase()) ||
                         endpoint.description.toLowerCase().includes(apiSearchQuery.toLowerCase()) ||
-                        endpoint.method.toLowerCase().includes(apiSearchQuery.toLowerCase())
+                        endpoint.method.toLowerCase().includes(apiSearchQuery.toLowerCase())) &&
+                        (selectedCategory === 'All' || endpoint.category === selectedCategory)
                       )
-                      .map((endpoint, index, filteredArray) => (
-                        <React.Fragment key={index}>
-                          <ListItem>
-                            <ListItemIcon>
+                      .map((endpoint, index) => (
+                        <Accordion key={index} sx={{ mb: 1, '&:before': { display: 'none' } }}>
+                          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
                               <Box
                                 component="span"
                                 sx={{
@@ -894,20 +774,150 @@ export const SystemDashboardPage: React.FC = () => {
                               >
                                 {endpoint.method}
                               </Box>
-                            </ListItemIcon>
-                            <ListItemText
-                              primary={
-                                <Typography variant="body2" component="code" sx={{ fontFamily: 'monospace' }}>
+                              <Box sx={{ flexGrow: 1 }}>
+                                <Typography variant="body2" component="code" sx={{ fontFamily: 'monospace', fontWeight: 'bold' }}>
                                   {endpoint.path}
                                 </Typography>
-                              }
-                              secondary={endpoint.description}
-                            />
-                          </ListItem>
-                          {index < filteredArray.length - 1 && <Divider />}
-                        </React.Fragment>
+                                <Typography variant="caption" color="textSecondary" sx={{ display: 'block' }}>
+                                  {endpoint.description}
+                                </Typography>
+                              </Box>
+                            </Box>
+                          </AccordionSummary>
+                          <AccordionDetails>
+                            <Box sx={{ mt: 1 }}>
+                              {/* Request Section */}
+                              {endpoint.request && (
+                                <Box sx={{ mb: 3 }}>
+                                  <Typography variant="h6" sx={{ mb: 1, color: 'primary.main' }}>
+                                    Request
+                                  </Typography>
+                                  
+                                  {endpoint.request.headers && (
+                                    <Box sx={{ mb: 2 }}>
+                                      <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Headers:</Typography>
+                                      <Box component="pre" sx={{ 
+                                        bgcolor: 'grey.100', 
+                                        p: 1, 
+                                        borderRadius: 1, 
+                                        fontSize: '0.875rem',
+                                        overflow: 'auto',
+                                        fontFamily: 'monospace'
+                                      }}>
+                                        {JSON.stringify(endpoint.request.headers, null, 2)}
+                                      </Box>
+                                    </Box>
+                                  )}
+                                  
+                                  {endpoint.request.params && (
+                                    <Box sx={{ mb: 2 }}>
+                                      <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Path Parameters:</Typography>
+                                      <Box component="pre" sx={{ 
+                                        bgcolor: 'grey.100', 
+                                        p: 1, 
+                                        borderRadius: 1, 
+                                        fontSize: '0.875rem',
+                                        overflow: 'auto',
+                                        fontFamily: 'monospace'
+                                      }}>
+                                        {JSON.stringify(endpoint.request.params, null, 2)}
+                                      </Box>
+                                    </Box>
+                                  )}
+                                  
+                                  {endpoint.request.query && (
+                                    <Box sx={{ mb: 2 }}>
+                                      <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Query Parameters:</Typography>
+                                      <Box component="pre" sx={{ 
+                                        bgcolor: 'grey.100', 
+                                        p: 1, 
+                                        borderRadius: 1, 
+                                        fontSize: '0.875rem',
+                                        overflow: 'auto',
+                                        fontFamily: 'monospace'
+                                      }}>
+                                        {JSON.stringify(endpoint.request.query, null, 2)}
+                                      </Box>
+                                    </Box>
+                                  )}
+                                  
+                                  {endpoint.request.body && (
+                                    <Box sx={{ mb: 2 }}>
+                                      <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Request Body:</Typography>
+                                      <Box component="pre" sx={{ 
+                                        bgcolor: 'grey.100', 
+                                        p: 1, 
+                                        borderRadius: 1, 
+                                        fontSize: '0.875rem',
+                                        overflow: 'auto',
+                                        fontFamily: 'monospace'
+                                      }}>
+                                        {JSON.stringify(endpoint.request.body, null, 2)}
+                                      </Box>
+                                    </Box>
+                                  )}
+                                </Box>
+                              )}
+
+                              {/* Response Section */}
+                              {endpoint.response && (
+                                <Box>
+                                  <Typography variant="h6" sx={{ mb: 1, color: 'success.main' }}>
+                                    Response
+                                  </Typography>
+                                  
+                                  {endpoint.response.success && (
+                                    <Box sx={{ mb: 2 }}>
+                                      <Typography variant="subtitle2" sx={{ fontWeight: 'bold', color: 'success.main' }}>
+                                        Success Response (200):
+                                      </Typography>
+                                      <Box component="pre" sx={{ 
+                                        bgcolor: 'success.lighter', 
+                                        p: 1, 
+                                        borderRadius: 1, 
+                                        fontSize: '0.875rem',
+                                        overflow: 'auto',
+                                        fontFamily: 'monospace',
+                                        border: '1px solid',
+                                        borderColor: 'success.light'
+                                      }}>
+                                        {JSON.stringify(endpoint.response.success, null, 2)}
+                                      </Box>
+                                    </Box>
+                                  )}
+                                  
+                                  {endpoint.response.error && (
+                                    <Box sx={{ mb: 2 }}>
+                                      <Typography variant="subtitle2" sx={{ fontWeight: 'bold', color: 'error.main' }}>
+                                        Error Response (4xx/5xx):
+                                      </Typography>
+                                      <Box component="pre" sx={{ 
+                                        bgcolor: 'error.lighter', 
+                                        p: 1, 
+                                        borderRadius: 1, 
+                                        fontSize: '0.875rem',
+                                        overflow: 'auto',
+                                        fontFamily: 'monospace',
+                                        border: '1px solid',
+                                        borderColor: 'error.light'
+                                      }}>
+                                        {JSON.stringify(endpoint.response.error, null, 2)}
+                                      </Box>
+                                    </Box>
+                                  )}
+                                </Box>
+                              )}
+                              
+                              {!endpoint.request && !endpoint.response && (
+                                <Typography variant="body2" color="textSecondary" sx={{ fontStyle: 'italic' }}>
+                                  No request/response examples available for this endpoint.
+                                </Typography>
+                              )}
+                            </Box>
+                          </AccordionDetails>
+                        </Accordion>
                       ))}
-                  </List>
+                  </Box>
                 </CardContent>
               </Card>
             </Grid>
