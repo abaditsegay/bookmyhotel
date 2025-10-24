@@ -211,5 +211,13 @@
       "processing": "PROCESSING",
       "failed": "FAILED"
     }
+  },
+  "bookingConfirmation": {
+    "summary": {
+      "bookedOn": "Booked on:",
+      "duration": "Duration:",
+      "nightSingle": "night",
+      "nightPlural": "nights"
+    }
   }
 }

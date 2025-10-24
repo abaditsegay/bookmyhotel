@@ -163,5 +163,13 @@
       "processing": "በሂደት ላይ",
       "failed": "ተወዳድሯል"
     }
+  },
+  "bookingConfirmation": {
+    "summary": {
+      "bookedOn": "የተያዘበት ጊዜ:",
+      "duration": "ጊዜ:",
+      "nightSingle": "ሌሊት",
+      "nightPlural": "ሌሊቶች"
+    }
   }
 }
