@@ -68,6 +68,14 @@ const BookingPage: React.FC = () => {
   // Mobile responsiveness
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  // Helper function to format amount for translations (without ETB prefix)
+  const formatAmountForTranslation = (amount: number): string => {
+    return amount.toLocaleString('en-US', { 
+      minimumFractionDigits: 0, 
+      maximumFractionDigits: 0 
+    });
+  };
   const isBelowMd = useMediaQuery(theme.breakpoints.down('md'));
   
   // Get data from navigation state
@@ -1169,7 +1177,7 @@ const BookingPage: React.FC = () => {
                             color: theme.palette.text.primary,
                             fontWeight: 600,
                           }}>
-                            {t('booking.page.creditCardPayment')} - ETB {totalAmount?.toFixed(0)}
+                            {t('booking.page.creditCardPayment')} - {formatCurrency(totalAmount || 0)}
                           </Typography>
                         </Box>
                         
@@ -1279,7 +1287,7 @@ const BookingPage: React.FC = () => {
                             fontWeight: 700,
                             mb: 0.5,
                           }}>
-                            {t('booking.page.mobileMoneyTransfer')} - ETB {totalAmount?.toFixed(0)}
+                            {t('booking.page.mobileMoneyTransfer')} - {formatCurrency(totalAmount || 0)}
                           </Typography>
                           <Typography variant="body1" sx={{ 
                             color: COLORS.PRIMARY,
@@ -1379,7 +1387,7 @@ const BookingPage: React.FC = () => {
                           <Grid item xs={12}>
                             <Alert severity="success" sx={{ py: 1 }}>
                               <Typography variant="body2">
-                                {t('booking.page.transferExactAmount')} <strong>ETB {totalAmount?.toFixed(0)}</strong> {t('booking.page.toMobileNumberAbove')}
+                                {t('booking.page.transferExactAmount')} <strong>{formatCurrency(totalAmount || 0)}</strong> {t('booking.page.toMobileNumberAbove')}
                               </Typography>
                             </Alert>
                           </Grid>
@@ -1405,7 +1413,7 @@ const BookingPage: React.FC = () => {
                             color: theme.palette.text.primary,
                             fontWeight: 600,
                           }}>
-                            {t('booking.page.payAtFrontDeskPayment')} - ETB {totalAmount?.toFixed(0)}
+                            {t('booking.page.payAtFrontDeskPayment')} - {formatCurrency(totalAmount || 0)}
                           </Typography>
                         </Box>
                         
@@ -1441,7 +1449,7 @@ const BookingPage: React.FC = () => {
                             color: theme.palette.text.primary,
                             fontWeight: 600,
                           }}>
-                            🇪🇹 M-birr Payment - ETB {totalAmount?.toFixed(0)}
+                            🇪🇹 M-birr Payment - {formatCurrency(totalAmount || 0)}
                           </Typography>
                         </Box>
                         
@@ -1494,7 +1502,7 @@ const BookingPage: React.FC = () => {
                             color: theme.palette.text.primary,
                             fontWeight: 600,
                           }}>
-                            🇪🇹 Telebirr Payment - ETB {totalAmount?.toFixed(0)}
+                            🇪🇹 Telebirr Payment - {formatCurrency(totalAmount || 0)}
                           </Typography>
                         </Box>
                         
@@ -1575,8 +1583,8 @@ const BookingPage: React.FC = () => {
               {loading 
                 ? t('booking.page.booking')
                 : isMobile 
-                  ? t('booking.page.bookWithAmount', { amount: totalAmount?.toFixed(0) })
-                  : t('booking.page.bookNowWithAmount', { amount: totalAmount?.toFixed(0) })
+                  ? t('booking.page.bookWithAmount', { amount: formatAmountForTranslation(totalAmount || 0) })
+                  : t('booking.page.bookNowWithAmount', { amount: formatAmountForTranslation(totalAmount || 0) })
               }
             </Button>
           </Box>
