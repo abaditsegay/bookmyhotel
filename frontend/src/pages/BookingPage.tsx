@@ -68,6 +68,7 @@ const BookingPage: React.FC = () => {
   // Mobile responsiveness
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isBelowMd = useMediaQuery(theme.breakpoints.down('md'));
   
   // Get data from navigation state
   const bookingData = location.state as BookingPageState;
@@ -1517,7 +1518,7 @@ const BookingPage: React.FC = () => {
               </Grid>
 
               {/* Mobile BookingSummary - appears after payment section */}
-              {isMobile && (
+              {isBelowMd && (
                 <Grid item xs={12}>
                   <BookingSummary
                     hotelName={hotelName}
