@@ -697,15 +697,9 @@ public class HousekeepingController {
             dto.setHotelName(task.getHotel().getName());
         }
 
-        // Set assigned user information safely with debug logging
-        System.out.println("🔍 Converting task " + task.getId() + " - Status: " + task.getStatus());
-        System.out.println("🔍 Task assigned user: " + task.getAssignedUser());
-        
+        // Set assigned user information safely
         if (task.getAssignedUser() != null) {
             User assignedUser = task.getAssignedUser();
-            System.out.println("🔍 Assigned user ID: " + assignedUser.getId());
-            System.out.println("🔍 Assigned user name: " + assignedUser.getFirstName() + " " + assignedUser.getLastName());
-            
             dto.setAssignedUserId(assignedUser.getId());
             
             // Create the assignedUser object for the frontend
@@ -717,7 +711,6 @@ public class HousekeepingController {
             );
             dto.setAssignedUser(dtoUser);
         } else {
-            System.out.println("⚠️ Task " + task.getId() + " has no assigned user!");
             // Set default values for unassigned tasks
             dto.setAssignedUserId(null);
             dto.setAssignedUser(null);
