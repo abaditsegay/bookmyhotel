@@ -1,6 +1,7 @@
 package com.bookmyhotel.controller;
 
 import com.bookmyhotel.dto.TaskUpdateRequest;
+import com.bookmyhotel.dto.HousekeepingTaskDTO;
 import com.bookmyhotel.entity.HousekeepingTask;
 import com.bookmyhotel.entity.HousekeepingTaskStatus;
 import com.bookmyhotel.entity.HousekeepingStaff;
@@ -22,6 +23,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/housekeeping")
@@ -81,18 +83,19 @@ public class HousekeepingController {
     }
 
     @GetMapping("/tasks")
-    public ResponseEntity<Page<HousekeepingTask>> getAllTasks(
+    public ResponseEntity<Page<HousekeepingTaskDTO>> getAllTasks(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         String tenantId = TenantContext.getTenantId();
         Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
         Pageable pageable = PageRequest.of(page, size);
         Page<HousekeepingTask> tasks = housekeepingService.getAllTasks(hotelId, pageable);
-        return ResponseEntity.ok(tasks);
+        Page<HousekeepingTaskDTO> taskDTOs = tasks.map(this::convertToDTO);
+        return ResponseEntity.ok(taskDTOs);
     }
 
     @GetMapping("/tasks/{id}")
-    public ResponseEntity<HousekeepingTask> getTaskById(@PathVariable Long id) {
+    public ResponseEntity<HousekeepingTaskDTO> getTaskById(@PathVariable Long id) {
         String tenantId = TenantContext.getTenantId();
         Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
         List<HousekeepingTask> tasks = housekeepingService.getAllTasks(hotelId);
@@ -100,15 +103,18 @@ public class HousekeepingController {
                 .filter(t -> t.getId().equals(id))
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("Task not found"));
-        return ResponseEntity.ok(task);
+        return ResponseEntity.ok(convertToDTO(task));
     }
 
     @GetMapping("/tasks/hotel/{hotelId}")
-    public ResponseEntity<List<HousekeepingTask>> getTasksByHotel(@PathVariable Long hotelId) {
+    public ResponseEntity<List<HousekeepingTaskDTO>> getTasksByHotel(@PathVariable Long hotelId) {
         String tenantId = TenantContext.getTenantId();
         // Get tasks directly by hotel ID (tasks now store hotel ID directly)
         List<HousekeepingTask> hotelTasks = housekeepingService.getAllTasks(hotelId);
-        return ResponseEntity.ok(hotelTasks);
+        List<HousekeepingTaskDTO> taskDTOs = hotelTasks.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(taskDTOs);
     }
 
     @GetMapping("/tasks/status/{status}")
@@ -664,6 +670,59 @@ public class HousekeepingController {
         dto.setTenantId(user.getHotel() != null && user.getHotel().getTenant() != null
                 ? user.getHotel().getTenant().getId()
                 : null);
+        return dto;
+    }
+
+    // Conversion method for HousekeepingTask to DTO
+    private HousekeepingTaskDTO convertToDTO(HousekeepingTask task) {
+        HousekeepingTaskDTO dto = new HousekeepingTaskDTO();
+        dto.setId(task.getId());
+        dto.setRoomNumber(task.getRoomNumber());
+        dto.setTaskType(task.getTaskType());
+        dto.setStatus(task.getStatus());
+        dto.setPriority(task.getPriority());
+        dto.setDescription(task.getDescription());
+        dto.setSpecialInstructions(task.getSpecialInstructions());
+        dto.setCreatedAt(task.getCreatedAt());
+        dto.setAssignedAt(task.getAssignedAt());
+        dto.setStartedAt(task.getStartedAt());
+        dto.setCompletedAt(task.getCompletedAt());
+        dto.setEstimatedDurationMinutes(task.getEstimatedDurationMinutes());
+        dto.setActualDurationMinutes(task.getActualDurationMinutes());
+        dto.setQualityScore(task.getQualityScore());
+        dto.setInspectorNotes(task.getInspectorNotes());
+
+        // Set hotel information
+        if (task.getHotel() != null) {
+            dto.setHotelName(task.getHotel().getName());
+        }
+
+        // Set assigned user information safely with debug logging
+        System.out.println("🔍 Converting task " + task.getId() + " - Status: " + task.getStatus());
+        System.out.println("🔍 Task assigned user: " + task.getAssignedUser());
+        
+        if (task.getAssignedUser() != null) {
+            User assignedUser = task.getAssignedUser();
+            System.out.println("🔍 Assigned user ID: " + assignedUser.getId());
+            System.out.println("🔍 Assigned user name: " + assignedUser.getFirstName() + " " + assignedUser.getLastName());
+            
+            dto.setAssignedUserId(assignedUser.getId());
+            
+            // Create the assignedUser object for the frontend
+            HousekeepingTaskDTO.AssignedUser dtoUser = new HousekeepingTaskDTO.AssignedUser(
+                assignedUser.getId(),
+                assignedUser.getFirstName(),
+                assignedUser.getLastName(),
+                assignedUser.getEmail()
+            );
+            dto.setAssignedUser(dtoUser);
+        } else {
+            System.out.println("⚠️ Task " + task.getId() + " has no assigned user!");
+            // Set default values for unassigned tasks
+            dto.setAssignedUserId(null);
+            dto.setAssignedUser(null);
+        }
+
         return dto;
     }
 }

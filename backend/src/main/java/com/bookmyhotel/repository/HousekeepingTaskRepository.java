@@ -24,10 +24,10 @@ import com.bookmyhotel.entity.User;
 public interface HousekeepingTaskRepository extends JpaRepository<HousekeepingTask, Long> {
 
         // Basic queries by hotel
-        @Query("SELECT h FROM HousekeepingTask h WHERE h.hotel.id = :hotelId")
+        @Query("SELECT h FROM HousekeepingTask h LEFT JOIN FETCH h.assignedUser LEFT JOIN FETCH h.hotel WHERE h.hotel.id = :hotelId")
         List<HousekeepingTask> findByHotelId(@Param("hotelId") Long hotelId);
 
-        @Query("SELECT h FROM HousekeepingTask h WHERE h.hotel.id = :hotelId")
+        @Query("SELECT h FROM HousekeepingTask h LEFT JOIN FETCH h.assignedUser LEFT JOIN FETCH h.hotel WHERE h.hotel.id = :hotelId")
         Page<HousekeepingTask> findByHotelId(@Param("hotelId") Long hotelId, Pageable pageable);
 
         // Status-based queries

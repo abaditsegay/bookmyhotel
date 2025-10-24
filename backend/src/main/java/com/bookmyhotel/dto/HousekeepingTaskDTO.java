@@ -34,6 +34,40 @@ public class HousekeepingTaskDTO {
     // Hotel details
     private String hotelName;
     
+    // Assigned user details
+    private Long assignedUserId;
+    private AssignedUser assignedUser;
+    
+    // Inner class for assigned user
+    public static class AssignedUser {
+        private Long id;
+        private String firstName;
+        private String lastName;
+        private String email;
+        
+        public AssignedUser() {}
+        
+        public AssignedUser(Long id, String firstName, String lastName, String email) {
+            this.id = id;
+            this.firstName = firstName;
+            this.lastName = lastName;
+            this.email = email;
+        }
+        
+        // Getters and setters
+        public Long getId() { return id; }
+        public void setId(Long id) { this.id = id; }
+        
+        public String getFirstName() { return firstName; }
+        public void setFirstName(String firstName) { this.firstName = firstName; }
+        
+        public String getLastName() { return lastName; }
+        public void setLastName(String lastName) { this.lastName = lastName; }
+        
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
+    }
+    
     // Constructors
     public HousekeepingTaskDTO() {}
     
@@ -180,5 +214,21 @@ public class HousekeepingTaskDTO {
     
     public void setHotelName(String hotelName) {
         this.hotelName = hotelName;
+    }
+    
+    public Long getAssignedUserId() {
+        return assignedUserId;
+    }
+    
+    public void setAssignedUserId(Long assignedUserId) {
+        this.assignedUserId = assignedUserId;
+    }
+    
+    public AssignedUser getAssignedUser() {
+        return assignedUser;
+    }
+    
+    public void setAssignedUser(AssignedUser assignedUser) {
+        this.assignedUser = assignedUser;
     }
 }
