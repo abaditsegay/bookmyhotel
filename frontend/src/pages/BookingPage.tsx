@@ -973,6 +973,21 @@ const BookingPage: React.FC = () => {
                 </Card>
               </Grid>
 
+              {/* Mobile BookingSummary - appears before payment section */}
+              {isBelowMd && (
+                <Grid item xs={12}>
+                  <BookingSummary
+                    hotelName={hotelName}
+                    roomData={roomData}
+                    checkInDate={checkInDate}
+                    checkOutDate={checkOutDate}
+                    guests={guests}
+                    nights={nights}
+                    totalAmount={totalAmount || 0}
+                  />
+                </Grid>
+              )}
+
               {/* Payment Section */}
               <Grid item xs={12}>
                 <Card
@@ -1516,21 +1531,6 @@ const BookingPage: React.FC = () => {
                   </CardContent>
                 </Card>
               </Grid>
-
-              {/* Mobile BookingSummary - appears after payment section */}
-              {isBelowMd && (
-                <Grid item xs={12}>
-                  <BookingSummary
-                    hotelName={hotelName}
-                    roomData={roomData}
-                    checkInDate={checkInDate}
-                    checkOutDate={checkOutDate}
-                    guests={guests}
-                    nights={nights}
-                    totalAmount={totalAmount || 0}
-                  />
-                </Grid>
-              )}
 
             </Grid>
           </Box>
