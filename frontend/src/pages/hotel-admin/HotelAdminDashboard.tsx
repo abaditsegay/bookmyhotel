@@ -35,6 +35,7 @@ import OfflineWalkInBooking from '../../components/OfflineWalkInBooking';
 import { roomCacheService } from '../../services/RoomCacheService';
 import PricingConfiguration from '../../components/PricingConfiguration';
 import HotelImageManagement from './HotelImageManagement';
+import HousekeepingPage from '../housekeeping/HousekeepingPage';
 import { getBookingStatusColor } from '../../utils/statusColors';
 
 interface TabPanelProps {
@@ -74,7 +75,7 @@ const HotelAdminDashboard: React.FC = () => {
   const getInitialTab = () => {
     const tabParam = searchParams.get('tab');
     const tab = tabParam ? parseInt(tabParam, 10) : 0;
-    return isNaN(tab) || tab < 0 || tab > 7 ? 0 : tab; // Fixed: Allow up to tab 7 (Offline Bookings)
+    return isNaN(tab) || tab < 0 || tab > 8 ? 0 : tab; // Fixed: Allow up to tab 8 (including Housekeeping)
   };
   
   const [activeTab, setActiveTab] = useState(getInitialTab);
@@ -83,7 +84,7 @@ const HotelAdminDashboard: React.FC = () => {
   useEffect(() => {
     const tabParam = searchParams.get('tab');
     const urlTab = tabParam ? parseInt(tabParam, 10) : 0;
-    const validTab = isNaN(urlTab) || urlTab < 0 || urlTab > 7 ? 0 : urlTab; // Fixed: Allow up to tab 7 (Offline Bookings)
+    const validTab = isNaN(urlTab) || urlTab < 0 || urlTab > 8 ? 0 : urlTab; // Fixed: Allow up to tab 8 (including Housekeeping)
     console.log(`🔗 HotelAdmin: URL tab changed to ${urlTab}, setting valid tab to ${validTab}`);
     setActiveTab(validTab);
   }, [searchParams]); // Remove activeTab from dependencies to prevent circular updates
@@ -221,9 +222,10 @@ const HotelAdminDashboard: React.FC = () => {
       newValue === 2 ? t('dashboard.hotelAdmin.tabs.rooms') :
       newValue === 3 ? t('dashboard.hotelAdmin.tabs.bookings') :
       newValue === 4 ? t('dashboard.hotelAdmin.tabs.staffSchedules') :
-      newValue === 5 ? t('dashboard.hotelAdmin.tabs.reports') :
-      newValue === 6 ? t('dashboard.hotelAdmin.tabs.pricingTax') :
-      newValue === 7 ? t('dashboard.hotelAdmin.tabs.offlineBookings') : 'Unknown');
+      newValue === 5 ? 'Housekeeping' :
+      newValue === 6 ? t('dashboard.hotelAdmin.tabs.reports') :
+      newValue === 7 ? t('dashboard.hotelAdmin.tabs.pricingTax') :
+      newValue === 8 ? t('dashboard.hotelAdmin.tabs.offlineBookings') : 'Unknown');
     setActiveTab(newValue);
     
     // Update URL parameter to persist tab state
@@ -238,8 +240,8 @@ const HotelAdminDashboard: React.FC = () => {
       // BookingManagementTable handles its own data loading
     }
     
-    // Load reports data when Reports tab (index 5) is selected
-    if (newValue === 5) {
+    // Load reports data when Reports tab (index 6) is selected
+    if (newValue === 6) {
       loadReportsData();
     }
   };
@@ -467,6 +469,7 @@ const HotelAdminDashboard: React.FC = () => {
             <Tab label={t('dashboard.hotelAdmin.tabs.rooms')} />
             <Tab label={t('dashboard.hotelAdmin.tabs.bookings')} />
             <Tab label={t('dashboard.hotelAdmin.tabs.staffSchedules')} />
+            <Tab label="Housekeeping" />
             <Tab label={t('dashboard.hotelAdmin.tabs.reports')} />
             <Tab label={t('dashboard.hotelAdmin.tabs.pricingTax')} />
             <Tab label={t('dashboard.hotelAdmin.tabs.offlineBookings')} />
@@ -986,6 +989,11 @@ const HotelAdminDashboard: React.FC = () => {
         </TabPanel>
 
         <TabPanel value={activeTab} index={5}>
+          {/* Housekeeping Tab */}
+          <HousekeepingPage />
+        </TabPanel>
+
+        <TabPanel value={activeTab} index={6}>
           {/* Reports Tab - Enhanced with More Data */}
           <Box>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
@@ -1703,12 +1711,12 @@ const HotelAdminDashboard: React.FC = () => {
           </Box>
         </TabPanel>
 
-        <TabPanel value={activeTab} index={6}>
+        <TabPanel value={activeTab} index={7}>
           {/* Pricing & Tax Configuration Tab */}
           <PricingConfiguration />
         </TabPanel>
 
-        <TabPanel value={activeTab} index={7}>
+        <TabPanel value={activeTab} index={8}>
           {/* Offline Bookings Tab */}
           <OfflineWalkInBooking
             hotelId={hotel?.id}

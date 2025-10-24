@@ -25,6 +25,7 @@ import BookingManagementTable from '../../components/booking/BookingManagementTa
 import WalkInBookingModal from '../../components/booking/WalkInBookingModal';
 import UnifiedRoomManagement from '../../components/common/UnifiedRoomManagement';
 import OfflineWalkInBooking from '../../components/OfflineWalkInBooking';
+import HousekeepingPage from '../housekeeping/HousekeepingPage';
 import { roomCacheService } from '../../services/RoomCacheService';
 import { COLORS } from '../../theme/themeColors';
 
@@ -368,14 +369,7 @@ const FrontDeskDashboard: React.FC = () => {
 
       {/* Housekeeping Tab */}
       <TabPanel value={activeTab} index={2}>
-        <Box sx={{ p: 3, textAlign: 'center' }}>
-          <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>
-            {t('dashboard.frontDesk.housekeepingModule.title')}
-          </Typography>
-          <Typography color="text.secondary" sx={{ whiteSpace: 'pre-line' }}>
-            {t('dashboard.frontDesk.housekeepingModule.description')}
-          </Typography>
-        </Box>
+        <HousekeepingPage />
       </TabPanel>
 
       {/* Offline Bookings Tab */}

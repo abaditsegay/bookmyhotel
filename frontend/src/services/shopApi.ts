@@ -19,18 +19,10 @@ class ShopApiService {
   private tenantId: string | null = null;
 
   setToken(token: string | null) {
-    console.log('🔑 ShopApiService.setToken called with:', token ? `token of length ${token.length}` : 'null');
     this.token = token;
-    
-    // Log first and last few characters for debugging (don't log full token for security)
-    if (token) {
-      const preview = `${token.substring(0, 10)}...${token.substring(token.length - 10)}`;
-      console.log('🔑 Token preview:', preview);
-    }
   }
 
   setTenantId(tenantId: string | null) {
-    console.log('🏨 ShopApiService.setTenantId called with:', tenantId);
     this.tenantId = tenantId;
   }
 
@@ -42,20 +34,13 @@ class ShopApiService {
     // Add Authorization header if token is available
     if (this.token) {
       headers['Authorization'] = `Bearer ${this.token}`;
-      console.log('🔐 Shop API: Using auth token (length:', this.token.length, ')');
-    } else {
-      console.warn('⚠️ Shop API: No token available for authentication');
     }
 
     // Add tenant ID header if available
     if (this.tenantId) {
       headers['X-Tenant-ID'] = this.tenantId;
-      console.log('🏨 Shop API: Using tenant ID:', this.tenantId);
-    } else {
-      console.warn('⚠️ Shop API: No tenant ID available');
     }
 
-    console.log('📤 Shop API Headers:', Object.keys(headers));
     return headers;
   }
 
@@ -393,19 +378,14 @@ class ShopApiService {
       throw new Error('Authentication required');
     }
 
-    console.log('📊 Shop API: Getting consolidated dashboard stats...');
-    
     try {
       // First, try to get consolidated stats from the new dedicated dashboard endpoint
       const response = await fetch(`${API_BASE_URL}/api/hotels/${hotelId}/shop/dashboard/stats`, {
         headers: this.getAuthHeaders(),
       });
       
-      console.log(`📊 Dashboard stats response status: ${response.status}`);
-      
       if (response.ok) {
         const data = await response.json();
-        console.log('✅ Backend dashboard stats loaded successfully:', data);
         return data;
       } else {
         console.warn(`⚠️ Backend dashboard endpoint failed with ${response.status}, falling back to aggregated approach`);

@@ -66,8 +66,8 @@ export interface HousekeepingTask {
   floorNumber?: number;
   estimatedDuration: number; // in minutes
   actualDuration?: number; // in minutes
-  assignedStaffId?: number;
-  assignedStaff?: HousekeepingStaff;
+  assignedUserId?: number;
+  assignedUser?: User;
   supervisorId?: number;
   supervisor?: User;
   dueDate: string;
@@ -133,8 +133,8 @@ export interface MaintenanceTask {
   actualCost?: number;
   estimatedDuration: number; // in minutes
   actualDuration?: number; // in minutes
-  assignedStaffId?: number;
-  assignedStaff?: User;
+  assignedUserId?: number;
+  assignedUser?: User;
   supervisorId?: number;
   supervisor?: User;
   dueDate: string;
@@ -157,7 +157,7 @@ export interface MaintenanceRequest {
   priority: string;
   status: string;
   roomNumber?: string;
-  assignedStaff?: HousekeepingStaff;
+  assignedUser?: User;
   dueDate?: string;
   createdAt: string;
   updatedAt?: string;
@@ -239,7 +239,7 @@ export interface CreateHousekeepingTaskRequest {
   floorNumber?: number;
   estimatedDuration: number;
   dueDate: string;
-  assignedStaffId?: number;
+  assignedUserId?: number;
   notes?: string;
 }
 
@@ -254,7 +254,7 @@ export interface CreateMaintenanceTaskRequest {
   estimatedCost: number;
   estimatedDuration: number;
   dueDate: string;
-  assignedStaffId?: number;
+  assignedUserId?: number;
   notes?: string;
 }
 
@@ -288,7 +288,7 @@ export interface TaskFilters {
   status?: string[];
   priority?: string[];
   taskType?: string[];
-  assignedStaffId?: number;
+  assignedUserId?: number;
   dateFrom?: string;
   dateTo?: string;
   roomNumber?: string;

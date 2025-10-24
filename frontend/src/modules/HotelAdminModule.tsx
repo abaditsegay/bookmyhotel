@@ -10,6 +10,7 @@ const StaffDetails = React.lazy(() => import('../pages/hotel-admin/StaffDetails'
 const HotelAdminBookingDetails = React.lazy(() => import('../pages/hotel-admin/HotelAdminBookingDetails'));
 const StaffScheduleManagement = React.lazy(() => import('../components/StaffScheduleManagement'));
 const StaffScheduleDashboard = React.lazy(() => import('../components/StaffScheduleDashboard'));
+const HousekeepingPage = React.lazy(() => import('../pages/housekeeping/HousekeepingPage'));
 
 /**
  * Hotel Admin Module - Hotel management routes
@@ -25,6 +26,7 @@ const HotelAdminModule: React.FC = () => {
       <Route path="staff/:id" element={<StaffDetails />} />
       <Route path="staff/schedule" element={<StaffScheduleManagement />} />
       <Route path="staff/schedule/dashboard" element={<StaffScheduleDashboard />} />
+      <Route path="housekeeping" element={<HousekeepingPage />} />
       <Route path="bookings/:id" element={<HotelAdminBookingDetails />} />
     </Routes>
   );

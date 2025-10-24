@@ -445,12 +445,12 @@ export const filterTasksByPriority = <T extends { priority: TaskPriority }>(
   return tasks.filter(task => priorities.includes(task.priority));
 };
 
-export const filterTasksByAssignee = <T extends { assignedStaffId?: number }>(
+export const filterTasksByAssignee = <T extends { assignedUserId?: number }>(
   tasks: T[],
-  staffId?: number
+  userId?: number
 ): T[] => {
-  if (staffId === undefined) return tasks;
-  return tasks.filter(task => task.assignedStaffId === staffId);
+  if (userId === undefined) return tasks;
+  return tasks.filter(task => task.assignedUserId === userId);
 };
 
 export const filterTasksByRoom = <T extends { roomNumber?: string }>(

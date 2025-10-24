@@ -122,15 +122,8 @@ public class SupervisorController {
                     taskMap.put("priority", task.getPriority() != null ? task.getPriority().toString() : "NORMAL");
                     taskMap.put("description", task.getDescription() != null ? task.getDescription() : "");
 
-                    // Safely get room number
-                    String roomNumber = "Unknown";
-                    try {
-                        if (task.getRoom() != null && task.getRoom().getRoomNumber() != null) {
-                            roomNumber = task.getRoom().getRoomNumber();
-                        }
-                    } catch (Exception roomError) {
-                        // Ignore room access errors
-                    }
+                    // Get room number directly from task
+                    String roomNumber = task.getRoomNumber() != null ? task.getRoomNumber() : "General Area";
                     taskMap.put("roomNumber", roomNumber);
 
                     String completedAt = null;
@@ -203,24 +196,17 @@ public class SupervisorController {
                 taskMap.put("description", task.getDescription() != null ? task.getDescription() : "");
                 taskMap.put("completedAt", task.getCompletedAt() != null ? task.getCompletedAt().toString() : null);
 
-                // Safely get room number
-                String roomNumber = "Unknown";
-                try {
-                    if (task.getRoom() != null && task.getRoom().getRoomNumber() != null) {
-                        roomNumber = task.getRoom().getRoomNumber();
-                    }
-                } catch (Exception e) {
-                    // Ignore room access errors
-                }
+                // Get room number directly from task
+                String roomNumber = task.getRoomNumber() != null ? task.getRoomNumber() : "General Area";
                 taskMap.put("roomNumber", roomNumber);
 
                 // Safely get assigned staff info
-                if (task.getAssignedStaff() != null) {
+                if (task.getAssignedUser() != null) {
                     taskMap.put("assignedStaffName",
-                            (task.getAssignedStaff().getFirstName() != null ? task.getAssignedStaff().getFirstName()
+                            (task.getAssignedUser().getFirstName() != null ? task.getAssignedUser().getFirstName()
                                     : "") + " " +
-                                    (task.getAssignedStaff().getLastName() != null
-                                            ? task.getAssignedStaff().getLastName()
+                                    (task.getAssignedUser().getLastName() != null
+                                            ? task.getAssignedUser().getLastName()
                                             : ""));
                 } else {
                     taskMap.put("assignedStaffName", "Unassigned");
@@ -241,24 +227,17 @@ public class SupervisorController {
                 taskMap.put("description", task.getDescription() != null ? task.getDescription() : "");
                 taskMap.put("startedAt", task.getStartedAt() != null ? task.getStartedAt().toString() : null);
 
-                // Safely get room number
-                String roomNumber = "Unknown";
-                try {
-                    if (task.getRoom() != null && task.getRoom().getRoomNumber() != null) {
-                        roomNumber = task.getRoom().getRoomNumber();
-                    }
-                } catch (Exception e) {
-                    // Ignore room access errors
-                }
+                // Get room number directly from task
+                String roomNumber = task.getRoomNumber() != null ? task.getRoomNumber() : "General Area";
                 taskMap.put("roomNumber", roomNumber);
 
                 // Safely get assigned staff info
-                if (task.getAssignedStaff() != null) {
+                if (task.getAssignedUser() != null) {
                     taskMap.put("assignedStaffName",
-                            (task.getAssignedStaff().getFirstName() != null ? task.getAssignedStaff().getFirstName()
+                            (task.getAssignedUser().getFirstName() != null ? task.getAssignedUser().getFirstName()
                                     : "") + " " +
-                                    (task.getAssignedStaff().getLastName() != null
-                                            ? task.getAssignedStaff().getLastName()
+                                    (task.getAssignedUser().getLastName() != null
+                                            ? task.getAssignedUser().getLastName()
                                             : ""));
                 } else {
                     taskMap.put("assignedStaffName", "Unassigned");
@@ -458,26 +437,19 @@ public class SupervisorController {
                         taskMap.put("completedAt",
                                 task.getCompletedAt() != null ? task.getCompletedAt().toString() : null);
 
-                        // Safely get room number
-                        String roomNumber = "Unknown";
-                        try {
-                            if (task.getRoom() != null && task.getRoom().getRoomNumber() != null) {
-                                roomNumber = task.getRoom().getRoomNumber();
-                            }
-                        } catch (Exception e) {
-                            // Ignore room access errors
-                        }
+                        // Get room number directly from task
+                        String roomNumber = task.getRoomNumber() != null ? task.getRoomNumber() : "General Area";
                         taskMap.put("roomNumber", roomNumber);
 
                         // Safely get assigned staff info
-                        if (task.getAssignedStaff() != null) {
-                            taskMap.put("assignedStaffId", task.getAssignedStaff().getId());
+                        if (task.getAssignedUser() != null) {
+                            taskMap.put("assignedStaffId", task.getAssignedUser().getId());
                             taskMap.put("assignedStaffName",
-                                    (task.getAssignedStaff().getFirstName() != null
-                                            ? task.getAssignedStaff().getFirstName()
+                                    (task.getAssignedUser().getFirstName() != null
+                                            ? task.getAssignedUser().getFirstName()
                                             : "") + " " +
-                                            (task.getAssignedStaff().getLastName() != null
-                                                    ? task.getAssignedStaff().getLastName()
+                                            (task.getAssignedUser().getLastName() != null
+                                                    ? task.getAssignedUser().getLastName()
                                                     : ""));
                         } else {
                             taskMap.put("assignedStaffId", null);
@@ -558,9 +530,9 @@ public class SupervisorController {
              * 
              * // Add assigned staff info if available
              * try {
-             * if (request.getAssignedStaff() != null) {
-             * requestMap.put("assignedStaffName", request.getAssignedStaff().getFirstName()
-             * + " " + request.getAssignedStaff().getLastName());
+             * if (request.getAssignedUser() != null) {
+             * requestMap.put("assignedStaffName", request.getAssignedUser().getFirstName()
+             * + " " + request.getAssignedUser().getLastName());
              * }
              * } catch (Exception staffError) {
              * // Ignore staff access errors
@@ -675,8 +647,8 @@ public class SupervisorController {
 
             HousekeepingTask task;
 
-            // Handle special case for "Other" areas (roomId = 999)
-            if (request.getRoomId() == 999) {
+            // Handle special case for "Other" areas (roomId = null)
+            if (request.getRoomId() == null) {
                 // For "Other" areas, we'll create a task without a specific room
                 Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
                 task = housekeepingService.createTaskWithoutRoom(
@@ -708,15 +680,8 @@ public class SupervisorController {
             taskMap.put("estimatedDuration", task.getEstimatedDurationMinutes());
             taskMap.put("createdAt", task.getCreatedAt().toString());
 
-            // Safely get room number
-            String roomNumber = "Unknown";
-            try {
-                if (task.getRoom() != null && task.getRoom().getRoomNumber() != null) {
-                    roomNumber = task.getRoom().getRoomNumber();
-                }
-            } catch (Exception e) {
-                // Ignore room access errors
-            }
+            // Get room number directly from task
+            String roomNumber = task.getRoomNumber() != null ? task.getRoomNumber() : "General Area";
             taskMap.put("roomNumber", roomNumber);
 
             return ResponseEntity.ok(taskMap);
@@ -828,15 +793,8 @@ public class SupervisorController {
                 taskMap.put("startedAt", task.getStartedAt() != null ? task.getStartedAt().toString() : null);
                 taskMap.put("completedAt", task.getCompletedAt() != null ? task.getCompletedAt().toString() : null);
 
-                // Safely get room number
-                String roomNumber = "Unknown";
-                try {
-                    if (task.getRoom() != null && task.getRoom().getRoomNumber() != null) {
-                        roomNumber = task.getRoom().getRoomNumber();
-                    }
-                } catch (Exception e) {
-                    // Ignore room access errors
-                }
+                // Get room number directly from task
+                String roomNumber = task.getRoomNumber() != null ? task.getRoomNumber() : "General Area";
                 taskMap.put("roomNumber", roomNumber);
 
                 tasksData.add(taskMap);
@@ -945,26 +903,19 @@ public class SupervisorController {
             taskMap.put("assignedAt",
                     assignedTask.getAssignedAt() != null ? assignedTask.getAssignedAt().toString() : null);
 
-            // Safely get room number
-            String roomNumber = "Unknown";
-            try {
-                if (assignedTask.getRoom() != null && assignedTask.getRoom().getRoomNumber() != null) {
-                    roomNumber = assignedTask.getRoom().getRoomNumber();
-                }
-            } catch (Exception e) {
-                // Ignore room access errors
-            }
+            // Get room number directly from task
+            String roomNumber = assignedTask.getRoomNumber() != null ? assignedTask.getRoomNumber() : "General Area";
             taskMap.put("roomNumber", roomNumber);
 
             // Add assigned staff info
-            if (assignedTask.getAssignedStaff() != null) {
-                taskMap.put("assignedStaffId", assignedTask.getAssignedStaff().getId());
+            if (assignedTask.getAssignedUser() != null) {
+                taskMap.put("assignedStaffId", assignedTask.getAssignedUser().getId());
                 taskMap.put("assignedStaffName",
-                        (assignedTask.getAssignedStaff().getFirstName() != null
-                                ? assignedTask.getAssignedStaff().getFirstName()
+                        (assignedTask.getAssignedUser().getFirstName() != null
+                                ? assignedTask.getAssignedUser().getFirstName()
                                 : "") + " " +
-                                (assignedTask.getAssignedStaff().getLastName() != null
-                                        ? assignedTask.getAssignedStaff().getLastName()
+                                (assignedTask.getAssignedUser().getLastName() != null
+                                        ? assignedTask.getAssignedUser().getLastName()
                                         : ""));
             }
 
@@ -1020,14 +971,14 @@ public class SupervisorController {
              * requestMap.put("roomNumber", roomNumber);
              * 
              * // Add assigned staff info
-             * if (assignedRequest.getAssignedStaff() != null) {
+             * if (assignedRequest.getAssignedUser() != null) {
              * requestMap.put("assignedStaffId",
-             * assignedRequest.getAssignedStaff().getId());
+             * assignedRequest.getAssignedUser().getId());
              * requestMap.put("assignedStaffName",
-             * (assignedRequest.getAssignedStaff().getFirstName() != null ?
-             * assignedRequest.getAssignedStaff().getFirstName() : "") + " " +
-             * (assignedRequest.getAssignedStaff().getLastName() != null ?
-             * assignedRequest.getAssignedStaff().getLastName() : ""));
+             * (assignedRequest.getAssignedUser().getFirstName() != null ?
+             * assignedRequest.getAssignedUser().getFirstName() : "") + " " +
+             * (assignedRequest.getAssignedUser().getLastName() != null ?
+             * assignedRequest.getAssignedUser().getLastName() : ""));
              * }
              * 
              * return ResponseEntity.ok(requestMap);
@@ -1067,26 +1018,19 @@ public class SupervisorController {
             taskMap.put("assignedAt",
                     assignedTask.getAssignedAt() != null ? assignedTask.getAssignedAt().toString() : null);
 
-            // Safely get room number
-            String roomNumber = "Unknown";
-            try {
-                if (assignedTask.getRoom() != null && assignedTask.getRoom().getRoomNumber() != null) {
-                    roomNumber = assignedTask.getRoom().getRoomNumber();
-                }
-            } catch (Exception e) {
-                // Ignore room access errors
-            }
+            // Get room number directly from task
+            String roomNumber = assignedTask.getRoomNumber() != null ? assignedTask.getRoomNumber() : "General Area";
             taskMap.put("roomNumber", roomNumber);
 
             // Add assigned staff info
-            if (assignedTask.getAssignedStaff() != null) {
-                taskMap.put("assignedStaffId", assignedTask.getAssignedStaff().getId());
+            if (assignedTask.getAssignedUser() != null) {
+                taskMap.put("assignedStaffId", assignedTask.getAssignedUser().getId());
                 taskMap.put("assignedStaffName",
-                        (assignedTask.getAssignedStaff().getFirstName() != null
-                                ? assignedTask.getAssignedStaff().getFirstName()
+                        (assignedTask.getAssignedUser().getFirstName() != null
+                                ? assignedTask.getAssignedUser().getFirstName()
                                 : "") + " " +
-                                (assignedTask.getAssignedStaff().getLastName() != null
-                                        ? assignedTask.getAssignedStaff().getLastName()
+                                (assignedTask.getAssignedUser().getLastName() != null
+                                        ? assignedTask.getAssignedUser().getLastName()
                                         : ""));
             }
 

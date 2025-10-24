@@ -75,9 +75,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
     // Initialize OfflineStorageService early
     const initOfflineStorage = async () => {
       try {
-        console.log('🔄 AuthContext: Initializing OfflineStorageService...');
         await offlineStorage.init();
-        console.log('✅ AuthContext: OfflineStorageService initialized successfully');
       } catch (error) {
         console.error('❌ AuthContext: Failed to initialize OfflineStorageService:', error);
       }
@@ -87,7 +85,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
     
     // Set up API client session expiration callback
     apiClient.setSessionExpiredCallback(() => {
-      console.log('Session expired - logging out user');
       setSessionExpired(true);
       setUser(null);
       setToken(null);
@@ -113,7 +110,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
       try {
         setToken(savedToken);
         setUser(savedUser as User);
-        console.log('Restored auth state from TokenManager');
         
         // Notify parent component of token change
         onTokenChange?.(savedToken);
@@ -129,12 +125,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
 
   const attemptOfflineLogin = async (email: string, password: string): Promise<boolean> => {
     try {
-      console.log('🔄 Mobile AuthContext: Attempting offline authentication for:', email);
       
       // Ensure OfflineStorageService is initialized
       try {
         await offlineStorage.init();
-        console.log('✅ Mobile AuthContext: OfflineStorageService ready for offline login');
       } catch (initError) {
         console.error('❌ Mobile AuthContext: Failed to initialize OfflineStorageService for offline login:', initError);
         return false;
@@ -143,13 +137,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
       // Get cached staff session for offline authentication (includes inactive sessions)
       const cachedSession = await offlineStorage.getStaffSessionForOfflineAuth(email);
       if (!cachedSession) {
-        console.log('❌ Mobile AuthContext: No cached session found for offline login');
         return false;
       }
 
       // Check if cached session matches login credentials
       if (cachedSession.email !== email) {
-        console.log('❌ Mobile AuthContext: Cached session email does not match login email');
         return false;
       }
 
@@ -157,17 +149,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
       if (cachedSession.passwordHash) {
         const isPasswordValid = offlineStorage.validatePassword(password, email, cachedSession.passwordHash);
         if (!isPasswordValid) {
-          console.log('❌ Mobile AuthContext: Password validation failed for offline login');
           return false;
         }
-        console.log('✅ Mobile AuthContext: Password validated successfully for offline login');
       } else {
-        console.log('⚠️ Mobile AuthContext: No password hash available for validation - proceeding with email-only validation');
       }
 
       // Check if session is not expired
       if (new Date(cachedSession.expiresAt) <= new Date()) {
-        console.log('❌ Mobile AuthContext: Cached session has expired');
         return false;
       }
 
@@ -177,11 +165,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
       ) || ['HOTEL_ADMIN', 'FRONTDESK'].includes(cachedSession.role);
 
       if (!isHotelStaff) {
-        console.log('❌ Mobile AuthContext: Cached session is not for hotel staff');
         return false;
       }
 
-      console.log('✅ Mobile AuthContext: Offline authentication successful');
       
       // Map cached session to user format
       const offlineUser: User = {
@@ -212,7 +198,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
       // Notify parent component of token change
       onTokenChange?.(cachedSession.token);
 
-      console.log('🏨 Mobile AuthContext: Offline login completed for hotel staff');
       return true;
 
     } catch (error) {
@@ -226,12 +211,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
     setError(null);
     
     try {
-      console.log('Mobile AuthContext: Starting login process');
-      console.log('Mobile AuthContext: API URL:', API_CONFIG.BASE_URL);
-      console.log('Mobile AuthContext: User Agent:', navigator.userAgent);
       
       const requestBody = { email, password };
-      console.log('Mobile AuthContext: Request body prepared');
       
       const response = await fetch(`${API_CONFIG.BASE_URL}/auth/login`, {
         method: 'POST',
@@ -242,19 +223,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
         body: JSON.stringify(requestBody),
       });
 
-      console.log('Mobile AuthContext: Response received:', response.status, response.statusText);
-      console.log('Mobile AuthContext: Response headers:', Object.fromEntries(response.headers));
 
       if (!response.ok) {
         const errorText = await response.text();
         console.error('Mobile AuthContext: Online login failed with status:', response.status, errorText);
         
         // Attempt offline authentication for hotel staff when server responds with error
-        console.log('🔄 Mobile AuthContext: Server error - attempting offline login fallback...');
         const offlineSuccess = await attemptOfflineLogin(email, password);
         
         if (offlineSuccess) {
-          console.log('✅ Mobile AuthContext: Offline login successful after server error');
           return true;
         }
         
@@ -264,11 +241,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
       }
 
       const loginData = await response.json();
-      console.log('Mobile AuthContext: Login successful, parsing data...');
-      console.log('Mobile AuthContext: Login data keys:', Object.keys(loginData));
 
       // Map backend response to frontend User interface
-      console.log('Mobile AuthContext: Mapping user data...');
       const user: User = {
         id: loginData.id.toString(),
         email: loginData.email,
@@ -290,26 +264,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
         isTenantBound: (loginData.tenantId !== null && loginData.tenantId !== undefined), // true if user has a tenant assignment
       };
 
-      console.log('Mobile AuthContext: Setting user state...');
       setUser(user);
       setToken(loginData.token);
       
       // Persist to localStorage using TokenManager
-      console.log('Mobile AuthContext: Persisting to localStorage...');
       try {
         TokenManager.setAuth(loginData.token, user as AuthUser);
-        console.log('Mobile AuthContext: localStorage save successful');
       } catch (storageError) {
         console.error('Mobile AuthContext: localStorage save failed:', storageError);
       }
       
       // Save staff session for offline use
-      console.log('Mobile AuthContext: Saving staff session for offline use...');
       try {
         // Ensure OfflineStorageService is initialized before saving session
         try {
           await offlineStorage.init(); // This will be a no-op if already initialized
-          console.log('✅ Mobile AuthContext: OfflineStorageService is ready');
         } catch (initError) {
           console.error('❌ Mobile AuthContext: Failed to initialize OfflineStorageService:', initError);
           throw initError;
@@ -331,31 +300,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
           isActive: true
         };
         
-        console.log('🔍 Mobile AuthContext: Staff session object:', staffSession);
         await offlineStorage.saveStaffSession(staffSession, password);
-        console.log('✅ Mobile AuthContext: Staff session saved successfully');
         
         // Verify session was saved
         const savedSession = await offlineStorage.getActiveStaffSession();
-        console.log('🔍 Mobile AuthContext: Verification - saved session:', savedSession);
         
         // Cache room data immediately after successful login for hotel staff
         const userRoles = Array.isArray(loginData.roles) ? loginData.roles : [loginData.roles];
         const isHotelStaff = userRoles.some((role: string) => ['HOTEL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'OPERATIONS_SUPERVISOR'].includes(role));
         
-        console.log('🔍 Mobile AuthContext: Checking room caching conditions...');
-        console.log('🔍 Mobile AuthContext: loginData.hotelId:', loginData.hotelId);
-        console.log('🔍 Mobile AuthContext: userRoles:', userRoles);
-        console.log('🔍 Mobile AuthContext: isHotelStaff:', isHotelStaff);
         
         if (loginData.hotelId && isHotelStaff) {
-          console.log('🏨 Mobile AuthContext: Triggering room data cache for hotel staff...');
           try {
             const hotelId = parseInt(loginData.hotelId.toString());
-            console.log('🏨 Mobile AuthContext: Parsed hotel ID:', hotelId);
             // Start room caching in background - don't wait for it to complete
             roomCacheService.fetchAndCacheRooms(hotelId).then((cachedRooms) => {
-              console.log(`✅ Mobile AuthContext: Successfully cached ${cachedRooms.length} rooms for hotel ${hotelId}`);
               // Start periodic refresh for cached rooms
               roomCacheService.startPeriodicRefresh(hotelId);
             }).catch((cacheError) => {
@@ -366,9 +325,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
             console.warn('⚠️ Mobile AuthContext: Failed to start room caching:', cacheError);
           }
         } else {
-          console.log('❌ Mobile AuthContext: Room caching skipped - conditions not met');
-          console.log('❌ Mobile AuthContext: hotelId exists:', !!loginData.hotelId);
-          console.log('❌ Mobile AuthContext: isHotelStaff:', isHotelStaff);
         }
       } catch (sessionError) {
         console.error('❌ Mobile AuthContext: Failed to save staff session:', sessionError);
@@ -377,21 +333,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
       }
       
       // Notify parent component of token change
-      console.log('Mobile AuthContext: Notifying token change...');
       onTokenChange?.(loginData.token);
       
-      console.log('Mobile AuthContext: Login process completed successfully');
       return true;
     } catch (error) {
       console.error('Mobile AuthContext: Online login failed with error:', error);
       console.error('Mobile AuthContext: Error stack:', (error as Error).stack);
       
       // Attempt offline authentication for hotel staff
-      console.log('🔄 Mobile AuthContext: Attempting offline login fallback...');
       const offlineSuccess = await attemptOfflineLogin(email, password);
       
       if (offlineSuccess) {
-        console.log('✅ Mobile AuthContext: Offline login successful');
         return true;
       }
       
@@ -422,11 +374,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
     // Clear tenant context
     onLogout?.();
     
-    console.log('User logged out');
   };
 
   const handleSessionExpired = () => {
-    console.log('Session expired - logging out user');
     setSessionExpired(true);
     setUser(null);
     setToken(null);

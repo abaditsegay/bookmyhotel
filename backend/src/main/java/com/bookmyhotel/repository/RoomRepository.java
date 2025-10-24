@@ -313,6 +313,13 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
        List<Room> findAllByOrderByHotelIdAscRoomNumberAsc();
 
        /**
+        * Find room by room number and hotel ID
+        */
+       @Query("SELECT r FROM Room r WHERE r.roomNumber = :roomNumber AND r.hotel.id = :hotelId")
+       Optional<Room> findByRoomNumberAndHotelId(@Param("roomNumber") String roomNumber,
+                     @Param("hotelId") Long hotelId);
+
+       /**
         * Find rooms that need maintenance after checkout
         * Used by automated room status service
         */

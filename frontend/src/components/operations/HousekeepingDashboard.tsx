@@ -46,10 +46,7 @@ const API_BASE_URL = API_CONFIG.BASE_URL;
 
 interface HousekeepingTask {
   id: number;
-  room: {
-    roomNumber: string;
-    floor: number;
-  };
+  roomNumber?: string;
   taskType: string;
   status: string;
   priority: string;
@@ -79,7 +76,7 @@ interface HousekeepingStaff {
 }
 
 interface CreateTaskForm {
-  roomId: string;
+  roomNumber: string;
   taskType: string;
   description: string;
   priority: string;
@@ -96,7 +93,7 @@ const HousekeepingDashboard: React.FC = () => {
   // Create task dialog states
   const [createTaskOpen, setCreateTaskOpen] = useState(false);
   const [createTaskForm, setCreateTaskForm] = useState<CreateTaskForm>({
-    roomId: '',
+    roomNumber: '',
     taskType: '',
     description: '',
     priority: 'NORMAL',
@@ -154,8 +151,8 @@ const HousekeepingDashboard: React.FC = () => {
         const transformedTasks = backendTasks.map((task: any) => ({
           id: task.id,
           room: {
-            roomNumber: task.room?.roomNumber || 'Unknown',
-            floor: task.room?.floor || Math.floor(parseInt(task.room?.roomNumber || '0') / 100)
+            roomNumber: task.roomNumber || 'Unknown',
+            floor: Math.floor(parseInt(task.roomNumber || '0') / 100)
           },
           taskType: task.taskType || task.task_type,
           status: task.status,
@@ -236,7 +233,7 @@ const HousekeepingDashboard: React.FC = () => {
       
       setCreateTaskOpen(false);
       setCreateTaskForm({
-        roomId: '',
+        roomNumber: '',
         taskType: '',
         description: '',
         priority: 'NORMAL',
@@ -252,15 +249,25 @@ const HousekeepingDashboard: React.FC = () => {
     if (!selectedTaskId || !selectedStaffId) return;
     
     try {
-      const response = await fetch(`${API_BASE_URL}/supervisor/tasks/housekeeping/${selectedTaskId}/assign/${selectedStaffId}`, {
-        method: 'PUT',
-        headers: TokenManager.getAuthHeaders()
+      const response = await fetch(`${API_BASE_URL}/housekeeping/tasks/${selectedTaskId}/assign`, {
+        method: 'POST',
+        headers: {
+          ...TokenManager.getAuthHeaders(),
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          staffId: selectedStaffId
+        })
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to assign task: ${response.status}`);
+        const errorText = await response.text();
+        console.error('Assignment failed:', response.status, errorText);
+        throw new Error(`Failed to assign task: ${response.status} - ${errorText}`);
       }
 
+      await response.json();
+      
       setAssignTaskOpen(false);
       setSelectedTaskId(null);
       setSelectedStaffId('');
@@ -344,7 +351,6 @@ const HousekeepingDashboard: React.FC = () => {
     
     try {
       // TODO: Call API to update task
-      console.log('Saving task edit:', editTaskData);
       
       // For now, just update the local task
       const updatedTask = {
@@ -429,7 +435,7 @@ const HousekeepingDashboard: React.FC = () => {
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4" component="h1">
-          Housekeeping Management
+          Housekeeping Tasks
         </Typography>
         <Box sx={{ display: 'flex', gap: 2 }}>
           <Button
@@ -510,10 +516,10 @@ const HousekeepingDashboard: React.FC = () => {
               <TableRow key={task.id}>
                 <TableCell>
                   <Typography variant="body2" fontWeight="medium">
-                    {task.room.roomNumber}
+                    {task.roomNumber || 'N/A'}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    Floor {task.room.floor}
+                    Floor {Math.floor(parseInt(task.roomNumber || '0') / 100) || 'N/A'}
                   </Typography>
                 </TableCell>
                 <TableCell>
@@ -665,9 +671,10 @@ const HousekeepingDashboard: React.FC = () => {
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
             <TextField
-              label="Room ID"
-              value={createTaskForm.roomId}
-              onChange={(e) => setCreateTaskForm({ ...createTaskForm, roomId: e.target.value })}
+              label="Room Number"
+              value={createTaskForm.roomNumber}
+              onChange={(e) => setCreateTaskForm({ ...createTaskForm, roomNumber: e.target.value })}
+              placeholder="e.g., 101, Lobby, Pool Area (optional)"
               fullWidth
             />
             <FormControl fullWidth>
@@ -807,7 +814,7 @@ const HousekeepingDashboard: React.FC = () => {
           {selectedTask && (
             <Box sx={{ pt: 2 }}>
               <Typography variant="h6" gutterBottom>
-                Task #{selectedTask.id} - Room {selectedTask.room.roomNumber}
+                Task #{selectedTask.id} - Room {selectedTask.roomNumber || 'N/A'}
               </Typography>
               
               <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mt: 2 }}>

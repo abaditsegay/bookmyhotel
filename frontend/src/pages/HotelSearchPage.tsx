@@ -33,10 +33,8 @@ const HotelSearchPage: React.FC = () => {
     
     try {
       // Use public API call for hotel search (no authentication/tenant headers)
-      console.log('🔍 Performing public hotel search:', searchRequest);
       const results = await hotelApiService.searchHotelsPublic(searchRequest);
       
-      console.log('✅ Hotel search results:', results);
       
       // Navigate to hotel list page with the data
       navigate('/hotels/search-results', {

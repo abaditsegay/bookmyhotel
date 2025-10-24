@@ -93,7 +93,6 @@ class SyncManager {
       const bookings = await offlineStorage.getOfflineBookings();
       const pendingBookings = bookings.filter(b => b.status === 'PENDING_SYNC');
 
-      console.log(`Found ${pendingBookings.length} pending bookings to sync`);
 
       for (const booking of pendingBookings) {
         const result = await this.syncSingleBooking(booking, token);
@@ -112,7 +111,6 @@ class SyncManager {
       if (results.syncedCount > 0) {
         try {
           await offlineStorage.cleanupOrphanedGuests();
-          console.log('Cleaned up orphaned guest data after sync');
         } catch (error) {
           console.warn('Failed to cleanup orphaned guests:', error);
         }

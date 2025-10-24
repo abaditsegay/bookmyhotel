@@ -47,7 +47,6 @@ const HotelListPage: React.FC = () => {
       setError('');
       console.log('🔍 Performing hotel search:', searchReq);
       const results = await hotelApiService.searchHotelsPublic(searchReq);
-      console.log('✅ Hotel search results:', results);
       setHotels(results);
     } catch (err) {
       console.error('❌ Hotel search failed:', err);

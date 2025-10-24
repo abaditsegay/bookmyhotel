@@ -1,22 +1,31 @@
 package com.bookmyhotel.controller;
 
+import com.bookmyhotel.dto.TaskUpdateRequest;
 import com.bookmyhotel.entity.HousekeepingTask;
 import com.bookmyhotel.entity.HousekeepingTaskStatus;
 import com.bookmyhotel.entity.HousekeepingStaff;
 import com.bookmyhotel.entity.HousekeepingTaskType;
 import com.bookmyhotel.entity.TaskPriority;
+import com.bookmyhotel.entity.User;
+import com.bookmyhotel.entity.UserRole;
 import com.bookmyhotel.enums.WorkShift;
+import com.bookmyhotel.repository.UserRepository;
 import com.bookmyhotel.service.HousekeepingService;
 import com.bookmyhotel.service.HotelService;
 import com.bookmyhotel.tenant.TenantContext;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/housekeeping")
+@PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('HOUSEKEEPING') or hasRole('OPERATIONS_SUPERVISOR')")
 public class HousekeepingController {
 
     @Autowired
@@ -25,26 +34,60 @@ public class HousekeepingController {
     @Autowired
     private HotelService hotelService;
 
+    @Autowired
+    private UserRepository userRepository;
+
     // Task endpoints
     @PostMapping("/tasks")
     public ResponseEntity<HousekeepingTask> createTask(@RequestBody HousekeepingTaskRequest request) {
+        System.out.println("🔍 Creating task with request: " + request);
+        System.out.println("🔍 Title: " + request.getTitle());
+        System.out.println("🔍 Description: " + request.getDescription());
+        System.out.println("🔍 Task Type: " + request.getTaskType());
+        System.out.println("🔍 Priority: " + request.getPriority());
+        System.out.println("🔍 Room Number: " + request.getRoomNumber());
+        System.out.println("🔍 Estimated Duration: " + request.getEstimatedDuration());
+        System.out.println("🔍 Assigned Staff ID: " + request.getAssignedStaffId());
+        System.out.println("🔍 Notes: " + request.getNotes());
+
         String tenantId = TenantContext.getTenantId();
         Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
-        HousekeepingTask task = housekeepingService.createTask(
-                hotelId,
-                request.getRoomId(),
-                request.getTaskType(),
-                request.getPriority(),
-                request.getDescription(),
-                request.getSpecialInstructions());
-        return ResponseEntity.ok(task);
+        System.out.println("🔍 Tenant ID: " + tenantId);
+        System.out.println("🔍 Hotel ID: " + hotelId);
+
+        // Create a comprehensive description from title and description
+        String fullDescription = request.getTitle();
+        if (request.getDescription() != null && !request.getDescription().trim().isEmpty()) {
+            fullDescription += "\n\n" + request.getDescription();
+        }
+
+        try {
+            HousekeepingTask task = housekeepingService.createTaskEnhanced(
+                    hotelId,
+                    request.getRoomNumber(),
+                    request.getTaskType(),
+                    request.getPriority(),
+                    fullDescription,
+                    request.getNotes(),
+                    request.getEstimatedDuration(),
+                    request.getAssignedStaffId());
+            System.out.println("✅ Task created successfully: " + task.getId());
+            return ResponseEntity.ok(task);
+        } catch (Exception e) {
+            System.err.println("❌ Error creating task: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     @GetMapping("/tasks")
-    public ResponseEntity<List<HousekeepingTask>> getAllTasks() {
+    public ResponseEntity<Page<HousekeepingTask>> getAllTasks(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
         String tenantId = TenantContext.getTenantId();
         Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
-        List<HousekeepingTask> tasks = housekeepingService.getAllTasks(hotelId);
+        Pageable pageable = PageRequest.of(page, size);
+        Page<HousekeepingTask> tasks = housekeepingService.getAllTasks(hotelId, pageable);
         return ResponseEntity.ok(tasks);
     }
 
@@ -63,12 +106,8 @@ public class HousekeepingController {
     @GetMapping("/tasks/hotel/{hotelId}")
     public ResponseEntity<List<HousekeepingTask>> getTasksByHotel(@PathVariable Long hotelId) {
         String tenantId = TenantContext.getTenantId();
-        // Filter by hotel through room relationship
-        List<HousekeepingTask> allTasks = housekeepingService.getAllTasks(hotelId);
-        List<HousekeepingTask> hotelTasks = allTasks.stream()
-                .filter(task -> task.getRoom() != null && task.getRoom().getHotel() != null &&
-                        task.getRoom().getHotel().getId().equals(hotelId))
-                .toList();
+        // Get tasks directly by hotel ID (tasks now store hotel ID directly)
+        List<HousekeepingTask> hotelTasks = housekeepingService.getAllTasks(hotelId);
         return ResponseEntity.ok(hotelTasks);
     }
 
@@ -132,6 +171,18 @@ public class HousekeepingController {
         return ResponseEntity.ok(updatedTask);
     }
 
+    @PutMapping("/tasks/{id}/status")
+    public ResponseEntity<?> updateTaskStatus(@PathVariable Long id, @RequestBody TaskUpdateRequest request) {
+        try {
+            String tenantId = TenantContext.getTenantId();
+            Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
+            HousekeepingTask updatedTask = housekeepingService.updateTaskStatus(hotelId, id, request.getStatus(), request.getNotes());
+            return ResponseEntity.ok(updatedTask);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error updating task status: " + e.getMessage());
+        }
+    }
+
     @PostMapping("/tasks/{id}/cancel")
     public ResponseEntity<HousekeepingTask> cancelTask(@PathVariable Long id, @RequestBody CancelTaskRequest request) {
         String tenantId = TenantContext.getTenantId();
@@ -160,9 +211,12 @@ public class HousekeepingController {
     public ResponseEntity<List<HousekeepingStaffDTO>> getAllStaff() {
         String tenantId = TenantContext.getTenantId();
         Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
-        List<HousekeepingStaff> staff = housekeepingService.getAllStaff(hotelId);
-        List<HousekeepingStaffDTO> staffDTOs = staff.stream()
-                .map(this::convertToStaffDTO)
+
+        // Get users with HOUSEKEEPING role from the hotel
+        List<User> housekeepingUsers = userRepository.findByHotelIdAndRole(hotelId, UserRole.HOUSEKEEPING);
+
+        List<HousekeepingStaffDTO> staffDTOs = housekeepingUsers.stream()
+                .map(this::convertUserToStaffDTO)
                 .toList();
         return ResponseEntity.ok(staffDTOs);
     }
@@ -234,19 +288,32 @@ public class HousekeepingController {
 
     // DTO Classes
     public static class HousekeepingTaskRequest {
-        private Long roomId;
+        private String title; // Will use as part of description
+        private String description;
         private HousekeepingTaskType taskType;
         private TaskPriority priority;
-        private String description;
-        private String specialInstructions;
+        private String roomNumber; // Will look up room by number
+        private Integer floorNumber;
+        private Integer estimatedDuration; // Duration in minutes
+        private String dueDate; // ISO date string
+        private Long assignedStaffId;
+        private String notes; // Will use as specialInstructions
 
         // Getters and setters
-        public Long getRoomId() {
-            return roomId;
+        public String getTitle() {
+            return title;
         }
 
-        public void setRoomId(Long roomId) {
-            this.roomId = roomId;
+        public void setTitle(String title) {
+            this.title = title;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
         }
 
         public HousekeepingTaskType getTaskType() {
@@ -265,20 +332,61 @@ public class HousekeepingController {
             this.priority = priority;
         }
 
-        public String getDescription() {
-            return description;
+        public String getRoomNumber() {
+            return roomNumber;
         }
 
-        public void setDescription(String description) {
-            this.description = description;
+        public void setRoomNumber(String roomNumber) {
+            this.roomNumber = roomNumber;
+        }
+
+        public Integer getFloorNumber() {
+            return floorNumber;
+        }
+
+        public void setFloorNumber(Integer floorNumber) {
+            this.floorNumber = floorNumber;
+        }
+
+        public Integer getEstimatedDuration() {
+            return estimatedDuration;
+        }
+
+        public void setEstimatedDuration(Integer estimatedDuration) {
+            this.estimatedDuration = estimatedDuration;
+        }
+
+        public String getDueDate() {
+            return dueDate;
+        }
+
+        public void setDueDate(String dueDate) {
+            this.dueDate = dueDate;
+        }
+
+        public Long getAssignedStaffId() {
+            return assignedStaffId;
+        }
+
+        public void setAssignedStaffId(Long assignedStaffId) {
+            this.assignedStaffId = assignedStaffId;
+        }
+
+        public String getNotes() {
+            return notes;
+        }
+
+        public void setNotes(String notes) {
+            this.notes = notes;
+        }
+
+        // Legacy getters for backward compatibility
+        public Long getRoomId() {
+            return null; // Not used in new implementation
         }
 
         public String getSpecialInstructions() {
-            return specialInstructions;
-        }
-
-        public void setSpecialInstructions(String specialInstructions) {
-            this.specialInstructions = specialInstructions;
+            return notes;
         }
     }
 
@@ -540,6 +648,22 @@ public class HousekeepingController {
         dto.setAverageRating(staff.getAverageRating() != null ? staff.getAverageRating() : 0.0);
         dto.setTotalTasksCompleted(staff.getTasksCompletedToday() != null ? staff.getTasksCompletedToday() : 0);
         dto.setTenantId(staff.getTenantId());
+        return dto;
+    }
+
+    // Conversion method for User to HousekeepingStaffDTO
+    private HousekeepingStaffDTO convertUserToStaffDTO(User user) {
+        HousekeepingStaffDTO dto = new HousekeepingStaffDTO();
+        dto.setId(user.getId());
+        dto.setEmployeeId("EMP" + user.getId()); // Generate employee ID from user ID
+        dto.setUser(new UserDTO(user.getId(), user.getFirstName(), user.getLastName()));
+        dto.setShiftType("DAY"); // Default shift type since it's not stored in User entity
+        dto.setActive(user.getIsActive() != null ? user.getIsActive() : true);
+        dto.setAverageRating(0.0); // Default rating since not tracked for users
+        dto.setTotalTasksCompleted(0); // Default tasks completed since not tracked for users
+        dto.setTenantId(user.getHotel() != null && user.getHotel().getTenant() != null
+                ? user.getHotel().getTenant().getId()
+                : null);
         return dto;
     }
 }

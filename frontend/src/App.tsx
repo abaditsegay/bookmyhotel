@@ -49,6 +49,7 @@ import BookingManagementPage from './pages/BookingManagementPage';
 import GuestBookingManagementPage from './pages/GuestBookingManagementPage';
 import { SystemDashboardPage } from './pages/SystemDashboardPage';
 import MyBookings from './components/MyBookings';
+import HousekeepingPage from './pages/housekeeping/HousekeepingPage';
 import OperationsPage from './pages/operations/OperationsPage';
 import StaffDashboardPage from './pages/StaffDashboardPage';
 import ShopRoutes from './pages/shop/ShopRoutes';
@@ -457,6 +458,11 @@ function App() {
             <RoomViewEdit />
           </ProtectedRoute>
         } />
+        <Route path="/hotel-admin/housekeeping" element={
+          <ProtectedRoute requiredRoles={['HOTEL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'OPERATIONS_SUPERVISOR']}>
+            <HousekeepingPage />
+          </ProtectedRoute>
+        } />
         
         {/* Front Desk Routes */}
         <Route path="/frontdesk" element={
@@ -482,6 +488,11 @@ function App() {
         <Route path="/frontdesk/schedules" element={
           <ProtectedRoute requiredRole="FRONTDESK">
             <StaffScheduleDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/frontdesk/housekeeping" element={
+          <ProtectedRoute requiredRoles={['HOTEL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'OPERATIONS_SUPERVISOR']}>
+            <HousekeepingPage />
           </ProtectedRoute>
         } />
         
@@ -523,14 +534,19 @@ function App() {
           </ProtectedRoute>
         } />
         
-        {/* Housekeeping Routes */}
+        {/* Housekeeping Routes - Accessible by Hotel Admin, Front Desk, and Housekeeping Staff */}
         <Route path="/housekeeping" element={
-          <ProtectedRoute requiredRole="HOUSEKEEPING">
-            <Navigate to="/housekeeping/schedules" replace />
+          <ProtectedRoute requiredRoles={['HOTEL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'OPERATIONS_SUPERVISOR']}>
+            <Navigate to="/housekeeping/dashboard" replace />
+          </ProtectedRoute>
+        } />
+        <Route path="/housekeeping/dashboard" element={
+          <ProtectedRoute requiredRoles={['HOTEL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'OPERATIONS_SUPERVISOR']}>
+            <HousekeepingPage />
           </ProtectedRoute>
         } />
         <Route path="/housekeeping/schedules" element={
-          <ProtectedRoute requiredRole="HOUSEKEEPING">
+          <ProtectedRoute requiredRoles={['HOTEL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'OPERATIONS_SUPERVISOR']}>
             <StaffScheduleDashboard />
           </ProtectedRoute>
         } />
