@@ -271,34 +271,42 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
 
           <Divider sx={{ my: { xs: 1.5, md: 2 } }} />
 
+          {/* Total Section with Distinct Background */}
           <Box sx={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
+            backgroundColor: alpha(COLORS.PRIMARY, 0.08),
+            borderRadius: 2,
+            p: { xs: 1.5, md: 2 },
             mb: { xs: 1.5, md: 2 },
-            flexDirection: { xs: 'column', sm: 'row' },
-            alignItems: { xs: 'flex-start', sm: 'center' },
-            gap: { xs: 0.5, sm: 0 },
+            border: `1px solid ${alpha(COLORS.PRIMARY, 0.15)}`,
           }}>
-            <Typography 
-              variant={isMobile ? 'body1' : 'h6'} 
-              sx={{ 
-                fontWeight: 700, 
-                color: COLORS.PRIMARY,
-                fontSize: { xs: '1.1rem', md: '1.25rem' },
-              }}
-            >
-              {t('booking.summary.total')}
-            </Typography>
-            <Typography 
-              variant={isMobile ? 'body1' : 'h6'} 
-              sx={{ 
-                fontWeight: 700, 
-                color: COLORS.PRIMARY,
-                fontSize: { xs: '1.2rem', md: '1.25rem' },
-              }}
-            >
-              {formatCurrency(totalAmount || 0)}
-            </Typography>
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              flexDirection: { xs: 'column', sm: 'row' },
+              alignItems: { xs: 'flex-start', sm: 'center' },
+              gap: { xs: 0.5, sm: 0 },
+            }}>
+              <Typography 
+                variant={isMobile ? 'body1' : 'h6'} 
+                sx={{ 
+                  fontWeight: 700, 
+                  color: COLORS.PRIMARY,
+                  fontSize: { xs: '1.1rem', md: '1.25rem' },
+                }}
+              >
+                {t('booking.summary.total')}
+              </Typography>
+              <Typography 
+                variant={isMobile ? 'body1' : 'h6'} 
+                sx={{ 
+                  fontWeight: 700, 
+                  color: COLORS.PRIMARY,
+                  fontSize: { xs: '1.2rem', md: '1.25rem' },
+                }}
+              >
+                {formatCurrency(totalAmount || 0)}
+              </Typography>
+            </Box>
           </Box>
 
           <Alert 
