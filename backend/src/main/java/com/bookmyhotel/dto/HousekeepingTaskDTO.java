@@ -12,6 +12,7 @@ import com.bookmyhotel.entity.TaskPriority;
 public class HousekeepingTaskDTO {
     
     private Long id;
+    private String title;
     private HousekeepingTaskType taskType;
     private HousekeepingTaskStatus status;
     private TaskPriority priority;
@@ -78,6 +79,14 @@ public class HousekeepingTaskDTO {
     
     public void setId(Long id) {
         this.id = id;
+    }
+    
+    public String getTitle() {
+        return title;
+    }
+    
+    public void setTitle(String title) {
+        this.title = title;
     }
     
     public HousekeepingTaskType getTaskType() {

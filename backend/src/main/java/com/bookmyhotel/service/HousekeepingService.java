@@ -56,14 +56,14 @@ public class HousekeepingService {
         }
 
         // Delegate to enhanced method using room number
-        return createTaskEnhanced(hotelId, room.getRoomNumber(), taskType, priority, description,
+        return createTaskEnhanced(hotelId, room.getRoomNumber(), description, taskType, priority, null,
                 specialInstructions, null, null);
     }
 
     /**
      * Create a housekeeping task with enhanced parameters
      */
-    public HousekeepingTask createTaskEnhanced(Long hotelId, String roomNumber, HousekeepingTaskType taskType,
+    public HousekeepingTask createTaskEnhanced(Long hotelId, String roomNumber, String title, HousekeepingTaskType taskType,
             TaskPriority priority, String description, String specialInstructions,
             Integer estimatedDuration, Long assignedStaffId) {
 
@@ -82,6 +82,7 @@ public class HousekeepingService {
         }
 
         // Set basic task properties
+        task.setTitle(title);
         task.setTaskType(taskType);
         task.setStatus(HousekeepingTaskStatus.PENDING);
         task.setPriority(priority);
@@ -612,7 +613,7 @@ public class HousekeepingService {
     public HousekeepingTask createTaskWithoutRoom(Long hotelId, HousekeepingTaskType taskType,
             TaskPriority priority, String description, String specialInstructions) {
         // Delegate to enhanced method with null room number for general tasks
-        return createTaskEnhanced(hotelId, null, taskType, priority, description,
+        return createTaskEnhanced(hotelId, null, description, taskType, priority, null,
                 specialInstructions, null, null);
     }
 

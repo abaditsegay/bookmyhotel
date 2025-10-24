@@ -57,19 +57,14 @@ public class HousekeepingController {
         System.out.println("🔍 Tenant ID: " + tenantId);
         System.out.println("🔍 Hotel ID: " + hotelId);
 
-        // Create a comprehensive description from title and description
-        String fullDescription = request.getTitle();
-        if (request.getDescription() != null && !request.getDescription().trim().isEmpty()) {
-            fullDescription += "\n\n" + request.getDescription();
-        }
-
         try {
             HousekeepingTask task = housekeepingService.createTaskEnhanced(
                     hotelId,
                     request.getRoomNumber(),
+                    request.getTitle(),
                     request.getTaskType(),
                     request.getPriority(),
-                    fullDescription,
+                    request.getDescription(),
                     request.getNotes(),
                     request.getEstimatedDuration(),
                     request.getAssignedStaffId());
@@ -677,6 +672,7 @@ public class HousekeepingController {
     private HousekeepingTaskDTO convertToDTO(HousekeepingTask task) {
         HousekeepingTaskDTO dto = new HousekeepingTaskDTO();
         dto.setId(task.getId());
+        dto.setTitle(task.getTitle());
         dto.setRoomNumber(task.getRoomNumber());
         dto.setTaskType(task.getTaskType());
         dto.setStatus(task.getStatus());
