@@ -1924,6 +1924,14 @@ export const amTranslations = {
       keepConfirmation: "የማረጋገጫ ቁጥርዎን ለመመሳከሪያ ያስቀምጡ"
     },
     
+    // Summary section
+    summary: {
+      bookedOn: "የተያዘበት ቀን",
+      duration: "ርዝመት",
+      nightSingle: "ምሽት",
+      nightPlural: "ምሽቶች"
+    },
+    
     // Email dialog
     emailDialog: {
       title: "የማስያዝ ማረጋገጫ በኢሜይል ላክ",

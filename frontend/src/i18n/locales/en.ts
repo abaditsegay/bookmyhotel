@@ -2063,6 +2063,14 @@ export const enTranslations = {
       keepConfirmation: "Keep your confirmation number for reference"
     },
     
+    // Summary section
+    summary: {
+      bookedOn: "Booked on",
+      duration: "Duration",
+      nightSingle: "night",
+      nightPlural: "nights"
+    },
+    
     // Email dialog
     emailDialog: {
       title: "Email Booking Confirmation",
