@@ -52,22 +52,22 @@ public interface HousekeepingTaskRepository extends JpaRepository<HousekeepingTa
         Page<HousekeepingTask> findByHotelIdAndAssignedUser(@Param("hotelId") Long hotelId,
                         @Param("user") User user, Pageable pageable);
 
-        @Query("SELECT h FROM HousekeepingTask h WHERE h.hotel.id = :hotelId AND h.assignedUser.id = :userId")
+        @Query("SELECT h FROM HousekeepingTask h LEFT JOIN FETCH h.assignedUser LEFT JOIN FETCH h.hotel WHERE h.hotel.id = :hotelId AND h.assignedUser.id = :userId")
         Page<HousekeepingTask> findByHotelIdAndAssignedUserId(@Param("hotelId") Long hotelId,
                         @Param("userId") Long userId, Pageable pageable);
 
-        @Query("SELECT h FROM HousekeepingTask h WHERE h.assignedUser.id = :userId AND h.hotel.id = :hotelId AND h.createdAt BETWEEN :start AND :end")
+        @Query("SELECT h FROM HousekeepingTask h LEFT JOIN FETCH h.assignedUser LEFT JOIN FETCH h.hotel WHERE h.assignedUser.id = :userId AND h.hotel.id = :hotelId AND h.createdAt BETWEEN :start AND :end")
         List<HousekeepingTask> findByAssignedUserIdAndHotelIdAndCreatedAtBetween(@Param("userId") Long userId,
                         @Param("hotelId") Long hotelId, @Param("start") LocalDateTime start,
                         @Param("end") LocalDateTime end);
 
-        @Query("SELECT h FROM HousekeepingTask h WHERE h.hotel.id = :hotelId AND h.assignedUser = :user AND h.createdAt BETWEEN :start AND :end")
+        @Query("SELECT h FROM HousekeepingTask h LEFT JOIN FETCH h.assignedUser LEFT JOIN FETCH h.hotel WHERE h.hotel.id = :hotelId AND h.assignedUser = :user AND h.createdAt BETWEEN :start AND :end")
         List<HousekeepingTask> findByHotelIdAndAssignedUserAndCreatedAtBetween(@Param("hotelId") Long hotelId,
                         @Param("user") User user, @Param("start") LocalDateTime start,
                         @Param("end") LocalDateTime end);
 
         // User-specific queries (for staff view)
-        @Query("SELECT h FROM HousekeepingTask h WHERE h.assignedUser.id = :userId")
+        @Query("SELECT h FROM HousekeepingTask h LEFT JOIN FETCH h.assignedUser LEFT JOIN FETCH h.hotel WHERE h.assignedUser.id = :userId")
         Page<HousekeepingTask> findByAssignedUserId(@Param("userId") Long userId, Pageable pageable);
 
         @Query("SELECT COUNT(h) FROM HousekeepingTask h WHERE h.assignedUser.id = :userId")
