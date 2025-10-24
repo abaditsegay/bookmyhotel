@@ -25,7 +25,11 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Tooltip
+  Tooltip,
+  useMediaQuery,
+  useTheme,
+  Fab,
+  List
 } from '@mui/material';
 import {
   CheckCircle as CheckCircleIcon,
@@ -34,7 +38,8 @@ import {
   Assignment as AssignmentIcon,
   Visibility as VisibilityIcon,
   FilterList as FilterListIcon,
-  Clear as ClearIcon
+  Clear as ClearIcon,
+  Refresh as RefreshIcon
 } from '@mui/icons-material';
 import { housekeepingSupervisorApi } from '../../services/housekeepingSupervisorApi';
 import { HousekeepingTask, HousekeepingStaff, HousekeepingTaskType, TaskPriority, CreateHousekeepingTaskRequest, HousekeepingTaskStatus } from '../../types/operations';
@@ -47,6 +52,9 @@ interface HousekeepingDashboardProps {
 
 const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole, userId }) => {
   const { user } = useAuth();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  
   const [tasks, setTasks] = useState<HousekeepingTask[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -363,8 +371,19 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
   const stats = getTaskStats();
 
   return (
-    <Box sx={{ flexGrow: 1, p: 3 }}>
-      <Typography variant="h4" component="h1" sx={{ mb: 3 }}>
+    <Box sx={{ 
+      flexGrow: 1, 
+      p: { xs: 1, sm: 2, md: 3 },
+      pb: { xs: 8, sm: 3 } // Extra bottom padding on mobile for FAB
+    }}>
+      <Typography 
+        variant={isMobile ? "h5" : "h4"} 
+        component="h1" 
+        sx={{ 
+          mb: { xs: 2, md: 3 },
+          textAlign: { xs: 'center', sm: 'left' }
+        }}
+      >
         {isHousekeepingStaff() ? 'My Tasks' : 'Tasks Overview'}
       </Typography>
 
@@ -375,50 +394,82 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
       )}
 
       {/* Statistics Cards */}
-      <Grid container spacing={3} sx={{ mb: 3 }}>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Typography color="textSecondary" gutterBottom>
+      <Grid container spacing={{ xs: 1, sm: 2, md: 3 }} sx={{ mb: { xs: 2, md: 3 } }}>
+        <Grid item xs={6} sm={6} md={3}>
+          <Card sx={{ height: '100%' }}>
+            <CardContent sx={{ 
+              p: { xs: 1, sm: 2 },
+              '&:last-child': { pb: { xs: 1, sm: 2 } }
+            }}>
+              <Typography 
+                color="textSecondary" 
+                gutterBottom
+                variant={isMobile ? "caption" : "body2"}
+                sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}
+              >
                 Total Tasks
               </Typography>
-              <Typography variant="h4">
+              <Typography variant={isMobile ? "h6" : "h4"}>
                 {stats.total}
               </Typography>
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Typography color="textSecondary" gutterBottom>
+        <Grid item xs={6} sm={6} md={3}>
+          <Card sx={{ height: '100%' }}>
+            <CardContent sx={{ 
+              p: { xs: 1, sm: 2 },
+              '&:last-child': { pb: { xs: 1, sm: 2 } }
+            }}>
+              <Typography 
+                color="textSecondary" 
+                gutterBottom
+                variant={isMobile ? "caption" : "body2"}
+                sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}
+              >
                 Completed
               </Typography>
-              <Typography variant="h4" color="success.main">
+              <Typography variant={isMobile ? "h6" : "h4"} color="success.main">
                 {stats.completed}
               </Typography>
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Typography color="textSecondary" gutterBottom>
+        <Grid item xs={6} sm={6} md={3}>
+          <Card sx={{ height: '100%' }}>
+            <CardContent sx={{ 
+              p: { xs: 1, sm: 2 },
+              '&:last-child': { pb: { xs: 1, sm: 2 } }
+            }}>
+              <Typography 
+                color="textSecondary" 
+                gutterBottom
+                variant={isMobile ? "caption" : "body2"}
+                sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}
+              >
                 In Progress
               </Typography>
-              <Typography variant="h4" color="info.main">
+              <Typography variant={isMobile ? "h6" : "h4"} color="info.main">
                 {stats.inProgress}
               </Typography>
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Typography color="textSecondary" gutterBottom>
+        <Grid item xs={6} sm={6} md={3}>
+          <Card sx={{ height: '100%' }}>
+            <CardContent sx={{ 
+              p: { xs: 1, sm: 2 },
+              '&:last-child': { pb: { xs: 1, sm: 2 } }
+            }}>
+              <Typography 
+                color="textSecondary" 
+                gutterBottom
+                variant={isMobile ? "caption" : "body2"}
+                sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}
+              >
                 Pending
               </Typography>
-              <Typography variant="h4" color="warning.main">
+              <Typography variant={isMobile ? "h6" : "h4"} color="warning.main">
                 {stats.pending}
               </Typography>
             </CardContent>
@@ -428,12 +479,27 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
 
       {/* Tasks Table */}
       <Card>
-        <CardContent>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-            <Typography variant="h6">
+        <CardContent sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: { xs: 'column', sm: 'row' },
+            justifyContent: 'space-between', 
+            mb: 2,
+            gap: { xs: 1, sm: 0 }
+          }}>
+            <Typography 
+              variant={isMobile ? "subtitle1" : "h6"}
+              sx={{ mb: { xs: 1, sm: 0 } }}
+            >
               {isHousekeepingStaff() ? 'My Tasks' : 'All Tasks'} ({filteredTasks.length} of {tasks.length} tasks)
             </Typography>
-            <Box sx={{ display: 'flex', gap: 1 }}>
+            <Box sx={{ 
+              display: 'flex', 
+              gap: 1,
+              flexDirection: { xs: 'row', sm: 'row' },
+              flexWrap: { xs: 'wrap', sm: 'nowrap' },
+              justifyContent: { xs: 'center', sm: 'flex-end' }
+            }}>
               {isManagementRole() && (
                 <>
                   <Button 
@@ -441,6 +507,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                     color="primary"
                     onClick={() => setAddTaskDialog(true)}
                     disabled={loading}
+                    size={isMobile ? "small" : "medium"}
                   >
                     Add Task
                   </Button>
@@ -449,12 +516,17 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                     color="secondary"
                     onClick={() => setAddStaffDialog(true)}
                     disabled={loading}
+                    size={isMobile ? "small" : "medium"}
                   >
                     Manage Staff
                   </Button>
                 </>
               )}
-              <Button variant="outlined" onClick={loadTasks}>
+              <Button 
+                variant="outlined" 
+                onClick={loadTasks}
+                size={isMobile ? "small" : "medium"}
+              >
                 Refresh
               </Button>
             </Box>
@@ -462,13 +534,30 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
 
           {/* Filter Controls - Only show for management roles */}
           {isManagementRole() && (
-            <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap', alignItems: 'center' }}>
-              <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box sx={{ 
+              display: 'flex', 
+              gap: { xs: 1, md: 2 }, 
+              mb: 2, 
+              flexWrap: 'wrap', 
+              alignItems: 'center',
+              '& .MuiFormControl-root': {
+                minWidth: { xs: 140, md: 150 }
+              }
+            }}>
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: 1,
+                  fontSize: { xs: '0.8rem', md: '0.875rem' }
+                }}
+              >
                 <FilterListIcon fontSize="small" />
                 Filters:
               </Typography>
               
-              <FormControl size="small" sx={{ minWidth: 150 }}>
+              <FormControl size="small">
                 <InputLabel>Assigned To</InputLabel>
                 <Select
                   value={filterAssignedTo}
@@ -488,7 +577,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                 </Select>
               </FormControl>
 
-              <FormControl size="small" sx={{ minWidth: 120 }}>
+              <FormControl size="small">
                 <InputLabel>Status</InputLabel>
                 <Select
                   value={filterStatus}
@@ -535,21 +624,105 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                   : "No tasks match the current filters."}
             </Alert>
           ) : (
-            <TableContainer component={Paper}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Title</TableCell>
-                    <TableCell>Type</TableCell>
-                    <TableCell>Room</TableCell>
-                    {isManagementRole() && <TableCell>Assigned To</TableCell>}
-                    <TableCell>Priority</TableCell>
-                    <TableCell>Status</TableCell>
-                    <TableCell>Due Date</TableCell>
-                    <TableCell>Actions</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
+            <>
+              {/* Mobile Card Layout */}
+              {isMobile ? (
+                <List sx={{ p: 0 }}>
+                  {filteredTasks.map((task) => (
+                    <Card key={task.id} sx={{ mb: 1 }}>
+                      <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                          <Typography variant="subtitle2" fontWeight="medium" sx={{ flex: 1, mr: 1 }}>
+                            {task.title}
+                          </Typography>
+                          <Chip 
+                            label={task.status} 
+                            color={getStatusColor(task.status)} 
+                            size="small" 
+                          />
+                        </Box>
+                        
+                        {task.description && (
+                          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+                            {task.description}
+                          </Typography>
+                        )}
+                        
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 1 }}>
+                          <Chip label={task.taskType} variant="outlined" size="small" />
+                          <Chip label={task.priority} color={getStatusColor(task.priority)} size="small" />
+                          {task.roomNumber && (
+                            <Chip label={`Room ${task.roomNumber}`} variant="outlined" size="small" />
+                          )}
+                        </Box>
+                        
+                        {task.dueDate && (
+                          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+                            Due: {new Date(task.dueDate).toLocaleDateString()}
+                          </Typography>
+                        )}
+                        
+                        {isManagementRole() && task.assignedUser && (
+                          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+                            Assigned to: {task.assignedUser.firstName} {task.assignedUser.lastName}
+                          </Typography>
+                        )}
+                        
+                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 2 }}>
+                          {/* Status Update Action */}
+                          <Button 
+                            size="small" 
+                            variant="outlined"
+                            onClick={() => {
+                              setSelectedTask(task);
+                              setIsViewOnlyMode(false);
+                              setStatusDialog(true);
+                            }}
+                            disabled={task.status.toLowerCase() === 'completed'}
+                            startIcon={getActionIcon(task.status)}
+                          >
+                            Update Status
+                          </Button>
+                          
+                          {/* Assignment Action - Only for management roles */}
+                          {isManagementRole() && (
+                            <Button 
+                              size="small" 
+                              variant="outlined"
+                              onClick={() => {
+                                setAssignTaskId(task.id);
+                                setSelectedStaffId(task.assignedUser?.id?.toString() || '');
+                                setAssignDialog(true);
+                                loadStaff();
+                              }}
+                              disabled={task.status.toLowerCase() === 'completed'}
+                              startIcon={<AssignmentIcon />}
+                            >
+                              Assign
+                            </Button>
+                          )}
+                        </Box>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </List>
+              ) : (
+                /* Desktop Table Layout */
+                <TableContainer component={Paper}>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Title</TableCell>
+                        <TableCell>Type</TableCell>
+                        <TableCell>Room</TableCell>
+                        {isManagementRole() && <TableCell>Assigned To</TableCell>}
+                        <TableCell>Priority</TableCell>
+                        <TableCell>Status</TableCell>
+                        <TableCell>Due Date</TableCell>
+                        <TableCell>Actions</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
                   {filteredTasks.map((task) => (
                     <TableRow key={task.id}>
                       <TableCell>
@@ -648,15 +821,40 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                 </TableBody>
               </Table>
             </TableContainer>
+              )}
+            </>
           )}
         </CardContent>
       </Card>
 
+      {/* Floating Action Button for Mobile Refresh */}
+      {isMobile && (
+        <Fab
+          color="primary"
+          aria-label="refresh"
+          onClick={loadTasks}
+          sx={{
+            position: 'fixed',
+            bottom: 16,
+            right: 16,
+            zIndex: 1000
+          }}
+        >
+          <RefreshIcon />
+        </Fab>
+      )}
+
       {/* Status Update Dialog */}
-      <Dialog open={statusDialog} onClose={() => {
-        setStatusDialog(false);
-        setIsViewOnlyMode(false);
-      }} maxWidth="sm" fullWidth>
+      <Dialog 
+        open={statusDialog} 
+        onClose={() => {
+          setStatusDialog(false);
+          setIsViewOnlyMode(false);
+        }} 
+        maxWidth="sm" 
+        fullWidth
+        fullScreen={isMobile}
+      >
         <DialogTitle>
           {isViewOnlyMode 
             ? 'Task Details'
@@ -842,7 +1040,13 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
       </Dialog>
 
       {/* Add Task Dialog */}
-      <Dialog open={addTaskDialog} onClose={() => setAddTaskDialog(false)} maxWidth="md" fullWidth>
+      <Dialog 
+        open={addTaskDialog} 
+        onClose={() => setAddTaskDialog(false)} 
+        maxWidth="md" 
+        fullWidth
+        fullScreen={isMobile}
+      >
         <DialogTitle>Create New Housekeeping Task</DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
@@ -961,7 +1165,13 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
       </Dialog>
 
       {/* Assignment Dialog */}
-      <Dialog open={assignDialog} onClose={() => setAssignDialog(false)} maxWidth="sm" fullWidth>
+      <Dialog 
+        open={assignDialog} 
+        onClose={() => setAssignDialog(false)} 
+        maxWidth="sm" 
+        fullWidth
+        fullScreen={isMobile}
+      >
         <DialogTitle>Assign Task to Staff Member</DialogTitle>
         <DialogContent>
           <Box sx={{ mt: 2 }}>
@@ -1018,7 +1228,13 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
       </Dialog>
 
       {/* Add Staff Dialog */}
-      <Dialog open={addStaffDialog} onClose={() => setAddStaffDialog(false)} maxWidth="sm" fullWidth>
+      <Dialog 
+        open={addStaffDialog} 
+        onClose={() => setAddStaffDialog(false)} 
+        maxWidth="sm" 
+        fullWidth
+        fullScreen={isMobile}
+      >
         <DialogTitle>Add Housekeeping Staff Member</DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
