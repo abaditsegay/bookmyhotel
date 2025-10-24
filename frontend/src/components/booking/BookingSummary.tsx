@@ -42,7 +42,7 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   return (
-    <Box sx={{ position: { xs: 'static', md: 'sticky' }, top: 24 }}>
+    <Box sx={{ position: { xs: 'relative', md: 'sticky' }, top: 24 }}>
       <Card
         elevation={0}
         sx={{

@@ -594,7 +594,7 @@ const BookingPage: React.FC = () => {
         {/* Main Content - Room Details, Form and Summary */}
         <Grid container spacing={isMobile ? 3 : 6}>
           {/* Left Column - Room Details and Booking Form */}
-          <Grid item xs={12} md={8} lg={8}>
+          <Grid item xs={12} md={8} lg={8} sx={{ order: { xs: 2, md: 1 } }}>
             {/* Room Details Section */}
             <Grid container spacing={isMobile ? 1.5 : 2} sx={{ mb: 3 }}>
               <Grid item xs={12}>
@@ -1570,7 +1570,7 @@ const BookingPage: React.FC = () => {
           </Grid>
 
           {/* Right Column - Booking Summary */}
-          <Grid item xs={12} md={4} lg={4}>
+          <Grid item xs={12} md={4} lg={4} sx={{ order: { xs: 1, md: 2 } }}>
             <BookingSummary
               hotelName={hotelName}
               roomData={roomData}
