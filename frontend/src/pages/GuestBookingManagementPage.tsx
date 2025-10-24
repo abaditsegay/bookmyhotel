@@ -118,21 +118,34 @@ const GuestBookingManagementPage: React.FC = () => {
     const diffTime = Math.abs(checkOutDate.getTime() - checkInDate.getTime());
     const nights = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
-    // For now, use the same price per night as the original booking
-    // In a real app, this might involve an API call to get current pricing
-    const basePricePerNight = booking.pricePerNight || 0;
+    // Get the base price by reverse-calculating from the original booking
+    // The original pricePerNight already includes room type multiplier
+    const originalPricePerNight = booking.pricePerNight || 0;
     
-    // Room type pricing adjustments (simplified)
-    let roomMultiplier = 1;
-    switch (modData.newRoomType.toLowerCase()) {
-      case 'standard': roomMultiplier = 1; break;
-      case 'deluxe': roomMultiplier = 1.3; break;
-      case 'suite': roomMultiplier = 1.8; break;
-      case 'presidential': roomMultiplier = 3; break;
-      default: roomMultiplier = 1;
+    // Get the original room type multiplier to find the base price
+    let originalRoomMultiplier = 1;
+    switch (booking.roomType?.toLowerCase()) {
+      case 'standard': originalRoomMultiplier = 1; break;
+      case 'deluxe': originalRoomMultiplier = 1.3; break;
+      case 'suite': originalRoomMultiplier = 1.8; break;
+      case 'presidential': originalRoomMultiplier = 3; break;
+      default: originalRoomMultiplier = 1;
     }
     
-    const newPricePerNight = basePricePerNight * roomMultiplier;
+    // Calculate base price without room type multiplier
+    const basePricePerNight = originalPricePerNight / originalRoomMultiplier;
+    
+    // Apply new room type multiplier
+    let newRoomMultiplier = 1;
+    switch (modData.newRoomType.toLowerCase()) {
+      case 'standard': newRoomMultiplier = 1; break;
+      case 'deluxe': newRoomMultiplier = 1.3; break;
+      case 'suite': newRoomMultiplier = 1.8; break;
+      case 'presidential': newRoomMultiplier = 3; break;
+      default: newRoomMultiplier = 1;
+    }
+    
+    const newPricePerNight = basePricePerNight * newRoomMultiplier;
     const newTotalAmount = newPricePerNight * nights;
     
     return {
