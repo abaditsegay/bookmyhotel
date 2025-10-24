@@ -129,7 +129,8 @@ public class StaffController {
 
             User user = userOpt.get();
 
-            // Get tasks assigned directly to this user (no need for HousekeepingStaff record)
+            // Get tasks assigned directly to this user (no need for HousekeepingStaff
+            // record)
             Pageable pageable = PageRequest.of(page, size);
             Page<HousekeepingTask> tasks = housekeepingTaskRepository.findByAssignedUserId(user.getId(), pageable);
 
@@ -156,7 +157,7 @@ public class StaffController {
             }
             User user = userOpt.get();
 
-            Optional<HousekeepingTask> taskOpt = housekeepingTaskRepository.findById(taskId);
+            Optional<HousekeepingTask> taskOpt = housekeepingTaskRepository.findByIdWithUserAndHotel(taskId);
             if (!taskOpt.isPresent()) {
                 return ResponseEntity.badRequest().body("Task not found");
             }
@@ -165,14 +166,15 @@ public class StaffController {
 
             // Check if user has management role or if the task is assigned to them
             boolean isManagementRole = user.getRoles().stream()
-                    .anyMatch(role -> role == UserRole.HOTEL_ADMIN || 
-                             role == UserRole.OPERATIONS_SUPERVISOR ||
-                             role == UserRole.FRONTDESK);
-            
-            boolean isTaskAssignedToUser = task.getAssignedUser() != null && 
+                    .anyMatch(role -> role == UserRole.HOTEL_ADMIN ||
+                            role == UserRole.OPERATIONS_SUPERVISOR ||
+                            role == UserRole.FRONTDESK);
+
+            boolean isTaskAssignedToUser = task.getAssignedUser() != null &&
                     task.getAssignedUser().getEmail().equals(user.getEmail());
 
-            // Allow management roles to update any task, or regular staff to update only their assigned tasks
+            // Allow management roles to update any task, or regular staff to update only
+            // their assigned tasks
             if (!isManagementRole && !isTaskAssignedToUser) {
                 return ResponseEntity.badRequest().body("Task not assigned to you");
             }
@@ -212,7 +214,7 @@ public class StaffController {
             }
             User user = userOpt.get();
 
-            Optional<HousekeepingTask> taskOpt = housekeepingTaskRepository.findById(taskId);
+            Optional<HousekeepingTask> taskOpt = housekeepingTaskRepository.findByIdWithUserAndHotel(taskId);
             if (!taskOpt.isPresent()) {
                 return ResponseEntity.badRequest().body("Task not found");
             }
@@ -248,7 +250,7 @@ public class StaffController {
             }
             User user = userOpt.get();
 
-            Optional<HousekeepingTask> taskOpt = housekeepingTaskRepository.findById(taskId);
+            Optional<HousekeepingTask> taskOpt = housekeepingTaskRepository.findByIdWithUserAndHotel(taskId);
             if (!taskOpt.isPresent()) {
                 return ResponseEntity.badRequest().body("Task not found");
             }
@@ -515,7 +517,8 @@ public class StaffController {
             }
             User user = userOpt.get();
 
-            // Get stats for tasks assigned directly to this user (no need for HousekeepingStaff record)
+            // Get stats for tasks assigned directly to this user (no need for
+            // HousekeepingStaff record)
             Long userId = user.getId();
 
             Map<String, Object> stats = new HashMap<>();

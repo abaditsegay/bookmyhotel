@@ -27,10 +27,10 @@ public class HousekeepingTask extends HotelScopedEntity {
 
     @Column(name = "room_number")
     private String roomNumber;
-    
+
     @Column(name = "title")
     private String title;
-    
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assigned_user_id")
     private User assignedUser;
@@ -81,7 +81,8 @@ public class HousekeepingTask extends HotelScopedEntity {
     public HousekeepingTask() {
     }
 
-    public HousekeepingTask(String roomNumber, String title, HousekeepingTaskType taskType, HousekeepingTaskStatus status,
+    public HousekeepingTask(String roomNumber, String title, HousekeepingTaskType taskType,
+            HousekeepingTaskStatus status,
             TaskPriority priority, String description) {
         this.roomNumber = roomNumber;
         this.title = title;

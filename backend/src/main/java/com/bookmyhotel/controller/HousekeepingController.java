@@ -177,7 +177,8 @@ public class HousekeepingController {
         try {
             String tenantId = TenantContext.getTenantId();
             Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
-            HousekeepingTask updatedTask = housekeepingService.updateTaskStatus(hotelId, id, request.getStatus(), request.getNotes());
+            HousekeepingTask updatedTask = housekeepingService.updateTaskStatus(hotelId, id, request.getStatus(),
+                    request.getNotes());
             return ResponseEntity.ok(updatedTask);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error updating task status: " + e.getMessage());
@@ -697,14 +698,13 @@ public class HousekeepingController {
         if (task.getAssignedUser() != null) {
             User assignedUser = task.getAssignedUser();
             dto.setAssignedUserId(assignedUser.getId());
-            
+
             // Create the assignedUser object for the frontend
             HousekeepingTaskDTO.AssignedUser dtoUser = new HousekeepingTaskDTO.AssignedUser(
-                assignedUser.getId(),
-                assignedUser.getFirstName(),
-                assignedUser.getLastName(),
-                assignedUser.getEmail()
-            );
+                    assignedUser.getId(),
+                    assignedUser.getFirstName(),
+                    assignedUser.getLastName(),
+                    assignedUser.getEmail());
             dto.setAssignedUser(dtoUser);
         } else {
             // Set default values for unassigned tasks

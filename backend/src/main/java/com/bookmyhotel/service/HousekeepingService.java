@@ -63,7 +63,8 @@ public class HousekeepingService {
     /**
      * Create a housekeeping task with enhanced parameters
      */
-    public HousekeepingTask createTaskEnhanced(Long hotelId, String roomNumber, String title, HousekeepingTaskType taskType,
+    public HousekeepingTask createTaskEnhanced(Long hotelId, String roomNumber, String title,
+            HousekeepingTaskType taskType,
             TaskPriority priority, String description, String specialInstructions,
             Integer estimatedDuration, Long assignedStaffId) {
 

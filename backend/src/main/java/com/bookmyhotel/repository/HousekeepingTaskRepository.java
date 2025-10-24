@@ -30,6 +30,10 @@ public interface HousekeepingTaskRepository extends JpaRepository<HousekeepingTa
         @Query("SELECT h FROM HousekeepingTask h LEFT JOIN FETCH h.assignedUser LEFT JOIN FETCH h.hotel WHERE h.hotel.id = :hotelId")
         Page<HousekeepingTask> findByHotelId(@Param("hotelId") Long hotelId, Pageable pageable);
 
+        // Find by ID with eager loading (to avoid lazy loading issues)
+        @Query("SELECT h FROM HousekeepingTask h LEFT JOIN FETCH h.assignedUser LEFT JOIN FETCH h.hotel WHERE h.id = :id")
+        Optional<HousekeepingTask> findByIdWithUserAndHotel(@Param("id") Long id);
+
         // Status-based queries
         @Query("SELECT h FROM HousekeepingTask h WHERE h.hotel.id = :hotelId AND h.status = :status")
         List<HousekeepingTask> findByHotelIdAndStatus(@Param("hotelId") Long hotelId,
