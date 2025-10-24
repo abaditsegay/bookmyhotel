@@ -2065,8 +2065,8 @@ export const enTranslations = {
     
     // Summary section
     summary: {
-      bookedOn: "Booked on",
-      duration: "Duration",
+      bookedOn: "Booked on:",
+      duration: "Duration:",
       nightSingle: "night",
       nightPlural: "nights"
     },

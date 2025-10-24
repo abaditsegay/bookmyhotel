@@ -1926,8 +1926,8 @@ export const amTranslations = {
     
     // Summary section
     summary: {
-      bookedOn: "የተያዘበት ቀን",
-      duration: "ርዝመት",
+      bookedOn: "የተያዘበት ቀን:",
+      duration: "ርዝመት:",
       nightSingle: "ምሽት",
       nightPlural: "ምሽቶች"
     },
