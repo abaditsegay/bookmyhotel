@@ -1,6 +1,7 @@
 import React from 'react';
 import { Typography, Box, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { SnackbarProvider } from 'notistack';
 import './i18n'; // Initialize i18n
 import EnhancedLayout from './components/layout/EnhancedLayout';
 import { ErrorBoundary } from './components/common';
@@ -211,16 +212,24 @@ function App() {
       </Dialog>
       
       {/* Main App Content */}
-      <NotificationProvider>
-        <ErrorBoundary 
-          level="critical"
-          showDetails={process.env.NODE_ENV === 'development'}
-          onError={(error, errorInfo) => {
-            console.error('Critical App Error:', error, errorInfo);
-            // In production, send to error tracking service
-          }}
-        >
-        <EnhancedLayout hideSidebar={!isAuthenticated} maxWidth={isFullWidthRoute ? false : 'xl'}>
+      <SnackbarProvider 
+        maxSnack={3}
+        anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        autoHideDuration={3000}
+      >
+        <NotificationProvider>
+          <ErrorBoundary 
+            level="critical"
+            showDetails={process.env.NODE_ENV === 'development'}
+            onError={(error, errorInfo) => {
+              console.error('Critical App Error:', error, errorInfo);
+              // In production, send to error tracking service
+            }}
+          >
+          <EnhancedLayout hideSidebar={!isAuthenticated} maxWidth={isFullWidthRoute ? false : 'xl'}>
           <Routes>
         <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />} />
         <Route path="/dashboard" element={<RoleBasedRouter />} />
@@ -555,8 +564,7 @@ function App() {
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
       
-      {/* PWA Install Prompt functionality disabled */}
-      {/* 
+      {/* PWA Install Prompt functionality disabled 
       <PWAInstallPrompt 
         open={showIOSPrompt} 
         onClose={() => dismissIOSPrompt(false)}
@@ -575,6 +583,7 @@ function App() {
         </EnhancedLayout>
       </ErrorBoundary>
       </NotificationProvider>
+      </SnackbarProvider>
     </>
   );
 }

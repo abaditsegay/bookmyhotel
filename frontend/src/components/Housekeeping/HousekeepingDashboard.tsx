@@ -12,6 +12,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TablePagination,
   Paper,
   Chip,
   IconButton,
@@ -99,6 +100,10 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
   const [filterAssignedTo, setFilterAssignedTo] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filteredTasks, setFilteredTasks] = useState<HousekeepingTask[]>([]);
+
+  // Pagination state
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   // Determine user capabilities based on role
   const currentRole = userRole || user?.role;
@@ -627,8 +632,11 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
             <>
               {/* Mobile Card Layout */}
               {isMobile ? (
+                <>
                 <List sx={{ p: 0 }}>
-                  {filteredTasks.map((task) => (
+                  {filteredTasks
+                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                    .map((task) => (
                     <Card key={task.id} sx={{ mb: 1 }}>
                       <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
@@ -706,6 +714,20 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                     </Card>
                   ))}
                 </List>
+                <TablePagination
+                  rowsPerPageOptions={[5, 10, 25, 50]}
+                  component="div"
+                  count={filteredTasks.length}
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  onPageChange={(event, newPage) => setPage(newPage)}
+                  onRowsPerPageChange={(event) => {
+                    setRowsPerPage(parseInt(event.target.value, 10));
+                    setPage(0);
+                  }}
+                  sx={{ borderTop: '1px solid', borderColor: 'divider' }}
+                />
+                </>
               ) : (
                 /* Desktop Table Layout */
                 <TableContainer component={Paper}>
@@ -723,7 +745,9 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                  {filteredTasks.map((task) => (
+                  {filteredTasks
+                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                    .map((task) => (
                     <TableRow key={task.id}>
                       <TableCell>
                         <Typography variant="body2" fontWeight="medium">
@@ -820,6 +844,18 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                   ))}
                 </TableBody>
               </Table>
+              <TablePagination
+                rowsPerPageOptions={[5, 10, 25, 50]}
+                component="div"
+                count={filteredTasks.length}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onPageChange={(event, newPage) => setPage(newPage)}
+                onRowsPerPageChange={(event) => {
+                  setRowsPerPage(parseInt(event.target.value, 10));
+                  setPage(0);
+                }}
+              />
             </TableContainer>
               )}
             </>

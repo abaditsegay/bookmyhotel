@@ -16,5 +16,9 @@ export { NotificationProvider, useNotification } from './NotificationSystem';
 export { InteractiveCard, AnimatedCounter, AnimatedProgressBar } from './MicroInteractions';
 export { validationRules } from './EnhancedTextField';
 
+// Phase 3: Professional UX Components
+export * from './SkeletonLoaders';
+export * from './EmptyState';
+
 export type { ErrorFallbackProps } from './ErrorBoundary';
 export type { NotificationOptions } from './NotificationSystem';
