@@ -254,7 +254,10 @@ const BookingPage: React.FC = () => {
   const calculateTotalAmount = () => {
     if (!checkInDate || !checkOutDate || !roomData) return 0;
     const nights = checkOutDate.diff(checkInDate, 'day');
-    return roomData.pricePerNight * nights;
+    const subtotal = roomData.pricePerNight * nights;
+    const vatAmount = subtotal * hotelVatRate;
+    const serviceTaxAmount = subtotal * hotelServiceTaxRate;
+    return subtotal + vatAmount + serviceTaxAmount;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -1572,6 +1575,28 @@ const BookingPage: React.FC = () => {
               </Grid>
 
             </Grid>
+          </Box>
+
+          {/* Tax Inclusion Notice */}
+          <Box
+            sx={{
+              mt: 3,
+              p: 2,
+              backgroundColor: alpha(theme.palette.info.main, 0.08),
+              borderRadius: 1,
+              border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`,
+            }}
+          >
+            <Typography
+              variant="body2"
+              sx={{
+                color: theme.palette.info.main,
+                fontWeight: 500,
+                textAlign: 'center',
+              }}
+            >
+              💡 Final price includes all taxes (VAT {(hotelVatRate * 100).toFixed(0)}% + Service Tax {(hotelServiceTaxRate * 100).toFixed(0)}%)
+            </Typography>
           </Box>
 
           {/* Actions */}
