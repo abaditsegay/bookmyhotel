@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 import { Dayjs } from 'dayjs';
 import { useTranslation } from 'react-i18next';
-import { formatCurrency } from '../../utils/currencyUtils';
+import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
 import { COLORS } from '../../theme/themeColors';
 
 interface BookingSummaryProps {
@@ -26,6 +26,8 @@ interface BookingSummaryProps {
   guests: number;
   nights: number;
   totalAmount: number;
+  vatRate?: number;
+  serviceTaxRate?: number;
 }
 
 const BookingSummary: React.FC<BookingSummaryProps> = ({
@@ -36,10 +38,18 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
   guests,
   nights,
   totalAmount,
+  vatRate = 0,
+  serviceTaxRate = 0,
 }) => {
   const { t } = useTranslation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+  // Calculate pricing breakdown
+  const subtotal = (roomData.pricePerNight || 0) * nights;
+  const vatAmount = subtotal * vatRate;
+  const serviceTaxAmount = subtotal * serviceTaxRate;
+  const calculatedTotal = subtotal + vatAmount + serviceTaxAmount;
 
   return (
     <Box sx={{ position: { xs: 'relative', md: 'sticky' }, top: 24 }}>
@@ -229,10 +239,7 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
                   flex: { xs: 'none', sm: 1 },
                 }}
               >
-                {t('booking.summary.pricePerNight', { 
-                  price: formatCurrency(roomData.pricePerNight || 0), 
-                  nights: nights 
-                })}
+                {formatCurrencyWithDecimals(roomData.pricePerNight || 0)} × {nights} {nights !== 1 ? 'nights' : 'night'}
               </Typography>
               <Typography 
                 variant="body2"
@@ -241,7 +248,37 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
                   fontWeight: 600,
                 }}
               >
-                {formatCurrency((roomData.pricePerNight || 0) * nights)}
+                {formatCurrencyWithDecimals(subtotal)}
+              </Typography>
+            </Box>
+            <Divider sx={{ my: 1 }} />
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              mb: 0.5,
+              flexDirection: { xs: 'column', sm: 'row' },
+              gap: { xs: 0.5, sm: 0 },
+            }}>
+              <Typography 
+                variant="body2"
+                sx={{ 
+                  fontSize: { xs: '0.75rem', md: '0.8rem' },
+                  fontStyle: 'italic',
+                  color: 'text.secondary',
+                }}
+              >
+                VAT ({vatRate > 0 ? (vatRate * 100).toFixed(2) : '0.00'}%)
+              </Typography>
+              <Typography 
+                variant="body2"
+                sx={{ 
+                  fontSize: { xs: '0.75rem', md: '0.8rem' },
+                  fontWeight: 500,
+                  fontStyle: 'italic',
+                  color: 'text.secondary',
+                }}
+              >
+                {formatCurrencyWithDecimals(vatAmount)}
               </Typography>
             </Box>
             <Box sx={{ 
@@ -253,18 +290,24 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
             }}>
               <Typography 
                 variant="body2"
-                sx={{ fontSize: { xs: '0.8rem', md: '0.875rem' } }}
+                sx={{ 
+                  fontSize: { xs: '0.75rem', md: '0.8rem' },
+                  fontStyle: 'italic',
+                  color: 'text.secondary',
+                }}
               >
-                {t('booking.summary.taxesAndFees')}
+                Service Tax ({serviceTaxRate > 0 ? (serviceTaxRate * 100).toFixed(2) : '0.00'}%)
               </Typography>
               <Typography 
                 variant="body2"
                 sx={{ 
-                  fontSize: { xs: '0.8rem', md: '0.875rem' },
-                  fontWeight: 600,
+                  fontSize: { xs: '0.75rem', md: '0.8rem' },
+                  fontWeight: 500,
+                  fontStyle: 'italic',
+                  color: 'text.secondary',
                 }}
               >
-                {formatCurrency(0)}
+                {formatCurrencyWithDecimals(serviceTaxAmount)}
               </Typography>
             </Box>
           </Box>
@@ -304,7 +347,7 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
                   fontSize: { xs: '1.2rem', md: '1.25rem' },
                 }}
               >
-                {formatCurrency(totalAmount || 0)}
+                {formatCurrencyWithDecimals(calculatedTotal)}
               </Typography>
             </Box>
           </Box>

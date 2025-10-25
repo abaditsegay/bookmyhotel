@@ -95,7 +95,8 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(25);
+  const [totalElements, setTotalElements] = useState(0);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingRoom, setEditingRoom] = useState<Partial<RoomResponse>>({});
   const [activeTab, setActiveTab] = useState(0);
@@ -127,36 +128,32 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
       setLoading(true);
       setError(null);
 
-      // Use front-desk rooms endpoint for both modes - it supports both FRONTDESK and HOTEL_ADMIN roles
-      const url = buildApiUrl('/front-desk/rooms');
-      
-      const response = await fetch(url, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
+      // Use hotel-admin API with proper pagination
+      const response = await hotelAdminApi.getHotelRooms(
+        token,
+        page,
+        rowsPerPage,
+        searchTerm || undefined,
+        undefined, // roomNumber filter
+        undefined, // roomType filter
+        statusFilter && statusFilter !== 'ALL' ? statusFilter : undefined
+      );
 
-      if (!response.ok) {
-        throw new Error(`Failed to fetch rooms: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      
-      if (data) {
-        // Handle both paginated response (from front-desk) and direct array
-        const roomsData = data.content || data;
-        setRooms(Array.isArray(roomsData) ? roomsData : []);
+      if (response.success && response.data) {
+        setRooms(response.data.content || []);
+        setTotalElements(response.data.totalElements || 0);
       } else {
-        setError('Failed to load rooms');
+        setError(response.message || 'Failed to load rooms');
+        setTotalElements(0);
       }
     } catch (error) {
       console.error('Failed to load rooms:', error);
       setError('Failed to load rooms');
+      setTotalElements(0);
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, [token, page, rowsPerPage, searchTerm, statusFilter]);
 
   useEffect(() => {
     loadRooms();
@@ -277,15 +274,8 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
     }
   };
 
-  // Filter and paginate rooms
-  const filteredRooms = rooms.filter(room => {
-    const matchesSearch = room.roomNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         room.roomType.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'ALL' || room.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
-
-  const paginatedRooms = filteredRooms.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+  // Server-side filtering and pagination - use rooms directly
+  const displayRooms = rooms;
 
   // Tab content for hotel admin mode
   const renderHotelAdminTabs = () => {
@@ -397,7 +387,7 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
                 </TableRow>
               </TableHead>
               <TableBody>
-                {paginatedRooms.map((room) => (
+                {displayRooms.map((room) => (
                   <TableRow key={room.id}>
                     <TableCell>
                       <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
@@ -465,9 +455,9 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
               </TableBody>
             </Table>
             <TablePagination
-              rowsPerPageOptions={[5, 10, 25]}
+              rowsPerPageOptions={[10, 25, 50, 100]}
               component="div"
-              count={filteredRooms.length}
+              count={totalElements}
               rowsPerPage={rowsPerPage}
               page={page}
               onPageChange={handleChangePage}

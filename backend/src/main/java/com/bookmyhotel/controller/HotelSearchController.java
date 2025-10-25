@@ -1,6 +1,9 @@
 package com.bookmyhotel.controller;
 
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.math.BigDecimal;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.bookmyhotel.dto.HotelSearchRequest;
 import com.bookmyhotel.dto.HotelSearchResult;
 import com.bookmyhotel.service.HotelSearchService;
+import com.bookmyhotel.service.HotelPricingConfigService;
 
 import jakarta.validation.Valid;
 
@@ -31,6 +35,9 @@ public class HotelSearchController {
 
     @Autowired
     private HotelSearchService hotelSearchService;
+
+    @Autowired
+    private HotelPricingConfigService hotelPricingConfigService;
 
     /**
      * Search hotels based on criteria - PUBLIC ENDPOINT
@@ -134,5 +141,42 @@ public class HotelSearchController {
     public ResponseEntity<List<HotelSearchResult>> getRandomHotels() {
         List<HotelSearchResult> randomHotels = hotelSearchService.getRandomHotels();
         return ResponseEntity.ok(randomHotels);
+    }
+
+    /**
+     * Get tax rate for a hotel - PUBLIC ENDPOINT
+     * Returns the total tax rate (VAT + Service Tax) with breakdown
+     */
+    @GetMapping("/{hotelId}/tax-rate")
+    public ResponseEntity<Map<String, Object>> getHotelTaxRate(@PathVariable Long hotelId) {
+        try {
+            BigDecimal totalTaxRate = hotelPricingConfigService.getTotalTaxRate(hotelId);
+            BigDecimal vatRate = hotelPricingConfigService.getVatRate(hotelId);
+            BigDecimal serviceTaxRate = hotelPricingConfigService.getServiceTaxRate(hotelId);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("hotelId", hotelId);
+
+            // Total tax
+            response.put("taxRate", totalTaxRate); // As decimal (e.g., 0.20 for 20%)
+            response.put("taxRatePercentage", totalTaxRate.multiply(new BigDecimal("100"))); // As percentage (e.g.,
+                                                                                             // 20.00)
+
+            // VAT breakdown
+            response.put("vatRate", vatRate); // As decimal (e.g., 0.15 for 15%)
+            response.put("vatRatePercentage", vatRate.multiply(new BigDecimal("100"))); // As percentage (e.g., 15.00)
+
+            // Service tax breakdown
+            response.put("serviceTaxRate", serviceTaxRate); // As decimal (e.g., 0.05 for 5%)
+            response.put("serviceTaxRatePercentage", serviceTaxRate.multiply(new BigDecimal("100"))); // As percentage
+                                                                                                      // (e.g., 5.00)
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Failed to fetch tax rate");
+            errorResponse.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
     }
 }

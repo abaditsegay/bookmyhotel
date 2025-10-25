@@ -850,12 +850,9 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                 <Typography variant="h6">{t('shop.orders.creation.total')}</Typography>
                 <Typography variant="h6" color="primary">
-                  ETB {calculateTotal()?.toFixed(0)}
+                  ETB {calculateTotal()?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </Typography>
               </Box>
-              <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center', display: 'block', mb: 2 }}>
-                (ETB {calculateTotal().toFixed(2)})
-              </Typography>
 
               {/* Create Order Button */}
               <Button
@@ -899,7 +896,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
         open={paymentDialogOpen}
         onClose={handlePaymentDialogClose}
         onPaymentComplete={handlePaymentComplete}
-        totalAmount={calculateTotal()}
+        totalAmount={createdOrder?.totalAmount || calculateTotal()}
         selectedPaymentMethod={paymentMethod}
         showSuccess={paymentSuccess}
       />

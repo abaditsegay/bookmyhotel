@@ -15,6 +15,18 @@ export const formatCurrency = (amount: number): string => {
 };
 
 /**
+ * Format currency amount with two decimal places for transparency
+ * @param amount - The amount to format
+ * @returns Formatted currency string with decimals (e.g., "ETB 5,670.50")
+ */
+export const formatCurrencyWithDecimals = (amount: number): string => {
+  return `ETB ${amount.toLocaleString('en-US', { 
+    minimumFractionDigits: 2, 
+    maximumFractionDigits: 2 
+  })}`;
+};
+
+/**
  * Format currency amount using browser's Intl.NumberFormat (for forms/detailed displays)
  * @param amount - The amount to format
  * @returns Formatted currency string using browser's locale

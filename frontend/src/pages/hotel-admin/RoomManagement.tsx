@@ -68,7 +68,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(25);
   const [totalElements, setTotalElements] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [tabValue, setTabValue] = useState(0);
@@ -146,15 +146,29 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
       if (response.success && response.data) {
         console.log('🔄 Room API Response:', response.data);
         console.log('🔄 Total Elements:', response.data.totalElements);
+        console.log('🔄 Total Pages:', response.data.totalPages);
+        console.log('🔄 Current Page:', response.data.number);
+        console.log('🔄 Page Size:', response.data.size);
         console.log('🔄 Room count in response:', response.data.content?.length);
         
-        setRooms(response.data.content);
+        setRooms(response.data.content || []);
         
         // Extract pagination info directly from response data
         const totalElements = response.data.totalElements || 0;
+        const totalPages = response.data.totalPages || 0;
+        const currentPage = response.data.number || 0;
         
-        console.log('🔄 Total Elements from response:', totalElements);
+        console.log('🔄 Setting Total Elements to:', totalElements);
+        console.log('🔄 Total Pages:', totalPages);
+        console.log('🔄 Current page from response:', currentPage, 'Local page state:', page);
+        
         setTotalElements(totalElements);
+        
+        // If current page is beyond available pages, reset to last page
+        if (page >= totalPages && totalPages > 0) {
+          console.log('🔄 Current page exceeds total pages, resetting to:', totalPages - 1);
+          setPage(totalPages - 1);
+        }
       } else {
         setError(response.message || 'Failed to load rooms');
         setTotalElements(0);
@@ -171,6 +185,11 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
   useEffect(() => {
     loadRooms();
   }, [loadRooms]);
+
+  // Debug pagination state
+  useEffect(() => {
+    console.log('🔄 PAGINATION STATE - Total Elements:', totalElements, 'Page:', page, 'RowsPerPage:', rowsPerPage, 'Total Pages:', Math.ceil((totalElements || 0) / rowsPerPage));
+  }, [totalElements, page, rowsPerPage]);
 
   // Memoized search handler to prevent input focus loss
   const handleSearchChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
@@ -698,7 +717,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
         </TableContainer>
 
         <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
+          rowsPerPageOptions={[10, 25, 50, 100]}
           component="div"
           count={totalElements || 0}
           rowsPerPage={rowsPerPage}

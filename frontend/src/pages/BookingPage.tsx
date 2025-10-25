@@ -48,6 +48,7 @@ import { PaymentMethod } from '../types/shop';
 import NumberStepper from '../components/common/NumberStepper';
 import BookingSummary from '../components/booking/BookingSummary';
 import { COLORS } from '../theme/themeColors';
+import { buildApiUrl } from '../config/apiConfig';
 
 interface BookingPageState {
   room?: AvailableRoom;
@@ -113,6 +114,11 @@ const BookingPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [hotelData, setHotelData] = useState<any>(null);
+  
+  // Hotel tax rates from backend
+  const [hotelTaxRate, setHotelTaxRate] = useState<number>(0); // Total tax rate
+  const [hotelVatRate, setHotelVatRate] = useState<number>(0); // VAT rate
+  const [hotelServiceTaxRate, setHotelServiceTaxRate] = useState<number>(0); // Service Tax rate
 
   // Memoized change handlers to prevent input focus loss
   const handleFirstNameChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -188,6 +194,29 @@ const BookingPage: React.FC = () => {
     };
     
     fetchHotelData();
+  }, [bookingData?.hotelId]);
+
+  // Fetch hotel tax rates from backend
+  useEffect(() => {
+    const fetchHotelTaxRates = async () => {
+      if (bookingData?.hotelId) {
+        try {
+          const response = await fetch(buildApiUrl(`/hotels/${bookingData.hotelId}/tax-rate`));
+          if (response.ok) {
+            const data = await response.json();
+            setHotelTaxRate(data.taxRate || 0);
+            setHotelVatRate(data.vatRate || 0);
+            setHotelServiceTaxRate(data.serviceTaxRate || 0);
+          } else {
+            console.warn('Could not fetch tax rates for hotel:', bookingData.hotelId);
+          }
+        } catch (error) {
+          console.error('Error fetching hotel tax rates:', error);
+        }
+      }
+    };
+    
+    fetchHotelTaxRates();
   }, [bookingData?.hotelId]);
 
   // Redirect if no booking data
@@ -992,6 +1021,8 @@ const BookingPage: React.FC = () => {
                     guests={guests}
                     nights={nights}
                     totalAmount={totalAmount || 0}
+                    vatRate={hotelVatRate}
+                    serviceTaxRate={hotelServiceTaxRate}
                   />
                 </Grid>
               )}
@@ -1601,6 +1632,8 @@ const BookingPage: React.FC = () => {
               guests={guests}
               nights={nights}
               totalAmount={totalAmount || 0}
+              vatRate={hotelVatRate}
+              serviceTaxRate={hotelServiceTaxRate}
             />
           </Grid>
         </Grid>

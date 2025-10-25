@@ -105,8 +105,8 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
       description: t('shopPayment.mobileDescription')
     }
   ];  const formatCurrency = (amount: number) => {
-    if (amount == null || isNaN(amount)) return 'ETB 0';
-    return `ETB ${amount.toFixed(0)}`;
+    if (amount == null || isNaN(amount)) return 'ETB 0.00';
+    return `ETB ${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
   const handlePaymentMethodSelect = (method: PaymentMethod) => {

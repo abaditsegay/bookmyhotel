@@ -304,9 +304,12 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
   return (
     <Box>
       {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mb: 3 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Typography variant="h5" component="h2">
+          Room Type Pricing
+        </Typography>
         <Box sx={{ display: 'flex', gap: 1 }}>
-          {pricingList.length === 0 && (
+          {pricingList.length === 0 ? (
             <Button
               variant="outlined"
               onClick={handleInitializeDefaults}
@@ -314,6 +317,15 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
               startIcon={loading ? <CircularProgress size={16} /> : <InfoIcon />}
             >
               Initialize Defaults
+            </Button>
+          ) : (
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => handleOpenDialog()}
+              startIcon={<AddIcon />}
+            >
+              Add Pricing
             </Button>
           )}
         </Box>

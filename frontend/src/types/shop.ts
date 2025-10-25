@@ -128,6 +128,8 @@ export interface ShopOrder {
   status: ShopOrderStatus;
   totalAmount: number;
   taxAmount: number;
+  vatAmount?: number;
+  serviceTaxAmount?: number;
   paymentMethod?: PaymentMethod;
   paymentIntentId?: string;
   isPaid: boolean;

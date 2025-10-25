@@ -22,6 +22,9 @@ public class ShopOrderResponse {
     private Long reservationId;
     private PaymentMethod paymentMethod;
     private BigDecimal totalAmount;
+    private BigDecimal taxAmount;
+    private BigDecimal vatAmount;
+    private BigDecimal serviceTaxAmount;
     private Boolean isPaid;
     private LocalDateTime paidAt;
     private String paymentReference;
@@ -133,6 +136,30 @@ public class ShopOrderResponse {
 
     public void setTotalAmount(BigDecimal totalAmount) {
         this.totalAmount = totalAmount;
+    }
+
+    public BigDecimal getTaxAmount() {
+        return taxAmount;
+    }
+
+    public void setTaxAmount(BigDecimal taxAmount) {
+        this.taxAmount = taxAmount;
+    }
+
+    public BigDecimal getVatAmount() {
+        return vatAmount;
+    }
+
+    public void setVatAmount(BigDecimal vatAmount) {
+        this.vatAmount = vatAmount;
+    }
+
+    public BigDecimal getServiceTaxAmount() {
+        return serviceTaxAmount;
+    }
+
+    public void setServiceTaxAmount(BigDecimal serviceTaxAmount) {
+        this.serviceTaxAmount = serviceTaxAmount;
     }
 
     public Boolean getIsPaid() {
@@ -277,14 +304,15 @@ public class ShopOrderResponse {
     /**
      * Returns a display-friendly customer name
      * 
-     * @return customer name, room number for room charges, or "Anonymous Customer" if null/empty
+     * @return customer name, room number for room charges, or "Anonymous Customer"
+     *         if null/empty
      */
     public String getDisplayCustomerName() {
         // For room charges, show only room number instead of "Anonymous Customer"
         if (roomNumber != null && !roomNumber.trim().isEmpty()) {
             return "Room " + roomNumber;
         }
-        
+
         if (isAnonymousOrder()) {
             return "Anonymous Customer";
         }

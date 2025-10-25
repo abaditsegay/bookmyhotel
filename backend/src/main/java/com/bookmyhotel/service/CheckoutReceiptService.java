@@ -248,26 +248,44 @@ public class CheckoutReceiptService {
         try {
             // Get hotel pricing configuration to determine tax rates
             Long hotelId = reservation.getHotel().getId();
-            BigDecimal totalTaxRate = hotelPricingConfigService.getTotalTaxRate(hotelId);
+            BigDecimal vatRate = hotelPricingConfigService.getVatRate(hotelId);
+            BigDecimal serviceTaxRate = hotelPricingConfigService.getServiceTaxRate(hotelId);
 
             // Calculate subtotal (room charges + additional charges, excluding taxes)
             BigDecimal subtotal = receipt.getTotalRoomCharges().add(receipt.getTotalAdditionalCharges())
                     .setScale(2, RoundingMode.HALF_UP);
 
-            // Calculate tax amount based on subtotal
-            BigDecimal taxAmount = subtotal.multiply(totalTaxRate).setScale(2, RoundingMode.HALF_UP);
+            // Calculate VAT amount
+            BigDecimal vatAmount = subtotal.multiply(vatRate).setScale(2, RoundingMode.HALF_UP);
 
-            if (taxAmount.compareTo(BigDecimal.ZERO) > 0) {
-                // Format tax rate as percentage for display
-                BigDecimal taxPercentage = totalTaxRate.multiply(BigDecimal.valueOf(100));
-                String taxDescription = String.format("Service Charge & VAT (%.1f%%)", taxPercentage.doubleValue());
+            // Calculate Service Tax amount
+            BigDecimal serviceTaxAmount = subtotal.multiply(serviceTaxRate).setScale(2, RoundingMode.HALF_UP);
 
-                ReceiptChargeItem taxItem = new ReceiptChargeItem(
-                        taxDescription, taxAmount, "TAX");
-                taxesAndFees.add(taxItem);
+            // Add VAT as separate line item
+            if (vatAmount.compareTo(BigDecimal.ZERO) > 0) {
+                BigDecimal vatPercentage = vatRate.multiply(BigDecimal.valueOf(100));
+                String vatDescription = String.format("VAT (%.2f%%)", vatPercentage.doubleValue());
 
-                logger.debug("Applied tax for hotel {}: {}% on subtotal {} = {}",
-                        hotelId, taxPercentage, subtotal, taxAmount);
+                ReceiptChargeItem vatItem = new ReceiptChargeItem(
+                        vatDescription, vatAmount, "TAX");
+                taxesAndFees.add(vatItem);
+
+                logger.debug("Applied VAT for hotel {}: {}% on subtotal {} = {}",
+                        hotelId, vatPercentage, subtotal, vatAmount);
+            }
+
+            // Add Service Tax as separate line item
+            if (serviceTaxAmount.compareTo(BigDecimal.ZERO) > 0) {
+                BigDecimal serviceTaxPercentage = serviceTaxRate.multiply(BigDecimal.valueOf(100));
+                String serviceTaxDescription = String.format("Service Tax (%.2f%%)",
+                        serviceTaxPercentage.doubleValue());
+
+                ReceiptChargeItem serviceTaxItem = new ReceiptChargeItem(
+                        serviceTaxDescription, serviceTaxAmount, "TAX");
+                taxesAndFees.add(serviceTaxItem);
+
+                logger.debug("Applied Service Tax for hotel {}: {}% on subtotal {} = {}",
+                        hotelId, serviceTaxPercentage, subtotal, serviceTaxAmount);
             }
 
         } catch (Exception e) {

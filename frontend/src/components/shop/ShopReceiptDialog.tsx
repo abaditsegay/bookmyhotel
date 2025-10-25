@@ -6,8 +6,6 @@ import {
   Button,
   Typography,
   Box,
-
-  Divider,
   Grid,
   Table,
   TableBody,
@@ -100,9 +98,12 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
     }
   };
 
-  const formatCurrency = (amount: number | null | undefined) => {
+  const formatCurrencyWithDecimals = (amount: number | null | undefined) => {
     const safeAmount = amount || 0;
-    return `ETB ${safeAmount.toFixed(0)}`;
+    return `ETB ${safeAmount.toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    })}`;
   };
 
   const handlePrint = () => {
@@ -572,31 +573,50 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                         </TableCell>
                         <TableCell align="right">
                           <Typography variant="body2">
-                            {formatCurrency(item.unitPrice)}
+                            {formatCurrencyWithDecimals(item.unitPrice)}
                           </Typography>
                         </TableCell>
                         <TableCell align="right">
                           <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                            {formatCurrency(item.unitPrice * item.quantity)}
+                            {formatCurrencyWithDecimals(item.unitPrice * item.quantity)}
                           </Typography>
                         </TableCell>
                       </TableRow>
                     ))}
 
-                    {/* Tax Row */}
-                    {(order.taxAmount || 0) > 0 && (
+                    {/* VAT Row */}
+                    {(order.vatAmount || 0) > 0 && (
                       <TableRow 
                         className="print-total-row"
                         sx={{
-                          backgroundColor: '#ffffff',
+                          backgroundColor: '#f8fafc',
                         }}
                       >
                         <TableCell colSpan={4}>
-                          <Typography variant="body2" sx={{ fontWeight: 600 }}>Tax</Typography>
+                          <Typography variant="body2" sx={{ fontWeight: 600, fontStyle: 'italic' }}>VAT (15.00%)</Typography>
                         </TableCell>
                         <TableCell align="right">
-                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                            {formatCurrency(order.taxAmount || 0)}
+                          <Typography variant="body2" sx={{ fontWeight: 600, fontStyle: 'italic' }}>
+                            {formatCurrencyWithDecimals(order.vatAmount || 0)}
+                          </Typography>
+                        </TableCell>
+                      </TableRow>
+                    )}
+
+                    {/* Service Tax Row */}
+                    {(order.serviceTaxAmount || 0) > 0 && (
+                      <TableRow 
+                        className="print-total-row"
+                        sx={{
+                          backgroundColor: '#f8fafc',
+                        }}
+                      >
+                        <TableCell colSpan={4}>
+                          <Typography variant="body2" sx={{ fontWeight: 600, fontStyle: 'italic' }}>Service Tax (5.00%)</Typography>
+                        </TableCell>
+                        <TableCell align="right">
+                          <Typography variant="body2" sx={{ fontWeight: 600, fontStyle: 'italic' }}>
+                            {formatCurrencyWithDecimals(order.serviceTaxAmount || 0)}
                           </Typography>
                         </TableCell>
                       </TableRow>
@@ -620,7 +640,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                       </TableCell>
                       <TableCell align="right">
                         <Typography variant="h6" sx={{ color: 'white', fontWeight: 700 }}>
-                          {formatCurrency(order.totalAmount)}
+                          {formatCurrencyWithDecimals(order.totalAmount)}
                         </Typography>
                       </TableCell>
                     </TableRow>
@@ -631,8 +651,8 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
 
             {/* Order Summary & Notes */}
             <Grid container spacing={3} sx={{ mb: 3 }}>
-              <Grid item xs={12} md={8}>
-                {order.notes && (
+              {order.notes && (
+                <Grid item xs={12}>
                   <Card className="print-card" sx={{ border: '1px solid', borderColor: 'grey.200' }}>
                     <CardContent>
                       <Typography variant="h6" sx={{ color: '#475569', fontWeight: 600, mb: 2 }}>
@@ -643,40 +663,8 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                       </Typography>
                     </CardContent>
                   </Card>
-                )}
-              </Grid>
-              <Grid item xs={12} md={4}>
-                <Card className="print-card" sx={{ border: '1px solid', borderColor: 'grey.200' }}>
-                  <CardContent>
-                    <Typography variant="h6" sx={{ color: '#475569', fontWeight: 600, mb: 2 }}>
-                      {t('shopReceipt.orderSummary')}
-                    </Typography>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Typography variant="body2">{t('shopReceipt.subtotal')}:</Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          {formatCurrency((order.totalAmount || 0) - (order.taxAmount || 0))}
-                        </Typography>
-                      </Box>
-                      {(order.taxAmount || 0) > 0 && (
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <Typography variant="body2">{t('shopReceipt.tax')}:</Typography>
-                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                            {formatCurrency(order.taxAmount || 0)}
-                          </Typography>
-                        </Box>
-                      )}
-                      <Divider sx={{ my: 1 }} />
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Typography variant="h6" sx={{ fontWeight: 700 }}>{t('shopReceipt.totalLabel')}:</Typography>
-                        <Typography variant="h6" sx={{ fontWeight: 700, color: '#475569' }}>
-                          {formatCurrency(order.totalAmount || 0)}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
+                </Grid>
+              )}
             </Grid>
 
             {/* Professional Footer */}

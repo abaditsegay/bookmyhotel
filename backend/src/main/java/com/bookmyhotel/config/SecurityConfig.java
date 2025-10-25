@@ -82,6 +82,7 @@ public class SecurityConfig {
                                                                 "/api/hotels/search",
                                                                 "/api/hotels/{id}",
                                                                 "/api/hotels/{id}/rooms",
+                                                                "/api/hotels/{id}/tax-rate",
                                                                 "/api/hotels/*/availability",
                                                                 "/api/hotels/random",
                                                                 "/api/hotels",

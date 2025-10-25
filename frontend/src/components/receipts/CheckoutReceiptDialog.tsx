@@ -1,5 +1,5 @@
 import React from 'react';
-import { formatCurrency } from '../../utils/currencyUtils';
+import { formatCurrency, formatCurrencyWithDecimals } from '../../utils/currencyUtils';
 import {
   Dialog,
   DialogContent,
@@ -385,8 +385,8 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                   <tr>
                     <td>Room Accommodation (${receipt.numberOfNights} night${receipt.numberOfNights !== 1 ? 's' : ''})</td>
                     <td class="center">${receipt.numberOfNights}</td>
-                    <td class="center">${formatCurrency(receipt.roomChargePerNight)}</td>
-                    <td class="right">${formatCurrency(receipt.totalRoomCharges)}</td>
+                    <td class="center">${formatCurrencyWithDecimals(receipt.roomChargePerNight)}</td>
+                    <td class="right">${formatCurrencyWithDecimals(receipt.totalRoomCharges)}</td>
                   </tr>
 
                   ${receipt.additionalCharges?.map(charge => {
@@ -399,8 +399,8 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                       <tr>
                         <td>${charge.description || 'Additional Service'}</td>
                         <td class="center">${quantity}</td>
-                        <td class="center">${formatCurrency(unitPrice)}</td>
-                        <td class="right">${formatCurrency(total)}</td>
+                        <td class="center">${formatCurrencyWithDecimals(unitPrice)}</td>
+                        <td class="right">${formatCurrencyWithDecimals(total)}</td>
                       </tr>
                     `;
                   }).join('') || ''}
@@ -413,10 +413,10 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                     const total = unitPrice * quantity;
                     return `
                       <tr>
-                        <td>${tax.description || 'Service Charge & VAT (20.0%)'}</td>
+                        <td>${tax.description || 'Tax'}</td>
                         <td class="center">${quantity}</td>
-                        <td class="center">${formatCurrency(unitPrice)}</td>
-                        <td class="right">${formatCurrency(total)}</td>
+                        <td class="center">${formatCurrencyWithDecimals(unitPrice)}</td>
+                        <td class="right">${formatCurrencyWithDecimals(total)}</td>
                       </tr>
                     `;
                   }).join('') || ''}
@@ -424,7 +424,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                   ${(receipt.totalTaxesAndFees || 0) > 0 ? `
                   <tr class="subtotal">
                     <td colspan="3">Taxes & Fees Subtotal</td>
-                    <td class="right">${formatCurrency(receipt.totalTaxesAndFees)}</td>
+                    <td class="right">${formatCurrencyWithDecimals(receipt.totalTaxesAndFees)}</td>
                   </tr>
                   ` : ''}
 
@@ -433,7 +433,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                     <td>TOTAL AMOUNT</td>
                     <td class="center"></td>
                     <td class="center"></td>
-                    <td class="right amount">${formatCurrency(receipt.grandTotal)}</td>
+                    <td class="right amount">${formatCurrencyWithDecimals(receipt.grandTotal)}</td>
                   </tr>
                 </tbody>
               </table>
@@ -800,10 +800,10 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                       {receipt.numberOfNights}
                     </TableCell>
                     <TableCell align="center" sx={{ py: 2, fontWeight: 500 }}>
-                      {formatCurrency(receipt.roomChargePerNight)}
+                      {formatCurrencyWithDecimals(receipt.roomChargePerNight)}
                     </TableCell>
                     <TableCell align="right" sx={{ py: 2, fontWeight: 600 }}>
-                      {formatCurrency(receipt.totalRoomCharges)}
+                      {formatCurrencyWithDecimals(receipt.totalRoomCharges)}
                     </TableCell>
                   </TableRow>
 
@@ -823,10 +823,10 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                           {quantity}
                         </TableCell>
                         <TableCell align="center" sx={{ py: 2, fontWeight: 500 }}>
-                          {formatCurrency(unitPrice)}
+                          {formatCurrencyWithDecimals(unitPrice)}
                         </TableCell>
                         <TableCell align="right" sx={{ py: 2, fontWeight: 600 }}>
-                          {formatCurrency(total)}
+                          {formatCurrencyWithDecimals(total)}
                         </TableCell>
                       </TableRow>
                     );
@@ -842,16 +842,16 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                     return (
                       <TableRow key={`tax-${index}`} sx={{ '&:hover': { bgcolor: '#f9f9f9' } }}>
                         <TableCell sx={{ py: 2, fontWeight: 500 }}>
-                          {tax.description || 'Service Charge & VAT (20.0%)'}
+                          {tax.description || 'Tax'}
                         </TableCell>
                         <TableCell align="center" sx={{ py: 2, fontWeight: 500 }}>
                           {quantity}
                         </TableCell>
                         <TableCell align="center" sx={{ py: 2, fontWeight: 500 }}>
-                          {formatCurrency(unitPrice)}
+                          {formatCurrencyWithDecimals(unitPrice)}
                         </TableCell>
                         <TableCell align="right" sx={{ py: 2, fontWeight: 600 }}>
-                          {formatCurrency(total)}
+                          {formatCurrencyWithDecimals(total)}
                         </TableCell>
                       </TableRow>
                     );
@@ -872,7 +872,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                         fontWeight: 700,
                         fontSize: '1rem',
                       }}>
-                        {formatCurrency(receipt.totalTaxesAndFees)}
+                        {formatCurrencyWithDecimals(receipt.totalTaxesAndFees)}
                       </TableCell>
                     </TableRow>
                   )}
@@ -901,7 +901,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                       fontWeight: 700, 
                       fontSize: '1.3rem',
                     }}>
-                      {formatCurrency(receipt.grandTotal)}
+                      {formatCurrencyWithDecimals(receipt.grandTotal)}
                     </TableCell>
                   </TableRow>
                 </TableBody>

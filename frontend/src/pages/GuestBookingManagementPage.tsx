@@ -35,6 +35,7 @@ import { bookingApiService } from '../services/bookingApi';
 import { buildApiUrl, API_CONFIG } from '../config/apiConfig';
 import { ROOM_TYPES, getRoomTypeLabel } from '../constants/roomTypes';
 import { formatDateForInput, formatDateForAPI, formatDateForDisplay } from '../utils/dateUtils';
+import { formatCurrencyWithDecimals } from '../utils/currencyUtils';
 import { COLORS } from '../theme/themeColors';
 
 // Get today's date in YYYY-MM-DD format (avoiding timezone issues)
@@ -52,6 +53,7 @@ interface BookingData {
   guestName: string;
   guestEmail: string;
   numberOfGuests: number;
+  hotelId: number;
   hotelName: string;
   hotelAddress: string;
   roomNumber: string;
@@ -94,6 +96,11 @@ const GuestBookingManagementPage: React.FC = () => {
   const [pricesModified, setPricesModified] = useState(false);
   const [originalPricing, setOriginalPricing] = useState<{pricePerNight: number, totalAmount: number} | null>(null);
   const [currentCalculatedTotal, setCurrentCalculatedTotal] = useState<number | null>(null);
+  const [fetchingRoomPrice, setFetchingRoomPrice] = useState(false);
+  const [roomTypePrices, setRoomTypePrices] = useState<Map<string, number>>(new Map());
+  const [hotelTaxRate, setHotelTaxRate] = useState<number>(0); // Total tax rate from backend
+  const [hotelVatRate, setHotelVatRate] = useState<number>(0); // VAT rate from backend
+  const [hotelServiceTaxRate, setHotelServiceTaxRate] = useState<number>(0); // Service tax rate from backend
   
     // Modification form state
   const [modificationData, setModificationData] = useState({
@@ -109,6 +116,79 @@ const GuestBookingManagementPage: React.FC = () => {
   // Cancellation form state
   const [cancellationReason, setCancellationReason] = useState('');
 
+  // Fetch hotel tax rates
+  const fetchHotelTaxRate = useCallback(async (hotelId: number) => {
+    try {
+      const response = await fetch(buildApiUrl(`/hotels/${hotelId}/tax-rate`));
+      
+      if (!response.ok) {
+        console.warn('Could not fetch tax rate for hotel:', hotelId);
+        return { total: 0, vat: 0, service: 0 };
+      }
+      
+      const data = await response.json();
+      return {
+        total: data.taxRate || 0,
+        vat: data.vatRate || 0,
+        service: data.serviceTaxRate || 0
+      };
+    } catch (error) {
+      console.error('Error fetching hotel tax rate:', error);
+      return { total: 0, vat: 0, service: 0 };
+    }
+  }, []);
+
+  // Fetch room price for a specific room type
+  const fetchRoomPriceForType = useCallback(async (roomType: string) => {
+    if (!booking) return null;
+    
+    // Check if we already have this price cached
+    if (roomTypePrices.has(roomType)) {
+      return roomTypePrices.get(roomType)!;
+    }
+    
+    try {
+      setFetchingRoomPrice(true);
+      
+      // Ensure we have a hotel ID
+      if (!booking.hotelId) {
+        console.warn('No hotel ID available in booking data');
+        return null;
+      }
+      
+      // Use the public hotel rooms API to get room pricing
+      // This endpoint doesn't require authentication and returns available rooms with pricing
+      const response = await fetch(
+        buildApiUrl(`/hotels/${booking.hotelId}/rooms?roomType=${roomType}&checkInDate=${formatDateForAPI(modificationData.newCheckInDate)}&checkOutDate=${formatDateForAPI(modificationData.newCheckOutDate)}&guests=${modificationData.newNumberOfGuests}`)
+      );
+      
+      if (!response.ok) {
+        console.warn('Could not fetch room price for type:', roomType);
+        return null;
+      }
+      
+      const rooms = await response.json();
+      if (rooms && rooms.length > 0) {
+        // Find the room with matching type
+        const room = rooms.find((r: any) => r.roomType?.toLowerCase() === roomType.toLowerCase());
+        
+        if (room && room.pricePerNight) {
+          const price = room.pricePerNight;
+          // Cache the price
+          setRoomTypePrices(prev => new Map(prev).set(roomType, price));
+          return price;
+        }
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Error fetching room price:', error);
+      return null;
+    } finally {
+      setFetchingRoomPrice(false);
+    }
+  }, [booking, modificationData, roomTypePrices]);
+
   // Calculate pricing for modified booking data
   const calculateModifiedPricing = useCallback((modData: typeof modificationData) => {
     if (!booking || !modData.newCheckInDate || !modData.newCheckOutDate) return null;
@@ -118,42 +198,98 @@ const GuestBookingManagementPage: React.FC = () => {
     const diffTime = Math.abs(checkOutDate.getTime() - checkInDate.getTime());
     const nights = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
-    // Get the base price by reverse-calculating from the original booking
-    // The original pricePerNight already includes room type multiplier
+    // Calculate the original nights
+    const originalCheckIn = new Date(booking.checkInDate);
+    const originalCheckOut = new Date(booking.checkOutDate);
+    const originalDiffTime = Math.abs(originalCheckOut.getTime() - originalCheckIn.getTime());
+    const originalNights = Math.ceil(originalDiffTime / (1000 * 60 * 60 * 24));
+    
+    // Each room type has its own fixed price per night
     const originalPricePerNight = booking.pricePerNight || 0;
     
-    // Get the original room type multiplier to find the base price
-    let originalRoomMultiplier = 1;
-    switch (booking.roomType?.toLowerCase()) {
-      case 'standard': originalRoomMultiplier = 1; break;
-      case 'deluxe': originalRoomMultiplier = 1.3; break;
-      case 'suite': originalRoomMultiplier = 1.8; break;
-      case 'presidential': originalRoomMultiplier = 3; break;
-      default: originalRoomMultiplier = 1;
+    // Use the tax rates from backend (already fetched)
+    const taxRate = hotelTaxRate;
+    const vatRate = hotelVatRate;
+    const serviceTaxRate = hotelServiceTaxRate;
+    
+    // Calculate original totals with separate taxes
+    const originalSubtotal = originalPricePerNight * originalNights;
+    const originalVatAmount = originalSubtotal * vatRate;
+    const originalServiceTaxAmount = originalSubtotal * serviceTaxRate;
+    const originalTaxAmount = originalVatAmount + originalServiceTaxAmount;
+    const originalTotal = originalSubtotal + originalTaxAmount;
+    
+    // Check if room type changed
+    const roomTypeChanged = modData.newRoomType !== booking.roomType;
+    
+    let newPricePerNight = originalPricePerNight;
+    
+    // If room type changed, try to get the cached price
+    if (roomTypeChanged && roomTypePrices.has(modData.newRoomType)) {
+      newPricePerNight = roomTypePrices.get(modData.newRoomType)!;
     }
     
-    // Calculate base price without room type multiplier
-    const basePricePerNight = originalPricePerNight / originalRoomMultiplier;
+    // Calculate new subtotal and apply the same tax rates separately
+    const newSubtotal = newPricePerNight * nights;
+    const newVatAmount = newSubtotal * vatRate;
+    const newServiceTaxAmount = newSubtotal * serviceTaxRate;
+    const newTaxAmount = newVatAmount + newServiceTaxAmount;
+    const newTotalAmount = newSubtotal + newTaxAmount;
     
-    // Apply new room type multiplier
-    let newRoomMultiplier = 1;
-    switch (modData.newRoomType.toLowerCase()) {
-      case 'standard': newRoomMultiplier = 1; break;
-      case 'deluxe': newRoomMultiplier = 1.3; break;
-      case 'suite': newRoomMultiplier = 1.8; break;
-      case 'presidential': newRoomMultiplier = 3; break;
-      default: newRoomMultiplier = 1;
-    }
-    
-    const newPricePerNight = basePricePerNight * newRoomMultiplier;
-    const newTotalAmount = newPricePerNight * nights;
+    // Debug logging to understand pricing calculations
+    console.log('Pricing Calculation Debug:', {
+      originalBooking: {
+        roomType: booking.roomType,
+        pricePerNight: originalPricePerNight,
+        nights: originalNights,
+        subtotal: originalSubtotal,
+        vatAmount: originalVatAmount,
+        vatRate: (vatRate * 100).toFixed(2) + '%',
+        serviceTaxAmount: originalServiceTaxAmount,
+        serviceTaxRate: (serviceTaxRate * 100).toFixed(2) + '%',
+        taxAmount: originalTaxAmount,
+        totalAmount: originalTotal,
+        checkInDate: booking.checkInDate,
+        checkOutDate: booking.checkOutDate
+      },
+      modificationData: {
+        roomType: modData.newRoomType,
+        checkInDate: modData.newCheckInDate,
+        checkOutDate: modData.newCheckOutDate
+      },
+      calculations: {
+        roomTypeChanged,
+        pricePerNight: newPricePerNight,
+        priceFromCache: roomTypeChanged && roomTypePrices.has(modData.newRoomType),
+        nights,
+        subtotal: newSubtotal,
+        vatAmount: newVatAmount,
+        vatRate: (vatRate * 100).toFixed(2) + '%',
+        serviceTaxAmount: newServiceTaxAmount,
+        serviceTaxRate: (serviceTaxRate * 100).toFixed(2) + '%',
+        taxAmount: newTaxAmount,
+        newTotalAmount
+      }
+    });
     
     return {
       pricePerNight: newPricePerNight,
+      subtotal: newSubtotal,
+      vatAmount: newVatAmount,
+      vatRate: vatRate,
+      serviceTaxAmount: newServiceTaxAmount,
+      serviceTaxRate: serviceTaxRate,
+      taxAmount: newTaxAmount,
+      taxRate: taxRate,
       totalAmount: newTotalAmount,
-      nights
+      nights,
+      roomTypeChanged,
+      originalSubtotal,
+      originalVatAmount: originalVatAmount,
+      originalServiceTaxAmount: originalServiceTaxAmount,
+      originalTaxAmount: originalTaxAmount
     };
-  }, [booking]);
+  }, [booking, roomTypePrices, hotelTaxRate, hotelVatRate, hotelServiceTaxRate]);
 
   // Fetch booking data from token (for email links)
   const fetchBookingFromToken = useCallback(async () => {
@@ -285,6 +421,15 @@ const GuestBookingManagementPage: React.FC = () => {
         modificationReason: ''
       });
       
+      // Fetch hotel tax rates
+      if (booking.hotelId) {
+        fetchHotelTaxRate(booking.hotelId).then(taxRates => {
+          setHotelTaxRate(taxRates.total);
+          setHotelVatRate(taxRates.vat);
+          setHotelServiceTaxRate(taxRates.service);
+        });
+      }
+      
       // Only reset price tracking if dialog is not open
       if (!modifyDialogOpen) {
         setPricesModified(false);
@@ -292,7 +437,7 @@ const GuestBookingManagementPage: React.FC = () => {
         setCurrentCalculatedTotal(null);
       }
     }
-  }, [booking, modifyDialogOpen]);
+  }, [booking, modifyDialogOpen, fetchHotelTaxRate]);
 
   // Track price changes during modification
   useEffect(() => {
@@ -508,7 +653,19 @@ const GuestBookingManagementPage: React.FC = () => {
         response = await apiResponse.json();
         
         if (response.success) {
-          setSuccessMessage(response.message || 'Booking modified successfully');
+          // Build detailed success message with pricing info
+          let message = response.message || 'Booking modified successfully';
+          if (response.additionalCharges && response.additionalCharges > 0) {
+            message += ` | Additional charges: ETB ${response.additionalCharges.toFixed(2)}`;
+          }
+          if (response.refundAmount && response.refundAmount > 0) {
+            message += ` | Refund amount: ETB ${response.refundAmount.toFixed(2)}`;
+          }
+          if (response.updatedBooking && response.updatedBooking.totalAmount) {
+            message += ` | New total: ETB ${response.updatedBooking.totalAmount.toFixed(2)}`;
+          }
+          
+          setSuccessMessage(message);
           setModifyDialogOpen(false);
           
           // Wait a moment for backend cache eviction and database commit
@@ -541,7 +698,21 @@ const GuestBookingManagementPage: React.FC = () => {
         response = await bookingApiService.modifyBooking(modificationRequest);
         
         if (response.success) {
-          setSuccessMessage(response.message || 'Booking modified successfully');
+          // Build detailed success message with pricing info
+          let message = response.message || 'Booking modified successfully';
+          const responseData = response.data || response;
+          
+          if (responseData.additionalCharges && responseData.additionalCharges > 0) {
+            message += ` | Additional charges: ETB ${responseData.additionalCharges.toFixed(2)}`;
+          }
+          if (responseData.refundAmount && responseData.refundAmount > 0) {
+            message += ` | Refund amount: ETB ${responseData.refundAmount.toFixed(2)}`;
+          }
+          if (responseData.updatedBooking && responseData.updatedBooking.totalAmount) {
+            message += ` | New total: ETB ${responseData.updatedBooking.totalAmount.toFixed(2)}`;
+          }
+          
+          setSuccessMessage(message);
           setModifyDialogOpen(false);
           
           // Wait a moment for backend cache eviction and database commit
@@ -862,7 +1033,7 @@ const GuestBookingManagementPage: React.FC = () => {
                   <strong>{t('booking.manage.duration')}:</strong> {nights} night{nights !== 1 ? 's' : ''}
                 </Typography>
                 <Typography variant="body1" color={COLORS.PRIMARY} sx={{ fontWeight: 'bold' }}>
-                  <strong>{t('booking.manage.totalAmount')}:</strong> ETB {booking.totalAmount?.toFixed(0)}
+                  <strong>{t('booking.manage.totalAmount')}:</strong> {formatCurrencyWithDecimals(booking.totalAmount || 0)}
                 </Typography>
               </Box>
             </Grid>
@@ -897,7 +1068,7 @@ const GuestBookingManagementPage: React.FC = () => {
                   <strong>{t('booking.manage.roomAssignment')}:</strong> {t('booking.manage.roomAssignmentNote')}
                 </Typography>
                 <Typography variant="body1">
-                  <strong>{t('booking.manage.rate')}:</strong> ETB {booking.pricePerNight?.toFixed(0)}/night
+                  <strong>{t('booking.manage.rate')}:</strong> {formatCurrencyWithDecimals(booking.pricePerNight || 0)}/night
                 </Typography>
               </Box>
             </Grid>
@@ -988,52 +1159,223 @@ const GuestBookingManagementPage: React.FC = () => {
         <DialogTitle>{t('booking.manage.modifyDialogTitle')}</DialogTitle>
         <DialogContent>
           {/* Price Change Indicator - Large and Prominent */}
-          {pricesModified && originalPricing && currentCalculatedTotal !== null && (
-            <Box sx={{ 
-              mb: 3, 
-              p: 3, 
-              backgroundColor: '#e3f2fd',
-              border: '2px solid #2196f3',
-              borderRadius: 2,
-              textAlign: 'center'
-            }}>
-              <Typography variant="h5" sx={{ color: '#1976d2', fontWeight: 'bold', mb: 2 }}>
-                🔄 PRICING UPDATED
-              </Typography>
-              <Grid container spacing={2} sx={{ mb: 2 }}>
-                <Grid item xs={4}>
-                  <Typography variant="h6" sx={{ color: '#666' }}>Original Total</Typography>
-                  <Typography variant="h4" sx={{ color: '#d32f2f', fontWeight: 'bold' }}>
-                    ${originalPricing.totalAmount.toFixed(2)}
+          {pricesModified && originalPricing && currentCalculatedTotal !== null && (() => {
+            // Calculate all the pricing details for transparency
+            const modPricing = calculateModifiedPricing(modificationData);
+            if (!modPricing) return null;
+
+            // Original booking details
+            const originalNights = calculateNights(booking.checkInDate, booking.checkOutDate);
+            const originalRoomType = booking.roomType;
+            const originalPricePerNight = booking.pricePerNight;
+            
+            // New booking details
+            const newNights = modPricing.nights;
+            const newRoomType = modificationData.newRoomType;
+            const newPricePerNight = modPricing.pricePerNight;
+            
+            // Changes detection
+            const datesChanged = formatDateForAPI(modificationData.newCheckInDate) !== formatDateForAPI(booking.checkInDate) ||
+                                formatDateForAPI(modificationData.newCheckOutDate) !== formatDateForAPI(booking.checkOutDate);
+            const roomTypeChanged = newRoomType !== originalRoomType;
+            const nightsChanged = newNights !== originalNights;
+            
+            const originalTotal = modPricing.originalSubtotal + modPricing.originalVatAmount + modPricing.originalServiceTaxAmount;
+            const priceDifference = currentCalculatedTotal - originalTotal;
+
+            return (
+              <Box sx={{ 
+                mb: 3, 
+                p: 3, 
+                backgroundColor: theme.palette.mode === 'dark' ? 'rgba(33, 150, 243, 0.1)' : '#e3f2fd',
+                border: `2px solid ${theme.palette.mode === 'dark' ? 'rgba(33, 150, 243, 0.5)' : '#2196f3'}`,
+                borderRadius: 2,
+              }}>
+                <Typography variant="h5" sx={{ color: '#1976d2', fontWeight: 'bold', mb: 3, textAlign: 'center' }}>
+                  🔄 PRICING UPDATED
+                </Typography>
+                
+                {/* What Changed Section */}
+                <Box sx={{ mb: 3, p: 2, backgroundColor: 'rgba(255, 255, 255, 0.5)', borderRadius: 1 }}>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2, color: '#0d47a1' }}>
+                    📋 What Changed:
                   </Typography>
+                  
+                  {datesChanged && (
+                    <Box sx={{ mb: 1.5 }}>
+                      <Typography variant="body2" sx={{ color: '#555' }}>
+                        <strong>Dates:</strong> {formatDate(booking.checkInDate)} → {formatDate(modificationData.newCheckInDate)} (Check-in)<br/>
+                        <Typography component="span" sx={{ ml: 7.5 }}>
+                          {formatDate(booking.checkOutDate)} → {formatDate(modificationData.newCheckOutDate)} (Check-out)
+                        </Typography>
+                      </Typography>
+                    </Box>
+                  )}
+                  
+                  {nightsChanged && (
+                    <Box sx={{ mb: 1.5 }}>
+                      <Typography variant="body2" sx={{ color: '#555' }}>
+                        <strong>Duration:</strong> {originalNights} night{originalNights !== 1 ? 's' : ''} → {newNights} night{newNights !== 1 ? 's' : ''} 
+                        <Typography component="span" sx={{ 
+                          ml: 1, 
+                          color: newNights > originalNights ? '#d32f2f' : '#2e7d32',
+                          fontWeight: 'bold'
+                        }}>
+                          ({newNights > originalNights ? '+' : ''}{newNights - originalNights} night{Math.abs(newNights - originalNights) !== 1 ? 's' : ''})
+                        </Typography>
+                      </Typography>
+                    </Box>
+                  )}
+                  
+                  {roomTypeChanged && (
+                    <Box sx={{ mb: 1.5 }}>
+                      <Typography variant="body2" sx={{ color: '#555' }}>
+                        <strong>Room Type:</strong> {getRoomTypeLabel(originalRoomType)} → {getRoomTypeLabel(newRoomType)}
+                      </Typography>
+                      <Alert severity="warning" sx={{ mt: 1 }}>
+                        Room type change detected. Final pricing will be calculated by the server based on the new room type's rate.
+                      </Alert>
+                    </Box>
+                  )}
+                </Box>
+
+                {/* Price Calculation Breakdown */}
+                <Box sx={{ mb: 3, p: 2, backgroundColor: 'rgba(255, 255, 255, 0.5)', borderRadius: 1 }}>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2, color: '#0d47a1' }}>
+                    🧮 Price Calculation Breakdown:
+                  </Typography>
+                  
+                  <Grid container spacing={2}>
+                    {/* Original Calculation */}
+                    <Grid item xs={12} sm={6}>
+                      <Box sx={{ p: 2, backgroundColor: 'rgba(211, 47, 47, 0.05)', borderRadius: 1, border: '1px solid rgba(211, 47, 47, 0.3)' }}>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1, color: '#d32f2f' }}>
+                          Original Booking:
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#555', mb: 0.5 }}>
+                          Room Type: {getRoomTypeLabel(originalRoomType)}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#555', mb: 0.5 }}>
+                          Rate/Night: {formatCurrencyWithDecimals(originalPricePerNight)}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#555', mb: 0.5 }}>
+                          Nights: {originalNights}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#555', mb: 0.5 }}>
+                          Subtotal: {formatCurrencyWithDecimals(modPricing.originalSubtotal)}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#555', mb: 0.5 }}>
+                          VAT ({modPricing.vatRate > 0 ? (modPricing.vatRate * 100).toFixed(2) : '0.00'}%): {formatCurrencyWithDecimals(modPricing.originalVatAmount)}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#555', mb: 0.5 }}>
+                          Service Tax ({modPricing.serviceTaxRate > 0 ? (modPricing.serviceTaxRate * 100).toFixed(2) : '0.00'}%): {formatCurrencyWithDecimals(modPricing.originalServiceTaxAmount)}
+                        </Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#d32f2f', mt: 1, pt: 1, borderTop: '1px solid rgba(211, 47, 47, 0.3)' }}>
+                          Total: {formatCurrencyWithDecimals(modPricing.originalSubtotal + modPricing.originalVatAmount + modPricing.originalServiceTaxAmount)}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: '#999', mt: 0.5, display: 'block' }}>
+                          Calculation: {formatCurrencyWithDecimals(originalPricePerNight)} × {originalNights} = {formatCurrencyWithDecimals(modPricing.originalSubtotal)}{modPricing.vatRate > 0 ? ` + ${formatCurrencyWithDecimals(modPricing.originalVatAmount)} (VAT)` : ''}{modPricing.serviceTaxRate > 0 ? ` + ${formatCurrencyWithDecimals(modPricing.originalServiceTaxAmount)} (Service Tax)` : ''} = {formatCurrencyWithDecimals(modPricing.originalSubtotal + modPricing.originalVatAmount + modPricing.originalServiceTaxAmount)}
+                        </Typography>
+                      </Box>
+                    </Grid>
+
+                    {/* New Calculation */}
+                    <Grid item xs={12} sm={6}>
+                      <Box sx={{ p: 2, backgroundColor: 'rgba(46, 125, 50, 0.05)', borderRadius: 1, border: '1px solid rgba(46, 125, 50, 0.3)' }}>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1, color: '#2e7d32' }}>
+                          Modified Booking:
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#555', mb: 0.5 }}>
+                          Room Type: {getRoomTypeLabel(newRoomType)}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#555', mb: 0.5 }}>
+                          Rate/Night: {formatCurrencyWithDecimals(newPricePerNight)}
+                          {roomTypeChanged && (
+                            <Typography component="span" sx={{ color: '#ff9800', fontSize: '0.75rem', ml: 0.5 }}>
+                              *
+                            </Typography>
+                          )}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#555', mb: 0.5 }}>
+                          Nights: {newNights}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#555', mb: 0.5 }}>
+                          Subtotal: {formatCurrencyWithDecimals(modPricing.subtotal)}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#555', mb: 0.5 }}>
+                          VAT ({modPricing.vatRate > 0 ? (modPricing.vatRate * 100).toFixed(2) : '0.00'}%): {formatCurrencyWithDecimals(modPricing.vatAmount)}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#555', mb: 0.5 }}>
+                          Service Tax ({modPricing.serviceTaxRate > 0 ? (modPricing.serviceTaxRate * 100).toFixed(2) : '0.00'}%): {formatCurrencyWithDecimals(modPricing.serviceTaxAmount)}
+                        </Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#2e7d32', mt: 1, pt: 1, borderTop: '1px solid rgba(46, 125, 50, 0.3)' }}>
+                          Total: {formatCurrencyWithDecimals(currentCalculatedTotal)}
+                          {roomTypeChanged && (
+                            <Typography component="span" sx={{ color: '#ff9800', fontSize: '0.75rem', ml: 0.5 }}>
+                              *
+                            </Typography>
+                          )}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: '#999', mt: 0.5, display: 'block' }}>
+                          Calculation: {formatCurrencyWithDecimals(newPricePerNight)} × {newNights} = {formatCurrencyWithDecimals(modPricing.subtotal)}{modPricing.vatRate > 0 ? ` + ${formatCurrencyWithDecimals(modPricing.vatAmount)} (VAT)` : ''}{modPricing.serviceTaxRate > 0 ? ` + ${formatCurrencyWithDecimals(modPricing.serviceTaxAmount)} (Service Tax)` : ''} = {formatCurrencyWithDecimals(currentCalculatedTotal)}
+                        </Typography>
+                        {roomTypeChanged && (
+                          <Typography variant="caption" sx={{ color: '#ff9800', mt: 0.5, display: 'block' }}>
+                            * Estimated - server will calculate actual price
+                          </Typography>
+                        )}
+                      </Box>
+                    </Grid>
+                  </Grid>
+                </Box>
+
+                {/* Summary - Large Numbers */}
+                <Grid container spacing={2} sx={{ mb: 2 }}>
+                  <Grid item xs={4}>
+                    <Box sx={{ textAlign: 'center' }}>
+                      <Typography variant="h6" sx={{ color: '#666', mb: 1 }}>Original Total</Typography>
+                      <Typography variant="h4" sx={{ color: '#d32f2f', fontWeight: 'bold' }}>
+                        {formatCurrencyWithDecimals(modPricing.originalSubtotal + modPricing.originalVatAmount + modPricing.originalServiceTaxAmount)}
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={4}>
+                    <Box sx={{ textAlign: 'center' }}>
+                      <Typography variant="h6" sx={{ color: '#666', mb: 1 }}>New Total</Typography>
+                      <Typography variant="h4" sx={{ color: '#2e7d32', fontWeight: 'bold' }}>
+                        {formatCurrencyWithDecimals(currentCalculatedTotal)}
+                        {roomTypeChanged && (
+                          <Typography component="span" sx={{ color: '#ff9800', fontSize: '0.875rem', ml: 0.5 }}>
+                            *
+                          </Typography>
+                        )}
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={4}>
+                    <Box sx={{ textAlign: 'center' }}>
+                      <Typography variant="h6" sx={{ color: '#666', mb: 1 }}>
+                        {priceDifference > 0 ? 'Additional Cost' : priceDifference < 0 ? 'Savings' : 'No Change'}
+                      </Typography>
+                      <Typography 
+                        variant="h4" 
+                        sx={{ 
+                          color: priceDifference > 0 ? '#d32f2f' : priceDifference < 0 ? '#2e7d32' : '#666',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        {priceDifference > 0 ? '+' : ''}{formatCurrencyWithDecimals(Math.abs(priceDifference))}
+                      </Typography>
+                    </Box>
+                  </Grid>
                 </Grid>
-                <Grid item xs={4}>
-                  <Typography variant="h6" sx={{ color: '#666' }}>New Total</Typography>
-                  <Typography variant="h4" sx={{ color: '#2e7d32', fontWeight: 'bold' }}>
-                    ${currentCalculatedTotal.toFixed(2)}
-                  </Typography>
-                </Grid>
-                <Grid item xs={4}>
-                  <Typography variant="h6" sx={{ color: '#666' }}>
-                    {currentCalculatedTotal > originalPricing.totalAmount ? 'Additional Cost' : 'Savings'}
-                  </Typography>
-                  <Typography 
-                    variant="h4" 
-                    sx={{ 
-                      color: currentCalculatedTotal > originalPricing.totalAmount ? '#d32f2f' : '#2e7d32',
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    {currentCalculatedTotal > originalPricing.totalAmount ? '+' : ''}
-                    ${(currentCalculatedTotal - originalPricing.totalAmount).toFixed(2)}
-                  </Typography>
-                </Grid>
-              </Grid>
-              <Typography variant="body1" sx={{ color: '#1976d2', fontStyle: 'italic' }}>
-                This pricing update will persist until you close this dialog
-              </Typography>
-            </Box>
-          )}
+                
+                <Typography variant="body2" sx={{ color: '#1976d2', fontStyle: 'italic', textAlign: 'center', mt: 2 }}>
+                  💡 This pricing update will persist until you close this dialog
+                </Typography>
+              </Box>
+            );
+          })()}
           
           <Grid container spacing={2} sx={{ mt: 1 }}>
             <Grid item xs={12}>
@@ -1096,7 +1438,16 @@ const GuestBookingManagementPage: React.FC = () => {
                 fullWidth
                 select
                 value={modificationData.newRoomType}
-                onChange={(e) => setModificationData({ ...modificationData, newRoomType: e.target.value })}
+                onChange={async (e) => {
+                  const newRoomType = e.target.value;
+                  setModificationData({ ...modificationData, newRoomType });
+                  
+                  // If room type changed, fetch the new price
+                  if (newRoomType !== booking?.roomType) {
+                    await fetchRoomPriceForType(newRoomType);
+                  }
+                }}
+                helperText={fetchingRoomPrice ? 'Fetching price for selected room type...' : ''}
               >
                 <MenuItem value="">{t('booking.manage.selectRoomType')}</MenuItem>
                 {ROOM_TYPES.map((roomType) => (

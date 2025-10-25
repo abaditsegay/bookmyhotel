@@ -1,6 +1,7 @@
 package com.bookmyhotel.service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,6 +53,9 @@ public class ShopOrderService {
 
     @Autowired
     private RoomChargeService roomChargeService;
+
+    @Autowired
+    private HotelPricingConfigService hotelPricingConfigService;
 
     /**
      * Simple method to demonstrate shop order functionality
@@ -200,6 +204,23 @@ public class ShopOrderService {
 
             orderItems.add(orderItem);
         }
+
+        // Calculate taxes separately
+        BigDecimal subtotal = totalAmount;
+        BigDecimal vatRate = hotelPricingConfigService.getVatRate(hotelId);
+        BigDecimal serviceTaxRate = hotelPricingConfigService.getServiceTaxRate(hotelId);
+
+        BigDecimal vatAmount = subtotal.multiply(vatRate).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal serviceTaxAmount = subtotal.multiply(serviceTaxRate).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal totalTax = vatAmount.add(serviceTaxAmount);
+
+        // Set tax amounts
+        order.setVatAmount(vatAmount);
+        order.setServiceTaxAmount(serviceTaxAmount);
+        order.setTaxAmount(totalTax);
+
+        // Calculate final total (subtotal + taxes)
+        totalAmount = subtotal.add(totalTax);
 
         order.setTotalAmount(totalAmount);
         order.setOrderItems(orderItems);
@@ -528,6 +549,9 @@ public class ShopOrderService {
         response.setRoomNumber(order.getRoomNumber());
         response.setReservationId(order.getReservation() != null ? order.getReservation().getId() : null);
         response.setTotalAmount(order.getTotalAmount());
+        response.setTaxAmount(order.getTaxAmount());
+        response.setVatAmount(order.getVatAmount());
+        response.setServiceTaxAmount(order.getServiceTaxAmount());
         response.setIsPaid(order.getIsPaid());
         response.setPaidAt(order.getPaidAt());
         response.setPaymentReference(order.getPaymentReference());
