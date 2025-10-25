@@ -262,7 +262,16 @@ const BookingManagementPage: React.FC = () => {
                     fontSize: { xs: '0.875rem', md: '1rem' },
                   }}
                 >
-                  <strong>Total Amount:</strong> ETB {booking.totalAmount?.toFixed(0)}
+                  <strong>Total Amount:</strong> ETB {booking.totalAmount?.toFixed(2)}
+                </Typography>
+                <Typography 
+                  variant="caption" 
+                  sx={{ 
+                    color: 'text.secondary',
+                    fontStyle: 'italic',
+                  }}
+                >
+                  (including all taxes)
                 </Typography>
               </CardContent>
             </Card>
