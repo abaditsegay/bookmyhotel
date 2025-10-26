@@ -24,7 +24,6 @@ import {
   Hotel as HotelIcon,
   CalendarMonth as CalendarIcon,
   Person as PersonIcon,
-  Payment as PaymentIcon,
 } from '@mui/icons-material';
 import { bookingApiService, BookingSearchResponse } from '../services/bookingApi';
 import { formatCurrencyWithDecimals } from '../utils/currencyUtils';
@@ -270,7 +269,7 @@ const BookingSearchPage: React.FC = () => {
 
             {/* Quick Info */}
             <Grid container spacing={{ xs: 2, md: 3 }}>
-              <Grid item xs={6} sm={6} md={3}>
+              <Grid item xs={6} sm={6} md={4}>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 0.5, md: 1 } }}>
                   <HotelIcon sx={{ mr: 1, color: 'primary.main', fontSize: { xs: '1.2rem', md: '1.5rem' } }} />
                   <Typography variant={isMobile ? "caption" : "body2"} color="text.secondary">Hotel</Typography>
@@ -283,7 +282,7 @@ const BookingSearchPage: React.FC = () => {
                 </Typography>
               </Grid>
 
-              <Grid item xs={6} sm={6} md={3}>
+              <Grid item xs={6} sm={6} md={4}>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 0.5, md: 1 } }}>
                   <CalendarIcon sx={{ mr: 1, color: 'primary.main', fontSize: { xs: '1.2rem', md: '1.5rem' } }} />
                   <Typography variant={isMobile ? "caption" : "body2"} color="text.secondary">Check-in</Typography>
@@ -293,7 +292,7 @@ const BookingSearchPage: React.FC = () => {
                 </Typography>
               </Grid>
 
-              <Grid item xs={6} sm={6} md={3}>
+              <Grid item xs={6} sm={6} md={4}>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 0.5, md: 1 } }}>
                   <CalendarIcon sx={{ mr: 1, color: 'primary.main', fontSize: { xs: '1.2rem', md: '1.5rem' } }} />
                   <Typography variant={isMobile ? "caption" : "body2"} color="text.secondary">Check-out</Typography>
@@ -301,18 +300,8 @@ const BookingSearchPage: React.FC = () => {
                 <Typography variant={isMobile ? "body2" : "body1"} fontWeight="medium">
                   {formatDate(booking.checkOutDate)}
                 </Typography>
-              </Grid>
-
-              <Grid item xs={6} sm={6} md={3}>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 0.5, md: 1 } }}>
-                  <PaymentIcon sx={{ mr: 1, color: 'primary.main', fontSize: { xs: '1.2rem', md: '1.5rem' } }} />
-                  <Typography variant={isMobile ? "caption" : "body2"} color="text.secondary">Total</Typography>
-                </Box>
-                <Typography variant={isMobile ? "subtitle1" : "h6"} color="primary.main" fontWeight="bold">
-                  ${booking.totalAmount}
-                </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  {calculateNights(booking.checkInDate, booking.checkOutDate)} nights
+                  {calculateNights(booking.checkInDate, booking.checkOutDate)} night{calculateNights(booking.checkInDate, booking.checkOutDate) !== 1 ? 's' : ''}
                 </Typography>
               </Grid>
             </Grid>

@@ -19,7 +19,6 @@ import { useNavigate } from 'react-router-dom';
 import { hotelApiService } from '../services/hotelApi';
 import { BookingResponse } from '../types/hotel';
 import { formatDateForDisplay } from '../utils/dateUtils';
-import { formatCurrencyWithDecimals } from '../utils/currencyUtils';
 import { COLORS } from '../theme/themeColors';
 import { getRoomTypeLabel } from '../constants/roomTypes';
 
@@ -337,28 +336,6 @@ const FindBookingPage: React.FC = () => {
                   </Typography>
                   <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
                     {formatDateForDisplay(booking.checkOutDate)}
-                  </Typography>
-                </Box>
-                
-                <Box 
-                  sx={{
-                    p: 2,
-                    borderRadius: 0,
-                    background: theme.palette.background.default,
-                    border: `1px solid rgba(224, 224, 224, 0.3)`,
-                  }}
-                >
-                  <Typography variant="subtitle1" color={COLORS.PRIMARY} sx={{ fontWeight: 'bold', mb: 1 }}>
-                    {t('booking.find.found.labels.totalAmount')}
-                  </Typography>
-                  <Typography 
-                    variant="h5" 
-                    sx={{ 
-                      fontWeight: 'bold',
-                      color: COLORS.PRIMARY,
-                    }}
-                  >
-                    {formatCurrencyWithDecimals(booking.totalAmount || 0)}
                   </Typography>
                 </Box>
                 
