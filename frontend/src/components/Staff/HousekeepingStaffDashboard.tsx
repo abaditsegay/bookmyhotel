@@ -36,7 +36,8 @@ import {
   Fab,
   SwipeableDrawer,
   AppBar,
-  Toolbar
+  Toolbar,
+  TablePagination
 } from '@mui/material';
 import {
   CheckCircle as CheckCircleIcon,
@@ -67,6 +68,10 @@ const HousekeepingStaffDashboard: React.FC = () => {
   const [newStatus, setNewStatus] = useState('');
   const [stats, setStats] = useState<any>(null);
   const [showTaskDetails, setShowTaskDetails] = useState(false);
+  
+  // Pagination state
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   useEffect(() => {
     loadMyTasks();
@@ -465,9 +470,21 @@ const HousekeepingStaffDashboard: React.FC = () => {
                 {/* Mobile Layout - Cards */}
                 {isMobile ? (
                   <Box>
-                    {tasks.map((task) => (
+                    {tasks.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((task) => (
                       <TaskCard key={task.id} task={task} />
                     ))}
+                    <TablePagination
+                      component="div"
+                      count={tasks.length}
+                      page={page}
+                      onPageChange={(_, newPage) => setPage(newPage)}
+                      rowsPerPage={rowsPerPage}
+                      onRowsPerPageChange={(event) => {
+                        setRowsPerPage(parseInt(event.target.value, 10));
+                        setPage(0);
+                      }}
+                      rowsPerPageOptions={[5, 10, 25]}
+                    />
                   </Box>
                 ) : (
                   /* Desktop Layout - Table */
@@ -485,7 +502,7 @@ const HousekeepingStaffDashboard: React.FC = () => {
                         </TableRow>
                       </TableHead>
                       <TableBody>
-                        {tasks.map((task) => (
+                        {tasks.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((task) => (
                           <TableRow key={task.id}>
                             <TableCell>
                               <Typography variant="subtitle2">
@@ -556,6 +573,18 @@ const HousekeepingStaffDashboard: React.FC = () => {
                         ))}
                       </TableBody>
                     </Table>
+                    <TablePagination
+                      component="div"
+                      count={tasks.length}
+                      page={page}
+                      onPageChange={(_, newPage) => setPage(newPage)}
+                      rowsPerPage={rowsPerPage}
+                      onRowsPerPageChange={(event) => {
+                        setRowsPerPage(parseInt(event.target.value, 10));
+                        setPage(0);
+                      }}
+                      rowsPerPageOptions={[5, 10, 25, 50]}
+                    />
                   </TableContainer>
                 )}
               </>
