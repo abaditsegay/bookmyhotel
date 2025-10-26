@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -28,6 +30,8 @@ import com.bookmyhotel.config.CacheConfig;
 @Service
 @Transactional(readOnly = true)
 public class HotelSearchService {
+
+    private static final Logger logger = LoggerFactory.getLogger(HotelSearchService.class);
 
     @Autowired
     private HotelRepository hotelRepository;
@@ -200,8 +204,8 @@ public class HotelSearchService {
             }
         } catch (Exception e) {
             // Log the error but don't fail the room type availability
-            System.err.println("Failed to load room type image for hotel " + hotelId + " and room type " + roomType
-                    + ": " + e.getMessage());
+            logger.error("Failed to load room type image for hotel {} and room type {}: {}",
+                    hotelId, roomType, e.getMessage(), e);
             dto.setImageUrl(null); // Will allow frontend to use fallback
         }
 
@@ -240,7 +244,7 @@ public class HotelSearchService {
 
         } catch (Exception e) {
             // Log the error but don't fail the hotel search
-            System.err.println("Failed to load hotel images for hotel " + hotel.getId() + ": " + e.getMessage());
+            logger.error("Failed to load hotel images for hotel {}: {}", hotel.getId(), e.getMessage(), e);
         }
 
         // Get room type availability instead of individual rooms

@@ -2,6 +2,8 @@ package com.bookmyhotel.service;
 
 import java.time.LocalDateTime;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +26,8 @@ import com.bookmyhotel.repository.UserRepository;
 @Service
 @Transactional
 public class BookingStatusUpdateService {
+
+    private static final Logger logger = LoggerFactory.getLogger(BookingStatusUpdateService.class);
 
     @Autowired
     private ReservationRepository reservationRepository;
@@ -50,14 +54,15 @@ public class BookingStatusUpdateService {
      * @return BookingResponse with updated booking information
      */
     public BookingResponse updateBookingStatus(Long reservationId, ReservationStatus newStatus, String initiatedBy) {
-        System.out.println("🔄 BookingStatusUpdateService.updateBookingStatus called - reservationId: " + reservationId
-                + ", newStatus: " + newStatus + ", initiatedBy: " + initiatedBy);
+        logger.debug(
+                "BookingStatusUpdateService.updateBookingStatus called - reservationId: {}, newStatus: {}, initiatedBy: {}",
+                reservationId, newStatus, initiatedBy);
 
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
 
-        System.out.println("📋 Found reservation: " + generateConfirmationNumber(reservation.getId())
-                + " - Current status: " + reservation.getStatus());
+        logger.debug("Found reservation: {} - Current status: {}",
+                generateConfirmationNumber(reservation.getId()), reservation.getStatus());
 
         // Store old status for comparison
         ReservationStatus oldStatus = reservation.getStatus();

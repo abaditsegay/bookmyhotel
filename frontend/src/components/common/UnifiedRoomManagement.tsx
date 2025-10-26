@@ -69,6 +69,7 @@ interface RoomResponse {
   status: string;
   hotelId: number;
   hotelName: string;
+  currentGuest?: string;
 }
 
 interface UnifiedRoomManagementProps {
@@ -95,6 +96,7 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
+  const [roomTypeFilter, setRoomTypeFilter] = useState<string>('ALL');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(25);
   const [totalElements, setTotalElements] = useState(0);
@@ -136,7 +138,7 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
             page,
             rowsPerPage,
             searchTerm || undefined,
-            undefined, // roomType filter
+            roomTypeFilter && roomTypeFilter !== 'ALL' ? roomTypeFilter : undefined,
             statusFilter && statusFilter !== 'ALL' ? statusFilter : undefined
           )
         : await hotelAdminApi.getHotelRooms(
@@ -145,7 +147,7 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
             rowsPerPage,
             searchTerm || undefined,
             undefined, // roomNumber filter
-            undefined, // roomType filter
+            roomTypeFilter && roomTypeFilter !== 'ALL' ? roomTypeFilter : undefined,
             statusFilter && statusFilter !== 'ALL' ? statusFilter : undefined
           );
 
@@ -190,7 +192,7 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [token, page, rowsPerPage, searchTerm, statusFilter, mode]);
+  }, [token, page, rowsPerPage, searchTerm, statusFilter, roomTypeFilter, mode]);
 
   useEffect(() => {
     loadRooms();
@@ -207,6 +209,11 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
 
   const handleStatusFilterChange = (event: SelectChangeEvent) => {
     setStatusFilter(event.target.value);
+    setPage(0);
+  };
+
+  const handleRoomTypeFilterChange = (event: SelectChangeEvent) => {
+    setRoomTypeFilter(event.target.value);
     setPage(0);
   };
 
@@ -389,6 +396,22 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
               </Select>
             </FormControl>
 
+            <FormControl sx={{ minWidth: 200 }}>
+              <InputLabel>{t(`${translationPrefix}.roomTypeFilter`)}</InputLabel>
+              <Select
+                value={roomTypeFilter}
+                label={t(`${translationPrefix}.roomTypeFilter`)}
+                onChange={handleRoomTypeFilterChange}
+              >
+                <MenuItem value="ALL">{t(`${translationPrefix}.allRoomTypes`)}</MenuItem>
+                {ROOM_TYPES.map((type) => (
+                  <MenuItem key={type.value} value={type.value}>
+                    {getRoomTypeLabel(type.value)}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
             <Button
               startIcon={<RefreshIcon />}
               onClick={loadRooms}
@@ -453,7 +476,7 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
                     </TableCell>
                     <TableCell>
                       <Typography variant="body2" color="text.secondary">
-                        {room.status === 'OCCUPIED' ? t(`${translationPrefix}.guestPresent`) : '-'}
+                        {room.status === 'OCCUPIED' ? (room.currentGuest || t(`${translationPrefix}.guestPresent`)) : '-'}
                       </Typography>
                     </TableCell>
                     <TableCell>{room.capacity}</TableCell>

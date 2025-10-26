@@ -127,6 +127,7 @@ export const omTranslations = {
         rooms: "Kuteewwan",
         bookings: "Kutaalee",
         staffSchedules: "Sagantaa Hojjettuu",
+        housekeeping: "Qulqulleessaa Manaa",
         reports: "Gabaasalee",
         pricingTax: "Gatii fi Gibira",
         offlineBookings: "Kutaalee Oflaayinii"
@@ -577,6 +578,8 @@ export const omTranslations = {
         searchRooms: "Kuteewwan barbaadhaa...",
         statusFilter: "Gingilchaa Haala",
         allStatuses: "Haala Hundaa",
+        roomTypeFilter: "Gingilchaa Gosa Kutaa",
+        allRoomTypes: "Gosa Kutaa Hundaa",
         guestPresent: "Keessummaan Jira",
         roomStatuses: {
           available: "Jira",
@@ -673,6 +676,8 @@ export const omTranslations = {
         searchRooms: "Kuteewwan barbaadhaa",
         statusFilter: "Gingilchaa Haala",
         allStatuses: "Haala Hundaa",
+        roomTypeFilter: "Gingilchaa Gosa Kutaa",
+        allRoomTypes: "Gosa Kutaa Hundaa",
         guestPresent: "Keessummaan Jira",
         tableHeaders: {
           roomNumber: "Lakkoofsa Kutaa",

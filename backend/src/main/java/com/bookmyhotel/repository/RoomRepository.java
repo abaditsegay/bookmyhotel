@@ -313,6 +313,20 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
        List<Room> findAllByOrderByHotelIdAscRoomNumberAsc();
 
        /**
+        * Find all rooms with reservations eagerly loaded, ordered by hotel ID and room
+        * number
+        */
+       @Query("SELECT DISTINCT r FROM Room r LEFT JOIN FETCH r.reservations ORDER BY r.hotel.id ASC, r.roomNumber ASC")
+       List<Room> findAllWithReservationsByOrderByHotelIdAscRoomNumberAsc();
+
+       /**
+        * Find rooms by hotel ID with reservations eagerly loaded, ordered by room
+        * number
+        */
+       @Query("SELECT DISTINCT r FROM Room r LEFT JOIN FETCH r.reservations WHERE r.hotel.id = :hotelId ORDER BY r.roomNumber")
+       List<Room> findByHotelIdWithReservationsOrderByRoomNumber(@Param("hotelId") Long hotelId);
+
+       /**
         * Find room by room number and hotel ID
         */
        @Query("SELECT r FROM Room r WHERE r.roomNumber = :roomNumber AND r.hotel.id = :hotelId")

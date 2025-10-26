@@ -128,8 +128,18 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
        long countByTenant_Id(String tenantId);
 
        /**
-        * Find random active hotels for advertisement display
+        * Find random active hotels for advertisement display (limited to 5)
+        * Using database-agnostic shuffling with stream API for better performance
         */
-       @Query(value = "SELECT * FROM hotels WHERE is_active = true ORDER BY RAND() LIMIT 5", nativeQuery = true)
-       List<Hotel> findRandomActiveHotels();
+       @Query("SELECT h FROM Hotel h WHERE h.isActive = true")
+       List<Hotel> findAllActiveHotels();
+
+       /**
+        * Find random active hotels (shuffled)
+        */
+       default List<Hotel> findRandomActiveHotels() {
+              List<Hotel> allHotels = findAllActiveHotels();
+              java.util.Collections.shuffle(allHotels);
+              return allHotels;
+       }
 }

@@ -722,8 +722,7 @@ public class FrontDeskService {
 
         } catch (Exception e) {
             // Log the error but don't fail the checkout process
-            System.err.println("Failed to generate receipt during checkout: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Failed to generate receipt during checkout: {}", e.getMessage(), e);
 
             return new CheckoutResponse(bookingResponse, null,
                     "Guest checked out successfully. Receipt generation failed - please generate manually if needed.");
@@ -752,7 +751,7 @@ public class FrontDeskService {
                 return authentication.getName();
             }
         } catch (Exception e) {
-            System.err.println("Failed to get current user email: " + e.getMessage());
+            logger.error("Failed to get current user email: {}", e.getMessage(), e);
         }
         return "front-desk-staff@bookmyhotel.com"; // Fallback
     }
@@ -991,7 +990,7 @@ public class FrontDeskService {
 
             return convertToHotelDTO(userHotel);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error getting hotel info: {}", e.getMessage(), e);
             throw new RuntimeException("Error getting hotel info: " + e.getMessage(), e);
         }
     }
@@ -1016,15 +1015,17 @@ public class FrontDeskService {
 
         List<Room> allRooms;
         if (isSystemAdmin) {
-            // System admin can see all rooms from all hotels
-            allRooms = roomRepository.findAllByOrderByHotelIdAscRoomNumberAsc();
+            // System admin can see all rooms from all hotels - with reservations for guest
+            // names
+            allRooms = roomRepository.findAllWithReservationsByOrderByHotelIdAscRoomNumberAsc();
         } else {
-            // Regular hotel staff can only see rooms from their hotel
+            // Regular hotel staff can only see rooms from their hotel - with reservations
+            // for guest names
             Hotel hotel = user.getHotel();
             if (hotel == null) {
                 throw new ResourceNotFoundException("User is not associated with any hotel");
             }
-            allRooms = roomCacheService.findByHotelIdOrderByRoomNumber(hotel.getId());
+            allRooms = roomRepository.findByHotelIdWithReservationsOrderByRoomNumber(hotel.getId());
         }
 
         // Convert to responses first (this computes the actual status including
@@ -1284,15 +1285,13 @@ public class FrontDeskService {
     @Cacheable(value = CacheConfig.AVAILABLE_ROOMS_CACHE, key = "'frontdesk:hotel:' + #hotelId + ':checkin:' + #checkInDate + ':checkout:' + #checkOutDate + ':guests:' + #guests")
     public List<RoomResponse> getAvailableRoomsForDateRange(Long hotelId, LocalDate checkInDate, LocalDate checkOutDate,
             Integer guests) {
-        System.out.println("🔍 FrontDeskService.getAvailableRoomsForDateRange called:");
-        System.out.println("   Hotel ID: " + hotelId);
-        System.out.println("   Check-in: " + checkInDate);
-        System.out.println("   Check-out: " + checkOutDate);
-        System.out.println("   Guests: " + guests);
+        logger.debug(
+                "FrontDeskService.getAvailableRoomsForDateRange called: hotelId={}, checkIn={}, checkOut={}, guests={}",
+                hotelId, checkInDate, checkOutDate, guests);
 
         // Use repository method that filters in database (no lazy loading issues)
         List<Room> availableRooms = roomRepository.findAvailableRooms(hotelId, checkInDate, checkOutDate, guests, null);
-        System.out.println("   Found " + availableRooms.size() + " available rooms from database query");
+        logger.debug("Found {} available rooms from database query", availableRooms.size());
 
         return availableRooms.stream()
                 .map(this::convertToRoomResponse)

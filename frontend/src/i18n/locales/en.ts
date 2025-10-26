@@ -127,6 +127,7 @@ export const enTranslations = {
         rooms: "Rooms",
         bookings: "Bookings",
         staffSchedules: "Staff Schedules",
+        housekeeping: "Housekeeping",
         reports: "Reports",
         pricingTax: "Pricing & Tax",
         offlineBookings: "Offline Bookings"
@@ -577,6 +578,8 @@ export const enTranslations = {
         searchRooms: "Search rooms...",
         statusFilter: "Status Filter",
         allStatuses: "All Statuses",
+        roomTypeFilter: "Room Type Filter",
+        allRoomTypes: "All Room Types",
         guestPresent: "Guest Present",
         roomStatuses: {
           available: "Available",
@@ -673,6 +676,8 @@ export const enTranslations = {
         searchRooms: "Search rooms",
         statusFilter: "Status Filter",
         allStatuses: "All Statuses",
+        roomTypeFilter: "Room Type Filter",
+        allRoomTypes: "All Room Types",
         guestPresent: "Guest Present",
         tableHeaders: {
           roomNumber: "Room Number",

@@ -119,6 +119,8 @@ export const amTranslations = {
         searchRooms: "ክፍሎችን ፈልግ",
         statusFilter: "የሁኔታ ማጣሪያ",
         allStatuses: "ሁሉም ሁኔታዎች",
+        roomTypeFilter: "የክፍል አይነት ማጣሪያ",
+        allRoomTypes: "ሁሉም የክፍል አይነቶች",
         guestPresent: "እንግዳ አለ",
         tableHeaders: {
           roomNumber: "የክፍል ቁጥር",
@@ -178,6 +180,7 @@ export const amTranslations = {
         rooms: "ክፍሎች",
         bookings: "ቦታ ማስያዞች",
         staffSchedules: "የሰራተኞች መርሐ ግብር",
+        housekeeping: "የቤት ጽዳት",
         reports: "ሪፖርቶች",
         pricingTax: "ዋጋ እና ግብር",
         offlineBookings: "ከመስመር ውጭ ማስያዞች"
@@ -630,6 +633,8 @@ export const amTranslations = {
         searchRooms: "ክፍሎችን ፈልግ...",
         statusFilter: "የሁኔታ ማጣሪያ",
         allStatuses: "ሁሉም ሁኔታዎች",
+        roomTypeFilter: "የክፍል አይነት ማጣሪያ",
+        allRoomTypes: "ሁሉም የክፍል አይነቶች",
         guestPresent: "እንግዳ አለ",
         roomStatuses: {
           available: "ይገኛል",

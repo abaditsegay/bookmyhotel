@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
 @Transactional
 public class HotelImageService {
 
-    private static final Logger log = LoggerFactory.getLogger(HotelImageService.class);
+    private static final Logger logger = LoggerFactory.getLogger(HotelImageService.class);
 
     private final S3Client s3Client;
     private final AwsS3Config awsS3Config;
@@ -76,7 +76,7 @@ public class HotelImageService {
                     .findByTenantIdAndHotelIdAndImageCategoryAndIsActiveTrue(
                             tenantId, hotelId, imageCategory);
             if (existingHeroImage.isPresent()) {
-                System.out.println("Found existing hero image for hotel " + hotelId + ", deactivating it");
+                logger.debug("Found existing hero image for hotel {}, deactivating it", hotelId);
                 // Deactivate existing hero image
                 HotelImage heroImage = existingHeroImage.get();
                 heroImage.setIsActive(false);
@@ -131,8 +131,8 @@ public class HotelImageService {
                     .findByTenantIdAndHotelIdAndRoomTypeIdAndImageCategoryAndIsActiveTrue(
                             tenantId, hotelId, roomTypeId, imageCategory);
             if (existingHeroImage.isPresent()) {
-                System.out.println("Found existing hero image for room type " + roomTypeId + " in hotel " + hotelId
-                        + ", deactivating it");
+                logger.debug("Found existing hero image for room type {} in hotel {}, deactivating it",
+                        roomTypeId, hotelId);
                 // Deactivate existing hero image
                 HotelImage heroImage = existingHeroImage.get();
                 heroImage.setIsActive(false);
@@ -143,16 +143,15 @@ public class HotelImageService {
         // Get the room type from the room type ID (which is roomType.ordinal() + 1)
         RoomType roomType = null;
         if (roomTypeId != null) {
-            System.out.println("🔍 HotelImageService.uploadRoomTypeImage DEBUG:");
-            System.out.println("  roomTypeId: " + roomTypeId);
+            logger.debug("HotelImageService.uploadRoomTypeImage: roomTypeId={}", roomTypeId);
             int ordinal = (int) (roomTypeId - 1); // Convert back from ordinal + 1
-            System.out.println("  calculated ordinal: " + ordinal);
+            logger.debug("Calculated ordinal: {}", ordinal);
             RoomType[] roomTypes = RoomType.values();
             if (ordinal >= 0 && ordinal < roomTypes.length) {
                 roomType = roomTypes[ordinal];
-                System.out.println("  resolved roomType: " + roomType);
+                logger.debug("Resolved roomType: {}", roomType);
             } else {
-                System.out.println("❌ Invalid ordinal for room type");
+                logger.warn("Invalid ordinal for room type: {}", ordinal);
             }
         }
 
@@ -256,10 +255,9 @@ public class HotelImageService {
         for (HotelImage image : allImages) {
             if (image.getIsActive() && !foundActive) {
                 foundActive = true;
-                System.out.println("🔧 Keeping active image: " + image.getFileName() + " (ID: " + image.getId() + ")");
+                logger.debug("Keeping active image: {} (ID: {})", image.getFileName(), image.getId());
             } else {
-                System.out.println(
-                        "🗑️ Removing duplicate image: " + image.getFileName() + " (ID: " + image.getId() + ")");
+                logger.debug("Removing duplicate image: {} (ID: {})", image.getFileName(), image.getId());
                 hotelImageRepository.delete(image); // Hard delete old duplicates
             }
         }
@@ -409,24 +407,22 @@ public class HotelImageService {
         String extension = getFileExtension(originalFilename);
         String filename;
 
-        System.out.println("🔍 generateS3Key DEBUG:");
-        System.out.println("  roomTypeId: " + roomTypeId);
-        System.out.println("  roomType: " + roomType);
-        System.out.println("  extension: " + extension);
+        logger.debug("generateS3Key: roomTypeId={}, roomType={}, extension={}",
+                roomTypeId, roomType, extension);
 
         // For room type images, use the room type name; for hotel images, use
         // "hotelImage"
         if (roomTypeId != null && roomType != null) {
             filename = roomType.toString().toLowerCase() + "." + extension;
-            System.out.println("✅ Using room type filename: " + filename);
+            logger.debug("Using room type filename: {}", filename);
         } else {
             // Hotel image - use consistent naming
             filename = "hotelImage." + extension;
-            System.out.println("🏨 Using hotel filename: " + filename);
+            logger.debug("Using hotel filename: {}", filename);
         }
 
         String finalKey = prefix + filename;
-        System.out.println("🗝️ Final S3 key: " + finalKey);
+        logger.debug("Final S3 key: {}", finalKey);
         return finalKey;
     }
 
@@ -457,7 +453,7 @@ public class HotelImageService {
             s3Client.deleteObject(deleteRequest);
         } catch (Exception e) {
             // Log error but don't throw exception
-            System.err.println("Failed to delete file from S3: " + e.getMessage());
+            logger.error("Failed to delete file from S3: {}", e.getMessage(), e);
         }
     }
 

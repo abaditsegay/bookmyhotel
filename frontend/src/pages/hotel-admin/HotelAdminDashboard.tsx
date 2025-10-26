@@ -469,7 +469,7 @@ const HotelAdminDashboard: React.FC = () => {
             <Tab label={t('dashboard.hotelAdmin.tabs.rooms')} />
             <Tab label={t('dashboard.hotelAdmin.tabs.bookings')} />
             <Tab label={t('dashboard.hotelAdmin.tabs.staffSchedules')} />
-            <Tab label="Housekeeping" />
+            <Tab label={t('dashboard.hotelAdmin.tabs.housekeeping')} />
             <Tab label={t('dashboard.hotelAdmin.tabs.reports')} />
             <Tab label={t('dashboard.hotelAdmin.tabs.pricingTax')} />
             <Tab label={t('dashboard.hotelAdmin.tabs.offlineBookings')} />

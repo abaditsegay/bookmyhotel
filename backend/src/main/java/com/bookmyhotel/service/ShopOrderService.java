@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -38,6 +40,8 @@ import com.bookmyhotel.repository.ShopOrderRepository;
 @Service
 @Transactional
 public class ShopOrderService {
+
+    private static final Logger logger = LoggerFactory.getLogger(ShopOrderService.class);
 
     @Autowired
     private ShopOrderRepository shopOrderRepository;
@@ -102,9 +106,9 @@ public class ShopOrderService {
                 // Try alternative approach: allow room charges if customer info is provided
                 // This handles cases where room assignment might not be in the system yet
                 if (request.getCustomerName() != null && !request.getCustomerName().trim().isEmpty()) {
-                    System.out.println("DEBUG: No reservation found for room " + request.getRoomNumber() +
-                            ", but customer name provided: " + request.getCustomerName() +
-                            ". Allowing room charge with manual tracking.");
+                    logger.debug(
+                            "No reservation found for room {}, but customer name provided: {}. Allowing room charge with manual tracking.",
+                            request.getRoomNumber(), request.getCustomerName());
                     // Continue without targetReservation - order will be created with room number
                     // and customer info
                 } else {
@@ -235,10 +239,10 @@ public class ShopOrderService {
             product.setStockQuantity(newStockQuantity);
             productRepository.save(product);
 
-            System.out.println("DEBUG: Stock decremented for product '" + product.getName() +
-                    "' (ID: " + product.getId() + "). Old stock: " +
-                    (product.getStockQuantity() + orderItem.getQuantity()) +
-                    ", New stock: " + newStockQuantity);
+            logger.debug("Stock decremented for product '{}' (ID: {}). Old stock: {}, New stock: {}",
+                    product.getName(), product.getId(),
+                    (product.getStockQuantity() + orderItem.getQuantity()),
+                    newStockQuantity);
         }
 
         // If payment method is ROOM_CHARGE and order is linked to a reservation,
@@ -250,8 +254,8 @@ public class ShopOrderService {
             } catch (Exception e) {
                 // Log the error but don't fail the order creation
                 // The room charge can be created manually later if needed
-                System.err.println(
-                        "Failed to create room charge for shop order " + savedOrder.getId() + ": " + e.getMessage());
+                logger.error("Failed to create room charge for shop order {}: {}",
+                        savedOrder.getId(), e.getMessage(), e);
             }
         }
 
@@ -626,10 +630,9 @@ public class ShopOrderService {
                 .collect(Collectors.toList());
 
         // For debugging: log what we found
-        System.out.println("DEBUG: Looking for room " + roomNumber + " in hotel " + hotelId);
-        System.out.println("DEBUG: Found " + checkedInReservations.size() + " specific room reservations");
-        System.out.println(
-                "DEBUG: Found " + roomTypeReservations.size() + " room-type reservations without specific rooms");
+        logger.debug("Looking for room {} in hotel {}", roomNumber, hotelId);
+        logger.debug("Found {} specific room reservations", checkedInReservations.size());
+        logger.debug("Found {} room-type reservations without specific rooms", roomTypeReservations.size());
 
         // Return null if no suitable reservation found
         return null;
