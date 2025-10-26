@@ -453,20 +453,20 @@ public class FrontDeskService {
             throw new IllegalStateException("Selected room is not available");
         }
 
-        // Additional check: Ensure room is not booked by OTHER reservations during this booking's dates
+        // Additional check: Ensure room is not booked by OTHER reservations during this
+        // booking's dates
         // We need to exclude the current reservation from this check
         Long hotelId = hotelService.getHotelIdByTenantId(TenantContext.getTenantId());
         boolean isBookedByOthers = reservationRepository.existsByAssignedRoomAndDateRangeExcludingReservation(
-            newRoomId, 
-            reservation.getCheckInDate(), 
-            reservation.getCheckOutDate(),
-            reservationId,
-            hotelId
-        );
-        
+                newRoomId,
+                reservation.getCheckInDate(),
+                reservation.getCheckOutDate(),
+                reservationId,
+                hotelId);
+
         if (isBookedByOthers) {
-            logger.warn("Room {} is already booked by another reservation for dates {} to {}", 
-                newRoom.getRoomNumber(), reservation.getCheckInDate(), reservation.getCheckOutDate());
+            logger.warn("Room {} is already booked by another reservation for dates {} to {}",
+                    newRoom.getRoomNumber(), reservation.getCheckInDate(), reservation.getCheckOutDate());
             throw new IllegalStateException("Selected room is currently occupied");
         }
 

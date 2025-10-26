@@ -2059,7 +2059,16 @@ export const enTranslations = {
       hotelInformation: "Hotel Information",
       roomInformation: "Room Information",
       guestInformation: "Guest Information",
-      bookingSummary: "Booking Summary"
+      bookingSummary: "Booking Summary",
+      pricingSummary: "Pricing Summary"
+    },
+    
+    // Pricing details
+    pricing: {
+      subtotal: "Subtotal",
+      vat: "VAT",
+      serviceTax: "Service Tax",
+      totalAmount: "Total Amount"
     },
     
     // Room details

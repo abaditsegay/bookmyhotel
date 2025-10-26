@@ -292,10 +292,41 @@
                             <span th:text="${nights}">3</span> night<span th:if="${nights > 1}">s</span>
                         </td>
                     </tr>
+                </table>
+            </div>
+
+            <!-- Pricing Summary with Tax Breakdown -->
+            <div class="booking-details" th:if="${hasTaxBreakdown}">
+                <h3>Pricing Summary</h3>
+                <table>
+                    <tr>
+                        <td>Subtotal</td>
+                        <td>ETB <span th:text="${#numbers.formatDecimal(subtotal, 1, 'COMMA', 2, 'POINT')}">0.00</span></td>
+                    </tr>
+                    <tr>
+                        <td>VAT (<span th:text="${#numbers.formatDecimal(vatRatePercentage, 1, 2)}">0.00</span>%)</td>
+                        <td>ETB <span th:text="${#numbers.formatDecimal(vatAmount, 1, 'COMMA', 2, 'POINT')}">0.00</span></td>
+                    </tr>
+                    <tr>
+                        <td>Service Tax (<span th:text="${#numbers.formatDecimal(serviceTaxRatePercentage, 1, 2)}">0.00</span>%)</td>
+                        <td>ETB <span th:text="${#numbers.formatDecimal(serviceTaxAmount, 1, 'COMMA', 2, 'POINT')}">0.00</span></td>
+                    </tr>
+                    <tr class="highlight-row">
+                        <td><strong>Total Amount</strong></td>
+                        <td>
+                            <strong>ETB <span th:text="${#numbers.formatDecimal(totalWithTax, 1, 'COMMA', 2, 'POINT')}">0.00</span></strong>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Fallback for bookings without tax breakdown -->
+            <div class="booking-details" th:unless="${hasTaxBreakdown}">
+                <table>
                     <tr class="highlight-row" th:if="${booking.totalAmount != null and booking.totalAmount > 0}">
                         <td><strong>Total Amount</strong></td>
                         <td>
-                            <strong>ETB <span th:text="${#numbers.formatDecimal(booking.totalAmount, 1, 2)}">0.00</span></strong>
+                            <strong>ETB <span th:text="${#numbers.formatDecimal(booking.totalAmount, 1, 'COMMA', 2, 'POINT')}">0.00</span></strong>
                         </td>
                     </tr>
                 </table>

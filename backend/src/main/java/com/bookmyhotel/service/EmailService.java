@@ -1,5 +1,7 @@
 package com.bookmyhotel.service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
@@ -28,6 +30,7 @@ public class EmailService {
     private final MicrosoftGraphEmailService microsoftGraphEmailService;
     private final TemplateEngine templateEngine;
     private final BookingTokenService bookingTokenService;
+    private final HotelPricingConfigService hotelPricingConfigService;
 
     @Value("${app.email.from}")
     private String fromEmail;
@@ -51,10 +54,12 @@ public class EmailService {
     @Autowired
     public EmailService(MicrosoftGraphEmailService microsoftGraphEmailService,
             @Qualifier("emailTemplateEngine") TemplateEngine templateEngine,
-            BookingTokenService bookingTokenService) {
+            BookingTokenService bookingTokenService,
+            HotelPricingConfigService hotelPricingConfigService) {
         this.microsoftGraphEmailService = microsoftGraphEmailService;
         this.templateEngine = templateEngine;
         this.bookingTokenService = bookingTokenService;
+        this.hotelPricingConfigService = hotelPricingConfigService;
     }
 
     /**
@@ -257,6 +262,42 @@ public class EmailService {
         // Calculate stay duration
         long nights = ChronoUnit.DAYS.between(booking.getCheckInDate(), booking.getCheckOutDate());
         templateData.put("nights", nights);
+
+        // Calculate tax breakdown if hotel ID is available
+        if (booking.getHotelId() != null) {
+            try {
+                BigDecimal vatRate = hotelPricingConfigService.getVatRate(booking.getHotelId());
+                BigDecimal serviceTaxRate = hotelPricingConfigService.getServiceTaxRate(booking.getHotelId());
+                
+                // Calculate subtotal (price per night * nights)
+                BigDecimal subtotal = booking.getPricePerNight().multiply(BigDecimal.valueOf(nights));
+                
+                // Calculate tax amounts
+                BigDecimal vatAmount = subtotal.multiply(vatRate).setScale(2, RoundingMode.HALF_UP);
+                BigDecimal serviceTaxAmount = subtotal.multiply(serviceTaxRate).setScale(2, RoundingMode.HALF_UP);
+                BigDecimal totalWithTax = subtotal.add(vatAmount).add(serviceTaxAmount).setScale(2, RoundingMode.HALF_UP);
+                
+                // Add to template data
+                templateData.put("subtotal", subtotal);
+                templateData.put("vatRate", vatRate);
+                templateData.put("vatRatePercentage", vatRate.multiply(new BigDecimal("100")).setScale(2, RoundingMode.HALF_UP));
+                templateData.put("vatAmount", vatAmount);
+                templateData.put("serviceTaxRate", serviceTaxRate);
+                templateData.put("serviceTaxRatePercentage", serviceTaxRate.multiply(new BigDecimal("100")).setScale(2, RoundingMode.HALF_UP));
+                templateData.put("serviceTaxAmount", serviceTaxAmount);
+                templateData.put("totalWithTax", totalWithTax);
+                templateData.put("hasTaxBreakdown", true);
+                
+                logger.debug("Tax breakdown calculated for hotel {}: subtotal={}, VAT={}%, service tax={}%", 
+                    booking.getHotelId(), subtotal, vatRate.multiply(new BigDecimal("100")), 
+                    serviceTaxRate.multiply(new BigDecimal("100")));
+            } catch (Exception e) {
+                logger.warn("Failed to calculate tax breakdown for hotel {}: {}", booking.getHotelId(), e.getMessage());
+                templateData.put("hasTaxBreakdown", false);
+            }
+        } else {
+            templateData.put("hasTaxBreakdown", false);
+        }
 
         return templateData;
     }

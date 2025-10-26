@@ -385,11 +385,11 @@
                 </div>
                 <div class="detail-row">
                     <span class="detail-label">Rate per night</span>
-                    <span class="detail-value" th:text="'ETB ' + ${#numbers.formatDecimal(booking.pricePerNight, 1, 2)}"></span>
+                    <span class="detail-value" th:text="'ETB ' + ${#numbers.formatDecimal(booking.pricePerNight, 1, 'COMMA', 2, 'POINT')}"></span>
                 </div>
                 <div class="detail-row total-row">
                     <span class="detail-label">Total Amount</span>
-                    <span class="detail-value" th:text="'ETB ' + ${#numbers.formatDecimal(booking.totalAmount, 1, 2)}"></span>
+                    <span class="detail-value" th:text="'ETB ' + ${#numbers.formatDecimal(booking.totalAmount, 1, 'COMMA', 2, 'POINT')}"></span>
                 </div>
             </div>
 

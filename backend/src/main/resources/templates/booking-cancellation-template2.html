@@ -373,14 +373,14 @@
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">Total Amount</span>
-                        <span class="detail-value cancelled-amount" th:text="'ETB ' + ${#numbers.formatDecimal(booking.totalAmount, 1, 2)}">ETB 5,400</span>
+                        <span class="detail-value cancelled-amount" th:text="'ETB ' + ${#numbers.formatDecimal(booking.totalAmount, 1, 'COMMA', 2, 'POINT')}">ETB 5,400</span>
                     </div>
                 </div>
             </div>
             
             <div class="refund-highlight" th:if="${refundAmount != null and refundAmount > 0}">
                 <h3><span class="icon">💰</span>Refund Processing</h3>
-                <div class="refund-amount" th:text="'ETB ' + ${#numbers.formatDecimal(refundAmount, 1, 2)}">ETB 5,400</div>
+                <div class="refund-amount" th:text="'ETB ' + ${#numbers.formatDecimal(refundAmount, 1, 'COMMA', 2, 'POINT')}">ETB 5,400</div>
                 <p>Your refund will be processed within 3-5 business days to your original payment method.</p>
             </div>
             

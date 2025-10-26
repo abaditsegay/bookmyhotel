@@ -34,6 +34,9 @@ import {
   Search as SearchIcon
 } from '@mui/icons-material';
 import { useAuthenticatedApi } from '../hooks/useAuthenticatedApi';
+import { useAuth } from '../contexts/AuthContext';
+import { buildApiUrl } from '../config/apiConfig';
+import { formatCurrencyWithDecimals } from '../utils/currencyUtils';
 
 import { COLORS, addAlpha } from '../theme/themeColors';
 
@@ -162,6 +165,7 @@ interface BookingData {
   guestName: string;
   guestEmail: string;
   numberOfGuests?: number;
+  hotelId?: number;
   hotelName: string;
   hotelAddress: string;
   roomNumber?: string;
@@ -182,6 +186,7 @@ const BookingConfirmationPage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { hotelApiService } = useAuthenticatedApi();
+  const { token } = useAuth();
   const { t } = useTranslation();
   
   // Mobile responsiveness
@@ -199,6 +204,10 @@ const BookingConfirmationPage: React.FC = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
+  
+  // Tax rate states
+  const [hotelVatRate, setHotelVatRate] = useState<number>(0);
+  const [hotelServiceTaxRate, setHotelServiceTaxRate] = useState<number>(0);
   
   // Get booking data from location state if available (from successful booking)
   const locationBooking = location.state?.booking;
@@ -234,6 +243,47 @@ const BookingConfirmationPage: React.FC = () => {
       setLoading(false);
     }
   }, [reservationId, locationBooking, fromSearch, fetchBookingData]);
+
+  // Fetch hotel tax rates when booking data is available
+  useEffect(() => {
+    const fetchTaxRates = async () => {
+      if (!booking?.hotelId) {
+        console.log('🏨 Cannot fetch tax rates - missing hotelId');
+        return;
+      }
+      
+      try {
+        console.log('🔍 Fetching tax rates for hotel:', booking.hotelId);
+        const headers: Record<string, string> = {};
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+        
+        const response = await fetch(buildApiUrl(`/hotels/${booking.hotelId}/tax-rate`), {
+          headers
+        });
+        
+        if (response.ok) {
+          const taxData = await response.json();
+          console.log('📊 Tax rates loaded:', taxData);
+          setHotelVatRate(taxData.vatRate || 0);
+          setHotelServiceTaxRate(taxData.serviceTaxRate || 0);
+        } else {
+          console.error('Failed to fetch tax rates:', response.status);
+          // Set default tax rates if fetch fails
+          setHotelVatRate(0);
+          setHotelServiceTaxRate(0);
+        }
+      } catch (error) {
+        console.error('Error fetching tax rates:', error);
+        // Set default tax rates if error occurs
+        setHotelVatRate(0);
+        setHotelServiceTaxRate(0);
+      }
+    };
+    
+    fetchTaxRates();
+  }, [booking?.hotelId, token]);
 
   const calculateNights = (checkIn: string, checkOut: string) => {
     // Parse as local dates to avoid timezone conversion issues
@@ -310,6 +360,32 @@ const BookingConfirmationPage: React.FC = () => {
       case 'REFUNDED': return t('bookingConfirmation.status.refunded');
       default: return status;
     }
+  };
+
+  // Calculate price breakdown with taxes
+  const calculatePriceBreakdown = () => {
+    if (!booking) {
+      return {
+        subtotal: 0,
+        vatAmount: 0,
+        serviceTaxAmount: 0,
+        total: 0,
+      };
+    }
+
+    const nights = calculateNights(booking.checkInDate, booking.checkOutDate);
+    const subtotal = booking.pricePerNight * nights;
+    // Tax rates are already decimals (e.g., 0.15 for 15%), so multiply directly
+    const vatAmount = subtotal * hotelVatRate;
+    const serviceTaxAmount = subtotal * hotelServiceTaxRate;
+    const total = subtotal + vatAmount + serviceTaxAmount;
+
+    return {
+      subtotal,
+      vatAmount,
+      serviceTaxAmount,
+      total,
+    };
   };
 
   const handlePrint = () => {
@@ -487,6 +563,7 @@ const BookingConfirmationPage: React.FC = () => {
   }
 
   const nights = calculateNights(booking.checkInDate, booking.checkOutDate);
+  const priceBreakdown = calculatePriceBreakdown();
 
   // Print-only PDF format component
   const PrintOnlyLayout = () => (
@@ -548,8 +625,20 @@ const BookingConfirmationPage: React.FC = () => {
             <td className="value">{formatCurrency(booking.pricePerNight || 0)}</td>
           </tr>
           <tr>
+            <td className="label">Subtotal:</td>
+            <td className="value">{formatCurrencyWithDecimals(priceBreakdown.subtotal)}</td>
+          </tr>
+          <tr>
+            <td className="label">VAT ({(hotelVatRate * 100).toFixed(2)}%):</td>
+            <td className="value">{formatCurrencyWithDecimals(priceBreakdown.vatAmount)}</td>
+          </tr>
+          <tr>
+            <td className="label">Service Tax ({(hotelServiceTaxRate * 100).toFixed(2)}%):</td>
+            <td className="value">{formatCurrencyWithDecimals(priceBreakdown.serviceTaxAmount)}</td>
+          </tr>
+          <tr>
             <td className="label">Total Amount:</td>
-            <td className="value">{formatCurrency(booking.totalAmount || 0)}</td>
+            <td className="value"><strong>{formatCurrencyWithDecimals(priceBreakdown.total)}</strong></td>
           </tr>
           <tr>
             <td className="label">Status:</td>
@@ -1026,7 +1115,7 @@ const BookingConfirmationPage: React.FC = () => {
                     fontSize: isMobile ? '1rem' : '1.25rem',
                   }}
                 >
-                  {formatCurrency(booking.totalAmount || 0)}
+                  {formatCurrencyWithDecimals(priceBreakdown.total)}
                 </Typography>
               </CardContent>
             </Card>
@@ -1231,6 +1320,97 @@ const BookingConfirmationPage: React.FC = () => {
             </Box>
           </Grid>
         </Grid>
+
+        {/* Pricing Summary with Tax Breakdown */}
+        <Box 
+          sx={{ 
+            mt: isMobile ? 3 : 4,
+            p: isMobile ? 2 : 3, 
+            border: `2px solid ${COLORS.SUCCESS}`, 
+            borderRadius: 2,
+            background: `linear-gradient(135deg, ${addAlpha(COLORS.SUCCESS, 0.05)} 0%, ${addAlpha(COLORS.SUCCESS, 0.02)} 100%)`,
+          }}
+        >
+          <Typography 
+            variant={isMobile ? 'subtitle1' : 'h6'} 
+            gutterBottom 
+            sx={{ 
+              fontWeight: 'bold', 
+              color: COLORS.PRIMARY, 
+              mb: isMobile ? 1.5 : 2,
+            }}
+          >
+            {t('bookingConfirmation.sections.pricingSummary')}
+          </Typography>
+          <Box>
+            <Box 
+              sx={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                mb: 1,
+                fontSize: isMobile ? '0.9rem' : '1rem',
+              }}
+            >
+              <Typography variant="body1">
+                {t('bookingConfirmation.pricing.subtotal')} ({formatCurrencyWithDecimals(booking.pricePerNight || 0)}/night × {nights} {nights !== 1 ? 'nights' : 'night'})
+              </Typography>
+              <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                {formatCurrencyWithDecimals(priceBreakdown.subtotal)}
+              </Typography>
+            </Box>
+            <Box 
+              sx={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                mb: 1,
+                fontSize: isMobile ? '0.9rem' : '1rem',
+              }}
+            >
+              <Typography variant="body1" color="text.secondary">
+                {t('bookingConfirmation.pricing.vat')} ({(hotelVatRate * 100).toFixed(2)}%)
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                {formatCurrencyWithDecimals(priceBreakdown.vatAmount)}
+              </Typography>
+            </Box>
+            <Box 
+              sx={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                mb: 2,
+                fontSize: isMobile ? '0.9rem' : '1rem',
+              }}
+            >
+              <Typography variant="body1" color="text.secondary">
+                {t('bookingConfirmation.pricing.serviceTax')} ({(hotelServiceTaxRate * 100).toFixed(2)}%)
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                {formatCurrencyWithDecimals(priceBreakdown.serviceTaxAmount)}
+              </Typography>
+            </Box>
+            <Divider sx={{ mb: 2 }} />
+            <Box 
+              sx={{ 
+                display: 'flex', 
+                justifyContent: 'space-between',
+                fontSize: isMobile ? '1rem' : '1.1rem',
+              }}
+            >
+              <Typography variant={isMobile ? 'subtitle1' : 'h6'} sx={{ fontWeight: 'bold' }}>
+                {t('bookingConfirmation.pricing.totalAmount')}
+              </Typography>
+              <Typography 
+                variant={isMobile ? 'subtitle1' : 'h6'} 
+                sx={{ 
+                  fontWeight: 'bold', 
+                  color: COLORS.SUCCESS,
+                }}
+              >
+                {formatCurrencyWithDecimals(priceBreakdown.total)}
+              </Typography>
+            </Box>
+          </Box>
+        </Box>
       </Paper>
 
       {/* Important Information */}

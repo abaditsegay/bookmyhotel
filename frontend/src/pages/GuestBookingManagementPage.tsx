@@ -28,7 +28,8 @@ import {
   ExpandMore as ExpandMoreIcon,
   Event as EventIcon,
   Hotel as HotelIcon,
-  Person as PersonIcon
+  Person as PersonIcon,
+  Receipt as ReceiptIcon
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { bookingApiService } from '../services/bookingApi';
@@ -36,7 +37,6 @@ import { buildApiUrl, API_CONFIG } from '../config/apiConfig';
 import { ROOM_TYPES, getRoomTypeLabel } from '../constants/roomTypes';
 import { formatDateForInput, formatDateForAPI, formatDateForDisplay } from '../utils/dateUtils';
 import { formatCurrencyWithDecimals } from '../utils/currencyUtils';
-import { COLORS } from '../theme/themeColors';
 
 // Get today's date in YYYY-MM-DD format (avoiding timezone issues)
 const getTodayForInput = (): string => {
@@ -1032,9 +1032,113 @@ const GuestBookingManagementPage: React.FC = () => {
                 <Typography variant="body1" sx={{ mb: 1 }}>
                   <strong>{t('booking.manage.duration')}:</strong> {nights} night{nights !== 1 ? 's' : ''}
                 </Typography>
-                <Typography variant="body1" color={COLORS.PRIMARY} sx={{ fontWeight: 'bold' }}>
-                  <strong>{t('booking.manage.totalAmount')}:</strong> {formatCurrencyWithDecimals(booking.totalAmount || 0)}
+                <Typography variant="body1" sx={{ mb: 1 }}>
+                  <strong>{t('booking.manage.rate')}:</strong> {formatCurrencyWithDecimals(booking.pricePerNight || 0)}/night
                 </Typography>
+              </Box>
+            </Grid>
+
+            {/* Pricing Summary */}
+            <Grid item xs={12}>
+              <Box 
+                sx={{
+                  p: 3,
+                  borderRadius: 2,
+                  background: 'linear-gradient(135deg, #f0f9f4 0%, #e8f5e9 100%)',
+                  border: `2px solid #66bb6a`,
+                  boxShadow: '0 2px 8px rgba(102, 187, 106, 0.15)',
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                  <Box
+                    sx={{
+                      width: 48,
+                      height: 48,
+                      borderRadius: '50%',
+                      backgroundColor: '#66bb6a',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      mr: 2,
+                    }}
+                  >
+                    <ReceiptIcon sx={{ color: 'white', fontSize: 28 }} />
+                  </Box>
+                  <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#2e7d32' }}>
+                    Price Summary
+                  </Typography>
+                </Box>
+                {(() => {
+                  const subtotal = (booking.pricePerNight || 0) * nights;
+                  const vatAmount = subtotal * (hotelVatRate || 0);
+                  const serviceTaxAmount = subtotal * (hotelServiceTaxRate || 0);
+                  const total = subtotal + vatAmount + serviceTaxAmount;
+                  
+                  return (
+                    <>
+                      {/* Price per Night and Number of Nights */}
+                      <Grid container spacing={3} sx={{ mb: 3 }}>
+                        <Grid item xs={12} sm={6}>
+                          <Typography variant="body2" sx={{ mb: 0.5, color: '#616161', fontWeight: 500 }}>
+                            Price per Night
+                          </Typography>
+                          <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#66bb6a' }}>
+                            {formatCurrencyWithDecimals(booking.pricePerNight || 0)}
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <Typography variant="body2" sx={{ mb: 0.5, color: '#616161', fontWeight: 500 }}>
+                            Number of Nights
+                          </Typography>
+                          <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#66bb6a' }}>
+                            {nights}
+                          </Typography>
+                        </Grid>
+                      </Grid>
+
+                      <Box sx={{ borderTop: `2px solid #c8e6c9`, pt: 2.5, mb: 2.5 }} />
+
+                      {/* Price Breakdown */}
+                      <Box sx={{ mb: 2.5 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1.5 }}>
+                          <Typography variant="body1" sx={{ color: '#616161' }}>
+                            Subtotal
+                          </Typography>
+                          <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#212121' }}>
+                            {formatCurrencyWithDecimals(subtotal)}
+                          </Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1.5 }}>
+                          <Typography variant="body1" sx={{ color: '#616161' }}>
+                            VAT ({((hotelVatRate || 0) * 100).toFixed(2)}%)
+                          </Typography>
+                          <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#212121' }}>
+                            {formatCurrencyWithDecimals(vatAmount)}
+                          </Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1.5 }}>
+                          <Typography variant="body1" sx={{ color: '#616161' }}>
+                            Service Tax ({((hotelServiceTaxRate || 0) * 100).toFixed(2)}%)
+                          </Typography>
+                          <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#212121' }}>
+                            {formatCurrencyWithDecimals(serviceTaxAmount)}
+                          </Typography>
+                        </Box>
+                      </Box>
+
+                      <Box sx={{ borderTop: `2px solid #c8e6c9`, pt: 2.5 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#2e7d32' }}>
+                            Total Amount
+                          </Typography>
+                          <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#66bb6a' }}>
+                            {formatCurrencyWithDecimals(total)}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </>
+                  );
+                })()}
               </Box>
             </Grid>
 
@@ -1064,11 +1168,8 @@ const GuestBookingManagementPage: React.FC = () => {
                 <Typography variant="body1" sx={{ mb: 1 }}>
                   <strong>{t('booking.manage.roomType')}:</strong> {getRoomTypeLabel(booking.roomType)}
                 </Typography>
-                <Typography variant="body1" sx={{ color: 'success.main', fontWeight: 'bold', mb: 1 }}>
+                <Typography variant="body1" sx={{ color: 'success.main', fontWeight: 'bold' }}>
                   <strong>{t('booking.manage.roomAssignment')}:</strong> {t('booking.manage.roomAssignmentNote')}
-                </Typography>
-                <Typography variant="body1">
-                  <strong>{t('booking.manage.rate')}:</strong> {formatCurrencyWithDecimals(booking.pricePerNight || 0)}/night
                 </Typography>
               </Box>
             </Grid>
