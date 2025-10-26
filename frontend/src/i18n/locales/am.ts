@@ -1475,6 +1475,7 @@ export const amTranslations = {
       addProduct: "ምርት ጨምር",
       editProduct: "ምርት አርም",
       deleteProduct: "ምርት ሰርዝ",
+      viewDetails: "የምርት ዝርዝሮችን ይመልከቱ",
       confirmDelete: "እርግጠኛ ነዎት ይህንን ምርት መሰረዝ ይፈልጋሉ?",
       categories: {
         all: "ሁሉም ምድቦች",
@@ -1487,9 +1488,21 @@ export const amTranslations = {
         name: "የምርት ስም",
         description: "መግለጫ",
         price: "ዋጋ",
+        costPrice: "የወጪ ዋጋ",
         category: "ምድብ",
+        sku: "የምርት ኮድ",
         availability: "ይገኛል",
-        stock: "የመጋዘን ብዛት"
+        active: "ንቁ",
+        stock: "የመጋዘን ብዛት",
+        stockQuantity: "የመጋዘን ብዛት",
+        minimumStock: "አነስተኛ መጋዘን",
+        minimumStockLevel: "አነስተኛ የመጋዘን ደረጃ",
+        maximumStock: "ከፍተኛ መጋዘን",
+        maximumStockLevel: "ከፍተኛ የመጋዘን ደረጃ",
+        weight: "ክብደት",
+        weightGrams: "ክብደት (ግራም)",
+        imageUrl: "የምስል አድራሻ",
+        notes: "ማስታወሻዎች"
       },
       table: {
         name: "ስም",
@@ -1506,6 +1519,7 @@ export const amTranslations = {
         outOfStock: "ከመጋዘን ወጥቷል",
         inStock: "በመጋዘን ውስጥ",
         lowStock: "ዝቅተኛ መጋዘን",
+        stockStatus: "የመጋዘን ሁኔታ",
         unknown: "አይታወቅም"
       },
       messages: {
@@ -1718,7 +1732,9 @@ export const amTranslations = {
     add: "ጨምር",
     view: "ተመልከት",
     back: "ተመለስ",
-    refresh: "አድስ"
+    refresh: "አድስ",
+    notAvailable: "አይገኝም",
+    units: "ክፍሎች"
   },
   // Shop Payment Dialog
   shopPayment: {

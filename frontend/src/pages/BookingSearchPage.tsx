@@ -27,6 +27,7 @@ import {
   Payment as PaymentIcon,
 } from '@mui/icons-material';
 import { bookingApiService, BookingSearchResponse } from '../services/bookingApi';
+import { formatCurrencyWithDecimals } from '../utils/currencyUtils';
 
 const BookingSearchPage: React.FC = () => {
   const theme = useTheme();
@@ -367,7 +368,7 @@ const BookingSearchPage: React.FC = () => {
                         Room {booking.roomNumber} - {booking.roomType}
                       </Typography>
                       <Typography variant={isMobile ? "caption" : "body2"} color="text.secondary">
-                        ETB {booking.pricePerNight?.toFixed(0)} per night
+                        {formatCurrencyWithDecimals(booking.pricePerNight || 0)} per night
                       </Typography>
                     </Grid>
 

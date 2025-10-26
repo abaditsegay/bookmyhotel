@@ -35,6 +35,7 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { hotelAdminApi } from '../../services/hotelAdminApi';
+import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
 
 // Hotel admin specific room response interface (matching FrontDesk)
 interface RoomResponse {
@@ -324,7 +325,7 @@ const RoomManagementTable: React.FC<RoomManagementTableProps> = ({ onRoomUpdate 
                     )}
                   </TableCell>
                   <TableCell>{room.capacity} guests</TableCell>
-                  <TableCell>ETB {room.pricePerNight?.toFixed(0)}</TableCell>
+                  <TableCell>{formatCurrencyWithDecimals(room.pricePerNight || 0)}</TableCell>
                   <TableCell>
                     <FormControlLabel
                       control={

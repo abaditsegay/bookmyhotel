@@ -23,6 +23,7 @@ import {
   Star as StarIcon,
 } from '@mui/icons-material';
 import { HotelSearchResult } from '../../types/hotel';
+import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
 import RoomCard from './RoomCard';
 import RoomTypeCard from './RoomTypeCard';
 
@@ -191,13 +192,13 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
                 }}
               >
                 <Typography variant="h5" color="success.main" sx={{ fontWeight: 'bold' }}>
-                  From ETB {hotel.minPrice?.toFixed(0)}
+                  From {formatCurrencyWithDecimals(hotel.minPrice || 0)}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   per night
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  Up to ETB {hotel.maxPrice?.toFixed(0)}
+                  Up to {formatCurrencyWithDecimals(hotel.maxPrice || 0)}
                 </Typography>
               </Box>
             </Stack>
@@ -245,13 +246,13 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
               
               <Box sx={{ textAlign: 'right', ml: 2 }}>
                 <Typography variant="h5" color="success.main" sx={{ fontWeight: 'bold' }}>
-                  From ETB {hotel.minPrice?.toFixed(0)}
+                  From {formatCurrencyWithDecimals(hotel.minPrice || 0)}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   per night
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  Up to ETB {hotel.maxPrice?.toFixed(0)}
+                  Up to {formatCurrencyWithDecimals(hotel.maxPrice || 0)}
                 </Typography>
               </Box>
             </Box>

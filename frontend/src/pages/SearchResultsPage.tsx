@@ -20,6 +20,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { hotelApiService } from '../services/hotelApi';
 import HotelDetailsCard from '../components/hotel/HotelDetailsCard';
+import { HotelCardSkeleton } from '../components/common/SkeletonLoaders';
 import { 
   HotelSearchRequest, 
   HotelSearchResult,
@@ -214,27 +215,35 @@ const SearchResultsPage: React.FC = () => {
         sx={{
           minHeight: '100vh',
           background: 'linear-gradient(135deg, #ffffff 0%, #ffffff 100%)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
         }}
       >
-        <Card 
-          sx={{ 
-            p: 4,
-            backgroundColor: 'white',
-            border: '1px solid rgba(224, 224, 224, 0.3)',
-            borderRadius: 1,
-            boxShadow: 'none',
-          }}
-        >
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-            <CircularProgress size={40} />
-            <Typography variant="body1" color="text.secondary">
-              Searching for hotels...
-            </Typography>
+        <Container maxWidth="lg" sx={{ py: isMobile ? 2 : 4, px: isMobile ? 1 : 3 }}>
+          <Box sx={{ mb: 3 }}>
+            <Button 
+              onClick={handleBackToSearch}
+              variant="outlined"
+              disabled
+              sx={{ 
+                borderRadius: 1,
+                textTransform: 'none',
+                fontWeight: 500,
+                borderColor: 'rgba(224, 224, 224, 0.5)',
+              }}
+            >
+              ← Back to Search
+            </Button>
           </Box>
-        </Card>
+          
+          <Typography variant="h5" sx={{ mb: 3, fontWeight: 600 }}>
+            Searching for hotels...
+          </Typography>
+          
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <HotelCardSkeleton />
+            <HotelCardSkeleton />
+            <HotelCardSkeleton />
+          </Box>
+        </Container>
       </Box>
     );
   }

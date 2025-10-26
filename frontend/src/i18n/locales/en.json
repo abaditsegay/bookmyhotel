@@ -52,7 +52,9 @@
     "cancel": "Cancel",
     "confirm": "Confirm",
     "save": "Save",
+    "add": "Add",
     "close": "Close",
+    "delete": "Delete",
     "yes": "Yes",
     "no": "No",
     "next": "Next",
@@ -60,7 +62,9 @@
     "submit": "Submit",
     "refresh": "Refresh",
     "rowsPerPage": "Rows per page:",
-    "displayedRows": "{{from}}-{{to}} of {{count}}"
+    "displayedRows": "{{from}}-{{to}} of {{count}}",
+    "notAvailable": "N/A",
+    "units": "units"
   },
   "navigation": {
     "home": "Home",
@@ -97,22 +101,53 @@
       "noSearchResults": "No products match your search criteria"
     },
     "products": {
+      "addProduct": "Add Product",
+      "searchPlaceholder": "Search products...",
+      "categories": {
+        "all": "All Categories"
+      },
       "table": {
         "name": "Name",
         "price": "Price",
+        "stock": "Stock",
         "currentStock": "Current Stock",
         "minimumStock": "Min Stock",
         "reorderSuggestion": "Reorder Qty",
-        "status": "Status"
+        "status": "Status",
+        "actions": "Actions"
       },
       "form": {
         "category": "Category",
-        "sku": "SKU"
+        "sku": "SKU",
+        "name": "Product Name",
+        "description": "Description",
+        "price": "Price",
+        "costPrice": "Cost Price",
+        "weight": "Weight",
+        "weightGrams": "Weight (grams)",
+        "imageUrl": "Image URL",
+        "stock": "Stock",
+        "stockQuantity": "Stock Quantity",
+        "minimumStock": "Minimum Stock",
+        "minimumStockLevel": "Minimum Stock Level",
+        "maximumStock": "Maximum Stock",
+        "maximumStockLevel": "Maximum Stock Level",
+        "availability": "Available",
+        "active": "Active",
+        "notes": "Notes"
       },
       "status": {
         "outOfStock": "Out of Stock",
-        "lowStock": "Low Stock"
-      }
+        "lowStock": "Low Stock",
+        "inStock": "In Stock",
+        "available": "Available",
+        "unavailable": "Unavailable",
+        "stockStatus": "Stock Status"
+      },
+      "editProduct": "Edit Product",
+      "deleteProduct": "Delete Product",
+      "viewDetails": "View Product Details",
+      "confirmDelete": "Are you sure you want to delete this product?"
     },
     "orders": {
       "status": {
@@ -219,5 +254,13 @@
       "nightSingle": "night",
       "nightPlural": "nights"
     }
+  },
+  "categoryNames": {
+    "BEVERAGES": "Beverages",
+    "SNACKS": "Snacks",
+    "CULTURAL_CLOTHING": "Cultural Clothing",
+    "SOUVENIRS": "Souvenirs",
+    "TOILETRIES": "Toiletries",
+    "OTHER": "Other"
   }
 }

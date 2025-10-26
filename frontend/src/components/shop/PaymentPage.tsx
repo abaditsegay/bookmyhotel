@@ -46,6 +46,7 @@ import { useMockPayment, MockPaymentRequest } from '../../services/mockPaymentGa
 import { useAuth } from '../../contexts/AuthContext';
 import { shopApiService } from '../../services/shopApi';
 import { useAuthenticatedApi } from '../../hooks/useAuthenticatedApi';
+import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
 
 interface OrderItem {
   product: {
@@ -149,7 +150,7 @@ const PaymentPage: React.FC = () => {
   }, [paymentData, navigate, user]);
 
   const formatCurrency = (amount: number) => {
-    return `ETB ${amount?.toFixed(0)}`;
+    return formatCurrencyWithDecimals(amount || 0);
   };
 
   const handlePaymentMethodSelect = (method: PaymentMethod) => {
@@ -497,7 +498,7 @@ const PaymentPage: React.FC = () => {
           <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
             <Typography variant="h6" color="primary">Total Amount:</Typography>
             <Typography variant="h6" color="primary">
-              ETB {orderSummary.totalAmount?.toFixed(0)}
+              {formatCurrencyWithDecimals(orderSummary.totalAmount || 0)}
             </Typography>
           </Box>
         </Paper>

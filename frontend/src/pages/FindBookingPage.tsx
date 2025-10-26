@@ -19,6 +19,7 @@ import { useNavigate } from 'react-router-dom';
 import { hotelApiService } from '../services/hotelApi';
 import { BookingResponse } from '../types/hotel';
 import { formatDateForDisplay } from '../utils/dateUtils';
+import { formatCurrencyWithDecimals } from '../utils/currencyUtils';
 import { COLORS } from '../theme/themeColors';
 import { getRoomTypeLabel } from '../constants/roomTypes';
 
@@ -357,7 +358,7 @@ const FindBookingPage: React.FC = () => {
                       color: COLORS.PRIMARY,
                     }}
                   >
-                    ETB {booking.totalAmount?.toFixed(0)}
+                    {formatCurrencyWithDecimals(booking.totalAmount || 0)}
                   </Typography>
                 </Box>
                 

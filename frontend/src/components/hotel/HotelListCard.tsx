@@ -18,6 +18,7 @@ import {
 } from '@mui/icons-material';
 import { HotelSearchResult } from '../../types/hotel';
 import { COLORS } from '../../theme/themeColors';
+import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
 import { formatCurrency } from '../../utils/currencyUtils';
 
 interface HotelListCardProps {
@@ -182,7 +183,7 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
                       lineHeight: 1.2,
                     }}
                   >
-                    From ETB {hotel.minPrice?.toFixed(0)}
+                    From {formatCurrencyWithDecimals(hotel.minPrice || 0)}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
                     per night
@@ -198,7 +199,7 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
               </Typography>
               <Box sx={{ textAlign: 'right' }}>
                 <Typography variant="h6" color={COLORS.PRIMARY} sx={{ fontWeight: 'bold' }}>
-                  From ETB {hotel.minPrice?.toFixed(0)}
+                  From {formatCurrencyWithDecimals(hotel.minPrice || 0)}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
                   per night

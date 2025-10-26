@@ -1572,6 +1572,7 @@ export const omTranslations = {
       addProduct: "Oomisha Dabaluu",
       editProduct: "Oomisha Gulaaluu",
       deleteProduct: "Oomisha Balleessuu",
+      viewDetails: "Bal'ina Oomishaa Ilaaluu",
       confirmDelete: "Oomisha kana balleessuu mirkaneeffattaa?",
       categories: {
         all: "Ramaddii Hundaa",
@@ -1584,9 +1585,21 @@ export const omTranslations = {
         name: "Maqaa Oomishaa",
         description: "Ibsa",
         price: "Gatii",
+        costPrice: "Gatii Baasii",
         category: "Ramaddii",
+        sku: "Koodii Oomishaa",
         availability: "Jira",
-        stock: "Baay'ina Kuusaa"
+        active: "Ka'aa",
+        stock: "Baay'ina Kuusaa",
+        stockQuantity: "Baay'ina Kuusaa",
+        minimumStock: "Kuusaa Gadi",
+        minimumStockLevel: "Sadarkaa Kuusaa Gadi",
+        maximumStock: "Kuusaa Olii",
+        maximumStockLevel: "Sadarkaa Kuusaa Olii",
+        weight: "Ulfaatina",
+        weightGrams: "Ulfaatina (giraama)",
+        imageUrl: "Teessoo Suuraa",
+        notes: "Yaadannoowwan"
       },
       table: {
         name: "Maqaa",
@@ -1603,6 +1616,7 @@ export const omTranslations = {
         outOfStock: "Kuusaan Dhume",
         inStock: "Kuusaa Keessa Jira",
         lowStock: "Kuusaa Xiqqaa",
+        stockStatus: "Haala Kuusaa",
         unknown: "Hin Beekamu"
       },
       messages: {
@@ -1816,6 +1830,8 @@ export const omTranslations = {
     view: "Ilaali",
     back: "Duubatti",
     refresh: "Haaromsuu",
+    notAvailable: "Hin Jiru",
+    units: "yuunitii",
     
     // Ji'oota
     months: {

@@ -1598,6 +1598,7 @@ export const enTranslations = {
       addProduct: "Add Product",
       editProduct: "Edit Product",
       deleteProduct: "Delete Product",
+      viewDetails: "View Product Details",
       confirmDelete: "Are you sure you want to delete this product?",
       categories: {
         all: "All Categories",
@@ -1610,9 +1611,21 @@ export const enTranslations = {
         name: "Product Name",
         description: "Description",
         price: "Price",
+        costPrice: "Cost Price",
         category: "Category",
+        sku: "SKU",
         availability: "Available",
-        stock: "Stock Quantity"
+        active: "Active",
+        stock: "Stock Quantity",
+        stockQuantity: "Stock Quantity",
+        minimumStock: "Minimum Stock",
+        minimumStockLevel: "Minimum Stock Level",
+        maximumStock: "Maximum Stock",
+        maximumStockLevel: "Maximum Stock Level",
+        weight: "Weight",
+        weightGrams: "Weight (grams)",
+        imageUrl: "Image URL",
+        notes: "Notes"
       },
       table: {
         name: "Name",
@@ -1629,6 +1642,7 @@ export const enTranslations = {
         outOfStock: "Out of Stock",
         inStock: "In Stock",
         lowStock: "Low Stock",
+        stockStatus: "Stock Status",
         unknown: "Unknown"
       },
       messages: {
@@ -1842,6 +1856,8 @@ export const enTranslations = {
     view: "View",
     back: "Back",
     refresh: "Refresh",
+    notAvailable: "N/A",
+    units: "units",
     
     // Months
     months: {

@@ -38,6 +38,7 @@ import { buildApiUrl } from '../../config/apiConfig';
 import { roomCacheService } from '../../services/RoomCacheService';
 import { CachedRoom } from '../../services/OfflineStorageService';
 import { getRoomTypeLabel } from '../../constants/roomTypes';
+import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
 
 interface RoomResponse {
   id: number;
@@ -522,7 +523,7 @@ const FrontDeskRoomManagement: React.FC<FrontDeskRoomManagementProps> = ({ onRoo
                     )}
                   </TableCell>
                   <TableCell>{room.capacity} {t('dashboard.frontDesk.roomManagement.guests')}</TableCell>
-                  <TableCell>ETB {room.pricePerNight?.toFixed(0)}</TableCell>
+                  <TableCell>{formatCurrencyWithDecimals(room.pricePerNight || 0)}</TableCell>
                   <TableCell>
                     <FormControlLabel
                       control={

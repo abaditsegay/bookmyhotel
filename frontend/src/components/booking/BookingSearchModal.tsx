@@ -28,6 +28,7 @@ import {
   Payment as PaymentIcon,
 } from '@mui/icons-material';
 import { bookingApiService, BookingSearchResponse } from '../../services/bookingApi';
+import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
 
 interface BookingSearchModalProps {
   open: boolean;
@@ -374,7 +375,7 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
                     <Typography variant="body2" color="text.secondary">Total</Typography>
                   </Box>
                   <Typography variant="h6" color="primary.main" fontWeight="bold">
-                    ETB {booking.totalAmount?.toFixed(0)}
+                    {formatCurrencyWithDecimals(booking.totalAmount || 0)}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
                     {calculateNights(booking.checkInDate, booking.checkOutDate)} nights

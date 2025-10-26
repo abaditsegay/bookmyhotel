@@ -16,6 +16,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { shopApiService } from '../../services/shopApi';
+import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
 import { ShopDashboardStats } from '../../types/shop';
 import ProductManagement from './ProductManagement';
 import OrderManagement from './OrderManagement';
@@ -221,7 +222,7 @@ const ShopDashboard: React.FC = () => {
                     ${dashboardStats.totalRevenue.toFixed(2)}
                   </Typography>
                   <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                    ETB {dashboardStats.totalRevenue?.toFixed(0)}
+                    {formatCurrencyWithDecimals(dashboardStats.totalRevenue || 0)}
                   </Typography>
                 </Box>
               </CardContent>

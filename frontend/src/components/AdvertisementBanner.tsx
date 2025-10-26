@@ -18,6 +18,7 @@ import {
 } from '@mui/icons-material';
 import { hotelApiService } from '../services/hotelApi';
 import { HotelSearchResult } from '../types/hotel';
+import { formatCurrencyWithDecimals } from '../utils/currencyUtils';
 import { useAuth } from '../contexts/AuthContext';
 
 interface AdvertisementBannerProps {
@@ -248,11 +249,11 @@ export default function AdvertisementBanner({ maxAds = 5 }: AdvertisementBannerP
                 {/* Price Section */}
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                   <Typography variant="h6" color="primary" sx={{ fontWeight: 'bold' }}>
-                    ETB {hotel.minPrice?.toFixed(0)}
+                    {formatCurrencyWithDecimals(hotel.minPrice || 0)}
                   </Typography>
                   {hotel.maxPrice > hotel.minPrice && (
                     <Typography variant="body2" color="text.secondary">
-                      - ETB {hotel.maxPrice?.toFixed(0)}
+                      - {formatCurrencyWithDecimals(hotel.maxPrice || 0)}
                     </Typography>
                   )}
                   <Typography variant="caption" color="success.main" sx={{ fontWeight: 'bold' }}>

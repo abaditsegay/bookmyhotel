@@ -41,6 +41,7 @@ import { shopApiService } from '../../services/shopApi';
 import { Product, ShopOrderCreateRequest, PaymentMethod, DeliveryType, ProductCategory, ShopOrder, ShopOrderUtils } from '../../types/shop';
 import ShopReceiptDialog from './ShopReceiptDialog';
 import PaymentDialog from './PaymentDialog';
+import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
 
 interface OrderItem {
   product: Product;
@@ -598,7 +599,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                                 color: isSelected ? 'primary.main' : (isOutOfStock ? 'text.disabled' : 'text.primary')
                               }}
                             >
-                              ETB {product.price?.toFixed(0)}
+                              {formatCurrencyWithDecimals(product.price || 0)}
                             </Typography>
                           </Box>
                           
@@ -812,7 +813,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                             </TableCell>
                             <TableCell align="right">
                               <Typography variant="body2">
-                                ETB {(item.product.price * item.quantity)?.toFixed(0)}
+                                {formatCurrencyWithDecimals((item.product.price * item.quantity) || 0)}
                               </Typography>
                             </TableCell>
                             <TableCell align="center">

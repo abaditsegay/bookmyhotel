@@ -29,6 +29,7 @@ import { hotelApiService } from '../services/hotelApi';
 import RoomCard from '../components/hotel/RoomCard';
 import RoomTypeCard from '../components/hotel/RoomTypeCard';
 import { COLORS } from '../theme/themeColors';
+import { formatCurrencyWithDecimals } from '../utils/currencyUtils';
 import { 
   HotelSearchRequest, 
   HotelSearchResult,
@@ -425,13 +426,13 @@ const HotelDetailPage: React.FC = () => {
                   color: COLORS.PRIMARY,
                   fontWeight: 700 
                 }}>
-                  From ETB {hotel.minPrice?.toFixed(0)}
+                  From {formatCurrencyWithDecimals(hotel.minPrice || 0)}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
                   per night
                 </Typography>
                 <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
-                  Up to ETB {hotel.maxPrice?.toFixed(0)}
+                  Up to {formatCurrencyWithDecimals(hotel.maxPrice || 0)}
                 </Typography>
               </Box>
             )}
@@ -465,13 +466,13 @@ const HotelDetailPage: React.FC = () => {
                   color: COLORS.PRIMARY,
                   fontWeight: 700 
                 }}>
-                  From ETB {hotel.minPrice?.toFixed(0)}
+                  From {formatCurrencyWithDecimals(hotel.minPrice || 0)}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
                   per night
                 </Typography>
                 <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
-                  Up to ETB {hotel.maxPrice?.toFixed(0)}
+                  Up to {formatCurrencyWithDecimals(hotel.maxPrice || 0)}
                 </Typography>
               </Box>
             )}

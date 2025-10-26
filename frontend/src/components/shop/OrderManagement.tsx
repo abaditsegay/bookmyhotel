@@ -38,6 +38,7 @@ import {
 import { format } from 'date-fns';
 import { useAuth } from '../../contexts/AuthContext';
 import { shopApiService } from '../../services/shopApi';
+import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
 import { ShopOrder, ShopOrderStatus, DeliveryType, ShopOrderUtils } from '../../types/shop';
 
 const OrderManagement: React.FC = () => {
@@ -236,7 +237,7 @@ const OrderManagement: React.FC = () => {
                 </TableCell>
                 <TableCell>
                   <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>
-                    ETB {order.totalAmount?.toFixed(0)}
+                    {formatCurrencyWithDecimals(order.totalAmount || 0)}
                   </Typography>
                 </TableCell>
                 <TableCell>
@@ -352,13 +353,13 @@ const OrderManagement: React.FC = () => {
                               primary={
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                                   <span>{item.productName}</span>
-                                  <span>ETB {(item.unitPrice * item.quantity)?.toFixed(0)}</span>
+                                  <span>{formatCurrencyWithDecimals((item.unitPrice * item.quantity) || 0)}</span>
                                 </Box>
                               }
                               secondary={
                                 <Box>
                                   <Box component="span" sx={{ display: 'block', lineHeight: 1.43 }}>
-                                    Quantity: {item.quantity} × ETB {item.unitPrice?.toFixed(0)}
+                                    Quantity: {item.quantity} × {formatCurrencyWithDecimals(item.unitPrice || 0)}
                                   </Box>
                                   <Box component="span" sx={{ display: 'block', fontSize: '0.75rem', lineHeight: 1.66 }}>
                                     SKU: {item.productSku}
@@ -380,7 +381,7 @@ const OrderManagement: React.FC = () => {
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <Typography variant="h6">Total:</Typography>
                       <Typography variant="h6" color="primary">
-                        ETB {selectedOrder.totalAmount?.toFixed(0)}
+                        {formatCurrencyWithDecimals(selectedOrder.totalAmount || 0)}
                       </Typography>
                     </Box>
                   </CardContent>

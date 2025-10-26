@@ -34,11 +34,13 @@ import {
   Delete as DeleteIcon,
   Search as SearchIcon,
   Warning as WarningIcon,
-  CheckCircle as CheckCircleIcon
+  CheckCircle as CheckCircleIcon,
+  Visibility as VisibilityIcon
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { shopApiService } from '../../services/shopApi';
+import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
 import { Product, ProductCreateRequest, ProductCategory } from '../../types/shop';
 import { translateProducts } from '../../utils/productTranslation';
 
@@ -53,8 +55,10 @@ const ProductManagement: React.FC = () => {
   const [categoryFilter, setCategoryFilter] = useState<string>('ALL');
   const [openDialog, setOpenDialog] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [viewDetailsDialogOpen, setViewDetailsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+  const [selectedViewProduct, setSelectedViewProduct] = useState<Product | null>(null);
   
   // Pagination state - matching FrontDesk Rooms tab style
   const [page, setPage] = useState(0); // 0-indexed for TablePagination
@@ -264,6 +268,16 @@ const ProductManagement: React.FC = () => {
     setOpenDialog(true);
   };
 
+  const handleViewDetails = (product: Product) => {
+    setSelectedViewProduct(product);
+    setViewDetailsDialogOpen(true);
+  };
+
+  const closeViewDetailsDialog = () => {
+    setViewDetailsDialogOpen(false);
+    setSelectedViewProduct(null);
+  };
+
   const resetForm = () => {
     setFormData({
       name: '',
@@ -405,10 +419,7 @@ const ProductManagement: React.FC = () => {
                 </TableCell>
                 <TableCell>
                   <Typography variant="subtitle2">
-                    ETB {product.price?.toFixed(0)}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    ETB {product.price?.toFixed(0)}
+                    {formatCurrencyWithDecimals(product.price || 0)}
                   </Typography>
                 </TableCell>
                 <TableCell>
@@ -434,7 +445,7 @@ const ProductManagement: React.FC = () => {
                           size="small"
                         />
                       }
-                      label="Active"
+                      label={t('shop.products.form.active')}
                       componentsProps={{ typography: { variant: 'caption' } }}
                     />
                     <FormControlLabel
@@ -451,6 +462,14 @@ const ProductManagement: React.FC = () => {
                   </Box>
                 </TableCell>
                 <TableCell align="center">
+                  <Tooltip title={t('shop.products.viewDetails')}>
+                    <IconButton
+                      size="small"
+                      onClick={() => handleViewDetails(product)}
+                    >
+                      <VisibilityIcon />
+                    </IconButton>
+                  </Tooltip>
                   <Tooltip title={t('shop.products.editProduct')}>
                     <IconButton
                       size="small"
@@ -504,7 +523,7 @@ const ProductManagement: React.FC = () => {
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
-                label="SKU"
+                label={t('shop.products.form.sku')}
                 value={formData.sku}
                 onChange={(e) => setFormData(prev => ({ ...prev, sku: e.target.value }))}
                 required
@@ -552,7 +571,7 @@ const ProductManagement: React.FC = () => {
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
-                label="Cost Price (ETB)"
+                label={t('shop.products.form.costPrice')}
                 type="number"
                 value={formData.costPrice}
                 onChange={(e) => setFormData(prev => ({ ...prev, costPrice: parseFloat(e.target.value) || 0 }))}
@@ -574,7 +593,7 @@ const ProductManagement: React.FC = () => {
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
-                label="Minimum Stock Level"
+                label={t('shop.products.form.minimumStockLevel')}
                 type="number"
                 value={formData.minimumStockLevel}
                 onChange={(e) => setFormData(prev => ({ ...prev, minimumStockLevel: parseInt(e.target.value) || 0 }))}
@@ -583,7 +602,7 @@ const ProductManagement: React.FC = () => {
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
-                label="Maximum Stock Level"
+                label={t('shop.products.form.maximumStockLevel')}
                 type="number"
                 value={formData.maximumStockLevel}
                 onChange={(e) => setFormData(prev => ({ ...prev, maximumStockLevel: parseInt(e.target.value) || 0 }))}
@@ -592,7 +611,7 @@ const ProductManagement: React.FC = () => {
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
-                label="Weight (grams)"
+                label={t('shop.products.form.weightGrams')}
                 type="number"
                 value={formData.weightGrams}
                 onChange={(e) => setFormData(prev => ({ ...prev, weightGrams: parseInt(e.target.value) || 0 }))}
@@ -601,7 +620,7 @@ const ProductManagement: React.FC = () => {
             <Grid item xs={12}>
               <TextField
                 fullWidth
-                label="Image URL"
+                label={t('shop.products.form.imageUrl')}
                 value={formData.imageUrl}
                 onChange={(e) => setFormData(prev => ({ ...prev, imageUrl: e.target.value }))}
               />
@@ -609,7 +628,7 @@ const ProductManagement: React.FC = () => {
             <Grid item xs={12}>
               <TextField
                 fullWidth
-                label="Notes"
+                label={t('shop.products.form.notes')}
                 value={formData.notes}
                 onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
                 multiline
@@ -648,7 +667,7 @@ const ProductManagement: React.FC = () => {
                 <strong>Category:</strong> {productToDelete.category.replace('_', ' ')}
               </Typography>
               <Typography variant="body2" color="text.secondary" gutterBottom>
-                <strong>Price:</strong> ETB {productToDelete.price?.toFixed(0)}
+                <strong>Price:</strong> {formatCurrencyWithDecimals(productToDelete.price || 0)}
               </Typography>
               <Typography variant="body2" color="text.secondary" gutterBottom>
                 <strong>Stock:</strong> {productToDelete.stockQuantity} units
@@ -664,6 +683,170 @@ const ProductManagement: React.FC = () => {
           <Button onClick={confirmDeleteProduct} variant="contained" color="error">
             {t('common.delete')}
           </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* View Details Dialog */}
+      <Dialog open={viewDetailsDialogOpen} onClose={closeViewDetailsDialog} maxWidth="md" fullWidth>
+        <DialogTitle>{t('shop.products.viewDetails')}</DialogTitle>
+        <DialogContent>
+          {selectedViewProduct && (
+            <Grid container spacing={3} sx={{ mt: 1 }}>
+              {/* Product Image */}
+              {selectedViewProduct.imageUrl && (
+                <Grid item xs={12} md={4}>
+                  <Box
+                    component="img"
+                    src={selectedViewProduct.imageUrl}
+                    alt={selectedViewProduct.name}
+                    sx={{
+                      width: '100%',
+                      maxHeight: 300,
+                      objectFit: 'contain',
+                      borderRadius: 1,
+                      border: '1px solid',
+                      borderColor: 'divider'
+                    }}
+                  />
+                </Grid>
+              )}
+              
+              {/* Product Details */}
+              <Grid item xs={12} md={selectedViewProduct.imageUrl ? 8 : 12}>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="caption" color="text.secondary">
+                      {t('shop.products.form.name')}
+                    </Typography>
+                    <Typography variant="body1" gutterBottom>
+                      {selectedViewProduct.name}
+                    </Typography>
+                  </Grid>
+
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="caption" color="text.secondary">
+                      {t('shop.products.form.sku')}
+                    </Typography>
+                    <Typography variant="body1" gutterBottom>
+                      {selectedViewProduct.sku}
+                    </Typography>
+                  </Grid>
+
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="caption" color="text.secondary">
+                      {t('shop.products.form.category')}
+                    </Typography>
+                    <Typography variant="body1" gutterBottom>
+                      {t(`categoryNames.${selectedViewProduct.category}`)}
+                    </Typography>
+                  </Grid>
+
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="caption" color="text.secondary">
+                      {t('shop.products.form.price')}
+                    </Typography>
+                    <Typography variant="body1" gutterBottom>
+                      {formatCurrencyWithDecimals(selectedViewProduct.price || 0)}
+                    </Typography>
+                  </Grid>
+
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="caption" color="text.secondary">
+                      {t('shop.products.form.costPrice')}
+                    </Typography>
+                    <Typography variant="body1" gutterBottom>
+                      {formatCurrencyWithDecimals(selectedViewProduct.costPrice || 0)}
+                    </Typography>
+                  </Grid>
+
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="caption" color="text.secondary">
+                      {t('shop.products.form.weight')}
+                    </Typography>
+                    <Typography variant="body1" gutterBottom>
+                      {selectedViewProduct.weightGrams ? `${selectedViewProduct.weightGrams}g` : t('common.notAvailable')}
+                    </Typography>
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    <Typography variant="caption" color="text.secondary">
+                      {t('shop.products.form.description')}
+                    </Typography>
+                    <Typography variant="body1" gutterBottom>
+                      {selectedViewProduct.description || t('common.notAvailable')}
+                    </Typography>
+                  </Grid>
+
+                  <Grid item xs={12} sm={4}>
+                    <Typography variant="caption" color="text.secondary">
+                      {t('shop.products.form.stockQuantity')}
+                    </Typography>
+                    <Typography variant="body1" gutterBottom>
+                      {selectedViewProduct.stockQuantity} {t('common.units')}
+                    </Typography>
+                  </Grid>
+
+                  <Grid item xs={12} sm={4}>
+                    <Typography variant="caption" color="text.secondary">
+                      {t('shop.products.form.minimumStock')}
+                    </Typography>
+                    <Typography variant="body1" gutterBottom>
+                      {selectedViewProduct.minimumStockLevel} {t('common.units')}
+                    </Typography>
+                  </Grid>
+
+                  <Grid item xs={12} sm={4}>
+                    <Typography variant="caption" color="text.secondary">
+                      {t('shop.products.form.maximumStock')}
+                    </Typography>
+                    <Typography variant="body1" gutterBottom>
+                      {selectedViewProduct.maximumStockLevel} {t('common.units')}
+                    </Typography>
+                  </Grid>
+
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="caption" color="text.secondary">
+                      {t('shop.products.form.availability')}
+                    </Typography>
+                    <Box>
+                      <Chip
+                        label={selectedViewProduct.isAvailable ? t('shop.products.status.available') : t('shop.products.status.unavailable')}
+                        color={selectedViewProduct.isAvailable ? 'success' : 'default'}
+                        size="small"
+                      />
+                    </Box>
+                  </Grid>
+
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="caption" color="text.secondary">
+                      {t('shop.products.status.stockStatus')}
+                    </Typography>
+                    <Box>
+                      <Chip
+                        label={selectedViewProduct.stockQuantity > selectedViewProduct.minimumStockLevel ? t('shop.products.status.inStock') : t('shop.products.status.lowStock')}
+                        color={selectedViewProduct.stockQuantity > selectedViewProduct.minimumStockLevel ? 'success' : 'warning'}
+                        size="small"
+                      />
+                    </Box>
+                  </Grid>
+
+                  {selectedViewProduct.notes && (
+                    <Grid item xs={12}>
+                      <Typography variant="caption" color="text.secondary">
+                        {t('shop.products.form.notes')}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {selectedViewProduct.notes}
+                      </Typography>
+                    </Grid>
+                  )}
+                </Grid>
+              </Grid>
+            </Grid>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeViewDetailsDialog}>{t('common.close')}</Button>
         </DialogActions>
       </Dialog>
     </Box>

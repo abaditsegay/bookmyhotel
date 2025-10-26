@@ -26,6 +26,7 @@ import { useAsyncOperation } from '../../hooks/useLoading';
 import { useFormValidation } from '../../hooks/useFormValidation';
 import NumberStepper from '../common/NumberStepper';
 import { COLORS, addAlpha } from '../../theme/themeColors';
+import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
 
 interface BookingFormProps {
   open: boolean;
@@ -516,7 +517,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
               </Box>
             ) : undefined}
           >
-            {bookingOperation.loading ? 'Processing...' : `Book Now - ETB ${totalAmount?.toFixed(0)}`}
+            {bookingOperation.loading ? 'Processing...' : `Book Now - ${formatCurrencyWithDecimals(totalAmount || 0)}`}
           </Button>
         </DialogActions>
       </Dialog>
