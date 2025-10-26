@@ -1342,9 +1342,7 @@ const PricingConfigurationComponent: React.FC = () => {
       >
         <Typography variant="body2" sx={{ fontWeight: 500 }}>
           <strong>Fixed Pricing Strategy Active:</strong> Room prices will remain consistent based on your configured rates. 
-          All taxes (VAT: {calculateTaxPercentage(config.vatRate)}, Service Tax: {calculateTaxPercentage(config.serviceTaxRate)}, 
-          {config.cityTaxRate > 0 && `City Tax: ${calculateTaxPercentage(config.cityTaxRate)}`}) 
-          will be automatically calculated and added during the booking process to ensure transparent pricing for your customers.
+          All taxes will be automatically calculated and added during the booking process to ensure transparent pricing for your customers.
         </Typography>
       </Alert>
     </Box>
