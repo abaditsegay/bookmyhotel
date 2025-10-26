@@ -1577,6 +1577,8 @@ export const omTranslations = {
       productUpdated: "Oomishaan milkaa'inaan haaromfameera",
       productDeleted: "Oomishaan milkaa'inaan balleeffameera",
       confirmDelete: "Oomisha kana balleessuu mirkaneeffattaa?",
+      noDataToExport: "Oomishaan gara alatti baafamuuf hin jiru",
+      exportSuccess: "Oomishaaleen milkaa'inaan gara alatti baafaman",
       categories: {
         all: "Ramaddii Hundaa",
         food: "Nyaataa fi Dhugaatii",
@@ -1661,13 +1663,25 @@ export const omTranslations = {
       },
       table: {
         orderId: "ID Ajajjii",
+        orderNumber: "Lakkoofsa Ajajjii",
+        customerName: "Maqaa Maamiltuu",
         customer: "Maamilchaa",
         room: "Kutaa",
         items: "Meeshaalee",
         total: "Ida'ama",
+        totalAmount: "Ida'ama Hundaa",
         status: "Haala",
+        paymentMethod: "Mala Kaffaltii",
+        deliveryType: "Gosa Geejjibaa",
+        createdAt: "Yeroo Uumame",
         date: "Guyyaa",
         actions: "Gochaalee"
+      },
+      noDataToExport: "Ajajjii gara alatti baafamuuf hin jiru",
+      exportSuccess: "Ajajjiin milkaa'inaan gara alatti baafaman",
+      deliveryTypes: {
+        roomDelivery: "Kutaatti Geejjibuu",
+        pickup: "Fudhadhuu"
       },
       status: {
         pending: "Eegaa jira",
@@ -1835,6 +1849,9 @@ export const omTranslations = {
     refresh: "Haaromsuu",
     notAvailable: "Hin Jiru",
     units: "yuunitii",
+    exportCsv: "CSV Baasuu",
+    available: "Ni argama",
+    unavailable: "Hin argamu",
     
     // Ji'oota
     months: {

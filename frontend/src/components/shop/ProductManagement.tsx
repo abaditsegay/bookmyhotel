@@ -35,7 +35,8 @@ import {
   Search as SearchIcon,
   Warning as WarningIcon,
   CheckCircle as CheckCircleIcon,
-  Visibility as VisibilityIcon
+  Visibility as VisibilityIcon,
+  Download as DownloadIcon
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { useSnackbar } from 'notistack';
@@ -46,11 +47,15 @@ import { Product, ProductCreateRequest, ProductCategory } from '../../types/shop
 import { translateProducts } from '../../utils/productTranslation';
 import { TableRowSkeleton } from '../common/SkeletonLoaders';
 import { NoProducts } from '../common/EmptyState';
+import { useTableSort } from '../../hooks/useTableSort';
+import { SortableTableCell } from '../common/SortableTableCell';
+import { useCsvExport } from '../../hooks/useCsvExport';
 
 const ProductManagement: React.FC = () => {
   const { t } = useTranslation();
   const { user, token } = useAuth();
   const { enqueueSnackbar } = useSnackbar();
+  const { exportToCsv } = useCsvExport({ filename: 'products' });
   const [products, setProducts] = useState<Product[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loading, setLoading] = useState(true);
@@ -89,6 +94,16 @@ const ProductManagement: React.FC = () => {
 
   // Get hotel ID from the authenticated user
   const hotelId = user?.hotelId ? parseInt(user.hotelId) : null;
+
+  // Translate products for display
+  const translatedProducts = translateProducts(products, t);
+  
+  // Apply sorting to translated products
+  const { sortedItems: sortedProducts, requestSort, getSortDirection } = useTableSort(
+    translatedProducts,
+    'name',
+    'asc'
+  );
 
   useEffect(() => {
     // Skip loading if no hotel ID
@@ -256,6 +271,37 @@ const ProductManagement: React.FC = () => {
     setPage(0); // Reset to first page when changing category
   };
 
+  const handleExportToCsv = () => {
+    if (sortedProducts.length === 0) {
+      enqueueSnackbar(t('shop.products.noDataToExport'), { variant: 'info' });
+      return;
+    }
+
+    const headers = [
+      t('shop.products.table.name'),
+      t('shop.products.form.category'),
+      t('shop.products.table.price'),
+      t('shop.products.table.stock'),
+      t('shop.products.form.minimumStockLevel'),
+      t('shop.products.form.sku'),
+      t('shop.products.form.description'),
+      t('shop.products.table.status')
+    ];
+
+    exportToCsv(sortedProducts, headers, (product) => [
+      product.name,
+      t(`categoryNames.${product.category}`),
+      formatCurrencyWithDecimals(product.price),
+      product.stockQuantity.toString(),
+      product.minimumStockLevel.toString(),
+      product.sku,
+      product.description || '',
+      product.isAvailable ? t('common.available') : t('common.unavailable')
+    ]);
+
+    enqueueSnackbar(t('shop.products.exportSuccess'), { variant: 'success' });
+  };
+
   const openCreateDialog = () => {
     resetForm();
     setEditingProduct(null);
@@ -308,9 +354,6 @@ const ProductManagement: React.FC = () => {
     });
   };
 
-  // Translate products for display
-  const translatedProducts = translateProducts(products, t);
-  
   // Debug logging for duplicates
   console.log('🔍 Products Debug:', {
     originalCount: products.length,
@@ -342,7 +385,15 @@ const ProductManagement: React.FC = () => {
   return (
     <Box>
       {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mb: 3 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mb: 3, gap: 2 }}>
+        <Button
+          variant="outlined"
+          startIcon={<DownloadIcon />}
+          onClick={handleExportToCsv}
+          disabled={sortedProducts.length === 0}
+        >
+          {t('common.exportCsv')}
+        </Button>
         <Button
           variant="contained"
           onClick={openCreateDialog}
@@ -397,10 +448,34 @@ const ProductManagement: React.FC = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>{t('shop.products.table.name')}</TableCell>
-              <TableCell>{t('shop.products.form.category')}</TableCell>
-              <TableCell>{t('shop.products.table.price')}</TableCell>
-              <TableCell>{t('shop.products.table.stock')}</TableCell>
+              <SortableTableCell
+                label={t('shop.products.table.name')}
+                sortKey="name"
+                active={getSortDirection('name') !== undefined}
+                direction={getSortDirection('name')}
+                onSort={() => requestSort('name')}
+              />
+              <SortableTableCell
+                label={t('shop.products.form.category')}
+                sortKey="category"
+                active={getSortDirection('category') !== undefined}
+                direction={getSortDirection('category')}
+                onSort={() => requestSort('category')}
+              />
+              <SortableTableCell
+                label={t('shop.products.table.price')}
+                sortKey="price"
+                active={getSortDirection('price') !== undefined}
+                direction={getSortDirection('price')}
+                onSort={() => requestSort('price')}
+              />
+              <SortableTableCell
+                label={t('shop.products.table.stock')}
+                sortKey="stockQuantity"
+                active={getSortDirection('stockQuantity') !== undefined}
+                direction={getSortDirection('stockQuantity')}
+                onSort={() => requestSort('stockQuantity')}
+              />
               <TableCell>{t('shop.products.table.status')}</TableCell>
               <TableCell align="center">{t('shop.products.table.actions')}</TableCell>
             </TableRow>
@@ -411,7 +486,7 @@ const ProductManagement: React.FC = () => {
               Array.from({ length: rowsPerPage }).map((_, index) => (
                 <TableRowSkeleton key={index} columns={6} />
               ))
-            ) : translatedProducts.length === 0 ? (
+            ) : sortedProducts.length === 0 ? (
               // Show empty state when no products
               <TableRow>
                 <TableCell colSpan={6}>
@@ -419,7 +494,7 @@ const ProductManagement: React.FC = () => {
                 </TableCell>
               </TableRow>
             ) : (
-              translatedProducts.map((product) => (
+              sortedProducts.map((product) => (
               <TableRow key={product.id}>
                 <TableCell>
                   <Box>

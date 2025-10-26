@@ -1603,6 +1603,8 @@ export const enTranslations = {
       productUpdated: "Product updated successfully",
       productDeleted: "Product deleted successfully",
       confirmDelete: "Are you sure you want to delete this product?",
+      noDataToExport: "No products available to export",
+      exportSuccess: "Products exported successfully",
       categories: {
         all: "All Categories",
         food: "Food & Beverages",
@@ -1687,13 +1689,25 @@ export const enTranslations = {
       },
       table: {
         orderId: "Order ID",
+        orderNumber: "Order Number",
+        customerName: "Customer Name",
         customer: "Customer",
         room: "Room",
         items: "Items",
         total: "Total",
+        totalAmount: "Total Amount",
         status: "Status",
+        paymentMethod: "Payment Method",
+        deliveryType: "Delivery Type",
+        createdAt: "Created At",
         date: "Date",
         actions: "Actions"
+      },
+      noDataToExport: "No orders available to export",
+      exportSuccess: "Orders exported successfully",
+      deliveryTypes: {
+        roomDelivery: "Room Delivery",
+        pickup: "Pickup"
       },
       status: {
         pending: "Pending",
@@ -1861,6 +1875,9 @@ export const enTranslations = {
     refresh: "Refresh",
     notAvailable: "N/A",
     units: "units",
+    exportCsv: "Export CSV",
+    available: "Available",
+    unavailable: "Unavailable",
     
     // Months
     months: {

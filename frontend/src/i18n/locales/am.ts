@@ -1480,6 +1480,8 @@ export const amTranslations = {
       productUpdated: "ምርት በስኬት ታድሷል",
       productDeleted: "ምርት በስኬት ተሰርዟል",
       confirmDelete: "እርግጠኛ ነዎት ይህንን ምርት መሰረዝ ይፈልጋሉ?",
+      noDataToExport: "ለመላክ የሚገኙ ምርቶች የሉም",
+      exportSuccess: "ምርቶች በተሳካ ሁኔታ ተልከዋል",
       categories: {
         all: "ሁሉም ምድቦች",
         food: "ምግብ እና መጠጦች",
@@ -1564,13 +1566,25 @@ export const amTranslations = {
       },
       table: {
         orderId: "የትዕዛዝ መለያ",
+        orderNumber: "የትዕዛዝ ቁጥር",
+        customerName: "የደንበኛ ስም",
         customer: "ደንበኛ",
         room: "ክፍል",
         items: "እቃዎች",
         total: "ጠቅላላ",
+        totalAmount: "ጠቅላላ መጠን",
         status: "ሁኔታ",
+        paymentMethod: "የክፍያ ዘዴ",
+        deliveryType: "የመላኪያ አይነት",
+        createdAt: "የተፈጠረበት",
         date: "ቀን",
         actions: "ድርጊቶች"
+      },
+      noDataToExport: "ለመላክ የሚገኙ ትዕዛዞች የሉም",
+      exportSuccess: "ትዕዛዞች በተሳካ ሁኔታ ተልከዋል",
+      deliveryTypes: {
+        roomDelivery: "ወደ ክፍል መላክ",
+        pickup: "መውሰድ"
       },
       status: {
         pending: "በመጠባበቅ ላይ",
@@ -1737,7 +1751,10 @@ export const amTranslations = {
     back: "ተመለስ",
     refresh: "አድስ",
     notAvailable: "አይገኝም",
-    units: "ክፍሎች"
+    units: "ክፍሎች",
+    exportCsv: "CSV አውጣ",
+    available: "ይገኛል",
+    unavailable: "አይገኝም"
   },
   // Shop Payment Dialog
   shopPayment: {
