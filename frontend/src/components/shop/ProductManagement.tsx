@@ -27,7 +27,9 @@ import {
   Tooltip,
   Switch,
   FormControlLabel,
-  TablePagination
+  TablePagination,
+  Card,
+  CardContent
 } from '@mui/material';
 import {
   Edit as EditIcon,
@@ -793,157 +795,132 @@ const ProductManagement: React.FC = () => {
         <DialogTitle>{t('shop.products.viewDetails')}</DialogTitle>
         <DialogContent>
           {selectedViewProduct && (
-            <Grid container spacing={3} sx={{ mt: 1 }}>
+            <Grid container spacing={3}>
               {/* Product Image */}
               {selectedViewProduct.imageUrl && (
-                <Grid item xs={12} md={4}>
-                  <Box
-                    component="img"
-                    src={selectedViewProduct.imageUrl}
-                    alt={selectedViewProduct.name}
-                    sx={{
-                      width: '100%',
-                      maxHeight: 300,
-                      objectFit: 'contain',
-                      borderRadius: 1,
-                      border: '1px solid',
-                      borderColor: 'divider'
-                    }}
-                  />
+                <Grid item xs={12}>
+                  <Card>
+                    <CardContent>
+                      <Box
+                        component="img"
+                        src={selectedViewProduct.imageUrl}
+                        alt={selectedViewProduct.name}
+                        sx={{
+                          width: '100%',
+                          maxHeight: 300,
+                          objectFit: 'contain',
+                          borderRadius: 1
+                        }}
+                      />
+                    </CardContent>
+                  </Card>
                 </Grid>
               )}
               
-              {/* Product Details */}
-              <Grid item xs={12} md={selectedViewProduct.imageUrl ? 8 : 12}>
-                <Grid container spacing={2}>
-                  <Grid item xs={12} sm={6}>
-                    <Typography variant="caption" color="text.secondary">
-                      {t('shop.products.form.name')}
-                    </Typography>
-                    <Typography variant="body1" gutterBottom>
-                      {selectedViewProduct.name}
-                    </Typography>
-                  </Grid>
-
-                  <Grid item xs={12} sm={6}>
-                    <Typography variant="caption" color="text.secondary">
-                      {t('shop.products.form.sku')}
-                    </Typography>
-                    <Typography variant="body1" gutterBottom>
-                      {selectedViewProduct.sku}
-                    </Typography>
-                  </Grid>
-
-                  <Grid item xs={12} sm={6}>
-                    <Typography variant="caption" color="text.secondary">
-                      {t('shop.products.form.category')}
-                    </Typography>
-                    <Typography variant="body1" gutterBottom>
-                      {t(`categoryNames.${selectedViewProduct.category}`)}
-                    </Typography>
-                  </Grid>
-
-                  <Grid item xs={12} sm={6}>
-                    <Typography variant="caption" color="text.secondary">
-                      {t('shop.products.form.price')}
-                    </Typography>
-                    <Typography variant="body1" gutterBottom>
-                      {formatCurrencyWithDecimals(selectedViewProduct.price || 0)}
-                    </Typography>
-                  </Grid>
-
-                  <Grid item xs={12} sm={6}>
-                    <Typography variant="caption" color="text.secondary">
-                      {t('shop.products.form.costPrice')}
-                    </Typography>
-                    <Typography variant="body1" gutterBottom>
-                      {formatCurrencyWithDecimals(selectedViewProduct.costPrice || 0)}
-                    </Typography>
-                  </Grid>
-
-                  <Grid item xs={12} sm={6}>
-                    <Typography variant="caption" color="text.secondary">
-                      {t('shop.products.form.weight')}
-                    </Typography>
-                    <Typography variant="body1" gutterBottom>
-                      {selectedViewProduct.weightGrams ? `${selectedViewProduct.weightGrams}g` : t('common.notAvailable')}
-                    </Typography>
-                  </Grid>
-
-                  <Grid item xs={12}>
-                    <Typography variant="caption" color="text.secondary">
-                      {t('shop.products.form.description')}
-                    </Typography>
-                    <Typography variant="body1" gutterBottom>
-                      {selectedViewProduct.description || t('common.notAvailable')}
-                    </Typography>
-                  </Grid>
-
-                  <Grid item xs={12} sm={4}>
-                    <Typography variant="caption" color="text.secondary">
-                      {t('shop.products.form.stockQuantity')}
-                    </Typography>
-                    <Typography variant="body1" gutterBottom>
-                      {selectedViewProduct.stockQuantity} {t('common.units')}
-                    </Typography>
-                  </Grid>
-
-                  <Grid item xs={12} sm={4}>
-                    <Typography variant="caption" color="text.secondary">
-                      {t('shop.products.form.minimumStock')}
-                    </Typography>
-                    <Typography variant="body1" gutterBottom>
-                      {selectedViewProduct.minimumStockLevel} {t('common.units')}
-                    </Typography>
-                  </Grid>
-
-                  <Grid item xs={12} sm={4}>
-                    <Typography variant="caption" color="text.secondary">
-                      {t('shop.products.form.maximumStock')}
-                    </Typography>
-                    <Typography variant="body1" gutterBottom>
-                      {selectedViewProduct.maximumStockLevel} {t('common.units')}
-                    </Typography>
-                  </Grid>
-
-                  <Grid item xs={12} sm={6}>
-                    <Typography variant="caption" color="text.secondary">
-                      {t('shop.products.form.availability')}
-                    </Typography>
-                    <Box>
-                      <Chip
-                        label={selectedViewProduct.isAvailable ? t('shop.products.status.available') : t('shop.products.status.unavailable')}
-                        color={selectedViewProduct.isAvailable ? 'success' : 'default'}
-                        size="small"
-                      />
+              {/* Basic Information */}
+              <Grid item xs={12} md={6}>
+                <Card>
+                  <CardContent>
+                    <Typography variant="h6" gutterBottom>Basic Information</Typography>
+                    <Box sx={{ '& > *': { mb: 0.5 } }}>
+                      <Typography><strong>{t('shop.products.form.name')}:</strong> {selectedViewProduct.name}</Typography>
+                      <Typography><strong>{t('shop.products.form.sku')}:</strong> {selectedViewProduct.sku}</Typography>
+                      <Typography><strong>{t('shop.products.form.category')}:</strong> {t(`categoryNames.${selectedViewProduct.category}`)}</Typography>
+                      {selectedViewProduct.description && (
+                        <Typography><strong>{t('shop.products.form.description')}:</strong> {selectedViewProduct.description}</Typography>
+                      )}
                     </Box>
-                  </Grid>
+                  </CardContent>
+                </Card>
+              </Grid>
 
-                  <Grid item xs={12} sm={6}>
-                    <Typography variant="caption" color="text.secondary">
-                      {t('shop.products.status.stockStatus')}
-                    </Typography>
-                    <Box>
+              {/* Pricing Information */}
+              <Grid item xs={12} md={6}>
+                <Card>
+                  <CardContent>
+                    <Typography variant="h6" gutterBottom>Pricing Information</Typography>
+                    <Box sx={{ '& > *': { mb: 0.5 } }}>
+                      <Typography><strong>{t('shop.products.form.price')}:</strong> {formatCurrencyWithDecimals(selectedViewProduct.price || 0)}</Typography>
+                      <Typography><strong>{t('shop.products.form.costPrice')}:</strong> {formatCurrencyWithDecimals(selectedViewProduct.costPrice || 0)}</Typography>
+                      <Typography>
+                        <strong>Profit Margin:</strong>{' '}
+                        {selectedViewProduct.price && selectedViewProduct.costPrice
+                          ? `${(((selectedViewProduct.price - selectedViewProduct.costPrice) / selectedViewProduct.price) * 100).toFixed(1)}%`
+                          : t('common.notAvailable')}
+                      </Typography>
+                      {selectedViewProduct.weightGrams && (
+                        <Typography><strong>{t('shop.products.form.weight')}:</strong> {selectedViewProduct.weightGrams}g</Typography>
+                      )}
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+
+              {/* Stock Information */}
+              <Grid item xs={12} md={6}>
+                <Card>
+                  <CardContent>
+                    <Typography variant="h6" gutterBottom>Stock Information</Typography>
+                    <Box sx={{ mb: 2 }}>
                       <Chip
                         label={selectedViewProduct.stockQuantity > selectedViewProduct.minimumStockLevel ? t('shop.products.status.inStock') : t('shop.products.status.lowStock')}
                         color={selectedViewProduct.stockQuantity > selectedViewProduct.minimumStockLevel ? 'success' : 'warning'}
-                        size="small"
+                        sx={{ mr: 1 }}
+                      />
+                      <Chip
+                        label={selectedViewProduct.isAvailable ? t('shop.products.status.available') : t('shop.products.status.unavailable')}
+                        color={selectedViewProduct.isAvailable ? 'success' : 'default'}
                       />
                     </Box>
-                  </Grid>
-
-                  {selectedViewProduct.notes && (
-                    <Grid item xs={12}>
-                      <Typography variant="caption" color="text.secondary">
-                        {t('shop.products.form.notes')}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {selectedViewProduct.notes}
-                      </Typography>
-                    </Grid>
-                  )}
-                </Grid>
+                    <Box sx={{ '& > *': { mb: 0.5 } }}>
+                      <Typography><strong>{t('shop.products.form.stockQuantity')}:</strong> {selectedViewProduct.stockQuantity} {t('common.units')}</Typography>
+                      <Typography><strong>{t('shop.products.form.minimumStock')}:</strong> {selectedViewProduct.minimumStockLevel} {t('common.units')}</Typography>
+                      <Typography><strong>{t('shop.products.form.maximumStock')}:</strong> {selectedViewProduct.maximumStockLevel} {t('common.units')}</Typography>
+                    </Box>
+                  </CardContent>
+                </Card>
               </Grid>
+
+              {/* Availability Status */}
+              <Grid item xs={12} md={6}>
+                <Card>
+                  <CardContent>
+                    <Typography variant="h6" gutterBottom>Product Status</Typography>
+                    <Box sx={{ '& > *': { mb: 0.5 } }}>
+                      <Typography>
+                        <strong>Availability:</strong>{' '}
+                        {selectedViewProduct.isAvailable ? (
+                          <Chip label={t('shop.products.status.available')} color="success" size="small" />
+                        ) : (
+                          <Chip label={t('shop.products.status.unavailable')} color="default" size="small" />
+                        )}
+                      </Typography>
+                      <Typography>
+                        <strong>Stock Level:</strong>{' '}
+                        {getStockStatusIcon(selectedViewProduct)}{' '}
+                        {selectedViewProduct.stockQuantity <= selectedViewProduct.minimumStockLevel
+                          ? 'Low Stock - Reorder Needed'
+                          : 'Adequate Stock'}
+                      </Typography>
+                      <Typography>
+                        <strong>Stock Value:</strong> {formatCurrencyWithDecimals((selectedViewProduct.costPrice || 0) * selectedViewProduct.stockQuantity)}
+                      </Typography>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+
+              {/* Notes */}
+              {selectedViewProduct.notes && (
+                <Grid item xs={12}>
+                  <Card>
+                    <CardContent>
+                      <Typography variant="h6" gutterBottom>Notes</Typography>
+                      <Typography>{selectedViewProduct.notes}</Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              )}
             </Grid>
           )}
         </DialogContent>
