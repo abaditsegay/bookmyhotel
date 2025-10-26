@@ -1476,6 +1476,9 @@ export const amTranslations = {
       editProduct: "ምርት አርም",
       deleteProduct: "ምርት ሰርዝ",
       viewDetails: "የምርት ዝርዝሮችን ይመልከቱ",
+      productCreated: "ምርት በስኬት ተፈጥሯል",
+      productUpdated: "ምርት በስኬት ታድሷል",
+      productDeleted: "ምርት በስኬት ተሰርዟል",
       confirmDelete: "እርግጠኛ ነዎት ይህንን ምርት መሰረዝ ይፈልጋሉ?",
       categories: {
         all: "ሁሉም ምድቦች",

@@ -53,6 +53,8 @@ import { Booking } from '../../types/booking-shared';
 import { formatDateForDisplay } from '../../utils/dateUtils';
 import BookingNotificationEvents from '../../utils/bookingNotificationEvents';
 import { logger } from '../../utils/logger';
+import { TableRowSkeleton } from '../common/SkeletonLoaders';
+import { NoBookings } from '../common/EmptyState';
 
 interface BookingManagementTableProps {
   mode: 'hotel-admin' | 'front-desk';
@@ -810,33 +812,14 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
             </TableHead>
             <TableBody>
               {loading ? (
-                <TableRow>
-                  <TableCell 
-                    colSpan={showActions ? 9 : 8} 
-                    align="center" 
-                    sx={{ 
-                      py: 4,
-                      backgroundColor: muiTheme.palette.background.default,
-                      border: 'none'
-                    }}
-                  >
-                    <CircularProgress sx={{ color: muiTheme.palette.primary.main }} />
-                  </TableCell>
-                </TableRow>
+                // Show skeleton loaders while loading
+                Array.from({ length: size }).map((_, index) => (
+                  <TableRowSkeleton key={index} columns={showActions ? 9 : 8} />
+                ))
               ) : bookings.length === 0 ? (
                 <TableRow>
-                  <TableCell 
-                    colSpan={showActions ? 9 : 8} 
-                    align="center" 
-                    sx={{ 
-                      py: 4,
-                      backgroundColor: muiTheme.palette.background.default,
-                      border: 'none'
-                    }}
-                  >
-                    <Typography color="text.secondary">
-                      {t('booking.management.noBookingsFound')}
-                    </Typography>
+                  <TableCell colSpan={showActions ? 9 : 8}>
+                    <NoBookings />
                   </TableCell>
                 </TableRow>
               ) : (

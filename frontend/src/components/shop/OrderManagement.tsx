@@ -40,6 +40,9 @@ import { useAuth } from '../../contexts/AuthContext';
 import { shopApiService } from '../../services/shopApi';
 import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
 import { ShopOrder, ShopOrderStatus, DeliveryType, ShopOrderUtils } from '../../types/shop';
+import { TableRowSkeleton } from '../common/SkeletonLoaders';
+import { NoOrders } from '../common/EmptyState';
+import { useDebounce } from '../../hooks/useDebounce';
 
 const OrderManagement: React.FC = () => {
   const { user, token } = useAuth();
@@ -48,6 +51,7 @@ const OrderManagement: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [viewOrderDialog, setViewOrderDialog] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<ShopOrder | null>(null);
@@ -121,10 +125,11 @@ const OrderManagement: React.FC = () => {
     setViewOrderDialog(true);
   };
 
+  // Filter orders based on search term and status
   const filteredOrders = orders.filter(order => {
-    const matchesSearch = order.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         ShopOrderUtils.getDisplayCustomerName(order).toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (order.roomNumber && order.roomNumber.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesSearch = order.orderNumber.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+                         ShopOrderUtils.getDisplayCustomerName(order).toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+                         (order.roomNumber && order.roomNumber.toLowerCase().includes(debouncedSearchTerm.toLowerCase()));
     const matchesStatus = statusFilter === 'ALL' || order.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -205,7 +210,20 @@ const OrderManagement: React.FC = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredOrders.map((order) => (
+            {loading ? (
+              // Show skeleton loaders while loading
+              Array.from({ length: 5 }).map((_, index) => (
+                <TableRowSkeleton key={index} columns={7} />
+              ))
+            ) : filteredOrders.length === 0 ? (
+              // Show empty state when no orders
+              <TableRow>
+                <TableCell colSpan={7}>
+                  <NoOrders />
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredOrders.map((order) => (
               <TableRow key={order.id}>
                 <TableCell>
                   <Box>
@@ -277,7 +295,8 @@ const OrderManagement: React.FC = () => {
                   </Tooltip>
                 </TableCell>
               </TableRow>
-            ))}
+            ))
+            )}
           </TableBody>
         </Table>
       </TableContainer>

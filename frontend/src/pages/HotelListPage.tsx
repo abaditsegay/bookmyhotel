@@ -4,7 +4,6 @@ import {
   Typography,
   Box,
   Alert,
-  CircularProgress,
   Snackbar,
   Grid,
   useTheme,
@@ -13,9 +12,6 @@ import {
   CardContent,
   Button,
 } from '@mui/material';
-import {
-  Search as SearchIcon,
-} from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { hotelApiService } from '../services/hotelApi';
 import HotelListCard from '../components/hotel/HotelListCard';
@@ -24,6 +20,8 @@ import {
   HotelSearchRequest, 
   HotelSearchResult,
 } from '../types/hotel';
+import { HotelCardSkeleton } from '../components/common/SkeletonLoaders';
+import { NoHotels } from '../components/common/EmptyState';
 
 const HotelListPage: React.FC = () => {
   const navigate = useNavigate();
@@ -122,36 +120,19 @@ const HotelListPage: React.FC = () => {
   if (loading) {
     return (
       <Container 
-        maxWidth="xl" 
-        sx={{ 
-          py: { xs: 2, md: 4 },
-          px: { xs: 1, md: 3 },
-        }}
+        maxWidth="lg"
+        sx={{ py: isMobile ? 2 : 4, px: isMobile ? 1 : 3 }}
       >
-        <Box sx={{ 
-          display: 'flex', 
-          flexDirection: 'column',
-          justifyContent: 'center', 
-          alignItems: 'center', 
-          minHeight: { xs: '50vh', md: '60vh' },
-          textAlign: 'center',
-        }}>
-          <CircularProgress 
-            size={48}
-            sx={{ 
-              mb: 2,
-              width: { xs: '40px !important', md: '48px !important' },
-              height: { xs: '40px !important', md: '48px !important' },
-            }}
-          />
-          <Typography 
-            variant="body1" 
-            color="text.secondary"
-            sx={{ fontSize: { xs: '0.9rem', md: '1rem' } }}
-          >
-            Searching for hotels...
-          </Typography>
-        </Box>
+        <Typography variant="h5" sx={{ mb: 3 }}>
+          Searching for hotels...
+        </Typography>
+        <Grid container spacing={isMobile ? 2 : 3}>
+          {Array.from({ length: 3 }).map((_, index) => (
+            <Grid item xs={12} key={index}>
+              <HotelCardSkeleton />
+            </Grid>
+          ))}
+        </Grid>
       </Container>
     );
   }
@@ -273,72 +254,7 @@ const HotelListPage: React.FC = () => {
           </Grid>
         </Box>
       ) : (
-        <Card 
-          sx={{ 
-            backgroundColor: theme.palette.background.paper,
-            border: `1px solid ${COLORS.CARD_BORDER}`,
-            borderRadius: 1,
-            boxShadow: 'none',
-          }}
-        >
-          <CardContent sx={{ p: isMobile ? 4 : 6, textAlign: 'center' }}>
-            <Box sx={{ 
-              display: 'flex', 
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: 2,
-              mb: 3,
-            }}>
-              <Box sx={{
-                width: 80,
-                height: 80,
-                borderRadius: 1,
-                bgcolor: theme.palette.background.paper,
-                border: `1px solid ${COLORS.CARD_BORDER}`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: 'none',
-              }}>
-                <SearchIcon sx={{ fontSize: 40, color: COLORS.PRIMARY }} />
-              </Box>
-              <Typography 
-                variant={isMobile ? "h5" : "h4"} 
-                sx={{ 
-                  fontWeight: 700,
-                  color: COLORS.PRIMARY,
-                }}
-              >
-                No Hotels Found
-              </Typography>
-            </Box>
-            <Typography variant="body1" color="text.secondary" paragraph sx={{ mb: 2, fontWeight: 500 }}>
-              We couldn't find any hotels matching your search criteria.
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3, fontWeight: 500 }}>
-              Try adjusting your search dates, location, or filters to find more options.
-            </Typography>
-            <Button
-              variant="contained"
-              size="large"
-              onClick={handleBackToSearch}
-              sx={{
-                borderRadius: 2,
-                textTransform: 'none',
-                fontWeight: 600,
-                px: 4,
-                py: 1.2,
-                backgroundColor: COLORS.PRIMARY,
-                '&:hover': {
-                  backgroundColor: COLORS.PRIMARY,
-                  filter: 'brightness(0.9)'
-                },
-              }}
-            >
-              Modify Search
-            </Button>
-          </CardContent>
-        </Card>
+        <NoHotels onRegister={handleBackToSearch} />
       )}
 
       {/* Success Snackbar */}

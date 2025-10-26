@@ -1573,6 +1573,9 @@ export const omTranslations = {
       editProduct: "Oomisha Gulaaluu",
       deleteProduct: "Oomisha Balleessuu",
       viewDetails: "Bal'ina Oomishaa Ilaaluu",
+      productCreated: "Oomishaan milkaa'inaan uumameera",
+      productUpdated: "Oomishaan milkaa'inaan haaromfameera",
+      productDeleted: "Oomishaan milkaa'inaan balleeffameera",
       confirmDelete: "Oomisha kana balleessuu mirkaneeffattaa?",
       categories: {
         all: "Ramaddii Hundaa",

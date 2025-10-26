@@ -22,6 +22,7 @@ import ProductManagement from './ProductManagement';
 import OrderManagement from './OrderManagement';
 import OrderCreation from './OrderCreation';
 import LowStockProducts from './LowStockProducts';
+import { StatCardSkeleton } from '../common/SkeletonLoaders';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -173,7 +174,15 @@ const ShopDashboard: React.FC = () => {
   return (
     <Box sx={{ width: '100%' }}>
       {/* Quick Stats Cards */}
-      {dashboardStats && (
+      {loading ? (
+        <Grid container spacing={1.5} sx={{ mb: 1.5 }}>
+          {Array.from({ length: 4 }).map((_, index) => (
+            <Grid item xs={12} sm={6} md={3} key={index}>
+              <StatCardSkeleton />
+            </Grid>
+          ))}
+        </Grid>
+      ) : dashboardStats && (
         <Grid container spacing={1.5} sx={{ mb: 1.5 }}>
           <Grid item xs={12} sm={6} md={3}>
             <Card>

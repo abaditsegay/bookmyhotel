@@ -1599,6 +1599,9 @@ export const enTranslations = {
       editProduct: "Edit Product",
       deleteProduct: "Delete Product",
       viewDetails: "View Product Details",
+      productCreated: "Product created successfully",
+      productUpdated: "Product updated successfully",
+      productDeleted: "Product deleted successfully",
       confirmDelete: "Are you sure you want to delete this product?",
       categories: {
         all: "All Categories",

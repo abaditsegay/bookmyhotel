@@ -38,15 +38,19 @@ import {
   Visibility as VisibilityIcon
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
+import { useSnackbar } from 'notistack';
 import { useAuth } from '../../contexts/AuthContext';
 import { shopApiService } from '../../services/shopApi';
 import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
 import { Product, ProductCreateRequest, ProductCategory } from '../../types/shop';
 import { translateProducts } from '../../utils/productTranslation';
+import { TableRowSkeleton } from '../common/SkeletonLoaders';
+import { NoProducts } from '../common/EmptyState';
 
 const ProductManagement: React.FC = () => {
   const { t } = useTranslation();
   const { user, token } = useAuth();
+  const { enqueueSnackbar } = useSnackbar();
   const [products, setProducts] = useState<Product[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loading, setLoading] = useState(true);
@@ -160,11 +164,14 @@ const ProductManagement: React.FC = () => {
 
     try {
       await shopApiService.createProduct(hotelId, formData);
+      enqueueSnackbar(t('shop.products.productCreated'), { variant: 'success' });
       setOpenDialog(false);
       resetForm();
       triggerRefresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create product');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to create product';
+      setError(errorMessage);
+      enqueueSnackbar(errorMessage, { variant: 'error' });
     }
   };
 
@@ -176,12 +183,15 @@ const ProductManagement: React.FC = () => {
     
     try {
       await shopApiService.updateProduct(hotelId, editingProduct.id, formData);
+      enqueueSnackbar(t('shop.products.productUpdated'), { variant: 'success' });
       setOpenDialog(false);
       setEditingProduct(null);
       resetForm();
       triggerRefresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update product');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update product';
+      setError(errorMessage);
+      enqueueSnackbar(errorMessage, { variant: 'error' });
     }
   };
 
@@ -198,11 +208,14 @@ const ProductManagement: React.FC = () => {
     
     try {
       await shopApiService.deleteProduct(hotelId, productToDelete.id);
+      enqueueSnackbar(t('shop.products.productDeleted'), { variant: 'success' });
       setDeleteDialogOpen(false);
       setProductToDelete(null);
       triggerRefresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete product');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to delete product';
+      setError(errorMessage);
+      enqueueSnackbar(errorMessage, { variant: 'error' });
     }
   };
 
@@ -393,7 +406,20 @@ const ProductManagement: React.FC = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {translatedProducts.map((product) => (
+            {loading ? (
+              // Show skeleton loaders while loading
+              Array.from({ length: rowsPerPage }).map((_, index) => (
+                <TableRowSkeleton key={index} columns={6} />
+              ))
+            ) : translatedProducts.length === 0 ? (
+              // Show empty state when no products
+              <TableRow>
+                <TableCell colSpan={6}>
+                  <NoProducts onCreate={openCreateDialog} />
+                </TableCell>
+              </TableRow>
+            ) : (
+              translatedProducts.map((product) => (
               <TableRow key={product.id}>
                 <TableCell>
                   <Box>
@@ -489,7 +515,8 @@ const ProductManagement: React.FC = () => {
                   </Tooltip>
                 </TableCell>
               </TableRow>
-            ))}
+            ))
+            )}
           </TableBody>
         </Table>
       </TableContainer>
