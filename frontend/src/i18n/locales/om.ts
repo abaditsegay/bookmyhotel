@@ -1031,6 +1031,9 @@ export const omTranslations = {
       title: "Bulchiinsa Buufataa",
       searchPlaceholder: "Maqaa keessummaa, lakkoofsa mirkaneeffannaa, kutaa, wabii kaffaltii, yookaan haala kaffaltii barbaadhaa...",
       refresh: "Haaromsuu",
+      exportCSV: "CSV Erguu",
+      noDataToExport: "Daataa buufataa kan ergamu hin jiru",
+      exportSuccess: "Buufaalee milkaa'inaan ergaman",
       noBookingsFound: "Buufaaleen hin argamne",
       loading: "Buufaalee fe'aa jira...",
       
@@ -2029,7 +2032,16 @@ export const omTranslations = {
       hotelInformation: "Odeeffannoo Hooteelaa",
       roomInformation: "Odeeffannoo Kutaa",
       guestInformation: "Odeeffannoo Keessummaa",
-      bookingSummary: "Cuunfaa Bakka Buusi"
+      bookingSummary: "Cuunfaa Bakka Buusi",
+      pricingSummary: "Cuunfaa Gatii"
+    },
+    
+    // Pricing details
+    pricing: {
+      subtotal: "Ida'ama Gadaanaa",
+      vat: "VAT",
+      serviceTax: "Gibira Tajaajiilaa",
+      totalAmount: "Ida'ama Waliigalaa"
     },
     
     // Room details

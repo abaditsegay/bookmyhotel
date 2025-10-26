@@ -356,16 +356,6 @@ const ProductManagement: React.FC = () => {
     });
   };
 
-  // Debug logging for duplicates
-  console.log('🔍 Products Debug:', {
-    originalCount: products.length,
-    translatedCount: translatedProducts.length,
-    originalIds: products.map(p => p.id),
-    translatedIds: translatedProducts.map(p => p.id),
-    hasDuplicateOriginalIds: products.length !== new Set(products.map(p => p.id)).size,
-    hasDuplicateTranslatedIds: translatedProducts.length !== new Set(translatedProducts.map(p => p.id)).size
-  });
-
   const getCategoryColor = (category: ProductCategory) => {
     switch (category) {
       case ProductCategory.BEVERAGES: return 'primary';

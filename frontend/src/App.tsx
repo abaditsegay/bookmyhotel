@@ -55,7 +55,6 @@ import OperationsPage from './pages/operations/OperationsPage';
 import StaffDashboardPage from './pages/StaffDashboardPage';
 import ShopRoutes from './pages/shop/ShopRoutes';
 import PublicHotelRegistration from './pages/PublicHotelRegistration';
-import UserDebugPage from './pages/UserDebugPage';
 import NotificationsPage from './pages/NotificationsPage';
 
 // Lazy load SystemModule for better performance
@@ -293,11 +292,6 @@ function App() {
         <Route path="/profile" element={
           <ProtectedRoute>
             <ProfilePage />
-          </ProtectedRoute>
-        } />
-        <Route path="/debug-user" element={
-          <ProtectedRoute>
-            <UserDebugPage />
           </ProtectedRoute>
         } />
         

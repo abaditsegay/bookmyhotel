@@ -158,7 +158,6 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
           if (response.ok) {
             const hotelData = await response.json();
             setHotelId(hotelData.id);
-            console.log('Loaded hotel info:', hotelData); // Debug log
           } else {
             const errorText = await response.text();
             console.error('Failed to fetch hotel information:', response.status, errorText);

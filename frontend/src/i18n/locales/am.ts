@@ -913,6 +913,9 @@ export const amTranslations = {
       title: "የመያዣ አማካሪ",
       searchPlaceholder: "በእንግዳ ስም፣ ማረጋገጫ ቁጥር፣ ክፍል፣ የክፍያ ማመሳከሪያ ወይም የክፍያ ሁኔታ ይፈልጉ...",
       refresh: "አድስ",
+      exportCSV: "CSV ላክ",
+      noDataToExport: "የሚላክ የመያዣ መረጃ የለም",
+      exportSuccess: "መያዣዎች በተሳካ ሁኔታ ተልከዋል",
       noBookingsFound: "ምንም መያዣ አልተገኘም",
       loading: "ቦታ ማስያዞች እየተጫኑ ነው...",
       
@@ -1916,7 +1919,16 @@ export const amTranslations = {
       hotelInformation: "የሆቴል መረጃ",
       roomInformation: "የክፍል መረጃ",
       guestInformation: "የእንግዳ መረጃ",
-      bookingSummary: "የማስያዝ ማጠቃለያ"
+      bookingSummary: "የማስያዝ ማጠቃለያ",
+      pricingSummary: "የዋጋ ማጠቃለያ"
+    },
+    
+    // Pricing details
+    pricing: {
+      subtotal: "ንዑስ ድምር",
+      vat: "ተ.እ.ታ",
+      serviceTax: "የአገልግሎት ታክስ",
+      totalAmount: "ጠቅላላ መጠን"
     },
     
     // Room details

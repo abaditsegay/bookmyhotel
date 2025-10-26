@@ -1031,6 +1031,9 @@ export const enTranslations = {
       title: "Booking Management",
       searchPlaceholder: "Search by guest name, confirmation number, room, payment reference, or payment status...",
       refresh: "Refresh",
+      exportCSV: "Export CSV",
+      noDataToExport: "No bookings to export",
+      exportSuccess: "Bookings exported successfully",
       noBookingsFound: "No bookings found",
       loading: "Loading bookings...",
       

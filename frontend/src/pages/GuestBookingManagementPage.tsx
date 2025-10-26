@@ -217,7 +217,6 @@ const GuestBookingManagementPage: React.FC = () => {
     const originalVatAmount = originalSubtotal * vatRate;
     const originalServiceTaxAmount = originalSubtotal * serviceTaxRate;
     const originalTaxAmount = originalVatAmount + originalServiceTaxAmount;
-    const originalTotal = originalSubtotal + originalTaxAmount;
     
     // Check if room type changed
     const roomTypeChanged = modData.newRoomType !== booking.roomType;
@@ -235,42 +234,6 @@ const GuestBookingManagementPage: React.FC = () => {
     const newServiceTaxAmount = newSubtotal * serviceTaxRate;
     const newTaxAmount = newVatAmount + newServiceTaxAmount;
     const newTotalAmount = newSubtotal + newTaxAmount;
-    
-    // Debug logging to understand pricing calculations
-    console.log('Pricing Calculation Debug:', {
-      originalBooking: {
-        roomType: booking.roomType,
-        pricePerNight: originalPricePerNight,
-        nights: originalNights,
-        subtotal: originalSubtotal,
-        vatAmount: originalVatAmount,
-        vatRate: (vatRate * 100).toFixed(2) + '%',
-        serviceTaxAmount: originalServiceTaxAmount,
-        serviceTaxRate: (serviceTaxRate * 100).toFixed(2) + '%',
-        taxAmount: originalTaxAmount,
-        totalAmount: originalTotal,
-        checkInDate: booking.checkInDate,
-        checkOutDate: booking.checkOutDate
-      },
-      modificationData: {
-        roomType: modData.newRoomType,
-        checkInDate: modData.newCheckInDate,
-        checkOutDate: modData.newCheckOutDate
-      },
-      calculations: {
-        roomTypeChanged,
-        pricePerNight: newPricePerNight,
-        priceFromCache: roomTypeChanged && roomTypePrices.has(modData.newRoomType),
-        nights,
-        subtotal: newSubtotal,
-        vatAmount: newVatAmount,
-        vatRate: (vatRate * 100).toFixed(2) + '%',
-        serviceTaxAmount: newServiceTaxAmount,
-        serviceTaxRate: (serviceTaxRate * 100).toFixed(2) + '%',
-        taxAmount: newTaxAmount,
-        newTotalAmount
-      }
-    });
     
     return {
       pricePerNight: newPricePerNight,

@@ -268,29 +268,32 @@ public class EmailService {
             try {
                 BigDecimal vatRate = hotelPricingConfigService.getVatRate(booking.getHotelId());
                 BigDecimal serviceTaxRate = hotelPricingConfigService.getServiceTaxRate(booking.getHotelId());
-                
+
                 // Calculate subtotal (price per night * nights)
                 BigDecimal subtotal = booking.getPricePerNight().multiply(BigDecimal.valueOf(nights));
-                
+
                 // Calculate tax amounts
                 BigDecimal vatAmount = subtotal.multiply(vatRate).setScale(2, RoundingMode.HALF_UP);
                 BigDecimal serviceTaxAmount = subtotal.multiply(serviceTaxRate).setScale(2, RoundingMode.HALF_UP);
-                BigDecimal totalWithTax = subtotal.add(vatAmount).add(serviceTaxAmount).setScale(2, RoundingMode.HALF_UP);
-                
+                BigDecimal totalWithTax = subtotal.add(vatAmount).add(serviceTaxAmount).setScale(2,
+                        RoundingMode.HALF_UP);
+
                 // Add to template data
                 templateData.put("subtotal", subtotal);
                 templateData.put("vatRate", vatRate);
-                templateData.put("vatRatePercentage", vatRate.multiply(new BigDecimal("100")).setScale(2, RoundingMode.HALF_UP));
+                templateData.put("vatRatePercentage",
+                        vatRate.multiply(new BigDecimal("100")).setScale(2, RoundingMode.HALF_UP));
                 templateData.put("vatAmount", vatAmount);
                 templateData.put("serviceTaxRate", serviceTaxRate);
-                templateData.put("serviceTaxRatePercentage", serviceTaxRate.multiply(new BigDecimal("100")).setScale(2, RoundingMode.HALF_UP));
+                templateData.put("serviceTaxRatePercentage",
+                        serviceTaxRate.multiply(new BigDecimal("100")).setScale(2, RoundingMode.HALF_UP));
                 templateData.put("serviceTaxAmount", serviceTaxAmount);
                 templateData.put("totalWithTax", totalWithTax);
                 templateData.put("hasTaxBreakdown", true);
-                
-                logger.debug("Tax breakdown calculated for hotel {}: subtotal={}, VAT={}%, service tax={}%", 
-                    booking.getHotelId(), subtotal, vatRate.multiply(new BigDecimal("100")), 
-                    serviceTaxRate.multiply(new BigDecimal("100")));
+
+                logger.debug("Tax breakdown calculated for hotel {}: subtotal={}, VAT={}%, service tax={}%",
+                        booking.getHotelId(), subtotal, vatRate.multiply(new BigDecimal("100")),
+                        serviceTaxRate.multiply(new BigDecimal("100")));
             } catch (Exception e) {
                 logger.warn("Failed to calculate tax breakdown for hotel {}: {}", booking.getHotelId(), e.getMessage());
                 templateData.put("hasTaxBreakdown", false);

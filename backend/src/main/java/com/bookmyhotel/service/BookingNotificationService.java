@@ -213,10 +213,12 @@ public class BookingNotificationService {
                 // Add to template data
                 templateData.put("subtotal", subtotal);
                 templateData.put("vatRate", vatRate);
-                templateData.put("vatRatePercentage", vatRate.multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP));
+                templateData.put("vatRatePercentage",
+                        vatRate.multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP));
                 templateData.put("vatAmount", vatAmount);
                 templateData.put("serviceTaxRate", serviceTaxRate);
-                templateData.put("serviceTaxRatePercentage", serviceTaxRate.multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP));
+                templateData.put("serviceTaxRatePercentage",
+                        serviceTaxRate.multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP));
                 templateData.put("serviceTaxAmount", serviceTaxAmount);
                 templateData.put("totalWithTax", totalWithTax);
                 templateData.put("hasTaxBreakdown", true);
@@ -289,10 +291,12 @@ public class BookingNotificationService {
                 // Add to template data
                 templateData.put("subtotal", subtotal);
                 templateData.put("vatRate", vatRate);
-                templateData.put("vatRatePercentage", vatRate.multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP));
+                templateData.put("vatRatePercentage",
+                        vatRate.multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP));
                 templateData.put("vatAmount", vatAmount);
                 templateData.put("serviceTaxRate", serviceTaxRate);
-                templateData.put("serviceTaxRatePercentage", serviceTaxRate.multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP));
+                templateData.put("serviceTaxRatePercentage",
+                        serviceTaxRate.multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP));
                 templateData.put("serviceTaxAmount", serviceTaxAmount);
                 templateData.put("totalWithTax", totalWithTax);
                 templateData.put("hasTaxBreakdown", true);

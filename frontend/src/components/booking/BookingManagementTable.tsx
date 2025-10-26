@@ -39,7 +39,8 @@ import {
   ExitToApp as CheckOutIcon,
   Print as PrintIcon,
   Edit as EditIcon,
-  Cancel as CancelIcon
+  Cancel as CancelIcon,
+  FileDownload as FileDownloadIcon
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { useTenant } from '../../contexts/TenantContext';
@@ -52,7 +53,6 @@ import CheckInDialog from './CheckInDialog';
 import { Booking } from '../../types/booking-shared';
 import { formatDateForDisplay } from '../../utils/dateUtils';
 import BookingNotificationEvents from '../../utils/bookingNotificationEvents';
-import { logger } from '../../utils/logger';
 import { TableRowSkeleton } from '../common/SkeletonLoaders';
 import { NoBookings } from '../common/EmptyState';
 
@@ -124,30 +124,13 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
     setSearchTerm(e.target.value);
   }, []);
   
-  // Debug state logging
-  logger.componentState('BookingManagementTable', {
-    mode,
-    tenant: tenant?.id,
-    token: token ? 'present' : 'missing',
-    bookingsCount: bookings.length,
-    totalElements,
-    loading,
-    page,
-    searchTerm,
-    debouncedSearchTerm,
-    refreshTrigger
-  });  // Receipt dialog state
+  // Receipt dialog state
   const [receiptDialogOpen, setReceiptDialogOpen] = useState(false);
   const [checkoutReceipt, setCheckoutReceipt] = useState<CheckoutResponse | null>(null);
   const [checkInDialogOpen, setCheckInDialogOpen] = useState(false);
   const [bookingForCheckIn, setBookingForCheckIn] = useState<Booking | null>(null);
   const [checkoutConfirmOpen, setCheckoutConfirmOpen] = useState(false);
   const [bookingForCheckout, setBookingForCheckout] = useState<Booking | null>(null);
-
-  // Debug dialog state
-  useEffect(() => {
-    logger.debug('CheckInDialog state changed', { checkInDialogOpen, bookingForCheckIn });
-  }, [checkInDialogOpen, bookingForCheckIn]);
 
   // Manual refresh function (used by refresh button)
   const loadBookings = React.useCallback(async () => {
@@ -326,15 +309,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
 
   // Debug: Log bookings data when it changes
   useEffect(() => {
-    if (bookings.length > 0) {
-      // console.log('BookingManagementTable: Bookings data:', bookings.map(b => ({
-      //   id: b.reservationId,
-      //   status: b.status,
-      //   statusUpper: b.status.toUpperCase(),
-      //   guestName: b.guestName,
-      //   canCheckIn: (b.status.toUpperCase() === 'CONFIRMED' || b.status.toUpperCase() === 'ARRIVING')
-      // })));
-    }
+    // Track bookings data changes
   }, [bookings]);
 
   // Handle search with debounce - only reset page when search changes
@@ -697,6 +672,84 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
     return formatDateForDisplay(dateString);
   };
 
+  // Export bookings to CSV
+  const exportToCSV = () => {
+    if (bookings.length === 0) {
+      setSnackbar({
+        open: true,
+        message: t('booking.management.noDataToExport') || 'No data to export',
+        severity: 'error'
+      });
+      return;
+    }
+
+    // Define CSV headers
+    const headers = [
+      'Confirmation Number',
+      'Guest Name',
+      'Guest Email',
+      'Room Type',
+      'Room Number',
+      'Check-In Date',
+      'Check-Out Date',
+      'Nights',
+      'Adults',
+      'Children',
+      'Total Amount (ETB)',
+      'Payment Status',
+      'Payment Reference',
+      'Booking Status'
+    ];
+
+    // Convert bookings to CSV rows
+    const rows = bookings.map(booking => [
+      booking.confirmationNumber,
+      booking.guestName,
+      booking.guestEmail,
+      booking.roomType,
+      booking.roomNumber || 'Not Assigned',
+      formatDate(booking.checkInDate),
+      formatDate(booking.checkOutDate),
+      booking.nights || '',
+      booking.adults || '',
+      booking.children || '',
+      booking.totalAmount.toFixed(2),
+      booking.paymentStatus || 'PENDING',
+      booking.paymentReference || '',
+      booking.status
+    ]);
+
+    // Combine headers and rows
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => {
+        // Escape commas and quotes in cell content
+        const cellStr = String(cell);
+        if (cellStr.includes(',') || cellStr.includes('"') || cellStr.includes('\n')) {
+          return `"${cellStr.replace(/"/g, '""')}"`;
+        }
+        return cellStr;
+      }).join(','))
+    ].join('\n');
+
+    // Create blob and download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `bookings_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    setSnackbar({
+      open: true,
+      message: t('booking.management.exportSuccess') || 'Bookings exported successfully',
+      severity: 'success'
+    });
+  };
+
   return (
     <Box>
       {/* Header with Search and Action Buttons */}
@@ -724,6 +777,14 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
         
         {/* Action Buttons */}
         <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button 
+            variant="outlined" 
+            startIcon={<FileDownloadIcon />} 
+            onClick={exportToCSV}
+            disabled={loading || bookings.length === 0}
+          >
+            {t('booking.management.exportCSV') || 'Export CSV'}
+          </Button>
           <Button 
             variant="outlined" 
             startIcon={<RefreshIcon />} 
