@@ -422,6 +422,11 @@ const HousekeepingDashboard: React.FC = () => {
   const filteredTasks = getFilteredTasks();
   const paginatedTasks = filteredTasks.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
+  // Reset to first page when filter changes
+  useEffect(() => {
+    setPage(0);
+  }, [activeTab]);
+
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
