@@ -453,12 +453,20 @@ public class FrontDeskService {
             throw new IllegalStateException("Selected room is not available");
         }
 
-        // Additional check: Ensure room is not currently booked (occupied)
-        // This is important because convertToRoomResponse may show rooms as OCCUPIED
-        // even if their database status is AVAILABLE due to active bookings
+        // Additional check: Ensure room is not booked by OTHER reservations during this booking's dates
+        // We need to exclude the current reservation from this check
         Long hotelId = hotelService.getHotelIdByTenantId(TenantContext.getTenantId());
-        boolean isCurrentlyBooked = roomRepository.isRoomCurrentlyBooked(newRoomId, hotelId);
-        if (isCurrentlyBooked) {
+        boolean isBookedByOthers = reservationRepository.existsByAssignedRoomAndDateRangeExcludingReservation(
+            newRoomId, 
+            reservation.getCheckInDate(), 
+            reservation.getCheckOutDate(),
+            reservationId,
+            hotelId
+        );
+        
+        if (isBookedByOthers) {
+            logger.warn("Room {} is already booked by another reservation for dates {} to {}", 
+                newRoom.getRoomNumber(), reservation.getCheckInDate(), reservation.getCheckOutDate());
             throw new IllegalStateException("Selected room is currently occupied");
         }
 
@@ -1281,7 +1289,7 @@ public class FrontDeskService {
         System.out.println("   Check-in: " + checkInDate);
         System.out.println("   Check-out: " + checkOutDate);
         System.out.println("   Guests: " + guests);
-        
+
         // Use repository method that filters in database (no lazy loading issues)
         List<Room> availableRooms = roomRepository.findAvailableRooms(hotelId, checkInDate, checkOutDate, guests, null);
         System.out.println("   Found " + availableRooms.size() + " available rooms from database query");

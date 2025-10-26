@@ -236,4 +236,21 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
         */
        List<Reservation> findByAssignedRoomAndStatusIn(com.bookmyhotel.entity.Room room,
                      List<ReservationStatus> statuses);
+
+       /**
+        * Check if a room is booked by OTHER reservations during a specific date range
+        * Excludes the current reservation from the check
+        */
+       @Query("SELECT COUNT(r) > 0 FROM Reservation r " +
+                     "WHERE r.assignedRoom.id = :roomId " +
+                     "AND r.hotel.id = :hotelId " +
+                     "AND r.id != :excludeReservationId " +
+                     "AND r.status NOT IN ('CANCELLED', 'NO_SHOW') " +
+                     "AND NOT (r.checkOutDate <= :checkInDate OR r.checkInDate >= :checkOutDate)")
+       boolean existsByAssignedRoomAndDateRangeExcludingReservation(
+                     @Param("roomId") Long roomId,
+                     @Param("checkInDate") LocalDate checkInDate,
+                     @Param("checkOutDate") LocalDate checkOutDate,
+                     @Param("excludeReservationId") Long excludeReservationId,
+                     @Param("hotelId") Long hotelId);
 }

@@ -27,14 +27,14 @@ import {
   Person as PersonIcon,
   Room as RoomIcon,
   AttachMoney as MoneyIcon,
-  CalendarToday as CalendarIcon,
 } from '@mui/icons-material';
-import { formatCurrency } from '../../utils/currencyUtils';
+import { formatCurrency, formatCurrencyWithDecimals } from '../../utils/currencyUtils';
 import { getRoomTypeLabel } from '../../constants/roomTypes';
 import { frontDeskApiService } from '../../services/frontDeskApi';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTenant } from '../../contexts/TenantContext';
 import { Booking, Room } from '../../types/booking-shared';
+import { buildApiUrl } from '../../config/apiConfig';
 
 interface CheckInDialogProps {
   open: boolean;
@@ -63,6 +63,10 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
   const [calculatedTotal, setCalculatedTotal] = useState<number>(0);
   const [calculatedPricePerNight, setCalculatedPricePerNight] = useState<number>(0);
   const [roomTypeOptions, setRoomTypeOptions] = useState<string[]>([]);
+  
+  // Tax rates from hotel
+  const [hotelVatRate, setHotelVatRate] = useState<number>(0);
+  const [hotelServiceTaxRate, setHotelServiceTaxRate] = useState<number>(0);
   
   // Local state to track current room assignment for this dialog session
   const [currentRoomNumber, setCurrentRoomNumber] = useState<string | null>(null);
@@ -168,6 +172,45 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
     }
   }, [open, booking, token, loadAvailableRooms]);
 
+  // Fetch hotel tax rates when dialog opens
+  useEffect(() => {
+    const fetchTaxRates = async () => {
+      if (!open || !booking) return;
+      
+      const rawHotelId = mode === 'hotel-admin' ? user?.hotelId : booking.hotelId;
+      const hotelId = typeof rawHotelId === 'string' ? parseInt(rawHotelId, 10) : rawHotelId;
+      
+      if (!hotelId) {
+        console.warn('⚠️ No hotel ID available for fetching tax rates');
+        return;
+      }
+      
+      try {
+        console.log('🔍 Fetching tax rates for hotel ID:', hotelId);
+        const response = await fetch(buildApiUrl(`/hotels/${hotelId}/tax-rate`), {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setHotelVatRate(data.vatRate || 0);
+          setHotelServiceTaxRate(data.serviceTaxRate || 0);
+          console.log('✅ Tax rates loaded successfully:', {
+            vatRate: data.vatRate,
+            serviceTaxRate: data.serviceTaxRate,
+            fullData: data
+          });
+        } else {
+          console.error('❌ Failed to fetch tax rates, status:', response.status);
+        }
+      } catch (error) {
+        console.error('❌ Error fetching tax rates:', error);
+      }
+    };
+    
+    fetchTaxRates();
+  }, [open, booking, mode, user?.hotelId, token]);
+
   // Reset state when dialog opens or booking changes
   useEffect(() => {
     if (open && booking) {
@@ -177,12 +220,19 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
         if (assignedRoom) {
           setSelectedRoomId(assignedRoom.id);
           setSelectedRoomType(assignedRoom.roomType);
+          // Use the booking's original total since room hasn't changed
+          // This prevents false price differences due to rounding or timing issues
+          setCalculatedPricePerNight(assignedRoom.pricePerNight);
+          setCalculatedTotal(booking.totalAmount);
         }
       } else {
         setSelectedRoomId(null);
         // Only set the room type if it exists in the available options
         const validRoomType = roomTypeOptions.includes(booking.roomType) ? booking.roomType : '';
         setSelectedRoomType(validRoomType);
+        // Reset price only when no room is assigned
+        setCalculatedTotal(0);
+        setCalculatedPricePerNight(0);
       }
       
       // Initialize current room number state
@@ -190,8 +240,6 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
       setCurrentRoomType(booking.roomType || null);
       
       setError(null);
-      setCalculatedTotal(0);
-      setCalculatedPricePerNight(0);
     }
   }, [open, booking, availableRooms, roomTypeOptions]);
 
@@ -201,8 +249,19 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
     setError(null);
 
     try {
-      // Find the assigned room details to get the room type
+      // Find the assigned room details to get the room type and price
       const assignedRoom = availableRooms.find(room => room.id === roomId);
+      
+      // Update price immediately when room is selected (including taxes)
+      if (assignedRoom) {
+        const subtotal = assignedRoom.pricePerNight * nights;
+        const vatAmount = subtotal * hotelVatRate;
+        const serviceTaxAmount = subtotal * hotelServiceTaxRate;
+        const totalWithTaxes = subtotal + vatAmount + serviceTaxAmount;
+        
+        setCalculatedPricePerNight(assignedRoom.pricePerNight);
+        setCalculatedTotal(totalWithTaxes);
+      }
       
       const result = await frontDeskApiService.updateBookingRoomAssignment(
         token,
@@ -303,23 +362,103 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
     selectedRoomType ? room.roomType === selectedRoomType : true
   );
 
-  // Update calculated price when room selection changes
+  // Update calculated price when room selection or room type changes
   useEffect(() => {
+    console.log('🔍 Price calculation useEffect triggered:', {
+      selectedRoomId,
+      selectedRoomType,
+      availableRoomsCount: availableRooms.length,
+      nights,
+      vatRate: hotelVatRate,
+      serviceTaxRate: hotelServiceTaxRate,
+      bookingRoomNumber: booking?.roomNumber,
+      bookingTotalAmount: booking?.totalAmount
+    });
+
     if (selectedRoomId && availableRooms.length > 0) {
+      // Specific room selected - use its exact price
       const selectedRoom = availableRooms.find(room => room.id === selectedRoomId);
       if (selectedRoom) {
-        setCalculatedPricePerNight(selectedRoom.pricePerNight);
-        setCalculatedTotal(selectedRoom.pricePerNight * nights);
+        // Check if this is the originally assigned room
+        const isOriginalRoom = booking?.roomNumber && selectedRoom.roomNumber === booking.roomNumber;
+        
+        console.log('🔍 Room comparison:', {
+          selectedRoomNumber: selectedRoom.roomNumber,
+          bookingRoomNumber: booking?.roomNumber,
+          isOriginalRoom,
+          bookingTotalAmount: booking?.totalAmount,
+          willUseOriginalTotal: isOriginalRoom && booking?.totalAmount
+        });
+        
+        if (isOriginalRoom && booking?.totalAmount) {
+          // Use the original booking total to prevent false price differences
+          console.log('✅ Using original booking total (room unchanged):', booking.totalAmount);
+          setCalculatedPricePerNight(selectedRoom.pricePerNight);
+          setCalculatedTotal(booking.totalAmount);
+        } else {
+          // Room changed or no original booking - calculate with current tax rates
+          const subtotal = selectedRoom.pricePerNight * nights;
+          const vatAmount = subtotal * hotelVatRate;
+          const serviceTaxAmount = subtotal * hotelServiceTaxRate;
+          const totalWithTaxes = subtotal + vatAmount + serviceTaxAmount;
+          
+          console.log('💰 Price calculation from selected room (room changed):', {
+            roomNumber: selectedRoom.roomNumber,
+            pricePerNight: selectedRoom.pricePerNight,
+            nights,
+            subtotal,
+            vatRate: hotelVatRate,
+            vatAmount,
+            serviceTaxRate: hotelServiceTaxRate,
+            serviceTaxAmount,
+            totalWithTaxes
+          });
+          
+          setCalculatedPricePerNight(selectedRoom.pricePerNight);
+          setCalculatedTotal(totalWithTaxes);
+        }
+      }
+    } else if (selectedRoomType && availableRooms.length > 0) {
+      // Room type selected but no specific room - use first room of that type
+      const roomsOfType = availableRooms.filter(room => room.roomType === selectedRoomType);
+      console.log('🏨 Rooms of type', selectedRoomType, ':', roomsOfType.length);
+      if (roomsOfType.length > 0) {
+        const firstRoomOfType = roomsOfType[0];
+        const subtotal = firstRoomOfType.pricePerNight * nights;
+        const vatAmount = subtotal * hotelVatRate;
+        const serviceTaxAmount = subtotal * hotelServiceTaxRate;
+        const totalWithTaxes = subtotal + vatAmount + serviceTaxAmount;
+        
+        console.log('💰 Price calculation from room type:', {
+          roomNumber: firstRoomOfType.roomNumber,
+          pricePerNight: firstRoomOfType.pricePerNight,
+          nights,
+          subtotal,
+          vatRate: hotelVatRate,
+          vatAmount,
+          serviceTaxRate: hotelServiceTaxRate,
+          serviceTaxAmount,
+          totalWithTaxes
+        });
+        
+        setCalculatedPricePerNight(firstRoomOfType.pricePerNight);
+        setCalculatedTotal(totalWithTaxes);
+      } else {
+        console.log('⚠️ No rooms found for type:', selectedRoomType);
+        setCalculatedPricePerNight(0);
+        setCalculatedTotal(0);
       }
     } else {
+      console.log('🔄 Resetting price to 0');
       setCalculatedPricePerNight(0);
       setCalculatedTotal(0);
     }
-  }, [selectedRoomId, availableRooms, nights]);
+  }, [selectedRoomId, selectedRoomType, availableRooms, nights, hotelVatRate, hotelServiceTaxRate, booking]);
 
   if (!booking) return null;
 
-  const originalTotal = (booking.pricePerNight || booking.totalAmount / nights) * nights;
+  // Use the booking's total amount (which already includes taxes) for comparison
+  const originalTotal = booking.totalAmount;
   const priceDifference = calculatedTotal - originalTotal;
 
   return (
@@ -501,86 +640,6 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                   }
                 }}
               />
-            </Grid>
-          </Grid>
-        </Paper>
-
-        {/* Booking Details */}
-        <Paper elevation={0} sx={{ 
-          p: 3, 
-          mb: 3,
-          border: '1px solid',
-          borderColor: 'primary.light',
-          borderRadius: 3,
-          background: 'linear-gradient(135deg, #ffffff 0%, #f5f9ff 100%)',
-          position: 'relative',
-          overflow: 'hidden',
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: '3px',
-            background: 'linear-gradient(90deg, #42a5f5 0%, #1976d2 50%, #1565c0 100%)',
-          }
-        }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-            <Box sx={{ 
-              p: 1, 
-              borderRadius: '50%', 
-              backgroundColor: 'primary.light',
-              color: 'primary.main'
-            }}>
-              <CalendarIcon fontSize="small" />
-            </Box>
-            <Typography variant="h6" sx={{ 
-              color: 'primary.main',
-              fontWeight: 700
-            }}>
-              Booking Details
-            </Typography>
-          </Box>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={4}>
-              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600, mb: 0.5 }}>
-                Check-in Date
-              </Typography>
-              <Typography variant="body1" sx={{ fontWeight: 600, color: 'text.primary' }}>
-                {new Date(booking.checkInDate).toLocaleDateString()}
-              </Typography>
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600, mb: 0.5 }}>
-                Check-out Date
-              </Typography>
-              <Typography variant="body1" sx={{ fontWeight: 600, color: 'text.primary' }}>
-                {new Date(booking.checkOutDate).toLocaleDateString()}
-              </Typography>
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600, mb: 0.5 }}>
-                Nights
-              </Typography>
-              <Typography variant="h6" sx={{ fontWeight: 700, color: 'primary.main' }}>
-                {nights} night{nights !== 1 ? 's' : ''}
-              </Typography>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600, mb: 0.5 }}>
-                Original Room Type
-              </Typography>
-              <Typography variant="body1" sx={{ color: 'text.primary' }}>
-                {getRoomTypeLabel(booking.roomType)}
-              </Typography>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600, mb: 0.5 }}>
-                Original Total
-              </Typography>
-              <Typography variant="h6" sx={{ fontWeight: 700, color: 'success.main' }}>
-                ${originalTotal.toFixed(2)}
-              </Typography>
             </Grid>
           </Grid>
         </Paper>
@@ -1031,7 +1090,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
         </Paper>
 
         {/* Price Summary */}
-        {selectedRoomId && (
+        {(selectedRoomId || (selectedRoomType && calculatedPricePerNight > 0)) && (
           <Paper elevation={0} sx={{ 
             p: 3,
             border: '1px solid',
@@ -1070,26 +1129,71 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
             <Grid container spacing={3}>
               <Grid item xs={12} md={6}>
                 <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600, mb: 0.5 }}>
-                  New Price per Night
+                  Price per Night
                 </Typography>
                 <Typography variant="h5" sx={{ 
                   fontWeight: 800,
                   color: 'success.main'
                 }}>
-                  ETB {calculatedPricePerNight.toFixed(0)}
+                  {formatCurrency(calculatedPricePerNight)}
                 </Typography>
               </Grid>
               <Grid item xs={12} md={6}>
                 <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600, mb: 0.5 }}>
-                  New Total ({nights} nights)
+                  Number of Nights
                 </Typography>
                 <Typography variant="h5" sx={{ 
                   fontWeight: 800,
                   color: 'success.main'
                 }}>
-                  ETB {calculatedTotal.toFixed(0)}
+                  {nights}
                 </Typography>
               </Grid>
+              
+              <Grid item xs={12}>
+                <Divider sx={{ my: 1, borderColor: 'success.light' }} />
+              </Grid>
+              
+              <Grid item xs={12}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                  <Typography variant="body1" color="text.secondary">
+                    Subtotal
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                    {formatCurrencyWithDecimals(calculatedPricePerNight * nights)}
+                  </Typography>
+                </Box>
+                
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    VAT ({(hotelVatRate * 100).toFixed(2)}%)
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                    {formatCurrencyWithDecimals(calculatedPricePerNight * nights * hotelVatRate)}
+                  </Typography>
+                </Box>
+                
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Service Tax ({(hotelServiceTaxRate * 100).toFixed(2)}%)
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                    {formatCurrencyWithDecimals(calculatedPricePerNight * nights * hotelServiceTaxRate)}
+                  </Typography>
+                </Box>
+                
+                <Divider sx={{ my: 2, borderColor: 'success.light' }} />
+                
+                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Typography variant="h6" sx={{ fontWeight: 700, color: 'success.dark' }}>
+                    Total Amount
+                  </Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 800, color: 'success.main' }}>
+                    {formatCurrencyWithDecimals(calculatedTotal)}
+                  </Typography>
+                </Box>
+              </Grid>
+              
               {priceDifference !== 0 && (
                 <Grid item xs={12}>
                   <Divider sx={{ my: 2, borderColor: 'success.light' }} />

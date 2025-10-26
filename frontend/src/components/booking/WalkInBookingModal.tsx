@@ -30,8 +30,8 @@ import { useTenant } from '../../contexts/TenantContext';
 import { hotelApiService } from '../../services/hotelApi';
 import { hotelAdminApi } from '../../services/hotelAdminApi';
 import { frontDeskApiService } from '../../services/frontDeskApi';
-import { formatCurrency } from '../../utils/currencyUtils';
-import { API_CONFIG } from '../../config/apiConfig';
+import { formatCurrency, formatCurrencyWithDecimals } from '../../utils/currencyUtils';
+import { API_CONFIG, buildApiUrl } from '../../config/apiConfig';
 import NumberStepper from '../common/NumberStepper';
 import { COLORS, addAlpha } from '../../theme/themeColors';
 
@@ -106,6 +106,10 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
   
   // Hotel information (we'll need to get this from the backend)
   const [hotelId, setHotelId] = useState<number | null>(null);
+  
+  // Tax rate information
+  const [hotelVatRate, setHotelVatRate] = useState<number>(0);
+  const [hotelServiceTaxRate, setHotelServiceTaxRate] = useState<number>(0);
 
   // Memoized change handlers to prevent input focus loss
   const handleGuestInfoChange = React.useCallback((field: keyof WalkInGuestInfo) => (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -191,6 +195,45 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
       loadHotelInfo();
     }
   }, [open, token, tenantId, user?.role, user?.roles, t]);
+  
+  // Fetch hotel tax rates when hotelId is available
+  useEffect(() => {
+    const fetchTaxRates = async () => {
+      if (!hotelId || !token) {
+        console.log('🏨 Cannot fetch tax rates - missing hotelId or token');
+        return;
+      }
+      
+      try {
+        console.log('🔍 Fetching tax rates for hotel:', hotelId);
+        const response = await fetch(buildApiUrl(`/hotels/${hotelId}/tax-rate`), {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'X-Tenant-ID': tenantId || '',
+          },
+        });
+        
+        if (response.ok) {
+          const taxData = await response.json();
+          console.log('📊 Tax rates loaded:', taxData);
+          setHotelVatRate(taxData.vatRate || 0);
+          setHotelServiceTaxRate(taxData.serviceTaxRate || 0);
+        } else {
+          console.error('Failed to fetch tax rates:', response.status);
+          // Set default tax rates if fetch fails
+          setHotelVatRate(0);
+          setHotelServiceTaxRate(0);
+        }
+      } catch (error) {
+        console.error('Error fetching tax rates:', error);
+        // Set default tax rates if error occurs
+        setHotelVatRate(0);
+        setHotelServiceTaxRate(0);
+      }
+    };
+    
+    fetchTaxRates();
+  }, [hotelId, token, tenantId]);
 
   // Load available rooms when dates/guests change and we're on step 1
   useEffect(() => {
@@ -470,7 +513,23 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
     if (!selectedRoom) return 0;
     
     const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24));
-    return selectedRoom.pricePerNight * nights;
+    const subtotal = selectedRoom.pricePerNight * nights;
+    
+    // Calculate taxes
+    const vatAmount = subtotal * hotelVatRate;
+    const serviceTaxAmount = subtotal * hotelServiceTaxRate;
+    const totalWithTaxes = subtotal + vatAmount + serviceTaxAmount;
+    
+    console.log('💰 Price calculation:', {
+      subtotal,
+      vatRate: hotelVatRate,
+      serviceTaxRate: hotelServiceTaxRate,
+      vatAmount,
+      serviceTaxAmount,
+      totalWithTaxes
+    });
+    
+    return totalWithTaxes;
   };
 
   const renderStepContent = () => {
@@ -1019,6 +1078,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                       </Typography>
                     </Box>
                     
+                    {/* Price Breakdown */}
                     <Box sx={{ 
                       p: 2,
                       bgcolor: theme.palette.action.hover,
@@ -1026,14 +1086,46 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                       mb: 2,
                       border: `1px solid ${theme.palette.divider}`,
                     }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                        <Typography variant="body1">
-                          {formatCurrency(selectedRoom?.pricePerNight || 0)}{t('walkInBooking.confirmation.perNight')} × {Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24))} {Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)) !== 1 ? t('walkInBooking.confirmation.nightPlural') : t('walkInBooking.confirmation.night')}
-                        </Typography>
-                        <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                          {formatCurrency(calculateTotalAmount() || 0)}
-                        </Typography>
-                      </Box>
+                      {(() => {
+                        const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24));
+                        const subtotal = (selectedRoom?.pricePerNight || 0) * nights;
+                        const vatAmount = subtotal * hotelVatRate;
+                        const serviceTaxAmount = subtotal * hotelServiceTaxRate;
+                        
+                        return (
+                          <>
+                            {/* Subtotal */}
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1.5 }}>
+                              <Typography variant="body1" sx={{ color: theme.palette.text.secondary }}>
+                                {t('walkInBooking.confirmation.subtotal')} ({formatCurrencyWithDecimals(selectedRoom?.pricePerNight || 0)}{t('walkInBooking.confirmation.perNight')} × {nights} {nights !== 1 ? t('walkInBooking.confirmation.nightPlural') : t('walkInBooking.confirmation.night')})
+                              </Typography>
+                              <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                {formatCurrencyWithDecimals(subtotal)}
+                              </Typography>
+                            </Box>
+                            
+                            {/* VAT */}
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1.5 }}>
+                              <Typography variant="body1" sx={{ color: theme.palette.text.secondary }}>
+                                {t('walkInBooking.confirmation.vat')} ({(hotelVatRate * 100).toFixed(0)}%)
+                              </Typography>
+                              <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                {formatCurrencyWithDecimals(vatAmount)}
+                              </Typography>
+                            </Box>
+                            
+                            {/* Service Tax */}
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0 }}>
+                              <Typography variant="body1" sx={{ color: theme.palette.text.secondary }}>
+                                {t('walkInBooking.confirmation.serviceTax')} ({(hotelServiceTaxRate * 100).toFixed(0)}%)
+                              </Typography>
+                              <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                {formatCurrencyWithDecimals(serviceTaxAmount)}
+                              </Typography>
+                            </Box>
+                          </>
+                        );
+                      })()}
                     </Box>
                     
                     <Divider sx={{ my: 2 }} />
@@ -1051,7 +1143,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                         {t('walkInBooking.confirmation.totalAmount')}
                       </Typography>
                       <Typography variant="h4" sx={{ color: 'white', fontWeight: 700 }}>
-                        {formatCurrency(calculateTotalAmount() || 0)}
+                        {formatCurrencyWithDecimals(calculateTotalAmount() || 0)}
                       </Typography>
                     </Box>
                     

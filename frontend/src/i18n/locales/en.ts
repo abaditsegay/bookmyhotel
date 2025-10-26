@@ -1541,7 +1541,11 @@ export const enTranslations = {
       pricingSummary: 'Pricing Summary',
       perNight: '/night',
       night: 'night',
-      nightPlural: 'nights'
+      nightPlural: 'nights',
+      subtotal: 'Subtotal',
+      vat: 'VAT',
+      serviceTax: 'Service Tax',
+      paymentNote: 'Payment will be processed at check-in'
     },
     actions: {
       next: 'Next',
