@@ -26,7 +26,8 @@ import {
   Paper,
   TextField,
   InputAdornment,
-  IconButton
+  IconButton,
+  TablePagination
 } from '@mui/material';
 import {
   NotificationsActive as NotificationsActiveIcon,
@@ -59,6 +60,10 @@ const NotificationsPage: React.FC = () => {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [typeFilter, setTypeFilter] = useState<string>('ALL');
   const [confirmationFilter, setConfirmationFilter] = useState<string>('');
+  
+  // Pagination state
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   // Get booking notifications (history) for the selected notification
   const { 
@@ -108,6 +113,15 @@ const NotificationsPage: React.FC = () => {
     return new Date(dateString).toLocaleString();
   };
 
+  const handlePageChange = (event: unknown, newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleRowsPerPageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0); // Reset to first page when changing rows per page
+  };
+
   const getFilteredNotifications = () => {
     // Ensure notifications is always an array
     let filtered = Array.isArray(notifications) ? notifications : [];
@@ -136,6 +150,13 @@ const NotificationsPage: React.FC = () => {
     });
     
     return sorted;
+  };
+
+  const getPaginatedNotifications = () => {
+    const filtered = getFilteredNotifications();
+    const startIndex = page * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+    return filtered.slice(startIndex, endIndex);
   };
 
   const renderNotificationsTable = (notifications: BookingNotification[]) => (
@@ -349,7 +370,10 @@ const NotificationsPage: React.FC = () => {
           <Select
             value={typeFilter}
             label="Filter by Type"
-            onChange={(e) => setTypeFilter(e.target.value)}
+            onChange={(e) => {
+              setTypeFilter(e.target.value);
+              setPage(0); // Reset to first page when filter changes
+            }}
           >
             <MenuItem value="ALL">All Notifications</MenuItem>
             <MenuItem value="CANCELLED">Cancelled Only</MenuItem>
@@ -361,7 +385,10 @@ const NotificationsPage: React.FC = () => {
           size="small"
           placeholder="Search by confirmation number..."
           value={confirmationFilter}
-          onChange={(e) => setConfirmationFilter(e.target.value)}
+          onChange={(e) => {
+            setConfirmationFilter(e.target.value);
+            setPage(0); // Reset to first page when search changes
+          }}
           sx={{ minWidth: 250 }}
           InputProps={{
             startAdornment: (
@@ -386,7 +413,19 @@ const NotificationsPage: React.FC = () => {
 
       {/* Notifications Table */}
       {getFilteredNotifications().length > 0 ? (
-        renderNotificationsTable(getFilteredNotifications())
+        <>
+          {renderNotificationsTable(getPaginatedNotifications())}
+          <TablePagination
+            component="div"
+            count={getFilteredNotifications().length}
+            page={page}
+            onPageChange={handlePageChange}
+            rowsPerPage={rowsPerPage}
+            onRowsPerPageChange={handleRowsPerPageChange}
+            rowsPerPageOptions={[5, 10, 25, 50, 100]}
+            sx={{ borderTop: 1, borderColor: 'divider' }}
+          />
+        </>
       ) : (
         <Box textAlign="center" py={4}>
           <InfoIcon color="action" sx={{ fontSize: 64, mb: 2 }} />
