@@ -25,10 +25,8 @@ import {
   Hotel as HotelIcon,
   CalendarMonth as CalendarIcon,
   Person as PersonIcon,
-  Payment as PaymentIcon,
 } from '@mui/icons-material';
 import { bookingApiService, BookingSearchResponse } from '../../services/bookingApi';
-import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
 
 interface BookingSearchModalProps {
   open: boolean;
@@ -359,7 +357,7 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
                   </Typography>
                 </Grid>
 
-                <Grid item xs={12} sm={6}>
+                <Grid item xs={12}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                     <PersonIcon sx={{ mr: 1, color: 'primary.main', fontSize: 20 }} />
                     <Typography variant="body2" color="text.secondary">Guest</Typography>
@@ -367,18 +365,8 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
                   <Typography variant="body1" fontWeight="medium">
                     {booking.guestName}
                   </Typography>
-                </Grid>
-
-                <Grid item xs={12} sm={6}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                    <PaymentIcon sx={{ mr: 1, color: 'primary.main', fontSize: 20 }} />
-                    <Typography variant="body2" color="text.secondary">Total</Typography>
-                  </Box>
-                  <Typography variant="h6" color="primary.main" fontWeight="bold">
-                    {formatCurrencyWithDecimals(booking.totalAmount || 0)}
-                  </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    {calculateNights(booking.checkInDate, booking.checkOutDate)} nights
+                    {calculateNights(booking.checkInDate, booking.checkOutDate)} night{calculateNights(booking.checkInDate, booking.checkOutDate) !== 1 ? 's' : ''}
                   </Typography>
                 </Grid>
               </Grid>
