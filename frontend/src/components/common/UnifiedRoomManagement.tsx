@@ -44,6 +44,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { formatCurrency } from '../../utils/currencyUtils';
 import { buildApiUrl } from '../../config/apiConfig';
 import { hotelAdminApi, RoomCreateRequest } from '../../services/hotelAdminApi';
+import * as frontDeskApi from '../../services/frontDeskApi';
 import { ROOM_TYPES, getRoomTypeLabel } from '../../constants/roomTypes';
 
 // Import hotel admin specific components conditionally
@@ -128,20 +129,56 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
       setLoading(true);
       setError(null);
 
-      // Use hotel-admin API with proper pagination
-      const response = await hotelAdminApi.getHotelRooms(
-        token,
-        page,
-        rowsPerPage,
-        searchTerm || undefined,
-        undefined, // roomNumber filter
-        undefined, // roomType filter
-        statusFilter && statusFilter !== 'ALL' ? statusFilter : undefined
-      );
+      // Use appropriate API based on mode
+      const response = mode === 'front-desk' 
+        ? await frontDeskApi.frontDeskApiService.getAllRooms(
+            token,
+            page,
+            rowsPerPage,
+            searchTerm || undefined,
+            undefined, // roomType filter
+            statusFilter && statusFilter !== 'ALL' ? statusFilter : undefined
+          )
+        : await hotelAdminApi.getHotelRooms(
+            token,
+            page,
+            rowsPerPage,
+            searchTerm || undefined,
+            undefined, // roomNumber filter
+            undefined, // roomType filter
+            statusFilter && statusFilter !== 'ALL' ? statusFilter : undefined
+          );
 
       if (response.success && response.data) {
-        setRooms(response.data.content || []);
-        setTotalElements(response.data.totalElements || 0);
+        let roomsData: RoomResponse[] = [];
+        
+        if (mode === 'front-desk') {
+          // Convert Room[] to RoomResponse[] for front-desk mode
+          const rooms = response.data.content || [];
+          roomsData = rooms.map((room: any) => ({
+            id: room.id,
+            roomNumber: room.roomNumber,
+            roomType: room.roomType,
+            pricePerNight: room.pricePerNight,
+            capacity: room.capacity,
+            description: room.description || '',
+            isAvailable: room.isAvailable,
+            status: room.status,
+            hotelId: room.hotelId || 0, // Default to 0 if not present
+            hotelName: room.hotelName || '',
+            currentGuest: room.currentGuest,
+            createdAt: room.createdAt || new Date().toISOString(),
+            updatedAt: room.updatedAt || new Date().toISOString()
+          }));
+        } else {
+          // Already RoomResponse[] for hotel-admin mode
+          roomsData = (response.data.content || []) as RoomResponse[];
+        }
+        
+        setRooms(roomsData);
+        // Handle different response structures
+        const total = (response.data as any).totalElements ?? (response.data as any).page?.totalElements ?? 0;
+        setTotalElements(total);
       } else {
         setError(response.message || 'Failed to load rooms');
         setTotalElements(0);
@@ -153,7 +190,7 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [token, page, rowsPerPage, searchTerm, statusFilter]);
+  }, [token, page, rowsPerPage, searchTerm, statusFilter, mode]);
 
   useEffect(() => {
     loadRooms();

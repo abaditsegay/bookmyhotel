@@ -32,7 +32,6 @@ import {
 import { formatCurrency } from '../../utils/currencyUtils';
 import { getRoomTypeLabel } from '../../constants/roomTypes';
 import { frontDeskApiService } from '../../services/frontDeskApi';
-import { hotelAdminApi } from '../../services/hotelAdminApi';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTenant } from '../../contexts/TenantContext';
 import { Booking, Room } from '../../types/booking-shared';
@@ -52,7 +51,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
   onCheckInSuccess,
   mode = 'front-desk', // Default to front-desk mode for backward compatibility
 }) => {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const { tenant } = useTenant();
   
   const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
@@ -105,57 +104,33 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
     try {
       let result: any;
       
-      if (mode === 'hotel-admin') {
-        // For hotel-admin mode, use the hotel admin API to get available rooms
-        console.log('🏨 CheckInDialog: Using hotel-admin API to get rooms');
-        result = await hotelAdminApi.getHotelRooms(
-          token,
-          0, // page
-          1000, // size - get all rooms
-          undefined, // search
-          undefined, // room number
-          undefined, // room type
-          'AVAILABLE' // only available rooms
-        );
-        
-        // Transform hotel admin API response to match expected Room interface
-        if (result.success && result.data?.content) {
-          const rooms = result.data.content.map((room: any) => ({
-            id: room.id,
-            roomNumber: room.roomNumber,
-            roomType: room.roomType,
-            pricePerNight: room.pricePerNight || 0,
-            isAvailable: room.isAvailable,
-            hotelId: room.hotelId,
-            capacity: room.capacity,
-            description: room.description
-          }));
-          result.data = rooms;
-        }
-      } else {
-        // For front-desk mode, use the front-desk API (requires hotelId)
-        let hotelId = booking.hotelId;
-        if (!hotelId && tenant?.id) {
-          console.log('🏨 CheckInDialog: No hotelId in booking, using fallback for front-desk mode');
-          // No fallback - hotel ID should come from user context or API
-          console.error('Hotel ID not available for check-in operation');
-          setError('Hotel ID not available. Please ensure you have proper access.');
-          return;
-        }
-
-        if (!hotelId) {
-          console.log('🏨 CheckInDialog: Early return - no hotelId available for front-desk mode');
-          setError('Hotel information not available for this booking');
-          return;
-        }
-
-        console.log('🏨 CheckInDialog: Using front-desk API for hotel', hotelId);
-        result = await frontDeskApiService.getAvailableRoomsForCheckin(
-          token, 
-          hotelId, 
-          tenant?.id || null
-        );
+      // Always use date-based availability check for check-in to prevent unavailable room selection
+      // Get hotel ID from user (hotel-admin mode) or booking (front-desk mode)
+      const rawHotelId = mode === 'hotel-admin' ? user?.hotelId : booking.hotelId;
+      const hotelId = typeof rawHotelId === 'string' ? parseInt(rawHotelId, 10) : rawHotelId;
+      
+      if (!hotelId) {
+        console.log('🏨 CheckInDialog: Early return - no hotelId available');
+        setError('Hotel information not available for this booking');
+        return;
       }
+
+      console.log('🏨 CheckInDialog: Using date-aware room availability for hotel', hotelId);
+      console.log('🏨 CheckInDialog: Booking dates:', {
+        checkInDate: booking.checkInDate,
+        checkOutDate: booking.checkOutDate,
+        checkInDateType: typeof booking.checkInDate,
+        checkOutDateType: typeof booking.checkOutDate
+      });
+      
+      result = await frontDeskApiService.getAvailableRoomsForCheckin(
+        token, 
+        hotelId, 
+        tenant?.id || null,
+        booking.checkInDate,
+        booking.checkOutDate,
+        2 // default guests - could be made configurable
+      );
 
       console.log('🏨 CheckInDialog: Rooms API result:', result);
 
@@ -182,7 +157,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
     } finally {
       setLoadingRooms(false);
     }
-  }, [booking, token, tenant?.id, mode]);
+  }, [booking, token, tenant?.id, mode, user?.hotelId]);
 
   // Load available rooms when dialog opens
   useEffect(() => {

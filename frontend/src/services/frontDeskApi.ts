@@ -815,12 +815,70 @@ export const frontDeskApiService = {
   },
 
   /**
+   * Get available rooms for a specific date range
+   */
+  getAvailableRoomsForDateRange: async (
+    token: string,
+    hotelId: number,
+    checkInDate: string,
+    checkOutDate: string,
+    guests: number = 2,
+    tenantId: string | null = null
+  ): Promise<{ success: boolean; data?: any[]; message?: string }> => {
+    try {
+      // Ensure dates are in YYYY-MM-DD format
+      const formatDate = (dateStr: string): string => {
+        // If already in YYYY-MM-DD format, return as is
+        if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+          return dateStr;
+        }
+        // Otherwise, parse and format
+        const date = new Date(dateStr);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      };
+
+      const formattedCheckIn = formatDate(checkInDate);
+      const formattedCheckOut = formatDate(checkOutDate);
+      
+      const params = new URLSearchParams({
+        checkInDate: formattedCheckIn,
+        checkOutDate: formattedCheckOut,
+        guests: guests.toString()
+      });
+
+      const response = await fetch(`${API_BASE_URL}/front-desk/hotels/${hotelId}/available-rooms?${params.toString()}`, {
+        method: 'GET',
+        headers: getAuthHeaders(token, tenantId),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to fetch available rooms');
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      console.error('Available rooms fetch error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to fetch available rooms' 
+      };
+    }
+  },
+
+  /**
    * Get all rooms with pagination and filtering
    */
   getAllRooms: async (
     token: string,
     page: number = 0, 
     size: number = 10, 
+    search?: string,
+    roomType?: string,
     status?: string,
     tenantId: string | null = null
   ): Promise<{ success: boolean; data?: { content: Room[]; page: { size: number; number: number; totalElements: number; totalPages: number; }; first: boolean; last: boolean; numberOfElements: number; empty: boolean; }; message?: string }> => {
@@ -830,6 +888,8 @@ export const frontDeskApiService = {
         size: size.toString(),
       });
       
+      if (search) params.append('search', search);
+      if (roomType) params.append('roomType', roomType);
       if (status && status !== 'ALL') {
         params.append('status', status);
       }
@@ -891,9 +951,64 @@ export const frontDeskApiService = {
   getAvailableRoomsForCheckin: async (
     token: string,
     hotelId: number,
-    tenantId: string | null = null
+    tenantId: string | null = null,
+    checkInDate?: string,
+    checkOutDate?: string,
+    guests: number = 2
   ): Promise<{ success: boolean; data?: any[]; message?: string }> => {
     try {
+      // If dates are provided, use the date-aware endpoint
+      if (checkInDate && checkOutDate) {
+        // Ensure dates are in YYYY-MM-DD format
+        const formatDate = (dateStr: string): string => {
+          // If already in YYYY-MM-DD format, return as is
+          if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+            return dateStr;
+          }
+          // Otherwise, parse and format
+          const date = new Date(dateStr);
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const day = String(date.getDate()).padStart(2, '0');
+          return `${year}-${month}-${day}`;
+        };
+
+        const formattedCheckIn = formatDate(checkInDate);
+        const formattedCheckOut = formatDate(checkOutDate);
+        
+        console.log('🏨 getAvailableRoomsForCheckin: Formatted dates:', {
+          original: { checkInDate, checkOutDate },
+          formatted: { checkIn: formattedCheckIn, checkOut: formattedCheckOut },
+          hotelId,
+          guests
+        });
+
+        const params = new URLSearchParams({
+          checkInDate: formattedCheckIn,
+          checkOutDate: formattedCheckOut,
+          guests: guests.toString()
+        });
+
+        const url = `${API_BASE_URL}/front-desk/hotels/${hotelId}/available-rooms?${params}`;
+        console.log('🏨 getAvailableRoomsForCheckin: Request URL:', url);
+
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: getAuthHeaders(token, tenantId),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error('🏨 getAvailableRoomsForCheckin: Error response:', errorData);
+          return { success: false, message: errorData.message || 'Failed to get available rooms' };
+        }
+
+        const data = await response.json();
+        console.log('🏨 getAvailableRoomsForCheckin: Success, rooms found:', data.length);
+        return { success: true, data };
+      }
+      
+      // Fallback to basic availability (no date filtering)
       const response = await fetch(
         `${API_BASE_URL}/front-desk/hotels/${hotelId}/available-rooms`,
         {

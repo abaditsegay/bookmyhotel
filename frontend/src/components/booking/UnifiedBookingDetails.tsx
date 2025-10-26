@@ -494,60 +494,32 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
 
   // Load available rooms for room selection
   const loadAvailableRooms = async (roomType?: string) => {
-    if (!token || !editedBooking) return;
+    if (!token || !editedBooking || !user?.hotelId) return;
 
     try {
       setLoadingRooms(true);
       const selectedRoomType = roomType || editedBooking.roomType;
+      const hotelId = parseInt(user.hotelId);
       
-      if (mode === 'hotel-admin') {
-        const result = await hotelAdminApi.getHotelRooms(
-          token,
-          0, // page
-          100, // size - get more rooms for selection
-          '', // search
-          '', // room number
-          selectedRoomType, // filter by current or selected room type
-          'AVAILABLE' // only available rooms
-        );
+      // Use the date-based availability endpoint to filter rooms available for the booking dates
+      const result = await frontDeskApiService.getAvailableRoomsForDateRange(
+        token,
+        hotelId,
+        editedBooking.checkInDate,
+        editedBooking.checkOutDate,
+        2, // default guests - could be made configurable
+        tenant?.id || null
+      );
+      
+      if (result.success && result.data) {
+        // Filter by room type if specified
+        const filteredRooms = selectedRoomType 
+          ? result.data.filter(room => room.roomType === selectedRoomType)
+          : result.data;
         
-        if (result.success && result.data) {
-          setAvailableRooms(result.data.content);
-        } else {
-          setError(t('booking.details.errors.failedToLoadRooms'));
-        }
+        setAvailableRooms(filteredRooms);
       } else {
-        // For front desk, use getRooms API
-        const result = await frontDeskApiService.getRooms(
-          token, 
-          0, 
-          100, 
-          '', 
-          selectedRoomType, 
-          'AVAILABLE',
-          tenant?.id || null
-        );
-        
-        if (result.success && result.data) {
-          // Convert FrontDeskRoom to RoomResponse format for compatibility
-          const convertedRooms: RoomResponse[] = result.data.content.map(room => ({
-            id: room.id,
-            roomNumber: room.roomNumber,
-            roomType: room.roomType,
-            pricePerNight: room.pricePerNight,
-            capacity: room.capacity,
-            description: room.description || '',
-            isAvailable: room.status === 'AVAILABLE',
-            status: room.status,
-            hotelId: null as any, // Will be populated by hotel context - type mismatch will be handled
-            hotelName: null as any, // Will be populated by hotel context - type mismatch will be handled
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-          }));
-          setAvailableRooms(convertedRooms);
-        } else {
-          setError(t('booking.details.errors.failedToLoadRooms'));
-        }
+        setError(t('booking.details.errors.failedToLoadRooms'));
       }
     } catch (err) {
       setError(t('booking.details.errors.failedToLoadRooms'));

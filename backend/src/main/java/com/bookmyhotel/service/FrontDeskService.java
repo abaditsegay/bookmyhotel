@@ -1276,39 +1276,18 @@ public class FrontDeskService {
     @Cacheable(value = CacheConfig.AVAILABLE_ROOMS_CACHE, key = "'frontdesk:hotel:' + #hotelId + ':checkin:' + #checkInDate + ':checkout:' + #checkOutDate + ':guests:' + #guests")
     public List<RoomResponse> getAvailableRoomsForDateRange(Long hotelId, LocalDate checkInDate, LocalDate checkOutDate,
             Integer guests) {
-        // Get all available rooms for the hotel
-        List<Room> allRooms = roomCacheService.findByHotelIdAndIsAvailableTrue(hotelId);
+        System.out.println("🔍 FrontDeskService.getAvailableRoomsForDateRange called:");
+        System.out.println("   Hotel ID: " + hotelId);
+        System.out.println("   Check-in: " + checkInDate);
+        System.out.println("   Check-out: " + checkOutDate);
+        System.out.println("   Guests: " + guests);
+        
+        // Use repository method that filters in database (no lazy loading issues)
+        List<Room> availableRooms = roomRepository.findAvailableRooms(hotelId, checkInDate, checkOutDate, guests, null);
+        System.out.println("   Found " + availableRooms.size() + " available rooms from database query");
 
-        // Filter out rooms that are occupied or assigned for the given date range
-        List<RoomResponse> availableRooms = allRooms.stream()
-                .filter(room -> {
-                    // Check if room has capacity for guests
-                    if (room.getCapacity() < guests) {
-                        return false;
-                    }
-
-                    // Check if room has any conflicting reservations for the date range
-                    boolean hasConflicts = room.getReservations().stream()
-                            .anyMatch(reservation -> {
-                                // Only consider active reservations (confirmed or checked-in)
-                                if (reservation.getStatus() != ReservationStatus.CONFIRMED &&
-                                        reservation.getStatus() != ReservationStatus.CHECKED_IN) {
-                                    return false;
-                                }
-
-                                // Check for date overlap
-                                LocalDate resCheckIn = reservation.getCheckInDate();
-                                LocalDate resCheckOut = reservation.getCheckOutDate();
-
-                                // Dates conflict if they overlap
-                                return !(checkOutDate.isBefore(resCheckIn) || checkInDate.isAfter(resCheckOut));
-                            });
-
-                    return !hasConflicts;
-                })
+        return availableRooms.stream()
                 .map(this::convertToRoomResponse)
                 .collect(Collectors.toList());
-
-        return availableRooms;
     }
 }
