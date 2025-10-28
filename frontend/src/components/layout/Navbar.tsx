@@ -114,26 +114,6 @@ const Navbar: React.FC = () => {
     return colorMap[role] || 'primary';
   };
 
-  // Helper function to get hotel-specific logo
-  const getHotelLogo = () => {
-    if (!user || !user.hotelName) {
-      return '/logo.svg'; // Default BookMyHotel logo for non-hotel users
-    }
-    
-    // Map hotel names to their specific logos
-    const hotelLogos: { [key: string]: string } = {
-      'Grand Plaza Hotel': '/logos/grand-plaza-hotel-logo.svg',
-      'Sam\'s Hotel at Bole': '/logos/sams-hotel-at-bole-logo.svg',
-      'Sams Hotel at Bole': '/logos/sams-hotel-at-bole-logo.svg', // Alternative naming
-      'Addis Sunshine Hotel': '/logos/addis-sunshine-hotel-logo.svg',
-      'Addis Sunshine': '/logos/addis-sunshine-hotel-logo.svg', // Alternative naming
-      // Add more hotel logos as needed
-    };
-    
-    // Return hotel-specific logo or default hotel logo
-    return hotelLogos[user.hotelName] || '/logos/default-hotel-logo.svg';
-  };
-
   // Helper function to determine if hotel name should be shown
   const shouldShowHotelName = () => {
     // Hide hotel name for system admin and customer users
@@ -489,31 +469,32 @@ const Navbar: React.FC = () => {
             {/* Language Selector - After mobile menu */}
             <LanguageSelector variant="icon" size="small" />
             
-            {/* Logo */}
-            <Box 
-              sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                cursor: 'pointer',
-                '&:hover': { opacity: 0.9 },
-                height: 'auto', // Let container size naturally
-                ml: 1, // Add consistent margin
-              }}
-              onClick={() => handleNavigation('/')}
-            >
-              <Box
-                component="img"
-                src={getHotelLogo()} 
-                alt={user && user.hotelName ? user.hotelName : "BookMyHotel"} 
+            {/* Dashboard Link - Only for logged-in users */}
+            {user && (
+              <Box 
                 sx={{ 
-                  height: 32, // Compact logo for compact navbar
-                  width: 'auto', // Maintain aspect ratio
-                  maxHeight: 32, // Prevent shrinking
-                  minHeight: 32, // Prevent shrinking
-                  objectFit: 'contain', // Ensure proper scaling
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  cursor: 'pointer',
+                  '&:hover': { opacity: 0.9 },
+                  height: 'auto',
+                  ml: 1,
                 }}
-              />
-            </Box>
+                onClick={() => handleNavigation('/')}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: 600,
+                    color: 'white',
+                    fontSize: { xs: '1.1rem', md: '1.25rem' },
+                    letterSpacing: '0.02em',
+                  }}
+                >
+                  Dashboard
+                </Typography>
+              </Box>
+            )}
           </Box>
 
           {/* Center Section: Hotel Name for Hotel Admin and Front Desk - Hidden on Mobile */}
@@ -527,17 +508,19 @@ const Navbar: React.FC = () => {
                 variant="h4" 
                 component="div" 
                 sx={{ 
-                  fontWeight: 'bold',
-                  color: 'white', // Always white for better contrast on navy blue
+                  fontWeight: 700,
+                  fontFamily: '"Pacifico", "Lobster", cursive',
+                  fontStyle: 'italic',
+                  color: 'white',
                   textAlign: 'center',
-                  fontSize: { md: '1.5rem', lg: '1.8rem' }, // Slightly smaller to fit on one line
-                  textShadow: '0 1px 2px rgba(0,0,0,0.7)', // Add shadow for white text on navy blue background
-                  // Keep on single line
+                  fontSize: { md: '2rem', lg: '2.5rem' },
+                  textShadow: '3px 3px 6px rgba(0, 0, 0, 0.4)',
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
-                  maxWidth: '400px', // Increased width to accommodate longer hotel names
+                  maxWidth: '500px',
                   lineHeight: 1.2,
+                  letterSpacing: '0.03em',
                 }}
               >
                 {user.hotelName}
