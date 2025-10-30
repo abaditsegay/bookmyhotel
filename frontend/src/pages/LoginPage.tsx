@@ -216,39 +216,6 @@ const LoginPage: React.FC = () => {
         py: 4,
       }}
     >
-      {/* Main Title Outside Login Form */}
-      <Typography 
-        variant="h3" 
-        component="h1" 
-        sx={{ 
-          fontWeight: 'bold',
-          color: 'primary.main',
-          mb: 4,
-          textAlign: 'center',
-          px: 2,
-        }}
-      >
-        <Box 
-          component="span" 
-          sx={{ 
-            color: '#dc143c', 
-            fontWeight: 600,
-            fontFamily: '"Pacifico", "Lobster", cursive',
-            fontSize: '1.25em',
-            fontStyle: 'italic',
-            letterSpacing: '0.03em',
-            textShadow: '3px 3px 6px rgba(220, 20, 60, 0.3)',
-            background: 'linear-gradient(135deg, #dc143c 0%, #ff4444 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-          }}
-        >
-          Shegeroom
-        </Box>{' '}
-        Hotel Reservation Management
-      </Typography>
-      
       <Container maxWidth="lg">
         <Box
           sx={{

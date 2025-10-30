@@ -528,8 +528,48 @@ const Navbar: React.FC = () => {
             </Box>
           )}
 
+          {/* Center Section: Shegeroom Branding - Only for non-logged-in users */}
+          {!user && (
+            <Box sx={{ 
+              display: { xs: 'none', md: 'flex' },
+              justifyContent: 'center', 
+              flex: 1,
+              alignItems: 'center',
+            }}>
+              <Typography
+                variant="h5"
+                sx={{
+                  fontWeight: 600,
+                  color: 'white',
+                  fontSize: { xs: '1rem', md: '1.5rem' },
+                  letterSpacing: '0.02em',
+                  textAlign: 'center',
+                }}
+              >
+                <Box
+                  component="span"
+                  sx={{
+                    color: '#FFD700',
+                    fontWeight: 900,
+                    fontFamily: '"Pacifico", "Lobster", cursive',
+                    fontSize: '1.25em',
+                    fontStyle: 'italic',
+                    letterSpacing: '0.05em',
+                    textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5), 0 0 1px #FFD700',
+                    WebkitTextStroke: '0.5px #FFD700',
+                  }}
+                >
+                  Shegeroom
+                </Box>{' '}
+                <Box component="span" sx={{ color: 'white' }}>
+                  Hotel Reservation Management
+                </Box>
+              </Typography>
+            </Box>
+          )}
+
           {/* For users who shouldn't see hotel name, or on mobile, show navigation in center */}
-          {(!user || !user.hotelName || !shouldShowHotelName() || isMobile) && (
+          {user && (!user.hotelName || !shouldShowHotelName() || isMobile) && (
             <Box sx={{ display: { xs: 'none', md: 'flex' }, justifyContent: 'center', flex: 1 }}>
               <DesktopNavigation />
             </Box>
