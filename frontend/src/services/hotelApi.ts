@@ -249,7 +249,9 @@ class HotelApiService {
         // Try to get the actual error message from the response
         try {
           const errorData = await response.json();
-          throw new Error(errorData.error || errorData.message || `API Error: ${response.status} ${response.statusText}`);
+          // Extract the most detailed error message available (prioritize details field)
+          const errorMessage = errorData.details || errorData.message || errorData.userFriendlyMessage || errorData.error || `API Error: ${response.status}`;
+          throw new Error(errorMessage);
         } catch (jsonError) {
           // If we can't parse the JSON, fall back to the status text
           throw new Error(`API Error: ${response.status} ${response.statusText}`);
