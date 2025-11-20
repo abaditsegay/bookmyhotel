@@ -201,7 +201,9 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
        /**
         * Find active reservations by guest email (for uniqueness validation)
-        * @deprecated Use findOverlappingActiveReservations instead for date-based checking
+        * 
+        * @deprecated Use findOverlappingActiveReservations instead for date-based
+        *             checking
         */
        @Deprecated
        @Query("SELECT r FROM Reservation r " +
@@ -211,7 +213,8 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
        /**
         * Find overlapping active reservations by guest email and date range
-        * This allows multiple bookings with the same email as long as dates don't overlap
+        * This allows multiple bookings with the same email as long as dates don't
+        * overlap
         */
        @Query("SELECT r FROM Reservation r " +
                      "WHERE r.guestInfo.email = :email " +

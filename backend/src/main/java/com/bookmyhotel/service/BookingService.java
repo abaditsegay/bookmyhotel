@@ -584,8 +584,10 @@ public class BookingService {
             if (!overlappingReservations.isEmpty()) {
                 Reservation existingBooking = overlappingReservations.get(0);
                 throw new BookingException(
-                        String.format("You already have a confirmed booking (confirmation: %s) from %s to %s that overlaps with your selected dates. " +
-                                "Please choose different dates or contact the hotel to modify your existing booking.",
+                        String.format(
+                                "You already have a confirmed booking (confirmation: %s) from %s to %s that overlaps with your selected dates. "
+                                        +
+                                        "Please choose different dates or contact the hotel to modify your existing booking.",
                                 existingBooking.getConfirmationNumber(),
                                 existingBooking.getCheckInDate(),
                                 existingBooking.getCheckOutDate()));
@@ -729,8 +731,10 @@ public class BookingService {
             if (!overlappingReservations.isEmpty()) {
                 Reservation existingBooking = overlappingReservations.get(0);
                 throw new BookingException(
-                        String.format("You already have a confirmed booking (confirmation: %s) from %s to %s that overlaps with your selected dates. " +
-                                "Please choose different dates or contact the hotel to modify your existing booking.",
+                        String.format(
+                                "You already have a confirmed booking (confirmation: %s) from %s to %s that overlaps with your selected dates. "
+                                        +
+                                        "Please choose different dates or contact the hotel to modify your existing booking.",
                                 existingBooking.getConfirmationNumber(),
                                 existingBooking.getCheckInDate(),
                                 existingBooking.getCheckOutDate()));
@@ -2690,27 +2694,27 @@ public class BookingService {
         try {
             // Cancel PENDING bookings older than 30 minutes
             LocalDateTime cutoffTime = LocalDateTime.now().minusMinutes(30);
-            
+
             List<Reservation> expiredPendingBookings = reservationRepository.findExpiredPendingReservations(cutoffTime);
-            
+
             if (!expiredPendingBookings.isEmpty()) {
                 logger.info("Found {} expired PENDING bookings to auto-cancel", expiredPendingBookings.size());
-                
+
                 for (Reservation reservation : expiredPendingBookings) {
                     String confirmationNumber = reservation.getConfirmationNumber();
-                    
+
                     // Update status to CANCELLED
                     reservation.setStatus(ReservationStatus.CANCELLED);
                     reservation.setUpdatedAt(LocalDateTime.now());
                     reservationRepository.save(reservation);
-                    
-                    logger.info("Auto-cancelled expired PENDING booking: {} (created at: {})", 
-                               confirmationNumber, reservation.getCreatedAt());
+
+                    logger.info("Auto-cancelled expired PENDING booking: {} (created at: {})",
+                            confirmationNumber, reservation.getCreatedAt());
                 }
-                
+
                 // Clear cache after bulk updates
                 invalidateRoomCaches();
-                
+
                 logger.info("Successfully auto-cancelled {} expired PENDING bookings", expiredPendingBookings.size());
             }
         } catch (Exception e) {

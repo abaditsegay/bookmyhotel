@@ -406,17 +406,10 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                   }).join('') || ''}
 
                   ${receipt.taxesAndFees?.map(tax => {
-                    const quantity = tax.quantity || 1;
-                    const unitPrice = (tax.unitPrice && tax.unitPrice > 0) 
-                      ? tax.unitPrice 
-                      : (tax.amount || 0) / quantity;
-                    const total = unitPrice * quantity;
                     return `
                       <tr>
-                        <td>${tax.description || 'Tax'}</td>
-                        <td class="center">${quantity}</td>
-                        <td class="center">${formatCurrencyWithDecimals(unitPrice)}</td>
-                        <td class="right">${formatCurrencyWithDecimals(total)}</td>
+                        <td colspan="3">${tax.description || 'Tax'}</td>
+                        <td class="right">${formatCurrencyWithDecimals(tax.amount || 0)}</td>
                       </tr>
                     `;
                   }).join('') || ''}
@@ -834,24 +827,13 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
 
                   {/* Taxes and Fees */}
                   {receipt.taxesAndFees?.map((tax, index) => {
-                    const quantity = tax.quantity || 1;
-                    const unitPrice = (tax.unitPrice && tax.unitPrice > 0) 
-                      ? tax.unitPrice 
-                      : (tax.amount || 0) / quantity;
-                    const total = unitPrice * quantity;
                     return (
                       <TableRow key={`tax-${index}`} sx={{ '&:hover': { bgcolor: '#f9f9f9' } }}>
-                        <TableCell sx={{ py: 2, fontWeight: 500 }}>
+                        <TableCell colSpan={3} sx={{ py: 2, fontWeight: 500 }}>
                           {tax.description || 'Tax'}
                         </TableCell>
-                        <TableCell align="center" sx={{ py: 2, fontWeight: 500 }}>
-                          {quantity}
-                        </TableCell>
-                        <TableCell align="center" sx={{ py: 2, fontWeight: 500 }}>
-                          {formatCurrencyWithDecimals(unitPrice)}
-                        </TableCell>
                         <TableCell align="right" sx={{ py: 2, fontWeight: 600 }}>
-                          {formatCurrencyWithDecimals(total)}
+                          {formatCurrencyWithDecimals(tax.amount || 0)}
                         </TableCell>
                       </TableRow>
                     );
