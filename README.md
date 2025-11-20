@@ -67,9 +67,10 @@ A production-ready, multi-tenant hotel booking application built with Spring Boo
 
 ### Prerequisites
 - Docker & Docker Compose
-- Java 21+ (for local development)
-- Node.js 18+ (for local development)
+- **Java 21 LTS** (required for backend development) - [See Java 21 setup guide](./JAVA_21_UPGRADE.md)
+- Node.js 18+ (for frontend development)
 - MySQL 8.0
+- Maven 3.9+ (for backend development)
 
 ### Quick Start with Docker
 
@@ -97,8 +98,19 @@ A production-ready, multi-tenant hotel booking application built with Spring Boo
 #### Backend
 ```bash
 cd backend
+
+# Ensure Java 21 is active (use one of these methods):
+# Option 1: Source the setup script
+source set-java-21.sh
+
+# Option 2: Set JAVA_HOME manually
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/microsoft-21.jdk/Contents/Home
+
+# Build and run
 mvn spring-boot:run
 ```
+
+> **Note**: For detailed Java 21 setup instructions, see [JAVA_21_UPGRADE.md](./JAVA_21_UPGRADE.md)
 
 #### Frontend
 ```bash

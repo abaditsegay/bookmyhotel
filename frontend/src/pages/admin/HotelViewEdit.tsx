@@ -247,7 +247,7 @@ const HotelViewEdit: React.FC = () => {
         <Paper 
           elevation={0}
           sx={{ 
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
             borderRadius: 3,
             p: 4,
             mb: 4,

@@ -27,31 +27,31 @@ export { getThemeColors };
 // Convenience exports for common colors (these will update automatically when brand colors change)
 export const COLORS = {
   // Interactive elements (buttons, links, form focus) - Professional Blue Theme
-  PRIMARY: '#1565c0',           // Professional deep blue
-  PRIMARY_HOVER: '#0d47a1',     // Darker blue for hover
-  PRIMARY_PRESSED: '#0d47a1',   // Dark blue for pressed
+  PRIMARY: '#1976d2',           // Professional blue (Material Blue 700)
+  PRIMARY_HOVER: '#1565c0',     // Darker blue for hover (Material Blue 800)
+  PRIMARY_PRESSED: '#0d47a1',   // Dark blue for pressed (Material Blue 900)
   
-  SECONDARY: '#1976d2',         // Medium blue for secondary
-  SECONDARY_HOVER: '#1565c0',   // Darker blue for secondary hover
+  SECONDARY: '#42a5f5',         // Light blue for secondary (Material Blue 400)
+  SECONDARY_HOVER: '#1976d2',   // Medium blue for secondary hover
   
   // Status colors - Professional hotel management colors
-  CONFIRMED: '#1565c0',         // Blue for confirmed bookings
-  PENDING: '#f57c00',           // Professional orange for pending
-  SUCCESS: '#2e7d32',           // Keep green for success states
-  ERROR: '#d32f2f',             // Professional red for errors
-  CANCELLED: '#757575',         // Gray for cancelled
-  CHECKED_IN: '#2e7d32',        // Green for checked in (success)
-  CHECKED_OUT: '#1565c0',       // Blue for checked out (completed)
+  CONFIRMED: '#1976d2',         // Blue for confirmed bookings
+  PENDING: '#fb8c00',           // Professional orange for pending (Material Orange 600)
+  SUCCESS: '#388e3c',           // Green for success states (Material Green 600)
+  ERROR: '#d32f2f',             // Professional red for errors (Material Red 700)
+  CANCELLED: '#757575',         // Gray for cancelled (Material Grey 600)
+  CHECKED_IN: '#388e3c',        // Green for checked in (success)
+  CHECKED_OUT: '#1976d2',       // Blue for checked out (completed)
   
   // Form elements - Blue theme
-  INPUT_FOCUS: '#1565c0',       // Blue focus color
-  INPUT_HOVER: '#1976d2',       // Medium blue hover
-  INPUT_BORDER: '#e3f2fd',      // Light blue border
+  INPUT_FOCUS: '#1976d2',       // Blue focus color
+  INPUT_HOVER: '#42a5f5',       // Light blue hover
+  INPUT_BORDER: '#e0e0e0',      // Neutral gray border (Material Grey 300)
   INPUT_ERROR: '#d32f2f',       // Red for errors
   
-  // Surface colors - Professional blue theme
-  CARD_BORDER: '#e3f2fd',       // Light blue card borders
-  CARD_HOVER: '#f5f9ff',        // Very light blue hover
+  // Surface colors - Professional neutral theme
+  CARD_BORDER: '#e0e0e0',       // Neutral gray card borders
+  CARD_HOVER: '#fafafa',        // Very light gray hover (Material Grey 50)
 } as const;
 
 // Color palette access

@@ -138,7 +138,6 @@ const HotelSearchPage: React.FC = () => {
           mb: isMobile ? 3 : 4,
           backgroundColor: theme.palette.background.paper,
           border: `1px solid ${theme.palette.divider}`,
-          borderRadius: 0,
           boxShadow: 'none',
         }}
       >
@@ -148,7 +147,6 @@ const HotelSearchPage: React.FC = () => {
             mb: isMobile ? 2 : 3,
             p: 2,
             backgroundColor: theme.palette.background.default,
-            borderRadius: 0,
             border: `1px solid rgba(224, 224, 224, 0.3)`,
           }}>
             <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>
@@ -196,7 +194,6 @@ const HotelSearchPage: React.FC = () => {
             mb: isMobile ? 2 : 3,
             p: 2,
             backgroundColor: theme.palette.background.default,
-            borderRadius: 0,
             border: `1px solid rgba(224, 224, 224, 0.3)`,
           }}>
             <Typography variant="h5" sx={{ fontWeight: 600, mb: 1, color: 'text.primary' }}>
@@ -219,10 +216,9 @@ const HotelSearchPage: React.FC = () => {
                 py: 1.5,
                 fontSize: '1.1rem',
                 fontWeight: 600,
-                borderRadius: 0,
-                background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
+                background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
                 '&:hover': {
-                  background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
+                  background: 'linear-gradient(135deg, #1565c0 0%, #0d47a1 100%)',
                   transform: 'translateY(-1px)',
                 },
                 transition: 'all 0.2s ease-in-out',
