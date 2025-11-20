@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import com.bookmyhotel.entity.converter.PaymentMethodConverter;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Embedded;
@@ -20,8 +22,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
-
-import com.bookmyhotel.entity.converter.PaymentMethodConverter;
 import jakarta.validation.constraints.Positive;
 
 /**
@@ -52,10 +52,13 @@ public class Reservation extends HotelScopedEntity {
 
     /**
      * Total amount for the reservation (SUBTOTAL ONLY - does NOT include taxes)
-     * This represents: (base_price_per_night × seasonal_multiplier) × number_of_nights
-     * Taxes are calculated separately at checkout based on hotel pricing configuration.
+     * This represents: (base_price_per_night × seasonal_multiplier) ×
+     * number_of_nights
+     * Taxes are calculated separately at checkout based on hotel pricing
+     * configuration.
      * 
-     * IMPORTANT: This field stores the subtotal amount. Taxes are added during checkout
+     * IMPORTANT: This field stores the subtotal amount. Taxes are added during
+     * checkout
      * and displayed on receipts, but are NOT stored in this field.
      */
     @NotNull(message = "Total amount is required")
