@@ -207,10 +207,10 @@ public class CheckoutReceiptService {
     }
 
     private void calculateRoomCharges(ConsolidatedReceiptResponse receipt, Reservation reservation) {
-        // The stored reservation.getPricePerNight() should be the base room rate
-        // (before taxes)
-        // This ensures the receipt shows the base rate and taxes are calculated
-        // separately
+        // The stored reservation.getPricePerNight() is the base room rate (before taxes)
+        // The stored reservation.getTotalAmount() is the subtotal (base rate × nights × seasonal multiplier)
+        // This method calculates the room charges correctly without adding taxes
+        // (taxes are added separately in setTaxesAndFees method)
         BigDecimal baseRatePerNight = reservation.getPricePerNight();
         receipt.setRoomChargePerNight(baseRatePerNight);
 

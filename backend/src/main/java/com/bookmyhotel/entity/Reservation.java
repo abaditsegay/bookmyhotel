@@ -50,6 +50,14 @@ public class Reservation extends HotelScopedEntity {
     @Column(name = "check_out_date", nullable = false)
     private LocalDate checkOutDate;
 
+    /**
+     * Total amount for the reservation (SUBTOTAL ONLY - does NOT include taxes)
+     * This represents: (base_price_per_night × seasonal_multiplier) × number_of_nights
+     * Taxes are calculated separately at checkout based on hotel pricing configuration.
+     * 
+     * IMPORTANT: This field stores the subtotal amount. Taxes are added during checkout
+     * and displayed on receipts, but are NOT stored in this field.
+     */
     @NotNull(message = "Total amount is required")
     @Positive(message = "Total amount must be positive")
     @Column(name = "total_amount", nullable = false, precision = 10, scale = 2)

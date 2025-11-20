@@ -586,6 +586,8 @@ public class BookingService {
 
     /**
      * Calculate total amount for the booking using room type pricing
+     * NOTE: This returns the SUBTOTAL only (base price × nights × seasonal multiplier).
+     * Taxes are NOT included and will be calculated separately at checkout.
      */
     private BigDecimal calculateTotalAmountByRoomType(Long hotelId, RoomType roomType, BookingRequest request) {
         logger.debug("Calculating total amount for hotel {} and room type {}", hotelId, roomType);
@@ -608,29 +610,24 @@ public class BookingService {
                 .setScale(2, RoundingMode.HALF_UP);
 
         // Calculate subtotal (base price * nights * seasonal multiplier)
+        // IMPORTANT: Taxes are NOT included here - they will be calculated at checkout
         BigDecimal subtotal = adjustedPricePerNight.multiply(BigDecimal.valueOf(numberOfNights))
                 .setScale(2, RoundingMode.HALF_UP);
 
-        // Apply taxes based on hotel pricing configuration
-        BigDecimal taxRate = hotelPricingConfigService.getTotalTaxRate(hotelId);
-        BigDecimal taxAmount = subtotal.multiply(taxRate).setScale(2, RoundingMode.HALF_UP);
-        BigDecimal totalAmount = subtotal.add(taxAmount).setScale(2, RoundingMode.HALF_UP);
-
-        logger.debug("Calculated pricing breakdown:");
+        logger.debug("Calculated pricing breakdown (taxes will be applied at checkout):");
         logger.debug("  Base price per night: {}", pricePerNight);
         logger.debug("  Seasonal multiplier: {}", seasonalMultiplier);
         logger.debug("  Adjusted price per night: {}", adjustedPricePerNight);
         logger.debug("  Number of nights: {}", numberOfNights);
-        logger.debug("  Subtotal: {}", subtotal);
-        logger.debug("  Tax rate: {}", taxRate);
-        logger.debug("  Tax amount: {}", taxAmount);
-        logger.debug("  Total amount: {}", totalAmount);
+        logger.debug("  Subtotal (without taxes): {}", subtotal);
 
-        return totalAmount;
+        return subtotal;
     }
 
     /**
      * Calculate total amount for room type booking using room type pricing
+     * NOTE: This returns the SUBTOTAL only (base price × nights × seasonal multiplier).
+     * Taxes are NOT included and will be calculated separately at checkout.
      */
     private BigDecimal calculateTotalAmountForRoomTypeByPricing(Long hotelId, RoomType roomType,
             RoomTypeBookingRequest request) {
@@ -654,25 +651,18 @@ public class BookingService {
                 .setScale(2, RoundingMode.HALF_UP);
 
         // Calculate subtotal (base price * nights * seasonal multiplier)
+        // IMPORTANT: Taxes are NOT included here - they will be calculated at checkout
         BigDecimal subtotal = adjustedPricePerNight.multiply(BigDecimal.valueOf(numberOfNights))
                 .setScale(2, RoundingMode.HALF_UP);
 
-        // Apply taxes based on hotel pricing configuration
-        BigDecimal taxRate = hotelPricingConfigService.getTotalTaxRate(hotelId);
-        BigDecimal taxAmount = subtotal.multiply(taxRate).setScale(2, RoundingMode.HALF_UP);
-        BigDecimal totalAmount = subtotal.add(taxAmount).setScale(2, RoundingMode.HALF_UP);
-
-        logger.debug("Calculated pricing breakdown:");
+        logger.debug("Calculated pricing breakdown (taxes will be applied at checkout):");
         logger.debug("  Base price per night: {}", pricePerNight);
         logger.debug("  Seasonal multiplier: {}", seasonalMultiplier);
         logger.debug("  Adjusted price per night: {}", adjustedPricePerNight);
         logger.debug("  Number of nights: {}", numberOfNights);
-        logger.debug("  Subtotal: {}", subtotal);
-        logger.debug("  Tax rate: {}", taxRate);
-        logger.debug("  Tax amount: {}", taxAmount);
-        logger.debug("  Total amount: {}", totalAmount);
+        logger.debug("  Subtotal (without taxes): {}", subtotal);
 
-        return totalAmount;
+        return subtotal;
     }
 
     /**
