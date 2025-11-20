@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -574,19 +575,28 @@ public class BookingService {
                 throw new BookingException("Guest email is required for anonymous bookings");
             }
 
-            // Check for email uniqueness - prevent multiple active bookings with same email
-            List<Reservation> activeReservations = reservationRepository.findActiveReservationsByGuestEmail(
-                    request.getGuestEmail());
-            if (!activeReservations.isEmpty()) {
-                throw new BookingException("An active reservation already exists for this email address. " +
-                        "Please use a different email or contact the hotel to modify your existing booking.");
+            // Check for overlapping bookings - prevent double bookings for same dates
+            // This allows multiple bookings with same email as long as dates don't overlap
+            List<Reservation> overlappingReservations = reservationRepository.findOverlappingActiveReservations(
+                    request.getGuestEmail(),
+                    request.getCheckInDate(),
+                    request.getCheckOutDate());
+            if (!overlappingReservations.isEmpty()) {
+                Reservation existingBooking = overlappingReservations.get(0);
+                throw new BookingException(
+                        String.format("You already have a confirmed booking (confirmation: %s) from %s to %s that overlaps with your selected dates. " +
+                                "Please choose different dates or contact the hotel to modify your existing booking.",
+                                existingBooking.getConfirmationNumber(),
+                                existingBooking.getCheckInDate(),
+                                existingBooking.getCheckOutDate()));
             }
         }
     }
 
     /**
      * Calculate total amount for the booking using room type pricing
-     * NOTE: This returns the SUBTOTAL only (base price × nights × seasonal multiplier).
+     * NOTE: This returns the SUBTOTAL only (base price × nights × seasonal
+     * multiplier).
      * Taxes are NOT included and will be calculated separately at checkout.
      */
     private BigDecimal calculateTotalAmountByRoomType(Long hotelId, RoomType roomType, BookingRequest request) {
@@ -626,7 +636,8 @@ public class BookingService {
 
     /**
      * Calculate total amount for room type booking using room type pricing
-     * NOTE: This returns the SUBTOTAL only (base price × nights × seasonal multiplier).
+     * NOTE: This returns the SUBTOTAL only (base price × nights × seasonal
+     * multiplier).
      * Taxes are NOT included and will be calculated separately at checkout.
      */
     private BigDecimal calculateTotalAmountForRoomTypeByPricing(Long hotelId, RoomType roomType,
@@ -709,12 +720,20 @@ public class BookingService {
                 throw new BookingException("Guest email is required for anonymous bookings");
             }
 
-            // Check for email uniqueness - prevent multiple active bookings with same email
-            List<Reservation> activeReservations = reservationRepository.findActiveReservationsByGuestEmail(
-                    request.getGuestEmail());
-            if (!activeReservations.isEmpty()) {
-                throw new BookingException("An active reservation already exists for this email address. " +
-                        "Please use a different email or contact the hotel to modify your existing booking.");
+            // Check for overlapping bookings - prevent double bookings for same dates
+            // This allows multiple bookings with same email as long as dates don't overlap
+            List<Reservation> overlappingReservations = reservationRepository.findOverlappingActiveReservations(
+                    request.getGuestEmail(),
+                    request.getCheckInDate(),
+                    request.getCheckOutDate());
+            if (!overlappingReservations.isEmpty()) {
+                Reservation existingBooking = overlappingReservations.get(0);
+                throw new BookingException(
+                        String.format("You already have a confirmed booking (confirmation: %s) from %s to %s that overlaps with your selected dates. " +
+                                "Please choose different dates or contact the hotel to modify your existing booking.",
+                                existingBooking.getConfirmationNumber(),
+                                existingBooking.getCheckInDate(),
+                                existingBooking.getCheckOutDate()));
             }
         }
     }
@@ -2659,6 +2678,44 @@ public class BookingService {
         } catch (Exception e) {
             logger.error("Failed to send booking authentication email for confirmation: {}", confirmationNumber, e);
             throw new RuntimeException("Failed to send authentication email", e);
+        }
+    }
+
+    /**
+     * Scheduled job to auto-cancel expired PENDING bookings
+     * Runs every 5 minutes to clean up abandoned bookings
+     */
+    @Scheduled(fixedRate = 300000) // 5 minutes
+    public void autoExpirePendingBookings() {
+        try {
+            // Cancel PENDING bookings older than 30 minutes
+            LocalDateTime cutoffTime = LocalDateTime.now().minusMinutes(30);
+            
+            List<Reservation> expiredPendingBookings = reservationRepository.findExpiredPendingReservations(cutoffTime);
+            
+            if (!expiredPendingBookings.isEmpty()) {
+                logger.info("Found {} expired PENDING bookings to auto-cancel", expiredPendingBookings.size());
+                
+                for (Reservation reservation : expiredPendingBookings) {
+                    String confirmationNumber = reservation.getConfirmationNumber();
+                    
+                    // Update status to CANCELLED
+                    reservation.setStatus(ReservationStatus.CANCELLED);
+                    reservation.setUpdatedAt(LocalDateTime.now());
+                    reservationRepository.save(reservation);
+                    
+                    logger.info("Auto-cancelled expired PENDING booking: {} (created at: {})", 
+                               confirmationNumber, reservation.getCreatedAt());
+                }
+                
+                // Clear cache after bulk updates
+                invalidateRoomCaches();
+                
+                logger.info("Successfully auto-cancelled {} expired PENDING bookings", expiredPendingBookings.size());
+            }
+        } catch (Exception e) {
+            logger.error("Error during auto-expiration of PENDING bookings", e);
+            // Don't rethrow - scheduled job should continue running
         }
     }
 }

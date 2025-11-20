@@ -201,11 +201,34 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
        /**
         * Find active reservations by guest email (for uniqueness validation)
+        * @deprecated Use findOverlappingActiveReservations instead for date-based checking
         */
+       @Deprecated
        @Query("SELECT r FROM Reservation r " +
                      "WHERE r.guestInfo.email = :email " +
                      "AND r.status NOT IN ('CANCELLED', 'NO_SHOW', 'CHECKED_OUT')")
        List<Reservation> findActiveReservationsByGuestEmail(@Param("email") String email);
+
+       /**
+        * Find overlapping active reservations by guest email and date range
+        * This allows multiple bookings with the same email as long as dates don't overlap
+        */
+       @Query("SELECT r FROM Reservation r " +
+                     "WHERE r.guestInfo.email = :email " +
+                     "AND r.status IN ('CONFIRMED', 'CHECKED_IN') " +
+                     "AND NOT (r.checkOutDate <= :newCheckInDate OR r.checkInDate >= :newCheckOutDate)")
+       List<Reservation> findOverlappingActiveReservations(
+                     @Param("email") String email,
+                     @Param("newCheckInDate") LocalDate newCheckInDate,
+                     @Param("newCheckOutDate") LocalDate newCheckOutDate);
+
+       /**
+        * Find expired PENDING reservations for auto-cancellation
+        */
+       @Query("SELECT r FROM Reservation r " +
+                     "WHERE r.status = com.bookmyhotel.entity.ReservationStatus.PENDING " +
+                     "AND r.createdAt < :cutoffTime")
+       List<Reservation> findExpiredPendingReservations(@Param("cutoffTime") java.time.LocalDateTime cutoffTime);
 
        /**
         * Find expired checked-in reservations (for auto-checkout)
