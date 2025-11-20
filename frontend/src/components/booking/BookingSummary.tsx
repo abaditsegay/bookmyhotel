@@ -356,6 +356,21 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
             severity="info" 
             sx={{ 
               borderRadius: 2,
+              bgcolor: alpha('#2196f3', 0.08),
+              color: 'text.secondary',
+              '& .MuiAlert-icon': { color: '#2196f3' },
+              mb: 2,
+            }}
+          >
+            <Typography variant="caption" sx={{ display: 'block', mb: 0.5 }}>
+              <strong>Note:</strong> Taxes will be calculated and applied at checkout based on your final bill.
+            </Typography>
+          </Alert>
+
+          <Alert 
+            severity="info" 
+            sx={{ 
+              borderRadius: 2,
               bgcolor: alpha(COLORS.PRIMARY, 0.05),
               color: COLORS.PRIMARY,
               '& .MuiAlert-icon': { color: COLORS.PRIMARY },
