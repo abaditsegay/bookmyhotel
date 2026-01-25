@@ -62,7 +62,7 @@ const StaffDetails: React.FC = () => {
           return;
         }
 
-        console.log('Loading staff with ID:', staffId);
+        // console.log('Loading staff with ID:', staffId);
         
         const result = await hotelAdminApi.getStaffById(token, staffId);
         

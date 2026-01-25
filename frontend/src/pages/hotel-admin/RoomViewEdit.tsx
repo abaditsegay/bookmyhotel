@@ -61,7 +61,7 @@ const RoomViewEdit: React.FC = () => {
           return;
         }
 
-        console.log('Loading room with ID:', roomId);
+        // console.log('Loading room with ID:', roomId);
         
         const result = await hotelAdminApi.getRoomById(token, roomId);
         

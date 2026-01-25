@@ -112,7 +112,7 @@ class SyncManager {
         try {
           await offlineStorage.cleanupOrphanedGuests();
         } catch (error) {
-          console.warn('Failed to cleanup orphaned guests:', error);
+          // console.warn('Failed to cleanup orphaned guests:', error);
         }
       }
 
@@ -147,12 +147,12 @@ class SyncManager {
     const failedBookings = bookings.filter(b => b.status === 'SYNC_FAILED');
     
     // Debug logging to understand the issue
-    console.debug(`📊 Sync Status Debug:
-- Total bookings: ${bookings.length}
-- Pending: ${pendingCount}
-- Synced: ${syncedBookings.length}  
-- Failed: ${failedBookings.length}
-- Failed booking IDs: [${failedBookings.map(b => b.id).join(', ')}]`);
+    // console.debug(`📊 Sync Status Debug:
+    // - Total bookings: ${bookings.length}
+    // - Pending: ${pendingCount}
+    // - Synced: ${syncedBookings.length}  
+    // - Failed: ${failedBookings.length}
+    // - Failed booking IDs: [${failedBookings.map(b => b.id).join(', ')}]`);
     
     return {
       isSyncing: this.issyncing,

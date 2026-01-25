@@ -976,12 +976,12 @@ export const frontDeskApiService = {
         const formattedCheckIn = formatDate(checkInDate);
         const formattedCheckOut = formatDate(checkOutDate);
         
-        console.log('🏨 getAvailableRoomsForCheckin: Formatted dates:', {
-          original: { checkInDate, checkOutDate },
-          formatted: { checkIn: formattedCheckIn, checkOut: formattedCheckOut },
-          hotelId,
-          guests
-        });
+        // console.log('🏨 getAvailableRoomsForCheckin: Formatted dates:', {
+        //   original: { checkInDate, checkOutDate },
+        //   formatted: { checkIn: formattedCheckIn, checkOut: formattedCheckOut },
+        //   hotelId,
+        //   guests
+        // });
 
         const params = new URLSearchParams({
           checkInDate: formattedCheckIn,
@@ -990,7 +990,7 @@ export const frontDeskApiService = {
         });
 
         const url = `${API_BASE_URL}/front-desk/hotels/${hotelId}/available-rooms?${params}`;
-        console.log('🏨 getAvailableRoomsForCheckin: Request URL:', url);
+        // console.log('🏨 getAvailableRoomsForCheckin: Request URL:', url);
 
         const response = await fetch(url, {
           method: 'GET',
@@ -1004,7 +1004,7 @@ export const frontDeskApiService = {
         }
 
         const data = await response.json();
-        console.log('🏨 getAvailableRoomsForCheckin: Success, rooms found:', data.length);
+        // console.log('🏨 getAvailableRoomsForCheckin: Success, rooms found:', data.length);
         return { success: true, data };
       }
       
@@ -1100,7 +1100,7 @@ export const frontDeskApiService = {
           // Use the detailed error message from the backend
           // For BookingException, the specific message is in 'details', not 'message'
           errorMessage = errorData.details || errorData.message || errorData.error || errorMessage;
-          console.log('API Error:', errorMessage);
+          // console.log('API Error:', errorMessage);
         } catch (parseError) {
           // If we can't parse the error response, use the status text
           errorMessage = response.statusText || errorMessage;
