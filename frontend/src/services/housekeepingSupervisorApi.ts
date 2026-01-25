@@ -40,7 +40,7 @@ class HousekeepingSupervisorApiService {
 
       return await response.json();
     } catch (error) {
-      console.error(`API request failed: /housekeeping${endpoint}`, error);
+      // console.error(`API request failed: /housekeeping${endpoint}`, error);
       throw error;
     }
   }

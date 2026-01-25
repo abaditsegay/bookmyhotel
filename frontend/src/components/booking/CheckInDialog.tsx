@@ -99,11 +99,11 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
     });
     
     if (!booking || !token) {
-      console.log('🏨 CheckInDialog: Early return - missing booking or token');
+      // console.log('🏨 CheckInDialog: Early return - missing booking or token');
       return;
     }
 
-    console.log('🏨 CheckInDialog: Loading rooms for mode:', mode);
+    // console.log('🏨 CheckInDialog: Loading rooms for mode:', mode);
     setLoadingRooms(true);
     setError(null);
 
@@ -116,12 +116,12 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
       const hotelId = typeof rawHotelId === 'string' ? parseInt(rawHotelId, 10) : rawHotelId;
       
       if (!hotelId) {
-        console.log('🏨 CheckInDialog: Early return - no hotelId available');
+        // console.log('🏨 CheckInDialog: Early return - no hotelId available');
         setError('Hotel information not available for this booking');
         return;
       }
 
-      console.log('🏨 CheckInDialog: Using date-aware room availability for hotel', hotelId);
+      // console.log('🏨 CheckInDialog: Using date-aware room availability for hotel', hotelId);
       console.log('🏨 CheckInDialog: Booking dates:', {
         checkInDate: booking.checkInDate,
         checkOutDate: booking.checkOutDate,
@@ -138,27 +138,27 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
         2 // default guests - could be made configurable
       );
 
-      console.log('🏨 CheckInDialog: Rooms API result:', result);
+      // console.log('🏨 CheckInDialog: Rooms API result:', result);
 
       if (result.success && result.data) {
-        console.log('🏨 CheckInDialog: Available rooms:', result.data);
+        // console.log('🏨 CheckInDialog: Available rooms:', result.data);
         setAvailableRooms(result.data);
         
         // Extract unique room types for the dropdown
         const uniqueRoomTypes = Array.from(new Set(result.data.map((room: Room) => room.roomType))) as string[];
-        console.log('🏨 CheckInDialog: Room types found:', uniqueRoomTypes);
+        // console.log('🏨 CheckInDialog: Room types found:', uniqueRoomTypes);
         setRoomTypeOptions(uniqueRoomTypes);
         
         // Only pre-select the original room type if it's available in the loaded options
         const validRoomType = uniqueRoomTypes.includes(booking.roomType) ? booking.roomType : '';
-        console.log('🏨 CheckInDialog: Setting selected room type to:', validRoomType);
+        // console.log('🏨 CheckInDialog: Setting selected room type to:', validRoomType);
         setSelectedRoomType(validRoomType);
       } else {
-        console.error('🏨 CheckInDialog: Failed to load rooms:', result.message);
+        // console.error('🏨 CheckInDialog: Failed to load rooms:', result.message);
         setError(result.message || 'Failed to load available rooms');
       }
     } catch (error) {
-      console.error('🏨 CheckInDialog: Error loading rooms:', error);
+      // console.error('🏨 CheckInDialog: Error loading rooms:', error);
       setError('Failed to load available rooms');
     } finally {
       setLoadingRooms(false);
@@ -167,9 +167,9 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
 
   // Load available rooms when dialog opens
   useEffect(() => {
-    console.log('🏨 CheckInDialog: useEffect triggered - open:', open, 'booking:', !!booking, 'token:', !!token);
+    // console.log('🏨 CheckInDialog: useEffect triggered - open:', open, 'booking:', !!booking, 'token:', !!token);
     if (open && booking && token) {
-      console.log('🏨 CheckInDialog: Calling loadAvailableRooms for booking:', booking.reservationId);
+      // console.log('🏨 CheckInDialog: Calling loadAvailableRooms for booking:', booking.reservationId);
       loadAvailableRooms();
     }
   }, [open, booking, token, loadAvailableRooms]);
@@ -183,12 +183,12 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
       const hotelId = typeof rawHotelId === 'string' ? parseInt(rawHotelId, 10) : rawHotelId;
       
       if (!hotelId) {
-        console.warn('⚠️ No hotel ID available for fetching tax rates');
+        // console.warn('⚠️ No hotel ID available for fetching tax rates');
         return;
       }
       
       try {
-        console.log('🔍 Fetching tax rates for hotel ID:', hotelId);
+        // console.log('🔍 Fetching tax rates for hotel ID:', hotelId);
         const response = await fetch(buildApiUrl(`/hotels/${hotelId}/tax-rate`), {
           headers: token ? { 'Authorization': `Bearer ${token}` } : {}
         });
@@ -203,10 +203,10 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
             fullData: data
           });
         } else {
-          console.error('❌ Failed to fetch tax rates, status:', response.status);
+          // console.error('❌ Failed to fetch tax rates, status:', response.status);
         }
       } catch (error) {
-        console.error('❌ Error fetching tax rates:', error);
+        // console.error('❌ Error fetching tax rates:', error);
       }
     };
     
@@ -343,7 +343,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
       }
     } catch (error) {
       setError('Failed to check-in guest');
-      console.error('Check-in error:', error);
+      // console.error('Check-in error:', error);
     } finally {
       setLoading(false);
     }
@@ -394,7 +394,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
         
         if (isOriginalRoom && booking?.totalAmount) {
           // Use the original booking total to prevent false price differences
-          console.log('✅ Using original booking total (room unchanged):', booking.totalAmount);
+          // console.log('✅ Using original booking total (room unchanged):', booking.totalAmount);
           setCalculatedPricePerNight(selectedRoom.pricePerNight);
           setCalculatedTotal(booking.totalAmount);
         } else {
@@ -423,7 +423,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
     } else if (selectedRoomType && availableRooms.length > 0) {
       // Room type selected but no specific room - use first room of that type
       const roomsOfType = availableRooms.filter(room => room.roomType === selectedRoomType);
-      console.log('🏨 Rooms of type', selectedRoomType, ':', roomsOfType.length);
+      // console.log('🏨 Rooms of type', selectedRoomType, ':', roomsOfType.length);
       if (roomsOfType.length > 0) {
         const firstRoomOfType = roomsOfType[0];
         const subtotal = firstRoomOfType.pricePerNight * nights;
@@ -446,12 +446,12 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
         setCalculatedPricePerNight(firstRoomOfType.pricePerNight);
         setCalculatedTotal(totalWithTaxes);
       } else {
-        console.log('⚠️ No rooms found for type:', selectedRoomType);
+        // console.log('⚠️ No rooms found for type:', selectedRoomType);
         setCalculatedPricePerNight(0);
         setCalculatedTotal(0);
       }
     } else {
-      console.log('🔄 Resetting price to 0');
+      // console.log('🔄 Resetting price to 0');
       setCalculatedPricePerNight(0);
       setCalculatedTotal(0);
     }

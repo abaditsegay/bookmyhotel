@@ -43,11 +43,11 @@ const HotelListPage: React.FC = () => {
     try {
       setLoading(true);
       setError('');
-      console.log('🔍 Performing hotel search:', searchReq);
+      // console.log('🔍 Performing hotel search:', searchReq);
       const results = await hotelApiService.searchHotelsPublic(searchReq);
       setHotels(results);
     } catch (err) {
-      console.error('❌ Hotel search failed:', err);
+      // console.error('❌ Hotel search failed:', err);
       setError(err instanceof Error ? err.message : 'An error occurred while searching for hotels');
       // If search fails, redirect back to search page
       navigate('/hotels/search');

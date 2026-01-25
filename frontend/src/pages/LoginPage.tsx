@@ -81,7 +81,7 @@ const LoginPage: React.FC = () => {
       }
       // Note: If login fails, the error will be set in authError by AuthContext
     } catch (err) {
-      console.error('Login error:', err);
+      // console.error('Login error:', err);
     } finally {
       setLoading(false);
     }

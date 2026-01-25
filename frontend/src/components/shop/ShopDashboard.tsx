@@ -65,13 +65,13 @@ const ShopDashboard: React.FC = () => {
 
   const loadDashboardData = useCallback(async () => {
     if (!hotelId) {
-      console.error('Cannot load dashboard data: No hotel ID available');
+      // console.error('Cannot load dashboard data: No hotel ID available');
       return;
     }
 
     // Ensure we have authentication before making API calls
     if (!token) {
-      console.warn('Cannot load dashboard data: No authentication token available');
+      // console.warn('Cannot load dashboard data: No authentication token available');
       setError('Authentication required. Please ensure you are logged in.');
       return;
     }
@@ -80,20 +80,20 @@ const ShopDashboard: React.FC = () => {
       setLoading(true);
       
       // Configure shop API service with authentication
-      console.info('Configuring shop API service with authentication...');
+      // console.info('Configuring shop API service with authentication...');
       shopApiService.setToken(token);
-      console.info('Shop API service configured with token');
+      // console.info('Shop API service configured with token');
 
       if (user?.tenantId) {
         shopApiService.setTenantId(user.tenantId);
-        console.info(`Shop API service configured with tenant ID: ${user.tenantId}`);
+        // console.info(`Shop API service configured with tenant ID: ${user.tenantId}`);
       } else {
-        console.warn('No tenant ID available for shop API');
+        // console.warn('No tenant ID available for shop API');
       }
 
-      console.info(`Loading dashboard stats for hotel ${hotelId}...`);
+      // console.info(`Loading dashboard stats for hotel ${hotelId}...`);
       const stats = await shopApiService.getDashboardStats(hotelId);
-      console.info('Dashboard stats loaded successfully:', stats);
+      // console.info('Dashboard stats loaded successfully:', stats);
 
       // Additional validation of stats
       const hasValidStats = stats && (
@@ -116,7 +116,7 @@ const ShopDashboard: React.FC = () => {
       setDashboardStats(stats);
       setError(null);
     } catch (err) {
-      console.error('Dashboard data loading error:', err);
+      // console.error('Dashboard data loading error:', err);
       setError(err instanceof Error ? err.message : 'Failed to load dashboard data');
     } finally {
       setLoading(false);

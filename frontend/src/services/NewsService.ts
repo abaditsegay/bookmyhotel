@@ -53,7 +53,7 @@ class NewsService {
 
       return await response.json();
     } catch (error) {
-      console.error(`API request failed: /news${endpoint}`, error);
+      // console.error(`API request failed: /news${endpoint}`, error);
       throw error;
     }
   }

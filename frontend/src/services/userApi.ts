@@ -44,7 +44,7 @@ export const updateUserProfile = async (
     const data = await response.json();
     return { success: true, message: data.message };
   } catch (error) {
-    console.error('Profile update error:', error);
+    // console.error('Profile update error:', error);
     return { 
       success: false, 
       message: error instanceof Error ? error.message : 'Failed to update profile' 
@@ -78,7 +78,7 @@ export const changeUserPassword = async (
     const data = await response.json();
     return { success: true, message: data.message };
   } catch (error) {
-    console.error('Password change error:', error);
+    // console.error('Password change error:', error);
     return { 
       success: false, 
       message: error instanceof Error ? error.message : 'Failed to change password' 
@@ -109,7 +109,7 @@ export const getUserProfile = async (
     const data = await response.json();
     return { success: true, data };
   } catch (error) {
-    console.error('Profile fetch error:', error);
+    // console.error('Profile fetch error:', error);
     return { 
       success: false, 
       message: error instanceof Error ? error.message : 'Failed to fetch profile' 

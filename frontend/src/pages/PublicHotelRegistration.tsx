@@ -105,7 +105,7 @@ const PublicHotelRegistration: React.FC = () => {
         throw new Error(errorData.message || 'Failed to submit registration');
       }
     } catch (err) {
-      console.error('Error submitting registration:', err);
+      // console.error('Error submitting registration:', err);
       setError(err instanceof Error ? err.message : 'Failed to submit hotel registration. Please try again.');
     } finally {
       setLoading(false);

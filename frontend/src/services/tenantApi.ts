@@ -36,7 +36,7 @@ class TenantApiService {
         data,
       };
     } catch (error: any) {
-      console.error('Error fetching current tenant:', error);
+      // console.error('Error fetching current tenant:', error);
       
       return {
         success: false,
@@ -69,7 +69,7 @@ class TenantApiService {
         data,
       };
     } catch (error: any) {
-      console.error('Error fetching tenant by ID:', error);
+      // console.error('Error fetching tenant by ID:', error);
       
       return {
         success: false,

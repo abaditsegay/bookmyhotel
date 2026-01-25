@@ -222,7 +222,7 @@ const MaintenanceDashboard: React.FC = () => {
         throw new Error(`API error: ${response.status}`);
       }
     } catch (err) {
-      console.error('Failed to load maintenance tasks:', err);
+      // console.error('Failed to load maintenance tasks:', err);
       setError('Unable to load maintenance tasks - please check your connection');
       setTasks([]); // Set empty array instead of mock data
     } finally {
@@ -271,11 +271,11 @@ const MaintenanceDashboard: React.FC = () => {
         
         setStaff(maintenanceStaff);
       } else {
-        console.error('Failed to load staff data:', response.status);
+        // console.error('Failed to load staff data:', response.status);
         setStaff([]); // Set empty array instead of mock data
       }
     } catch (err) {
-      console.error('Failed to load maintenance staff:', err);
+      // console.error('Failed to load maintenance staff:', err);
       setStaff([]); // Set empty array instead of mock data
     }
   };
@@ -314,7 +314,7 @@ const MaintenanceDashboard: React.FC = () => {
         roomId: createTaskForm.roomId ? parseInt(createTaskForm.roomId) : null
       };
       
-      console.log('Request body:', requestBody);
+      // console.log('Request body:', requestBody);
       
       const response = await fetch(buildApiUrl('/maintenance/tasks'), {
         method: 'POST',
@@ -325,12 +325,12 @@ const MaintenanceDashboard: React.FC = () => {
         body: JSON.stringify(requestBody)
       });
       
-      console.log('Response status:', response.status);
-      console.log('Response ok:', response.ok);
+      // console.log('Response status:', response.status);
+      // console.log('Response ok:', response.ok);
       
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Error response:', errorText);
+        // console.error('Error response:', errorText);
         setError(`Failed to create maintenance task: ${errorText}`);
         return;
       }
@@ -507,7 +507,7 @@ const MaintenanceDashboard: React.FC = () => {
     
     try {
       // TODO: Call API to update task
-      console.log('Saving task edit:', editTaskData);
+      // console.log('Saving task edit:', editTaskData);
       
       // For now, just update the local task
       const updatedTask = {
@@ -527,7 +527,7 @@ const MaintenanceDashboard: React.FC = () => {
       // await loadTasks();
       
     } catch (error) {
-      console.error('Error updating task:', error);
+      // console.error('Error updating task:', error);
     }
   };
 

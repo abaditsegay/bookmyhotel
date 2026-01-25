@@ -224,7 +224,7 @@ function App() {
             level="critical"
             showDetails={process.env.NODE_ENV === 'development'}
             onError={(error, errorInfo) => {
-              console.error('Critical App Error:', error, errorInfo);
+              // console.error('Critical App Error:', error, errorInfo);
               // In production, send to error tracking service
             }}
           >

@@ -72,7 +72,7 @@ const BookingSearchPage: React.FC = () => {
       }
     } catch (err) {
       setError('Failed to search for booking. Please try again.');
-      console.error('Booking search error:', err);
+      // console.error('Booking search error:', err);
     } finally {
       setLoading(false);
     }

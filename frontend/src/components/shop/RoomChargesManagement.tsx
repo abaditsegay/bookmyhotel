@@ -94,7 +94,7 @@ const RoomChargesManagement: React.FC<RoomChargesProps> = ({ hotelId }) => {
       setTotalElements(response.totalElements);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load room charges');
-      console.error('Failed to load room charges:', err);
+      // console.error('Failed to load room charges:', err);
     } finally {
       setLoading(false);
     }

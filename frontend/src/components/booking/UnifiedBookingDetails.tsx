@@ -135,7 +135,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
           return;
         }
 
-        console.log('Loading booking with reservation ID:', reservationId);
+        // console.log('Loading booking with reservation ID:', reservationId);
         
         // Use the appropriate API based on mode
         const result = mode === 'hotel-admin' 
@@ -164,18 +164,18 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
             paymentIntentId: responseData.paymentIntentId
           };
           
-          console.log('🔍 UnifiedBookingDetails - Raw API response:', responseData);
-          console.log('🔍 UnifiedBookingDetails - Mapped booking:', mappedBooking);
+          // console.log('🔍 UnifiedBookingDetails - Raw API response:', responseData);
+          // console.log('🔍 UnifiedBookingDetails - Mapped booking:', mappedBooking);
           setBooking(mappedBooking);
           
           setEditedBooking({ ...mappedBooking });
         } else {
-          console.log('Booking not found for reservation ID:', reservationId);
+          // console.log('Booking not found for reservation ID:', reservationId);
           setError(result.message || t('booking.details.bookingNotFoundForId', { id: reservationId }));
         }
       } catch (err) {
         setError(t('booking.details.errors.failedToLoad'));
-        console.error('Error loading booking:', err);
+        // console.error('Error loading booking:', err);
       } finally {
         setLoading(false);
       }
@@ -246,7 +246,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
       setIsEditing(false);
     } catch (err) {
       showErrorDialog(err instanceof Error ? err.message : t('booking.details.errors.failedToUpdate'));
-      console.error('Error updating booking:', err);
+      // console.error('Error updating booking:', err);
     } finally {
       setPriceCalculating(false);
     }
@@ -283,7 +283,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
 
       // STEP 1: Handle status changes first using Front Desk API (works for both roles)
       if (statusChanged) {
-        console.log('🔄 Status change detected:', booking.status, '→', editedBooking.status);
+        // console.log('🔄 Status change detected:', booking.status, '→', editedBooking.status);
         try {
           const result = await frontDeskApiService.updateBookingStatus(
             token,
@@ -313,19 +313,19 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
               paymentIntentId: apiBooking.paymentIntentId
             };
             hasUpdates = true;
-            console.log('✅ Status updated successfully');
+            // console.log('✅ Status updated successfully');
           } else {
             throw new Error(result.message || 'Failed to update booking status');
           }
         } catch (err) {
-          console.error('❌ Error updating booking status:', err);
+          // console.error('❌ Error updating booking status:', err);
           throw new Error('Failed to update booking status');
         }
       }
 
       // STEP 2: Handle room assignment changes using Front Desk API (works for both roles)
       if (roomAssignmentChanged && selectedRoomId) {
-        console.log('🏠 Room assignment change detected, using room ID:', selectedRoomId);
+        // console.log('🏠 Room assignment change detected, using room ID:', selectedRoomId);
         try {
           const result = await frontDeskApiService.updateBookingRoomAssignment(
             token,
@@ -355,18 +355,18 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
               paymentIntentId: result.data.paymentIntentId
             };
             
-            console.log('✅ Room assignment successful:', updatedBooking);
+            // console.log('✅ Room assignment successful:', updatedBooking);
             
             // Update final booking data and current state
             finalBookingData = { ...updatedBooking };
             setSuccess(t('booking.details.success.roomAssignmentUpdated'));
             hasUpdates = true;
           } else {
-            console.log('❌ Room assignment API failed:', result);
+            // console.log('❌ Room assignment API failed:', result);
             throw new Error(result.message || 'Failed to update room assignment');
           }
         } catch (err) {
-          console.error('❌ Error updating room assignment:', err);
+          // console.error('❌ Error updating room assignment:', err);
           
           // Check if the error is about room availability
           const errorMessage = err instanceof Error ? err.message : t('booking.details.errors.failedToLoadRooms');
@@ -383,7 +383,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
 
             // STEP 3: Handle comprehensive booking updates (dates, guest info, etc.) using unified API
       if ((datesChanged || guestInfoChanged || roomTypeChanged) && !statusChanged && !roomAssignmentChanged) {
-        console.log('🗓️ Comprehensive booking update detected for room type/dates/guest info');
+        // console.log('🗓️ Comprehensive booking update detected for room type/dates/guest info');
         try {
           // Get hotel ID from current booking data (we need it for the comprehensive update)
           // Get hotel ID from user context
@@ -433,7 +433,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
               paymentIntentId: result.data.paymentIntentId
             };
             
-            console.log('✅ Comprehensive booking update successful:', updatedBooking);
+            // console.log('✅ Comprehensive booking update successful:', updatedBooking);
             
             // Update final booking data and current state
             finalBookingData = { ...updatedBooking };
@@ -455,11 +455,11 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
               setSuccess(t('booking.details.success.guestInfoUpdated'));
             }
           } else {
-            console.log('❌ Comprehensive booking update API failed:', result);
+            // console.log('❌ Comprehensive booking update API failed:', result);
             throw new Error(result.message || 'Failed to update booking details');
           }
         } catch (err) {
-          console.error('❌ Error in comprehensive booking update:', err);
+          // console.error('❌ Error in comprehensive booking update:', err);
           throw new Error(err instanceof Error ? err.message : 'Failed to update booking details');
         }
       }
@@ -485,7 +485,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
         setSuccess(t('booking.details.success.noChanges'));
       }
     } catch (error) {
-      console.error('🚨 Unified Save Error:', error);
+      // console.error('🚨 Unified Save Error:', error);
       throw error;
     }
   };
@@ -523,7 +523,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
       }
     } catch (err) {
       setError(t('booking.details.errors.failedToLoadRooms'));
-      console.error('Error loading rooms:', err);
+      // console.error('Error loading rooms:', err);
     } finally {
       setLoadingRooms(false);
     }
@@ -541,11 +541,11 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
         setRoomTypePricing(result.data);
         return result.data;
       } else {
-        console.warn('No pricing found for room type:', roomType);
+        // console.warn('No pricing found for room type:', roomType);
         return null;
       }
     } catch (err) {
-      console.error('Error loading room type pricing:', err);
+      // console.error('Error loading room type pricing:', err);
       return null;
     } finally {
       setLoadingRoomTypePricing(false);
@@ -644,7 +644,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
             });
           }
         }).catch((error) => {
-          console.error('Pricing API error, but room type change should persist:', error);
+          // console.error('Pricing API error, but room type change should persist:', error);
         });
         
         return; // Exit after setting state and initiating async pricing update

@@ -58,7 +58,7 @@ const TaskAssignmentDialog: React.FC<TaskAssignmentDialogProps> = ({
       setStaff(allStaff);
     } catch (err) {
       setError('Failed to load staff');
-      console.error('Load staff error:', err);
+      // console.error('Load staff error:', err);
     } finally {
       setLoading(false);
     }
@@ -82,7 +82,7 @@ const TaskAssignmentDialog: React.FC<TaskAssignmentDialogProps> = ({
       setSelectedStaffId('');
     } catch (err) {
       setError('Failed to assign task');
-      console.error('Assign error:', err);
+      // console.error('Assign error:', err);
     } finally {
       setLoading(false);
     }

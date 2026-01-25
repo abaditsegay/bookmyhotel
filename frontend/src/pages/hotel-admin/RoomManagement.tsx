@@ -127,7 +127,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
   const loadRooms = useCallback(async () => {
     if (!token) return;
     
-    console.log('🔄 Loading rooms... page:', page, 'size:', rowsPerPage, 'filters:', filters);
+    // console.log('🔄 Loading rooms... page:', page, 'size:', rowsPerPage, 'filters:', filters);
     
     try {
       setLoading(true);
@@ -144,12 +144,12 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
       );
       
       if (response.success && response.data) {
-        console.log('🔄 Room API Response:', response.data);
-        console.log('🔄 Total Elements:', response.data.totalElements);
-        console.log('🔄 Total Pages:', response.data.totalPages);
-        console.log('🔄 Current Page:', response.data.number);
-        console.log('🔄 Page Size:', response.data.size);
-        console.log('🔄 Room count in response:', response.data.content?.length);
+        // console.log('🔄 Room API Response:', response.data);
+        // console.log('🔄 Total Elements:', response.data.totalElements);
+        // console.log('🔄 Total Pages:', response.data.totalPages);
+        // console.log('🔄 Current Page:', response.data.number);
+        // console.log('🔄 Page Size:', response.data.size);
+        // console.log('🔄 Room count in response:', response.data.content?.length);
         
         setRooms(response.data.content || []);
         
@@ -158,15 +158,15 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
         const totalPages = response.data.totalPages || 0;
         const currentPage = response.data.number || 0;
         
-        console.log('🔄 Setting Total Elements to:', totalElements);
-        console.log('🔄 Total Pages:', totalPages);
-        console.log('🔄 Current page from response:', currentPage, 'Local page state:', page);
+        // console.log('🔄 Setting Total Elements to:', totalElements);
+        // console.log('🔄 Total Pages:', totalPages);
+        // console.log('🔄 Current page from response:', currentPage, 'Local page state:', page);
         
         setTotalElements(totalElements);
         
         // If current page is beyond available pages, reset to last page
         if (page >= totalPages && totalPages > 0) {
-          console.log('🔄 Current page exceeds total pages, resetting to:', totalPages - 1);
+          // console.log('🔄 Current page exceeds total pages, resetting to:', totalPages - 1);
           setPage(totalPages - 1);
         }
       } else {
@@ -174,7 +174,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
         setTotalElements(0);
       }
     } catch (err) {
-      console.error('Error loading rooms:', err);
+      // console.error('Error loading rooms:', err);
       setError('Failed to load rooms. Please try again.');
       setTotalElements(0);
     } finally {
@@ -188,7 +188,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
 
   // Debug pagination state
   useEffect(() => {
-    console.log('🔄 PAGINATION STATE - Total Elements:', totalElements, 'Page:', page, 'RowsPerPage:', rowsPerPage, 'Total Pages:', Math.ceil((totalElements || 0) / rowsPerPage));
+    // console.log('🔄 PAGINATION STATE - Total Elements:', totalElements, 'Page:', page, 'RowsPerPage:', rowsPerPage, 'Total Pages:', Math.ceil((totalElements || 0) / rowsPerPage));
   }, [totalElements, page, rowsPerPage]);
 
   // Memoized search handler to prevent input focus loss
@@ -281,7 +281,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
         setError(response.message || 'Failed to update room status');
       }
     } catch (err) {
-      console.error('Error updating room status:', err);
+      // console.error('Error updating room status:', err);
       setError('Failed to update room status. Please try again.');
     } finally {
       setStatusUpdating(false);
@@ -309,7 +309,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
         setError(response.message || 'Failed to update room availability');
       }
     } catch (err) {
-      console.error('Error toggling room availability:', err);
+      // console.error('Error toggling room availability:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to update room availability';
       setError(errorMessage);
     } finally {
@@ -322,13 +322,13 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
     
     try {
       setFixingConsistency(true);
-      console.log('🔧 Fixing room status consistency...');
+      // console.log('🔧 Fixing room status consistency...');
       
       const response = await hotelAdminApi.fixRoomStatusConsistency(token);
-      console.log('🔧 Fix consistency response:', response);
+      // console.log('🔧 Fix consistency response:', response);
       
       if (response.success) {
-        console.log('🔧 Room status consistency fixed, refreshing room list...');
+        // console.log('🔧 Room status consistency fixed, refreshing room list...');
         await loadRooms();
         setError(null);
         
@@ -336,7 +336,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
         if (response.automatedSystem) {
           setAutomationStatus(response.automatedSystem);
           setShowAutomationInfo(true);
-          console.log('🤖 Automated system info:', response.automatedSystem);
+          // console.log('🤖 Automated system info:', response.automatedSystem);
           
           // Auto-hide automation info after 5 seconds
           setTimeout(() => {
@@ -344,12 +344,12 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
           }, 5000);
         }
         
-        console.log('🔧 Room list refreshed');
+        // console.log('🔧 Room list refreshed');
       } else {
         setError(response.message || 'Failed to fix room status consistency');
       }
     } catch (error) {
-      console.error('Fix room status consistency error:', error);
+      // console.error('Fix room status consistency error:', error);
       setError('Failed to fix room status consistency');
     } finally {
       setFixingConsistency(false);
@@ -361,24 +361,24 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
     
     try {
       setLoading(true);
-      console.log('🗑️ Deleting room:', selectedRoom.id, selectedRoom.roomNumber);
+      // console.log('🗑️ Deleting room:', selectedRoom.id, selectedRoom.roomNumber);
       
       const response = await hotelAdminApi.deleteRoom(token, selectedRoom.id);
-      console.log('🗑️ Delete response:', response);
+      // console.log('🗑️ Delete response:', response);
       
       if (response.success) {
-        console.log('🗑️ Delete successful, refreshing room list...');
+        // console.log('🗑️ Delete successful, refreshing room list...');
         setDeleteDialogOpen(false);
         setSelectedRoom(null);
         await loadRooms();
         setError(null);
-        console.log('🗑️ Room list refreshed');
+        // console.log('🗑️ Room list refreshed');
       } else {
-        console.log('🗑️ Delete failed:', response.message);
+        // console.log('🗑️ Delete failed:', response.message);
         setError(response.message || 'Failed to delete room. Room may have active bookings.');
       }
     } catch (err) {
-      console.error('🗑️ Error deleting room:', err);
+      // console.error('🗑️ Error deleting room:', err);
       setError('Failed to delete room. Room may have active bookings.');
     } finally {
       setLoading(false);
@@ -406,7 +406,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
         setError(response.message || 'Failed to create room. Please check the room number is unique.');
       }
     } catch (err) {
-      console.error('Error creating room:', err);
+      // console.error('Error creating room:', err);
       setError('Failed to create room. Please check the room number is unique.');
     } finally {
       setLoading(false);
@@ -428,7 +428,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
         setError(response.message || 'Failed to update room');
       }
     } catch (err) {
-      console.error('Error updating room:', err);
+      // console.error('Error updating room:', err);
       setError('Failed to update room. Please try again.');
     } finally {
       setLoading(false);
@@ -1051,7 +1051,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
           <DialogContent sx={{ p: 0 }}>
             <RoomBulkUpload
               onUploadComplete={(rooms) => {
-                console.log('🔄 Bulk upload completed, received rooms:', rooms?.length || 0);
+                // console.log('🔄 Bulk upload completed, received rooms:', rooms?.length || 0);
                 // Reset pagination to first page to see newly added rooms
                 setPage(0);
                 // Clear any filters to ensure all rooms are visible
@@ -1065,7 +1065,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
                 // Keep dialog open to show success overlay
                 // Force reload with a delay to ensure backend cache is cleared
                 setTimeout(() => {
-                  console.log('🔄 Reloading rooms after bulk upload...');
+                  // console.log('🔄 Reloading rooms after bulk upload...');
                   loadRooms();
                 }, 500);
               }}

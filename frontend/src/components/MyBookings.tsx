@@ -81,7 +81,7 @@ const MyBookings: React.FC = () => {
       setBookings(userBookings);
     } catch (err) {
       setError('Failed to load your bookings. Please try again later.');
-      console.error('Error fetching bookings:', err);
+      // console.error('Error fetching bookings:', err);
     } finally {
       setLoading(false);
     }
@@ -102,7 +102,7 @@ const MyBookings: React.FC = () => {
       setSelectedBooking(null);
     } catch (err) {
       setError('Failed to cancel booking. Please try again or contact support.');
-      console.error('Error cancelling booking:', err);
+      // console.error('Error cancelling booking:', err);
     } finally {
       setCancelling(false);
     }
@@ -147,7 +147,7 @@ const MyBookings: React.FC = () => {
       }
     } catch (err: any) {
       setError(err.message || 'Failed to modify booking. Please try again or contact support.');
-      console.error('Error modifying booking:', err);
+      // console.error('Error modifying booking:', err);
     } finally {
       setModifying(false);
     }

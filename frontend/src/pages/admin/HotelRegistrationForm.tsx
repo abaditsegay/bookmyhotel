@@ -140,7 +140,7 @@ const HotelRegistrationForm: React.FC = () => {
       };
       
       await adminApiService.createHotel(createRequest);
-      console.log('Hotel registered successfully:', formData);
+      // console.log('Hotel registered successfully:', formData);
       setSuccess(true);
       
       // Redirect after success
@@ -149,7 +149,7 @@ const HotelRegistrationForm: React.FC = () => {
       }, 2000);
       
     } catch (err: any) {
-      console.error('Error registering hotel:', err);
+      // console.error('Error registering hotel:', err);
       setError(err.message || 'Failed to register hotel. Please try again.');
     } finally {
       setLoading(false);

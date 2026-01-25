@@ -61,7 +61,7 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
       setTodos(fetchedTodos);
     } catch (err) {
       setError(t('widgets.todos.failedToLoad'));
-      console.error('Error loading todos:', err);
+      // console.error('Error loading todos:', err);
     } finally {
       setLoading(false);
     }
@@ -97,7 +97,7 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
       setSeverity('MEDIUM');
     } catch (err) {
       setError(t('widgets.todos.failedToCreate'));
-      console.error('Error creating todo:', err);
+      // console.error('Error creating todo:', err);
     }
   };
 
@@ -109,7 +109,7 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
       ));
     } catch (err) {
       setError(t('widgets.todos.failedToUpdate'));
-      console.error('Error updating todo:', err);
+      // console.error('Error updating todo:', err);
     }
   };
 
@@ -119,7 +119,7 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
       setTodos(prev => prev.filter(todo => todo.id !== id));
     } catch (err) {
       setError(t('widgets.todos.failedToDelete'));
-      console.error('Error deleting todo:', err);
+      // console.error('Error deleting todo:', err);
     }
   };
 

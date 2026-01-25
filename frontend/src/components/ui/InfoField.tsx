@@ -84,7 +84,7 @@ const InfoField: React.FC<InfoFieldProps> = ({
         await navigator.clipboard.writeText(String(value));
         // You could add a toast notification here
       } catch (err) {
-        console.error('Failed to copy to clipboard:', err);
+        // console.error('Failed to copy to clipboard:', err);
       }
     }
   };

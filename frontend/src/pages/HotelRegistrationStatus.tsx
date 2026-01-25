@@ -70,7 +70,7 @@ const HotelRegistrationStatus: React.FC = () => {
       setRegistration(result);
       
     } catch (err: any) {
-      console.error('Error checking registration status:', err);
+      // console.error('Error checking registration status:', err);
       setError(err.message || 'Failed to check registration status. Please try again.');
     } finally {
       setLoading(false);

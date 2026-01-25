@@ -101,7 +101,7 @@ const AdminDashboard: React.FC = () => {
     } catch (error) {
       setHotelError('Failed to load hotels');
       setHotels([]);
-      console.error('Error loading hotels:', error);
+      // console.error('Error loading hotels:', error);
     } finally {
       setHotelLoading(false);
     }
@@ -129,7 +129,7 @@ const AdminDashboard: React.FC = () => {
     } catch (error) {
       setUserError('Failed to load users');
       setUsers([]);
-      console.error('Error loading users:', error);
+      // console.error('Error loading users:', error);
     } finally {
       setUserLoading(false);
     }
@@ -149,9 +149,9 @@ const AdminDashboard: React.FC = () => {
   // Sync tab state with URL parameter changes (for browser back/forward navigation)
   useEffect(() => {
     const currentTabFromUrl = getInitialTab();
-    console.log('AdminDashboard useEffect - currentTab:', currentTab, 'currentTabFromUrl:', currentTabFromUrl);
+    // console.log('AdminDashboard useEffect - currentTab:', currentTab, 'currentTabFromUrl:', currentTabFromUrl);
     if (currentTabFromUrl !== currentTab) {
-      console.log('AdminDashboard useEffect - updating tab from', currentTab, 'to', currentTabFromUrl);
+      // console.log('AdminDashboard useEffect - updating tab from', currentTab, 'to', currentTabFromUrl);
       setCurrentTab(currentTabFromUrl);
     }
   }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps

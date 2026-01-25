@@ -41,7 +41,7 @@ class AdminApiService {
         // Fallback to text if JSON parsing fails
         errorText = await response.text();
       }
-      console.error(`API Error Details: ${response.status} ${response.statusText}`, errorText);
+      // console.error(`API Error Details: ${response.status} ${response.statusText}`, errorText);
       throw new Error(`API Error: ${response.status} ${response.statusText} - ${errorText}`);
     }
 

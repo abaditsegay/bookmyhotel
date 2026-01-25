@@ -69,7 +69,7 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
   const loadBookings = useCallback(async () => {
     if (!token) return;
     
-    console.log('Loading bookings with params:', { page, size, search, tenantId });
+    // console.log('Loading bookings with params:', { page, size, search, tenantId });
     setLoading(true);
     setError(null);
     
@@ -77,7 +77,7 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
       const result = await frontDeskApiService.getAllBookings(token, page, size, search, tenantId);
       
       if (result.success && result.data) {
-        console.log('🏨 FrontDeskBookingManagement - Raw API data:', result.data.content);
+        // console.log('🏨 FrontDeskBookingManagement - Raw API data:', result.data.content);
         setBookings(result.data.content);
         setTotalElements(result.data.totalElements || 0);
       } else {
@@ -86,7 +86,7 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
         setTotalElements(0);
       }
     } catch (error) {
-      console.error('Load bookings error:', error);
+      // console.error('Load bookings error:', error);
       setError('Failed to load bookings');
       setBookings([]);
       setTotalElements(0);
@@ -103,7 +103,7 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
   // Add window focus listener to refresh bookings when returning from other pages
   useEffect(() => {
     const handleWindowFocus = () => {
-      console.log('Window gained focus, refreshing bookings...');
+      // console.log('Window gained focus, refreshing bookings...');
       loadBookings();
     };
 
@@ -113,7 +113,7 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
     // Also listen for visibility change (more reliable than focus on some browsers)
     const handleVisibilityChange = () => {
       if (!document.hidden) {
-        console.log('Page became visible, refreshing bookings...');
+        // console.log('Page became visible, refreshing bookings...');
         loadBookings();
       }
     };
@@ -146,14 +146,14 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
 
   // Handle page change
   const handlePageChange = (event: React.ChangeEvent<unknown> | null, newPage: number) => {
-    console.log('Page change requested:', newPage);
+    // console.log('Page change requested:', newPage);
     setPage(newPage);
   };
 
   // Handle rows per page change
   const handleRowsPerPageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newSize = parseInt(event.target.value, 10);
-    console.log('Rows per page change:', newSize);
+    // console.log('Rows per page change:', newSize);
     setSize(newSize);
     setPage(0);
   };

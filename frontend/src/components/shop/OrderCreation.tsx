@@ -189,7 +189,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
       if (purchaseType === 'ROOM_CHARGE' && roomNumber) {
         // This would typically involve finding the reservation ID for the room
         // For now, we'll assume there's a way to get it
-        console.log('Order created with room charging:', createdOrderResponse);
+        // console.log('Order created with room charging:', createdOrderResponse);
       }
 
       // For room charges, complete immediately without receipt
@@ -203,9 +203,9 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
         if (onOrderComplete) {
           try {
             await onOrderComplete();
-            console.log('Dashboard stats refreshed after room charge completion');
+            // console.log('Dashboard stats refreshed after room charge completion');
           } catch (error) {
-            console.error('Error refreshing dashboard stats:', error);
+            // console.error('Error refreshing dashboard stats:', error);
           }
         }
         
@@ -272,9 +272,9 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
         if (onOrderComplete) {
           try {
             await onOrderComplete();
-            console.log('Dashboard stats refreshed after order completion');
+            // console.log('Dashboard stats refreshed after order completion');
           } catch (error) {
-            console.error('Error refreshing dashboard stats:', error);
+            // console.error('Error refreshing dashboard stats:', error);
           }
         }
         
@@ -287,7 +287,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
           }
         });
       } catch (error) {
-        console.error('Error completing sale after payment:', error);
+        // console.error('Error completing sale after payment:', error);
         setError('Payment successful, but there was an error completing the sale. Please try again.');
       }
     } else {
@@ -297,9 +297,9 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
       if (onOrderComplete) {
         try {
           await onOrderComplete();
-          console.log('Dashboard stats refreshed after payment completion');
+          // console.log('Dashboard stats refreshed after payment completion');
         } catch (error) {
-          console.error('Error refreshing dashboard stats:', error);
+          // console.error('Error refreshing dashboard stats:', error);
         }
       }
       
@@ -319,7 +319,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
   };
 
   const handlePaymentRequired = () => {
-    console.log('handlePaymentRequired called - opening payment dialog');
+    // console.log('handlePaymentRequired called - opening payment dialog');
     // Close receipt dialog and open payment dialog
     setReceiptDialogOpen(false);
     setPaymentDialogOpen(true);
@@ -355,11 +355,11 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
     if (purchaseType === 'ANONYMOUS' && 
         (paymentMethod === PaymentMethod.CASH || paymentMethod === PaymentMethod.CARD) &&
         !paymentCompleted) {
-      console.log('Payment required: true');
+      // console.log('Payment required: true');
       return true;
     }
     
-    console.log('Payment required: false');
+    // console.log('Payment required: false');
     return false;
   };
 

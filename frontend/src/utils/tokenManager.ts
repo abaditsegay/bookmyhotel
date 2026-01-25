@@ -43,7 +43,7 @@ class TokenManager {
     try {
       return JSON.parse(userData);
     } catch (error) {
-      console.error('Failed to parse user data from localStorage:', error);
+      // console.error('Failed to parse user data from localStorage:', error);
       this.clearUser(); // Clear corrupted data
       return null;
     }
@@ -116,7 +116,7 @@ class TokenManager {
       
       return now >= exp;
     } catch (error) {
-      console.error('Failed to decode token:', error);
+      // console.error('Failed to decode token:', error);
       return true;
     }
   }
@@ -137,7 +137,7 @@ class TokenManager {
       // Refresh if token expires within the threshold
       return (exp - now) <= refreshThreshold;
     } catch (error) {
-      console.error('Failed to decode token for refresh check:', error);
+      // console.error('Failed to decode token for refresh check:', error);
       return false;
     }
   }
@@ -148,7 +148,7 @@ class TokenManager {
   static async refreshToken(): Promise<boolean> {
     const currentToken = this.getToken();
     if (!currentToken) {
-      console.warn('No token available for refresh');
+      // console.warn('No token available for refresh');
       return false;
     }
 
@@ -166,16 +166,16 @@ class TokenManager {
         if (data.token) {
           // Update only the token, keep existing user data
           localStorage.setItem(this.TOKEN_KEY, data.token);
-          console.log('Token refreshed successfully');
+          // console.log('Token refreshed successfully');
           return true;
         }
       } else {
-        console.error('Token refresh failed:', response.status);
+        // console.error('Token refresh failed:', response.status);
         // If refresh fails, clear auth data
         this.clearAuth();
       }
     } catch (error) {
-      console.error('Token refresh error:', error);
+      // console.error('Token refresh error:', error);
       // If refresh fails, clear auth data
       this.clearAuth();
     }
@@ -189,13 +189,13 @@ class TokenManager {
    */
   static async validateAndRefreshToken(): Promise<boolean> {
     if (this.isTokenExpired()) {
-      console.log('Token is expired, clearing auth');
+      // console.log('Token is expired, clearing auth');
       this.clearAuth();
       return false;
     }
 
     if (this.shouldRefreshToken()) {
-      console.log('Token needs refresh, attempting refresh');
+      // console.log('Token needs refresh, attempting refresh');
       return await this.refreshToken();
     }
 
@@ -218,7 +218,7 @@ class TokenManager {
     const currentToken = this.getToken();
     
     if (legacyToken && !currentToken) {
-      console.log('Migrating legacy token to standard storage');
+      // console.log('Migrating legacy token to standard storage');
       localStorage.setItem(this.TOKEN_KEY, legacyToken);
     }
     
@@ -230,17 +230,17 @@ class TokenManager {
    * Debug helper: Log current token state
    */
   static debugTokenState(): void {
-    console.log('🔍 Token Manager Debug:');
-    console.log('- auth_token:', !!this.getToken());
-    console.log('- auth_user:', !!this.getUser());
-    console.log('- legacy token:', !!localStorage.getItem(this.LEGACY_TOKEN_KEY));
-    console.log('- authToken:', !!localStorage.getItem('authToken'));
+    // console.log('🔍 Token Manager Debug:');
+    // console.log('- auth_token:', !!this.getToken());
+    // console.log('- auth_user:', !!this.getUser());
+    // console.log('- legacy token:', !!localStorage.getItem(this.LEGACY_TOKEN_KEY));
+    // console.log('- authToken:', !!localStorage.getItem('authToken'));
     
     const user = this.getUser();
     if (user) {
-      console.log('- User email:', user.email);
-      console.log('- Hotel ID:', user.hotelId);
-      console.log('- Tenant ID:', user.tenantId);
+      // console.log('- User email:', user.email);
+      // console.log('- Hotel ID:', user.hotelId);
+      // console.log('- Tenant ID:', user.tenantId);
     }
   }
 }

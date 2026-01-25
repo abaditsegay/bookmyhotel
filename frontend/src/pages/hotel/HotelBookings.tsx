@@ -7,7 +7,7 @@ const HotelBookings: React.FC = () => {
   const { canAccessCheckout } = useAuth();
 
   // Debug logging for checkout access
-  console.log('HotelBookings - Can access checkout:', canAccessCheckout());
+  // console.log('HotelBookings - Can access checkout:', canAccessCheckout());
   
   return (
     <Box sx={{ p: 3 }}>
@@ -22,7 +22,7 @@ const HotelBookings: React.FC = () => {
         showCheckInOut={canAccessCheckout()}
         currentTab={0}
         onBookingAction={(booking, action) => {
-          console.log(`${action} for booking:`, booking);
+          // console.log(`${action} for booking:`, booking);
         }}
       />
     </Box>

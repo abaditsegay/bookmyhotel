@@ -119,7 +119,7 @@ const TenantManagementAdmin: React.FC = () => {
         isActiveFilter
       );
       
-      console.log('Tenant API Response:', response);
+      // console.log('Tenant API Response:', response);
       if (response.content) {
         setTenants(response.content);
         // Spring Boot Page object has totalElements directly on the response
@@ -136,7 +136,7 @@ const TenantManagementAdmin: React.FC = () => {
         setTotalElements(0);
       }
     } catch (err) {
-      console.error('Error loading tenants:', err);
+      // console.error('Error loading tenants:', err);
       setError('Failed to load tenants. Please try again.');
       setTotalElements(0);
     } finally {
@@ -205,7 +205,7 @@ const TenantManagementAdmin: React.FC = () => {
       await loadTenants();
       setError(null);
     } catch (err) {
-      console.error('Error creating tenant:', err);
+      // console.error('Error creating tenant:', err);
       setError('Failed to create tenant. Please check if the name and subdomain are unique.');
     } finally {
       setLoading(false);
@@ -223,7 +223,7 @@ const TenantManagementAdmin: React.FC = () => {
       await loadTenants();
       setError(null);
     } catch (err) {
-      console.error('Error updating tenant:', err);
+      // console.error('Error updating tenant:', err);
       setError('Failed to update tenant.');
     } finally {
       setLoading(false);
@@ -241,7 +241,7 @@ const TenantManagementAdmin: React.FC = () => {
       await loadTenants();
       setError(null);
     } catch (err) {
-      console.error('Error deleting tenant:', err);
+      // console.error('Error deleting tenant:', err);
       setError('Failed to delete tenant.');
     } finally {
       setLoading(false);
@@ -257,7 +257,7 @@ const TenantManagementAdmin: React.FC = () => {
       await loadTenants();
       setError(null);
     } catch (err) {
-      console.error('Error toggling tenant status:', err);
+      // console.error('Error toggling tenant status:', err);
       setError('Failed to update tenant status.');
     } finally {
       setLoading(false);

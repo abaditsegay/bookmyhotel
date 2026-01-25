@@ -132,7 +132,7 @@ const HotelBookings: React.FC<HotelBookingsProps> = ({
         throw new Error(result.message || 'Failed to load bookings');
       }
     } catch (error) {
-      console.error('Error loading bookings:', error);
+      // console.error('Error loading bookings:', error);
       setSnackbar({
         open: true,
         message: 'Failed to load bookings',
@@ -194,7 +194,7 @@ const HotelBookings: React.FC<HotelBookingsProps> = ({
       setDeleteDialogOpen(false);
       await loadBookings();
     } catch (error) {
-      console.error('Error deleting booking:', error);
+      // console.error('Error deleting booking:', error);
       setSnackbar({
         open: true,
         message: 'Failed to delete booking',

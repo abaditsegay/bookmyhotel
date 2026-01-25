@@ -110,7 +110,7 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
           return;
         }
         
-        console.warn('User does not have permissions to access tenant management or is not associated with a hotel.');
+        // console.warn('User does not have permissions to access tenant management or is not associated with a hotel.');
         setTenants([]);
         return;
       }
@@ -118,7 +118,7 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
       const activeTenants = await adminApiService.getActiveTenants();
       setTenants(activeTenants);
     } catch (err) {
-      console.error('Error loading tenants:', err);
+      // console.error('Error loading tenants:', err);
       setLocalError('Failed to load tenants. You may not have sufficient permissions.');
     } finally {
       setLoadingTenants(false);

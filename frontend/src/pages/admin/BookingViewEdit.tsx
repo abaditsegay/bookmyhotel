@@ -105,7 +105,7 @@ const BookingViewEdit: React.FC = () => {
           return;
         }
 
-        console.log('Loading booking with reservation ID:', reservationId);
+        // console.log('Loading booking with reservation ID:', reservationId);
         
         const result = await hotelAdminApi.getBookingById(token, reservationId);
         
@@ -130,16 +130,16 @@ const BookingViewEdit: React.FC = () => {
             paymentIntentId: result.data.paymentIntentId
           };
           
-          console.log('Found booking:', mappedBooking);
+          // console.log('Found booking:', mappedBooking);
           setBooking(mappedBooking);
           setEditedBooking({ ...mappedBooking });
         } else {
-          console.log('Booking not found for reservation ID:', reservationId);
+          // console.log('Booking not found for reservation ID:', reservationId);
           setError(result.message || `Booking not found for ID: ${reservationId}`);
         }
       } catch (err) {
         setError('Failed to load booking details');
-        console.error('Error loading booking:', err);
+        // console.error('Error loading booking:', err);
       } finally {
         setLoading(false);
       }
@@ -295,7 +295,7 @@ const BookingViewEdit: React.FC = () => {
       setIsEditing(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update booking');
-      console.error('Error updating booking:', err);
+      // console.error('Error updating booking:', err);
     } finally {
       setPriceCalculating(false);
     }
@@ -325,7 +325,7 @@ const BookingViewEdit: React.FC = () => {
       }
     } catch (err) {
       setError('Failed to load available rooms');
-      console.error('Error loading rooms:', err);
+      // console.error('Error loading rooms:', err);
     } finally {
       setLoadingRooms(false);
     }
@@ -343,11 +343,11 @@ const BookingViewEdit: React.FC = () => {
         setRoomTypePricing(result.data);
         return result.data;
       } else {
-        console.warn('No pricing found for room type:', roomType);
+        // console.warn('No pricing found for room type:', roomType);
         return null;
       }
     } catch (err) {
-      console.error('Error loading room type pricing:', err);
+      // console.error('Error loading room type pricing:', err);
       return null;
     } finally {
       setLoadingRoomTypePricing(false);

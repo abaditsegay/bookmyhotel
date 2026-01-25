@@ -64,7 +64,7 @@ const FrontDeskDashboard: React.FC = () => {
   useEffect(() => {
     const urlTab = parseInt(searchParams.get('tab') || '0', 10);
     const validTab = Math.max(0, Math.min(urlTab, 3));
-    console.log(`🔗 FrontDesk: URL tab changed to ${urlTab}, setting valid tab to ${validTab}`);
+    // console.log(`🔗 FrontDesk: URL tab changed to ${urlTab}, setting valid tab to ${validTab}`);
     setActiveTab(validTab);
   }, [searchParams]); // Remove activeTab from dependencies to prevent circular updates
   const [stats, setStats] = useState<FrontDeskStats | null>(null);
@@ -88,18 +88,18 @@ const FrontDeskDashboard: React.FC = () => {
 
   // Debug modal state changes
   useEffect(() => {
-    console.log('FrontDeskDashboard - walkInModalOpen state changed:', walkInModalOpen);
+    // console.log('FrontDeskDashboard - walkInModalOpen state changed:', walkInModalOpen);
   }, [walkInModalOpen]);
 
   // Update URL when tab changes
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     // Prevent unnecessary updates if already on the same tab
     if (newValue === activeTab) {
-      console.log(`🔄 FrontDesk: Already on tab ${newValue}, skipping...`);
+      // console.log(`🔄 FrontDesk: Already on tab ${newValue}, skipping...`);
       return;
     }
     
-    console.log(`🔄 FrontDesk: Switching from tab ${activeTab} to tab ${newValue}`);
+    // console.log(`🔄 FrontDesk: Switching from tab ${activeTab} to tab ${newValue}`);
     console.log(`🔄 FrontDesk: Tab ${newValue} corresponds to:`, 
       newValue === 0 ? 'Bookings' :
       newValue === 1 ? 'Rooms' :
@@ -117,11 +117,11 @@ const FrontDeskDashboard: React.FC = () => {
     // If switching to Rooms tab (index 1), ensure room cache is loaded
     if (newValue === 1 && user?.hotelId) {
       const hotelId = parseInt(user.hotelId);
-      console.log('🏨 Switching to Rooms tab, ensuring room cache is loaded...');
+      // console.log('🏨 Switching to Rooms tab, ensuring room cache is loaded...');
       roomCacheService.getRooms(hotelId).then(rooms => {
-        console.log(`✅ Room cache ready: ${rooms.length} rooms available`);
+        // console.log(`✅ Room cache ready: ${rooms.length} rooms available`);
       }).catch(error => {
-        console.warn('Failed to load room cache for Rooms tab:', error);
+        // console.warn('Failed to load room cache for Rooms tab:', error);
       });
     }
   };
@@ -136,38 +136,38 @@ const FrontDeskDashboard: React.FC = () => {
         setStats(result.data);
       }
     } catch (error) {
-      console.error('Failed to load stats:', error);
+      // console.error('Failed to load stats:', error);
     }
   };
 
   // Preload and cache room data for offline use
   const preloadRoomData = async () => {
-    console.log('🚀 FrontDesk Dashboard: preloadRoomData called');
-    console.log('🔍 FrontDesk Dashboard: user?.hotelId:', user?.hotelId);
-    console.log('🔍 FrontDesk Dashboard: token exists:', !!token);
-    console.log('🔍 FrontDesk Dashboard: user object:', user);
+    // console.log('🚀 FrontDesk Dashboard: preloadRoomData called');
+    // console.log('🔍 FrontDesk Dashboard: user?.hotelId:', user?.hotelId);
+    // console.log('🔍 FrontDesk Dashboard: token exists:', !!token);
+    // console.log('🔍 FrontDesk Dashboard: user object:', user);
     
     if (!user?.hotelId || !token) {
-      console.warn('⚠️ FrontDesk Dashboard: Missing hotelId or token, skipping room preload');
+      // console.warn('⚠️ FrontDesk Dashboard: Missing hotelId or token, skipping room preload');
       return;
     }
     
     try {
       const hotelId = parseInt(user.hotelId);
-      console.log('🏨 FrontDesk Dashboard: Preloading room data for hotel', hotelId);
+      // console.log('🏨 FrontDesk Dashboard: Preloading room data for hotel', hotelId);
       
       // Force refresh to get latest room data and cache it
       const rooms = await roomCacheService.getRooms(hotelId, true);
-      console.log('📊 FrontDesk Dashboard: Retrieved rooms:', rooms.length, 'rooms');
-      console.log('🔍 FrontDesk Dashboard: Sample room data:', rooms.slice(0, 2));
+      // console.log('📊 FrontDesk Dashboard: Retrieved rooms:', rooms.length, 'rooms');
+      // console.log('🔍 FrontDesk Dashboard: Sample room data:', rooms.slice(0, 2));
       
       // Start periodic refresh for this hotel
       roomCacheService.startPeriodicRefresh(hotelId);
       
-      console.log('✅ FrontDesk Dashboard: Room data preloaded successfully');
+      // console.log('✅ FrontDesk Dashboard: Room data preloaded successfully');
     } catch (error) {
-      console.error('❌ FrontDesk Dashboard: Failed to preload room data:', error);
-      console.error('❌ FrontDesk Dashboard: Error stack:', error instanceof Error ? error.stack : 'No stack');
+      // console.error('❌ FrontDesk Dashboard: Failed to preload room data:', error);
+      // console.error('❌ FrontDesk Dashboard: Error stack:', error instanceof Error ? error.stack : 'No stack');
     }
   };
 
@@ -182,7 +182,7 @@ const FrontDeskDashboard: React.FC = () => {
   };
 
   const handleWalkInSuccess = async (bookingData: any) => {
-    console.log('Walk-in booking created successfully:', bookingData);
+    // console.log('Walk-in booking created successfully:', bookingData);
     // Close modal first
     setWalkInModalOpen(false);
     
@@ -337,7 +337,7 @@ const FrontDeskDashboard: React.FC = () => {
           currentTab={activeTab}
           refreshTrigger={bookingRefreshTrigger}
           onBookingAction={(booking, action) => {
-            console.log(`${action} for booking:`, booking);
+            // console.log(`${action} for booking:`, booking);
             // Handle booking actions like check-in/check-out
             handleRefresh();
           }}
@@ -353,14 +353,14 @@ const FrontDeskDashboard: React.FC = () => {
         <UnifiedRoomManagement
           mode="front-desk"
           onRoomUpdate={(room: any) => {
-            console.log('Room updated:', room);
+            // console.log('Room updated:', room);
             // Refresh stats when room is updated
             loadStats();
             // Also refresh room cache to keep IndexedDB in sync
             if (user?.hotelId) {
               const hotelId = parseInt(user.hotelId);
               roomCacheService.getRooms(hotelId, true).catch(error => {
-                console.warn('Failed to refresh room cache after update:', error);
+                // console.warn('Failed to refresh room cache after update:', error);
               });
             }
           }}
@@ -376,7 +376,7 @@ const FrontDeskDashboard: React.FC = () => {
       <TabPanel value={activeTab} index={3}>
         <OfflineWalkInBooking
           onBookingComplete={(booking) => {
-            console.log('Offline booking created:', booking);
+            // console.log('Offline booking created:', booking);
             setSnackbar({
               open: true,
               message: t('dashboard.frontDesk.success.offlineBookingCreated', { guestName: booking.guestName }),

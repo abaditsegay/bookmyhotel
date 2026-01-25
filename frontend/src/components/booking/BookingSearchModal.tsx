@@ -84,7 +84,7 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
       }
     } catch (err) {
       setError('Failed to search for booking. Please try again.');
-      console.error('Booking search error:', err);
+      // console.error('Booking search error:', err);
     } finally {
       setLoading(false);
     }

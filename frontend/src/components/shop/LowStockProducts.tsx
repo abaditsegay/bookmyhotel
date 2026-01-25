@@ -48,7 +48,7 @@ const LowStockProducts: React.FC = () => {
 
   const loadLowStockProducts = React.useCallback(async () => {
     if (!hotelId || !token) {
-      console.error('Cannot load low stock products: No hotel ID or token available');
+      // console.error('Cannot load low stock products: No hotel ID or token available');
       return;
     }
 
@@ -62,7 +62,7 @@ const LowStockProducts: React.FC = () => {
         shopApiService.setTenantId(user.tenantId);
       }
 
-      console.info(`Loading low stock products for hotel ${hotelId}...`);
+      // console.info(`Loading low stock products for hotel ${hotelId}...`);
       const response = await shopApiService.getLowStockProducts(hotelId, page, size);
       
       // Translate products
@@ -70,9 +70,9 @@ const LowStockProducts: React.FC = () => {
       
       setProducts(translatedProducts);
       setTotalElements(response.totalElements || 0);
-      console.info('Low stock products loaded successfully:', translatedProducts.length);
+      // console.info('Low stock products loaded successfully:', translatedProducts.length);
     } catch (err) {
-      console.error('Low stock products loading error:', err);
+      // console.error('Low stock products loading error:', err);
       setError(err instanceof Error ? err.message : 'Failed to load low stock products');
     } finally {
       setLoading(false);

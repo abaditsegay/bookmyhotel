@@ -77,7 +77,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
       try {
         await offlineStorage.init();
       } catch (error) {
-        console.error('❌ AuthContext: Failed to initialize OfflineStorageService:', error);
+        // console.error('❌ AuthContext: Failed to initialize OfflineStorageService:', error);
       }
     };
     
@@ -114,7 +114,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
         // Notify parent component of token change
         onTokenChange?.(savedToken);
       } catch (error) {
-        console.error('Failed to restore auth state:', error);
+        // console.error('Failed to restore auth state:', error);
         TokenManager.clearAuth();
       }
     }
@@ -130,7 +130,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
       try {
         await offlineStorage.init();
       } catch (initError) {
-        console.error('❌ Mobile AuthContext: Failed to initialize OfflineStorageService for offline login:', initError);
+        // console.error('❌ Mobile AuthContext: Failed to initialize OfflineStorageService for offline login:', initError);
         return false;
       }
       
@@ -201,7 +201,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
       return true;
 
     } catch (error) {
-      console.error('❌ Mobile AuthContext: Offline authentication failed:', error);
+      // console.error('❌ Mobile AuthContext: Offline authentication failed:', error);
       return false;
     }
   };
@@ -226,7 +226,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Mobile AuthContext: Online login failed with status:', response.status, errorText);
+        // console.error('Mobile AuthContext: Online login failed with status:', response.status, errorText);
         
         // Attempt offline authentication for hotel staff when server responds with error
         const offlineSuccess = await attemptOfflineLogin(email, password);
@@ -235,7 +235,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
           return true;
         }
         
-        console.error('❌ Mobile AuthContext: Both server and offline login failed');
+        // console.error('❌ Mobile AuthContext: Both server and offline login failed');
         setError(errorText || 'Login failed');
         return false;
       }
@@ -271,7 +271,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
       try {
         TokenManager.setAuth(loginData.token, user as AuthUser);
       } catch (storageError) {
-        console.error('Mobile AuthContext: localStorage save failed:', storageError);
+        // console.error('Mobile AuthContext: localStorage save failed:', storageError);
       }
       
       // Save staff session for offline use
@@ -280,7 +280,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
         try {
           await offlineStorage.init(); // This will be a no-op if already initialized
         } catch (initError) {
-          console.error('❌ Mobile AuthContext: Failed to initialize OfflineStorageService:', initError);
+          // console.error('❌ Mobile AuthContext: Failed to initialize OfflineStorageService:', initError);
           throw initError;
         }
         
@@ -318,17 +318,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
               // Start periodic refresh for cached rooms
               roomCacheService.startPeriodicRefresh(hotelId);
             }).catch((cacheError) => {
-              console.warn('⚠️ Mobile AuthContext: Room caching failed, but login continues:', cacheError);
-              console.error('⚠️ Mobile AuthContext: Room caching error details:', cacheError);
+              // console.warn('⚠️ Mobile AuthContext: Room caching failed, but login continues:', cacheError);
+              // console.error('⚠️ Mobile AuthContext: Room caching error details:', cacheError);
             });
           } catch (cacheError) {
-            console.warn('⚠️ Mobile AuthContext: Failed to start room caching:', cacheError);
+            // console.warn('⚠️ Mobile AuthContext: Failed to start room caching:', cacheError);
           }
         } else {
         }
       } catch (sessionError) {
-        console.error('❌ Mobile AuthContext: Failed to save staff session:', sessionError);
-        console.error('❌ Mobile AuthContext: Session error stack:', sessionError instanceof Error ? sessionError.stack : 'No stack');
+        // console.error('❌ Mobile AuthContext: Failed to save staff session:', sessionError);
+        // console.error('❌ Mobile AuthContext: Session error stack:', sessionError instanceof Error ? sessionError.stack : 'No stack');
         // Don't fail login if offline storage fails
       }
       
@@ -337,8 +337,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
       
       return true;
     } catch (error) {
-      console.error('Mobile AuthContext: Online login failed with error:', error);
-      console.error('Mobile AuthContext: Error stack:', (error as Error).stack);
+      // console.error('Mobile AuthContext: Online login failed with error:', error);
+      // console.error('Mobile AuthContext: Error stack:', (error as Error).stack);
       
       // Attempt offline authentication for hotel staff
       const offlineSuccess = await attemptOfflineLogin(email, password);
@@ -347,7 +347,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
         return true;
       }
       
-      console.error('❌ Mobile AuthContext: Both online and offline login failed');
+      // console.error('❌ Mobile AuthContext: Both online and offline login failed');
       setError((error as Error).message || 'Login failed - no network connection and no cached credentials');
       return false;
     } finally {
@@ -365,7 +365,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
     
     // Deactivate staff sessions (preserve for offline authentication)
     offlineStorage.deactivateStaffSessions().catch(error => {
-      console.error('Failed to deactivate staff sessions:', error);
+      // console.error('Failed to deactivate staff sessions:', error);
     });
     
     // Clear localStorage using TokenManager
@@ -419,7 +419,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
         return false;
       }
     } catch (error) {
-      console.error('Profile update failed:', error);
+      // console.error('Profile update failed:', error);
       setError('Failed to update profile. Please try again.');
       return false;
     } finally {
@@ -447,7 +447,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
         return false;
       }
     } catch (error) {
-      console.error('Password change failed:', error);
+      // console.error('Password change failed:', error);
       setError('Failed to change password. Please try again.');
       return false;
     } finally {

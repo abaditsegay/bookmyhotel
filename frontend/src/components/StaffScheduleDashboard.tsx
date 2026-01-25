@@ -78,7 +78,7 @@ const StaffScheduleDashboard: React.FC = () => {
       setSchedules(schedulesResponse.data);
       setStats(statsResponse.data);
     } catch (error) {
-      console.error('Error fetching schedule data:', error);
+      // console.error('Error fetching schedule data:', error);
       setError('Failed to load schedule data');
     } finally {
       setLoading(false);

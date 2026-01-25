@@ -85,7 +85,7 @@ const HotelRegistrationAdmin: React.FC = () => {
         setRegistrations(data.content || data);
       }
     } catch (error) {
-      console.error('Error fetching registrations:', error);
+      // console.error('Error fetching registrations:', error);
     } finally {
       setLoading(false);
     }
@@ -99,7 +99,7 @@ const HotelRegistrationAdmin: React.FC = () => {
         setStatistics(data);
       }
     } catch (error) {
-      console.error('Error fetching statistics:', error);
+      // console.error('Error fetching statistics:', error);
     }
   };
 
@@ -131,7 +131,7 @@ const HotelRegistrationAdmin: React.FC = () => {
         fetchStatistics();
       }
     } catch (error) {
-      console.error('Error processing action:', error);
+      // console.error('Error processing action:', error);
     }
   };
 

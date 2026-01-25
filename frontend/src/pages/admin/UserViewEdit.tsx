@@ -87,7 +87,7 @@ const UserViewEdit: React.FC = () => {
         setError('User not found');
       }
     } catch (error) {
-      console.error('Error fetching user:', error);
+      // console.error('Error fetching user:', error);
       setError('Failed to load user details');
     } finally {
       setLoading(false);
@@ -142,7 +142,7 @@ const UserViewEdit: React.FC = () => {
       setSuccessMessage('User updated successfully');
       navigate(`/admin/users/${id}`);
     } catch (error) {
-      console.error('Error updating user:', error);
+      // console.error('Error updating user:', error);
       setError('Failed to update user');
     } finally {
       setSaving(false);

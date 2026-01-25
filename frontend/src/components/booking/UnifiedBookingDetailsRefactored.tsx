@@ -134,7 +134,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
           return;
         }
 
-        console.log('Loading booking with reservation ID:', reservationId);
+        // console.log('Loading booking with reservation ID:', reservationId);
         
         // Use the appropriate API based on mode
         const result = mode === 'hotel-admin' 
@@ -163,18 +163,18 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
             paymentIntentId: responseData.paymentIntentId
           };
           
-          console.log('🔍 UnifiedBookingDetails - Raw API response:', responseData);
-          console.log('🔍 UnifiedBookingDetails - Mapped booking:', mappedBooking);
+          // console.log('🔍 UnifiedBookingDetails - Raw API response:', responseData);
+          // console.log('🔍 UnifiedBookingDetails - Mapped booking:', mappedBooking);
           setBooking(mappedBooking);
           
           setEditedBooking({ ...mappedBooking });
         } else {
-          console.log('Booking not found for reservation ID:', reservationId);
+          // console.log('Booking not found for reservation ID:', reservationId);
           setError(result.message || `Booking not found for ID: ${reservationId}`);
         }
       } catch (err) {
         setError('Failed to load booking details');
-        console.error('Error loading booking:', err);
+        // console.error('Error loading booking:', err);
       } finally {
         setLoading(false);
       }

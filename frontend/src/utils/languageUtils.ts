@@ -12,7 +12,7 @@ export const getSavedLanguage = (): string | null => {
   try {
     return localStorage.getItem(LANGUAGE_STORAGE_KEY);
   } catch (error) {
-    console.warn('Failed to read language from localStorage:', error);
+    // console.warn('Failed to read language from localStorage:', error);
     return null;
   }
 };
@@ -24,7 +24,7 @@ export const saveLanguage = (languageCode: string): void => {
   try {
     localStorage.setItem(LANGUAGE_STORAGE_KEY, languageCode);
   } catch (error) {
-    console.warn('Failed to save language to localStorage:', error);
+    // console.warn('Failed to save language to localStorage:', error);
   }
 };
 

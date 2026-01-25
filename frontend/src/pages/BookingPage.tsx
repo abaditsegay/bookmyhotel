@@ -187,7 +187,7 @@ const BookingPage: React.FC = () => {
             setHotelData(hotel);
           }
         } catch (error) {
-          console.error('Error fetching hotel data:', error);
+          // console.error('Error fetching hotel data:', error);
         }
       }
     };
@@ -206,10 +206,10 @@ const BookingPage: React.FC = () => {
             setHotelVatRate(data.vatRate || 0);
             setHotelServiceTaxRate(data.serviceTaxRate || 0);
           } else {
-            console.warn('Could not fetch tax rates for hotel:', bookingData.hotelId);
+            // console.warn('Could not fetch tax rates for hotel:', bookingData.hotelId);
           }
         } catch (error) {
-          console.error('Error fetching hotel tax rates:', error);
+          // console.error('Error fetching hotel tax rates:', error);
         }
       }
     };
@@ -417,10 +417,10 @@ const BookingPage: React.FC = () => {
       };
       
       // Debug logging
-      console.log('Room data:', roomData);
-      console.log('Has specific room:', hasSpecificRoom);
-      console.log('Booking request:', bookingRequest);
-      console.log('Expected endpoint:', hasSpecificRoom ? '/bookings' : '/bookings/room-type');
+      // console.log('Room data:', roomData);
+      // console.log('Has specific room:', hasSpecificRoom);
+      // console.log('Booking request:', bookingRequest);
+      // console.log('Expected endpoint:', hasSpecificRoom ? '/bookings' : '/bookings/room-type');
       
       const result = await hotelApiService.createBooking(bookingRequest);
       

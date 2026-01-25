@@ -97,7 +97,7 @@ const OperationsSupervisorDashboard: React.FC = () => {
       ]);
       
     } catch (err) {
-      console.error('Failed to load dashboard data:', err);
+      // console.error('Failed to load dashboard data:', err);
       setError('Failed to load dashboard data');
     } finally {
       setLoading(false);
@@ -155,7 +155,7 @@ const OperationsSupervisorDashboard: React.FC = () => {
         });
       }
     } catch (err) {
-      console.error('Failed to load operations stats:', err);
+      // console.error('Failed to load operations stats:', err);
     }
   };
 
@@ -179,7 +179,7 @@ const OperationsSupervisorDashboard: React.FC = () => {
         setStaffPerformance(performanceData);
       }
     } catch (err) {
-      console.error('Failed to load staff performance:', err);
+      // console.error('Failed to load staff performance:', err);
     }
   };
 
@@ -240,7 +240,7 @@ const OperationsSupervisorDashboard: React.FC = () => {
         setRecentActivity(activities.slice(0, 6));
       }
     } catch (err) {
-      console.error('Failed to load recent activity:', err);
+      // console.error('Failed to load recent activity:', err);
     }
   };
 

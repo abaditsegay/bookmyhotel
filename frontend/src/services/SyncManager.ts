@@ -117,7 +117,7 @@ class SyncManager {
       }
 
     } catch (error) {
-      console.error('Sync process failed:', error);
+      // console.error('Sync process failed:', error);
       results.success = false;
       results.errors.push({
         bookingId: 'system',
@@ -173,7 +173,7 @@ class SyncManager {
     const failedBookings = await offlineStorage.getOfflineBookings();
     const toRetry = failedBookings.filter(b => b.status === 'SYNC_FAILED');
     
-    console.log(`🔄 Retrying ${toRetry.length} failed bookings`);
+    // console.log(`🔄 Retrying ${toRetry.length} failed bookings`);
     
     const results = {
       success: true,
@@ -187,7 +187,7 @@ class SyncManager {
 
     for (const booking of toRetry) {
       try {
-        console.log(`🔄 Retrying booking ${booking.id}...`);
+        // console.log(`🔄 Retrying booking ${booking.id}...`);
         
         // First, reset the booking status to PENDING_SYNC
         await offlineStorage.updateBookingStatus(booking.id, 'PENDING_SYNC');
@@ -196,14 +196,14 @@ class SyncManager {
         const response = await this.syncSingleBooking(booking, token);
         if (response.success) {
           results.syncedCount++;
-          console.log(`✅ Successfully synced booking ${booking.id} on retry`);
+          // console.log(`✅ Successfully synced booking ${booking.id} on retry`);
         } else {
           results.failedCount++;
           results.errors.push({
             bookingId: booking.id,
             error: response.error || 'Unknown error'
           });
-          console.log(`❌ Booking ${booking.id} failed again: ${response.error}`);
+          // console.log(`❌ Booking ${booking.id} failed again: ${response.error}`);
         }
       } catch (error) {
         results.failedCount++;
@@ -212,14 +212,14 @@ class SyncManager {
           bookingId: booking.id,
           error: `Failed to sync booking ${booking.id}: ${errorMessage}`
         });
-        console.error(`❌ Exception during retry of booking ${booking.id}:`, error);
+        // console.error(`❌ Exception during retry of booking ${booking.id}:`, error);
         
         // Mark booking as failed with error details
         await offlineStorage.updateBookingStatus(booking.id, 'SYNC_FAILED', errorMessage);
       }
     }
 
-    console.log(`🔄 Retry completed: ${results.syncedCount} synced, ${results.failedCount} still failed`);
+    // console.log(`🔄 Retry completed: ${results.syncedCount} synced, ${results.failedCount} still failed`);
     return results;
   }
 
@@ -267,10 +267,10 @@ class SyncManager {
   async cleanupOrphanedGuests(): Promise<number> {
     try {
       const cleanedCount = await offlineStorage.cleanupOrphanedGuests();
-      console.log(`🧹 Manual cleanup: Removed ${cleanedCount} orphaned guest records`);
+      // console.log(`🧹 Manual cleanup: Removed ${cleanedCount} orphaned guest records`);
       return cleanedCount;
     } catch (error) {
-      console.error('Failed to cleanup orphaned guests:', error);
+      // console.error('Failed to cleanup orphaned guests:', error);
       return 0;
     }
   }

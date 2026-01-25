@@ -125,7 +125,7 @@ const frontDeskRoomApi = {
       
       return { success: true, data: transformedData };
     } catch (error) {
-      console.error('Rooms fetch error:', error);
+      // console.error('Rooms fetch error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to fetch rooms' 
@@ -161,7 +161,7 @@ const frontDeskRoomApi = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Room status update error:', error);
+      // console.error('Room status update error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to update room status' 
@@ -197,7 +197,7 @@ const frontDeskRoomApi = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Room availability update error:', error);
+      // console.error('Room availability update error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to update room availability' 
@@ -278,17 +278,17 @@ const FrontDeskRoomManagement: React.FC<FrontDeskRoomManagementProps> = ({ onRoo
         throw new Error(result.message || 'Failed to load rooms from API');
       }
     } catch (error) {
-      console.error('API call failed, trying IndexedDB fallback:', error);
+      // console.error('API call failed, trying IndexedDB fallback:', error);
       
       // Fallback to cached rooms from IndexedDB
       try {
-        console.log('📦 Loading rooms from IndexedDB cache...');
+        // console.log('📦 Loading rooms from IndexedDB cache...');
         const user = JSON.parse(localStorage.getItem('auth_user') || '{}');
         const hotelId = user.hotelId ? parseInt(user.hotelId) : null;
         
         if (hotelId) {
           const cachedRooms = await roomCacheService.getRooms(hotelId);
-          console.log(`✅ Loaded ${cachedRooms.length} rooms from IndexedDB cache`);
+          // console.log(`✅ Loaded ${cachedRooms.length} rooms from IndexedDB cache`);
           
           // Convert CachedRoom to RoomResponse format
           const convertedRooms: RoomResponse[] = cachedRooms.map((room: CachedRoom) => ({
@@ -339,7 +339,7 @@ const FrontDeskRoomManagement: React.FC<FrontDeskRoomManagementProps> = ({ onRoo
           setError('No hotel ID found in user data');
         }
       } catch (cacheError) {
-        console.error('Failed to load rooms from cache:', cacheError);
+        // console.error('Failed to load rooms from cache:', cacheError);
         setError('Failed to load rooms from both API and cache');
       }
     } finally {
@@ -408,7 +408,7 @@ const FrontDeskRoomManagement: React.FC<FrontDeskRoomManagementProps> = ({ onRoo
         setError(result.message || 'Failed to update room status');
       }
     } catch (error) {
-      console.error('Failed to update room status:', error);
+      // console.error('Failed to update room status:', error);
       setError('Failed to update room status');
     } finally {
       setStatusUpdating(false);
@@ -440,7 +440,7 @@ const FrontDeskRoomManagement: React.FC<FrontDeskRoomManagementProps> = ({ onRoo
         setError(result.message || 'Failed to toggle room availability');
       }
     } catch (error) {
-      console.error('Failed to toggle room availability:', error);
+      // console.error('Failed to toggle room availability:', error);
       setError('Failed to toggle room availability');
     } finally {
       setAvailabilityUpdating(prev => ({ ...prev, [room.id]: false }));

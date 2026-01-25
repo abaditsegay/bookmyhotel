@@ -28,7 +28,7 @@ export const useBookingNotifications = (confirmationNumber: string | null): UseB
     setError(null);
 
     try {
-      console.log('🔍 Fetching notifications for confirmation:', confirmationNumber);
+      // console.log('🔍 Fetching notifications for confirmation:', confirmationNumber);
       
       const response = await fetch(
         `${API_CONFIG.BASE_URL}/notifications/by-confirmation/${encodeURIComponent(confirmationNumber)}`,
@@ -49,11 +49,11 @@ export const useBookingNotifications = (confirmationNumber: string | null): UseB
       }
 
       const data: BookingNotification[] = await response.json();
-      console.log('✅ Fetched notifications:', data);
+      // console.log('✅ Fetched notifications:', data);
       
       setNotifications(data);
     } catch (err) {
-      console.error('❌ Error fetching notifications:', err);
+      // console.error('❌ Error fetching notifications:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch notifications');
       setNotifications([]);
     } finally {

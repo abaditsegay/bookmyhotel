@@ -117,7 +117,7 @@ const FrontDeskBookingDetails: React.FC = () => {
         }
       } catch (err) {
         setError('Failed to load booking details');
-        console.error('Error loading booking:', err);
+        // console.error('Error loading booking:', err);
       } finally {
         setLoading(false);
       }
@@ -158,7 +158,7 @@ const FrontDeskBookingDetails: React.FC = () => {
             setSuccess('Room assignment will be updated during check-in process');
             hasUpdates = true;
           } catch (roomError) {
-            console.error('Room assignment error:', roomError);
+            // console.error('Room assignment error:', roomError);
           }
         }
       }
@@ -214,7 +214,7 @@ const FrontDeskBookingDetails: React.FC = () => {
       }
     } catch (err) {
       setError('Failed to update booking');
-      console.error('Error updating booking:', err);
+      // console.error('Error updating booking:', err);
     }
   };
 

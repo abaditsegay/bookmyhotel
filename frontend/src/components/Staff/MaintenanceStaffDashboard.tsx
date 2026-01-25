@@ -62,7 +62,7 @@ const MaintenanceStaffDashboard: React.FC = () => {
       setTasks(tasksData);
     } catch (err) {
       setError('Failed to load your maintenance tasks');
-      console.error('Error loading tasks:', err);
+      // console.error('Error loading tasks:', err);
     } finally {
       setLoading(false);
     }
@@ -73,7 +73,7 @@ const MaintenanceStaffDashboard: React.FC = () => {
       const statsData = await staffApi.getStaffStats('MAINTENANCE');
       setStats(statsData);
     } catch (err) {
-      console.error('Error loading stats:', err);
+      // console.error('Error loading stats:', err);
     }
   };
 
@@ -95,7 +95,7 @@ const MaintenanceStaffDashboard: React.FC = () => {
       await loadStats();
     } catch (err) {
       setError('Failed to update task status');
-      console.error('Error updating task:', err);
+      // console.error('Error updating task:', err);
     }
   };
 
@@ -106,7 +106,7 @@ const MaintenanceStaffDashboard: React.FC = () => {
       await loadStats();
     } catch (err) {
       setError('Failed to start task');
-      console.error('Error starting task:', err);
+      // console.error('Error starting task:', err);
     }
   };
 
@@ -117,7 +117,7 @@ const MaintenanceStaffDashboard: React.FC = () => {
       await loadStats();
     } catch (err) {
       setError('Failed to complete task');
-      console.error('Error completing task:', err);
+      // console.error('Error completing task:', err);
     }
   };
 

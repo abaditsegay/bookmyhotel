@@ -26,9 +26,9 @@ class Logger {
     const prefix = `[${timestamp}] [${level}]`;
     
     if (data !== undefined) {
-      console.log(`${prefix} ${message}`, data);
+      // console.log(`${prefix} ${message}`, data);
     } else {
-      console.log(`${prefix} ${message}`);
+      // console.log(`${prefix} ${message}`);
     }
   }
 

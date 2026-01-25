@@ -46,7 +46,7 @@ class StaffApiService {
       
       return response.text() as unknown as T;
     } catch (error) {
-      console.error('API call failed:', error);
+      // console.error('API call failed:', error);
       throw error;
     }
   }

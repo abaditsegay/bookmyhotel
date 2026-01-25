@@ -194,7 +194,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
         throw new Error(result.message || 'Failed to load bookings');
       }
     } catch (error) {
-      console.error('Error loading bookings:', error);
+      // console.error('Error loading bookings:', error);
       
       setSnackbar({
         open: true,
@@ -287,7 +287,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
           throw new Error(result.message || 'Failed to load bookings');
         }
       } catch (error) {
-        console.error('Error loading bookings:', error);
+        // console.error('Error loading bookings:', error);
         
         setSnackbar({
           open: true,
@@ -385,7 +385,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
         });
       }
     } catch (error) {
-      console.error('Error deleting booking:', error);
+      // console.error('Error deleting booking:', error);
       setSnackbar({
         open: true,
         message: 'Failed to delete booking',
@@ -441,7 +441,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
           }
         }
       } catch (error) {
-        console.error('Error updating booking status:', error);
+        // console.error('Error updating booking status:', error);
         setSnackbar({
           open: true,
           message: error instanceof Error ? error.message : 'Failed to update booking status',
@@ -530,7 +530,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
         });
       }
     } catch (error) {
-      console.error('Error generating receipt:', error);
+      // console.error('Error generating receipt:', error);
       setSnackbar({
         open: true,
         message: 'Failed to generate receipt',
@@ -601,7 +601,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
         });
       }
     } catch (error) {
-      console.error('Error updating payment status:', error);
+      // console.error('Error updating payment status:', error);
       setSnackbar({
         open: true,
         message: 'Failed to update payment status',

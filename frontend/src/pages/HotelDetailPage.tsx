@@ -113,7 +113,7 @@ const HotelDetailPage: React.FC = () => {
         // console.log('✅ Hotel details loaded:', hotelDetails);
         setHotel(hotelDetails);
       } catch (err) {
-        console.error('❌ Failed to load hotel details:', err);
+        // console.error('❌ Failed to load hotel details:', err);
         setError(err instanceof Error ? err.message : 'Failed to load hotel details');
       } finally {
         setLoading(false);

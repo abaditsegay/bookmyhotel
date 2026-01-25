@@ -179,7 +179,7 @@ const EnhancedBookingManagementTable: React.FC<EnhancedBookingManagementTablePro
         setBookings(response.data.content);
       }
     } catch (error) {
-      console.error('Failed to fetch bookings:', error);
+      // console.error('Failed to fetch bookings:', error);
       setSnackbar({
         open: true,
         message: 'Failed to fetch bookings',
@@ -296,7 +296,7 @@ const EnhancedBookingManagementTable: React.FC<EnhancedBookingManagementTablePro
     } else if (mode === 'front-desk') {
       navigate(`/frontdesk/bookings/${bookingId}`);
     } else {
-      console.log('View booking:', booking.reservationId);
+      // console.log('View booking:', booking.reservationId);
     }
   };
 
@@ -309,7 +309,7 @@ const EnhancedBookingManagementTable: React.FC<EnhancedBookingManagementTablePro
     try {
       const bookingId = booking.reservationId; // Use reservationId as the primary identifier
       // Mock checkout for demo purposes
-      console.log('Checkout booking:', bookingId);
+      // console.log('Checkout booking:', bookingId);
       setSnackbar({
         open: true,
         message: 'Guest checked out successfully',
@@ -317,7 +317,7 @@ const EnhancedBookingManagementTable: React.FC<EnhancedBookingManagementTablePro
       });
       fetchBookings(); // Refresh the list
     } catch (error) {
-      console.error('Checkout error:', error);
+      // console.error('Checkout error:', error);
       setSnackbar({
         open: true,
         message: 'Failed to check out guest',
@@ -332,7 +332,7 @@ const EnhancedBookingManagementTable: React.FC<EnhancedBookingManagementTablePro
   };
 
   const handlePrintReceipt = (booking: any) => {
-    console.log('Print receipt for reservation:', booking.reservationId);
+    // console.log('Print receipt for reservation:', booking.reservationId);
     // Add print receipt functionality here using booking.reservationId
   };
 
@@ -342,7 +342,7 @@ const EnhancedBookingManagementTable: React.FC<EnhancedBookingManagementTablePro
     try {
       const bookingId = selectedBooking.reservationId; // Use reservationId as the primary identifier
       // Mock cancel for demo purposes
-      console.log('Cancel booking:', bookingId);
+      // console.log('Cancel booking:', bookingId);
       
       setSnackbar({
         open: true,
@@ -354,7 +354,7 @@ const EnhancedBookingManagementTable: React.FC<EnhancedBookingManagementTablePro
       // Trigger notification
       BookingNotificationEvents.afterCancellation();
     } catch (error) {
-      console.error('Cancel booking error:', error);
+      // console.error('Cancel booking error:', error);
       setSnackbar({
         open: true,
         message: 'Failed to cancel booking',

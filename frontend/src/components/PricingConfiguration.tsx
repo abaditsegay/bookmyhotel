@@ -179,7 +179,7 @@ const PricingConfigurationComponent: React.FC = () => {
         throw new Error('Failed to fetch pricing configuration');
       }
     } catch (err) {
-      console.error('Error fetching configuration:', err);
+      // console.error('Error fetching configuration:', err);
       setError('Failed to load pricing configuration');
       // Set default configuration if fetch fails
       setConfig(defaultConfig);
@@ -228,7 +228,7 @@ const PricingConfigurationComponent: React.FC = () => {
         throw new Error('Failed to save pricing configuration');
       }
     } catch (err) {
-      console.error('Error saving configuration:', err);
+      // console.error('Error saving configuration:', err);
       setError('Failed to save pricing configuration');
     } finally {
       setSaving(false);

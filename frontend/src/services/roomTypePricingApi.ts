@@ -94,7 +94,7 @@ class RoomTypePricingService {
         message: 'Room type pricing fetched successfully'
       };
     } catch (error) {
-      console.error('Error fetching room type pricing:', error);
+      // console.error('Error fetching room type pricing:', error);
       return {
         success: false,
         message: error instanceof Error ? error.message : 'Failed to fetch room type pricing'
@@ -137,7 +137,7 @@ class RoomTypePricingService {
         message: 'Room type pricing saved successfully'
       };
     } catch (error) {
-      console.error('Error saving room type pricing:', error);
+      // console.error('Error saving room type pricing:', error);
       return {
         success: false,
         message: error instanceof Error ? error.message : 'Failed to save room type pricing'
@@ -180,7 +180,7 @@ class RoomTypePricingService {
         message: 'Room type pricing updated successfully'
       };
     } catch (error) {
-      console.error('Error updating room type pricing:', error);
+      // console.error('Error updating room type pricing:', error);
       return {
         success: false,
         message: error instanceof Error ? error.message : 'Failed to update room type pricing'
@@ -208,7 +208,7 @@ class RoomTypePricingService {
         message: 'Room type pricing deleted successfully'
       };
     } catch (error) {
-      console.error('Error deleting room type pricing:', error);
+      // console.error('Error deleting room type pricing:', error);
       return {
         success: false,
         message: error instanceof Error ? error.message : 'Failed to delete room type pricing'
@@ -238,7 +238,7 @@ class RoomTypePricingService {
         message: 'Room type pricing fetched successfully'
       };
     } catch (error) {
-      console.error('Error fetching room type pricing:', error);
+      // console.error('Error fetching room type pricing:', error);
       return {
         success: false,
         message: error instanceof Error ? error.message : 'Failed to fetch pricing for room type'
@@ -266,7 +266,7 @@ class RoomTypePricingService {
         message: 'Default pricing initialized successfully'
       };
     } catch (error) {
-      console.error('Error initializing default pricing:', error);
+      // console.error('Error initializing default pricing:', error);
       return {
         success: false,
         message: error instanceof Error ? error.message : 'Failed to initialize default pricing'

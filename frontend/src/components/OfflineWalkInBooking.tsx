@@ -124,32 +124,32 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
     const resolvedHotelId = hotelId || (user?.hotelId ? parseInt(user.hotelId) : null);
     
     if (!resolvedHotelId) {
-      console.warn('⚠️ No hotelId available for room cache loading - neither from props nor user data');
+      // console.warn('⚠️ No hotelId available for room cache loading - neither from props nor user data');
       setError('Hotel ID is required to load room data. Please ensure you are logged in with proper hotel access.');
       setRoomsLoaded(true);
       return;
     }
     
     try {
-      console.log('📦 Loading rooms from cache for hotel:', resolvedHotelId);
+      // console.log('📦 Loading rooms from cache for hotel:', resolvedHotelId);
       const rooms = await roomCacheService.getRooms(resolvedHotelId);
       setCachedRooms(rooms);
       setRoomsLoaded(true);
-      console.log(`✅ Loaded ${rooms.length} cached rooms`);
+      // console.log(`✅ Loaded ${rooms.length} cached rooms`);
       
       // If no cached rooms, try to fetch fresh data
       if (rooms.length === 0 && navigator.onLine && token) {
-        console.log('🔄 No cached rooms found, fetching fresh data...');
+        // console.log('🔄 No cached rooms found, fetching fresh data...');
         try {
           const freshRooms = await roomCacheService.fetchAndCacheRooms(resolvedHotelId);
           setCachedRooms(freshRooms);
-          console.log(`✨ Fetched and cached ${freshRooms.length} fresh rooms`);
+          // console.log(`✨ Fetched and cached ${freshRooms.length} fresh rooms`);
         } catch (fetchError) {
-          console.warn('Failed to fetch fresh room data:', fetchError);
+          // console.warn('Failed to fetch fresh room data:', fetchError);
         }
       }
     } catch (error) {
-      console.error('Failed to load cached rooms:', error);
+      // console.error('Failed to load cached rooms:', error);
       setRoomsLoaded(true); // Still mark as loaded to prevent infinite loading
     }
   }, [hotelId, token, user?.hotelId]);
@@ -168,7 +168,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
           // Start periodic refresh for this hotel
           roomCacheService.startPeriodicRefresh(hotelId);
         } catch (error) {
-          console.error('Failed to initialize rooms:', error);
+          // console.error('Failed to initialize rooms:', error);
           setRoomsLoaded(true); // Prevent infinite retry
         }
       }
@@ -917,11 +917,11 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
     
     try {
       const bookings = await offlineStorage.getOfflineBookings(resolvedHotelId || undefined);
-      console.log('🔍 Debug: Loaded offline bookings:', bookings.length, 'for hotel:', resolvedHotelId);
-      console.log('🔍 Debug: Booking statuses:', bookings.map(b => `${b.id}: ${b.status}`));
+      // console.log('🔍 Debug: Loaded offline bookings:', bookings.length, 'for hotel:', resolvedHotelId);
+      // console.log('🔍 Debug: Booking statuses:', bookings.map(b => `${b.id}: ${b.status}`));
       setOfflineBookings(bookings);
     } catch (error) {
-      console.error('Failed to load offline bookings:', error);
+      // console.error('Failed to load offline bookings:', error);
     }
   }, [hotelId, user?.hotelId]);
 
@@ -930,7 +930,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
       const pendingBookings = await offlineStorage.getPendingSyncBookings();
       setPendingSyncCount(pendingBookings.length);
     } catch (error) {
-      console.error('Failed to load pending sync count:', error);
+      // console.error('Failed to load pending sync count:', error);
     }
   }, []);
 
@@ -947,7 +947,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
           offlineStorage.debugDatabase();
         }, 1000);
       } catch (error) {
-        console.error('Failed to initialize offline storage:', error);
+        // console.error('Failed to initialize offline storage:', error);
         setError('Failed to initialize offline support');
       }
     };
@@ -972,14 +972,14 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
         const resolvedHotelId = hotelId || (user?.hotelId ? parseInt(user.hotelId) : null);
         
         if (!resolvedHotelId || !token) {
-          console.log('Cannot load rooms - missing hotelId or token:', { hotelId: resolvedHotelId, hasToken: !!token });
+          // console.log('Cannot load rooms - missing hotelId or token:', { hotelId: resolvedHotelId, hasToken: !!token });
           // Fall back to cached room data
-          console.log('💾 Using cached room data due to missing hotelId or token');
+          // console.log('💾 Using cached room data due to missing hotelId or token');
           rooms = cachedRooms.filter(room => room.capacity >= guests);
           dataSource = 'cached';
         } else {
           try {
-            console.log('🌐 Loading room data from same API as main walk-in booking...');
+            // console.log('🌐 Loading room data from same API as main walk-in booking...');
             
             const isHotelAdmin = user?.role === 'HOTEL_ADMIN' || user?.roles?.includes('HOTEL_ADMIN');
             
@@ -1002,7 +1002,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                 size: '100'
               });
               
-              console.log('Hotel admin fetching available rooms for date range:', format(checkInDate, 'yyyy-MM-dd'), 'to', format(checkOutDate, 'yyyy-MM-dd'), 'guests:', guests);
+              // console.log('Hotel admin fetching available rooms for date range:', format(checkInDate, 'yyyy-MM-dd'), 'to', format(checkOutDate, 'yyyy-MM-dd'), 'guests:', guests);
               
               const response = await fetch(`${API_BASE_URL}/api/hotel-admin/available-rooms?${params.toString()}`, {
                 headers
@@ -1021,7 +1021,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                   isAvailable: room.isAvailable
                 }));
                 dataSource = 'api';
-                console.log(`✅ Loaded ${rooms.length} rooms from hotel admin API`);
+                // console.log(`✅ Loaded ${rooms.length} rooms from hotel admin API`);
               } else {
                 throw new Error(`Failed to fetch available rooms: ${response.status}`);
               }
@@ -1033,7 +1033,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                 guests: guests.toString()
               });
               
-              console.log('Front desk fetching available rooms for date range:', format(checkInDate, 'yyyy-MM-dd'), 'to', format(checkOutDate, 'yyyy-MM-dd'), 'guests:', guests);
+              // console.log('Front desk fetching available rooms for date range:', format(checkInDate, 'yyyy-MM-dd'), 'to', format(checkOutDate, 'yyyy-MM-dd'), 'guests:', guests);
               
               const response = await fetch(`${API_BASE_URL}/api/front-desk/hotels/${resolvedHotelId}/available-rooms?${params.toString()}`, {
                 headers
@@ -1052,13 +1052,13 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                   isAvailable: true // Front desk API only returns available rooms
                 }));
                 dataSource = 'api';
-                console.log(`✅ Loaded ${rooms.length} rooms from front desk API`);
+                // console.log(`✅ Loaded ${rooms.length} rooms from front desk API`);
               } else {
                 throw new Error(`Failed to fetch available rooms: ${response.status}`);
               }
             }
           } catch (apiError) {
-            console.log('🔄 API call failed, using offline fallback data:', apiError);
+            // console.log('🔄 API call failed, using offline fallback data:', apiError);
           }
         }
         
@@ -1070,11 +1070,11 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
             (room.isAvailable !== false)
           );
           rooms = filteredRooms;
-          console.log(`🔍 API rooms: Filtered ${filteredRooms.length} available rooms from ${rooms.length} total rooms for ${guests} guests`);
+          // console.log(`🔍 API rooms: Filtered ${filteredRooms.length} available rooms from ${rooms.length} total rooms for ${guests} guests`);
         } 
         
         // Always check enhanced cached room availability for additional/fallback rooms
-        console.log('💾 Checking enhanced cached room availability data...');
+        // console.log('💾 Checking enhanced cached room availability data...');
         let cachedAvailableRooms: AvailableRoom[] = [];
         try {
           if (resolvedHotelId) {
@@ -1096,10 +1096,10 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
               isAvailable: room.isAvailable
             }));
             
-            console.log(`📊 Enhanced cached availability: ${cachedAvailableRooms.length} rooms available considering offline bookings`);
+            // console.log(`📊 Enhanced cached availability: ${cachedAvailableRooms.length} rooms available considering offline bookings`);
           }
         } catch (cacheError) {
-          console.error('Enhanced cache availability check failed:', cacheError);
+          // console.error('Enhanced cache availability check failed:', cacheError);
           // Final fallback to basic cached rooms
           cachedAvailableRooms = cachedRooms.filter(room => 
             room.capacity >= guests && room.isAvailable
@@ -1112,26 +1112,26 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
             description: room.description,
             isAvailable: room.isAvailable
           }));
-          console.log(`📦 Basic cached fallback: ${cachedAvailableRooms.length} rooms`);
+          // console.log(`📦 Basic cached fallback: ${cachedAvailableRooms.length} rooms`);
         }
 
         // If API returned no rooms, use cached rooms as primary source
         if (rooms.length === 0 && cachedAvailableRooms.length > 0) {
           rooms = cachedAvailableRooms;
           dataSource = 'enhanced-cached';
-          console.log(`🔄 Using cached rooms as primary source: ${rooms.length} rooms`);
+          // console.log(`🔄 Using cached rooms as primary source: ${rooms.length} rooms`);
         } else if (rooms.length > 0 && cachedAvailableRooms.length > 0) {
           // Both API and cache have rooms - prefer API but log difference
           const apiRoomIds = new Set(rooms.map(r => r.id));
           const cachedOnlyRooms = cachedAvailableRooms.filter(r => !apiRoomIds.has(r.id));
           if (cachedOnlyRooms.length > 0) {
-            console.log(`⚠️ Cache has ${cachedOnlyRooms.length} additional rooms not in API response`);
+            // console.log(`⚠️ Cache has ${cachedOnlyRooms.length} additional rooms not in API response`);
           }
         }
         
         // If we still have no rooms and we're online, try to refresh the cache
         if (rooms.length === 0 && resolvedHotelId && navigator.onLine) {
-          console.log('🔄 No rooms found anywhere, attempting to fetch and cache fresh data...');
+          // console.log('🔄 No rooms found anywhere, attempting to fetch and cache fresh data...');
           try {
             const freshRooms = await roomCacheService.fetchAndCacheRooms(resolvedHotelId);
             const availableRooms = freshRooms.filter(room => 
@@ -1147,9 +1147,9 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
               isAvailable: room.isAvailable
             }));
             dataSource = 'fresh-cache';
-            console.log(`✨ Fresh cache: ${rooms.length} rooms available after refreshing cache`);
+            // console.log(`✨ Fresh cache: ${rooms.length} rooms available after refreshing cache`);
           } catch (refreshError) {
-            console.error('Failed to refresh room cache:', refreshError);
+            // console.error('Failed to refresh room cache:', refreshError);
           }
         }
         
@@ -1191,7 +1191,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
         }
         
       } catch (error) {
-        console.error('Failed to load available rooms:', error);
+        // console.error('Failed to load available rooms:', error);
         setError('Failed to load available rooms. Please try again.');
         setAvailableRooms([]);
       } finally {
@@ -1279,7 +1279,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
       };
 
       const bookingId = await offlineStorage.saveOfflineBooking(bookingData);
-      console.log('🔍 Debug: Booking saved with ID:', bookingId, 'Status:', bookingData.status);
+      // console.log('🔍 Debug: Booking saved with ID:', bookingId, 'Status:', bookingData.status);
 
       // Mark room as occupied in enhanced offline system
       try {
@@ -1289,9 +1289,9 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
           bookingData.checkInDate,
           bookingData.checkOutDate
         );
-        console.log('✅ Room marked as occupied for offline booking:', selectedRoom.roomNumber);
+        // console.log('✅ Room marked as occupied for offline booking:', selectedRoom.roomNumber);
       } catch (roomMarkError) {
-        console.warn('⚠️ Failed to mark room as occupied:', roomMarkError);
+        // console.warn('⚠️ Failed to mark room as occupied:', roomMarkError);
         // Non-critical error - booking is still saved
       }
 
@@ -1328,20 +1328,20 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
 
       // Trigger sync with current token if online and authenticated
       if (isOnline && token) {
-        console.log('🔄 Attempting immediate sync with current authentication token...');
+        // console.log('🔄 Attempting immediate sync with current authentication token...');
         try {
           const syncResult = await syncManager.syncAllPendingBookings(token);
           if (syncResult.success && syncResult.syncedCount > 0) {
-            console.log(`✅ Successfully synced ${syncResult.syncedCount} booking(s) immediately`);
+            // console.log(`✅ Successfully synced ${syncResult.syncedCount} booking(s) immediately`);
             setSuccess('Booking created and synced to server successfully!');
             setSuccessDialogOpen(true);
           } else if (syncResult.failedCount > 0) {
-            console.log(`⚠️  Booking saved but sync failed. Will retry automatically.`);
+            // console.log(`⚠️  Booking saved but sync failed. Will retry automatically.`);
             setSuccess('Booking saved offline! It will sync when connection is restored.');
             setSuccessDialogOpen(true);
           }
         } catch (syncError) {
-          console.log('⚠️  Immediate sync failed, will retry later:', syncError);
+          // console.log('⚠️  Immediate sync failed, will retry later:', syncError);
         }
       }
 
@@ -1359,7 +1359,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
       }
 
     } catch (error: any) {
-      console.error('Failed to save offline booking:', error);
+      // console.error('Failed to save offline booking:', error);
       setError(error.message || 'Failed to save booking');
     } finally {
       setLoading(false);
@@ -1373,7 +1373,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
       const guests = await offlineStorage.searchGuests(guestSearchQuery);
       setFoundGuests(guests);
     } catch (error) {
-      console.error('Failed to search guests:', error);
+      // console.error('Failed to search guests:', error);
       setFoundGuests([]);
     }
   };

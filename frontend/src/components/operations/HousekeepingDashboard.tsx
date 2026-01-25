@@ -177,7 +177,7 @@ const HousekeepingDashboard: React.FC = () => {
         throw new Error(`API error: ${response.status}`);
       }
     } catch (err) {
-      console.error('Failed to load housekeeping tasks:', err);
+      // console.error('Failed to load housekeeping tasks:', err);
       setError('Unable to load tasks - please check your connection');
       setTasks([]); // Set empty array instead of mock data
     } finally {
@@ -213,11 +213,11 @@ const HousekeepingDashboard: React.FC = () => {
         }));
         setStaff(transformedStaff);
       } else {
-        console.error('Failed to load staff data:', response.status);
+        // console.error('Failed to load staff data:', response.status);
         setStaff([]); // Set empty array instead of mock data
       }
     } catch (err) {
-      console.error('Failed to load housekeeping staff:', err);
+      // console.error('Failed to load housekeeping staff:', err);
       setStaff([]); // Set empty array instead of mock data
     }
   };
@@ -262,7 +262,7 @@ const HousekeepingDashboard: React.FC = () => {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Assignment failed:', response.status, errorText);
+        // console.error('Assignment failed:', response.status, errorText);
         throw new Error(`Failed to assign task: ${response.status} - ${errorText}`);
       }
 
@@ -273,7 +273,7 @@ const HousekeepingDashboard: React.FC = () => {
       setSelectedStaffId('');
       await loadTasks();
     } catch (err) {
-      console.error('Task assignment error:', err);
+      // console.error('Task assignment error:', err);
       setError(`Failed to assign task: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
   };
@@ -291,7 +291,7 @@ const HousekeepingDashboard: React.FC = () => {
 
       await loadTasks();
     } catch (err) {
-      console.error('Task start error:', err);
+      // console.error('Task start error:', err);
       setError(`Failed to start task: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
   };
@@ -319,7 +319,7 @@ const HousekeepingDashboard: React.FC = () => {
       setQualityRating(5);
       await loadTasks();
     } catch (err) {
-      console.error('Task completion error:', err);
+      // console.error('Task completion error:', err);
       setError(`Failed to complete task: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
   };
@@ -368,7 +368,7 @@ const HousekeepingDashboard: React.FC = () => {
       // await loadTasks();
       
     } catch (error) {
-      console.error('Error updating task:', error);
+      // console.error('Error updating task:', error);
     }
   };
 

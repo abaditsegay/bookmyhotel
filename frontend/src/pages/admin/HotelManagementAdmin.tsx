@@ -176,7 +176,7 @@ const HotelManagementAdmin: React.FC = () => {
       const response = await adminApiService.getHotels(0, 1000); // Get all hotels for now
       setHotels(response.content || []);
     } catch (err) {
-      console.error('Error loading hotels:', err);
+      // console.error('Error loading hotels:', err);
       setError('Failed to load hotels. Please try again.');
     } finally {
       setLoading(false);
@@ -194,7 +194,7 @@ const HotelManagementAdmin: React.FC = () => {
       const response = await adminApiService.getHotelRegistrations(page, rowsPerPage);
       setRegistrations(response.content || response);
     } catch (err) {
-      console.error('Error loading registrations:', err);
+      // console.error('Error loading registrations:', err);
     }
   }, [token, page, rowsPerPage]);
 
@@ -205,7 +205,7 @@ const HotelManagementAdmin: React.FC = () => {
       const response = await adminApiService.getActiveTenants();
       setTenants(response);
     } catch (err) {
-      console.error('Error loading tenants:', err);
+      // console.error('Error loading tenants:', err);
     } finally {
       setTenantsLoading(false);
     }
@@ -223,7 +223,7 @@ const HotelManagementAdmin: React.FC = () => {
         total: data.totalRegistrations
       });
     } catch (err) {
-      console.error('Error loading registration statistics:', err);
+      // console.error('Error loading registration statistics:', err);
     }
   }, [token]);
 
@@ -370,11 +370,11 @@ const HotelManagementAdmin: React.FC = () => {
         }
       } else {
         const errorData = await response.text();
-        console.error('Registration failed:', response.status, errorData);
+        // console.error('Registration failed:', response.status, errorData);
         throw new Error(`Failed to submit registration: ${response.status} ${errorData}`);
       }
     } catch (err) {
-      console.error('Error submitting registration:', err);
+      // console.error('Error submitting registration:', err);
       setError('Failed to submit hotel registration. Please try again.');
     }
   };
@@ -465,7 +465,7 @@ const HotelManagementAdmin: React.FC = () => {
         throw new Error('Failed to update registration');
       }
     } catch (err) {
-      console.error('Error updating registration:', err);
+      // console.error('Error updating registration:', err);
       setError('Failed to update hotel registration. Please try again.');
       setTimeout(() => setError(null), 3000);
     }
@@ -540,7 +540,7 @@ const HotelManagementAdmin: React.FC = () => {
       loadRegistrationStatistics();
       loadHotels(); // Refresh hotels list to show the newly created hotel
     } catch (err) {
-      console.error('Error approving registration:', err);
+      // console.error('Error approving registration:', err);
       setError('Failed to approve registration. Please try again.');
       setTimeout(() => setError(null), 3000);
     }
@@ -576,7 +576,7 @@ const HotelManagementAdmin: React.FC = () => {
         throw new Error('Failed to reject registration');
       }
     } catch (err) {
-      console.error('Error rejecting registration:', err);
+      // console.error('Error rejecting registration:', err);
       setError('Failed to reject hotel registration. Please try again.');
     }
   };
@@ -645,7 +645,7 @@ const HotelManagementAdmin: React.FC = () => {
       setSuccess('Hotel updated successfully');
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
-      console.error('Error updating hotel:', err);
+      // console.error('Error updating hotel:', err);
       setError('Failed to update hotel. Please try again.');
     }
   };
@@ -662,7 +662,7 @@ const HotelManagementAdmin: React.FC = () => {
       setSuccess(`Hotel ${hotel.isActive ? 'deactivated' : 'activated'} successfully`);
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
-      console.error('Error toggling hotel status:', err);
+      // console.error('Error toggling hotel status:', err);
       setError('Failed to update hotel status. Please try again.');
     } finally {
       setLoading(false);
@@ -688,7 +688,7 @@ const HotelManagementAdmin: React.FC = () => {
       setSuccess('Hotel deleted successfully');
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
-      console.error('Error deleting hotel:', err);
+      // console.error('Error deleting hotel:', err);
       setError('Failed to delete hotel. Please try again.');
     } finally {
       setLoading(false);

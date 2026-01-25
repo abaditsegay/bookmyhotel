@@ -118,7 +118,7 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
         setTotalElements(0);
       }
     } catch (err) {
-      console.error('Error loading staff:', err);
+      // console.error('Error loading staff:', err);
       setError('Failed to load staff. Please try again.');
       setTotalElements(0);
     } finally {
@@ -202,7 +202,7 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
         setError(response.message || 'Failed to create staff member. Please check the email is unique.');
       }
     } catch (err) {
-      console.error('Error creating staff:', err);
+      // console.error('Error creating staff:', err);
       setError('Failed to create staff member. Please check the email is unique.');
     } finally {
       setLoading(false);
@@ -224,7 +224,7 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
         setError(response.message || 'Failed to delete staff member.');
       }
     } catch (err) {
-      console.error('Error deleting staff:', err);
+      // console.error('Error deleting staff:', err);
       setError('Failed to delete staff member.');
     } finally {
       setLoading(false);
@@ -247,7 +247,7 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
         setError(response.message || 'Failed to update staff status');
       }
     } catch (err) {
-      console.error('Error toggling staff status:', err);
+      // console.error('Error toggling staff status:', err);
       setError('Failed to update staff status.');
     } finally {
       setLoading(false);

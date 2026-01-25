@@ -195,7 +195,7 @@ export const hotelAdminApi = {
       
       if (search && search.trim()) {
         params.append('search', search.trim());
-        console.log('HotelAdminApi: Adding search parameter:', search.trim());
+        // console.log('HotelAdminApi: Adding search parameter:', search.trim());
       }
 
       // Get tenant ID from token/user
@@ -203,7 +203,7 @@ export const hotelAdminApi = {
       const tenantId = user?.tenantId || '';
 
       const url = `${API_BASE_URL}/hotel-admin/bookings?${params.toString()}&_t=${Date.now()}`;
-      console.log('HotelAdminApi: Fetching bookings from URL:', url);
+      // console.log('HotelAdminApi: Fetching bookings from URL:', url);
 
       const response = await fetch(url, {
         method: 'GET',
@@ -222,7 +222,7 @@ export const hotelAdminApi = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Bookings fetch error:', error);
+      // console.error('Bookings fetch error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to fetch bookings' 
@@ -246,7 +246,7 @@ export const hotelAdminApi = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Booking stats fetch error:', error);
+      // console.error('Booking stats fetch error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to fetch booking statistics' 
@@ -270,7 +270,7 @@ export const hotelAdminApi = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Hotel stats fetch error:', error);
+      // console.error('Hotel stats fetch error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to fetch hotel statistics' 
@@ -301,7 +301,7 @@ export const hotelAdminApi = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Booking status update error:', error);
+      // console.error('Booking status update error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to update booking status' 
@@ -332,7 +332,7 @@ export const hotelAdminApi = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Payment status update error:', error);
+      // console.error('Payment status update error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to update payment status' 
@@ -375,7 +375,7 @@ export const hotelAdminApi = {
       const data = await response.json();
       return { success: true, data, message: data.message };
     } catch (error) {
-      console.error('Booking modification error:', error);
+      // console.error('Booking modification error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to modify booking' 
@@ -409,7 +409,7 @@ export const hotelAdminApi = {
 
       return { success: true };
     } catch (error) {
-      console.error('Booking delete error:', error);
+      // console.error('Booking delete error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to delete booking' 
@@ -436,7 +436,7 @@ export const hotelAdminApi = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Booking fetch error:', error);
+      // console.error('Booking fetch error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to fetch booking details' 
@@ -503,7 +503,7 @@ export const hotelAdminApi = {
       
       return { success: true, data: transformedData };
     } catch (error) {
-      console.error('Rooms fetch error:', error);
+      // console.error('Rooms fetch error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to fetch rooms' 
@@ -530,7 +530,7 @@ export const hotelAdminApi = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Room fetch error:', error);
+      // console.error('Room fetch error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to fetch room details' 
@@ -558,7 +558,7 @@ export const hotelAdminApi = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Room creation error:', error);
+      // console.error('Room creation error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to create room' 
@@ -587,7 +587,7 @@ export const hotelAdminApi = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Room update error:', error);
+      // console.error('Room update error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to update room' 
@@ -613,7 +613,7 @@ export const hotelAdminApi = {
 
       return { success: true };
     } catch (error) {
-      console.error('Room deletion error:', error);
+      // console.error('Room deletion error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to delete room' 
@@ -644,7 +644,7 @@ export const hotelAdminApi = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Room availability update error:', error);
+      // console.error('Room availability update error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to update room availability' 
@@ -681,7 +681,7 @@ export const hotelAdminApi = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Room status update error:', error);
+      // console.error('Room status update error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to update room status' 
@@ -753,7 +753,7 @@ export const hotelAdminApi = {
       
       return { success: true, data: transformedData };
     } catch (error) {
-      console.error('Get staff error:', error);
+      // console.error('Get staff error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to fetch staff' 
@@ -800,7 +800,7 @@ export const hotelAdminApi = {
       
       return { success: true, data: transformedData };
     } catch (error) {
-      console.error('Get staff by ID error:', error);
+      // console.error('Get staff by ID error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to fetch staff member' 
@@ -833,8 +833,8 @@ export const hotelAdminApi = {
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('Staff creation error response:', errorData);
-        console.error('Request body was:', userDTO);
+        // console.error('Staff creation error response:', errorData);
+        // console.error('Request body was:', userDTO);
         
         // Handle specific error cases
         if (errorData.error === 'User with this email already exists') {
@@ -887,7 +887,7 @@ export const hotelAdminApi = {
       
       return { success: true, data: transformedData };
     } catch (error) {
-      console.error('Create staff error:', error);
+      // console.error('Create staff error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to create staff member' 
@@ -933,7 +933,7 @@ export const hotelAdminApi = {
       
       return { success: true, data: transformedData };
     } catch (error) {
-      console.error('Update staff error:', error);
+      // console.error('Update staff error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to update staff member' 
@@ -959,7 +959,7 @@ export const hotelAdminApi = {
 
       return { success: true };
     } catch (error) {
-      console.error('Delete staff error:', error);
+      // console.error('Delete staff error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to delete staff member' 
@@ -989,7 +989,7 @@ export const hotelAdminApi = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Activate staff error:', error);
+      // console.error('Activate staff error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to activate staff member' 
@@ -1019,7 +1019,7 @@ export const hotelAdminApi = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Deactivate staff error:', error);
+      // console.error('Deactivate staff error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to deactivate staff member' 
@@ -1047,7 +1047,7 @@ export const hotelAdminApi = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Hotel fetch error:', error);
+      // console.error('Hotel fetch error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to fetch hotel details' 
@@ -1075,7 +1075,7 @@ export const hotelAdminApi = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Hotel update error:', error);
+      // console.error('Hotel update error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to update hotel details' 
@@ -1112,7 +1112,7 @@ export const hotelAdminApi = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Room type pricing fetch error:', error);
+      // console.error('Room type pricing fetch error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to fetch room type pricing' 
@@ -1143,7 +1143,7 @@ export const hotelAdminApi = {
           // Use the detailed error message from the backend
           // For BookingException, the specific message is in 'details', not 'message'
           errorMessage = errorData.details || errorData.message || errorData.error || errorMessage;
-          console.log('Hotel Admin API Error:', errorMessage);
+          // console.log('Hotel Admin API Error:', errorMessage);
         } catch (parseError) {
           // If we can't parse the error response, use the status text
           errorMessage = response.statusText || errorMessage;
@@ -1155,7 +1155,7 @@ export const hotelAdminApi = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Walk-in booking creation error:', error);
+      // console.error('Walk-in booking creation error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to create walk-in booking' 
@@ -1192,7 +1192,7 @@ export const hotelAdminApi = {
       }));
       return { success: true, data: transformedData };
     } catch (error) {
-      console.error('Hotel images fetch error:', error);
+      // console.error('Hotel images fetch error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to fetch hotel images' 
@@ -1251,7 +1251,7 @@ export const hotelAdminApi = {
       }));
       return { success: true, data: transformedData };
     } catch (error) {
-      console.error('Hotel images upload error:', error);
+      // console.error('Hotel images upload error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to upload hotel images' 
@@ -1277,7 +1277,7 @@ export const hotelAdminApi = {
 
       return { success: true };
     } catch (error) {
-      console.error('Hotel image deletion error:', error);
+      // console.error('Hotel image deletion error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to delete hotel image' 
@@ -1319,7 +1319,7 @@ export const hotelAdminApi = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Bulk upload error:', error);
+      // console.error('Bulk upload error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to upload rooms'
@@ -1360,7 +1360,7 @@ export const hotelAdminApi = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('CSV validation error:', error);
+      // console.error('CSV validation error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to validate CSV'
@@ -1389,7 +1389,7 @@ export const hotelAdminApi = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Template info error:', error);
+      // console.error('Template info error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to get template info'
@@ -1420,7 +1420,7 @@ export const hotelAdminApi = {
         automatedSystem: result.automatedSystem
       };
     } catch (error) {
-      console.error('Fix room status consistency error:', error);
+      // console.error('Fix room status consistency error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to fix room status consistency'
@@ -1446,7 +1446,7 @@ export const hotelAdminApi = {
 
       return { success: true, data: result };
     } catch (error) {
-      console.error('Get automation status error:', error);
+      // console.error('Get automation status error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Network error' 

@@ -62,7 +62,7 @@ export const TenantProvider: React.FC<TenantProviderProps> = ({ children }) => {
 
   const updateTenantFromToken = useCallback((token: string) => {
     const extractedTenantId = getTenantIdFromToken(token);
-    console.log('Extracted tenant ID from JWT:', extractedTenantId);
+    // console.log('Extracted tenant ID from JWT:', extractedTenantId);
     
     // For system-wide users, extractedTenantId will be null
     setTenantId(extractedTenantId);
@@ -70,15 +70,15 @@ export const TenantProvider: React.FC<TenantProviderProps> = ({ children }) => {
     // CRITICAL: Set the token in apiClient so authenticated requests work
     apiClient.setToken(token);
     apiClient.setTenantId(extractedTenantId);
-    console.log('🔑 Token and tenant set in apiClient during restoration');
+    // console.log('🔑 Token and tenant set in apiClient during restoration');
     
     if (extractedTenantId === null) {
-      console.log('System-wide user detected - no tenant context');
+      // console.log('System-wide user detected - no tenant context');
     }
   }, [setTenantId]);
 
   const clearTenant = useCallback(() => {
-    console.log('Clearing tenant context on logout');
+    // console.log('Clearing tenant context on logout');
     setTenantId(null);
   }, [setTenantId]);
 
@@ -88,13 +88,13 @@ export const TenantProvider: React.FC<TenantProviderProps> = ({ children }) => {
     const savedToken = TokenManager.getToken();
     if (savedToken) {
       const extractedTenantId = getTenantIdFromToken(savedToken);
-      console.log('Extracted tenant ID from JWT during initialization:', extractedTenantId);
+      // console.log('Extracted tenant ID from JWT during initialization:', extractedTenantId);
       setTenantId(extractedTenantId); // This can be null for system-wide users
       
       // CRITICAL: Also set the token in apiClient during initialization
       apiClient.setToken(savedToken);
       apiClient.setTenantId(extractedTenantId);
-      console.log('🔑 Token and tenant set in apiClient during initialization');
+      // console.log('🔑 Token and tenant set in apiClient during initialization');
     }
   }, [setTenantId]);
 

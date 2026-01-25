@@ -139,7 +139,7 @@ const PaymentPage: React.FC = () => {
   // Redirect if no payment data
   useEffect(() => {
     if (!paymentData || !paymentData.totalAmount) {
-      console.warn('No payment data found, redirecting...');
+      // console.warn('No payment data found, redirecting...');
       
       // Check if user has access to shop routes
       const userRoles = user?.roles || [];
@@ -300,7 +300,7 @@ const PaymentPage: React.FC = () => {
           transactionId: `txn_${Date.now()}`,
         };
 
-        console.log('Creating hotel booking:', bookingRequest);
+        // console.log('Creating hotel booking:', bookingRequest);
         const result = await hotelApiService.createBooking(bookingRequest);
         
         // Auto-redirect after booking creation
@@ -330,7 +330,7 @@ const PaymentPage: React.FC = () => {
       }
 
     } catch (err) {
-      console.error('Failed to create order/booking after payment:', err);
+      // console.error('Failed to create order/booking after payment:', err);
       const bookingType = paymentData?.bookingType || 'shop_order';
       const errorMsg = bookingType === 'hotel_booking' 
         ? 'Payment successful but failed to create booking. Please contact support.'
@@ -425,12 +425,12 @@ const PaymentPage: React.FC = () => {
 
     const handleDownloadReceipt = () => {
       // TODO: Implement PDF download functionality
-      console.log('Downloading booking receipt...');
+      // console.log('Downloading booking receipt...');
     };
 
     const handleSaveReceipt = () => {
       // TODO: Implement save to account functionality
-      console.log('Saving booking receipt...');
+      // console.log('Saving booking receipt...');
     };
 
     return (
@@ -544,12 +544,12 @@ const PaymentPage: React.FC = () => {
 
     const handleDownloadReceipt = () => {
       // TODO: Implement PDF download functionality
-      console.log('Downloading receipt...');
+      // console.log('Downloading receipt...');
     };
 
     const handleSaveReceipt = () => {
       // TODO: Implement save to account functionality
-      console.log('Saving receipt...');
+      // console.log('Saving receipt...');
     };
 
     return (

@@ -86,7 +86,7 @@ const OrderManagement: React.FC = () => {
 
   const loadOrders = useCallback(async () => {
     if (!hotelId) {
-      console.error('Cannot load orders: No hotel ID available');
+      // console.error('Cannot load orders: No hotel ID available');
       return;
     }
 
@@ -133,7 +133,7 @@ const OrderManagement: React.FC = () => {
 
   const handleToggleOrderStatus = async (orderId: number) => {
     if (!hotelId) {
-      console.error('Cannot toggle order status: No hotel ID available');
+      // console.error('Cannot toggle order status: No hotel ID available');
       return;
     }
 

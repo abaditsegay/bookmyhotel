@@ -43,7 +43,7 @@ class OperationsSupervisorApiService {
 
       return await response.json();
     } catch (error) {
-      console.error(`API request failed: /supervisor${endpoint}`, error);
+      // console.error(`API request failed: /supervisor${endpoint}`, error);
       throw error;
     }
   }

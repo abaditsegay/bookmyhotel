@@ -223,7 +223,7 @@ const BookingConfirmationPage: React.FC = () => {
       setEmailAddress(response.guestEmail);
     } catch (err) {
       setError('Failed to load booking details');
-      console.error('Error fetching booking:', err);
+      // console.error('Error fetching booking:', err);
     } finally {
       setLoading(false);
     }
@@ -248,12 +248,12 @@ const BookingConfirmationPage: React.FC = () => {
   useEffect(() => {
     const fetchTaxRates = async () => {
       if (!booking?.hotelId) {
-        console.log('🏨 Cannot fetch tax rates - missing hotelId');
+        // console.log('🏨 Cannot fetch tax rates - missing hotelId');
         return;
       }
       
       try {
-        console.log('🔍 Fetching tax rates for hotel:', booking.hotelId);
+        // console.log('🔍 Fetching tax rates for hotel:', booking.hotelId);
         const headers: Record<string, string> = {};
         if (token) {
           headers['Authorization'] = `Bearer ${token}`;
@@ -265,17 +265,17 @@ const BookingConfirmationPage: React.FC = () => {
         
         if (response.ok) {
           const taxData = await response.json();
-          console.log('📊 Tax rates loaded:', taxData);
+          // console.log('📊 Tax rates loaded:', taxData);
           setHotelVatRate(taxData.vatRate || 0);
           setHotelServiceTaxRate(taxData.serviceTaxRate || 0);
         } else {
-          console.error('Failed to fetch tax rates:', response.status);
+          // console.error('Failed to fetch tax rates:', response.status);
           // Set default tax rates if fetch fails
           setHotelVatRate(0);
           setHotelServiceTaxRate(0);
         }
       } catch (error) {
-        console.error('Error fetching tax rates:', error);
+        // console.error('Error fetching tax rates:', error);
         // Set default tax rates if error occurs
         setHotelVatRate(0);
         setHotelServiceTaxRate(0);
@@ -405,7 +405,7 @@ const BookingConfirmationPage: React.FC = () => {
       setSnackbarSeverity('success');
       setSnackbarOpen(true);
     } catch (err) {
-      console.error('Error sending email:', err);
+      // console.error('Error sending email:', err);
       let errorMessage = t('bookingConfirmation.messages.emailError') + ' ';
       
       if (err instanceof Error) {
@@ -436,7 +436,7 @@ const BookingConfirmationPage: React.FC = () => {
       setSnackbarSeverity('success');
       setSnackbarOpen(true);
     } catch (err) {
-      console.error('Error downloading PDF:', err);
+      // console.error('Error downloading PDF:', err);
       let errorMessage = t('bookingConfirmation.messages.pdfError') + ' ';
       
       if (err instanceof Error) {

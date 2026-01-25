@@ -67,16 +67,16 @@ const StaffDetails: React.FC = () => {
         const result = await hotelAdminApi.getStaffById(token, staffId);
         
         if (result.success && result.data) {
-          console.log('Found staff:', result.data);
+          // console.log('Found staff:', result.data);
           setStaff(result.data);
           setEditedStaff({ ...result.data });
         } else {
-          console.log('Staff not found for ID:', staffId);
+          // console.log('Staff not found for ID:', staffId);
           setError(result.message || `Staff not found for ID: ${staffId}`);
         }
       } catch (err) {
         setError('Failed to load staff details');
-        console.error('Error loading staff:', err);
+        // console.error('Error loading staff:', err);
       } finally {
         setLoading(false);
       }
@@ -118,7 +118,7 @@ const StaffDetails: React.FC = () => {
       }
     } catch (err) {
       setError('Failed to update staff');
-      console.error('Error updating staff:', err);
+      // console.error('Error updating staff:', err);
     }
   };
 
@@ -164,7 +164,7 @@ const StaffDetails: React.FC = () => {
       }
     } catch (err) {
       setError('Failed to update staff status');
-      console.error('Error updating staff status:', err);
+      // console.error('Error updating staff status:', err);
     }
   };
 

@@ -110,12 +110,12 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
     const lines = csvText.split('\n').filter(line => line.trim());
     
     if (lines.length < 2) {
-      console.log('CSV parsing: Not enough lines');
+      // console.log('CSV parsing: Not enough lines');
       return [];
     }
     
     const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
-    console.log('CSV headers found:', headers);
+    // console.log('CSV headers found:', headers);
     
     const rooms: RoomData[] = [];
     
@@ -175,7 +175,7 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
       }
     }
     
-    console.log('CSV parsing complete:', rooms.length, 'rooms found');
+    // console.log('CSV parsing complete:', rooms.length, 'rooms found');
     return rooms;
   };
 
@@ -263,15 +263,15 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
     try {
       // First try server-side validation if token is available
       if (token) {
-        console.log('Attempting server-side validation...');
+        // console.log('Attempting server-side validation...');
         const validationResult = await hotelAdminApi.validateCsv(token, file, hotelId?.toString());
-        console.log('Server validation result:', validationResult);
+        // console.log('Server validation result:', validationResult);
         if (validationResult.success && validationResult.data) {
           // Handle nested data structure
           const actualData = validationResult.data.data || validationResult.data;
           setParsedData(actualData.successfulRooms || []);
           setValidationErrors(actualData.validationErrors || []);
-          console.log('Parsed data set:', actualData.successfulRooms?.length || 0, 'rooms');
+          // console.log('Parsed data set:', actualData.successfulRooms?.length || 0, 'rooms');
           // Always go to step 3 (Review & Validate) to show the data table
           setActiveStep(Math.max(activeStep, 3));
           setIsProcessing(false);
@@ -280,15 +280,15 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
       }
       
       // Fallback to client-side parsing and validation
-      console.log('Using client-side parsing...');
+      // console.log('Using client-side parsing...');
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
           const csvText = e.target?.result as string;
-          console.log('CSV text loaded, length:', csvText?.length);
+          // console.log('CSV text loaded, length:', csvText?.length);
           const rooms = parseCSV(csvText);
           const errors = validateData(rooms);
-          console.log('Client-side parsed:', rooms?.length, 'rooms, errors:', errors?.length);
+          // console.log('Client-side parsed:', rooms?.length, 'rooms, errors:', errors?.length);
           
           setParsedData(rooms);
           setValidationErrors(errors);
@@ -296,7 +296,7 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
           setActiveStep(Math.max(activeStep, 3));
           setIsProcessing(false);
         } catch (error) {
-          console.error('Error parsing CSV:', error);
+          // console.error('Error parsing CSV:', error);
           alert('Error parsing CSV file. Please check the format.');
           setIsProcessing(false);
         }
@@ -305,7 +305,7 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
       reader.readAsText(file);
       
     } catch (error) {
-      console.error('Error validating file:', error);
+      // console.error('Error validating file:', error);
       alert('Error validating file. Using offline validation.');
       
       // Fallback to client-side validation
@@ -322,7 +322,7 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
           setActiveStep(Math.max(activeStep, 3));
           setIsProcessing(false);
         } catch (error) {
-          console.error('Error parsing CSV:', error);
+          // console.error('Error parsing CSV:', error);
           alert('Error parsing CSV file. Please check the format.');
           setIsProcessing(false);
         }
@@ -339,7 +339,7 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
     }
     
     if (!uploadedFile || !token) {
-      console.error('Missing file or token');
+      // console.error('Missing file or token');
       return;
     }
     
@@ -377,14 +377,14 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
           (failedImports > 0 ? `, ${failedImports} failed` : ''));
         
         if (importErrors.length > 0) {
-          console.log('Import errors:', importErrors);
+          // console.log('Import errors:', importErrors);
         }
       } else {
         throw new Error(result.message || 'Upload failed');
       }
       
     } catch (error) {
-      console.error('Error uploading rooms:', error);
+      // console.error('Error uploading rooms:', error);
       alert('Error uploading rooms: ' + (error instanceof Error ? error.message : 'Unknown error'));
     } finally {
       setIsImporting(false);

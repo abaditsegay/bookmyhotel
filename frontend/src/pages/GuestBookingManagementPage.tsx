@@ -123,7 +123,7 @@ const GuestBookingManagementPage: React.FC = () => {
       const response = await fetch(buildApiUrl(`/hotels/${hotelId}/tax-rate`));
       
       if (!response.ok) {
-        console.warn('Could not fetch tax rate for hotel:', hotelId);
+        // console.warn('Could not fetch tax rate for hotel:', hotelId);
         return { total: 0, vat: 0, service: 0 };
       }
       
@@ -134,7 +134,7 @@ const GuestBookingManagementPage: React.FC = () => {
         service: data.serviceTaxRate || 0
       };
     } catch (error) {
-      console.error('Error fetching hotel tax rate:', error);
+      // console.error('Error fetching hotel tax rate:', error);
       return { total: 0, vat: 0, service: 0 };
     }
   }, []);
@@ -153,7 +153,7 @@ const GuestBookingManagementPage: React.FC = () => {
       
       // Ensure we have a hotel ID
       if (!booking.hotelId) {
-        console.warn('No hotel ID available in booking data');
+        // console.warn('No hotel ID available in booking data');
         return null;
       }
       
@@ -164,7 +164,7 @@ const GuestBookingManagementPage: React.FC = () => {
       );
       
       if (!response.ok) {
-        console.warn('Could not fetch room price for type:', roomType);
+        // console.warn('Could not fetch room price for type:', roomType);
         return null;
       }
       
@@ -183,7 +183,7 @@ const GuestBookingManagementPage: React.FC = () => {
       
       return null;
     } catch (error) {
-      console.error('Error fetching room price:', error);
+      // console.error('Error fetching room price:', error);
       return null;
     } finally {
       setFetchingRoomPrice(false);
@@ -566,7 +566,7 @@ const GuestBookingManagementPage: React.FC = () => {
         setAuthMessage(result.message || `Failed to send authentication email for ${action}. Please try again.`);
       }
     } catch (error) {
-      console.error('Error sending authentication email:', error);
+      // console.error('Error sending authentication email:', error);
       setAuthMessage(`Failed to send authentication email for ${action}. Please try again.`);
     } finally {
       setAuthLoading(false);

@@ -149,7 +149,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
           const isHotelAdmin = user?.role === 'HOTEL_ADMIN' || user?.roles?.includes('HOTEL_ADMIN');
           const endpoint = isHotelAdmin ? `${API_BASE_URL}/api/hotel-admin/hotel` : `${API_BASE_URL}/api/front-desk/hotel`;
           
-          console.log('Loading hotel info for user role:', user?.role, 'using endpoint:', endpoint);
+          // console.log('Loading hotel info for user role:', user?.role, 'using endpoint:', endpoint);
           
           const response = await fetch(endpoint, {
             headers
@@ -160,16 +160,16 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
             setHotelId(hotelData.id);
           } else {
             const errorText = await response.text();
-            console.error('Failed to fetch hotel information:', response.status, errorText);
+            // console.error('Failed to fetch hotel information:', response.status, errorText);
             throw new Error(`Failed to fetch hotel information: ${response.status}`);
           }
         } catch (hotelError) {
-          console.error('Failed to fetch hotel information:', hotelError);
+          // console.error('Failed to fetch hotel information:', hotelError);
           setError(t('walkInBooking.messages.failedToLoadHotelPermissions'));
           return;
         }
       } catch (error) {
-        console.error('Failed to load hotel info:', error);
+        // console.error('Failed to load hotel info:', error);
         setError(t('walkInBooking.messages.failedToLoadHotel'));
       }
     };
@@ -199,12 +199,12 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
   useEffect(() => {
     const fetchTaxRates = async () => {
       if (!hotelId || !token) {
-        console.log('🏨 Cannot fetch tax rates - missing hotelId or token');
+        // console.log('🏨 Cannot fetch tax rates - missing hotelId or token');
         return;
       }
       
       try {
-        console.log('🔍 Fetching tax rates for hotel:', hotelId);
+        // console.log('🔍 Fetching tax rates for hotel:', hotelId);
         const response = await fetch(buildApiUrl(`/hotels/${hotelId}/tax-rate`), {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -214,17 +214,17 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
         
         if (response.ok) {
           const taxData = await response.json();
-          console.log('📊 Tax rates loaded:', taxData);
+          // console.log('📊 Tax rates loaded:', taxData);
           setHotelVatRate(taxData.vatRate || 0);
           setHotelServiceTaxRate(taxData.serviceTaxRate || 0);
         } else {
-          console.error('Failed to fetch tax rates:', response.status);
+          // console.error('Failed to fetch tax rates:', response.status);
           // Set default tax rates if fetch fails
           setHotelVatRate(0);
           setHotelServiceTaxRate(0);
         }
       } catch (error) {
-        console.error('Error fetching tax rates:', error);
+        // console.error('Error fetching tax rates:', error);
         // Set default tax rates if error occurs
         setHotelVatRate(0);
         setHotelServiceTaxRate(0);
@@ -238,7 +238,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
   useEffect(() => {
     const loadAvailableRooms = async () => {
       if (!hotelId || !token) {
-        console.log('Cannot load rooms - missing hotelId or token:', { hotelId, hasToken: !!token });
+        // console.log('Cannot load rooms - missing hotelId or token:', { hotelId, hasToken: !!token });
         return;
       }
       
@@ -278,7 +278,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
             size: '100'
           });
           
-          console.log('Hotel admin fetching available rooms for date range:', format(checkInDate, 'yyyy-MM-dd'), 'to', format(checkOutDate, 'yyyy-MM-dd'), 'guests:', guests);
+          // console.log('Hotel admin fetching available rooms for date range:', format(checkInDate, 'yyyy-MM-dd'), 'to', format(checkOutDate, 'yyyy-MM-dd'), 'guests:', guests);
           
           const response = await fetch(`${API_BASE_URL}/api/hotel-admin/available-rooms?${params.toString()}`, {
             headers
@@ -316,7 +316,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
             guests: guests.toString()
           });
           
-          console.log('Front desk fetching available rooms for date range:', format(checkInDate, 'yyyy-MM-dd'), 'to', format(checkOutDate, 'yyyy-MM-dd'), 'guests:', guests);
+          // console.log('Front desk fetching available rooms for date range:', format(checkInDate, 'yyyy-MM-dd'), 'to', format(checkOutDate, 'yyyy-MM-dd'), 'guests:', guests);
           
           const response = await fetch(`${API_BASE_URL}/api/front-desk/hotels/${hotelId}/available-rooms?${params.toString()}`, {
             headers
@@ -345,12 +345,12 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
           (room.isAvailable !== false)
         );
         
-        console.log('Available rooms loaded:', filteredRooms.length, 'out of', rooms.length, 'total rooms');
-        console.log('Filtered for', guests, 'guests on', format(checkInDate, 'yyyy-MM-dd'), 'to', format(checkOutDate, 'yyyy-MM-dd'));
+        // console.log('Available rooms loaded:', filteredRooms.length, 'out of', rooms.length, 'total rooms');
+        // console.log('Filtered for', guests, 'guests on', format(checkInDate, 'yyyy-MM-dd'), 'to', format(checkOutDate, 'yyyy-MM-dd'));
         setAvailableRooms(filteredRooms);
         setSelectedRoom(null);
       } catch (error) {
-        console.error('Failed to load available rooms:', error);
+        // console.error('Failed to load available rooms:', error);
         setError(t('walkInBooking.messages.failedToLoadRooms'));
         setAvailableRooms([]);
       } finally {
@@ -418,7 +418,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
       const isHotelAdmin = user?.role === 'HOTEL_ADMIN' || user?.roles?.includes('HOTEL_ADMIN');
       
       if (isHotelAdmin) {
-        console.log('Creating walk-in booking via hotel admin API');
+        // console.log('Creating walk-in booking via hotel admin API');
         response = await hotelAdminApi.createWalkInBooking(token, bookingRequest);
         if (response.success) {
           response = response.data;
@@ -426,7 +426,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
           throw new Error(response.message || 'Failed to create booking');
         }
       } else {
-        console.log('Creating walk-in booking via front desk API');
+        // console.log('Creating walk-in booking via front desk API');
         // Use the new front desk walk-in booking endpoint that ensures email goes to guest
         response = await frontDeskApiService.createWalkInBooking(token, bookingRequest);
         if (response.success) {
@@ -444,7 +444,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
         BookingNotificationEvents.afterCreation();
       }
     } catch (error) {
-      console.error('Failed to create walk-in booking:', error);
+      // console.error('Failed to create walk-in booking:', error);
       
       // Extract meaningful error message
       let errorMessage = 'Failed to create booking. Please try again.';

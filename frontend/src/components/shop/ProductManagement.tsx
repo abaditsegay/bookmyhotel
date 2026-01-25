@@ -175,7 +175,7 @@ const ProductManagement: React.FC = () => {
 
   const handleCreateProduct = async () => {
     if (!hotelId) {
-      console.error('Cannot create product: No hotel ID available');
+      // console.error('Cannot create product: No hotel ID available');
       return;
     }
 
@@ -194,7 +194,7 @@ const ProductManagement: React.FC = () => {
 
   const handleUpdateProduct = async () => {
     if (!editingProduct || !hotelId) {
-      console.error('Cannot update product: Missing product or hotel ID');
+      // console.error('Cannot update product: Missing product or hotel ID');
       return;
     }
     
@@ -219,7 +219,7 @@ const ProductManagement: React.FC = () => {
 
   const confirmDeleteProduct = async () => {
     if (!productToDelete || !hotelId) {
-      console.error('Cannot delete product: Missing product or hotel ID');
+      // console.error('Cannot delete product: Missing product or hotel ID');
       return;
     }
     
@@ -238,7 +238,7 @@ const ProductManagement: React.FC = () => {
 
   const handleToggleStatus = async (product: Product, field: 'isActive' | 'isAvailable') => {
     if (!hotelId) {
-      console.error('Cannot toggle status: No hotel ID available');
+      // console.error('Cannot toggle status: No hotel ID available');
       return;
     }
 

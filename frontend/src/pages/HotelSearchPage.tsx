@@ -44,7 +44,7 @@ const HotelSearchPage: React.FC = () => {
         }
       });
     } catch (err) {
-      console.error('❌ Hotel search failed:', err);
+      // console.error('❌ Hotel search failed:', err);
       setError(err instanceof Error ? err.message : t('hotelSearch.errors.searchFailed'));
     } finally {
       setLoading(false);

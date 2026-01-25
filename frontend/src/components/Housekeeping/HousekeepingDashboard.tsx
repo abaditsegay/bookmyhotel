@@ -139,7 +139,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
         setTasks([]);
       }
     } catch (error) {
-      console.error('🔄 loadTasks: Error loading tasks:', error);
+      // console.error('🔄 loadTasks: Error loading tasks:', error);
       setError('Failed to load tasks');
       setTasks([]);
     } finally {
@@ -185,7 +185,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
       loadTasks();
     } catch (err) {
       setError('Failed to update task status');
-      console.error('Update status error:', err);
+      // console.error('Update status error:', err);
     }
   };
 
@@ -194,7 +194,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
       const staff = await housekeepingSupervisorApi.getStaff();
       setAvailableStaff(staff);
     } catch (err) {
-      console.error('❌ Failed to load staff:', err);
+      // console.error('❌ Failed to load staff:', err);
       setError('Failed to load staff members');
     }
   }, []);
@@ -210,7 +210,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
       loadTasks();
     } catch (err) {
       setError('Failed to assign task');
-      console.error('Assign task error:', err);
+      // console.error('Assign task error:', err);
     }
   };
 
@@ -256,7 +256,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
       }
       
     } catch (err) {
-      console.error('❌ Error creating staff member:', err);
+      // console.error('❌ Error creating staff member:', err);
       setError('Failed to create staff member');
     } finally {
       setLoading(false);
@@ -359,7 +359,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
       loadTasks();
       
     } catch (err) {
-      console.error('❌ Error creating task:', err);
+      // console.error('❌ Error creating task:', err);
       setError('Failed to create task');
     } finally {
       setLoading(false);

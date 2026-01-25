@@ -52,7 +52,7 @@ export const useBookingHistory = (confirmationNumber?: string) => {
       const data = await response.json();
       setHistory(data || []);
     } catch (err: any) {
-      console.error('Error fetching booking history:', err);
+      // console.error('Error fetching booking history:', err);
       setError(err.message || 'Failed to fetch booking history');
       setHistory([]);
     } finally {

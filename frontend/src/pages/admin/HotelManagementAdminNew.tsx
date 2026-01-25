@@ -163,7 +163,7 @@ const HotelManagementAdmin: React.FC = () => {
       const response = await adminApiService.getHotels(0, 1000); // Get all hotels for now
       setHotels(response.content || []);
     } catch (err) {
-      console.error('Error loading hotels:', err);
+      // console.error('Error loading hotels:', err);
       setError('Failed to load hotels. Please try again.');
     } finally {
       setLoading(false);
@@ -188,7 +188,7 @@ const HotelManagementAdmin: React.FC = () => {
         setRegistrations(data.content || data);
       }
     } catch (err) {
-      console.error('Error loading registrations:', err);
+      // console.error('Error loading registrations:', err);
     }
   }, [token]);
 
@@ -205,7 +205,7 @@ const HotelManagementAdmin: React.FC = () => {
         setRegistrationStats(data);
       }
     } catch (err) {
-      console.error('Error loading registration statistics:', err);
+      // console.error('Error loading registration statistics:', err);
     }
   }, [token]);
 
@@ -312,7 +312,7 @@ const HotelManagementAdmin: React.FC = () => {
         throw new Error('Failed to submit registration');
       }
     } catch (err) {
-      console.error('Error submitting registration:', err);
+      // console.error('Error submitting registration:', err);
       setError('Failed to submit hotel registration. Please try again.');
     }
   };
@@ -386,7 +386,7 @@ const HotelManagementAdmin: React.FC = () => {
       setSuccess('Hotel updated successfully');
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
-      console.error('Error updating hotel:', err);
+      // console.error('Error updating hotel:', err);
       setError('Failed to update hotel. Please try again.');
     }
   };
@@ -403,7 +403,7 @@ const HotelManagementAdmin: React.FC = () => {
       setSuccess(`Hotel ${hotel.isActive ? 'deactivated' : 'activated'} successfully`);
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
-      console.error('Error toggling hotel status:', err);
+      // console.error('Error toggling hotel status:', err);
       setError('Failed to update hotel status. Please try again.');
     } finally {
       setLoading(false);
@@ -429,7 +429,7 @@ const HotelManagementAdmin: React.FC = () => {
       setSuccess('Hotel deleted successfully');
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
-      console.error('Error deleting hotel:', err);
+      // console.error('Error deleting hotel:', err);
       setError('Failed to delete hotel. Please try again.');
     } finally {
       setLoading(false);

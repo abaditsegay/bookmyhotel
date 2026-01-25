@@ -208,7 +208,7 @@ class MockPaymentGateway {
   private generatePaymentReference(paymentMethod: PaymentMethod, userReference?: string): string {
     // Use user-provided reference for mobile money payments if available
     if ((paymentMethod === PaymentMethod.MOBILE_MONEY || paymentMethod === PaymentMethod.MOBILE) && userReference) {
-      console.log('✅ Using user-provided payment reference:', userReference);
+      // console.log('✅ Using user-provided payment reference:', userReference);
       return userReference;
     }
     
@@ -217,7 +217,7 @@ class MockPaymentGateway {
     const methodCode = this.getMethodCode(paymentMethod);
     const random = Math.floor(Math.random() * 1000);
     const generatedRef = `${methodCode}_${timestamp}_${random}`;
-    console.log('🔄 Generated payment reference:', generatedRef);
+    // console.log('🔄 Generated payment reference:', generatedRef);
     return generatedRef;
   }
 
@@ -276,25 +276,25 @@ class MockPaymentGateway {
       
       // Check if card number has 16 digits
       if (!/^\d{16}$/.test(cardNumber)) {
-        console.warn('Invalid card number: must be 16 digits');
+        // console.warn('Invalid card number: must be 16 digits');
         return false;
       }
       
       // Basic Luhn algorithm check for credit cards
       if (!this.isValidCreditCard(cardNumber)) {
-        console.warn('Invalid credit card number: failed Luhn check');
+        // console.warn('Invalid credit card number: failed Luhn check');
         return false;
       }
       
       // Check expiry date format
       if (paymentDetails.expiryDate && !/^\d{2}\/\d{2}$/.test(paymentDetails.expiryDate)) {
-        console.warn('Invalid expiry date format: must be MM/YY');
+        // console.warn('Invalid expiry date format: must be MM/YY');
         return false;
       }
       
       // Check CVV format
       if (paymentDetails.cvv && !/^\d{3,4}$/.test(paymentDetails.cvv)) {
-        console.warn('Invalid CVV: must be 3-4 digits');
+        // console.warn('Invalid CVV: must be 3-4 digits');
         return false;
       }
     }

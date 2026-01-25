@@ -206,29 +206,29 @@ class ShopApiService {
 
   async getInventorySummary(hotelId: number): Promise<{ totalProducts: number, lowStockProducts: number, outOfStockProducts: number, activeProducts: number }> {
     try {
-      console.info(`📦 Fetching inventory summary for hotel ${hotelId}`);
+      // console.info(`📦 Fetching inventory summary for hotel ${hotelId}`);
       const url = `${API_BASE_URL}/hotels/${hotelId}/shop/inventory/summary`;
       const headers = this.getAuthHeaders();
       
-      console.info(`📤 Making request to: ${url}`);
-      console.info(`📤 Request headers:`, Object.keys(headers));
+      // console.info(`📤 Making request to: ${url}`);
+      // console.info(`📤 Request headers:`, Object.keys(headers));
       
       const response = await fetch(url, { headers });
       
-      console.info(`📥 Response status: ${response.status} ${response.statusText}`);
+      // console.info(`📥 Response status: ${response.status} ${response.statusText}`);
       
       if (!response.ok) {
         const errorText = await response.text().catch(() => 'Unknown error');
-        console.error(`❌ Inventory summary API returned ${response.status}: ${response.statusText}`);
-        console.error(`❌ Error details:`, errorText);
+        // console.error(`❌ Inventory summary API returned ${response.status}: ${response.statusText}`);
+        // console.error(`❌ Error details:`, errorText);
         throw new Error(`HTTP ${response.status}: ${errorText}`);
       }
       
       const result = await this.handleResponse<{ totalProducts: number, lowStockProducts: number, outOfStockProducts: number, activeProducts: number }>(response);
-      console.info(`✅ Inventory summary result:`, result);
+      // console.info(`✅ Inventory summary result:`, result);
       return result;
     } catch (error) {
-      console.error('💥 Error fetching inventory summary:', error);
+      // console.error('💥 Error fetching inventory summary:', error);
       throw error;
     }
   }
@@ -335,29 +335,29 @@ class ShopApiService {
 
   async getOrderStatistics(hotelId: number): Promise<any> {
     try {
-      console.info(`📊 Fetching order statistics for hotel ${hotelId}`);
+      // console.info(`📊 Fetching order statistics for hotel ${hotelId}`);
       const url = `${API_BASE_URL}/hotels/${hotelId}/shop/orders/statistics`;
       const headers = this.getAuthHeaders();
       
-      console.info(`📤 Making request to: ${url}`);
-      console.info(`📤 Request headers:`, Object.keys(headers));
+      // console.info(`📤 Making request to: ${url}`);
+      // console.info(`📤 Request headers:`, Object.keys(headers));
       
       const response = await fetch(url, { headers });
       
-      console.info(`📥 Response status: ${response.status} ${response.statusText}`);
+      // console.info(`📥 Response status: ${response.status} ${response.statusText}`);
       
       if (!response.ok) {
         const errorText = await response.text().catch(() => 'Unknown error');
-        console.error(`❌ Order statistics API returned ${response.status}: ${response.statusText}`);
-        console.error(`❌ Error details:`, errorText);
+        // console.error(`❌ Order statistics API returned ${response.status}: ${response.statusText}`);
+        // console.error(`❌ Error details:`, errorText);
         throw new Error(`HTTP ${response.status}: ${errorText}`);
       }
       
       const result = await this.handleResponse<any>(response);
-      console.info(`✅ Order statistics result:`, result);
+      // console.info(`✅ Order statistics result:`, result);
       return result;
     } catch (error) {
-      console.error('💥 Error fetching order statistics:', error);
+      // console.error('💥 Error fetching order statistics:', error);
       throw error;
     }
   }
@@ -374,7 +374,7 @@ class ShopApiService {
   // Dashboard and Analytics - improved backend-driven implementation
   async getDashboardStats(hotelId: number): Promise<ShopDashboardStats> {
     if (!this.token || !this.tenantId) {
-      console.error('❌ Shop API: No token or tenant ID set for dashboard stats');
+      // console.error('❌ Shop API: No token or tenant ID set for dashboard stats');
       throw new Error('Authentication required');
     }
 
@@ -388,31 +388,31 @@ class ShopApiService {
         const data = await response.json();
         return data;
       } else {
-        console.warn(`⚠️ Backend dashboard endpoint failed with ${response.status}, falling back to aggregated approach`);
+        // console.warn(`⚠️ Backend dashboard endpoint failed with ${response.status}, falling back to aggregated approach`);
       }
       
     } catch (error) {
-      console.warn('⚠️ Backend dashboard endpoint error, falling back to aggregated approach:', error);
+      // console.warn('⚠️ Backend dashboard endpoint error, falling back to aggregated approach:', error);
     }
 
     // Fallback implementation: aggregate data from multiple backend endpoints
-    console.info('📊 Using aggregated approach for dashboard statistics');
+    // console.info('📊 Using aggregated approach for dashboard statistics');
     
     try {
       const [inventorySummary, orderStats] = await Promise.all([
         this.getInventorySummary(hotelId).then(result => {
-          console.info('Inventory summary fetched successfully:', result);
+          // console.info('Inventory summary fetched successfully:', result);
           return result;
         }).catch(err => {
-          console.error('Failed to get inventory summary:', err);
+          // console.error('Failed to get inventory summary:', err);
           // Return default structure that matches the backend InventorySummary
           return { totalProducts: 0, activeProducts: 0, lowStockProducts: 0, outOfStockProducts: 0 };
         }),
         this.getOrderStatistics(hotelId).then(result => {
-          console.info('Order statistics fetched successfully:', result);
+          // console.info('Order statistics fetched successfully:', result);
           return result;
         }).catch(err => {
-          console.error('Failed to get order statistics:', err);
+          // console.error('Failed to get order statistics:', err);
           // Return default structure that matches the backend OrderStatistics
           return { 
             totalOrders: 0, 
@@ -442,10 +442,10 @@ class ShopApiService {
         topSellingProducts: orderStats.topSellingProducts || [],
       };
 
-      console.info('Dashboard stats aggregated successfully:', dashboardStats);
+      // console.info('Dashboard stats aggregated successfully:', dashboardStats);
       return dashboardStats;
     } catch (error) {
-      console.error('Error getting dashboard stats from aggregated data:', error);
+      // console.error('Error getting dashboard stats from aggregated data:', error);
       
       // Return empty stats with proper logging
       const emptyStats = {
@@ -463,7 +463,7 @@ class ShopApiService {
         topSellingProducts: [],
       };
       
-      console.warn('Returning empty dashboard stats due to errors');
+      // console.warn('Returning empty dashboard stats due to errors');
       return emptyStats;
     }
   }

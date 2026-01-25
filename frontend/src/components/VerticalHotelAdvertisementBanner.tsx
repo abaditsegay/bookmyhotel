@@ -84,7 +84,7 @@ export default function VerticalHotelAdvertisementBanner({ maxHotels = 3 }: Vert
         setHotels(fallbackHotels.slice(0, maxHotels));
       }
     } catch (err) {
-      console.warn('Failed to fetch random hotels from API, using fallback:', err);
+      // console.warn('Failed to fetch random hotels from API, using fallback:', err);
       setError('Using sample hotels');
       setHotels(fallbackHotels.slice(0, maxHotels));
     } finally {

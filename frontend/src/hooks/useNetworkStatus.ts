@@ -117,7 +117,7 @@ export const useNetworkStatus = () => {
         lastSyncError: syncStatus.lastSyncError
       });
     } catch (error) {
-      console.error('Failed to update sync status:', error);
+      // console.error('Failed to update sync status:', error);
       // Set default sync status if database not initialized
       setSyncStatus(prev => ({
         ...prev,
@@ -151,7 +151,7 @@ export const useNetworkStatus = () => {
         storageSize: sizeString
       });
     } catch (error) {
-      console.error('Failed to update offline stats:', error);
+      // console.error('Failed to update offline stats:', error);
       // Set default stats if database not initialized
       setOfflineStats({
         totalBookings: 0,
@@ -324,7 +324,7 @@ export const useNetworkStatus = () => {
         await updateSyncStatus();
         await updateOfflineStats();
       } catch (error) {
-        console.error('Failed to initialize offline services:', error);
+        // console.error('Failed to initialize offline services:', error);
         // Still update network status even if offline storage fails
         updateNetworkStatus();
       }

@@ -121,12 +121,12 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
     
     // If payment is required, trigger payment dialog instead of closing
     if (requiresPayment && onPaymentRequired) {
-      console.log('Calling onPaymentRequired...');
+      // console.log('Calling onPaymentRequired...');
       onPaymentRequired();
       return;
     }
     
-    console.log('Closing receipt dialog normally');
+    // console.log('Closing receipt dialog normally');
     onClose();
     // Call the callback to refresh the order list if provided
     if (onOrderAdded) {

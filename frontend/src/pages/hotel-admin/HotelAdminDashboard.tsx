@@ -85,7 +85,7 @@ const HotelAdminDashboard: React.FC = () => {
     const tabParam = searchParams.get('tab');
     const urlTab = tabParam ? parseInt(tabParam, 10) : 0;
     const validTab = isNaN(urlTab) || urlTab < 0 || urlTab > 8 ? 0 : urlTab; // Fixed: Allow up to tab 8 (including Housekeeping)
-    console.log(`🔗 HotelAdmin: URL tab changed to ${urlTab}, setting valid tab to ${validTab}`);
+    // console.log(`🔗 HotelAdmin: URL tab changed to ${urlTab}, setting valid tab to ${validTab}`);
     setActiveTab(validTab);
   }, [searchParams]); // Remove activeTab from dependencies to prevent circular updates
 
@@ -211,11 +211,11 @@ const HotelAdminDashboard: React.FC = () => {
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     // Prevent unnecessary updates if already on the same tab
     if (newValue === activeTab) {
-      console.log(`🔄 HotelAdmin: Already on tab ${newValue}, skipping...`);
+      // console.log(`🔄 HotelAdmin: Already on tab ${newValue}, skipping...`);
       return;
     }
     
-    console.log(`🔄 HotelAdmin: Switching from tab ${activeTab} to tab ${newValue}`);
+    // console.log(`🔄 HotelAdmin: Switching from tab ${activeTab} to tab ${newValue}`);
     console.log(`🔄 HotelAdmin: Tab ${newValue} corresponds to:`, 
       newValue === 0 ? t('dashboard.hotelAdmin.tabs.hotelDetail') :
       newValue === 1 ? t('dashboard.hotelAdmin.tabs.staff') :
@@ -269,14 +269,14 @@ const HotelAdminDashboard: React.FC = () => {
       });
       
       if (!hotelStatsResult.success) {
-        console.error('Failed to load hotel stats:', hotelStatsResult.message);
+        // console.error('Failed to load hotel stats:', hotelStatsResult.message);
       }
       
       if (!bookingStatsResult.success) {
-        console.error('Failed to load booking stats:', bookingStatsResult.message);
+        // console.error('Failed to load booking stats:', bookingStatsResult.message);
       }
     } catch (error) {
-      console.error('Failed to load reports data:', error);
+      // console.error('Failed to load reports data:', error);
       setReportsData({
         hotelStats: null,
         bookingStats: null,
@@ -313,7 +313,7 @@ const HotelAdminDashboard: React.FC = () => {
         setHotelError(result.message || 'Failed to load hotel data');
       }
     } catch (err) {
-      console.error('Error loading hotel data:', err);
+      // console.error('Error loading hotel data:', err);
       setHotelError('Failed to load hotel data');
     } finally {
       setHotelLoading(false);
@@ -322,32 +322,32 @@ const HotelAdminDashboard: React.FC = () => {
 
   // Preload and cache room data for offline use
   const preloadRoomData = async () => {
-    console.log('🚀 Hotel Admin Dashboard: preloadRoomData called');
-    console.log('🔍 Hotel Admin Dashboard: user?.hotelId:', user?.hotelId);
-    console.log('🔍 Hotel Admin Dashboard: token exists:', !!token);
-    console.log('🔍 Hotel Admin Dashboard: user object:', user);
+    // console.log('🚀 Hotel Admin Dashboard: preloadRoomData called');
+    // console.log('🔍 Hotel Admin Dashboard: user?.hotelId:', user?.hotelId);
+    // console.log('🔍 Hotel Admin Dashboard: token exists:', !!token);
+    // console.log('🔍 Hotel Admin Dashboard: user object:', user);
     
     if (!user?.hotelId || !token) {
-      console.warn('⚠️ Hotel Admin Dashboard: Missing hotelId or token, skipping room preload');
+      // console.warn('⚠️ Hotel Admin Dashboard: Missing hotelId or token, skipping room preload');
       return;
     }
     
     try {
       const hotelId = parseInt(user.hotelId);
-      console.log('🏨 Hotel Admin Dashboard: Preloading room data for hotel', hotelId);
+      // console.log('🏨 Hotel Admin Dashboard: Preloading room data for hotel', hotelId);
       
       // Force refresh to get latest room data and cache it
       const rooms = await roomCacheService.getRooms(hotelId, true);
-      console.log('📊 Hotel Admin Dashboard: Retrieved rooms:', rooms.length, 'rooms');
-      console.log('🔍 Hotel Admin Dashboard: Sample room data:', rooms.slice(0, 2));
+      // console.log('📊 Hotel Admin Dashboard: Retrieved rooms:', rooms.length, 'rooms');
+      // console.log('🔍 Hotel Admin Dashboard: Sample room data:', rooms.slice(0, 2));
       
       // Start periodic refresh for this hotel
       roomCacheService.startPeriodicRefresh(hotelId);
       
-      console.log('✅ Hotel Admin Dashboard: Room data preloaded successfully');
+      // console.log('✅ Hotel Admin Dashboard: Room data preloaded successfully');
     } catch (error) {
-      console.error('❌ Hotel Admin Dashboard: Failed to preload room data:', error);
-      console.error('❌ Hotel Admin Dashboard: Error stack:', error instanceof Error ? error.stack : 'No stack');
+      // console.error('❌ Hotel Admin Dashboard: Failed to preload room data:', error);
+      // console.error('❌ Hotel Admin Dashboard: Error stack:', error instanceof Error ? error.stack : 'No stack');
     }
   };
 
@@ -973,12 +973,12 @@ const HotelAdminDashboard: React.FC = () => {
             currentTab={activeTab}
             refreshTrigger={bookingRefreshTrigger}
             onBookingAction={(booking, action) => {
-              console.log(`${action} for booking:`, booking);
+              // console.log(`${action} for booking:`, booking);
               // Handle booking actions like check-in/check-out
               // BookingManagementTable handles its own data refresh
             }}
             onWalkInRequest={() => {
-              console.log('Walk-in booking requested from BookingManagementTable');
+              // console.log('Walk-in booking requested from BookingManagementTable');
               setWalkInModalOpen(true);
             }}
           />
@@ -1721,7 +1721,7 @@ const HotelAdminDashboard: React.FC = () => {
           <OfflineWalkInBooking
             hotelId={hotel?.id}
             onBookingComplete={(booking) => {
-              console.log('Offline booking created:', booking);
+              // console.log('Offline booking created:', booking);
               setSnackbar({
                 open: true,
                 message: t('dashboard.hotelAdmin.messages.offlineBookingSuccess', { guestName: booking.guestName }),
@@ -1739,7 +1739,7 @@ const HotelAdminDashboard: React.FC = () => {
         open={walkInModalOpen}
         onClose={() => setWalkInModalOpen(false)}
         onSuccess={(bookingData) => {
-          console.log('Walk-in booking created successfully:', bookingData);
+          // console.log('Walk-in booking created successfully:', bookingData);
           setWalkInModalOpen(false);
           // Show success dialog
           setSuccessDialog({

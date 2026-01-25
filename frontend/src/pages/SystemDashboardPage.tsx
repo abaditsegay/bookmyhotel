@@ -173,7 +173,7 @@ export const SystemDashboardPage: React.FC = () => {
           loading: false
         });
       } catch (error) {
-        console.error('Failed to fetch dashboard statistics:', error);
+        // console.error('Failed to fetch dashboard statistics:', error);
         setStats(prev => ({ ...prev, loading: false }));
       }
     };
@@ -232,7 +232,7 @@ export const SystemDashboardPage: React.FC = () => {
           loading: false
         });
       } catch (error) {
-        console.error('Failed to refresh dashboard statistics:', error);
+        // console.error('Failed to refresh dashboard statistics:', error);
         setStats(prev => ({ ...prev, loading: false }));
       }
     };

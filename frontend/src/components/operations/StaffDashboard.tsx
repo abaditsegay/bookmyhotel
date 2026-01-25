@@ -154,7 +154,7 @@ const StaffDashboard: React.FC<StaffDashboardProps> = ({ currentUserRole = 'OPER
         throw new Error(`Failed to load staff data: ${response.status}`);
       }
     } catch (err) {
-      console.error('Failed to load staff data:', err);
+      // console.error('Failed to load staff data:', err);
       setError('Failed to load staff data - please check your connection');
       setStaffMembers([]); // Set empty array instead of mock data
     } finally {

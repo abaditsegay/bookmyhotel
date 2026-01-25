@@ -186,7 +186,7 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
         setTotalElements(0);
       }
     } catch (error) {
-      console.error('Failed to load rooms:', error);
+      // console.error('Failed to load rooms:', error);
       setError('Failed to load rooms');
       setTotalElements(0);
     } finally {
@@ -255,7 +255,7 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
         onRoomUpdate(data);
       }
     } catch (error) {
-      console.error('Failed to update room status:', error);
+      // console.error('Failed to update room status:', error);
       setError('Failed to update room status');
     }
   };
@@ -284,7 +284,7 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
         onRoomUpdate(data);
       }
     } catch (error) {
-      console.error('Failed to update room availability:', error);
+      // console.error('Failed to update room availability:', error);
       setError('Failed to update room availability');
     }
   };
@@ -311,7 +311,7 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
         setError(response.message || 'Failed to create room. Please check the room number is unique.');
       }
     } catch (err) {
-      console.error('Error creating room:', err);
+      // console.error('Error creating room:', err);
       setError('Failed to create room. Please check the room number is unique.');
     } finally {
       setLoading(false);

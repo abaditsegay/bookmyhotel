@@ -147,7 +147,7 @@ export const Phase3Demo: React.FC = () => {
   };
 
   const handleSearch = (query: string, filters: SearchFilter[]) => {
-    console.log('Search:', query, filters);
+    // console.log('Search:', query, filters);
     // Simulate search results
     const filteredBookings = sampleBookings.filter(booking =>
       booking.guestName.toLowerCase().includes(query.toLowerCase()) ||
@@ -157,7 +157,7 @@ export const Phase3Demo: React.FC = () => {
   };
 
   const handleRowAction = (action: string, rowId: number) => {
-    console.log(`Action ${action} on row ${rowId}`);
+    // console.log(`Action ${action} on row ${rowId}`);
     // Handle actions like edit, delete, view details
   };
 

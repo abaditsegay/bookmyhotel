@@ -66,16 +66,16 @@ const RoomViewEdit: React.FC = () => {
         const result = await hotelAdminApi.getRoomById(token, roomId);
         
         if (result.success && result.data) {
-          console.log('Found room:', result.data);
+          // console.log('Found room:', result.data);
           setRoom(result.data);
           setEditedRoom({ ...result.data });
         } else {
-          console.log('Room not found for ID:', roomId);
+          // console.log('Room not found for ID:', roomId);
           setError(result.message || `Room not found for ID: ${roomId}`);
         }
       } catch (err) {
         setError(t('rooms.details.errors.failedToLoad'));
-        console.error('Error loading room:', err);
+        // console.error('Error loading room:', err);
       } finally {
         setLoading(false);
       }
@@ -117,7 +117,7 @@ const RoomViewEdit: React.FC = () => {
       }
     } catch (err) {
       setError(t('rooms.details.errors.failedToUpdate'));
-      console.error('Error updating room:', err);
+      // console.error('Error updating room:', err);
     }
   };
 
@@ -139,7 +139,7 @@ const RoomViewEdit: React.FC = () => {
       setError(t('rooms.details.errors.apiNotSupported'));
     } catch (err) {
       setError(t('rooms.details.errors.failedToUpdateStatus'));
-      console.error('Error updating room status:', err);
+      // console.error('Error updating room status:', err);
     }
   };
 

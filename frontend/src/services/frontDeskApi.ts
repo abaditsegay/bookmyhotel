@@ -191,7 +191,7 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Bookings fetch error:', error);
+      // console.error('Bookings fetch error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to fetch bookings' 
@@ -217,7 +217,7 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Booking fetch error:', error);
+      // console.error('Booking fetch error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to fetch booking' 
@@ -251,7 +251,7 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Booking status update error:', error);
+      // console.error('Booking status update error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to update booking status' 
@@ -294,7 +294,7 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Room assignment update error:', error);
+      // console.error('Room assignment update error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to update room assignment' 
@@ -340,7 +340,7 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Booking update error:', error);
+      // console.error('Booking update error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to update booking' 
@@ -369,7 +369,7 @@ export const frontDeskApiService = {
 
       return { success: true };
     } catch (error) {
-      console.error('Booking delete error:', error);
+      // console.error('Booking delete error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to delete booking' 
@@ -395,7 +395,7 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Arrivals fetch error:', error);
+      // console.error('Arrivals fetch error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to fetch arrivals' 
@@ -421,7 +421,7 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Departures fetch error:', error);
+      // console.error('Departures fetch error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to fetch departures' 
@@ -447,7 +447,7 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Current guests fetch error:', error);
+      // console.error('Current guests fetch error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to fetch current guests' 
@@ -473,7 +473,7 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Check in error:', error);
+      // console.error('Check in error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to check in guest' 
@@ -499,7 +499,7 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Check out error:', error);
+      // console.error('Check out error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to check out guest' 
@@ -525,7 +525,7 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Check out with receipt error:', error);
+      // console.error('Check out with receipt error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to check out guest with receipt' 
@@ -551,7 +551,7 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Receipt preview error:', error);
+      // console.error('Receipt preview error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to generate receipt preview' 
@@ -577,7 +577,7 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('No-show error:', error);
+      // console.error('No-show error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to mark as no-show' 
@@ -608,7 +608,7 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Cancel booking error:', error);
+      // console.error('Cancel booking error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to cancel booking' 
@@ -652,7 +652,7 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Search bookings error:', error);
+      // console.error('Search bookings error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to search bookings' 
@@ -678,7 +678,7 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Front desk stats error:', error);
+      // console.error('Front desk stats error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to fetch front desk statistics' 
@@ -727,7 +727,7 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Rooms fetch error:', error);
+      // console.error('Rooms fetch error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to fetch rooms' 
@@ -767,7 +767,7 @@ export const frontDeskApiService = {
         } catch (parseError) {
           // If response isn't JSON, it might be HTML error page
           const errorText = await response.text();
-          console.error('Non-JSON error response:', errorText);
+          // console.error('Non-JSON error response:', errorText);
           errorMessage = `Server error (${response.status}): ${response.statusText}`;
         }
         throw new Error(errorMessage);
@@ -776,7 +776,7 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Room status update error:', error);
+      // console.error('Room status update error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to update room status' 
@@ -806,7 +806,7 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Room details fetch error:', error);
+      // console.error('Room details fetch error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to fetch room details' 
@@ -862,7 +862,7 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Available rooms fetch error:', error);
+      // console.error('Available rooms fetch error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to fetch available rooms' 
@@ -907,7 +907,7 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Rooms fetch error:', error);
+      // console.error('Rooms fetch error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to fetch rooms' 
@@ -937,7 +937,7 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Room availability toggle error:', error);
+      // console.error('Room availability toggle error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to toggle room availability' 
@@ -999,7 +999,7 @@ export const frontDeskApiService = {
 
         if (!response.ok) {
           const errorData = await response.json();
-          console.error('🏨 getAvailableRoomsForCheckin: Error response:', errorData);
+          // console.error('🏨 getAvailableRoomsForCheckin: Error response:', errorData);
           return { success: false, message: errorData.message || 'Failed to get available rooms' };
         }
 
@@ -1025,7 +1025,7 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Get available rooms error:', error);
+      // console.error('Get available rooms error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to get available rooms' 
@@ -1068,7 +1068,7 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Check-in with room assignment error:', error);
+      // console.error('Check-in with room assignment error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to check-in guest' 
@@ -1112,7 +1112,7 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Walk-in booking creation error:', error);
+      // console.error('Walk-in booking creation error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to create walk-in booking' 

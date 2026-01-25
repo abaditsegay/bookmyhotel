@@ -146,7 +146,7 @@ const UserManagementAdmin: React.FC = () => {
         response = await adminApiService.getUsers(page, rowsPerPage);
       }
       
-      console.log('User API Response:', response);
+      // console.log('User API Response:', response);
       if (response.content) {
         setUsers(response.content);
         // Spring Boot Page object has totalElements directly on the response
@@ -163,7 +163,7 @@ const UserManagementAdmin: React.FC = () => {
         setTotalElements(0);
       }
     } catch (err) {
-      console.error('Error loading users:', err);
+      // console.error('Error loading users:', err);
       setError('Failed to load users');
       setTotalElements(0);
     } finally {
@@ -193,7 +193,7 @@ const UserManagementAdmin: React.FC = () => {
       const response = await adminApiService.getActiveTenants();
       setTenants(response || []);
     } catch (err) {
-      console.error('Error loading tenants:', err);
+      // console.error('Error loading tenants:', err);
       setError('Failed to load tenants');
     } finally {
       setLoadingTenants(false);
@@ -208,7 +208,7 @@ const UserManagementAdmin: React.FC = () => {
       const response = await adminApiService.getHotelsByTenant(tenantId);
       setHotels(response || []);
     } catch (err) {
-      console.error('Error loading hotels:', err);
+      // console.error('Error loading hotels:', err);
       setError('Failed to load hotels');
     } finally {
       setLoadingHotels(false);
@@ -253,7 +253,7 @@ const UserManagementAdmin: React.FC = () => {
       setHotels([]); // Clear hotels when form is reset
       loadUsers();
     } catch (err) {
-      console.error('Error creating user:', err);
+      // console.error('Error creating user:', err);
       
       // Extract meaningful error message from API response
       if (err instanceof Error) {
@@ -286,7 +286,7 @@ const UserManagementAdmin: React.FC = () => {
       setSelectedUser(null);
       loadUsers();
     } catch (err) {
-      console.error('Error updating user:', err);
+      // console.error('Error updating user:', err);
       setError('Failed to update user');
     }
   };
@@ -300,7 +300,7 @@ const UserManagementAdmin: React.FC = () => {
       setSelectedUser(null);
       loadUsers();
     } catch (err) {
-      console.error('Error deleting user:', err);
+      // console.error('Error deleting user:', err);
       setError('Failed to delete user');
     }
   };
@@ -310,7 +310,7 @@ const UserManagementAdmin: React.FC = () => {
       await adminApiService.toggleUserStatus(userId);
       loadUsers();
     } catch (err) {
-      console.error('Error toggling user status:', err);
+      // console.error('Error toggling user status:', err);
       setError('Failed to toggle user status');
     }
   };
@@ -325,7 +325,7 @@ const UserManagementAdmin: React.FC = () => {
       setNewPassword('');
       alert('Password reset successfully');
     } catch (err) {
-      console.error('Error resetting password:', err);
+      // console.error('Error resetting password:', err);
       setError('Failed to reset password');
     }
   };
@@ -659,7 +659,7 @@ const UserManagementAdmin: React.FC = () => {
                   onChange={(e) => {
                     const selectedRole = e.target.value;
                     const isHotelBoundRole = ['HOTEL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING'].includes(selectedRole);
-                    console.log('Role selected:', selectedRole, 'Is hotel bound:', isHotelBoundRole);
+                    // console.log('Role selected:', selectedRole, 'Is hotel bound:', isHotelBoundRole);
                     setUserForm({ 
                       ...userForm, 
                       roles: [selectedRole],
@@ -682,7 +682,7 @@ const UserManagementAdmin: React.FC = () => {
             {/* Tenant Selection - Show for hotel-bound roles */}
             {(() => {
               const shouldShow = (userForm.roles.includes('HOTEL_ADMIN') || userForm.roles.includes('FRONTDESK') || userForm.roles.includes('HOUSEKEEPING'));
-              console.log('Should show tenant selection:', shouldShow, 'User roles:', userForm.roles);
+              // console.log('Should show tenant selection:', shouldShow, 'User roles:', userForm.roles);
               return shouldShow;
             })() && (
               <Grid item xs={12} md={6}>

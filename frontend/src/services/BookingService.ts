@@ -21,7 +21,7 @@ export class BookingService {
 
       return await response.json();
     } catch (error) {
-      console.error('Error fetching user bookings:', error);
+      // console.error('Error fetching user bookings:', error);
       throw error;
     }
   }
@@ -44,7 +44,7 @@ export class BookingService {
 
       return await response.json();
     } catch (error) {
-      console.error('Error cancelling booking:', error);
+      // console.error('Error cancelling booking:', error);
       throw error;
     }
   }
@@ -72,7 +72,7 @@ export class BookingService {
 
       return await response.json();
     } catch (error) {
-      console.error('Error modifying booking:', error);
+      // console.error('Error modifying booking:', error);
       throw error;
     }
   }

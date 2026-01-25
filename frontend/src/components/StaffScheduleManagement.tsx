@@ -151,12 +151,12 @@ const StaffScheduleManagement: React.FC = () => {
         setLoading(true);
         setError(null);
         
-        console.log('Fetching initial data...');
-        console.log('Current token:', token ? 'Token available' : 'No token');
-        console.log('Token length:', token?.length || 0);
+        // console.log('Fetching initial data...');
+        // console.log('Current token:', token ? 'Token available' : 'No token');
+        // console.log('Token length:', token?.length || 0);
         
         if (!token) {
-          console.warn('No authentication token available');
+          // console.warn('No authentication token available');
           return;
         }
         
@@ -165,21 +165,21 @@ const StaffScheduleManagement: React.FC = () => {
             method: 'GET',
             headers: getAuthHeaders(token),
           }).then(res => res.ok ? res.json() : []).catch(err => {
-            console.warn('Failed to fetch schedules:', err);
+            // console.warn('Failed to fetch schedules:', err);
             return [];
           }),
           fetch(buildApiUrl('/hotels-mgmt/list'), {
             method: 'GET',
             headers: getAuthHeaders(token),
           }).then(res => res.ok ? res.json() : []).catch(err => {
-            console.warn('Failed to fetch hotels:', err);
+            // console.warn('Failed to fetch hotels:', err);
             return [];
           }),
           fetch(buildApiUrl('/staff-schedules/staff'), {
             method: 'GET',
             headers: getAuthHeaders(token),
           }).then(res => res.ok ? res.json() : []).catch(err => {
-            console.error('Failed to fetch staff:', err);
+            // console.error('Failed to fetch staff:', err);
             return [];
           })
         ]);
@@ -202,7 +202,7 @@ const StaffScheduleManagement: React.FC = () => {
         }
         
         if (!staffResponse || staffResponse.length === 0) {
-          console.warn('No staff members found. This might indicate an authentication or permission issue.');
+          // console.warn('No staff members found. This might indicate an authentication or permission issue.');
         }
         
         const departmentSet = new Set<string>();
@@ -220,7 +220,7 @@ const StaffScheduleManagement: React.FC = () => {
         
         setLoading(false);
       } catch (err: any) {
-        console.error('Error fetching data:', err);
+        // console.error('Error fetching data:', err);
         setError(`Failed to load data: ${err.response?.data?.message || err.message}`);
         setDepartments(['FRONTDESK', 'HOUSEKEEPING', 'MAINTENANCE', 'SECURITY', 'RESTAURANT', 'CONCIERGE', 'MANAGEMENT']);
         setLoading(false);
@@ -238,7 +238,7 @@ const StaffScheduleManagement: React.FC = () => {
   const fetchSchedules = async () => {
     try {
       if (!token) {
-        console.warn('No authentication token available for fetchSchedules');
+        // console.warn('No authentication token available for fetchSchedules');
         return;
       }
       
@@ -260,7 +260,7 @@ const StaffScheduleManagement: React.FC = () => {
       const data = await response.json();
       setSchedules(data);
     } catch (error) {
-      console.error('Error fetching schedules:', error);
+      // console.error('Error fetching schedules:', error);
       setError('Failed to load schedules');
     }
   };
@@ -296,7 +296,7 @@ const StaffScheduleManagement: React.FC = () => {
 
         if (!response.ok) {
           const errorText = await response.text();
-          console.error('Server response:', errorText);
+          // console.error('Server response:', errorText);
           
           // Try to parse JSON error message
           let errorMessage = 'Failed to save schedule';
@@ -319,7 +319,7 @@ const StaffScheduleManagement: React.FC = () => {
       resetForm();
       await fetchSchedules();
     } catch (error: any) {
-      console.error('Error saving schedule:', error);
+      // console.error('Error saving schedule:', error);
       // Extract the error message from various possible error formats
       let errorMessage = 'Failed to save schedule';
       
@@ -375,7 +375,7 @@ const StaffScheduleManagement: React.FC = () => {
         setSuccess('Schedule deleted successfully');
         await fetchSchedules();
       } catch (error) {
-        console.error('Error deleting schedule:', error);
+        // console.error('Error deleting schedule:', error);
         setError('Failed to delete schedule');
       } finally {
         setShowDeleteDialog(false);
@@ -409,7 +409,7 @@ const StaffScheduleManagement: React.FC = () => {
       setSuccess('Schedule status updated successfully');
       await fetchSchedules();
     } catch (error) {
-      console.error('Error updating status:', error);
+      // console.error('Error updating status:', error);
       setError('Failed to update schedule status');
     }
   };
@@ -492,7 +492,7 @@ const StaffScheduleManagement: React.FC = () => {
       setUploadFile(null);
       await fetchSchedules();
     } catch (error: any) {
-      console.error('Error uploading file:', error);
+      // console.error('Error uploading file:', error);
       setError(error.message || 'Failed to upload schedule file');
     }
   };

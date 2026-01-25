@@ -55,7 +55,7 @@ const StaffTasksDialog: React.FC<StaffTasksDialogProps> = ({
         setPerformance(performanceData);
       } catch (err) {
         setError('Failed to load staff data');
-        console.error('Load staff data error:', err);
+        // console.error('Load staff data error:', err);
       } finally {
         setLoading(false);
       }

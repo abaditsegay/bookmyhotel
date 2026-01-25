@@ -74,7 +74,7 @@ const DefaultErrorFallback: React.FC<ErrorFallbackProps> = ({
   
   const handleReportError = () => {
     // In a real app, this would send error to logging service
-    console.error('Error reported:', { error, errorInfo });
+    // console.error('Error reported:', { error, errorInfo });
     
     // Could integrate with services like Sentry, LogRocket, etc.
     // Example: Sentry.captureException(error);
@@ -318,7 +318,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     // Log error details
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
+    // console.error('ErrorBoundary caught an error:', error, errorInfo);
     
     // Update state with error info
     this.setState({

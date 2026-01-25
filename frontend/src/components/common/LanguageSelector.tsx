@@ -45,7 +45,7 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({
   const handleLanguageChange = (languageCode: string) => {
     // Validate language code
     if (!isSupportedLanguage(languageCode)) {
-      console.warn(`Unsupported language code: ${languageCode}`);
+      // console.warn(`Unsupported language code: ${languageCode}`);
       return;
     }
     

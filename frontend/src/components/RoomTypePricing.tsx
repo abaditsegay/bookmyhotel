@@ -98,12 +98,12 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
       if (response.ok) {
         const multipliers: PricingMultipliers = await response.json();
         setPricingMultipliers(multipliers);
-        console.log('🎯 Fetched pricing multipliers:', multipliers);
+        // console.log('🎯 Fetched pricing multipliers:', multipliers);
       } else {
-        console.warn('Failed to fetch pricing multipliers, using defaults');
+        // console.warn('Failed to fetch pricing multipliers, using defaults');
       }
     } catch (error) {
-      console.error('Error fetching pricing multipliers:', error);
+      // console.error('Error fetching pricing multipliers:', error);
     }
   }, [token]);
 
@@ -120,7 +120,7 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
         setError(response.message || 'Failed to load pricing');
       }
     } catch (err) {
-      console.error('Error loading pricing:', err);
+      // console.error('Error loading pricing:', err);
       setError('Failed to load pricing');
     } finally {
       setLoading(false);
@@ -221,7 +221,7 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
         setError(response.message || 'Failed to save pricing');
       }
     } catch (err) {
-      console.error('Error saving pricing:', err);
+      // console.error('Error saving pricing:', err);
       setError('Failed to save pricing');
     } finally {
       setLoading(false);
@@ -247,7 +247,7 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
         setError(response.message || 'Failed to delete pricing');
       }
     } catch (err) {
-      console.error('Error deleting pricing:', err);
+      // console.error('Error deleting pricing:', err);
       setError('Failed to delete pricing');
     } finally {
       setLoading(false);
@@ -271,7 +271,7 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
         setError(response.message || 'Failed to initialize default pricing');
       }
     } catch (err) {
-      console.error('Error initializing defaults:', err);
+      // console.error('Error initializing defaults:', err);
       setError('Failed to initialize default pricing');
     } finally {
       setLoading(false);

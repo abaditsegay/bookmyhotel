@@ -100,7 +100,7 @@ const UserRegistrationForm: React.FC = () => {
           setTenants(activeTenants);
         }
       } catch (error) {
-        console.error('Failed to load tenants:', error);
+        // console.error('Failed to load tenants:', error);
         setError('Failed to load tenants');
       } finally {
         setLoadingTenants(false);
@@ -122,7 +122,7 @@ const UserRegistrationForm: React.FC = () => {
             setHotels(tenantHotels);
           }
         } catch (error) {
-          console.error('Failed to load hotels:', error);
+          // console.error('Failed to load hotels:', error);
           setError('Failed to load hotels for selected tenant');
         } finally {
           setLoadingHotels(false);
@@ -239,7 +239,7 @@ const UserRegistrationForm: React.FC = () => {
       }, 2000);
       
     } catch (err: any) {
-      console.error('User creation failed:', err);
+      // console.error('User creation failed:', err);
       setError(err.message || 'Failed to create user. Please try again.');
     } finally {
       setLoading(false);

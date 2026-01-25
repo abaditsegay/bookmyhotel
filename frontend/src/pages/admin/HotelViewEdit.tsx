@@ -117,7 +117,7 @@ const HotelViewEdit: React.FC = () => {
         setError('Hotel not found');
       }
     } catch (error) {
-      console.error('Error fetching hotel:', error);
+      // console.error('Error fetching hotel:', error);
       setError('Failed to load hotel details');
     } finally {
       setLoading(false);
@@ -174,7 +174,7 @@ const HotelViewEdit: React.FC = () => {
       setSuccessMessage('Hotel updated successfully');
       navigate(`/admin/hotels/${id}`);
     } catch (error) {
-      console.error('Error updating hotel:', error);
+      // console.error('Error updating hotel:', error);
       setError('Failed to update hotel');
     } finally {
       setSaving(false);
