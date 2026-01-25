@@ -3,7 +3,9 @@ package com.bookmyhotel.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 
@@ -20,20 +22,35 @@ public class AwsS3Config {
     @Value("${aws.s3.bucket.name:bookmyhotel-images}")
     private String bucketName;
 
+    @Value("${aws.s3.access-key-id:}")
+    private String accessKeyId;
+
+    @Value("${aws.s3.secret-access-key:}")
+    private String secretAccessKey;
+
     /**
      * Creates and configures S3Client bean
-     * Uses DefaultCredentialsProvider which looks for credentials in:
-     * 1. Environment variables (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
-     * 2. System properties
-     * 3. Credential profiles file (~/.aws/credentials)
-     * 4. EC2 instance profile
+     * Uses static credentials from application properties if available,
+     * otherwise falls back to DefaultCredentialsProvider
      */
     @Bean
     public S3Client s3Client() {
-        return S3Client.builder()
-                .region(Region.of(awsRegion))
-                .credentialsProvider(DefaultCredentialsProvider.create())
-                .build();
+        // Use static credentials if provided, otherwise use default credential chain
+        if (accessKeyId != null && !accessKeyId.isBlank() && 
+            secretAccessKey != null && !secretAccessKey.isBlank()) {
+            AwsBasicCredentials awsCredentials = AwsBasicCredentials.create(accessKeyId, secretAccessKey);
+            
+            return S3Client.builder()
+                    .region(Region.of(awsRegion))
+                    .credentialsProvider(StaticCredentialsProvider.create(awsCredentials))
+                    .build();
+        } else {
+            // Fall back to default credential provider chain
+            return S3Client.builder()
+                    .region(Region.of(awsRegion))
+                    .credentialsProvider(software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider.create())
+                    .build();
+        }
     }
 
     /**

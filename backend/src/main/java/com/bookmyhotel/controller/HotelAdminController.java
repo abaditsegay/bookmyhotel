@@ -532,10 +532,21 @@ public class HotelAdminController {
                 // Get room type images - convert room type string to ID
                 try {
                     logger.info("🔍 DEBUG: Received room type request: {}", roomType);
-                    RoomType roomTypeEnum = RoomType.valueOf(roomType.toUpperCase());
-                    Long roomTypeId = (long) (roomTypeEnum.ordinal() + 1);
-                    logger.info("🔍 DEBUG: Converted room type {} to ID: {} (ordinal: {})", roomType, roomTypeId,
-                            roomTypeEnum.ordinal());
+                    
+                    // Handle both formats: "ROOM_TYPE_1" (from frontend) and "STANDARD" (enum name)
+                    Long roomTypeId;
+                    if (roomType.matches("ROOM_TYPE_\\d+")) {
+                        // Frontend sends "ROOM_TYPE_1", "ROOM_TYPE_2", etc.
+                        roomTypeId = Long.parseLong(roomType.replace("ROOM_TYPE_", ""));
+                        logger.info("🔍 DEBUG: Parsed room type ID from format: {}", roomTypeId);
+                    } else {
+                        // Standard enum name format: "STANDARD", "DELUXE", etc.
+                        RoomType roomTypeEnum = RoomType.valueOf(roomType.toUpperCase());
+                        roomTypeId = (long) (roomTypeEnum.ordinal() + 1);
+                        logger.info("🔍 DEBUG: Converted room type {} to ID: {} (ordinal: {})", roomType, roomTypeId,
+                                roomTypeEnum.ordinal());
+                    }
+                    
                     logger.info("🔍 DEBUG: Retrieving images for hotel ID: {}, room type ID: {}", hotel.getId(),
                             roomTypeId);
 
@@ -613,21 +624,23 @@ public class HotelAdminController {
                 // This is a room type image upload
                 ImageCategory category = ImageCategory.ROOM_TYPE_HERO; // Room type images default to hero
 
-                // Convert room type string to room type ID (ordinal + 1)
-                RoomType roomTypeEnum;
-                try {
-                    roomTypeEnum = RoomType.valueOf(roomType.toUpperCase());
-                    // System.out.println("  roomTypeEnum: " + roomTypeEnum);
-                } catch (IllegalArgumentException e) {
-                    // System.out.println("❌ Invalid room type: " + roomType);
-                    Map<String, Object> response = new HashMap<>();
-                    response.put("success", false);
-                    response.put("error", "Invalid room type: " + roomType);
-                    return ResponseEntity.badRequest().body(response);
+                // Handle both formats: "ROOM_TYPE_1" (from frontend) and "STANDARD" (enum name)
+                Long roomTypeId;
+                if (roomType.matches("ROOM_TYPE_\\d+")) {
+                    // Frontend sends "ROOM_TYPE_1", "ROOM_TYPE_2", etc.
+                    roomTypeId = Long.parseLong(roomType.replace("ROOM_TYPE_", ""));
+                } else {
+                    // Standard enum name format: "STANDARD", "DELUXE", etc.
+                    try {
+                        RoomType roomTypeEnum = RoomType.valueOf(roomType.toUpperCase());
+                        roomTypeId = (long) (roomTypeEnum.ordinal() + 1);
+                    } catch (IllegalArgumentException e) {
+                        Map<String, Object> response = new HashMap<>();
+                        response.put("success", false);
+                        response.put("error", "Invalid room type: " + roomType);
+                        return ResponseEntity.badRequest().body(response);
+                    }
                 }
-
-                Long roomTypeId = (long) (roomTypeEnum.ordinal() + 1);
-                // System.out.println("  roomTypeId: " + roomTypeId);
 
                 uploadedImage = hotelImageService.uploadRoomTypeImage(
                         tenantId, hotel.getId(), roomTypeId, category, heroImage, heroAltText, null);

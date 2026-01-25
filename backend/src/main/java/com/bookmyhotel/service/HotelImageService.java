@@ -1,13 +1,16 @@
 package com.bookmyhotel.service;
 
 import com.bookmyhotel.config.AwsS3Config;
+import com.bookmyhotel.entity.Hotel;
 import com.bookmyhotel.entity.HotelImage;
 import com.bookmyhotel.entity.Room;
 import com.bookmyhotel.entity.RoomType;
 import com.bookmyhotel.enums.ImageCategory;
 import com.bookmyhotel.repository.HotelImageRepository;
+import com.bookmyhotel.repository.HotelRepository;
 import com.bookmyhotel.repository.RoomRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,9 +18,14 @@ import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
 
+import jakarta.annotation.PostConstruct;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -38,7 +46,14 @@ public class HotelImageService {
     private final S3Client s3Client;
     private final AwsS3Config awsS3Config;
     private final HotelImageRepository hotelImageRepository;
+    private final HotelRepository hotelRepository;
     private final RoomRepository roomRepository;
+
+    @Value("${image.upload.base-directory:/opt/bookmyhotel/uploads/images}")
+    private String baseUploadDirectory;
+
+    @Value("${image.upload.base-url:http://localhost:8080/uploads/images}")
+    private String baseImageUrl;
 
     // Supported image formats
     private static final String[] ALLOWED_EXTENSIONS = { "jpg", "jpeg", "png", "webp" };
@@ -53,11 +68,20 @@ public class HotelImageService {
 
     @Autowired
     public HotelImageService(S3Client s3Client, AwsS3Config awsS3Config,
-            HotelImageRepository hotelImageRepository, RoomRepository roomRepository) {
+            HotelImageRepository hotelImageRepository, HotelRepository hotelRepository,
+            RoomRepository roomRepository) {
         this.s3Client = s3Client;
         this.awsS3Config = awsS3Config;
         this.hotelImageRepository = hotelImageRepository;
+        this.hotelRepository = hotelRepository;
         this.roomRepository = roomRepository;
+    }
+    
+    @PostConstruct
+    public void init() {
+        // Log configuration after injection is complete
+        logger.info("📂 Image upload directory: {}", baseUploadDirectory);
+        logger.info("🌐 Image base URL: {}", baseImageUrl);
     }
 
     /**
@@ -84,8 +108,11 @@ public class HotelImageService {
             }
         }
 
-        String key = generateS3Key(tenantId, hotelId, null, imageCategory, file.getOriginalFilename());
-        String s3Url = uploadToS3(key, file);
+        // Get hotel name for folder structure
+        Hotel hotel = hotelRepository.findById(hotelId)
+                .orElseThrow(() -> new RuntimeException("Hotel not found: " + hotelId));
+        String key = generateFileKey(hotel.getName(), null, file.getOriginalFilename());
+        String imageUrl = uploadToLocalFilesystem(key, file);
 
         // Get image dimensions
         BufferedImage bufferedImage = ImageIO.read(file.getInputStream());
@@ -102,7 +129,7 @@ public class HotelImageService {
         hotelImage.setHotelId(hotelId);
         hotelImage.setImageCategory(imageCategory);
         hotelImage.setFileName(file.getOriginalFilename());
-        hotelImage.setFilePath(s3Url);
+        hotelImage.setFilePath(imageUrl);
         hotelImage.setDisplayOrder(displayOrder);
         hotelImage.setAltText(altText);
         hotelImage.setFileSize(file.getSize());
@@ -155,8 +182,11 @@ public class HotelImageService {
             }
         }
 
-        String key = generateS3Key(tenantId, hotelId, roomTypeId, imageCategory, file.getOriginalFilename(), roomType);
-        String s3Url = uploadToS3(key, file);
+        // Get hotel name for folder structure
+        Hotel hotel = hotelRepository.findById(hotelId)
+                .orElseThrow(() -> new RuntimeException("Hotel not found: " + hotelId));
+        String key = generateFileKey(hotel.getName(), roomType, file.getOriginalFilename());
+        String imageUrl = uploadToLocalFilesystem(key, file);
 
         // Get image dimensions
         BufferedImage bufferedImage = ImageIO.read(file.getInputStream());
@@ -174,7 +204,7 @@ public class HotelImageService {
         hotelImage.setRoomTypeId(roomTypeId);
         hotelImage.setImageCategory(imageCategory);
         hotelImage.setFileName(file.getOriginalFilename());
-        hotelImage.setFilePath(s3Url);
+        hotelImage.setFilePath(imageUrl);
         hotelImage.setDisplayOrder(displayOrder);
         hotelImage.setAltText(altText);
         hotelImage.setFileSize(file.getSize());
@@ -390,70 +420,66 @@ public class HotelImageService {
         }
     }
 
-    private String generateS3Key(String tenantId, Long hotelId, Long roomTypeId,
-            ImageCategory category, String originalFilename) {
-        return generateS3Key(tenantId, hotelId, roomTypeId, category, originalFilename, null);
-    }
-
-    private String generateS3Key(String tenantId, Long hotelId, Long roomTypeId,
-            ImageCategory category, String originalFilename, RoomType roomType) {
-        String prefix;
-        if (roomTypeId == null) {
-            prefix = awsS3Config.getHotelImagePrefix(tenantId, hotelId);
-        } else {
-            prefix = awsS3Config.getRoomTypeImagePrefix(tenantId, hotelId, roomTypeId);
-        }
-
+    /**
+     * Generate file key using hotel name folder structure
+     * Format: hotelName/main.jpg or hotelName/standard.jpg
+     */
+    private String generateFileKey(String hotelName, RoomType roomType, String originalFilename) {
+        // Sanitize hotel name for filesystem (remove special chars, spaces to hyphens)
+        String sanitizedHotelName = hotelName.toLowerCase()
+                .replaceAll("[^a-z0-9\\s-]", "")
+                .replaceAll("\\s+", "-");
+        
         String extension = getFileExtension(originalFilename);
         String filename;
-
-        logger.debug("generateS3Key: roomTypeId={}, roomType={}, extension={}",
-                roomTypeId, roomType, extension);
-
-        // For room type images, use the room type name; for hotel images, use
-        // "hotelImage"
-        if (roomTypeId != null && roomType != null) {
+        
+        if (roomType != null) {
+            // Room type image: hotelName/standard.jpg, hotelName/deluxe.jpg
             filename = roomType.toString().toLowerCase() + "." + extension;
-            logger.debug("Using room type filename: {}", filename);
+            logger.debug("📁 Room type image: {}/{}", sanitizedHotelName, filename);
         } else {
-            // Hotel image - use consistent naming
-            filename = "hotelImage." + extension;
-            logger.debug("Using hotel filename: {}", filename);
+            // Hotel main image: hotelName/main.jpg
+            filename = "main." + extension;
+            logger.debug("📁 Hotel main image: {}/{}", sanitizedHotelName, filename);
         }
-
-        String finalKey = prefix + filename;
-        logger.debug("Final S3 key: {}", finalKey);
+        
+        String finalKey = sanitizedHotelName + "/" + filename;
+        logger.debug("✅ Generated file key: {}", finalKey);
         return finalKey;
     }
 
-    private String uploadToS3(String key, MultipartFile file) throws IOException {
+    private String uploadToLocalFilesystem(String key, MultipartFile file) throws IOException {
         try {
-            PutObjectRequest putRequest = PutObjectRequest.builder()
-                    .bucket(awsS3Config.getBucketName())
-                    .key(key)
-                    .contentType(file.getContentType())
-                    .contentLength(file.getSize())
-                    .build();
-
-            s3Client.putObject(putRequest, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
-
-            return awsS3Config.getS3Url(key);
+            // Create full file path: /opt/bookmyhotel/uploads/images/{key}
+            Path filePath = Paths.get(baseUploadDirectory, key);
+            
+            // Create directories if they don't exist
+            Files.createDirectories(filePath.getParent());
+            
+            // Save file to filesystem
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+            
+            logger.info("✅ File uploaded to local filesystem: {}", filePath);
+            
+            // Return URL path: /uploads/images/{key}
+            return baseImageUrl + "/" + key;
         } catch (Exception e) {
-            throw new IOException("Failed to upload file to S3", e);
+            throw new IOException("Failed to upload file to local filesystem", e);
         }
     }
 
-    private void deleteFromS3(String key) {
+    private void deleteFromLocalFilesystem(String key) {
         try {
-            DeleteObjectRequest deleteRequest = DeleteObjectRequest.builder()
-                    .bucket(awsS3Config.getBucketName())
-                    .key(key)
-                    .build();
-
-            s3Client.deleteObject(deleteRequest);
+            Path filePath = Paths.get(baseUploadDirectory, key);
+            if (Files.exists(filePath)) {
+                Files.delete(filePath);
+                logger.info("✅ File deleted from local filesystem: {}", filePath);
+            } else {
+                logger.warn("⚠️ File not found for deletion: {}", filePath);
+            }
         } catch (Exception e) {
             // Log error but don't throw exception
-            logger.error("Failed to delete file from S3: {}", e.getMessage(), e);
+            logger.error("Failed to delete file from local filesystem: {}", e.getMessage(), e);
         }
     }
 
@@ -468,13 +494,23 @@ public class HotelImageService {
         return filename.substring(lastDotIndex + 1);
     }
 
-    private String extractS3KeyFromUrl(String s3Url) {
-        // Extract S3 key from full URL
-        String bucketUrl = String.format("https://%s.s3.%s.amazonaws.com/",
-                awsS3Config.getBucketName(), awsS3Config.getAwsRegion());
-        if (s3Url.startsWith(bucketUrl)) {
-            return s3Url.substring(bucketUrl.length());
+    private String extractKeyFromUrl(String imageUrl) {
+        // Extract key from local filesystem URL or S3 URL
+        // Local: http://localhost:8080/uploads/images/{key}
+        // S3: https://bucket.s3.region.amazonaws.com/{key}
+        
+        if (imageUrl.contains("/uploads/images/")) {
+            // Local filesystem URL
+            int index = imageUrl.indexOf("/uploads/images/");
+            return imageUrl.substring(index + "/uploads/images/".length());
+        } else {
+            // Legacy S3 URL
+            String bucketUrl = String.format("https://%s.s3.%s.amazonaws.com/",
+                    awsS3Config.getBucketName(), awsS3Config.getAwsRegion());
+            if (imageUrl.startsWith(bucketUrl)) {
+                return imageUrl.substring(bucketUrl.length());
+            }
         }
-        return s3Url; // Return as-is if format is unexpected
+        return imageUrl; // Return as-is if format is unexpected
     }
 }
