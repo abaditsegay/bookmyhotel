@@ -246,13 +246,13 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
       setError(null);
       
       try {
-        console.log('Loading available rooms for:', {
-          hotelId,
-          checkIn: format(checkInDate, 'yyyy-MM-dd'),
-          checkOut: format(checkOutDate, 'yyyy-MM-dd'),
-          guests,
-          userRole: user?.role
-        });
+        // console.log('Loading available rooms for:', {
+        //   hotelId,
+        //   checkIn: format(checkInDate, 'yyyy-MM-dd'),
+        //   checkOut: format(checkOutDate, 'yyyy-MM-dd'),
+        //   guests,
+        //   userRole: user?.role
+        // });
         
         // Use different APIs based on user role
         const isHotelAdmin = user?.role === 'HOTEL_ADMIN' || user?.roles?.includes('HOTEL_ADMIN');
@@ -519,14 +519,14 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
     const serviceTaxAmount = subtotal * hotelServiceTaxRate;
     const totalWithTaxes = subtotal + vatAmount + serviceTaxAmount;
     
-    console.log('💰 Price calculation:', {
-      subtotal,
-      vatRate: hotelVatRate,
-      serviceTaxRate: hotelServiceTaxRate,
-      vatAmount,
-      serviceTaxAmount,
-      totalWithTaxes
-    });
+    // console.log('💰 Price calculation:', {
+    //   subtotal,
+    //   vatRate: hotelVatRate,
+    //   serviceTaxRate: hotelServiceTaxRate,
+    //   vatAmount,
+    //   serviceTaxAmount,
+    //   totalWithTaxes
+    // });
     
     return totalWithTaxes;
   };

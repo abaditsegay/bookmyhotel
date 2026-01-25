@@ -1156,25 +1156,25 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
         setAvailableRooms(rooms);
         setSelectedRoom(null);
         
-        console.log(`📊 Room Selection Summary:
-- Data Source: ${dataSource.toUpperCase()}
-- Available Rooms: ${rooms.length}
-- Guest Capacity: >= ${guests} guests
-- Date Range: ${format(checkInDate, 'yyyy-MM-dd')} to ${format(checkOutDate, 'yyyy-MM-dd')}
-- Hotel ID: ${resolvedHotelId}
-- Online Status: ${navigator.onLine}
-- Cached Rooms Total: ${cachedRooms.length}`);
+        // console.log(`📊 Room Selection Summary:
+// - Data Source: ${dataSource.toUpperCase()}
+// - Available Rooms: ${rooms.length}
+// - Guest Capacity: >= ${guests} guests
+// - Date Range: ${format(checkInDate, 'yyyy-MM-dd')} to ${format(checkOutDate, 'yyyy-MM-dd')}
+// - Hotel ID: ${resolvedHotelId}
+// - Online Status: ${navigator.onLine}
+// - Cached Rooms Total: ${cachedRooms.length}`);
         
         if (rooms.length === 0) {
-          console.error(`❌ No rooms available for booking:
-- Requested guests: ${guests}
-- Check-in: ${format(checkInDate, 'yyyy-MM-dd')}
-- Check-out: ${format(checkOutDate, 'yyyy-MM-dd')}
-- Hotel ID: ${resolvedHotelId}
-- Data source: ${dataSource}
-- Total cached rooms: ${cachedRooms.length}
-- Cached rooms with sufficient capacity: ${cachedRooms.filter(r => r.capacity >= guests).length}
-- Available cached rooms: ${cachedRooms.filter(r => r.isAvailable).length}`);
+          // console.error(`❌ No rooms available for booking:
+// - Requested guests: ${guests}
+// - Check-in: ${format(checkInDate, 'yyyy-MM-dd')}
+// - Check-out: ${format(checkOutDate, 'yyyy-MM-dd')}
+// - Hotel ID: ${resolvedHotelId}
+// - Data source: ${dataSource}
+// - Total cached rooms: ${cachedRooms.length}
+// - Cached rooms with sufficient capacity: ${cachedRooms.filter(r => r.capacity >= guests).length}
+// - Available cached rooms: ${cachedRooms.filter(r => r.isAvailable).length}`);
           
           setError(t('dashboard.hotelAdmin.offlineBooking.validationErrors.noRoomsAvailable', {
             guests,

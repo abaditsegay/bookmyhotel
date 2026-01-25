@@ -375,11 +375,11 @@ const BookingPage: React.FC = () => {
         // Process payment through mock gateway
         paymentResult = await mockPayment.processPayment(mockPaymentRequest);
         
-        console.log('🔄 Payment processed:', {
-          paymentMethod,
-          userTransferReference: mobileTransferReference,
-          paymentResult: paymentResult
-        });
+        // console.log('🔄 Payment processed:', {
+        //   paymentMethod,
+        //   userTransferReference: mobileTransferReference,
+        //   paymentResult: paymentResult
+        // });
         
         // Check if payment failed
         if (!paymentResult.success) {

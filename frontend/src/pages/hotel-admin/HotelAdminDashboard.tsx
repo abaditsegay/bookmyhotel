@@ -216,16 +216,16 @@ const HotelAdminDashboard: React.FC = () => {
     }
     
     // console.log(`🔄 HotelAdmin: Switching from tab ${activeTab} to tab ${newValue}`);
-    console.log(`🔄 HotelAdmin: Tab ${newValue} corresponds to:`, 
-      newValue === 0 ? t('dashboard.hotelAdmin.tabs.hotelDetail') :
-      newValue === 1 ? t('dashboard.hotelAdmin.tabs.staff') :
-      newValue === 2 ? t('dashboard.hotelAdmin.tabs.rooms') :
-      newValue === 3 ? t('dashboard.hotelAdmin.tabs.bookings') :
-      newValue === 4 ? t('dashboard.hotelAdmin.tabs.staffSchedules') :
-      newValue === 5 ? 'Housekeeping' :
-      newValue === 6 ? t('dashboard.hotelAdmin.tabs.reports') :
-      newValue === 7 ? t('dashboard.hotelAdmin.tabs.pricingTax') :
-      newValue === 8 ? t('dashboard.hotelAdmin.tabs.offlineBookings') : 'Unknown');
+    // console.log(`🔄 HotelAdmin: Tab ${newValue} corresponds to:`, 
+    //   newValue === 0 ? t('dashboard.hotelAdmin.tabs.hotelDetail') :
+    //   newValue === 1 ? t('dashboard.hotelAdmin.tabs.staff') :
+    //   newValue === 2 ? t('dashboard.hotelAdmin.tabs.rooms') :
+    //   newValue === 3 ? t('dashboard.hotelAdmin.tabs.bookings') :
+    //   newValue === 4 ? t('dashboard.hotelAdmin.tabs.staffSchedules') :
+    //   newValue === 5 ? 'Housekeeping' :
+    //   newValue === 6 ? t('dashboard.hotelAdmin.tabs.reports') :
+    //   newValue === 7 ? t('dashboard.hotelAdmin.tabs.pricingTax') :
+    //   newValue === 8 ? t('dashboard.hotelAdmin.tabs.offlineBookings') : 'Unknown');
     setActiveTab(newValue);
     
     // Update URL parameter to persist tab state

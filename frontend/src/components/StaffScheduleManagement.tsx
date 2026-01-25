@@ -184,11 +184,11 @@ const StaffScheduleManagement: React.FC = () => {
           })
         ]);
         
-        console.log('API Responses:', {
-          schedules: schedulesResponse?.length || 0,
-          hotels: hotelsResponse?.length || 0,
-          staff: staffResponse?.length || 0
-        });
+        // console.log('API Responses:', {
+        //   schedules: schedulesResponse?.length || 0,
+        //   hotels: hotelsResponse?.length || 0,
+        //   staff: staffResponse?.length || 0
+        // });
         
         setSchedules(schedulesResponse || []);
         setHotels(hotelsResponse || []);

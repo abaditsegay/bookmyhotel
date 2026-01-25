@@ -344,12 +344,12 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
   const requiresPayment = () => {
     if (!createdOrder) return false;
     
-    console.log('requiresPayment check:', {
-      purchaseType,
-      paymentMethod,
-      paymentCompleted,
-      createdOrder: createdOrder?.id
-    });
+    // console.log('requiresPayment check:', {
+    //   purchaseType,
+    //   paymentMethod,
+    //   paymentCompleted,
+    //   createdOrder: createdOrder?.id
+    // });
     
     // For anonymous customers with CASH or CARD payment methods, payment is required
     if (purchaseType === 'ANONYMOUS' && 

@@ -638,12 +638,12 @@ export class OfflineStorageService {
         
         // Log individual booking details
         allBookings.forEach((booking, index) => {
-          console.log(`🔍 DEBUG: Booking ${index + 1}:`, {
-            id: booking.id,
-            status: booking.status,
-            guestName: booking.guestName,
-            createdAt: booking.createdAt
-          });
+          // console.log(`🔍 DEBUG: Booking ${index + 1}:`, {
+          //   id: booking.id,
+          //   status: booking.status,
+          //   guestName: booking.guestName,
+          //   createdAt: booking.createdAt
+          // });
         });
       }
     } catch (error) {
@@ -1175,13 +1175,13 @@ export class OfflineStorageService {
     // console.log(`🧹 OfflineStorageService.saveStaffSession: Cleaned up expired sessions`);
     
     // console.log(`👤 OfflineStorageService.saveStaffSession: Saving staff session:`, session);
-    console.log(`🔍 OfflineStorageService.saveStaffSession: Database state:`, {
-      isInitialized: this.isInitialized,
-      dbExists: !!this.db,
-      dbName: this.db?.name,
-      version: this.db?.version,
-      objectStoreNames: this.db ? Array.from(this.db.objectStoreNames) : []
-    });
+    // console.log(`🔍 OfflineStorageService.saveStaffSession: Database state:`, {
+    //   isInitialized: this.isInitialized,
+    //   dbExists: !!this.db,
+    //   dbName: this.db?.name,
+    //   version: this.db?.version,
+    //   objectStoreNames: this.db ? Array.from(this.db.objectStoreNames) : []
+    // });
 
     // Double-check that database is properly initialized
     if (!this.isInitialized || !this.db) {
@@ -1212,11 +1212,11 @@ export class OfflineStorageService {
         };
         
         transaction.onerror = (event) => {
-          console.error(`❌ OfflineStorageService.saveStaffSession: Transaction failed:`, {
-            error: transaction.error,
-            event: event,
-            target: event.target
-          });
+          // console.error(`❌ OfflineStorageService.saveStaffSession: Transaction failed:`, {
+          //   error: transaction.error,
+          //   event: event,
+          //   target: event.target
+          // });
           reject(transaction.error || new Error('Transaction failed'));
         };
 
@@ -1641,13 +1641,13 @@ export type { OfflineBooking, RoomAvailability, GuestInfo };
     if (allRooms.length > 0) {
       // console.log('Sample rooms:');
       allRooms.slice(0, 3).forEach((room, index) => {
-        console.log(`Room ${index + 1}:`, {
-          id: room.id,
-          roomNumber: room.roomNumber,
-          roomType: room.roomType,
-          hotelId: room.hotelId,
-          isAvailable: room.isAvailable
-        });
+        // console.log(`Room ${index + 1}:`, {
+        //   id: room.id,
+        //   roomNumber: room.roomNumber,
+        //   roomType: room.roomType,
+        //   hotelId: room.hotelId,
+        //   isAvailable: room.isAvailable
+        // });
       });
     } else {
       // console.log('⚠️ No rooms in cache. Try logging out and back in.');
@@ -1669,22 +1669,22 @@ export type { OfflineBooking, RoomAvailability, GuestInfo };
     
     if (activeSession) {
       // console.log('✅ Active Staff Session Found:');
-      console.log('🔍 Session Details:', {
-        id: activeSession.id,
-        email: activeSession.email,
-        username: activeSession.username,
-        role: activeSession.role,
-        roles: activeSession.roles,
-        hotelId: activeSession.hotelId,
-        hotelName: activeSession.hotelName,
-        tenantId: activeSession.tenantId,
-        hasPasswordHash: !!activeSession.passwordHash,
-        expiresAt: activeSession.expiresAt,
-        lastActivity: activeSession.lastActivity,
-        isExpired: new Date(activeSession.expiresAt) <= new Date(),
-        timeUntilExpiry: new Date(activeSession.expiresAt).getTime() - new Date().getTime(),
-        isActive: activeSession.isActive
-      });
+      // console.log('🔍 Session Details:', {
+      //   id: activeSession.id,
+      //   email: activeSession.email,
+      //   username: activeSession.username,
+      //   role: activeSession.role,
+      //   roles: activeSession.roles,
+      //   hotelId: activeSession.hotelId,
+      //   hotelName: activeSession.hotelName,
+      //   tenantId: activeSession.tenantId,
+      //   hasPasswordHash: !!activeSession.passwordHash,
+      //   expiresAt: activeSession.expiresAt,
+      //   lastActivity: activeSession.lastActivity,
+      //   isExpired: new Date(activeSession.expiresAt) <= new Date(),
+      //   timeUntilExpiry: new Date(activeSession.expiresAt).getTime() - new Date().getTime(),
+      //   isActive: activeSession.isActive
+      // });
       
       return activeSession;
     } else {

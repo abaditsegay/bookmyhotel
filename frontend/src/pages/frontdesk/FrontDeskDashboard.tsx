@@ -100,11 +100,11 @@ const FrontDeskDashboard: React.FC = () => {
     }
     
     // console.log(`🔄 FrontDesk: Switching from tab ${activeTab} to tab ${newValue}`);
-    console.log(`🔄 FrontDesk: Tab ${newValue} corresponds to:`, 
-      newValue === 0 ? 'Bookings' :
-      newValue === 1 ? 'Rooms' :
-      newValue === 2 ? 'Housekeeping' :
-      newValue === 3 ? 'Offline Bookings' : 'Unknown');
+    // console.log(`🔄 FrontDesk: Tab ${newValue} corresponds to:`, 
+    //   newValue === 0 ? 'Bookings' :
+    //   newValue === 1 ? 'Rooms' :
+    //   newValue === 2 ? 'Housekeeping' :
+    //   newValue === 3 ? 'Offline Bookings' : 'Unknown');
     setActiveTab(newValue);
     
     // Update URL parameters without triggering navigation

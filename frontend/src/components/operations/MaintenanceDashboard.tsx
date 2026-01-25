@@ -289,11 +289,11 @@ const MaintenanceDashboard: React.FC = () => {
       }
       const hotelId = parseInt(currentUser.hotelId);
       
-      console.log('Creating maintenance task with data:', {
-        hotelId,
-        currentUser,
-        createTaskForm
-      });
+      // console.log('Creating maintenance task with data:', {
+      //   hotelId,
+      //   currentUser,
+      //   createTaskForm
+      // });
       
       // Validate required data
       if (!hotelId) {

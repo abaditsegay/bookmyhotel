@@ -133,14 +133,14 @@ const ProductManagement: React.FC = () => {
           category: categoryFilter !== 'ALL' ? categoryFilter : undefined
         });
         
-        console.log('🛍️ Products API Response:', {
-          page,
-          size: rowsPerPage,
-          totalReceived: data.content.length,
-          totalElements: data.totalElements,
-          productIds: data.content.map(p => p.id),
-          hasDuplicateIds: data.content.length !== new Set(data.content.map(p => p.id)).size
-        });
+        // console.log('🛍️ Products API Response:', {
+        //   page,
+        //   size: rowsPerPage,
+        //   totalReceived: data.content.length,
+        //   totalElements: data.totalElements,
+        //   productIds: data.content.map(p => p.id),
+        //   hasDuplicateIds: data.content.length !== new Set(data.content.map(p => p.id)).size
+        // });
         
         setProducts(data.content);
         setTotalElements(data.totalElements);

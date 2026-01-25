@@ -267,16 +267,16 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
       const datesChanged = editedBooking.checkInDate !== booking.checkInDate || 
                           editedBooking.checkOutDate !== booking.checkOutDate;
       
-      console.log('🔍 Change Detection:', {
-        statusChanged,
-        roomAssignmentChanged,
-        roomTypeChanged,
-        guestInfoChanged,
-        datesChanged,
-        originalBooking: booking,
-        editedBooking: editedBooking,
-        selectedRoomId
-      });
+      // console.log('🔍 Change Detection:', {
+      //   statusChanged,
+      //   roomAssignmentChanged,
+      //   roomTypeChanged,
+      //   guestInfoChanged,
+      //   datesChanged,
+      //   originalBooking: booking,
+      //   editedBooking: editedBooking,
+      //   selectedRoomId
+      // });
 
       let hasUpdates = false;
       let finalBookingData = { ...editedBooking };

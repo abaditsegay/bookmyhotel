@@ -102,16 +102,16 @@ const ShopDashboard: React.FC = () => {
         stats.totalRevenue > 0
       );
       
-      console.info('Stats validation:', {
-        hasStats: !!stats,
-        hasValidStats,
-        statsKeys: stats ? Object.keys(stats) : [],
-        sampleValues: stats ? {
-          totalProducts: stats.totalProducts,
-          totalOrders: stats.totalOrders,
-          totalRevenue: stats.totalRevenue
-        } : null
-      });
+      // console.info('Stats validation:', {
+      //   hasStats: !!stats,
+      //   hasValidStats,
+      //   statsKeys: stats ? Object.keys(stats) : [],
+      //   sampleValues: stats ? {
+      //     totalProducts: stats.totalProducts,
+      //     totalOrders: stats.totalOrders,
+      //     totalRevenue: stats.totalRevenue
+      //   } : null
+      // });
 
       setDashboardStats(stats);
       setError(null);

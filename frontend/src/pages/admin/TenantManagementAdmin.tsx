@@ -125,12 +125,12 @@ const TenantManagementAdmin: React.FC = () => {
         // Spring Boot Page object has totalElements directly on the response
         const totalCount = response.totalElements || response.page?.totalElements || response.content.length || 0;
         setTotalElements(totalCount);
-        console.log('Total Elements:', totalCount, 'Response structure:', { 
-          hasPage: !!response.page, 
-          pageTotalElements: response.page?.totalElements,
-          directTotalElements: response.totalElements,
-          contentLength: response.content.length 
-        });
+        // console.log('Total Elements:', totalCount, 'Response structure:', { 
+        //   hasPage: !!response.page, 
+        //   pageTotalElements: response.page?.totalElements,
+        //   directTotalElements: response.totalElements,
+        //   contentLength: response.content.length 
+        // });
       } else {
         setError('Failed to load tenants');
         setTotalElements(0);

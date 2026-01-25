@@ -373,8 +373,8 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
         // Show success overlay
         setSuccessOverlayOpen(true);
         
-        console.log(`Import completed: ${successfulImports} rooms imported` + 
-          (failedImports > 0 ? `, ${failedImports} failed` : ''));
+        // console.log(`Import completed: ${successfulImports} rooms imported` + 
+        //   (failedImports > 0 ? `, ${failedImports} failed` : ''));
         
         if (importErrors.length > 0) {
           // console.log('Import errors:', importErrors);

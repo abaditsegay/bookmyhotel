@@ -210,13 +210,13 @@ class ApiClient {
           const isAuthEndpoint = isAuthenticatedEndpoint(requestUrl);
           const hasToken = this.getToken() !== null;
           
-          console.log('403 Error Analysis:', {
-            url: requestUrl,
-            tokenExpired,
-            isAuthEndpoint,
-            hasToken,
-            willTriggerLogout: hasToken && (tokenExpired || isAuthEndpoint)
-          });
+          // console.log('403 Error Analysis:', {
+          //   url: requestUrl,
+          //   tokenExpired,
+          //   isAuthEndpoint,
+          //   hasToken,
+          //   willTriggerLogout: hasToken && (tokenExpired || isAuthEndpoint)
+          // });
           
           // Only trigger session expiration for users who actually have tokens/sessions
           if (hasToken && (tokenExpired || isAuthEndpoint)) {

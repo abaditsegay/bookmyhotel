@@ -89,14 +89,14 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
   const nights = booking ? calculateNights(booking.checkInDate, booking.checkOutDate) : 0;
 
   const loadAvailableRooms = useCallback(async () => {
-    console.log('🏨 CheckInDialog: loadAvailableRooms called with:', {
-      booking: !!booking,
-      bookingId: booking?.reservationId,
-      hotelId: booking?.hotelId,
-      token: !!token,
-      tenantId: tenant?.id,
-      mode: mode
-    });
+    // console.log('🏨 CheckInDialog: loadAvailableRooms called with:', {
+    //   booking: !!booking,
+    //   bookingId: booking?.reservationId,
+    //   hotelId: booking?.hotelId,
+    //   token: !!token,
+    //   tenantId: tenant?.id,
+    //   mode: mode
+    // });
     
     if (!booking || !token) {
       // console.log('🏨 CheckInDialog: Early return - missing booking or token');
@@ -122,12 +122,12 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
       }
 
       // console.log('🏨 CheckInDialog: Using date-aware room availability for hotel', hotelId);
-      console.log('🏨 CheckInDialog: Booking dates:', {
-        checkInDate: booking.checkInDate,
-        checkOutDate: booking.checkOutDate,
-        checkInDateType: typeof booking.checkInDate,
-        checkOutDateType: typeof booking.checkOutDate
-      });
+      // console.log('🏨 CheckInDialog: Booking dates:', {
+      //   checkInDate: booking.checkInDate,
+      //   checkOutDate: booking.checkOutDate,
+      //   checkInDateType: typeof booking.checkInDate,
+      //   checkOutDateType: typeof booking.checkOutDate
+      // });
       
       result = await frontDeskApiService.getAvailableRoomsForCheckin(
         token, 
@@ -197,11 +197,11 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
           const data = await response.json();
           setHotelVatRate(data.vatRate || 0);
           setHotelServiceTaxRate(data.serviceTaxRate || 0);
-          console.log('✅ Tax rates loaded successfully:', {
-            vatRate: data.vatRate,
-            serviceTaxRate: data.serviceTaxRate,
-            fullData: data
-          });
+          // console.log('✅ Tax rates loaded successfully:', {
+          //   vatRate: data.vatRate,
+          //   serviceTaxRate: data.serviceTaxRate,
+          //   fullData: data
+          // });
         } else {
           // console.error('❌ Failed to fetch tax rates, status:', response.status);
         }
@@ -366,16 +366,16 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
 
   // Update calculated price when room selection or room type changes
   useEffect(() => {
-    console.log('🔍 Price calculation useEffect triggered:', {
-      selectedRoomId,
-      selectedRoomType,
-      availableRoomsCount: availableRooms.length,
-      nights,
-      vatRate: hotelVatRate,
-      serviceTaxRate: hotelServiceTaxRate,
-      bookingRoomNumber: booking?.roomNumber,
-      bookingTotalAmount: booking?.totalAmount
-    });
+    // console.log('🔍 Price calculation useEffect triggered:', {
+    //   selectedRoomId,
+    //   selectedRoomType,
+    //   availableRoomsCount: availableRooms.length,
+    //   nights,
+    //   vatRate: hotelVatRate,
+    //   serviceTaxRate: hotelServiceTaxRate,
+    //   bookingRoomNumber: booking?.roomNumber,
+    //   bookingTotalAmount: booking?.totalAmount
+    // });
 
     if (selectedRoomId && availableRooms.length > 0) {
       // Specific room selected - use its exact price
@@ -384,13 +384,13 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
         // Check if this is the originally assigned room
         const isOriginalRoom = booking?.roomNumber && selectedRoom.roomNumber === booking.roomNumber;
         
-        console.log('🔍 Room comparison:', {
-          selectedRoomNumber: selectedRoom.roomNumber,
-          bookingRoomNumber: booking?.roomNumber,
-          isOriginalRoom,
-          bookingTotalAmount: booking?.totalAmount,
-          willUseOriginalTotal: isOriginalRoom && booking?.totalAmount
-        });
+        // console.log('🔍 Room comparison:', {
+        //   selectedRoomNumber: selectedRoom.roomNumber,
+        //   bookingRoomNumber: booking?.roomNumber,
+        //   isOriginalRoom,
+        //   bookingTotalAmount: booking?.totalAmount,
+        //   willUseOriginalTotal: isOriginalRoom && booking?.totalAmount
+        // });
         
         if (isOriginalRoom && booking?.totalAmount) {
           // Use the original booking total to prevent false price differences
@@ -404,17 +404,17 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
           const serviceTaxAmount = subtotal * hotelServiceTaxRate;
           const totalWithTaxes = subtotal + vatAmount + serviceTaxAmount;
           
-          console.log('💰 Price calculation from selected room (room changed):', {
-            roomNumber: selectedRoom.roomNumber,
-            pricePerNight: selectedRoom.pricePerNight,
-            nights,
-            subtotal,
-            vatRate: hotelVatRate,
-            vatAmount,
-            serviceTaxRate: hotelServiceTaxRate,
-            serviceTaxAmount,
-            totalWithTaxes
-          });
+          // console.log('💰 Price calculation from selected room (room changed):', {
+          //   roomNumber: selectedRoom.roomNumber,
+          //   pricePerNight: selectedRoom.pricePerNight,
+          //   nights,
+          //   subtotal,
+          //   vatRate: hotelVatRate,
+          //   vatAmount,
+          //   serviceTaxRate: hotelServiceTaxRate,
+          //   serviceTaxAmount,
+          //   totalWithTaxes
+          // });
           
           setCalculatedPricePerNight(selectedRoom.pricePerNight);
           setCalculatedTotal(totalWithTaxes);
@@ -431,17 +431,17 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
         const serviceTaxAmount = subtotal * hotelServiceTaxRate;
         const totalWithTaxes = subtotal + vatAmount + serviceTaxAmount;
         
-        console.log('💰 Price calculation from room type:', {
-          roomNumber: firstRoomOfType.roomNumber,
-          pricePerNight: firstRoomOfType.pricePerNight,
-          nights,
-          subtotal,
-          vatRate: hotelVatRate,
-          vatAmount,
-          serviceTaxRate: hotelServiceTaxRate,
-          serviceTaxAmount,
-          totalWithTaxes
-        });
+        // console.log('💰 Price calculation from room type:', {
+        //   roomNumber: firstRoomOfType.roomNumber,
+        //   pricePerNight: firstRoomOfType.pricePerNight,
+        //   nights,
+        //   subtotal,
+        //   vatRate: hotelVatRate,
+        //   vatAmount,
+        //   serviceTaxRate: hotelServiceTaxRate,
+        //   serviceTaxAmount,
+        //   totalWithTaxes
+        // });
         
         setCalculatedPricePerNight(firstRoomOfType.pricePerNight);
         setCalculatedTotal(totalWithTaxes);
