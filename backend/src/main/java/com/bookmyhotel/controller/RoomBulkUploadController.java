@@ -6,6 +6,8 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +22,8 @@ import java.util.Map;
 @RequestMapping("/api/hotel-admin/hotels/{hotelId}/rooms/bulk")
 @Tag(name = "Room Bulk Upload", description = "APIs for bulk uploading hotel rooms")
 public class RoomBulkUploadController {
+
+    private static final Logger logger = LoggerFactory.getLogger(RoomBulkUploadController.class);
 
     @Autowired
     private RoomBulkUploadService roomBulkUploadService;
@@ -44,8 +48,8 @@ public class RoomBulkUploadController {
             return ResponseEntity.ok(result);
 
         } catch (Exception e) {
-            System.err.println("🔥 ERROR in upload: " + e.getMessage());
-            e.printStackTrace();
+            // System.err.println("🔥 ERROR in upload: " + e.getMessage());
+            logger.error("Operation failed", e);
             return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
                     "message", e.getMessage()));

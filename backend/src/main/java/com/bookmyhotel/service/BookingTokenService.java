@@ -2,6 +2,8 @@ package com.bookmyhotel.service;
 
 import java.util.Date;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +18,8 @@ import javax.crypto.SecretKey;
  */
 @Service
 public class BookingTokenService {
+
+    private static final Logger logger = LoggerFactory.getLogger(BookingTokenService.class);
 
     @Value("${jwt.secret.key}")
     private String jwtSecret;
@@ -59,16 +63,16 @@ public class BookingTokenService {
 
             String type = claims.get("type", String.class);
             if (!"booking_management".equals(type)) {
-                System.err.println("JWT validation error: Invalid token type: " + type);
+                // System.err.println("JWT validation error: Invalid token type: " + type);
                 return null;
             }
 
             Long reservationId = claims.get("reservationId", Long.class);
-            System.out.println("JWT validation successful for reservation ID: " + reservationId);
+            // System.out.println("JWT validation successful for reservation ID: " + reservationId);
             return reservationId;
         } catch (Exception e) {
-            System.err.println("JWT validation error: " + e.getClass().getSimpleName() + " - " + e.getMessage());
-            e.printStackTrace();
+            // System.err.println("JWT validation error: " + e.getClass().getSimpleName() + " - " + e.getMessage());
+            logger.error("Operation failed", e);
             return null;
         }
     }
@@ -87,11 +91,11 @@ public class BookingTokenService {
                     .getPayload();
 
             String email = claims.get("guestEmail", String.class);
-            System.out.println("JWT email extraction successful: " + email);
+            // System.out.println("JWT email extraction successful: " + email);
             return email;
         } catch (Exception e) {
-            System.err.println("JWT email extraction error: " + e.getClass().getSimpleName() + " - " + e.getMessage());
-            e.printStackTrace();
+            // System.err.println("JWT email extraction error: " + e.getClass().getSimpleName() + " - " + e.getMessage());
+            logger.error("Operation failed", e);
             return null;
         }
     }

@@ -380,7 +380,7 @@ class ShopApiService {
 
     try {
       // First, try to get consolidated stats from the new dedicated dashboard endpoint
-      const response = await fetch(`${API_BASE_URL}/api/hotels/${hotelId}/shop/dashboard/stats`, {
+      const response = await fetch(`${API_BASE_URL}/hotels/${hotelId}/shop/dashboard/stats`, {
         headers: this.getAuthHeaders(),
       });
       

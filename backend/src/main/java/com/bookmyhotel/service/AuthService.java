@@ -87,7 +87,7 @@ public class AuthService {
         } catch (Exception e) {
             // Log the error but don't fail registration
             // Email is nice-to-have, registration success is critical
-            System.err.println("Failed to send welcome email to " + user.getEmail() + ": " + e.getMessage());
+            // System.err.println("Failed to send welcome email to " + user.getEmail() + ": " + e.getMessage());
         }
 
         // Generate token for immediate login

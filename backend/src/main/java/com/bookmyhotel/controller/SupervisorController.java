@@ -5,6 +5,8 @@ import com.bookmyhotel.enums.*;
 import com.bookmyhotel.service.HousekeepingService;
 import com.bookmyhotel.service.HotelService;
 import com.bookmyhotel.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -28,6 +30,8 @@ import java.util.ArrayList;
 @CrossOrigin(origins = "*", maxAge = 3600)
 @PreAuthorize("hasRole('OPERATIONS_SUPERVISOR')")
 public class SupervisorController {
+
+    private static final Logger logger = LoggerFactory.getLogger(SupervisorController.class);
 
     @Autowired
     private HousekeepingService housekeepingService;
@@ -148,7 +152,7 @@ public class SupervisorController {
 
             return ResponseEntity.ok(dashboard);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Operation failed", e);
             return ResponseEntity.status(500).body(Map.of("error", "An unexpected error occurred: " + e.getMessage()));
         }
     }
@@ -252,7 +256,7 @@ public class SupervisorController {
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Operation failed", e);
             return ResponseEntity.status(500).body(Map.of("error", "An unexpected error occurred: " + e.getMessage()));
         }
     }
@@ -364,8 +368,8 @@ public class SupervisorController {
                 }
             } catch (Exception housekeepingError) {
                 // Log but don't fail if housekeeping_staff table has issues
-                System.err.println(
-                        "Warning: Could not fetch from housekeeping_staff table: " + housekeepingError.getMessage());
+                // System.err.println(
+                //         "Warning: Could not fetch from housekeeping_staff table: " + housekeepingError.getMessage());
             }
 
             return ResponseEntity.ok(Map.of(
@@ -373,7 +377,7 @@ public class SupervisorController {
                     "housekeeping", housekeepingStaff,
                     "maintenance", maintenanceStaff));
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Operation failed", e);
             return ResponseEntity.status(500).body(Map.of("error", "An unexpected error occurred: " + e.getMessage()));
         }
     }
@@ -473,7 +477,7 @@ public class SupervisorController {
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Operation failed", e);
             return ResponseEntity.status(500).body(Map.of("error", "An unexpected error occurred: " + e.getMessage()));
         }
     }
@@ -551,7 +555,7 @@ public class SupervisorController {
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Operation failed", e);
             return ResponseEntity.status(500).body(Map.of("error", "An unexpected error occurred: " + e.getMessage()));
         }
     }
@@ -610,7 +614,7 @@ public class SupervisorController {
              * return ResponseEntity.ok(responseMap);
              */
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Operation failed", e);
             return ResponseEntity.status(500)
                     .body(Map.of("error", "Error creating maintenance request: " + e.getMessage()));
         }
@@ -686,7 +690,7 @@ public class SupervisorController {
 
             return ResponseEntity.ok(taskMap);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Operation failed", e);
             return ResponseEntity.status(500).body(Map.of("error", "An unexpected error occurred: " + e.getMessage()));
         }
     }
@@ -808,7 +812,7 @@ public class SupervisorController {
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Operation failed", e);
             return ResponseEntity.status(500).body(Map.of("error", "An unexpected error occurred: " + e.getMessage()));
         }
     }
@@ -868,7 +872,7 @@ public class SupervisorController {
 
             return ResponseEntity.ok(performance);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Operation failed", e);
             return ResponseEntity.status(500).body(Map.of("error", "An unexpected error occurred: " + e.getMessage()));
         }
     }
@@ -921,7 +925,7 @@ public class SupervisorController {
 
             return ResponseEntity.ok(taskMap);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Operation failed", e);
             return ResponseEntity.status(500).body(Map.of("error", "Failed to assign task: " + e.getMessage()));
         }
     }
@@ -984,7 +988,7 @@ public class SupervisorController {
              * return ResponseEntity.ok(requestMap);
              */
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Operation failed", e);
             return ResponseEntity.status(500)
                     .body(Map.of("error", "Failed to assign maintenance request: " + e.getMessage()));
         }
@@ -1036,7 +1040,7 @@ public class SupervisorController {
 
             return ResponseEntity.ok(taskMap);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Operation failed", e);
             return ResponseEntity.status(500).body(Map.of("error", "Failed to auto-assign task: " + e.getMessage()));
         }
     }

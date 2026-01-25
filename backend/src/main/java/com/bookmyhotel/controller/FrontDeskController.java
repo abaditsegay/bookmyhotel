@@ -191,8 +191,8 @@ public class FrontDeskController {
 
             return ResponseEntity.ok(availableRooms);
         } catch (Exception e) {
-            System.err.println("Failed to get available rooms: " + e.getMessage());
-            e.printStackTrace();
+            // System.err.println("Failed to get available rooms: " + e.getMessage());
+            logger.error("Operation failed", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -431,9 +431,9 @@ public class FrontDeskController {
 
         // Log the walk-in booking creation for audit purposes
         String staffEmail = auth.getName();
-        System.out.println("Walk-in booking created by front desk staff: " + staffEmail +
-                " with confirmation number: " + response.getConfirmationNumber() +
-                " for guest email: " + request.getGuestEmail());
+        // System.out.println("Walk-in booking created by front desk staff: " + staffEmail +
+        //         " with confirmation number: " + response.getConfirmationNumber() +
+        //         " for guest email: " + request.getGuestEmail());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }

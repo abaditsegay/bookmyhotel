@@ -3,6 +3,8 @@ package com.bookmyhotel.controller;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,6 +22,8 @@ import com.bookmyhotel.tenant.TenantContext;
 @RequestMapping("/api/hotels-mgmt")
 @CrossOrigin(origins = "*")
 public class HotelManagementController {
+
+    private static final Logger logger = LoggerFactory.getLogger(HotelManagementController.class);
 
     @Autowired
     private HotelManagementService hotelManagementService;
@@ -47,8 +51,8 @@ public class HotelManagementController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             // Log the error for debugging
-            System.err.println("Error in getAllHotels: " + e.getMessage());
-            e.printStackTrace();
+            // System.err.println("Error in getAllHotels: " + e.getMessage());
+            logger.error("Operation failed", e);
             throw e;
         }
     }

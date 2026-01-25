@@ -7,6 +7,8 @@ import com.bookmyhotel.entity.RoomType;
 import com.bookmyhotel.entity.RoomStatus;
 import com.bookmyhotel.repository.HotelRepository;
 import com.bookmyhotel.repository.RoomRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.core.io.ClassPathResource;
@@ -26,6 +28,8 @@ import java.util.Map;
 
 @Service
 public class RoomBulkUploadService {
+
+    private static final Logger logger = LoggerFactory.getLogger(RoomBulkUploadService.class);
 
     private final RoomRepository roomRepository;
     private final HotelRepository hotelRepository;
@@ -79,13 +83,13 @@ public class RoomBulkUploadService {
                     if (rowNumber == 1) {
                         // Parse headers
                         headers = line.split(",");
-                        System.out.println("CSV Headers: " + java.util.Arrays.toString(headers));
+                        // System.out.println("CSV Headers: " + java.util.Arrays.toString(headers));
                         continue;
                     }
 
                     // Parse data rows
                     String[] values = line.split(",");
-                    System.out.println("Row " + rowNumber + " values: " + java.util.Arrays.toString(values));
+                    // System.out.println("Row " + rowNumber + " values: " + java.util.Arrays.toString(values));
                     Map<String, Object> room = new HashMap<>();
                     List<String> rowErrors = new ArrayList<>();
 
@@ -150,8 +154,8 @@ public class RoomBulkUploadService {
                         rowErrors.add("Capacity is required");
                     }
 
-                    System.out.println("Parsed room: " + room);
-                    System.out.println("Row errors: " + rowErrors);
+                    // System.out.println("Parsed room: " + room);
+                    // System.out.println("Row errors: " + rowErrors);
 
                     // Add validation errors for this row
                     for (String error : rowErrors) {
@@ -164,9 +168,9 @@ public class RoomBulkUploadService {
                     // Add room if no critical errors
                     if (rowErrors.isEmpty()) {
                         successfulRooms.add(room);
-                        System.out.println("Added successful room: " + room.get("roomNumber"));
+                        // System.out.println("Added successful room: " + room.get("roomNumber"));
                     } else {
-                        System.out.println("Skipped room due to errors: " + rowErrors);
+                        // System.out.println("Skipped room due to errors: " + rowErrors);
                     }
                 }
             }
@@ -181,11 +185,11 @@ public class RoomBulkUploadService {
             result.put("data", data);
 
         } catch (IOException e) {
-            System.err.println("Error reading CSV file: " + e.getMessage());
+            // System.err.println("Error reading CSV file: " + e.getMessage());
             result.put("success", false);
             result.put("message", "Error reading CSV file: " + e.getMessage());
         } catch (Exception e) {
-            System.err.println("Unexpected error during CSV validation: " + e.getMessage());
+            // System.err.println("Unexpected error during CSV validation: " + e.getMessage());
             result.put("success", false);
             result.put("message", "An unexpected error occurred while processing your request");
         }
@@ -201,15 +205,15 @@ public class RoomBulkUploadService {
     public Map<String, Object> uploadRoomsFromCsv(Long hotelId, MultipartFile file, boolean skipErrors) {
         Map<String, Object> result = new HashMap<>();
 
-        System.out.println("🔥 UPLOAD SERVICE CALLED");
-        System.out.println("🔥 Hotel ID: " + hotelId);
-        System.out.println("🔥 File: " + (file != null ? file.getOriginalFilename() : "null"));
-        System.out.println("🔥 Skip errors: " + skipErrors);
+        // System.out.println("🔥 UPLOAD SERVICE CALLED");
+        // System.out.println("🔥 Hotel ID: " + hotelId);
+        // System.out.println("🔥 File: " + (file != null ? file.getOriginalFilename() : "null"));
+        // System.out.println("🔥 Skip errors: " + skipErrors);
 
         // First validate the CSV
         Map<String, Object> validation = validateCsv(hotelId, file);
         if (!(Boolean) validation.get("success")) {
-            System.out.println("🔥 Validation failed: " + validation.get("message"));
+            // System.out.println("🔥 Validation failed: " + validation.get("message"));
             return validation;
         }
 
@@ -217,11 +221,11 @@ public class RoomBulkUploadService {
         List<Map<String, Object>> successfulRooms = (List<Map<String, Object>>) data.get("successfulRooms");
         List<Map<String, Object>> validationErrors = (List<Map<String, Object>>) data.get("validationErrors");
 
-        System.out.println("🔥 Successful rooms from validation: " + successfulRooms.size());
-        System.out.println("🔥 Validation errors: " + validationErrors.size());
+        // System.out.println("🔥 Successful rooms from validation: " + successfulRooms.size());
+        // System.out.println("🔥 Validation errors: " + validationErrors.size());
 
         if (!skipErrors && !validationErrors.isEmpty()) {
-            System.out.println("🔥 Stopping due to validation errors");
+            // System.out.println("🔥 Stopping due to validation errors");
             result.put("success", false);
             result.put("message", "Validation errors found. Please fix them before importing.");
             result.put("data", data);
@@ -231,20 +235,20 @@ public class RoomBulkUploadService {
         // Get the hotel object
         Hotel hotel = hotelRepository.findById(hotelId).orElse(null);
         if (hotel == null) {
-            System.out.println("🔥 Hotel not found: " + hotelId);
+            // System.out.println("🔥 Hotel not found: " + hotelId);
             result.put("success", false);
             result.put("message", "Hotel not found");
             return result;
         }
 
-        System.out.println("🔥 Found hotel: " + hotel.getName());
+        // System.out.println("🔥 Found hotel: " + hotel.getName());
 
         List<Room> importedRooms = new ArrayList<>();
         List<String> importErrors = new ArrayList<>();
 
         try {
             for (Map<String, Object> roomData : successfulRooms) {
-                System.out.println("🔥 Processing room: " + roomData);
+                // System.out.println("🔥 Processing room: " + roomData);
                 try {
                     Room room = new Room();
                     room.setHotel(hotel);
@@ -252,14 +256,14 @@ public class RoomBulkUploadService {
 
                     // Convert room type string to enum
                     String roomTypeStr = (String) roomData.get("roomType");
-                    System.out.println("🔥 Room type string: " + roomTypeStr);
+                    // System.out.println("🔥 Room type string: " + roomTypeStr);
                     try {
                         RoomType roomType = RoomType.valueOf(roomTypeStr.toUpperCase());
                         room.setRoomType(roomType);
-                        System.out.println("🔥 Set room type: " + roomType);
+                        // System.out.println("🔥 Set room type: " + roomType);
                     } catch (IllegalArgumentException e) {
                         String error = "Invalid room type '" + roomTypeStr + "' for room " + roomData.get("roomNumber");
-                        System.out.println("🔥 " + error);
+                        // System.out.println("🔥 " + error);
                         importErrors.add(error);
                         continue;
                     }
@@ -267,7 +271,7 @@ public class RoomBulkUploadService {
                     // Convert price to BigDecimal
                     Double priceDouble = (Double) roomData.get("pricePerNight");
                     room.setPricePerNight(BigDecimal.valueOf(priceDouble));
-                    System.out.println("🔥 Set price: " + priceDouble);
+                    // System.out.println("🔥 Set price: " + priceDouble);
 
                     room.setCapacity((Integer) roomData.get("capacity"));
                     room.setDescription((String) roomData.getOrDefault("description", ""));
@@ -277,10 +281,10 @@ public class RoomBulkUploadService {
                     try {
                         RoomStatus status = RoomStatus.valueOf(statusStr.toUpperCase());
                         room.setStatus(status);
-                        System.out.println("🔥 Set status: " + status);
+                        // System.out.println("🔥 Set status: " + status);
                     } catch (IllegalArgumentException e) {
                         room.setStatus(RoomStatus.AVAILABLE);
-                        System.out.println("🔥 Defaulted status to AVAILABLE");
+                        // System.out.println("🔥 Defaulted status to AVAILABLE");
                     }
 
                     room.setIsAvailable((Boolean) roomData.getOrDefault("isAvailable", true));
@@ -288,20 +292,20 @@ public class RoomBulkUploadService {
                     // Check if room number already exists for this hotel
                     if (roomRepository.existsByHotelAndRoomNumber(hotel, room.getRoomNumber())) {
                         String error = "Room " + room.getRoomNumber() + " already exists";
-                        System.out.println("🔥 " + error);
+                        // System.out.println("🔥 " + error);
                         importErrors.add(error);
                         continue;
                     }
 
-                    System.out.println("🔥 About to save room: " + room.getRoomNumber());
+                    // System.out.println("🔥 About to save room: " + room.getRoomNumber());
                     Room savedRoom = roomRepository.save(room);
-                    System.out.println("🔥 Saved room with ID: " + savedRoom.getId());
+                    // System.out.println("🔥 Saved room with ID: " + savedRoom.getId());
                     importedRooms.add(savedRoom);
 
                 } catch (Exception e) {
                     String error = "Failed to import room " + roomData.get("roomNumber") + ": " + e.getMessage();
-                    System.out.println("🔥 " + error);
-                    e.printStackTrace();
+                    // System.out.println("🔥 " + error);
+                    logger.error("Operation failed", e);
                     importErrors.add(error);
                 }
             }
@@ -313,7 +317,7 @@ public class RoomBulkUploadService {
             resultData.put("successfulImports", importedRooms.size());
             resultData.put("failedImports", importErrors.size());
 
-            System.out.println("🔥 Final result data: " + resultData);
+            // System.out.println("🔥 Final result data: " + resultData);
 
             result.put("success", true);
             result.put("message", String.format("Import completed: %d successful, %d failed",
@@ -321,8 +325,8 @@ public class RoomBulkUploadService {
             result.put("data", resultData);
 
         } catch (Exception e) {
-            System.err.println("Error during room import: " + e.getMessage());
-            e.printStackTrace();
+            // System.err.println("Error during room import: " + e.getMessage());
+            logger.error("Operation failed", e);
             result.put("success", false);
             result.put("message", "Error during import: " + e.getMessage());
         }

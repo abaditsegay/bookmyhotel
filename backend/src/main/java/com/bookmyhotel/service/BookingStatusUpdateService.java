@@ -99,8 +99,8 @@ public class BookingStatusUpdateService {
 
         // Create booking notification if status changed to CANCELLED
         if (newStatus == ReservationStatus.CANCELLED) {
-            System.out.println("📢 Creating cancellation notification for reservation: "
-                    + generateConfirmationNumber(reservation.getId()));
+            // System.out.println("📢 Creating cancellation notification for reservation: "
+            //         + generateConfirmationNumber(reservation.getId()));
             try {
                 String reason = "Booking cancelled by " + initiatedBy;
                 bookingChangeNotificationService.createCancellationNotification(
@@ -108,15 +108,15 @@ public class BookingStatusUpdateService {
                         reason,
                         java.math.BigDecimal.ZERO, // No refund calculation for admin/front desk cancellations
                         initiatedBy);
-                System.out.println("✅ Successfully created cancellation notification");
+                // System.out.println("✅ Successfully created cancellation notification");
             } catch (Exception e) {
                 // Log error but don't fail the status update
-                System.err.println("❌ Failed to create cancellation notification: " + e.getMessage());
-                e.printStackTrace();
+                // System.err.println("❌ Failed to create cancellation notification: " + e.getMessage());
+                logger.error("Operation failed", e);
             }
         }
 
-        System.out.println("✅ Status updated successfully: " + oldStatus + " → " + newStatus);
+        // System.out.println("✅ Status updated successfully: " + oldStatus + " → " + newStatus);
 
         // Trigger automated room status consistency check for the affected room
         if (room != null) {
@@ -231,7 +231,7 @@ public class BookingStatusUpdateService {
         try {
             return userRepository.findById(guestId).orElse(null);
         } catch (Exception e) {
-            System.err.println("Error fetching guest user: " + e.getMessage());
+            // System.err.println("Error fetching guest user: " + e.getMessage());
             return null;
         }
     }

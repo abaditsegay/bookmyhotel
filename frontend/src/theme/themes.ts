@@ -2,53 +2,53 @@ import { createTheme } from '@mui/material/styles';
 
 // Custom theme constants (shared between light and dark themes)
 export const themeConstants = {
-  // Brand colors - Navy Blue Theme System for Hotel Management
-  brandPrimary: '#1565c0',     // Navy blue - main brand color (Blue 800)
-  brandPrimaryLight: '#42a5f5', // Light blue (Blue 400)
-  brandPrimaryDark: '#0d47a1',  // Very dark blue (Blue 900)
-  brandSecondary: '#1976d2',   // Medium blue for secondary elements (Blue 700)
-  brandAccent: '#e3f2fd',      // Light blue accent (Blue 50)
+  // Brand colors - Deep Blue Theme System for Hotel Management
+  brandPrimary: '#1a237e',     // Deep blue - main brand color (Indigo 900)
+  brandPrimaryLight: '#5c6bc0', // Light deep blue (Indigo 400)
+  brandPrimaryDark: '#0d1657',  // Very dark blue
+  brandSecondary: '#9e9e9e',   // Soft gray for secondary elements (Gray 500)
+  brandAccent: '#ffd54f',      // Warm gold accent (Amber 300)
   
-  // Blue Color Palette for consistent theming
+  // Deep Blue Color Palette for consistent theming
   greenPalette: {
-    50: '#e3f2fd',
-    100: '#bbdefb',
-    200: '#90caf9',
-    300: '#64b5f6',
-    400: '#42a5f5',
-    500: '#2196f3',   // Standard blue
-    600: '#1e88e5',
-    700: '#1976d2',
-    800: '#1565c0',   // Navy blue - main brand
-    900: '#0d47a1',   // Very dark blue
+    50: '#e8eaf6',
+    100: '#c5cae9',
+    200: '#9fa8da',
+    300: '#7986cb',
+    400: '#5c6bc0',
+    500: '#3f51b5',   // Standard deep blue
+    600: '#3949ab',
+    700: '#303f9f',
+    800: '#283593',   // Deep blue
+    900: '#1a237e',   // Very dark blue - main brand
   },
   
-  // UI Element specific colors derived from blue palette
+  // UI Element specific colors derived from deep blue palette
   uiColors: {
     // Form elements
-    inputFocus: '#1565c0',
-    inputHover: '#1976d2',
-    inputBorder: '#e3f2fd',
+    inputFocus: '#1a237e',
+    inputHover: '#283593',
+    inputBorder: '#e8eaf6',
     
     // Buttons
-    primaryButton: '#1565c0',
-    primaryButtonHover: '#0d47a1',
-    primaryButtonPressed: '#0d47a1',
+    primaryButton: '#1a237e',
+    primaryButtonHover: '#0d1657',
+    primaryButtonPressed: '#0d1657',
     
     // Status indicators
-    success: '#1565c0',  // Blue for success
-    confirmed: '#1565c0', // Blue for confirmed status
-    pending: '#f57c00',   // Keep orange for pending
+    success: '#1a237e',  // Deep blue for success
+    confirmed: '#1a237e', // Deep blue for confirmed status
+    pending: '#ffd54f',   // Warm gold for pending
     error: '#d32f2f',     // Professional red
     
     // Steppers and progress
-    stepperActive: '#1565c0',
-    stepperCompleted: '#0d47a1',
+    stepperActive: '#1a237e',
+    stepperCompleted: '#0d1657',
     stepperInactive: '#bdbdbd',
     
     // Cards and surfaces
-    cardBorder: '#e3f2fd',
-    cardHover: '#f0f7ff',
+    cardBorder: '#e8eaf6',
+    cardHover: '#f3f4fb',
     surfaceElevated: '#ffffff',
   },
   
@@ -190,15 +190,15 @@ const lightThemeBase = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: '#2e7d32',      // Forest green as primary
-      light: '#66bb6a',
-      dark: '#1b5e20',
+      main: '#1a237e',      // Deep blue as primary
+      light: '#5c6bc0',
+      dark: '#0d1657',
       contrastText: '#ffffff',
     },
     secondary: {
-      main: '#4caf50',  // Green as secondary (for confirmed status, etc.)
-      light: '#42a5f5',
-      dark: '#1565c0',
+      main: '#9e9e9e',  // Soft gray as secondary
+      light: '#e0e0e0',
+      dark: '#616161',
       contrastText: '#ffffff',
     },
     background: {
@@ -216,15 +216,15 @@ const lightThemeBase = createTheme({
       contrastText: '#ffffff',
     },
     warning: {
-      main: themeConstants.uiColors.pending,
-      light: '#FFF5F0',
-      dark: '#e65100',
-      contrastText: '#ffffff',
+      main: '#ffd54f',  // Warm gold accent
+      light: '#fff9c4',
+      dark: '#ffb300',
+      contrastText: '#000000',
     },
     info: {
-      main: '#1565c0',
-      light: '#e3f2fd',
-      dark: '#0d47a1',
+      main: '#1a237e',
+      light: '#e8eaf6',
+      dark: '#0d1657',
       contrastText: '#ffffff',
     },
     error: {
@@ -358,15 +358,15 @@ const darkThemeBase = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      main: '#4caf50',  // Green for dark mode
-      light: '#66bb6a',
-      dark: '#2e7d32',
+      main: '#5c6bc0',  // Light deep blue for dark mode
+      light: '#9fa8da',
+      dark: '#3949ab',
       contrastText: '#ffffff',
     },
     secondary: {
-      main: '#66bb6a',  // Lighter green for dark mode
-      light: '#a5d6a7',
-      dark: '#43a047',
+      main: '#bdbdbd',  // Light gray for dark mode
+      light: '#e0e0e0',
+      dark: '#9e9e9e',
       contrastText: '#000000',
     },
     background: {
@@ -384,16 +384,16 @@ const darkThemeBase = createTheme({
       contrastText: '#000000',
     },
     warning: {
-      main: '#ffb74d',
-      light: '#ffcc80',
-      dark: '#ff9800',
+      main: '#ffd54f',  // Warm gold accent for dark mode
+      light: '#ffe082',
+      dark: '#ffb300',
       contrastText: '#000000',
     },
     info: {
-      main: '#ff5722',
-      light: '#ffab91',
-      dark: '#ff7043',
-      contrastText: '#000000',
+      main: '#5c6bc0',  // Deep blue for info
+      light: '#9fa8da',
+      dark: '#3949ab',
+      contrastText: '#ffffff',
     },
     error: {
       main: '#ef5350',

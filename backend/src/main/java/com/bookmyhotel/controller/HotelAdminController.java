@@ -505,8 +505,8 @@ public class HotelAdminController {
             return ResponseEntity.ok(availableRooms);
 
         } catch (Exception e) {
-            System.err.println("Failed to get available rooms: " + e.getMessage());
-            e.printStackTrace();
+            // System.err.println("Failed to get available rooms: " + e.getMessage());
+            logger.error("Operation failed", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -587,11 +587,11 @@ public class HotelAdminController {
 
         try {
             // Debug logging
-            System.out.println("🔍 ROOM TYPE UPLOAD DEBUG:");
-            System.out.println("  roomType parameter: " + roomType);
-            System.out.println("  isHotelGeneral parameter: " + isHotelGeneral);
-            System.out
-                    .println("  heroImage filename: " + (heroImage != null ? heroImage.getOriginalFilename() : "null"));
+            // System.out.println("🔍 ROOM TYPE UPLOAD DEBUG:");
+            // System.out.println("  roomType parameter: " + roomType);
+            // System.out.println("  isHotelGeneral parameter: " + isHotelGeneral);
+            // System.out
+            //         .println("  heroImage filename: " + (heroImage != null ? heroImage.getOriginalFilename() : "null"));
 
             String tenantId = TenantContext.getTenantId();
             HotelDTO hotel = hotelAdminService.getMyHotel(auth.getName());
@@ -607,8 +607,8 @@ public class HotelAdminController {
 
             // Check if this is a room type image upload
             if (roomType != null && !roomType.trim().isEmpty()) {
-                System.out.println("🎯 TAKING ROOM TYPE UPLOAD PATH");
-                System.out.println("  roomType: " + roomType);
+                // System.out.println("🎯 TAKING ROOM TYPE UPLOAD PATH");
+                // System.out.println("  roomType: " + roomType);
 
                 // This is a room type image upload
                 ImageCategory category = ImageCategory.ROOM_TYPE_HERO; // Room type images default to hero
@@ -617,9 +617,9 @@ public class HotelAdminController {
                 RoomType roomTypeEnum;
                 try {
                     roomTypeEnum = RoomType.valueOf(roomType.toUpperCase());
-                    System.out.println("  roomTypeEnum: " + roomTypeEnum);
+                    // System.out.println("  roomTypeEnum: " + roomTypeEnum);
                 } catch (IllegalArgumentException e) {
-                    System.out.println("❌ Invalid room type: " + roomType);
+                    // System.out.println("❌ Invalid room type: " + roomType);
                     Map<String, Object> response = new HashMap<>();
                     response.put("success", false);
                     response.put("error", "Invalid room type: " + roomType);
@@ -627,13 +627,13 @@ public class HotelAdminController {
                 }
 
                 Long roomTypeId = (long) (roomTypeEnum.ordinal() + 1);
-                System.out.println("  roomTypeId: " + roomTypeId);
+                // System.out.println("  roomTypeId: " + roomTypeId);
 
                 uploadedImage = hotelImageService.uploadRoomTypeImage(
                         tenantId, hotel.getId(), roomTypeId, category, heroImage, heroAltText, null);
-                System.out.println("✅ Room type image uploaded successfully");
+                // System.out.println("✅ Room type image uploaded successfully");
             } else {
-                System.out.println("🏨 TAKING HOTEL GENERAL UPLOAD PATH");
+                // System.out.println("🏨 TAKING HOTEL GENERAL UPLOAD PATH");
 
                 // This is a hotel general image upload
                 ImageCategory category;
@@ -642,11 +642,11 @@ public class HotelAdminController {
                 } else {
                     category = ImageCategory.HOTEL_GALLERY; // Default to gallery
                 }
-                System.out.println("  category: " + category);
+                // System.out.println("  category: " + category);
 
                 uploadedImage = hotelImageService.uploadHotelImage(
                         tenantId, hotel.getId(), category, heroImage, heroAltText, null);
-                System.out.println("✅ Hotel image uploaded successfully");
+                // System.out.println("✅ Hotel image uploaded successfully");
             }
 
             List<Map<String, Object>> responseData = List.of(createImageResponse(uploadedImage));

@@ -27,6 +27,8 @@ import com.bookmyhotel.entity.RegistrationStatus;
 import com.bookmyhotel.service.HotelRegistrationService;
 
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Admin controller for hotel registration management
@@ -36,6 +38,8 @@ import jakarta.validation.Valid;
 @PreAuthorize("hasRole('ADMIN') or hasRole('SYSTEM_ADMIN')")
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class HotelRegistrationAdminController {
+
+    private static final Logger logger = LoggerFactory.getLogger(HotelRegistrationAdminController.class);
 
     @Autowired
     private HotelRegistrationService registrationService;
@@ -142,8 +146,8 @@ public class HotelRegistrationAdminController {
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             // Log the error for debugging
-            System.err.println("Error approving registration " + id + ": " + e.getMessage());
-            e.printStackTrace();
+            // System.err.println("Error approving registration " + id + ": " + e.getMessage());
+            logger.error("Operation failed", e);
             return ResponseEntity.badRequest().body(null);
         }
     }

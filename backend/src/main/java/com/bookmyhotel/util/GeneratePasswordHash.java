@@ -7,7 +7,7 @@ public class GeneratePasswordHash {
     // Boot conflicts)
     public static void generatePasswordHash(String[] args) {
         if (args.length != 1) {
-            System.out.println("Usage: java GeneratePasswordHash <password>");
+            // System.out.println("Usage: java GeneratePasswordHash <password>");
             return;
         }
 
@@ -15,7 +15,7 @@ public class GeneratePasswordHash {
         String password = args[0];
         String hash = encoder.encode(password);
 
-        System.out.println("Password: " + password);
-        System.out.println("BCrypt Hash: " + hash);
+        // System.out.println("Password: " + password);
+        // System.out.println("BCrypt Hash: " + hash);
     }
 }

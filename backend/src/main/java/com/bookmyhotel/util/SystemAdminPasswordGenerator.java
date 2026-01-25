@@ -11,10 +11,10 @@ public class SystemAdminPasswordGenerator {
         // Generate hash for "password"
         String passwordHash = encoder.encode("password");
 
-        System.out.println("password hash: " + passwordHash);
+        // System.out.println("password hash: " + passwordHash);
 
         // Test verification
         boolean matches = encoder.matches("password", passwordHash);
-        System.out.println("Verification test: " + matches);
+        // System.out.println("Verification test: " + matches);
     }
 }

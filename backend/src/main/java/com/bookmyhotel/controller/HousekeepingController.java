@@ -14,6 +14,8 @@ import com.bookmyhotel.repository.UserRepository;
 import com.bookmyhotel.service.HousekeepingService;
 import com.bookmyhotel.service.HotelService;
 import com.bookmyhotel.tenant.TenantContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -30,6 +32,8 @@ import java.util.stream.Collectors;
 @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('HOUSEKEEPING') or hasRole('OPERATIONS_SUPERVISOR')")
 public class HousekeepingController {
 
+    private static final Logger logger = LoggerFactory.getLogger(HousekeepingController.class);
+
     @Autowired
     private HousekeepingService housekeepingService;
 
@@ -42,20 +46,20 @@ public class HousekeepingController {
     // Task endpoints
     @PostMapping("/tasks")
     public ResponseEntity<HousekeepingTask> createTask(@RequestBody HousekeepingTaskRequest request) {
-        System.out.println("🔍 Creating task with request: " + request);
-        System.out.println("🔍 Title: " + request.getTitle());
-        System.out.println("🔍 Description: " + request.getDescription());
-        System.out.println("🔍 Task Type: " + request.getTaskType());
-        System.out.println("🔍 Priority: " + request.getPriority());
-        System.out.println("🔍 Room Number: " + request.getRoomNumber());
-        System.out.println("🔍 Estimated Duration: " + request.getEstimatedDuration());
-        System.out.println("🔍 Assigned Staff ID: " + request.getAssignedStaffId());
-        System.out.println("🔍 Notes: " + request.getNotes());
+        // System.out.println("🔍 Creating task with request: " + request);
+        // System.out.println("🔍 Title: " + request.getTitle());
+        // System.out.println("🔍 Description: " + request.getDescription());
+        // System.out.println("🔍 Task Type: " + request.getTaskType());
+        // System.out.println("🔍 Priority: " + request.getPriority());
+        // System.out.println("🔍 Room Number: " + request.getRoomNumber());
+        // System.out.println("🔍 Estimated Duration: " + request.getEstimatedDuration());
+        // System.out.println("🔍 Assigned Staff ID: " + request.getAssignedStaffId());
+        // System.out.println("🔍 Notes: " + request.getNotes());
 
         String tenantId = TenantContext.getTenantId();
         Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
-        System.out.println("🔍 Tenant ID: " + tenantId);
-        System.out.println("🔍 Hotel ID: " + hotelId);
+        // System.out.println("🔍 Tenant ID: " + tenantId);
+        // System.out.println("🔍 Hotel ID: " + hotelId);
 
         try {
             HousekeepingTask task = housekeepingService.createTaskEnhanced(
@@ -68,11 +72,10 @@ public class HousekeepingController {
                     request.getNotes(),
                     request.getEstimatedDuration(),
                     request.getAssignedStaffId());
-            System.out.println("✅ Task created successfully: " + task.getId());
+            // System.out.println("✅ Task created successfully: " + task.getId());
             return ResponseEntity.ok(task);
         } catch (Exception e) {
-            System.err.println("❌ Error creating task: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Error creating housekeeping task", e);
             throw e;
         }
     }
