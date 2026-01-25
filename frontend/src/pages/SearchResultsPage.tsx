@@ -15,12 +15,14 @@ import {
   Card,
   CardContent,
 } from '@mui/material';
+import { SearchOff as SearchOffIcon } from '@mui/icons-material';
 
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { hotelApiService } from '../services/hotelApi';
 import HotelDetailsCard from '../components/hotel/HotelDetailsCard';
 import { HotelCardSkeleton } from '../components/common/SkeletonLoaders';
+import EmptyState from '../components/common/EmptyState';
 import { 
   HotelSearchRequest, 
   HotelSearchResult,
@@ -404,51 +406,17 @@ const SearchResultsPage: React.FC = () => {
             boxShadow: 'none',
           }}
         >
-          <CardContent sx={{ p: isMobile ? 4 : 6, textAlign: 'center' }}>
-            <Box sx={{ 
-              display: 'flex', 
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: 2,
-              mb: 3,
-            }}>
-              <Typography 
-                variant={isMobile ? "h5" : "h4"} 
-                sx={{ 
-                  fontWeight: 600,
-                  color: 'text.primary',
-                  mb: 1,
-                }}
-              >
-                No Hotels Found
-              </Typography>
-            </Box>
-            <Typography variant="body1" color="text.secondary" paragraph sx={{ mb: 2 }}>
-              We couldn't find any hotels matching your search criteria.
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              Try adjusting your search dates, location, or filters to find more options.
-            </Typography>
-            <Button
-              variant="contained"
-              size="large"
-              onClick={handleBackToSearch}
-              sx={{
-                borderRadius: 2,
-                textTransform: 'none',
-                fontWeight: 500,
-                px: 4,
-                py: 1.2,
-                boxShadow: 'none',
-                '&:hover': {
-                  boxShadow: 'none',
-                  transform: 'none',
-                  opacity: 0.9,
-                },
+          <CardContent sx={{ p: 0 }}>
+            <EmptyState
+              icon={<SearchOffIcon />}
+              title="No Hotels Found"
+              message="We couldn't find any hotels matching your search criteria. Try adjusting your search dates, location, or filters to find more options."
+              action={{
+                label: "Modify Search",
+                onClick: handleBackToSearch,
+                variant: "contained"
               }}
-            >
-              Modify Search
-            </Button>
+            />
           </CardContent>
         </Card>
       )}

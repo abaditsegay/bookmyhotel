@@ -26,8 +26,8 @@ export const ADMIN_THEME_COLORS = {
     accent: '#ffcc80',
   },
   SYSTEM_ADMIN: {
-    primary: '#1976d2',
-    primaryHover: '#1565c0',
+    primary: '#1565c0',
+    primaryHover: '#0d47a1',
     primaryDark: '#0d47a1',
     accent: '#bbdefb',
   },

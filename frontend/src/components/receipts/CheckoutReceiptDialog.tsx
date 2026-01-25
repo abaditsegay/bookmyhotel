@@ -11,11 +11,11 @@ import {
   Table,
   TableBody,
   TableCell,
-  TableContainer,
   TableHead,
   TableRow,
   IconButton,
   Tooltip,
+  useTheme,
 } from '@mui/material';
 import {
   Print as PrintIcon,
@@ -38,12 +38,15 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
   receipt,
   guestName,
 }) => {
+  const theme = useTheme();
   if (!receipt) return null;
 
   const formatDate = (dateString: string) => formatDateForDisplay(dateString);
   const formatDateTime = (dateString: string) => new Date(dateString).toLocaleString();
 
   const handlePrint = () => {
+    const primaryColor = theme.palette.primary.main;
+    
     const printWindow = window.open('', '_blank');
     if (printWindow) {
       printWindow.document.write(`
@@ -72,50 +75,42 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
               }
               
               .header {
-                background: linear-gradient(135deg, #1976d2, #1565c0);
-                color: white;
-                padding: 40px 20px;
-                text-align: center;
+                padding: 30px 20px 20px;
+                border-bottom: 1px solid #e0e0e0;
                 margin-bottom: 20px;
-                position: relative;
               }
               
               .header h1 {
-                font-size: 32px;
+                font-size: 28px;
                 font-weight: 700;
-                margin-bottom: 8px;
+                margin-bottom: 6px;
+                color: #212121;
               }
               
               .header .address {
-                font-size: 18px;
-                opacity: 0.9;
-                margin-bottom: 20px;
+                font-size: 14px;
+                color: #666;
+                margin-bottom: 15px;
               }
               
               .badges {
                 display: flex;
-                gap: 20px;
-                justify-content: center;
+                gap: 15px;
                 align-items: center;
               }
               
               .badge {
-                background: rgba(255,255,255,0.2);
-                padding: 10px 20px;
-                border-radius: 25px;
-                border: 1px solid rgba(255,255,255,0.3);
+                font-size: 13px;
+                color: #666;
               }
               
               .badge.receipt {
-                font-size: 18px;
                 font-weight: 600;
               }
               
               .badge.number {
-                background: rgba(255,255,255,0.15);
-                padding: 5px 15px;
-                border-radius: 15px;
-                font-size: 14px;
+                color: #666;
+                font-size: 13px;
               }
               
               .content {
@@ -126,29 +121,21 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
               
               .section {
                 background: white;
-                border-radius: 8px;
                 padding: 20px;
                 margin-bottom: 20px;
                 border: 1px solid #e0e0e0;
-                border-left: 4px solid #1976d2;
+                border-left: 4px solid ${primaryColor};
               }
               
               .section h2 {
-                color: #1976d2;
-                font-size: 18px;
+                color: #212121;
+                font-size: 16px;
                 font-weight: 600;
                 margin-bottom: 15px;
-                display: flex;
-                align-items: center;
-                gap: 8px;
               }
               
               .section h2::before {
-                content: '';
-                width: 8px;
-                height: 8px;
-                background: #1976d2;
-                border-radius: 50%;
+                display: none;
               }
               
               .info-grid {
@@ -177,13 +164,13 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
               
               .info-value.highlight {
                 font-weight: 700;
-                color: #1976d2;
+                color: ${primaryColor};
                 font-size: 16px;
               }
               
               .divider {
-                height: 2px;
-                background: linear-gradient(90deg, transparent, #1976d2, transparent);
+                height: 1px;
+                background: #e0e0e0;
                 margin: 20px 0;
               }
               
@@ -191,20 +178,19 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                 width: 100%;
                 border-collapse: collapse;
                 background: white;
-                border-radius: 8px;
-                overflow: hidden;
                 border: 1px solid #e0e0e0;
               }
               
               .table thead th {
-                background: linear-gradient(135deg, #1976d2, #1565c0);
-                color: white;
-                padding: 15px 12px;
+                background: #fafafa;
+                color: #666;
+                padding: 12px;
                 text-align: left;
-                font-weight: 700;
-                font-size: 14px;
+                font-weight: 600;
+                font-size: 11px;
                 text-transform: uppercase;
                 letter-spacing: 0.5px;
+                border-bottom: 1px solid #e0e0e0;
               }
               
               .table thead th.center {
@@ -242,18 +228,20 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
               }
               
               .table tbody tr.total {
-                background: linear-gradient(135deg, #1976d2, #1565c0);
+                background: white;
+                border-top: 2px solid #212121;
               }
               
               .table tbody tr.total td {
-                color: white;
+                color: #212121;
                 border-bottom: none;
-                padding: 20px 12px;
+                padding: 15px 12px;
                 font-weight: 700;
               }
               
               .table tbody tr.total td.amount {
-                font-size: 18px;
+                font-size: 16px;
+                font-weight: 700;
               }
               
               .footer {
@@ -261,13 +249,12 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                 margin-top: 30px;
                 padding: 20px;
                 background: white;
-                border-radius: 8px;
-                border: 1px solid #e0e0e0;
+                border-top: 1px solid #e0e0e0;
               }
               
               .footer h3 {
-                color: #1976d2;
-                font-size: 20px;
+                color: #212121;
+                font-size: 18px;
                 font-weight: 600;
                 margin-bottom: 10px;
               }
@@ -279,11 +266,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
               }
               
               @media print {
-                .header {
-                  -webkit-print-color-adjust: exact;
-                  color-adjust: exact;
-                }
-                
+                .header,
                 .table thead th,
                 .table tbody tr.total td {
                   -webkit-print-color-adjust: exact;
@@ -467,182 +450,159 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
         sx: { 
           minHeight: '90vh',
           borderRadius: 2,
-          overflow: 'hidden',
+          bgcolor: '#f5f5f5',
         }
       }}
     >
-      {/* Header with hotel name and receipt info - matching the blue header in image */}
-      <Box sx={{
-        background: 'linear-gradient(135deg, #1976d2, #1565c0)',
-        color: 'white',
-        p: 4,
-        textAlign: 'center',
-        position: 'relative',
-      }}>
-        {/* Action buttons in top right */}
+      <DialogContent sx={{ p: 0 }}>
+        {/* Main content wrapper with white background */}
         <Box sx={{ 
-          position: 'absolute', 
-          top: 16, 
-          right: 16,
-          display: 'flex', 
-          gap: 1 
+          bgcolor: 'white', 
+          m: 3, 
+          borderRadius: 2,
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
         }}>
-          <Tooltip title="Print Receipt">
-            <IconButton 
-              onClick={handlePrint} 
-              sx={{ 
-                color: 'white',
-                bgcolor: 'rgba(255,255,255,0.1)',
-                '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' },
-              }}
-            >
-              <PrintIcon />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Download PDF">
-            <IconButton 
-              onClick={handleDownload} 
-              sx={{ 
-                color: 'white',
-                bgcolor: 'rgba(255,255,255,0.1)',
-                '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' },
-              }}
-            >
-              <DownloadIcon />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Email Receipt">
-            <IconButton 
-              onClick={handleEmail} 
-              sx={{ 
-                color: 'white',
-                bgcolor: 'rgba(255,255,255,0.1)',
-                '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' },
-              }}
-            >
-              <EmailIcon />
-            </IconButton>
-          </Tooltip>
-        </Box>
-
-        {/* Hotel name and address */}
-        <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>
-          {receipt.hotelName}
-        </Typography>
-        <Typography variant="h6" sx={{ opacity: 0.9, mb: 3 }}>
-          {receipt.hotelAddress}
-        </Typography>
-
-        {/* Receipt badges */}
-        <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', alignItems: 'center' }}>
-          <Box sx={{
-            bgcolor: 'rgba(255,255,255,0.2)',
-            px: 3,
-            py: 1,
-            borderRadius: 25,
-            border: '1px solid rgba(255,255,255,0.3)',
+          {/* Header Section */}
+          <Box sx={{ 
+            p: 4, 
+            borderBottom: '1px solid #e0e0e0',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start'
           }}>
-            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+            <Box>
+              <Typography variant="h4" sx={{ fontWeight: 700, mb: 0.5, color: '#212121' }}>
+                {receipt.hotelName}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {receipt.hotelAddress}
+              </Typography>
+            </Box>
+            <Box sx={{ textAlign: 'right' }}>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                Receipt #{receipt.receiptNumber}
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <Tooltip title="Print Receipt">
+                  <IconButton 
+                    size="small"
+                    onClick={handlePrint} 
+                    sx={{ 
+                      border: '1px solid #e0e0e0',
+                      '&:hover': { bgcolor: '#f5f5f5' },
+                    }}
+                  >
+                    <PrintIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Download PDF">
+                  <IconButton 
+                    size="small"
+                    onClick={handleDownload} 
+                    sx={{ 
+                      border: '1px solid #e0e0e0',
+                      '&:hover': { bgcolor: '#f5f5f5' },
+                    }}
+                  >
+                    <DownloadIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Email Receipt">
+                  <IconButton 
+                    size="small"
+                    onClick={handleEmail} 
+                    sx={{ 
+                      border: '1px solid #e0e0e0',
+                      '&:hover': { bgcolor: '#f5f5f5' },
+                    }}
+                  >
+                    <EmailIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+            </Box>
+          </Box>
+
+          {/* Booking Summary Section */}
+          <Box sx={{ p: 4, borderBottom: '1px solid #e0e0e0' }}>
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                fontWeight: 600, 
+                mb: 1,
+                color: '#666',
+                textTransform: 'uppercase',
+                fontSize: '0.7rem',
+                letterSpacing: '0.5px'
+              }}
+            >
               Official Receipt
             </Typography>
-          </Box>
-          <Box sx={{
-            bgcolor: 'rgba(255,255,255,0.15)',
-            px: 2,
-            py: 0.5,
-            borderRadius: 15,
-          }}>
-            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+            <Typography variant="body2" sx={{ color: '#666', fontSize: '0.85rem' }}>
               Receipt #{receipt.receiptNumber}
             </Typography>
           </Box>
-        </Box>
 
-        {/* Arrow pointing down */}
-        <Box sx={{
-          position: 'absolute',
-          bottom: -12,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: 0,
-          height: 0,
-          borderLeft: '24px solid transparent',
-          borderRight: '24px solid transparent',
-          borderTop: '24px solid #1565c0',
-        }} />
-      </Box>
-
-      <DialogContent sx={{ p: 0, bgcolor: '#f5f5f5' }}>
-        <Box sx={{ p: 4, maxWidth: 800, mx: 'auto' }}>
           {/* Guest Information Section */}
-          <Box sx={{
-            bgcolor: 'white',
-            borderRadius: 2,
+          <Box sx={{ 
+            mx: 4, 
+            mt: 4,
             p: 3,
-            mb: 3,
             border: '1px solid #e0e0e0',
-            borderLeft: '4px solid #1976d2',
+            borderLeft: `4px solid ${theme.palette.primary.main}`
           }}>
-            <Typography variant="h6" sx={{ 
-              color: '#1976d2', 
-              fontWeight: 600, 
-              mb: 2,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1,
-            }}>
-              <Box component="span" sx={{ 
-                width: 8, 
-                height: 8, 
-                bgcolor: '#1976d2', 
-                borderRadius: '50%' 
-              }} />
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                fontWeight: 700, 
+                mb: 3,
+                color: '#212121',
+                fontSize: '1rem'
+              }}
+            >
               Guest Information
             </Typography>
-            
             <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
+              <Grid item xs={6}>
                 <Box sx={{ mb: 2 }}>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: '#666', mb: 0.5 }}>
+                  <Typography variant="caption" sx={{ color: '#666', textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
                     Full Name:
                   </Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                    {receipt.guestName}
+                  <Typography variant="body2" sx={{ fontWeight: 500, mt: 0.5 }}>
+                    {guestName}
                   </Typography>
                 </Box>
                 <Box sx={{ mb: 2 }}>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: '#666', mb: 0.5 }}>
+                  <Typography variant="caption" sx={{ color: '#666', textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
                     Email:
                   </Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                    {receipt.guestEmail}
+                  <Typography variant="body2" sx={{ fontWeight: 500, mt: 0.5 }}>
+                    {receipt.guestEmail || 'N/A'}
                   </Typography>
                 </Box>
-                {receipt.guestPhone && (
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="body2" sx={{ fontWeight: 600, color: '#666', mb: 0.5 }}>
-                      Phone:
-                    </Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                      {receipt.guestPhone}
-                    </Typography>
-                  </Box>
-                )}
+                <Box>
+                  <Typography variant="caption" sx={{ color: '#666', textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
+                    Phone:
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 500, mt: 0.5 }}>
+                    {receipt.guestPhone || 'N/A'}
+                  </Typography>
+                </Box>
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid item xs={6}>
                 <Box sx={{ mb: 2 }}>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: '#666', mb: 0.5 }}>
+                  <Typography variant="caption" sx={{ color: '#666', textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
                     Confirmation:
                   </Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 700, color: '#1976d2' }}>
+                  <Typography variant="body2" sx={{ fontWeight: 700, color: theme.palette.primary.main, mt: 0.5 }}>
                     {receipt.confirmationNumber}
                   </Typography>
                 </Box>
                 <Box>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: '#666', mb: 0.5 }}>
+                  <Typography variant="caption" sx={{ color: '#666', textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
                     Guests:
                   </Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 500, mt: 0.5 }}>
                     {receipt.numberOfGuests}
                   </Typography>
                 </Box>
@@ -651,72 +611,65 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
           </Box>
 
           {/* Stay Details Section */}
-          <Box sx={{
-            bgcolor: 'white',
-            borderRadius: 2,
+          <Box sx={{ 
+            mx: 4, 
+            mt: 3,
             p: 3,
-            mb: 3,
             border: '1px solid #e0e0e0',
-            borderLeft: '4px solid #1976d2',
+            borderLeft: `4px solid ${theme.palette.primary.main}`
           }}>
-            <Typography variant="h6" sx={{ 
-              color: '#1976d2', 
-              fontWeight: 600, 
-              mb: 2,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1,
-            }}>
-              <Box component="span" sx={{ 
-                width: 8, 
-                height: 8, 
-                bgcolor: '#1976d2', 
-                borderRadius: '50%' 
-              }} />
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                fontWeight: 700, 
+                mb: 3,
+                color: '#212121',
+                fontSize: '1rem'
+              }}
+            >
               Stay Details
             </Typography>
-            
             <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
+              <Grid item xs={6}>
                 <Box sx={{ mb: 2 }}>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: '#666', mb: 0.5 }}>
+                  <Typography variant="caption" sx={{ color: '#666', textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
                     Room:
                   </Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 500, mt: 0.5 }}>
                     {receipt.roomNumber} ({receipt.roomType})
                   </Typography>
                 </Box>
                 <Box sx={{ mb: 2 }}>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: '#666', mb: 0.5 }}>
+                  <Typography variant="caption" sx={{ color: '#666', textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
                     Check-in:
                   </Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 500, mt: 0.5 }}>
                     {formatDate(receipt.checkInDate)}
                   </Typography>
                 </Box>
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: '#666', mb: 0.5 }}>
+                <Box>
+                  <Typography variant="caption" sx={{ color: '#666', textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
                     Check-out:
                   </Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 500, mt: 0.5 }}>
                     {formatDate(receipt.checkOutDate)}
                   </Typography>
                 </Box>
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid item xs={6}>
                 <Box sx={{ mb: 2 }}>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: '#666', mb: 0.5 }}>
+                  <Typography variant="caption" sx={{ color: '#666', textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
                     Duration:
                   </Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                    {receipt.numberOfNights} night{receipt.numberOfNights !== 1 ? 's' : ''}
+                  <Typography variant="body2" sx={{ fontWeight: 500, mt: 0.5 }}>
+                    {receipt.numberOfNights} night{receipt.numberOfNights > 1 ? 's' : ''}
                   </Typography>
                 </Box>
                 <Box>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: '#666', mb: 0.5 }}>
-                    Rate per Night:
+                  <Typography variant="caption" sx={{ color: '#666', textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
+                    Rate per night:
                   </Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 500, mt: 0.5 }}>
                     {formatCurrency(receipt.roomChargePerNight)}
                   </Typography>
                 </Box>
@@ -724,212 +677,182 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
             </Grid>
           </Box>
 
-          {/* Divider line */}
-          <Box sx={{ 
-            height: 2, 
-            background: 'linear-gradient(90deg, transparent, #1976d2, transparent)', 
-            mb: 3 
-          }} />
-
-          {/* Billing Table - matching the exact format from the image */}
-          <Box sx={{
-            bgcolor: 'white',
-            borderRadius: 2,
-            overflow: 'hidden',
-            border: '1px solid #e0e0e0',
-          }}>
-            <TableContainer>
-              <Table>
-                {/* Blue header matching the image */}
-                <TableHead sx={{ 
-                  background: 'linear-gradient(135deg, #1976d2, #1565c0)',
-                }}>
-                  <TableRow>
-                    <TableCell sx={{ 
-                      color: 'white', 
-                      fontWeight: 700, 
-                      fontSize: '0.95rem',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.5px',
-                    }}>
-                      DESCRIPTION
-                    </TableCell>
-                    <TableCell align="center" sx={{ 
-                      color: 'white', 
-                      fontWeight: 700, 
-                      fontSize: '0.95rem',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.5px',
-                    }}>
-                      QTY
-                    </TableCell>
-                    <TableCell align="center" sx={{ 
-                      color: 'white', 
-                      fontWeight: 700, 
-                      fontSize: '0.95rem',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.5px',
-                    }}>
-                      UNIT PRICE
-                    </TableCell>
-                    <TableCell align="right" sx={{ 
-                      color: 'white', 
-                      fontWeight: 700, 
-                      fontSize: '0.95rem',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.5px',
-                    }}>
-                      AMOUNT
-                    </TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {/* Room Accommodation */}
-                  <TableRow sx={{ '&:hover': { bgcolor: '#f9f9f9' } }}>
-                    <TableCell sx={{ py: 2, fontWeight: 500 }}>
-                      Room Accommodation ({receipt.numberOfNights} night{receipt.numberOfNights !== 1 ? 's' : ''})
-                    </TableCell>
-                    <TableCell align="center" sx={{ py: 2, fontWeight: 500 }}>
-                      {receipt.numberOfNights}
-                    </TableCell>
-                    <TableCell align="center" sx={{ py: 2, fontWeight: 500 }}>
-                      {formatCurrencyWithDecimals(receipt.roomChargePerNight)}
-                    </TableCell>
-                    <TableCell align="right" sx={{ py: 2, fontWeight: 600 }}>
-                      {formatCurrencyWithDecimals(receipt.totalRoomCharges)}
-                    </TableCell>
-                  </TableRow>
-
-                  {/* Additional Charges */}
-                  {receipt.additionalCharges?.map((charge, index) => {
-                    const quantity = charge.quantity || 1;
-                    const unitPrice = (charge.unitPrice && charge.unitPrice > 0) 
-                      ? charge.unitPrice 
-                      : (charge.amount || 0) / quantity;
-                    const total = unitPrice * quantity;
-                    return (
-                      <TableRow key={`additional-${index}`} sx={{ '&:hover': { bgcolor: '#f9f9f9' } }}>
-                        <TableCell sx={{ py: 2, fontWeight: 500 }}>
-                          {charge.description || 'Additional Service'}
-                        </TableCell>
-                        <TableCell align="center" sx={{ py: 2, fontWeight: 500 }}>
-                          {quantity}
-                        </TableCell>
-                        <TableCell align="center" sx={{ py: 2, fontWeight: 500 }}>
-                          {formatCurrencyWithDecimals(unitPrice)}
-                        </TableCell>
-                        <TableCell align="right" sx={{ py: 2, fontWeight: 600 }}>
-                          {formatCurrencyWithDecimals(total)}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  }) || []}
-
-                  {/* Taxes and Fees */}
-                  {receipt.taxesAndFees?.map((tax, index) => {
-                    return (
-                      <TableRow key={`tax-${index}`} sx={{ '&:hover': { bgcolor: '#f9f9f9' } }}>
-                        <TableCell colSpan={3} sx={{ py: 2, fontWeight: 500 }}>
-                          {tax.description || 'Tax'}
-                        </TableCell>
-                        <TableCell align="right" sx={{ py: 2, fontWeight: 600 }}>
-                          {formatCurrencyWithDecimals(tax.amount || 0)}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  }) || []}
-
-                  {/* Subtotal row for taxes/fees if there are any */}
-                  {(receipt.totalTaxesAndFees || 0) > 0 && (
-                    <TableRow sx={{ bgcolor: '#f5f5f5', borderTop: '1px solid #e0e0e0' }}>
-                      <TableCell colSpan={3} sx={{ 
-                        py: 2, 
-                        fontWeight: 600, 
-                        fontSize: '1rem',
-                      }}>
-                        Taxes & Fees Subtotal
-                      </TableCell>
-                      <TableCell align="right" sx={{ 
-                        py: 2, 
-                        fontWeight: 700,
-                        fontSize: '1rem',
-                      }}>
-                        {formatCurrencyWithDecimals(receipt.totalTaxesAndFees)}
-                      </TableCell>
-                    </TableRow>
-                  )}
-
-                  {/* Total Amount - blue background matching the image */}
-                  <TableRow sx={{ 
-                    background: 'linear-gradient(135deg, #1976d2, #1565c0)',
-                    '& .MuiTableCell-root': {
-                      color: 'white',
-                      borderBottom: 'none',
-                    }
+          {/* Charges Section */}
+          <Box sx={{ mx: 4, mt: 3 }}>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ 
+                    fontWeight: 700, 
+                    bgcolor: '#fafafa',
+                    textTransform: 'uppercase',
+                    fontSize: '0.7rem',
+                    letterSpacing: '0.5px',
+                    color: '#666',
+                    border: '1px solid #e0e0e0',
+                    borderBottom: '2px solid #e0e0e0'
                   }}>
-                    <TableCell sx={{ 
-                      py: 3, 
-                      fontWeight: 700, 
-                      fontSize: '1.1rem',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.5px',
-                    }}>
-                      TOTAL AMOUNT
+                    Description
+                  </TableCell>
+                  <TableCell align="center" sx={{ 
+                    fontWeight: 700, 
+                    bgcolor: '#fafafa',
+                    textTransform: 'uppercase',
+                    fontSize: '0.7rem',
+                    letterSpacing: '0.5px',
+                    color: '#666',
+                    border: '1px solid #e0e0e0',
+                    borderBottom: '2px solid #e0e0e0'
+                  }}>
+                    QTY
+                  </TableCell>
+                  <TableCell align="right" sx={{ 
+                    fontWeight: 700, 
+                    bgcolor: '#fafafa',
+                    textTransform: 'uppercase',
+                    fontSize: '0.7rem',
+                    letterSpacing: '0.5px',
+                    color: '#666',
+                    border: '1px solid #e0e0e0',
+                    borderBottom: '2px solid #e0e0e0'
+                  }}>
+                    Unit Price
+                  </TableCell>
+                  <TableCell align="right" sx={{ 
+                    fontWeight: 700, 
+                    bgcolor: '#fafafa',
+                    textTransform: 'uppercase',
+                    fontSize: '0.7rem',
+                    letterSpacing: '0.5px',
+                    color: '#666',
+                    border: '1px solid #e0e0e0',
+                    borderBottom: '2px solid #e0e0e0'
+                  }}>
+                    Amount
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {/* Room charges */}
+                <TableRow>
+                  <TableCell sx={{ border: '1px solid #e0e0e0' }}>
+                    Room Accommodation ({receipt.numberOfNights} night{receipt.numberOfNights > 1 ? 's' : ''})
+                  </TableCell>
+                  <TableCell align="center" sx={{ border: '1px solid #e0e0e0' }}>
+                    {receipt.numberOfNights}
+                  </TableCell>
+                  <TableCell align="right" sx={{ border: '1px solid #e0e0e0' }}>
+                    {formatCurrency(receipt.roomChargePerNight)}
+                  </TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 600, border: '1px solid #e0e0e0' }}>
+                    {formatCurrency(receipt.totalRoomCharges)}
+                  </TableCell>
+                </TableRow>
+
+                {/* Shop/Additional charges */}
+                {receipt.additionalCharges && receipt.additionalCharges.length > 0 && receipt.additionalCharges.map((charge: any, index: number) => (
+                  <TableRow key={index}>
+                    <TableCell sx={{ border: '1px solid #e0e0e0' }}>
+                      {charge.description}
                     </TableCell>
-                    <TableCell />
-                    <TableCell />
-                    <TableCell align="right" sx={{ 
-                      py: 3, 
-                      fontWeight: 700, 
-                      fontSize: '1.3rem',
-                    }}>
-                      {formatCurrencyWithDecimals(receipt.grandTotal)}
+                    <TableCell align="center" sx={{ border: '1px solid #e0e0e0' }}>
+                      {charge.quantity || 1}
+                    </TableCell>
+                    <TableCell align="right" sx={{ border: '1px solid #e0e0e0' }}>
+                      {formatCurrency(charge.unitPrice || charge.amount)}
+                    </TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 600, border: '1px solid #e0e0e0' }}>
+                      {formatCurrency(charge.amount)}
                     </TableCell>
                   </TableRow>
-                </TableBody>
-              </Table>
-            </TableContainer>
+                ))}
+
+                {/* Taxes and fees */}
+                {receipt.taxesAndFees && receipt.taxesAndFees.length > 0 && receipt.taxesAndFees.map((tax: any, index: number) => (
+                  <TableRow key={`tax-${index}`}>
+                    <TableCell colSpan={3} sx={{ textAlign: 'right', fontWeight: 500, border: '1px solid #e0e0e0' }}>
+                      {tax.description}
+                    </TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 600, border: '1px solid #e0e0e0' }}>
+                      {formatCurrency(tax.amount)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+
+                {/* Taxes & Fees Subtotal */}
+                <TableRow>
+                  <TableCell colSpan={3} sx={{ textAlign: 'right', fontWeight: 700, border: '1px solid #e0e0e0' }}>
+                    Taxes & Fees Subtotal
+                  </TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 700, border: '1px solid #e0e0e0' }}>
+                    {formatCurrency(receipt.totalTaxesAndFees)}
+                  </TableCell>
+                </TableRow>
+
+                {/* Total Row */}
+                <TableRow>
+                  <TableCell 
+                    colSpan={3} 
+                    sx={{ 
+                      textAlign: 'right', 
+                      fontWeight: 700,
+                      fontSize: '1rem',
+                      bgcolor: '#fff',
+                      border: '2px solid #212121',
+                      borderRight: 'none'
+                    }}
+                  >
+                    TOTAL AMOUNT
+                  </TableCell>
+                  <TableCell 
+                    align="right" 
+                    sx={{ 
+                      fontWeight: 700,
+                      fontSize: '1rem',
+                      bgcolor: '#fff',
+                      border: '2px solid #212121',
+                      borderLeft: 'none'
+                    }}
+                  >
+                    {formatCurrency(receipt.grandTotal)}
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
           </Box>
 
-          {/* Footer section */}
+          {/* Footer Section */}
           <Box sx={{ 
-            textAlign: 'center', 
-            mt: 4, 
-            p: 3,
-            bgcolor: 'white',
-            borderRadius: 2,
-            border: '1px solid #e0e0e0',
+            mx: 4,
+            mt: 4,
+            mb: 4,
+            pt: 3,
+            borderTop: '1px solid #e0e0e0',
+            textAlign: 'center'
           }}>
-            <Typography variant="h5" sx={{ 
-              color: '#1976d2', 
-              fontWeight: 600, 
-              mb: 2 
-            }}>
+            <Typography variant="body1" sx={{ fontWeight: 600, mb: 1 }}>
               Thank you for choosing {receipt.hotelName}!
             </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2 }}>
               Generated on {formatDateTime(receipt.generatedAt)}
-            </Typography>
-            {receipt.generatedBy && (
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                Generated by: {receipt.generatedBy}
-              </Typography>
-            )}
-            <Typography variant="caption" color="text.secondary">
-              This is an official receipt for your stay.
             </Typography>
           </Box>
         </Box>
       </DialogContent>
 
-      <DialogActions sx={{ p: 3, bgcolor: '#f5f5f5', borderTop: '1px solid #e0e0e0' }}>
+      <DialogActions sx={{ p: 3, bgcolor: '#f5f5f5' }}>
         <Button 
           onClick={onClose} 
-          variant="contained" 
-          size="large"
+          variant="outlined"
           sx={{ 
-            px: 4,
-            fontWeight: 600,
+            minWidth: 120,
+            textTransform: 'none',
+            borderColor: '#e0e0e0',
+            color: '#616161',
+            '&:hover': {
+              borderColor: '#bdbdbd',
+              bgcolor: '#fafafa'
+            }
           }}
         >
           Close

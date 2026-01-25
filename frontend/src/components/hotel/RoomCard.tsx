@@ -67,19 +67,26 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
         border: `1px solid ${theme.palette.divider}`,
         borderRadius: 2,
         boxShadow: theme.shadows[2],
-        transition: 'transform 0.2s, box-shadow 0.2s',
+        transition: 'all 0.3s ease-in-out',
         '&:hover': {
-          transform: 'translateY(-2px)',
-          boxShadow: theme.shadows[4],
+          transform: 'translateY(-8px)',
+          boxShadow: theme.shadows[8],
+          borderColor: 'primary.light',
         },
       }}
     >
       <CardMedia
         component="img"
-        height={isMobile ? "140" : "160"}
+        height={isMobile ? "220" : "280"}
         image={getRoomImage(room.roomType)}
         alt={`${room.roomType} room`}
-        sx={{ objectFit: 'cover' }}
+        sx={{ 
+          objectFit: 'cover',
+          transition: 'transform 0.4s ease-in-out',
+          '&:hover': {
+            transform: 'scale(1.08)',
+          },
+        }}
       />
       
       <CardContent sx={{ p: isMobile ? 1.2 : 1.5 }}>

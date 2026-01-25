@@ -358,6 +358,7 @@ const Navbar: React.FC = () => {
       anchorEl={anchorEl}
       open={Boolean(anchorEl)}
       onClose={handleMenuClose}
+      aria-label="User account menu"
       PaperProps={{
         sx: {
           mt: 1.5,
@@ -369,25 +370,25 @@ const Navbar: React.FC = () => {
         },
       }}
     >
-      <MenuItem onClick={() => handleNavigation('/profile')}>
-        <PersonIcon sx={{ mr: 1 }} />
+      <MenuItem onClick={() => handleNavigation('/profile')} aria-label="Go to profile page">
+        <PersonIcon sx={{ mr: 1 }} aria-hidden="true" />
         Profile
       </MenuItem>
       {user?.role === 'CUSTOMER' && (
         <>
-          <MenuItem onClick={() => handleNavigation('/hotels/search')}>
-            <SearchIcon sx={{ mr: 1 }} />
+          <MenuItem onClick={() => handleNavigation('/hotels/search')} aria-label="Search for hotels">
+            <SearchIcon sx={{ mr: 1 }} aria-hidden="true" />
             Hotel Search
           </MenuItem>
-          <MenuItem onClick={() => handleNavigation('/my-bookings')}>
-            <BusinessIcon sx={{ mr: 1 }} />
+          <MenuItem onClick={() => handleNavigation('/my-bookings')} aria-label="View my bookings">
+            <BusinessIcon sx={{ mr: 1 }} aria-hidden="true" />
             My Bookings
           </MenuItem>
         </>
       )}
       <Divider />
-      <MenuItem onClick={handleLogout}>
-        <LogoutIcon sx={{ mr: 1 }} />
+      <MenuItem onClick={handleLogout} aria-label="Logout from account">
+        <LogoutIcon sx={{ mr: 1 }} aria-hidden="true" />
         Logout
       </MenuItem>
     </Menu>
@@ -458,7 +459,7 @@ const Navbar: React.FC = () => {
               <IconButton
                 edge="start"
                 color="inherit"
-                aria-label="menu"
+                aria-label="Open navigation menu"
                 onClick={toggleMobileDrawer}
                 sx={{ mr: 1 }}
               >
@@ -472,6 +473,15 @@ const Navbar: React.FC = () => {
             {/* Dashboard Link - Only for logged-in users */}
             {user && (
               <Box 
+                component="button"
+                role="link"
+                aria-label="Go to dashboard"
+                tabIndex={0}
+                onKeyPress={(e: React.KeyboardEvent) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    handleNavigation('/');
+                  }
+                }}
                 sx={{ 
                   display: 'flex', 
                   alignItems: 'center', 
@@ -479,6 +489,9 @@ const Navbar: React.FC = () => {
                   '&:hover': { opacity: 0.9 },
                   height: 'auto',
                   ml: 1,
+                  border: 'none',
+                  background: 'transparent',
+                  padding: 0,
                 }}
                 onClick={() => handleNavigation('/')}
               >

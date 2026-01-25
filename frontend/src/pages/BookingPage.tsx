@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { COLORS } from '../theme/themeColors';
 import {
   Container,
   Typography,
@@ -47,7 +48,6 @@ import { formatCurrency } from '../utils/currencyUtils';
 import { PaymentMethod } from '../types/shop';
 import NumberStepper from '../components/common/NumberStepper';
 import BookingSummary from '../components/booking/BookingSummary';
-import { COLORS } from '../theme/themeColors';
 import { buildApiUrl } from '../config/apiConfig';
 
 interface BookingPageState {
@@ -597,7 +597,7 @@ const BookingPage: React.FC = () => {
                   label={t('booking.guestBooking')} 
                   size="medium"
                   sx={{ 
-                    bgcolor: '#4caf50',
+                    bgcolor: 'COLORS.SUCCESS',
                     color: 'white',
                     fontWeight: 700,
                     fontSize: '1rem',

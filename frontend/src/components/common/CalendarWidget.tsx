@@ -38,6 +38,19 @@ const CalendarWidget: React.FC = () => {
     !user.roles.includes('CUSTOMER') && 
     !user.roles.includes('GUEST');
 
+  // Get event type color based on theme
+  const getEventTypeColor = (type: CalendarEvent['type']) => {
+    switch (type) {
+      case 'booking': return theme.palette.primary.main;
+      case 'checkin': return theme.palette.primary.dark;
+      case 'checkout': return theme.palette.primary.light;
+      case 'maintenance': return theme.palette.primary.main;
+      case 'meeting': return theme.palette.primary.dark;
+      case 'reminder': return theme.palette.primary.light;
+      default: return theme.palette.primary.light;
+    }
+  };
+
   // Calendar navigation
   const navigateMonth = (direction: 'prev' | 'next') => {
     setCurrentDate(prev => {
@@ -118,18 +131,6 @@ const CalendarWidget: React.FC = () => {
     return null;
   }
 
-  const getEventTypeColor = (type: CalendarEvent['type']) => {
-    switch (type) {
-      case 'booking': return '#1976d2'; // Primary blue
-      case 'checkin': return '#1565c0'; // Darker blue
-      case 'checkout': return '#42a5f5'; // Light blue
-      case 'maintenance': return '#2196f3'; // Blue
-      case 'meeting': return '#0d47a1'; // Dark blue
-      case 'reminder': return '#64b5f6'; // Light blue
-      default: return '#90caf9'; // Very light blue
-    }
-  };
-
   // Get calendar days for current month
   const getCalendarDays = () => {
     const year = currentDate.getFullYear();
@@ -192,7 +193,7 @@ const CalendarWidget: React.FC = () => {
         overflow: 'hidden',
         position: 'relative',
         zIndex: 'auto',
-        backgroundColor: '#e3f2fd', // Light blue background
+        backgroundColor: '#e8f5e9', // Light blue background
         border: 'none',
       }}
     >
@@ -204,7 +205,7 @@ const CalendarWidget: React.FC = () => {
           justifyContent: 'center',
           py: 2,
           px: 2,
-          backgroundColor: '#1976d2', // Primary blue color
+          backgroundColor: 'primary.main',
           color: 'white',
           position: 'relative',
         }}
@@ -327,14 +328,14 @@ const CalendarWidget: React.FC = () => {
                     borderRight: dayIndex < 6 ? '1px solid rgba(0, 0, 0, 0.1)' : 'none', // Subtle border
                     backgroundColor: date ? (
                       isSelected(date) 
-                        ? '#1976d2' // Primary blue for selected
+                        ? 'primary.main'
                         : isToday(date) 
-                          ? 'rgba(25, 118, 210, 0.3)' // Blue tint for today
-                          : 'transparent' // Transparent to inherit parent background
-                    ) : 'transparent', // Transparent for empty cells
+                          ? 'primary.100'
+                          : 'transparent'
+                    ) : 'transparent',
                     transition: 'all 0.2s ease',
                     '&:hover': date ? {
-                      backgroundColor: isSelected(date) ? '#1976d2' : 'rgba(25, 118, 210, 0.2)', // Blue hover effect
+                      backgroundColor: (theme) => isSelected(date) ? theme.palette.primary.main : theme.palette.primary.light,
                     } : {},
                   }}
                 >

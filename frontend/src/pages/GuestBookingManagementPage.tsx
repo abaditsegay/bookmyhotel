@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { COLORS } from '../theme/themeColors';
 import {
   Container,
   Typography,
@@ -1008,7 +1009,7 @@ const GuestBookingManagementPage: React.FC = () => {
                   p: 3,
                   borderRadius: 2,
                   background: 'linear-gradient(135deg, #f0f9f4 0%, #e8f5e9 100%)',
-                  border: `2px solid #66bb6a`,
+                  border: `2px solid COLORS.SUCCESS`,
                   boxShadow: '0 2px 8px rgba(102, 187, 106, 0.15)',
                 }}
               >
@@ -1018,7 +1019,7 @@ const GuestBookingManagementPage: React.FC = () => {
                       width: 48,
                       height: 48,
                       borderRadius: '50%',
-                      backgroundColor: '#66bb6a',
+                      backgroundColor: 'COLORS.SUCCESS',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -1027,7 +1028,7 @@ const GuestBookingManagementPage: React.FC = () => {
                   >
                     <ReceiptIcon sx={{ color: 'white', fontSize: 28 }} />
                   </Box>
-                  <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#2e7d32' }}>
+                  <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'COLORS.SUCCESS' }}>
                     Price Summary
                   </Typography>
                 </Box>
@@ -1042,18 +1043,18 @@ const GuestBookingManagementPage: React.FC = () => {
                       {/* Price per Night and Number of Nights */}
                       <Grid container spacing={3} sx={{ mb: 3 }}>
                         <Grid item xs={12} sm={6}>
-                          <Typography variant="body2" sx={{ mb: 0.5, color: '#616161', fontWeight: 500 }}>
+                          <Typography variant="body2" sx={{ mb: 0.5, color: 'COLORS.TEXT_SECONDARY', fontWeight: 500 }}>
                             Price per Night
                           </Typography>
-                          <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#66bb6a' }}>
+                          <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'COLORS.SUCCESS' }}>
                             {formatCurrencyWithDecimals(booking.pricePerNight || 0)}
                           </Typography>
                         </Grid>
                         <Grid item xs={12} sm={6}>
-                          <Typography variant="body2" sx={{ mb: 0.5, color: '#616161', fontWeight: 500 }}>
+                          <Typography variant="body2" sx={{ mb: 0.5, color: 'COLORS.TEXT_SECONDARY', fontWeight: 500 }}>
                             Number of Nights
                           </Typography>
-                          <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#66bb6a' }}>
+                          <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'COLORS.SUCCESS' }}>
                             {nights}
                           </Typography>
                         </Grid>
@@ -1064,26 +1065,26 @@ const GuestBookingManagementPage: React.FC = () => {
                       {/* Price Breakdown */}
                       <Box sx={{ mb: 2.5 }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1.5 }}>
-                          <Typography variant="body1" sx={{ color: '#616161' }}>
+                          <Typography variant="body1" sx={{ color: 'COLORS.TEXT_SECONDARY' }}>
                             Subtotal
                           </Typography>
-                          <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#212121' }}>
+                          <Typography variant="body1" sx={{ fontWeight: 'bold', color: 'COLORS.TEXT_PRIMARY' }}>
                             {formatCurrencyWithDecimals(subtotal)}
                           </Typography>
                         </Box>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1.5 }}>
-                          <Typography variant="body1" sx={{ color: '#616161' }}>
+                          <Typography variant="body1" sx={{ color: 'COLORS.TEXT_SECONDARY' }}>
                             VAT ({((hotelVatRate || 0) * 100).toFixed(2)}%)
                           </Typography>
-                          <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#212121' }}>
+                          <Typography variant="body1" sx={{ fontWeight: 'bold', color: 'COLORS.TEXT_PRIMARY' }}>
                             {formatCurrencyWithDecimals(vatAmount)}
                           </Typography>
                         </Box>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1.5 }}>
-                          <Typography variant="body1" sx={{ color: '#616161' }}>
+                          <Typography variant="body1" sx={{ color: 'COLORS.TEXT_SECONDARY' }}>
                             Service Tax ({((hotelServiceTaxRate || 0) * 100).toFixed(2)}%)
                           </Typography>
-                          <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#212121' }}>
+                          <Typography variant="body1" sx={{ fontWeight: 'bold', color: 'COLORS.TEXT_PRIMARY' }}>
                             {formatCurrencyWithDecimals(serviceTaxAmount)}
                           </Typography>
                         </Box>
@@ -1091,10 +1092,10 @@ const GuestBookingManagementPage: React.FC = () => {
 
                       <Box sx={{ borderTop: `2px solid #c8e6c9`, pt: 2.5 }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#2e7d32' }}>
+                          <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'COLORS.SUCCESS' }}>
                             Total Amount
                           </Typography>
-                          <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#66bb6a' }}>
+                          <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'COLORS.SUCCESS' }}>
                             {formatCurrencyWithDecimals(total)}
                           </Typography>
                         </Box>
@@ -1251,17 +1252,17 @@ const GuestBookingManagementPage: React.FC = () => {
               <Box sx={{ 
                 mb: 3, 
                 p: 3, 
-                backgroundColor: theme.palette.mode === 'dark' ? 'rgba(33, 150, 243, 0.1)' : '#e3f2fd',
-                border: `2px solid ${theme.palette.mode === 'dark' ? 'rgba(33, 150, 243, 0.5)' : '#2196f3'}`,
+                backgroundColor: theme.palette.mode === 'dark' ? 'rgba(33, 150, 243, 0.1)' : 'COLORS.BG_INFO_LIGHT',
+                border: `2px solid ${theme.palette.mode === 'dark' ? theme.palette.primary.main + '80' : theme.palette.primary.main}`,
                 borderRadius: 2,
               }}>
-                <Typography variant="h5" sx={{ color: '#1976d2', fontWeight: 'bold', mb: 3, textAlign: 'center' }}>
+                <Typography variant="h5" sx={{ color: 'COLORS.PRIMARY', fontWeight: 'bold', mb: 3, textAlign: 'center' }}>
                   🔄 PRICING UPDATED
                 </Typography>
                 
                 {/* What Changed Section */}
                 <Box sx={{ mb: 3, p: 2, backgroundColor: 'rgba(255, 255, 255, 0.5)', borderRadius: 1 }}>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2, color: '#0d47a1' }}>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2, color: (theme) => theme.palette.primary.dark }}>
                     📋 What Changed:
                   </Typography>
                   
@@ -1282,7 +1283,7 @@ const GuestBookingManagementPage: React.FC = () => {
                         <strong>Duration:</strong> {originalNights} night{originalNights !== 1 ? 's' : ''} → {newNights} night{newNights !== 1 ? 's' : ''} 
                         <Typography component="span" sx={{ 
                           ml: 1, 
-                          color: newNights > originalNights ? '#d32f2f' : '#2e7d32',
+                          color: newNights > originalNights ? '#d32f2f' : 'COLORS.SUCCESS',
                           fontWeight: 'bold'
                         }}>
                           ({newNights > originalNights ? '+' : ''}{newNights - originalNights} night{Math.abs(newNights - originalNights) !== 1 ? 's' : ''})
@@ -1305,7 +1306,7 @@ const GuestBookingManagementPage: React.FC = () => {
 
                 {/* Price Calculation Breakdown */}
                 <Box sx={{ mb: 3, p: 2, backgroundColor: 'rgba(255, 255, 255, 0.5)', borderRadius: 1 }}>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2, color: '#0d47a1' }}>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2, color: (theme) => theme.palette.primary.dark }}>
                     🧮 Price Calculation Breakdown:
                   </Typography>
                   
@@ -1346,7 +1347,7 @@ const GuestBookingManagementPage: React.FC = () => {
                     {/* New Calculation */}
                     <Grid item xs={12} sm={6}>
                       <Box sx={{ p: 2, backgroundColor: 'rgba(46, 125, 50, 0.05)', borderRadius: 1, border: '1px solid rgba(46, 125, 50, 0.3)' }}>
-                        <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1, color: '#2e7d32' }}>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1, color: 'COLORS.SUCCESS' }}>
                           Modified Booking:
                         </Typography>
                         <Typography variant="body2" sx={{ color: '#555', mb: 0.5 }}>
@@ -1372,7 +1373,7 @@ const GuestBookingManagementPage: React.FC = () => {
                         <Typography variant="body2" sx={{ color: '#555', mb: 0.5 }}>
                           Service Tax ({modPricing.serviceTaxRate > 0 ? (modPricing.serviceTaxRate * 100).toFixed(2) : '0.00'}%): {formatCurrencyWithDecimals(modPricing.serviceTaxAmount)}
                         </Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#2e7d32', mt: 1, pt: 1, borderTop: '1px solid rgba(46, 125, 50, 0.3)' }}>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold', color: 'COLORS.SUCCESS', mt: 1, pt: 1, borderTop: '1px solid rgba(46, 125, 50, 0.3)' }}>
                           Total: {formatCurrencyWithDecimals(currentCalculatedTotal)}
                           {roomTypeChanged && (
                             <Typography component="span" sx={{ color: '#ff9800', fontSize: '0.75rem', ml: 0.5 }}>
@@ -1406,7 +1407,7 @@ const GuestBookingManagementPage: React.FC = () => {
                   <Grid item xs={4}>
                     <Box sx={{ textAlign: 'center' }}>
                       <Typography variant="h6" sx={{ color: '#666', mb: 1 }}>New Total</Typography>
-                      <Typography variant="h4" sx={{ color: '#2e7d32', fontWeight: 'bold' }}>
+                      <Typography variant="h4" sx={{ color: 'COLORS.SUCCESS', fontWeight: 'bold' }}>
                         {formatCurrencyWithDecimals(currentCalculatedTotal)}
                         {roomTypeChanged && (
                           <Typography component="span" sx={{ color: '#ff9800', fontSize: '0.875rem', ml: 0.5 }}>
@@ -1424,7 +1425,7 @@ const GuestBookingManagementPage: React.FC = () => {
                       <Typography 
                         variant="h4" 
                         sx={{ 
-                          color: priceDifference > 0 ? '#d32f2f' : priceDifference < 0 ? '#2e7d32' : '#666',
+                          color: priceDifference > 0 ? '#d32f2f' : priceDifference < 0 ? 'COLORS.SUCCESS' : '#666',
                           fontWeight: 'bold'
                         }}
                       >
@@ -1434,7 +1435,7 @@ const GuestBookingManagementPage: React.FC = () => {
                   </Grid>
                 </Grid>
                 
-                <Typography variant="body2" sx={{ color: '#1976d2', fontStyle: 'italic', textAlign: 'center', mt: 2 }}>
+                <Typography variant="body2" sx={{ color: 'COLORS.PRIMARY', fontStyle: 'italic', textAlign: 'center', mt: 2 }}>
                   💡 This pricing update will persist until you close this dialog
                 </Typography>
               </Box>

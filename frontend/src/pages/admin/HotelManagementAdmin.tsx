@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_CONFIG } from '../../config/apiConfig';
+import { COLORS } from '../../theme/themeColors';
 import {
   Typography,
   Box,
@@ -48,7 +49,6 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import { adminApiService, HotelDTO, UpdateHotelRequest, TenantDTO, ApproveRegistrationRequest, HotelRegistrationResponse } from '../../services/adminApi';
 import HotelEditDialog from '../../components/hotel/HotelEditDialog';
-import { COLORS } from '../../theme/themeColors';
 
 interface Hotel extends HotelDTO {}
 
@@ -796,7 +796,32 @@ const HotelManagementAdmin: React.FC = () => {
             <TableContainer component={Paper}>
               <Table>
                 <TableHead>
-                  <TableRow>
+                  <TableRow
+                    sx={{
+                      background: 'linear-gradient(135deg, #64748b 0%, #475569 50%, #334155 100%)',
+                      boxShadow: '0 4px 12px rgba(100, 116, 139, 0.15)',
+                      '& .MuiTableCell-head': {
+                        color: '#ffffff',
+                        fontWeight: 600,
+                        fontSize: '0.95rem',
+                        letterSpacing: '0.5px',
+                        textTransform: 'uppercase',
+                        border: 'none',
+                        padding: '20px 16px',
+                        position: 'relative',
+                        textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                        '&::after': {
+                          content: '""',
+                          position: 'absolute',
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          height: '3px',
+                          background: 'linear-gradient(90deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.6) 100%)'
+                        }
+                      }
+                    }}
+                  >
                     <TableCell>Hotel Name</TableCell>
                     <TableCell>Location</TableCell>
                     <TableCell>Tenant</TableCell>
@@ -972,7 +997,32 @@ const HotelManagementAdmin: React.FC = () => {
             <TableContainer component={Paper}>
               <Table>
                 <TableHead>
-                  <TableRow>
+                  <TableRow
+                    sx={{
+                      background: 'linear-gradient(135deg, #64748b 0%, #475569 50%, #334155 100%)',
+                      boxShadow: '0 4px 12px rgba(100, 116, 139, 0.15)',
+                      '& .MuiTableCell-head': {
+                        color: '#ffffff',
+                        fontWeight: 600,
+                        fontSize: '0.95rem',
+                        letterSpacing: '0.5px',
+                        textTransform: 'uppercase',
+                        border: 'none',
+                        padding: '20px 16px',
+                        position: 'relative',
+                        textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                        '&::after': {
+                          content: '""',
+                          position: 'absolute',
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          height: '3px',
+                          background: 'linear-gradient(90deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.6) 100%)'
+                        }
+                      }
+                    }}
+                  >
                     <TableCell>Hotel Name</TableCell>
                     <TableCell>Contact Person</TableCell>
                     <TableCell>Email</TableCell>
@@ -1138,10 +1188,10 @@ const HotelManagementAdmin: React.FC = () => {
                   border: '1px solid #e3f2fd', 
                   borderRadius: 2, 
                   p: 2, 
-                  backgroundColor: '#f8fcff',
+                  backgroundColor: 'COLORS.BG_INFO_LIGHT',
                   mt: 1
                 }}>
-                  <Typography variant="subtitle1" sx={{ mb: 2, color: '#1976d2', fontWeight: 600 }}>
+                  <Typography variant="subtitle1" sx={{ mb: 2, color: 'COLORS.PRIMARY', fontWeight: 600 }}>
                     Phone Numbers
                   </Typography>
                   <Grid container spacing={2}>

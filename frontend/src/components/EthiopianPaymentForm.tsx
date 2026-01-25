@@ -25,6 +25,7 @@ import {
   AccessTime as TimeIcon
 } from '@mui/icons-material';
 import TokenManager from '../utils/tokenManager';
+import { COLORS } from '../theme/themeColors';
 
 interface EthiopianPaymentFormProps {
   amount: number;
@@ -163,8 +164,8 @@ export const EthiopianPaymentForm: React.FC<EthiopianPaymentFormProps> = ({
       return {
         name: 'M-birr',
         description: 'Pay using your M-birr mobile wallet',
-        icon: <MbirrIcon sx={{ color: '#FFA500' }} />,
-        color: '#FFA500',
+        icon: <MbirrIcon sx={{ color: COLORS.MBIRR_ORANGE }} />,
+        color: COLORS.MBIRR_ORANGE,
         dialCode: '*847#',
         limits: 'Limits: 10 - 100,000 ETB'
       };
@@ -172,8 +173,8 @@ export const EthiopianPaymentForm: React.FC<EthiopianPaymentFormProps> = ({
       return {
         name: 'Telebirr',
         description: 'Pay using your Telebirr mobile wallet',
-        icon: <TelebirrIcon sx={{ color: '#4CAF50' }} />,
-        color: '#4CAF50',
+        icon: <TelebirrIcon sx={{ color: COLORS.TELEBIRR_GREEN }} />,
+        color: COLORS.TELEBIRR_GREEN,
         dialCode: '*127#',
         limits: 'Limits: 5 - 50,000 ETB'
       };
@@ -321,7 +322,7 @@ export const EthiopianPaymentForm: React.FC<EthiopianPaymentFormProps> = ({
                   control={<Radio />}
                   label={
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <MbirrIcon sx={{ mr: 1, color: '#FFA500' }} />
+                      <MbirrIcon sx={{ mr: 1, color: COLORS.MBIRR_ORANGE }} />
                       M-birr
                     </Box>
                   }
@@ -331,7 +332,7 @@ export const EthiopianPaymentForm: React.FC<EthiopianPaymentFormProps> = ({
                   control={<Radio />}
                   label={
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <TelebirrIcon sx={{ mr: 1, color: '#4CAF50' }} />
+                      <TelebirrIcon sx={{ mr: 1, color: COLORS.TELEBIRR_GREEN }} />
                       Telebirr
                     </Box>
                   }

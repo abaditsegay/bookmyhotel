@@ -13,6 +13,14 @@ export const designSystem = {
     xxxl: 64
   },
 
+  // Font weight scale
+  fontWeights: {
+    regular: 400,
+    medium: 500,
+    semibold: 600,
+    bold: 700
+  },
+
   // Typography hierarchy
   typography: {
     h1: { 
@@ -85,11 +93,11 @@ export const designSystem = {
       700: '#1976d2',
       800: '#1565c0',
       900: '#0d47a1',
-      main: '#1976d2',
+      main: '#1565c0',
       light: '#42a5f5',
-      dark: '#1565c0',
+      dark: '#0d47a1',
       contrastText: '#ffffff',
-      25: '#f8faff'
+      25: '#f0f7ff'
     },
     secondary: {
       main: '#757575',
@@ -116,9 +124,9 @@ export const designSystem = {
       contrastText: '#ffffff'
     },
     info: {
-      main: '#2196f3',
-      light: '#64b5f6',
-      dark: '#1976d2',
+      main: '#1565c0',
+      light: '#42a5f5',
+      dark: '#0d47a1',
       contrastText: '#ffffff'
     },
     text: {

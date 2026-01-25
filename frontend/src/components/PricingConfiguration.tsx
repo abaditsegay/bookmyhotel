@@ -1330,13 +1330,13 @@ const PricingConfigurationComponent: React.FC = () => {
         sx={{ 
           mt: 3,
           borderRadius: 2,
-          bgcolor: alpha('#4A9B9B', 0.1),
-          border: `1px solid ${alpha('#4A9B9B', 0.3)}`,
+          bgcolor: alpha(theme.palette.success.main, 0.1),
+          border: `1px solid ${alpha(theme.palette.success.main, 0.3)}`,
           '& .MuiAlert-message': {
             color: theme.palette.text.primary
           },
           '& .MuiAlert-icon': {
-            color: '#4A9B9B'
+            color: theme.palette.success.main
           }
         }}
       >

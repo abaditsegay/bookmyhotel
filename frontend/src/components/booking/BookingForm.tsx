@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -51,6 +51,19 @@ const BookingForm: React.FC<BookingFormProps> = ({
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  
+  // Focus management - auto-focus first input when dialog opens
+  const firstInputRef = useRef<HTMLInputElement>(null);
+  
+  useEffect(() => {
+    if (open && firstInputRef.current) {
+      // Delay focus to ensure dialog is fully rendered
+      const timeoutId = setTimeout(() => {
+        firstInputRef.current?.focus();
+      }, 100);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [open]);
   
   const [checkInDate, setCheckInDate] = useState<Dayjs | null>(
     defaultCheckIn ? dayjs(defaultCheckIn) : dayjs()
@@ -415,6 +428,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
                   helperText={formValidation.getFieldProps('guestName').helperText || undefined}
                   required
                   size={isMobile ? "small" : "medium"}
+                  inputRef={firstInputRef}
                   validationState={
                     formValidation.validation.guestName?.error ? 'error' : 
                     formValidation.validation.guestName?.touched && !formValidation.validation.guestName?.error ? 'success' : 

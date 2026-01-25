@@ -2,39 +2,25 @@ import { createTheme } from '@mui/material/styles';
 
 // Custom theme constants (shared between light and dark themes)
 export const themeConstants = {
-  // Brand colors - Professional Blue Theme System for Hotel Management
-  brandPrimary: '#1565c0',     // Professional deep blue - main brand color
-  brandPrimaryLight: '#42a5f5',
-  brandPrimaryDark: '#0d47a1',
-  brandSecondary: '#1976d2',   // Medium blue for secondary elements
-  brandAccent: '#e3f2fd',      // Light blue accent
+  // Brand colors - Navy Blue Theme System for Hotel Management
+  brandPrimary: '#1565c0',     // Navy blue - main brand color (Blue 800)
+  brandPrimaryLight: '#42a5f5', // Light blue (Blue 400)
+  brandPrimaryDark: '#0d47a1',  // Very dark blue (Blue 900)
+  brandSecondary: '#1976d2',   // Medium blue for secondary elements (Blue 700)
+  brandAccent: '#e3f2fd',      // Light blue accent (Blue 50)
   
-  // Professional Blue Color Palette for consistent theming
-  bluePalette: {
+  // Blue Color Palette for consistent theming
+  greenPalette: {
     50: '#e3f2fd',
     100: '#bbdefb',
     200: '#90caf9',
     300: '#64b5f6',
-    400: '#42a5f6',
+    400: '#42a5f5',
     500: '#2196f3',   // Standard blue
     600: '#1e88e5',
-    700: '#1976d2',   // Professional medium blue
-    800: '#1565c0',   // Professional deep blue
-    900: '#0d47a1',   // Dark professional blue
-  },
-  
-  // Green Color Palette for success states (keeping for backward compatibility)
-  greenPalette: {
-    50: '#e8f5e8',
-    100: '#c8e6c8',
-    200: '#a5d6a7',
-    300: '#81c784',
-    400: '#66bb6a',
-    500: '#4caf50',   // Main green for success
-    600: '#43a047',
-    700: '#388e3c',
-    800: '#2e7d32',
-    900: '#1b5e20',
+    700: '#1976d2',
+    800: '#1565c0',   // Navy blue - main brand
+    900: '#0d47a1',   // Very dark blue
   },
   
   // UI Element specific colors derived from blue palette
@@ -50,9 +36,9 @@ export const themeConstants = {
     primaryButtonPressed: '#0d47a1',
     
     // Status indicators
-    success: '#2e7d32',  // Keep green for success but more muted
+    success: '#1565c0',  // Blue for success
     confirmed: '#1565c0', // Blue for confirmed status
-    pending: '#f57c00',   // Professional orange
+    pending: '#f57c00',   // Keep orange for pending
     error: '#d32f2f',     // Professional red
     
     // Steppers and progress
@@ -62,7 +48,7 @@ export const themeConstants = {
     
     // Cards and surfaces
     cardBorder: '#e3f2fd',
-    cardHover: '#f5f9ff',
+    cardHover: '#f0f7ff',
     surfaceElevated: '#ffffff',
   },
   
@@ -128,17 +114,17 @@ export const themeConstants = {
     high: 0.3,
   },
   
-  // Gradient styles - Professional blue theme for hotel management
+  // Gradient styles - Navy blue theme for hotel management
   gradients: {
     light: {
-      primaryButton: 'linear-gradient(135deg, #1565c0 0%, #0d47a1 100%)',  // Professional blue gradient
+      primaryButton: 'linear-gradient(135deg, #1565c0 0%, #0d47a1 100%)',  // Navy blue gradient
       secondaryButton: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)', // Medium blue gradient
-      successButton: 'linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)',  // Keep green for success
+      successButton: 'linear-gradient(135deg, #1565c0 0%, #0d47a1 100%)',  // Blue for success
       heroBackground: 'linear-gradient(135deg, #1565c0 0%, #1976d2 100%)', // Blue hero background
     },
     dark: {
-      primaryButton: 'linear-gradient(135deg, #42a5f6 0%, #1976d2 100%)',  // Lighter blue for dark mode
-      secondaryButton: 'linear-gradient(135deg, #64b5f6 0%, #42a5f6 100%)', // Blue for secondary
+      primaryButton: 'linear-gradient(135deg, #ff7043 0%, #ff5722 100%)',  // Lighter orange for dark mode
+      secondaryButton: 'linear-gradient(135deg, #ff8a65 0%, #ff7043 100%)', // Orange for secondary
       successButton: 'linear-gradient(135deg, #4caf50 0%, #2e7d32 100%)',  // Green for success
       heroBackground: 'linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%)',
     }
@@ -204,13 +190,13 @@ const lightThemeBase = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: '#1565c0',      // Professional blue as primary
-      light: '#42a5f6',
-      dark: '#0d47a1',
+      main: '#2e7d32',      // Forest green as primary
+      light: '#66bb6a',
+      dark: '#1b5e20',
       contrastText: '#ffffff',
     },
     secondary: {
-      main: '#1976d2',  // Blue as secondary (for confirmed status, etc.)
+      main: '#4caf50',  // Green as secondary (for confirmed status, etc.)
       light: '#42a5f5',
       dark: '#1565c0',
       contrastText: '#ffffff',
@@ -236,9 +222,9 @@ const lightThemeBase = createTheme({
       contrastText: '#ffffff',
     },
     info: {
-      main: '#2196f3',
+      main: '#1565c0',
       light: '#e3f2fd',
-      dark: '#1976d2',
+      dark: '#0d47a1',
       contrastText: '#ffffff',
     },
     error: {
@@ -248,10 +234,10 @@ const lightThemeBase = createTheme({
       contrastText: '#ffffff',
     },
     // Custom palette extensions - 25% reduced border opacity
-    divider: 'rgba(232, 245, 232, 0.75)', // 25% reduction from themeConstants.greenPalette[200]
+    divider: 'rgba(227, 242, 253, 0.75)', // 25% reduction from themeConstants.greenPalette[200]
     action: {
-      hover: 'rgba(232, 245, 232, 0.38)',   // 25% reduction from greenPalette[50]
-      selected: 'rgba(200, 230, 200, 0.75)', // 25% reduction from greenPalette[100]
+      hover: 'rgba(227, 242, 253, 0.38)',   // 25% reduction from greenPalette[50]
+      selected: 'rgba(187, 222, 251, 0.75)', // 25% reduction from greenPalette[100]
     },
   },
   components: {
@@ -372,15 +358,15 @@ const darkThemeBase = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      main: '#1976d2',  // Professional blue for dark mode
-      light: '#42a5f6',
-      dark: '#1565c0',
+      main: '#4caf50',  // Green for dark mode
+      light: '#66bb6a',
+      dark: '#2e7d32',
       contrastText: '#ffffff',
     },
     secondary: {
-      main: '#64b5f6',  // Lighter blue for dark mode
-      light: '#90caf9',
-      dark: '#42a5f5',
+      main: '#66bb6a',  // Lighter green for dark mode
+      light: '#a5d6a7',
+      dark: '#43a047',
       contrastText: '#000000',
     },
     background: {
@@ -404,9 +390,9 @@ const darkThemeBase = createTheme({
       contrastText: '#000000',
     },
     info: {
-      main: '#64b5f6',
-      light: '#90caf9',
-      dark: '#42a5f5',
+      main: '#ff5722',
+      light: '#ffab91',
+      dark: '#ff7043',
       contrastText: '#000000',
     },
     error: {

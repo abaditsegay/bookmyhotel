@@ -113,7 +113,7 @@ const HotelSearchPage: React.FC = () => {
                   }
                 },
                 '&::-webkit-scrollbar-track': {
-                  background: '#ffffff',
+                  background: theme.palette.background.paper,
                   borderRadius: '0px',
                 },
                 '&::-webkit-scrollbar-thumb': {
@@ -216,9 +216,9 @@ const HotelSearchPage: React.FC = () => {
                 py: 1.5,
                 fontSize: '1.1rem',
                 fontWeight: 600,
-                background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
+                background: (theme) => `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
                 '&:hover': {
-                  background: 'linear-gradient(135deg, #1565c0 0%, #0d47a1 100%)',
+                  background: (theme) => `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.dark} 100%)`,
                   transform: 'translateY(-1px)',
                 },
                 transition: 'all 0.2s ease-in-out',

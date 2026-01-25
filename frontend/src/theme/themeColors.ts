@@ -26,25 +26,25 @@ export { getThemeColors };
 
 // Convenience exports for common colors (these will update automatically when brand colors change)
 export const COLORS = {
-  // Interactive elements (buttons, links, form focus) - Professional Blue Theme
-  PRIMARY: '#1976d2',           // Professional blue (Material Blue 700)
-  PRIMARY_HOVER: '#1565c0',     // Darker blue for hover (Material Blue 800)
-  PRIMARY_PRESSED: '#0d47a1',   // Dark blue for pressed (Material Blue 900)
+  // Interactive elements (buttons, links, form focus) - Navy Blue Theme
+  PRIMARY: '#1565c0',           // Navy blue (Blue 800)
+  PRIMARY_HOVER: '#0d47a1',     // Darker blue for hover (Blue 900)
+  PRIMARY_PRESSED: '#0d47a1',   // Dark blue for pressed (Blue 900)
   
-  SECONDARY: '#42a5f5',         // Light blue for secondary (Material Blue 400)
-  SECONDARY_HOVER: '#1976d2',   // Medium blue for secondary hover
+  SECONDARY: '#42a5f5',         // Light blue for secondary (Blue 400)
+  SECONDARY_HOVER: '#1565c0',   // Medium blue for secondary hover
   
   // Status colors - Professional hotel management colors
-  CONFIRMED: '#1976d2',         // Blue for confirmed bookings
+  CONFIRMED: '#1565c0',         // Blue for confirmed bookings
   PENDING: '#fb8c00',           // Professional orange for pending (Material Orange 600)
-  SUCCESS: '#388e3c',           // Green for success states (Material Green 600)
+  SUCCESS: '#1976d2',           // Blue for success states (Material Blue 700)
   ERROR: '#d32f2f',             // Professional red for errors (Material Red 700)
   CANCELLED: '#757575',         // Gray for cancelled (Material Grey 600)
-  CHECKED_IN: '#388e3c',        // Green for checked in (success)
-  CHECKED_OUT: '#1976d2',       // Blue for checked out (completed)
+  CHECKED_IN: '#1976d2',        // Blue for checked in (success)
+  CHECKED_OUT: '#1565c0',       // Blue for checked out (completed)
   
   // Form elements - Blue theme
-  INPUT_FOCUS: '#1976d2',       // Blue focus color
+  INPUT_FOCUS: '#1565c0',       // Blue focus color
   INPUT_HOVER: '#42a5f5',       // Light blue hover
   INPUT_BORDER: '#e0e0e0',      // Neutral gray border (Material Grey 300)
   INPUT_ERROR: '#d32f2f',       // Red for errors
@@ -52,6 +52,34 @@ export const COLORS = {
   // Surface colors - Professional neutral theme
   CARD_BORDER: '#e0e0e0',       // Neutral gray card borders
   CARD_HOVER: '#fafafa',        // Very light gray hover (Material Grey 50)
+  
+  // Additional UI colors
+  WARNING: '#ff9800',           // Orange for warnings (Material Orange 500)
+  INFO: '#1565c0',              // Blue for info
+  WHITE: '#ffffff',             // Pure white
+  GOLD: '#ffd700',              // Gold for stars/ratings
+  
+  // Text colors
+  TEXT_PRIMARY: '#212121',      // Primary text (Material Grey 900)
+  TEXT_SECONDARY: '#616161',    // Secondary text (Material Grey 700)
+  TEXT_DISABLED: '#9e9e9e',     // Disabled text (Material Grey 400)
+  
+  // Background colors
+  BG_DEFAULT: '#f5f5f5',        // Default background (Material Grey 100)
+  BG_PAPER: '#ffffff',          // Paper/card background
+  BG_LIGHT: '#fafafa',          // Light background (Material Grey 50)
+  BG_SLATE: '#475569',          // Slate background for contrast
+  
+  // Payment provider brand colors (keep as-is for brand recognition)
+  MBIRR_ORANGE: '#FFA500',      // M-Birr brand orange
+  TELEBIRR_GREEN: '#4CAF50',    // TeleBirr brand green
+  
+  // Status background colors (for chips and badges)
+  BG_SUCCESS_LIGHT: '#e3f2fd',  // Light blue background
+  BG_WARNING_LIGHT: '#fff8e1',  // Light orange background
+  BG_ERROR_LIGHT: '#ffebee',    // Light red background
+  BG_INFO_LIGHT: '#e3f2fd',     // Light blue background
+  BG_DEFAULT_LIGHT: '#f5f5f5',  // Light grey background
 } as const;
 
 // Color palette access
@@ -59,29 +87,64 @@ export const GREEN_PALETTE = themeConstants.greenPalette;
 
 // Helper functions for common use cases
 export const getStatusColor = (status: string): string => {
-  const normalizedStatus = status.toUpperCase();
+  const normalizedStatus = status.toUpperCase().replace(/[\s_-]/g, '');
   
   switch (normalizedStatus) {
     case 'CONFIRMED':
+    case 'ACTIVE':
       return COLORS.CONFIRMED;
     case 'PENDING':
+    case 'UNDERREVIEW':
       return COLORS.PENDING;
     case 'SUCCESS':
     case 'COMPLETED':
+    case 'PAID':
+    case 'APPROVED':
       return COLORS.SUCCESS;
     case 'ERROR':
     case 'FAILED':
+    case 'SUSPENDED':
       return COLORS.ERROR;
     case 'CANCELLED':
+    case 'INACTIVE':
+    case 'REJECTED':
       return COLORS.CANCELLED;
-    case 'CHECKED_IN':
     case 'CHECKEDIN':
       return COLORS.CHECKED_IN;
-    case 'CHECKED_OUT':
     case 'CHECKEDOUT':
       return COLORS.CHECKED_OUT;
     default:
       return COLORS.PRIMARY;
+  }
+};
+
+// Get background color for status chips
+export const getStatusBgColor = (status: string): string => {
+  const normalizedStatus = status.toUpperCase().replace(/[\s_-]/g, '');
+  
+  switch (normalizedStatus) {
+    case 'SUCCESS':
+    case 'COMPLETED':
+    case 'PAID':
+    case 'APPROVED':
+    case 'ACTIVE':
+    case 'CHECKEDIN':
+      return COLORS.BG_SUCCESS_LIGHT;
+    case 'PENDING':
+    case 'UNDERREVIEW':
+      return COLORS.BG_WARNING_LIGHT;
+    case 'ERROR':
+    case 'FAILED':
+    case 'SUSPENDED':
+      return COLORS.BG_ERROR_LIGHT;
+    case 'CONFIRMED':
+    case 'CHECKEDOUT':
+      return COLORS.BG_INFO_LIGHT;
+    case 'CANCELLED':
+    case 'INACTIVE':
+    case 'REJECTED':
+    default:
+      return COLORS.BG_DEFAULT_LIGHT;
   }
 };
 

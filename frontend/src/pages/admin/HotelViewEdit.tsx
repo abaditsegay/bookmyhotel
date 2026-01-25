@@ -226,28 +226,28 @@ const HotelViewEdit: React.FC = () => {
   const getStatusInfo = (status: string) => {
     switch (status?.toUpperCase()) {
       case 'ACTIVE':
-        return { icon: <VerifiedIcon />, color: 'success' as const, bgColor: '#e8f5e8' };
+        return { icon: <VerifiedIcon />, color: 'success' as const, bgColor: COLORS.BG_SUCCESS_LIGHT };
       case 'PENDING':
-        return { icon: <PendingIcon />, color: 'warning' as const, bgColor: '#fff8e1' };
+        return { icon: <PendingIcon />, color: 'warning' as const, bgColor: COLORS.BG_WARNING_LIGHT };
       case 'INACTIVE':
-        return { icon: <InactiveIcon />, color: 'default' as const, bgColor: '#f5f5f5' };
+        return { icon: <InactiveIcon />, color: 'default' as const, bgColor: COLORS.BG_DEFAULT_LIGHT };
       case 'SUSPENDED':
-        return { icon: <SuspendedIcon />, color: 'error' as const, bgColor: '#ffebee' };
+        return { icon: <SuspendedIcon />, color: 'error' as const, bgColor: COLORS.BG_ERROR_LIGHT };
       default:
-        return { icon: <VerifiedIcon />, color: 'success' as const, bgColor: '#e8f5e8' };
+        return { icon: <VerifiedIcon />, color: 'success' as const, bgColor: COLORS.BG_SUCCESS_LIGHT };
     }
   };
 
   const statusInfo = getStatusInfo(currentHotel?.status || 'ACTIVE');
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: '#f8fafc' }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: 'COLORS.BG_DEFAULT' }}>
       <Container maxWidth="xl" sx={{ py: 4 }}>
         {/* Enhanced Header with Hero Section */}
         <Paper 
           elevation={0}
           sx={{ 
-            background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
+            background: `linear-gradient(135deg, ${COLORS.PRIMARY} 0%, ${COLORS.PRIMARY_HOVER} 100%)`,
             borderRadius: 3,
             p: 4,
             mb: 4,
@@ -387,7 +387,7 @@ const HotelViewEdit: React.FC = () => {
               <Grid item xs={12} sm={3}>
                 <Box sx={{ textAlign: 'center' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <StarIcon sx={{ mr: 0.5, color: '#ffd700' }} />
+                    <StarIcon sx={{ mr: 0.5, color: COLORS.GOLD }} />
                     <Typography variant="h4" sx={{ fontWeight: 700 }}>
                       {currentHotel?.rating || 'N/A'}
                     </Typography>
@@ -429,7 +429,7 @@ const HotelViewEdit: React.FC = () => {
             {/* Main Content Area */}
             <Grid item xs={12} lg={8}>
               {/* Basic Information Card */}
-              <Card elevation={0} sx={{ mb: 4, border: '1px solid #e0e7ff', borderRadius: 3 }}>
+              <Card elevation={0} sx={{ mb: 4, border: '1px solid COLORS.BG_INFO_LIGHT', borderRadius: 3 }}>
                 <CardContent sx={{ p: 4 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                     <Avatar sx={{ bgcolor: 'primary.main', mr: 2 }}>
@@ -553,7 +553,7 @@ const HotelViewEdit: React.FC = () => {
               </Card>
 
               {/* Location Information Card */}
-              <Card elevation={0} sx={{ mb: 4, border: '1px solid #e0e7ff', borderRadius: 3 }}>
+              <Card elevation={0} sx={{ mb: 4, border: '1px solid COLORS.BG_INFO_LIGHT', borderRadius: 3 }}>
                 <CardContent sx={{ p: 4 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                     <Avatar sx={{ bgcolor: 'secondary.main', mr: 2 }}>
@@ -654,7 +654,7 @@ const HotelViewEdit: React.FC = () => {
               </Card>
 
               {/* Operations & Settings Card */}
-              <Card elevation={0} sx={{ border: '1px solid #e0e7ff', borderRadius: 3 }}>
+              <Card elevation={0} sx={{ border: '1px solid COLORS.BG_INFO_LIGHT', borderRadius: 3 }}>
                 <CardContent sx={{ p: 4 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                     <Avatar sx={{ bgcolor: 'info.main', mr: 2 }}>
@@ -769,7 +769,7 @@ const HotelViewEdit: React.FC = () => {
             {/* Sidebar */}
             <Grid item xs={12} lg={4}>
               {/* Status Management Card */}
-              <Card elevation={0} sx={{ mb: 4, border: '1px solid #e0e7ff', borderRadius: 3 }}>
+              <Card elevation={0} sx={{ mb: 4, border: '1px solid COLORS.BG_INFO_LIGHT', borderRadius: 3 }}>
                 <CardContent sx={{ p: 4 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                     <Avatar sx={{ bgcolor: statusInfo.bgColor, mr: 2 }}>
@@ -833,7 +833,7 @@ const HotelViewEdit: React.FC = () => {
               </Card>
 
               {/* Analytics Card */}
-              <Card elevation={0} sx={{ mb: 4, border: '1px solid #e0e7ff', borderRadius: 3 }}>
+              <Card elevation={0} sx={{ mb: 4, border: '1px solid COLORS.BG_INFO_LIGHT', borderRadius: 3 }}>
                 <CardContent sx={{ p: 4 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                     <Avatar sx={{ bgcolor: 'success.main', mr: 2 }}>
@@ -847,7 +847,7 @@ const HotelViewEdit: React.FC = () => {
                   <Stack spacing={3}>
                     <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'warning.50', borderRadius: 2 }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
-                        <StarIcon sx={{ color: '#ffd700', mr: 1 }} />
+                        <StarIcon sx={{ color: COLORS.GOLD, mr: 1 }} />
                         <Typography variant="h3" sx={{ fontWeight: 700, color: 'warning.main' }}>
                           {currentHotel.rating || 'N/A'}
                         </Typography>
@@ -882,7 +882,7 @@ const HotelViewEdit: React.FC = () => {
               </Card>
 
               {/* System Information Card */}
-              <Card elevation={0} sx={{ border: '1px solid #e0e7ff', borderRadius: 3 }}>
+              <Card elevation={0} sx={{ border: '1px solid COLORS.BG_INFO_LIGHT', borderRadius: 3 }}>
                 <CardContent sx={{ p: 4 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                     <Avatar sx={{ bgcolor: 'info.main', mr: 2 }}>

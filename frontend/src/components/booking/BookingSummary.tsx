@@ -356,9 +356,9 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
             severity="info" 
             sx={{ 
               borderRadius: 2,
-              bgcolor: alpha('#2196f3', 0.08),
+              bgcolor: (theme) => alpha(theme.palette.primary.main, 0.08),
               color: 'text.secondary',
-              '& .MuiAlert-icon': { color: '#2196f3' },
+              '& .MuiAlert-icon': { color: 'primary.main' },
               mb: 2,
             }}
           >

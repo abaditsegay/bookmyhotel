@@ -44,6 +44,7 @@ import { MetricCard, BarChart, DonutChart } from '../components/common/DataVisua
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import BookIcon from '@mui/icons-material/Book';
 import { designSystem } from '../theme/designSystem';
+import { COLORS } from '../theme/themeColors';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -120,9 +121,9 @@ export const SystemDashboardPage: React.FC = () => {
   ];
 
   const bookingStatusData = [
-    { label: t('booking.details.confirmed'), value: 68, color: '#4caf50' },
-    { label: t('booking.details.pending'), value: 22, color: '#ff9800' },
-    { label: t('booking.details.cancelled'), value: 10, color: '#f44336' },
+    { label: t('booking.details.confirmed'), value: 68, color: COLORS.SUCCESS },
+    { label: t('booking.details.pending'), value: 22, color: COLORS.WARNING },
+    { label: t('booking.details.cancelled'), value: 10, color: COLORS.ERROR },
   ];
 
   // Fetch dashboard statistics

@@ -1,16 +1,13 @@
 import React, { useState } from 'react';
 import {
   Dialog,
-  DialogTitle,
   DialogContent,
-  DialogActions,
   Typography,
   Box,
   Grid,
   Card,
   CardContent,
   TextField,
-  Divider,
   CircularProgress,
   Alert,
   FormControl,
@@ -222,518 +219,292 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
     switch (currentPaymentMethod) {
       case PaymentMethod.CARD:
         return (
-          <Box sx={{ mt: 2 }}>
-            <Card sx={{ 
-              background: COLORS.CARD_HOVER,
-              borderRadius: 3,
-              minHeight: 420,
-              display: 'flex',
-              flexDirection: 'column',
-              boxShadow: `0 8px 32px ${COLORS.PRIMARY}15`,
-              border: `1px solid ${COLORS.CARD_BORDER}`,
-            }}>
-              <CardContent sx={{ 
-                py: 3, 
-                flexGrow: 1,
-                display: 'flex',
-                flexDirection: 'column'
+          <Box sx={{ mt: 2, py: 3 }}>
+            <Box sx={{ textAlign: 'center', mb: 3 }}>
+              <Box sx={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 56,
+                height: 56,
+                borderRadius: '50%',
+                bgcolor: (theme) => theme.palette.primary.light + '20',
+                mb: 2,
               }}>
-                <Box sx={{ textAlign: 'center', mb: 3 }}>
-                  <Box sx={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: 64,
-                    height: 64,
-                    borderRadius: '50%',
-                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                    backdropFilter: 'blur(10px)',
-                    mb: 2,
-                    border: '2px solid rgba(255, 255, 255, 0.4)',
-                  }}>
-                    <CreditCardIcon sx={{ 
-                      fontSize: 32, 
-                      color: '#475569',
-                    }} />
-                  </Box>
-                  <Typography variant="h5" sx={{ 
-                    color: '#475569',
-                    fontWeight: 700,
-                    mb: 0.5,
-                    textShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                  }}>
-                    {t('shopPayment.secureCardPayment')}
-                  </Typography>
-                  <Typography variant="body2" sx={{ 
-                    color: '#475569',
-                    mb: 2,
-                    opacity: 0.8,
-                  }}>
-                    {t('shopPayment.sslEncrypted')}
-                  </Typography>
-                  <Typography variant="h6" sx={{ 
-                    color: '#475569',
-                    fontWeight: 700,
-                    fontSize: '1.4rem',
-                    textShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                  }}>
-                    {t('shopPayment.amountLabel')} {formatCurrency(totalAmount)}
-                  </Typography>
-                </Box>
-                
-                <Box sx={{ flexGrow: 1 }}>
-                  <Grid container spacing={2}>
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      value={cardName}
-                      onChange={(e) => setCardName(e.target.value)}
-                      placeholder={t('shopPayment.cardholderNamePlaceholder')}
-                      variant="outlined"
-                      sx={{
-                        '& .MuiOutlinedInput-root': {
-                          backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                          borderRadius: 2,
-                          '& fieldset': {
-                            borderColor: 'rgba(71, 85, 105, 0.3)',
-                          },
-                          '&:hover fieldset': {
-                            borderColor: 'rgba(71, 85, 105, 0.6)',
-                          },
-                          '&.Mui-focused fieldset': {
-                            borderColor: '#475569',
-                            borderWidth: 2,
-                          },
-                        },
-                        '& .MuiOutlinedInput-input': {
-                          color: '#475569',
-                          fontWeight: 500,
-                          '&::placeholder': {
-                            color: 'rgba(71, 85, 105, 0.6)',
-                            opacity: 1,
-                          },
-                        },
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      value={cardNumber}
-                      onChange={(e) => {
-                        const value = e.target.value.replace(/\D/g, '');
-                        const formatted = value.replace(/(\d{4})(?=\d)/g, '$1 ');
-                        setCardNumber(formatted);
-                      }}
-                      placeholder={t('shopPayment.cardNumberPlaceholder')}
-                      inputProps={{ maxLength: 19 }}
-                      variant="outlined"
-                      sx={{
-                        '& .MuiOutlinedInput-root': {
-                          backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                          borderRadius: 2,
-                          '& fieldset': {
-                            borderColor: 'rgba(71, 85, 105, 0.3)',
-                          },
-                          '&:hover fieldset': {
-                            borderColor: 'rgba(71, 85, 105, 0.6)',
-                          },
-                          '&.Mui-focused fieldset': {
-                            borderColor: '#475569',
-                            borderWidth: 2,
-                          },
-                        },
-                        '& .MuiOutlinedInput-input': {
-                          color: '#475569',
-                          fontWeight: 500,
-                          '&::placeholder': {
-                            color: 'rgba(71, 85, 105, 0.6)',
-                            opacity: 1,
-                          },
-                        },
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={6}>
-                    <TextField
-                      fullWidth
-                      value={cardExpiry}
-                      onChange={(e) => {
-                        const value = e.target.value.replace(/\D/g, '');
-                        const formatted = value.replace(/(\d{2})(\d{2})/, '$1/$2');
-                        setCardExpiry(formatted);
-                      }}
-                      placeholder={t('shopPayment.expiryPlaceholder')}
-                      inputProps={{ maxLength: 5 }}
-                      variant="outlined"
-                      sx={{
-                        '& .MuiOutlinedInput-root': {
-                          backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                          borderRadius: 2,
-                          '& fieldset': {
-                            borderColor: 'rgba(71, 85, 105, 0.3)',
-                          },
-                          '&:hover fieldset': {
-                            borderColor: 'rgba(71, 85, 105, 0.6)',
-                          },
-                          '&.Mui-focused fieldset': {
-                            borderColor: '#475569',
-                            borderWidth: 2,
-                          },
-                        },
-                        '& .MuiOutlinedInput-input': {
-                          color: '#475569',
-                          fontWeight: 500,
-                          '&::placeholder': {
-                            color: 'rgba(71, 85, 105, 0.6)',
-                            opacity: 1,
-                          },
-                        },
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={6}>
-                    <TextField
-                      fullWidth
-                      value={cardCvv}
-                      onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, ''))}
-                      placeholder={t('shopPayment.cvvPlaceholder')}
-                      inputProps={{ maxLength: 4 }}
-                      variant="outlined"
-                      sx={{
-                        '& .MuiOutlinedInput-root': {
-                          backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                          borderRadius: 2,
-                          '& fieldset': {
-                            borderColor: 'rgba(71, 85, 105, 0.3)',
-                          },
-                          '&:hover fieldset': {
-                            borderColor: 'rgba(71, 85, 105, 0.6)',
-                          },
-                          '&.Mui-focused fieldset': {
-                            borderColor: '#475569',
-                            borderWidth: 2,
-                          },
-                        },
-                        '& .MuiOutlinedInput-input': {
-                          color: '#475569',
-                          fontWeight: 500,
-                          '&::placeholder': {
-                            color: 'rgba(71, 85, 105, 0.6)',
-                            opacity: 1,
-                          },
-                        },
-                      }}
-                    />
-                  </Grid>
-                  </Grid>
-                </Box>
-              </CardContent>
-            </Card>
+                <CreditCardIcon sx={{ 
+                  fontSize: 28, 
+                  color: (theme) => theme.palette.primary.main,
+                }} />
+              </Box>
+              <Typography variant="h6" sx={{ 
+                color: '#212121',
+                fontWeight: 600,
+                mb: 0.5,
+              }}>
+                {t('shopPayment.secureCardPayment')}
+              </Typography>
+              <Typography variant="body2" sx={{ 
+                color: 'text.secondary',
+                mb: 1,
+              }}>
+                {t('shopPayment.sslEncrypted')}
+              </Typography>
+              <Typography variant="h6" sx={{ 
+                color: (theme) => theme.palette.primary.main,
+                fontWeight: 600,
+              }}>
+                {t('shopPayment.amountLabel')} {formatCurrency(totalAmount)}
+              </Typography>
+            </Box>
+            
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  value={cardName}
+                  onChange={(e) => setCardName(e.target.value)}
+                  placeholder={t('shopPayment.cardholderNamePlaceholder')}
+                  variant="outlined"
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      '&.Mui-focused fieldset': {
+                        borderColor: (theme) => theme.palette.primary.main,
+                      },
+                    },
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  value={cardNumber}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, '');
+                    const formatted = value.replace(/(\d{4})(?=\d)/g, '$1 ');
+                    setCardNumber(formatted);
+                  }}
+                  placeholder={t('shopPayment.cardNumberPlaceholder')}
+                  inputProps={{ maxLength: 19 }}
+                  variant="outlined"
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      '&.Mui-focused fieldset': {
+                        borderColor: (theme) => theme.palette.primary.main,
+                      },
+                    },
+                  }}
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <TextField
+                  fullWidth
+                  value={cardExpiry}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, '');
+                    const formatted = value.replace(/(\d{2})(\d{2})/, '$1/$2');
+                    setCardExpiry(formatted);
+                  }}
+                  placeholder={t('shopPayment.expiryPlaceholder')}
+                  inputProps={{ maxLength: 5 }}
+                  variant="outlined"
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      '&.Mui-focused fieldset': {
+                        borderColor: (theme) => theme.palette.primary.main,
+                      },
+                    },
+                  }}
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <TextField
+                  fullWidth
+                  value={cardCvv}
+                  onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, ''))}
+                  placeholder={t('shopPayment.cvvPlaceholder')}
+                  inputProps={{ maxLength: 4 }}
+                  variant="outlined"
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      '&.Mui-focused fieldset': {
+                        borderColor: (theme) => theme.palette.primary.main,
+                      },
+                    },
+                  }}
+                />
+              </Grid>
+            </Grid>
           </Box>
         );
 
       case PaymentMethod.MOBILE_MONEY:
         return (
-          <Box sx={{ mt: 2 }}>
-            <Card sx={{ 
-              background: 'linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%)',
-              borderRadius: 3,
-              minHeight: 420,
-              display: 'flex',
-              flexDirection: 'column',
-              boxShadow: '0 8px 32px rgba(71, 85, 105, 0.2)',
-              border: '1px solid rgba(71, 85, 105, 0.3)',
-            }}>
-              <CardContent sx={{ 
-                py: 3, 
-                flexGrow: 1,
-                display: 'flex',
-                flexDirection: 'column'
+          <Box sx={{ mt: 2, py: 3 }}>
+            <Box sx={{ textAlign: 'center', mb: 3 }}>
+              <Box sx={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 56,
+                height: 56,
+                borderRadius: '50%',
+                bgcolor: (theme) => theme.palette.primary.light + '20',
+                mb: 2,
               }}>
-                <Box sx={{ textAlign: 'center', mb: 3 }}>
-                  <Box sx={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: 64,
-                    height: 64,
-                    borderRadius: '50%',
-                    backgroundColor: 'rgba(71, 85, 105, 0.1)',
-                    backdropFilter: 'blur(10px)',
-                    mb: 2,
-                    border: '2px solid rgba(71, 85, 105, 0.3)',
-                  }}>
-                    <MobileIcon sx={{ 
-                      fontSize: 32, 
-                      color: '#475569',
-                    }} />
-                  </Box>
-                  <Typography variant="h5" sx={{ 
-                    color: '#475569',
-                    fontWeight: 700,
-                    mb: 0.5,
-                    textShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                  }}>
-                    {t('shopPayment.mobileMoneyPayment')}
-                  </Typography>
-                  <Typography variant="body2" sx={{ 
-                    color: 'rgba(71, 85, 105, 0.8)',
-                    mb: 2
-                  }}>
-                    {t('shopPayment.paySecurelyMobile')}
-                  </Typography>
-                  <Typography variant="h6" sx={{ 
-                    color: '#475569',
-                    fontWeight: 700,
-                    fontSize: '1.4rem',
-                    textShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                  }}>
-                    {t('shopPayment.amountLabel')} {formatCurrency(totalAmount)}
-                  </Typography>
-                </Box>
-                
-                <Box sx={{ flexGrow: 1 }}>
-                  <Grid container spacing={2}>
-                  <Grid item xs={12}>
-                    <FormControl fullWidth variant="outlined">
-                      <Select
-                        value={mobileProvider}
-                        onChange={(e) => setMobileProvider(e.target.value)}
-                        displayEmpty
-                        sx={{
-                          backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                          borderRadius: 2,
-                          '& fieldset': {
-                            borderColor: 'rgba(71, 85, 105, 0.3)',
-                          },
-                          '&:hover fieldset': {
-                            borderColor: 'rgba(71, 85, 105, 0.6)',
-                          },
-                          '&.Mui-focused fieldset': {
-                            borderColor: '#475569',
-                            borderWidth: 2,
-                          },
-                          '& .MuiSelect-select': {
-                            minHeight: isMobile ? '44px' : 'auto',
-                            color: '#475569',
-                            fontWeight: 500,
-                          },
-                          '& .MuiSelect-icon': {
-                            color: '#475569',
-                          }
-                        }}
-                      >
-                        <MenuItem value="" disabled sx={{ color: 'rgba(71, 85, 105, 0.5)' }}>
-                          {t('shopPayment.selectMobileProvider')}
-                        </MenuItem>
-                        <MenuItem value="M-birr">
-                          🇪🇹 M-birr
-                        </MenuItem>
-                        <MenuItem value="Telebirr">
-                          🇪🇹 Telebirr
-                        </MenuItem>
-                        <MenuItem value="CBE Birr">CBE Birr</MenuItem>
-                        <MenuItem value="HelloCash">HelloCash</MenuItem>
-                        <MenuItem value="M-Pesa">M-Pesa</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      value={phoneNumber}
-                      onChange={(e) => setPhoneNumber(e.target.value)}
-                      placeholder={t('shopPayment.phoneNumberPlaceholder')}
-                      variant="outlined"
-                      sx={{
-                        '& .MuiOutlinedInput-root': {
-                          backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                          borderRadius: 2,
-                          '& fieldset': {
-                            borderColor: 'rgba(71, 85, 105, 0.3)',
-                          },
-                          '&:hover fieldset': {
-                            borderColor: 'rgba(71, 85, 105, 0.6)',
-                          },
-                          '&.Mui-focused fieldset': {
-                            borderColor: '#475569',
-                            borderWidth: 2,
-                          },
-                        },
-                        '& .MuiOutlinedInput-input': {
-                          color: '#475569',
-                          fontWeight: 500,
-                          '&::placeholder': {
-                            color: 'rgba(71, 85, 105, 0.6)',
-                            opacity: 1,
-                          },
-                        },
-                      }}
-                    />
-                  </Grid>
-                  </Grid>
-                </Box>
-              </CardContent>
-            </Card>
+                <MobileIcon sx={{ 
+                  fontSize: 28, 
+                  color: (theme) => theme.palette.primary.main,
+                }} />
+              </Box>
+              <Typography variant="h6" sx={{ 
+                color: '#212121',
+                fontWeight: 600,
+                mb: 0.5,
+              }}>
+                {t('shopPayment.mobileMoneyPayment')}
+              </Typography>
+              <Typography variant="body2" sx={{ 
+                color: 'text.secondary',
+                mb: 1,
+              }}>
+                {t('shopPayment.paySecurelyMobile')}
+              </Typography>
+              <Typography variant="h6" sx={{ 
+                color: (theme) => theme.palette.primary.main,
+                fontWeight: 600,
+              }}>
+                {t('shopPayment.amountLabel')} {formatCurrency(totalAmount)}
+              </Typography>
+            </Box>
+            
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <FormControl fullWidth variant="outlined">
+                  <Select
+                    value={mobileProvider}
+                    onChange={(e) => setMobileProvider(e.target.value)}
+                    displayEmpty
+                    sx={{
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                        borderColor: (theme) => theme.palette.primary.main,
+                      },
+                    }}
+                  >
+                    <MenuItem value="" disabled>
+                      {t('shopPayment.selectMobileProvider')}
+                    </MenuItem>
+                    <MenuItem value="M-birr">
+                      🇪🇹 M-birr
+                    </MenuItem>
+                    <MenuItem value="Telebirr">
+                      🇪🇹 Telebirr
+                    </MenuItem>
+                    <MenuItem value="CBE Birr">CBE Birr</MenuItem>
+                    <MenuItem value="HelloCash">HelloCash</MenuItem>
+                    <MenuItem value="M-Pesa">M-Pesa</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  placeholder={t('shopPayment.phoneNumberPlaceholder')}
+                  variant="outlined"
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      '&.Mui-focused fieldset': {
+                        borderColor: (theme) => theme.palette.primary.main,
+                      },
+                    },
+                  }}
+                />
+              </Grid>
+            </Grid>
           </Box>
         );
 
       case PaymentMethod.CASH:
         return (
-          <Box sx={{ mt: 2 }}>
-            <Card sx={{ 
-              background: 'linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%)',
-              borderRadius: 3,
-              minHeight: 420,
-              display: 'flex',
-              flexDirection: 'column',
-              boxShadow: '0 8px 32px rgba(71, 85, 105, 0.2)',
-              border: '1px solid rgba(71, 85, 105, 0.3)',
+          <Box sx={{ mt: 2, textAlign: 'center', py: 4 }}>
+            <Typography variant="h6" sx={{ 
+              fontWeight: 600, 
+              color: '#212121',
+              mb: 2
             }}>
-              <CardContent sx={{ 
-                textAlign: 'center', 
-                py: 4,
-                flexGrow: 1,
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center'
+              Cash Payment
+            </Typography>
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+              Please collect cash payment from customer at the counter.
+            </Typography>
+            <Box sx={{
+              display: 'inline-block',
+              bgcolor: (theme) => theme.palette.primary.light + '20',
+              border: '2px solid #2e7d32',
+              borderRadius: 2,
+              px: 4,
+              py: 2,
+            }}>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                Amount to collect
+              </Typography>
+              <Typography variant="h4" sx={{ 
+                color: (theme) => theme.palette.primary.main,
+                fontWeight: 700,
               }}>
-                <Box sx={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: 80,
-                  height: 80,
-                  borderRadius: '50%',
-                  backgroundColor: 'rgba(71, 85, 105, 0.15)',
-                  backdropFilter: 'blur(10px)',
-                  mb: 3,
-                  border: '2px solid rgba(71, 85, 105, 0.3)',
-                }}>
-                  <CashIcon sx={{ 
-                    fontSize: 40, 
-                    color: '#475569',
-                  }} />
-                </Box>
-                <Typography variant="h5" sx={{ 
-                  color: '#475569',
-                  fontWeight: 700,
-                  mb: 2,
-                  textShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                }}>
-                  {t('shopPayment.cashPayment')}
-                </Typography>
-                <Typography variant="body1" sx={{ 
-                  color: 'rgba(71, 85, 105, 0.8)',
-                  mb: 3,
-                  fontSize: '1.1rem',
-                }}>
-                  {t('shopPayment.collectCashPayment')}
-                </Typography>
-                <Box sx={{ 
-                  backgroundColor: 'rgba(255, 255, 255, 0.7)',
-                  backdropFilter: 'blur(10px)',
-                  borderRadius: 2,
-                  padding: 3,
-                  border: '1px solid rgba(71, 85, 105, 0.2)',
-                }}>
-                  <Typography variant="h4" sx={{ 
-                    color: '#475569',
-                    fontWeight: 700,
-                    textShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                  }}>
-                    {formatCurrency(totalAmount)}
-                  </Typography>
-                  <Typography variant="body2" sx={{ 
-                    color: 'rgba(71, 85, 105, 0.8)',
-                    mt: 1,
-                  }}>
-                    {t('shopPayment.amountToCollect')}
-                  </Typography>
-                </Box>
-              </CardContent>
-            </Card>
+                {formatCurrency(totalAmount)}
+              </Typography>
+            </Box>
           </Box>
         );
 
       case PaymentMethod.PAY_AT_FRONTDESK:
         return (
-          <Box sx={{ mt: 2 }}>
-            <Card sx={{ 
-              background: 'linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%)',
-              borderRadius: 3,
-              minHeight: 420,
-              display: 'flex',
-              flexDirection: 'column',
-              boxShadow: '0 8px 32px rgba(71, 85, 105, 0.2)',
-              border: '1px solid rgba(71, 85, 105, 0.3)',
+          <Box sx={{ mt: 2, textAlign: 'center', py: 4 }}>
+            <Box sx={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 56,
+              height: 56,
+              borderRadius: '50%',
+              bgcolor: (theme) => theme.palette.primary.light + '20',
+              mb: 2,
             }}>
-              <CardContent sx={{ 
-                textAlign: 'center', 
-                py: 4,
-                flexGrow: 1,
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center'
+              <BankIcon sx={{ 
+                fontSize: 28, 
+                color: (theme) => theme.palette.primary.main,
+              }} />
+            </Box>
+            <Typography variant="h6" sx={{ 
+              fontWeight: 600, 
+              color: '#212121',
+              mb: 1
+            }}>
+              {t('shopPayment.payAtFrontDesk')}
+            </Typography>
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+              {t('shopPayment.customerPaysFrontDesk')}
+            </Typography>
+            <Box sx={{
+              display: 'inline-block',
+              bgcolor: (theme) => theme.palette.primary.light + '20',
+              border: '2px solid #2e7d32',
+              borderRadius: 2,
+              px: 4,
+              py: 2,
+            }}>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                {t('shopPayment.totalAmount')}
+              </Typography>
+              <Typography variant="h4" sx={{ 
+                color: (theme) => theme.palette.primary.main,
+                fontWeight: 700,
               }}>
-                <Box sx={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: 80,
-                  height: 80,
-                  borderRadius: '50%',
-                  backgroundColor: 'rgba(71, 85, 105, 0.15)',
-                  backdropFilter: 'blur(10px)',
-                  mb: 3,
-                  border: '2px solid rgba(71, 85, 105, 0.3)',
-                }}>
-                  <BankIcon sx={{ 
-                    fontSize: 40, 
-                    color: '#475569',
-                  }} />
-                </Box>
-                <Typography variant="h5" sx={{ 
-                  color: '#475569',
-                  fontWeight: 700,
-                  mb: 2,
-                  textShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                }}>
-                  {t('shopPayment.payAtFrontDesk')}
-                </Typography>
-                <Typography variant="body1" sx={{ 
-                  color: 'rgba(71, 85, 105, 0.8)',
-                  mb: 3,
-                  fontSize: '1.1rem',
-                }}>
-                  {t('shopPayment.customerPaysFrontDesk')}
-                </Typography>
-                <Box sx={{ 
-                  backgroundColor: 'rgba(255, 255, 255, 0.7)',
-                  backdropFilter: 'blur(10px)',
-                  borderRadius: 2,
-                  padding: 3,
-                  border: '1px solid rgba(71, 85, 105, 0.2)',
-                }}>
-                  <Typography variant="h4" sx={{ 
-                    color: '#475569',
-                    fontWeight: 700,
-                    textShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                  }}>
-                    {formatCurrency(totalAmount)}
-                  </Typography>
-                  <Typography variant="body2" sx={{ 
-                    color: 'rgba(71, 85, 105, 0.8)',
-                    mt: 1,
-                  }}>
-                    {t('shopPayment.totalAmount')}
-                  </Typography>
-                </Box>
-              </CardContent>
-            </Card>
+                {formatCurrency(totalAmount)}
+              </Typography>
+            </Box>
           </Box>
         );
 
@@ -754,7 +525,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
           '& .MuiDialog-paper': {
             margin: isMobile ? 0 : theme.spacing(2),
             borderRadius: isMobile ? 0 : 3,
-            background: 'linear-gradient(135deg, #475569 0%, #64748b 100%)',
+            background: `linear-gradient(135deg, ${COLORS.BG_SLATE} 0%, #64748b 100%)`,
           }
         }}
       >
@@ -835,241 +606,182 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
       onClose={onClose} 
       maxWidth="md" 
       fullWidth
-      fullScreen={isMobile}
-      sx={{
-        '& .MuiDialog-paper': {
-          margin: isMobile ? 0 : theme.spacing(2),
-          borderRadius: isMobile ? 0 : 3,
-          overflow: 'hidden',
-        }
+      PaperProps={{
+        sx: {
+          borderRadius: 2,
+          bgcolor: '#f5f5f5',
+        },
       }}
     >
-      <DialogTitle sx={{
-        background: 'linear-gradient(135deg, #475569 0%, #64748b 100%)',
-        color: '#ffffff',
-        py: 3,
-        position: 'relative',
-        '&::after': {
-          content: '""',
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: '1px',
-          background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)',
-        }
+      <Box sx={{ 
+        bgcolor: 'white', 
+        m: 3, 
+        borderRadius: 2,
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
       }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+        {/* Header Section */}
+        <Box sx={{ 
+          p: 3, 
+          borderBottom: '1px solid #e0e0e0',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 2
+        }}>
           <Box sx={{
-            display: 'inline-flex',
+            display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             width: 48,
             height: 48,
             borderRadius: '50%',
-            backgroundColor: 'rgba(255, 255, 255, 0.15)',
-            backdropFilter: 'blur(10px)',
-            border: '2px solid rgba(255, 255, 255, 0.2)',
+            bgcolor: (theme) => theme.palette.primary.light + '20',
+            border: '2px solid #2e7d32',
           }}>
-            <PaymentIcon sx={{ color: '#ffffff', fontSize: 28 }} />
+            <PaymentIcon sx={{ color: (theme) => theme.palette.primary.main, fontSize: 28 }} />
           </Box>
           <Box>
             <Typography variant="h5" sx={{ 
               fontWeight: 700,
-              textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+              color: '#212121',
               mb: 0.5,
             }}>
               {t('shopPayment.completePayment')}
             </Typography>
             <Typography variant="h6" sx={{ 
-              color: 'rgba(255, 255, 255, 0.9)',
+              color: (theme) => theme.palette.primary.main,
               fontWeight: 600,
             }}>
               {formatCurrency(totalAmount)}
             </Typography>
           </Box>
         </Box>
-      </DialogTitle>
 
-      <DialogContent sx={{ p: { xs: 2, md: 3 } }}>
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-        )}
+        {/* Content Section */}
+        <Box sx={{ p: 4 }}>
+          {error && (
+            <Alert severity="error" sx={{ mb: 3 }}>
+              {error}
+            </Alert>
+          )}
 
-        {/* Payment Method Selection */}
-        <Typography variant="h6" sx={{ 
-          mt: 2,
-          mb: 2,
-          color: '#475569',
-          fontWeight: 700,
+          {/* Payment Method Selection */}
+          <Typography variant="h6" sx={{ 
+            mb: 3,
+            color: '#212121',
+            fontWeight: 600,
+            borderLeft: '4px solid #2e7d32',
+            pl: 2
+          }}>
+            {t('shopPayment.selectPaymentMethod')}
+          </Typography>
+          
+          <Grid container spacing={2} sx={{ mb: 3 }}>
+            {paymentMethods.map((method) => (
+              <Grid item xs={12} sm={4} key={method.value}>
+                <Card 
+                  onClick={() => handlePaymentMethodSelect(method.value)}
+                  sx={{
+                    cursor: 'pointer',
+                    border: currentPaymentMethod === method.value ? '2px solid #2e7d32' : '1px solid #e0e0e0',
+                    bgcolor: currentPaymentMethod === method.value ? '#e8f5e9' : 'white',
+                    boxShadow: 'none',
+                    transition: 'all 0.2s',
+                    '&:hover': {
+                      borderColor: currentPaymentMethod === method.value ? '#2e7d32' : '#bdbdbd',
+                      bgcolor: currentPaymentMethod === method.value ? '#e8f5e9' : '#f5f5f5',
+                    },
+                  }}
+                >
+                  <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+                    <Box sx={{ textAlign: 'center' }}>
+                      <Box sx={{ 
+                        color: currentPaymentMethod === method.value ? '#2e7d32' : '#616161',
+                        fontSize: 36,
+                        mb: 1,
+                        display: 'flex',
+                        justifyContent: 'center',
+                      }}>
+                        {method.icon}
+                      </Box>
+                      <Typography variant="subtitle2" sx={{ 
+                        fontWeight: 600,
+                        color: currentPaymentMethod === method.value ? '#2e7d32' : '#212121',
+                        mb: 0.5,
+                      }}>
+                        {method.label}
+                      </Typography>
+                      <Typography variant="caption" sx={{ 
+                        color: 'text.secondary',
+                        display: 'block',
+                      }}>
+                        {method.description}
+                      </Typography>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+
+          {/* Payment Details */}
+          <Box sx={{ 
+            minHeight: 300,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'flex-start'
+          }}>
+            {renderPaymentDetails()}
+          </Box>
+        </Box>
+
+        {/* Footer Actions */}
+        <Box sx={{ 
+          p: 3, 
+          borderTop: '1px solid #e0e0e0',
+          bgcolor: '#fafafa',
+          display: 'flex',
+          gap: 2,
+          justifyContent: 'flex-end'
         }}>
-          {t('shopPayment.selectPaymentMethod')}
-        </Typography>
-        
-        <FormControl fullWidth sx={{ mb: { xs: 2, md: 3 } }}>
-          <Select
-            value={currentPaymentMethod}
-            onChange={(e) => handlePaymentMethodSelect(e.target.value as PaymentMethod)}
-            displayEmpty
-            sx={{
-              backgroundColor: theme.palette.background.paper,
-              borderRadius: 2,
-              '& fieldset': {
-                borderColor: 'rgba(71, 85, 105, 0.3)',
-              },
-              '&:hover fieldset': {
-                borderColor: '#64748b',
-              },
-              '&.Mui-focused fieldset': {
-                borderColor: '#475569',
-                borderWidth: 2,
-              },
-              '& .MuiSelect-select': {
-                minHeight: isMobile ? '44px' : 'auto',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1.5,
-                color: '#475569',
-                fontWeight: 500,
-              },
-              '& .MuiSelect-icon': {
-                color: '#475569',
-              }
-            }}
-            MenuProps={{
-              PaperProps: {
-                sx: {
-                  borderRadius: 2,
-                  mt: 1,
-                  boxShadow: '0 8px 32px rgba(71, 85, 105, 0.15)',
-                  border: '1px solid rgba(71, 85, 105, 0.1)',
-                }
+          <StandardButton 
+            onClick={onClose} 
+            disabled={processing}
+            variant="outlined"
+            sx={{ 
+              minWidth: 120,
+              textTransform: 'none',
+              borderColor: '#e0e0e0',
+              color: '#616161',
+              '&:hover': {
+                borderColor: '#bdbdbd',
+                bgcolor: '#fafafa'
               }
             }}
           >
-            <MenuItem value="" disabled sx={{ color: 'rgba(71, 85, 105, 0.5)' }}>
-              {t('shopPayment.selectPaymentMethod')}
-            </MenuItem>
-            {paymentMethods.map((method) => (
-              <MenuItem 
-                key={method.value} 
-                value={method.value}
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 2,
-                  py: 1.5,
-                  px: 2,
-                  minHeight: isMobile ? '44px' : 'auto',
-                  '&:hover': {
-                    backgroundColor: 'rgba(71, 85, 105, 0.08)',
-                  },
-                  '&.Mui-selected': {
-                    backgroundColor: 'rgba(71, 85, 105, 0.12)',
-                    '&:hover': {
-                      backgroundColor: 'rgba(71, 85, 105, 0.16)',
-                    }
-                  }
-                }}
-              >
-                <Box sx={{ 
-                  color: '#64748b',
-                  fontSize: 24,
-                  display: 'flex',
-                  alignItems: 'center',
-                }}>
-                  {method.icon}
-                </Box>
-                <Box sx={{ flexGrow: 1 }}>
-                  <Typography variant="subtitle1" sx={{ 
-                    fontWeight: 600,
-                    color: '#475569',
-                    lineHeight: 1.2,
-                  }}>
-                    {method.label}
-                  </Typography>
-                  <Typography variant="caption" sx={{ 
-                    color: theme.palette.text.secondary,
-                    display: 'block',
-                    lineHeight: 1.1,
-                    mt: 0.25,
-                  }}>
-                    {method.description}
-                  </Typography>
-                </Box>
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
-        <Divider sx={{ 
-          my: 2,
-          background: 'linear-gradient(90deg, transparent, rgba(71, 85, 105, 0.3), transparent)',
-          height: 2,
-        }} />
-
-        {/* Payment Details */}
-        <Box sx={{ 
-          minHeight: 520, // Fixed height to prevent jumping
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'flex-start'
-        }}>
-          {renderPaymentDetails()}
+            {t('shopPayment.cancel')}
+          </StandardButton>
+          <StandardButton
+            onClick={handleProcessPayment}
+            variant="contained"
+            disabled={processing}
+            startIcon={processing ? <CircularProgress size={20} sx={{ color: 'white' }} /> : null}
+            sx={{ 
+              minWidth: 180,
+              textTransform: 'none',
+              bgcolor: (theme) => theme.palette.primary.main,
+              '&:hover': {
+                bgcolor: '#1b5e20',
+              },
+              '&:disabled': {
+                bgcolor: '#ffccbc',
+                color: 'rgba(255, 255, 255, 0.7)',
+              }
+            }}
+          >
+            {processing ? t('shopPayment.processing') : `${t('shopPayment.pay')} ${formatCurrency(totalAmount)}`}
+          </StandardButton>
         </Box>
-      </DialogContent>
-
-      <DialogActions sx={{ 
-        p: { xs: 2, md: 3 },
-        gap: { xs: 1, md: 2 },
-        flexDirection: isMobile ? 'column-reverse' : 'row',
-        backgroundColor: 'rgba(71, 85, 105, 0.02)',
-        borderTop: '1px solid rgba(71, 85, 105, 0.1)',
-      }}>
-        <StandardButton 
-          onClick={onClose} 
-          disabled={processing}
-          variant="outlined"
-          fullWidth={isMobile}
-          sx={{ 
-            minHeight: '44px',
-            order: isMobile ? 2 : 1,
-            borderColor: '#64748b',
-            color: '#475569',
-            '&:hover': {
-              backgroundColor: 'rgba(71, 85, 105, 0.04)',
-              borderColor: '#475569',
-            }
-          }}
-        >
-          {t('shopPayment.cancel')}
-        </StandardButton>
-        <StandardButton
-          onClick={handleProcessPayment}
-          variant="contained"
-          disabled={processing}
-          startIcon={processing ? <CircularProgress size={20} sx={{ color: 'white' }} /> : null}
-          fullWidth={isMobile}
-          sx={{ 
-            minHeight: '44px',
-            order: isMobile ? 1 : 2,
-            background: 'linear-gradient(135deg, #475569 0%, #64748b 100%)',
-            boxShadow: '0 4px 15px rgba(71, 85, 105, 0.4)',
-            '&:hover': {
-              background: 'linear-gradient(135deg, #3c485a 0%, #55637a 100%)',
-              boxShadow: '0 6px 20px rgba(71, 85, 105, 0.5)',
-            },
-            '&:disabled': {
-              background: 'linear-gradient(135deg, rgba(71, 85, 105, 0.5) 0%, rgba(100, 116, 139, 0.5) 100%)',
-              color: 'rgba(255, 255, 255, 0.7)',
-            }
-          }}
-        >
-          {processing ? t('shopPayment.processing') : `${t('shopPayment.pay')} ${formatCurrency(totalAmount)}`}
-        </StandardButton>
-      </DialogActions>
+      </Box>
     </Dialog>
   );
 };

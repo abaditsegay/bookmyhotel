@@ -1426,7 +1426,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                     variant="h5" 
                     sx={{ 
                       fontWeight: 'bold',
-                      color: COLORS.PRIMARY, // Blue color to match screenshot
+                      color: COLORS.PRIMARY, // Orange color to match theme
                       mb: 0.5,
                     }}
                   >
@@ -1462,20 +1462,20 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
             alternativeLabel
             sx={{
               '& .MuiStepLabel-root .Mui-completed': {
-                color: COLORS.PRIMARY, // Blue for completed steps
+                color: COLORS.PRIMARY, // Orange for completed steps
               },
               '& .MuiStepLabel-root .Mui-active': {
-                color: COLORS.PRIMARY, // Blue for active step
+                color: COLORS.PRIMARY, // Orange for active step
               },
               '& .MuiStepConnector-line': {
                 borderColor: 'divider',
               },
               '& .MuiStepIcon-root': {
                 '&.Mui-completed': {
-                  color: COLORS.PRIMARY, // Blue for completed step icons
+                  color: COLORS.PRIMARY, // Orange for completed step icons
                 },
                 '&.Mui-active': {
-                  color: COLORS.PRIMARY, // Blue for active step icon
+                  color: COLORS.PRIMARY, // Orange for active step icon
                 },
               },
             }}

@@ -22,6 +22,7 @@ import {
   RadioGroup,
   FormControlLabel,
   Radio,
+  useTheme,
 } from '@mui/material';
 import {
   Person as PersonIcon,
@@ -53,6 +54,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
 }) => {
   const { token, user } = useAuth();
   const { tenant } = useTenant();
+  const theme = useTheme();
   
   const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
   const [selectedRoomType, setSelectedRoomType] = useState<string>('');
@@ -486,7 +488,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
         pb: 2,
         pt: 3,
         px: 3,
-        background: 'linear-gradient(135deg, #0d47a1 0%, #1565c0 50%, #1976d2 100%)',
+        background: (theme) => `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.dark} 50%, ${theme.palette.primary.main} 100%)`,
         color: 'white',
         position: 'relative',
         '&::after': {
@@ -496,7 +498,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
           left: 0,
           right: 0,
           height: '4px',
-          background: 'linear-gradient(90deg, #42a5f5 0%, #1976d2 50%, #0d47a1 100%)',
+          background: (theme) => `linear-gradient(90deg, ${theme.palette.primary.light} 0%, ${theme.palette.primary.main} 50%, ${theme.palette.primary.dark} 100%)`,
         }
       }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -566,7 +568,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
             left: 0,
             right: 0,
             height: '4px',
-            background: 'linear-gradient(90deg, #1565c0 0%, #1976d2 50%, #42a5f5 100%)',
+            background: (theme) => `linear-gradient(90deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 50%, ${theme.palette.primary.light} 100%)`,
           }
         }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
@@ -661,7 +663,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
             left: 0,
             right: 0,
             height: '3px',
-            background: 'linear-gradient(90deg, #66bb6a 0%, #42a5f5 50%, #1976d2 100%)',
+            background: (theme) => `linear-gradient(90deg, ${theme.palette.success.main} 0%, ${theme.palette.primary.light} 50%, ${theme.palette.primary.main} 100%)`,
           }
         }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
@@ -691,7 +693,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                   <Typography variant="h5" sx={{ 
                     fontWeight: 800, 
                     color: 'primary.main',
-                    background: 'linear-gradient(45deg, #1565c0, #1976d2)',
+                    background: (theme) => `linear-gradient(45deg, ${theme.palette.primary.dark}, ${theme.palette.primary.main})`,
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent'
                   }}>
@@ -793,7 +795,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
             left: 0,
             right: 0,
             height: '3px',
-            background: 'linear-gradient(90deg, #1976d2 0%, #42a5f5 50%, #66bb6a 100%)',
+            background: (theme) => `linear-gradient(90deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.light} 50%, ${theme.palette.success.main} 100%)`,
           }
         }} data-testid="room-assignment-section">
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
@@ -887,7 +889,8 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                             backgroundColor: 'white',
                             boxShadow: '0 8px 32px rgba(21, 101, 192, 0.2)',
                             borderRadius: 12,
-                            border: '1px solid #1976d2'
+                            border: '1px solid',
+                            borderColor: 'primary.main'
                           },
                         },
                         MenuListProps: {
@@ -1003,7 +1006,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                             left: 0,
                             right: 0,
                             height: '4px',
-                            background: 'linear-gradient(90deg, #1565c0 0%, #1976d2 50%, #42a5f5 100%)',
+                            background: (theme) => `linear-gradient(90deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 50%, ${theme.palette.primary.light} 100%)`,
                           }
                         })
                       }}
@@ -1107,7 +1110,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
               left: 0,
               right: 0,
               height: '4px',
-              background: 'linear-gradient(90deg, #66bb6a 0%, #4caf50 50%, #2e7d32 100%)',
+              background: 'linear-gradient(90deg, ${theme.palette.primary.light} 0%, ${theme.palette.primary.light} 50%, ${theme.palette.primary.main} 100%)',
             }
           }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
@@ -1269,17 +1272,17 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
             disabled={loading}
             size="large"
             sx={{
-              background: 'linear-gradient(135deg, #0d47a1 0%, #1565c0 50%, #1976d2 100%)',
+              background: (theme) => `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.dark} 50%, ${theme.palette.primary.main} 100%)`,
               fontWeight: 700,
               px: 4,
               py: 1.5,
               borderRadius: 2,
               textTransform: 'none',
               fontSize: '1rem',
-              boxShadow: '0 4px 16px rgba(21, 101, 192, 0.4)',
+              boxShadow: (theme) => `0 4px 16px ${theme.palette.primary.dark}66`,
               '&:hover': {
-                background: 'linear-gradient(135deg, #0a3d91 0%, #0d47a1 50%, #1565c0 100%)',
-                boxShadow: '0 6px 20px rgba(21, 101, 192, 0.5)',
+                background: (theme) => `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.dark} 50%, ${theme.palette.primary.dark} 100%)`,
+                boxShadow: (theme) => `0 6px 20px ${theme.palette.primary.dark}88`,
                 transform: 'translateY(-2px)'
               },
               '&:active': {
@@ -1300,7 +1303,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
             sx={{
               background: !currentRoomNumber || currentRoomNumber === 'To be assigned' || loading 
                 ? '#e0e0e0' 
-                : 'linear-gradient(135deg, #0d47a1 0%, #1565c0 50%, #1976d2 100%)',
+                : 'linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 50%, #ff5722 100%)',
               color: !currentRoomNumber || currentRoomNumber === 'To be assigned' || loading ? '#9e9e9e' : 'white',
               fontWeight: 700,
               px: 4,
@@ -1310,10 +1313,10 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
               fontSize: '1rem',
               boxShadow: !currentRoomNumber || currentRoomNumber === 'To be assigned' || loading 
                 ? 'none' 
-                : '0 4px 16px rgba(21, 101, 192, 0.4)',
+                : '0 4px 16px rgba(216, 67, 21, 0.4)',
               '&:hover': !currentRoomNumber || currentRoomNumber === 'To be assigned' || loading ? {} : {
-                background: 'linear-gradient(135deg, #0a3d91 0%, #0d47a1 50%, #1565c0 100%)',
-                boxShadow: '0 6px 20px rgba(21, 101, 192, 0.5)',
+                background: 'linear-gradient(135deg, #a52f0a 0%, ${theme.palette.primary.dark} 50%, ${theme.palette.primary.main} 100%)',
+                boxShadow: '0 6px 20px rgba(216, 67, 21, 0.5)',
                 transform: 'translateY(-2px)'
               },
               '&:active': {

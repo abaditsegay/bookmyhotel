@@ -183,3 +183,6 @@ export const EmptyStateIcons = {
   Inbox: InboxIcon,
   Info: InfoIcon,
 };
+
+// Default export
+export default EmptyState;

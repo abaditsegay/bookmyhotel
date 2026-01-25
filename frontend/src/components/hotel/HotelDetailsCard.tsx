@@ -89,26 +89,36 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
 
   return (
     <Card 
-      elevation={0} 
+      elevation={2} 
       sx={{ 
         mb: isMobile ? 2 : 3,
-        borderRadius: 1,
+        borderRadius: 2,
         overflow: 'hidden',
         border: '1px solid rgba(224, 224, 224, 0.3)',
         display: horizontalLayout && isLargeScreen ? 'flex' : 'block',
         flexDirection: horizontalLayout && isLargeScreen ? 'row' : 'column',
+        transition: 'all 0.3s ease-in-out',
+        '&:hover': {
+          transform: 'translateY(-8px)',
+          boxShadow: 6,
+          borderColor: 'primary.light',
+        },
       }}
     >
       {/* Hotel Header with Image */}
       <CardMedia
         component="img"
-        height={isMobile ? "200" : horizontalLayout && isLargeScreen ? "250" : "300"}
+        height={isMobile ? "300" : horizontalLayout && isLargeScreen ? "350" : "400"}
         image={getHotelImage(hotel)}
         alt={hotel.name}
         sx={{ 
           objectFit: 'cover',
-          width: horizontalLayout && isLargeScreen ? '400px' : '100%',
+          width: horizontalLayout && isLargeScreen ? '500px' : '100%',
           flexShrink: 0,
+          transition: 'transform 0.4s ease-in-out',
+          '&:hover': {
+            transform: 'scale(1.05)',
+          },
         }}
       />
       

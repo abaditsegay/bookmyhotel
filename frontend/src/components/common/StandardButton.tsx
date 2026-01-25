@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, ButtonProps } from '@mui/material';
+import { Button, ButtonProps, CircularProgress } from '@mui/material';
 import { designSystem } from '../../theme/designSystem';
 
 interface StandardButtonProps extends Omit<ButtonProps, 'size'> {
@@ -7,6 +7,8 @@ interface StandardButtonProps extends Omit<ButtonProps, 'size'> {
   fullWidth?: boolean;
   gradient?: boolean;
   elevated?: boolean;
+  loading?: boolean;
+  loadingText?: string;
 }
 
 /**
@@ -23,9 +25,13 @@ interface StandardButtonProps extends Omit<ButtonProps, 'size'> {
  *   Book Now
  * </StandardButton>
  * 
- * // Secondary action
- * <StandardButton buttonSize="medium" variant="outlined">
- *   Cancel
+ * // With loading state
+ * <StandardButton 
+ *   loading={isSubmitting}
+ *   loadingText="Processing..."
+ *   onClick={handleSubmit}
+ * >
+ *   Submit
  * </StandardButton>
  * 
  * // Mobile-friendly full width
@@ -37,6 +43,8 @@ interface StandardButtonProps extends Omit<ButtonProps, 'size'> {
  * @param buttonSize - Size variant: 'small' (32px), 'medium' (40px), 'large' (48px)
  * @param fullWidth - Whether button should take full width of container
  * @param variant - Material-UI button variant: 'text', 'outlined', 'contained'
+ * @param loading - Show loading spinner and disable button
+ * @param loadingText - Text to show while loading (defaults to children)
  * @param children - Button content (text, icons, etc.)
  * @param sx - Additional Material-UI styling overrides
  */
@@ -46,6 +54,8 @@ const StandardButton: React.FC<StandardButtonProps> = ({
   variant = 'contained',
   gradient = false,
   elevated = false,
+  loading = false,
+  loadingText,
   children,
   sx,
   ...props
@@ -53,25 +63,37 @@ const StandardButton: React.FC<StandardButtonProps> = ({
   const getSizeConfig = (size: 'small' | 'medium' | 'large') => {
     switch (size) {
       case 'small':
-        return { height: '36px', padding: '8px 16px' };
+        return { height: '38px', padding: '8px 20px', fontSize: '0.875rem' };
       case 'large':
-        return { height: '52px', padding: '12px 32px' };
+        return { height: '56px', padding: '14px 36px', fontSize: '1.125rem' };
       default:
-        return { height: '44px', padding: '10px 24px' };
+        return { height: '48px', padding: '12px 28px', fontSize: '1rem' };
     }
   };
+  
+  const getSpinnerSize = () => {
+    switch (buttonSize) {
+      case 'small': return 16;
+      case 'large': return 24;
+      default: return 20;
+    }
+  };
+  
   const sizeConfig = getSizeConfig(buttonSize);
 
   return (
     <Button
       variant={variant}
       fullWidth={fullWidth}
+      disabled={loading || props.disabled}
+      startIcon={loading ? <CircularProgress size={getSpinnerSize()} color="inherit" /> : props.startIcon}
       sx={{
         ...sizeConfig,
         textTransform: 'none', // More modern look without all-caps
-        borderRadius: designSystem.borderRadius.md, // Consistent border radius
+        borderRadius: 2, // Larger border radius for modern look
         fontWeight: 600,
-        transition: 'all 0.2s ease-in-out',
+        boxShadow: variant === 'contained' ? 2 : 0,
+        transition: 'all 0.3s ease-in-out',
         
         // Gradient styling
         ...(gradient && variant === 'contained' && {
@@ -122,7 +144,7 @@ const StandardButton: React.FC<StandardButtonProps> = ({
       }}
       {...props}
     >
-      {children}
+      {loading ? (loadingText || children) : children}
     </Button>
   );
 };

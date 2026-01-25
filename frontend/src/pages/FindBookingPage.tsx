@@ -23,15 +23,15 @@ import { COLORS } from '../theme/themeColors';
 import { getRoomTypeLabel } from '../constants/roomTypes';
 
 // Helper function to get payment status color
-const getPaymentStatusColor = (status?: string): string => {
+const getPaymentStatusColor = (theme: any, status?: string): string => {
   switch (status?.toUpperCase()) {
     case 'COMPLETED':
-      return '#4caf50'; // Green
+      return theme.palette.success.main; // Success color from theme
     case 'PROCESSING':
-      return '#ff9800'; // Orange
+      return theme.palette.primary.main; // Primary color from theme
     case 'PENDING':
     default:
-      return '#f44336'; // Red
+      return theme.palette.error.main; // Error color from theme
   }
 };
 
@@ -372,7 +372,7 @@ const FindBookingPage: React.FC = () => {
                     variant="h6" 
                     sx={{ 
                       fontWeight: 'bold',
-                      color: getPaymentStatusColor(booking.paymentStatus),
+                      color: getPaymentStatusColor(theme, booking.paymentStatus),
                     }}
                   >
                     {booking.paymentStatus || 'PENDING'}

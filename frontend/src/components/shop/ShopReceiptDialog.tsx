@@ -14,13 +14,10 @@ import {
   TableRow,
   IconButton,
   Tooltip,
-  Card,
-  CardContent,
 } from '@mui/material';
 import {
   Print as PrintIcon,
   Download as DownloadIcon,
-  Close as CloseIcon,
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { ShopOrder } from '../../types/shop';
@@ -251,438 +248,339 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
         fullWidth
         PaperProps={{
           sx: {
-            maxHeight: '95vh',
+            minHeight: '90vh',
             borderRadius: 2,
+            bgcolor: '#f5f5f5',
           },
         }}
       >
-        {/* Dialog Header - Hidden in Print */}
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            p: 2,
-            background: 'linear-gradient(135deg, #475569 0%, #64748b 100%)',
-            color: 'white',
-            '@media print': { display: 'none' },
-          }}
-        >
-          <Typography variant="h6" sx={{ fontWeight: 600 }}>
-            {t('shopReceipt.title')} - {order.customerName || t('shopReceipt.anonymousCustomer')}
-          </Typography>
-          <Box>
-            <Tooltip title={t('shopReceipt.printReceipt')}>
-              <IconButton 
-                onClick={handlePrint} 
-                sx={{ mr: 1, color: 'white' }}
-                size="small"
-              >
-                <PrintIcon />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title={t('shopReceipt.downloadReceipt')}>
-              <IconButton 
-                onClick={handleDownload} 
-                sx={{ mr: 1, color: 'white' }}
-                size="small"
-              >
-                <DownloadIcon />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title={t('shopReceipt.close')}>
-              <IconButton 
-                onClick={onClose} 
-                sx={{ color: 'white' }}
-                size="small"
-              >
-                <CloseIcon />
-              </IconButton>
-            </Tooltip>
-          </Box>
-        </Box>
-
         <DialogContent sx={{ p: 0 }}>
-          <Box className="print-content" sx={{ p: 3 }}>
-            {/* Professional Header */}
-            <Box 
-              className="print-header"
-              sx={{
-                background: 'linear-gradient(135deg, #475569 0%, #64748b 100%)',
-                color: 'white',
-                p: 3,
-                borderRadius: 2,
-                mb: 3,
-                textAlign: 'center',
-              }}
-            >
-              <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
-                {displayHotelName}
-              </Typography>
-              {(order.hotelAddress || hotelAddress) && (
-                <Typography variant="body1" sx={{ opacity: 0.9, mb: 1 }}>
-                  {order.hotelAddress || hotelAddress}
+          <Box className="print-content" sx={{ 
+            bgcolor: 'white', 
+            m: 3, 
+            borderRadius: 2,
+            boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+          }}>
+            {/* Header Section */}
+            <Box sx={{ 
+              p: 4, 
+              borderBottom: '1px solid #e0e0e0',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'flex-start'
+            }}>
+              <Box>
+                <Typography variant="h4" sx={{ fontWeight: 700, mb: 0.5, color: '#212121' }}>
+                  {displayHotelName}
                 </Typography>
-              )}
-              {(order.hotelTaxId || hotelTaxId) && (
-                <Typography variant="body2" sx={{ opacity: 0.8 }}>
-                  Tax ID: {order.hotelTaxId || hotelTaxId}
+                <Typography variant="body2" color="text.secondary">
+                  {order.hotelAddress || hotelAddress || '1234 Main Street, Downtown'}
                 </Typography>
-              )}
-              <Typography variant="h6" sx={{ mt: 2, fontWeight: 600 }}>
-                {t('shopReceipt.receiptNumber')}{order.orderNumber}
-              </Typography>
-              <Box sx={{ mt: 2 }}>
+                {(order.hotelTaxId || hotelTaxId) && (
+                  <Typography variant="body2" color="text.secondary">
+                    Tax ID: {order.hotelTaxId || hotelTaxId}
+                  </Typography>
+                )}
+              </Box>
+              <Box sx={{ textAlign: 'right' }}>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                  {t('shopReceipt.receiptNumber')}{order.orderNumber}
+                </Typography>
                 <Typography 
-                  className="print-status"
                   variant="caption" 
                   sx={{ 
                     px: 2, 
-                    py: 0.8, 
-                    borderRadius: 2, 
+                    py: 0.5, 
+                    borderRadius: 1, 
                     backgroundColor: getStatusColor(order.status),
                     color: 'white',
-                    fontWeight: 'bold',
+                    fontWeight: 600,
                     textTransform: 'uppercase',
-                    fontSize: '0.75rem'
+                    fontSize: '0.7rem',
+                    display: 'inline-block',
+                    mb: 1
                   }}
                 >
                   {receiptStatus}
                 </Typography>
+                <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                  <Tooltip title={t('shopReceipt.printReceipt')}>
+                    <IconButton 
+                      size="small"
+                      onClick={handlePrint} 
+                      sx={{ 
+                        border: '1px solid #e0e0e0',
+                        '&:hover': { bgcolor: '#f5f5f5' },
+                      }}
+                    >
+                      <PrintIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title={t('shopReceipt.downloadReceipt')}>
+                    <IconButton 
+                      size="small"
+                      onClick={handleDownload} 
+                      sx={{ 
+                        border: '1px solid #e0e0e0',
+                        '&:hover': { bgcolor: '#f5f5f5' },
+                      }}
+                    >
+                      <DownloadIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
               </Box>
             </Box>
 
-            {/* Customer & Order Information Cards */}
-            <Grid container spacing={3} sx={{ mb: 3 }}>
-              <Grid item xs={12} md={6}>
-                <Card 
-                  className="print-card"
-                  sx={{ 
-                    height: '100%',
-                    border: '1px solid',
-                    borderColor: 'grey.200',
-                  }}
-                >
-                  <CardContent sx={{ pb: '16px !important' }}>
-                    <Typography 
-                      variant="h6" 
-                      sx={{ 
-                        color: '#475569', 
-                        fontWeight: 600, 
-                        mb: 2,
-                        display: 'flex',
-                        alignItems: 'center',
-                      }}
-                    >
-                      {t('shopReceipt.customerInformation')}
+            {/* Customer & Order Information */}
+            <Box sx={{ p: 4 }}>
+              <Typography 
+                variant="h6" 
+                sx={{ 
+                  fontWeight: 600, 
+                  mb: 3,
+                  color: '#212121',
+                  borderLeft: (theme) => `4px solid ${theme.palette.primary.main}`,
+                  pl: 2
+                }}
+              >
+                {t('shopReceipt.customerInformation')}
+              </Typography>
+              <Grid container spacing={3}>
+                <Grid item xs={6}>
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="body2" sx={{ color: '#666', mb: 0.5 }}>
+                      {t('shopReceipt.name')}:
                     </Typography>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Typography variant="body2" color="text.secondary">{t('shopReceipt.name')}</Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          {order.customerName || t('shopReceipt.anonymousCustomer')}
-                        </Typography>
-                      </Box>
-                      {order.customerEmail && (
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <Typography variant="body2" color="text.secondary">{t('shopReceipt.email')}</Typography>
-                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                            {order.customerEmail}
-                          </Typography>
-                        </Box>
-                      )}
-                      {order.customerPhone && (
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <Typography variant="body2" color="text.secondary">{t('shopReceipt.phone')}</Typography>
-                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                            {order.customerPhone}
-                          </Typography>
-                        </Box>
-                      )}
-                      {order.roomNumber && (
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <Typography variant="body2" color="text.secondary">{t('shopReceipt.room')}</Typography>
-                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                            {order.roomNumber}
-                          </Typography>
-                        </Box>
-                      )}
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
-              
-              <Grid item xs={12} md={6}>
-                <Card 
-                  className="print-card"
-                  sx={{ 
-                    height: '100%',
-                    border: '1px solid',
-                    borderColor: 'grey.200',
-                  }}
-                >
-                  <CardContent sx={{ pb: '16px !important' }}>
-                    <Typography 
-                      variant="h6" 
-                      sx={{ 
-                        color: '#475569', 
-                        fontWeight: 600, 
-                        mb: 2,
-                        display: 'flex',
-                        alignItems: 'center',
-                      }}
-                    >
-                      {t('shopReceipt.orderDetails')}
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                      {order.customerName || t('shopReceipt.anonymousCustomer')}
                     </Typography>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Typography variant="body2" color="text.secondary">{t('shopReceipt.orderDate')}</Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          {formatDate(order.orderDate)}
-                        </Typography>
-                      </Box>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Typography variant="body2" color="text.secondary">{t('shopReceipt.paymentMethod')}</Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          {order.paymentMethod === 'CASH' ? t('shopReceipt.cash') : (order.paymentMethod || t('shopReceipt.cash'))}
-                        </Typography>
-                      </Box>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Typography variant="body2" color="text.secondary">{t('shopReceipt.delivery')}</Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          {order.isDelivery ? `${t('shopReceipt.yesDelivery')} (${order.deliveryType})` : t('shopReceipt.noPickup')}
-                        </Typography>
-                      </Box>
-                      {order.completedAt && (
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <Typography variant="body2" color="text.secondary">{t('shopReceipt.completedAt')}</Typography>
-                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                            {formatDate(order.completedAt)}
-                          </Typography>
-                        </Box>
-                      )}
-                      {order.isDelivery && order.deliveryAddress && (
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <Typography variant="body2" color="text.secondary">{t('shopReceipt.address')}</Typography>
-                          <Typography variant="body2" sx={{ fontWeight: 500, maxWidth: '60%', textAlign: 'right' }}>
-                            {order.deliveryAddress}
-                          </Typography>
-                        </Box>
-                      )}
+                  </Box>
+                  {order.customerEmail && (
+                    <Box sx={{ mb: 2 }}>
+                      <Typography variant="body2" sx={{ color: '#666', mb: 0.5 }}>
+                        {t('shopReceipt.email')}:
+                      </Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        {order.customerEmail}
+                      </Typography>
                     </Box>
-                  </CardContent>
-                </Card>
+                  )}
+                  {order.customerPhone && (
+                    <Box>
+                      <Typography variant="body2" sx={{ color: '#666', mb: 0.5 }}>
+                        {t('shopReceipt.phone')}:
+                      </Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        {order.customerPhone}
+                      </Typography>
+                    </Box>
+                  )}
+                </Grid>
+                <Grid item xs={6}>
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="body2" sx={{ color: '#666', mb: 0.5 }}>
+                      {t('shopReceipt.orderDate')}:
+                    </Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                      {formatDate(order.orderDate)}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="body2" sx={{ color: '#666', mb: 0.5 }}>
+                      {t('shopReceipt.paymentMethod')}:
+                    </Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                      {order.paymentMethod === 'CASH' ? t('shopReceipt.cash') : (order.paymentMethod || t('shopReceipt.cash'))}
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="body2" sx={{ color: '#666', mb: 0.5 }}>
+                      {t('shopReceipt.delivery')}:
+                    </Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                      {order.isDelivery ? `${t('shopReceipt.yesDelivery')} (${order.deliveryType})` : t('shopReceipt.noPickup')}
+                    </Typography>
+                  </Box>
+                </Grid>
               </Grid>
-            </Grid>
+            </Box>
 
             {/* Order Items Table */}
-            <Card className="print-card" sx={{ mb: 3, border: '1px solid', borderColor: 'grey.200' }}>
-              <CardContent sx={{ p: 0, '&:last-child': { pb: 0 } }}>
-                <Table className="print-table" sx={{ minWidth: 650 }}>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell 
-                        sx={{ 
-                          background: 'linear-gradient(135deg, #475569 0%, #64748b 100%)',
-                          color: 'white',
-                          fontWeight: 600,
-                        }}
-                      >
-                        {t('shopReceipt.product')}
-                      </TableCell>
-                      <TableCell 
-                        align="center"
-                        sx={{ 
-                          background: 'linear-gradient(135deg, #475569 0%, #64748b 100%)',
-                          color: 'white',
-                          fontWeight: 600,
-                        }}
-                      >
-                        {t('shopReceipt.sku')}
-                      </TableCell>
-                      <TableCell 
-                        align="center"
-                        sx={{ 
-                          background: 'linear-gradient(135deg, #475569 0%, #64748b 100%)',
-                          color: 'white',
-                          fontWeight: 600,
-                        }}
-                      >
-                        {t('shopReceipt.qty')}
-                      </TableCell>
-                      <TableCell 
-                        align="right"
-                        sx={{ 
-                          background: 'linear-gradient(135deg, #475569 0%, #64748b 100%)',
-                          color: 'white',
-                          fontWeight: 600,
-                        }}
-                      >
-                        {t('shopReceipt.unitPrice')}
-                      </TableCell>
-                      <TableCell 
-                        align="right"
-                        sx={{ 
-                          background: 'linear-gradient(135deg, #475569 0%, #64748b 100%)',
-                          color: 'white',
-                          fontWeight: 600,
-                        }}
-                      >
-                        {t('shopReceipt.total')}
-                      </TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {order.items.map((item, index) => (
-                      <TableRow 
-                        key={item.id}
-                        sx={{
-                          '&:nth-of-type(odd)': { backgroundColor: 'rgba(0, 0, 0, 0.02)' },
-                        }}
-                      >
-                        <TableCell>
-                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                            {item.productName}
-                          </Typography>
-                          {item.productDescription && (
-                            <Typography variant="caption" color="text.secondary" display="block">
-                              {item.productDescription}
-                            </Typography>
-                          )}
-                          {item.notes && (
-                            <Typography 
-                              variant="caption" 
-                              sx={{ 
-                                color: '#475569', 
-                                fontStyle: 'italic',
-                                display: 'block',
-                                mt: 0.5
-                              }}
-                            >
-                              Note: {item.notes}
-                            </Typography>
-                          )}
-                        </TableCell>
-                        <TableCell align="center">
-                          <Typography variant="body2">{item.productSku}</Typography>
-                        </TableCell>
-                        <TableCell align="center">
-                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                            {item.quantity}
-                          </Typography>
-                        </TableCell>
-                        <TableCell align="right">
-                          <Typography variant="body2">
-                            {formatCurrencyWithDecimals(item.unitPrice)}
-                          </Typography>
-                        </TableCell>
-                        <TableCell align="right">
-                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                            {formatCurrencyWithDecimals(item.unitPrice * item.quantity)}
-                          </Typography>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-
-                    {/* VAT Row */}
-                    {(order.vatAmount || 0) > 0 && (
-                      <TableRow 
-                        className="print-total-row"
-                        sx={{
-                          backgroundColor: '#f8fafc',
-                        }}
-                      >
-                        <TableCell colSpan={4}>
-                          <Typography variant="body2" sx={{ fontWeight: 600, fontStyle: 'italic' }}>VAT (15.00%)</Typography>
-                        </TableCell>
-                        <TableCell align="right">
-                          <Typography variant="body2" sx={{ fontWeight: 600, fontStyle: 'italic' }}>
-                            {formatCurrencyWithDecimals(order.vatAmount || 0)}
-                          </Typography>
-                        </TableCell>
-                      </TableRow>
-                    )}
-
-                    {/* Service Tax Row */}
-                    {(order.serviceTaxAmount || 0) > 0 && (
-                      <TableRow 
-                        className="print-total-row"
-                        sx={{
-                          backgroundColor: '#f8fafc',
-                        }}
-                      >
-                        <TableCell colSpan={4}>
-                          <Typography variant="body2" sx={{ fontWeight: 600, fontStyle: 'italic' }}>Service Tax (5.00%)</Typography>
-                        </TableCell>
-                        <TableCell align="right">
-                          <Typography variant="body2" sx={{ fontWeight: 600, fontStyle: 'italic' }}>
-                            {formatCurrencyWithDecimals(order.serviceTaxAmount || 0)}
-                          </Typography>
-                        </TableCell>
-                      </TableRow>
-                    )}
-
-                    {/* Total Row */}
+            <Box sx={{ px: 4, pb: 4 }}>
+              <Typography 
+                variant="h6" 
+                sx={{ 
+                  fontWeight: 600, 
+                  mb: 3,
+                  color: '#212121',
+                  borderLeft: (theme) => `4px solid ${theme.palette.primary.main}`,
+                  pl: 2
+                }}
+              >
+                Order Items
+              </Typography>
+              <Table sx={{ minWidth: 650 }}>
+                <TableHead>
+                  <TableRow sx={{ bgcolor: '#fafafa' }}>
+                    <TableCell sx={{ fontWeight: 600, color: '#616161', textTransform: 'uppercase', fontSize: '0.75rem' }}>
+                      {t('shopReceipt.product')}
+                    </TableCell>
+                    <TableCell align="center" sx={{ fontWeight: 600, color: '#616161', textTransform: 'uppercase', fontSize: '0.75rem' }}>
+                      {t('shopReceipt.sku')}
+                    </TableCell>
+                    <TableCell align="center" sx={{ fontWeight: 600, color: '#616161', textTransform: 'uppercase', fontSize: '0.75rem' }}>
+                      {t('shopReceipt.qty')}
+                    </TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 600, color: '#616161', textTransform: 'uppercase', fontSize: '0.75rem' }}>
+                      {t('shopReceipt.unitPrice')}
+                    </TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 600, color: '#616161', textTransform: 'uppercase', fontSize: '0.75rem' }}>
+                      {t('shopReceipt.total')}
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {order.items.map((item, index) => (
                     <TableRow 
-                      className="print-total-row"
-                      sx={{
-                        backgroundColor: '#475569',
-                        '& .MuiTableCell-root': {
-                          color: 'white',
-                          fontWeight: 700,
-                        }
-                      }}
+                      key={item.id}
+                      sx={{ '&:hover': { bgcolor: '#f9f9f9' } }}
                     >
-                      <TableCell colSpan={4}>
-                        <Typography variant="h6" sx={{ color: 'white', fontWeight: 700 }}>
-                          TOTAL
+                      <TableCell>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          {item.productName}
+                        </Typography>
+                        {item.productDescription && (
+                          <Typography variant="caption" color="text.secondary" display="block">
+                            {item.productDescription}
+                          </Typography>
+                        )}
+                        {item.notes && (
+                          <Typography 
+                            variant="caption" 
+                            sx={{ 
+                              color: (theme) => theme.palette.primary.main, 
+                              fontStyle: 'italic',
+                              display: 'block',
+                              mt: 0.5
+                            }}
+                          >
+                            Note: {item.notes}
+                          </Typography>
+                        )}
+                      </TableCell>
+                      <TableCell align="center">
+                        <Typography variant="body2">{item.productSku}</Typography>
+                      </TableCell>
+                      <TableCell align="center">
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          {item.quantity}
                         </Typography>
                       </TableCell>
                       <TableCell align="right">
-                        <Typography variant="h6" sx={{ color: 'white', fontWeight: 700 }}>
-                          {formatCurrencyWithDecimals(order.totalAmount)}
+                        <Typography variant="body2">
+                          {formatCurrencyWithDecimals(item.unitPrice)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                          {formatCurrencyWithDecimals(item.unitPrice * item.quantity)}
                         </Typography>
                       </TableCell>
                     </TableRow>
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
+                  ))}
 
-            {/* Order Summary & Notes */}
-            <Grid container spacing={3} sx={{ mb: 3 }}>
-              {order.notes && (
-                <Grid item xs={12}>
-                  <Card className="print-card" sx={{ border: '1px solid', borderColor: 'grey.200' }}>
-                    <CardContent>
-                      <Typography variant="h6" sx={{ color: '#475569', fontWeight: 600, mb: 2 }}>
-                        Order Notes
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {order.notes}
-                      </Typography>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              )}
-            </Grid>
+                  {/* VAT Row */}
+                  {(order.vatAmount || 0) > 0 && (
+                    <TableRow>
+                      <TableCell colSpan={4} sx={{ pt: 3, borderBottom: 'none' }}>
+                        <Typography variant="body2" sx={{ fontWeight: 500, fontStyle: 'italic' }}>
+                          VAT (15.00%)
+                        </Typography>
+                      </TableCell>
+                      <TableCell align="right" sx={{ pt: 3, borderBottom: 'none' }}>
+                        <Typography variant="body2" sx={{ fontWeight: 600, fontStyle: 'italic' }}>
+                          {formatCurrencyWithDecimals(order.vatAmount || 0)}
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  )}
 
-            {/* Professional Footer */}
-            <Box sx={{ textAlign: 'center', mt: 4, pt: 3, borderTop: '1px solid #e0e0e0' }}>
-              <Typography variant="h6" sx={{ color: '#475569', fontWeight: 600, mb: 1 }}>
+                  {/* Service Tax Row */}
+                  {(order.serviceTaxAmount || 0) > 0 && (
+                    <TableRow>
+                      <TableCell colSpan={4} sx={{ borderBottom: '2px solid #e0e0e0', pb: 2 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 500, fontStyle: 'italic' }}>
+                          Service Tax (5.00%)
+                        </Typography>
+                      </TableCell>
+                      <TableCell align="right" sx={{ borderBottom: '2px solid #e0e0e0', pb: 2 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 600, fontStyle: 'italic' }}>
+                          {formatCurrencyWithDecimals(order.serviceTaxAmount || 0)}
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  )}
+
+                  {/* Total Row */}
+                  <TableRow>
+                    <TableCell colSpan={4} sx={{ borderBottom: 'none', pt: 2 }}>
+                      <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                        TOTAL
+                      </Typography>
+                    </TableCell>
+                    <TableCell align="right" sx={{ borderBottom: 'none', pt: 2 }}>
+                      <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                        {formatCurrencyWithDecimals(order.totalAmount)}
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </Box>
+
+            {/* Order Notes if any */}
+            {order.notes && (
+              <Box sx={{ px: 4, pb: 2 }}>
+                <Typography 
+                  variant="h6" 
+                  sx={{ 
+                    fontWeight: 600, 
+                    mb: 2,
+                    color: '#212121',
+                    borderLeft: (theme) => `4px solid ${theme.palette.primary.main}`,
+                    pl: 2
+                  }}
+                >
+                  Order Notes
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {order.notes}
+                </Typography>
+              </Box>
+            )}
+
+            {/* Footer */}
+            <Box sx={{ 
+              p: 4, 
+              borderTop: '1px solid #e0e0e0',
+              textAlign: 'center',
+              bgcolor: '#fafafa'
+            }}>
+              <Typography variant="body1" sx={{ fontWeight: 600, mb: 1 }}>
                 {t('shopReceipt.thankYou')}
               </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
                 {order.isDelivery && order.deliveryType === 'ROOM_DELIVERY' 
                   ? t('shopReceipt.roomDeliveryMessage')
                   : t('shopReceipt.pickupMessage')
                 }
               </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2 }}>
                 {t('shopReceipt.receiptGenerated')} {formatDate(new Date().toISOString())}
               </Typography>
               {frontDeskPerson && (
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
                   {t('shopReceipt.frontDeskPerson')} {frontDeskPerson}
                 </Typography>
               )}
@@ -690,36 +588,18 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
           </Box>
         </DialogContent>
 
-        <DialogActions 
-          sx={{ 
-            p: 2, 
-            borderTop: '1px solid #e0e0e0',
-            '@media print': { display: 'none' } 
-          }}
-        >
-          <Button 
-            onClick={handlePrint} 
-            startIcon={<PrintIcon />} 
-            variant="outlined"
-            sx={{ color: '#475569', borderColor: '#475569' }}
-          >
-            {t('shopReceipt.printReceipt')}
-          </Button>
-          <Button 
-            onClick={handleDownload} 
-            startIcon={<DownloadIcon />} 
-            variant="outlined"
-            sx={{ color: '#475569', borderColor: '#475569' }}
-          >
-            {t('shopReceipt.download')}
-          </Button>
+        <DialogActions sx={{ p: 3, bgcolor: '#f5f5f5' }}>
           <Button 
             onClick={handleCloseAndRefresh} 
-            variant="contained"
+            variant="outlined"
             sx={{ 
-              background: 'linear-gradient(135deg, #475569 0%, #64748b 100%)',
+              minWidth: 120,
+              textTransform: 'none',
+              borderColor: '#e0e0e0',
+              color: '#616161',
               '&:hover': {
-                background: 'linear-gradient(135deg, #334155 0%, #475569 100%)',
+                borderColor: '#bdbdbd',
+                bgcolor: '#fafafa'
               }
             }}
           >

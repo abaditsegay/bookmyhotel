@@ -781,15 +781,15 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
               onClick={handleBack} 
               sx={{ 
                 mr: 1,
-                color: '#1976d2',
+                color: '#2e7d32',
                 '&:hover': {
-                  backgroundColor: '#e3f2fd'
+                  backgroundColor: '#e8f5e9'
                 }
               }}
             >
               <ArrowBackIcon />
             </IconButton>
-            <Typography variant="h4" component="h1" sx={{ color: '#1976d2', fontWeight: 600 }}>
+            <Typography variant="h4" component="h1" sx={{ color: '#2e7d32', fontWeight: 600 }}>
               {pageTitle}
             </Typography>
           </Box>
@@ -803,12 +803,12 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                 disabled={!booking || !canModifyBooking(booking.status)}
                 title={booking && !canModifyBooking(booking.status) ? `Cannot edit booking with status: ${booking.status}` : undefined}
                 sx={{
-                  borderColor: '#1976d2',
-                  color: '#1976d2',
+                  borderColor: '#2e7d32',
+                  color: '#2e7d32',
                   '&:hover': {
-                    borderColor: '#115293',
-                    backgroundColor: '#e3f2fd',
-                    color: '#115293'
+                    borderColor: '#1b5e20',
+                    backgroundColor: '#e8f5e9',
+                    color: '#1b5e20'
                   }
                 }}
               >
@@ -838,9 +838,9 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                   onClick={handleSave}
                   disabled={priceCalculating}
                   sx={{
-                    backgroundColor: '#1976d2',
+                    backgroundColor: '#2e7d32',
                     '&:hover': {
-                      backgroundColor: '#115293'
+                      backgroundColor: '#a52f0a'
                     }
                   }}
                 >
@@ -856,17 +856,17 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
           {/* Guest Information */}
           <Grid item xs={12} md={6}>
             <Card sx={{ 
-              border: '1px solid #e3f2fd',
+              border: '1px solid #e8f5e9',
               boxShadow: '0 2px 8px rgba(25, 118, 210, 0.1)',
               '&:hover': {
                 boxShadow: '0 4px 16px rgba(25, 118, 210, 0.15)'
               }
             }}>
               <CardContent>
-                <Typography variant="h6" gutterBottom sx={{ color: '#1976d2', fontWeight: 600 }}>
+                <Typography variant="h6" gutterBottom sx={{ color: '#2e7d32', fontWeight: 600 }}>
                   {t('booking.details.guestInformation')}
                 </Typography>
-                <Divider sx={{ mb: 2, borderColor: '#e3f2fd' }} />
+                <Divider sx={{ mb: 2, borderColor: '#e8f5e9' }} />
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
@@ -880,14 +880,14 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                       sx={isEditing ? {
                         '& .MuiOutlinedInput-root': {
                           '&:hover fieldset': {
-                            borderColor: '#1976d2',
+                            borderColor: '#2e7d32',
                           },
                           '&.Mui-focused fieldset': {
-                            borderColor: '#1976d2',
+                            borderColor: '#2e7d32',
                           },
                         },
                         '& .MuiInputLabel-root.Mui-focused': {
-                          color: '#1976d2',
+                          color: '#2e7d32',
                         },
                       } : {}}
                     />
@@ -903,14 +903,14 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                       sx={isEditing ? {
                         '& .MuiOutlinedInput-root': {
                           '&:hover fieldset': {
-                            borderColor: '#1976d2',
+                            borderColor: '#2e7d32',
                           },
                           '&.Mui-focused fieldset': {
-                            borderColor: '#1976d2',
+                            borderColor: '#2e7d32',
                           },
                         },
                         '& .MuiInputLabel-root.Mui-focused': {
-                          color: '#1976d2',
+                          color: '#2e7d32',
                         },
                       } : {}}
                     />
@@ -923,17 +923,17 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
           {/* Booking Details */}
           <Grid item xs={12} md={6}>
             <Card sx={{ 
-              border: '1px solid #e3f2fd',
+              border: '1px solid #e8f5e9',
               boxShadow: '0 2px 8px rgba(25, 118, 210, 0.1)',
               '&:hover': {
                 boxShadow: '0 4px 16px rgba(25, 118, 210, 0.15)'
               }
             }}>
               <CardContent>
-                <Typography variant="h6" gutterBottom sx={{ color: '#1976d2', fontWeight: 600 }}>
+                <Typography variant="h6" gutterBottom sx={{ color: '#2e7d32', fontWeight: 600 }}>
                   {t('booking.details.bookingDetails')}
                 </Typography>
-                <Divider sx={{ mb: 2, borderColor: '#e3f2fd' }} />
+                <Divider sx={{ mb: 2, borderColor: '#e8f5e9' }} />
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
@@ -952,14 +952,14 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                         sx={{
                           '& .MuiOutlinedInput-root': {
                             '&:hover .MuiOutlinedInput-notchedOutline': {
-                              borderColor: '#1976d2',
+                              borderColor: '#2e7d32',
                             },
                             '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                              borderColor: '#1976d2',
+                              borderColor: '#2e7d32',
                             },
                           },
                           '& .MuiInputLabel-root.Mui-focused': {
-                            color: '#1976d2',
+                            color: '#2e7d32',
                           },
                         }}
                       >
@@ -1008,17 +1008,17 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
           {/* Hotel & Room Information */}
           <Grid item xs={12} md={6}>
             <Card sx={{ 
-              border: '1px solid #e3f2fd',
+              border: '1px solid #e8f5e9',
               boxShadow: '0 2px 8px rgba(25, 118, 210, 0.1)',
               '&:hover': {
                 boxShadow: '0 4px 16px rgba(25, 118, 210, 0.15)'
               }
             }}>
               <CardContent>
-                <Typography variant="h6" gutterBottom sx={{ color: '#1976d2', fontWeight: 600 }}>
+                <Typography variant="h6" gutterBottom sx={{ color: '#2e7d32', fontWeight: 600 }}>
                   {t('booking.details.hotelRoomInformation')}
                 </Typography>
-                <Divider sx={{ mb: 2, borderColor: '#e3f2fd' }} />
+                <Divider sx={{ mb: 2, borderColor: '#e8f5e9' }} />
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
@@ -1046,14 +1046,14 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                         sx={{
                           '& .MuiOutlinedInput-root': {
                             '&:hover .MuiOutlinedInput-notchedOutline': {
-                              borderColor: '#1976d2',
+                              borderColor: '#2e7d32',
                             },
                             '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                              borderColor: '#1976d2',
+                              borderColor: '#2e7d32',
                             },
                           },
                           '& .MuiInputLabel-root.Mui-focused': {
-                            color: '#1976d2',
+                            color: '#2e7d32',
                           },
                         }}
                       >
@@ -1092,12 +1092,12 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                         onClick={handleSelectRoom}
                         sx={{ 
                           height: '56px', // Match the height of the dropdown
-                          borderColor: '#1976d2',
-                          color: '#1976d2',
+                          borderColor: '#2e7d32',
+                          color: '#2e7d32',
                           '&:hover': {
-                            borderColor: '#115293',
-                            backgroundColor: '#e3f2fd',
-                            color: '#115293'
+                            borderColor: '#a52f0a',
+                            backgroundColor: '#e8f5e9',
+                            color: '#a52f0a'
                           }
                         }}
                       >
@@ -1118,14 +1118,14 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                         sx={{
                           '& .MuiOutlinedInput-root': {
                             '&:hover fieldset': {
-                              borderColor: '#1976d2',
+                              borderColor: '#2e7d32',
                             },
                             '&.Mui-focused fieldset': {
-                              borderColor: '#1976d2',
+                              borderColor: '#2e7d32',
                             },
                           },
                           '& .MuiInputLabel-root.Mui-focused': {
-                            color: '#1976d2',
+                            color: '#2e7d32',
                           },
                         }}
                       />
@@ -1179,17 +1179,17 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
           {/* Stay Information */}
           <Grid item xs={12} md={6}>
             <Card sx={{ 
-              border: '1px solid #e3f2fd',
+              border: '1px solid #e8f5e9',
               boxShadow: '0 2px 8px rgba(25, 118, 210, 0.1)',
               '&:hover': {
                 boxShadow: '0 4px 16px rgba(25, 118, 210, 0.15)'
               }
             }}>
               <CardContent>
-                <Typography variant="h6" gutterBottom sx={{ color: '#1976d2', fontWeight: 600 }}>
+                <Typography variant="h6" gutterBottom sx={{ color: '#2e7d32', fontWeight: 600 }}>
                   {t('booking.details.stayInformation')}
                 </Typography>
-                <Divider sx={{ mb: 2, borderColor: '#e3f2fd' }} />
+                <Divider sx={{ mb: 2, borderColor: '#e8f5e9' }} />
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={6}>
@@ -1205,14 +1205,14 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                       sx={isEditing ? {
                         '& .MuiOutlinedInput-root': {
                           '&:hover fieldset': {
-                            borderColor: '#1976d2',
+                            borderColor: '#2e7d32',
                           },
                           '&.Mui-focused fieldset': {
-                            borderColor: '#1976d2',
+                            borderColor: '#2e7d32',
                           },
                         },
                         '& .MuiInputLabel-root.Mui-focused': {
-                          color: '#1976d2',
+                          color: '#2e7d32',
                         },
                       } : {}}
                     />
@@ -1230,14 +1230,14 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                       sx={isEditing ? {
                         '& .MuiOutlinedInput-root': {
                           '&:hover fieldset': {
-                            borderColor: '#1976d2',
+                            borderColor: '#2e7d32',
                           },
                           '&.Mui-focused fieldset': {
-                            borderColor: '#1976d2',
+                            borderColor: '#2e7d32',
                           },
                         },
                         '& .MuiInputLabel-root.Mui-focused': {
-                          color: '#1976d2',
+                          color: '#2e7d32',
                         },
                       } : {}}
                     />
@@ -1285,17 +1285,17 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
           {/* Additional Information */}
           <Grid item xs={12}>
             <Card sx={{ 
-              border: '1px solid #e3f2fd',
+              border: '1px solid #e8f5e9',
               boxShadow: '0 2px 8px rgba(25, 118, 210, 0.1)',
               '&:hover': {
                 boxShadow: '0 4px 16px rgba(25, 118, 210, 0.15)'
               }
             }}>
               <CardContent>
-                <Typography variant="h6" gutterBottom sx={{ color: '#1976d2', fontWeight: 600 }}>
+                <Typography variant="h6" gutterBottom sx={{ color: '#2e7d32', fontWeight: 600 }}>
                   {t('booking.details.additionalInformation')}
                 </Typography>
-                <Divider sx={{ mb: 2, borderColor: '#e3f2fd' }} />
+                <Divider sx={{ mb: 2, borderColor: '#e8f5e9' }} />
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={6}>
@@ -1330,15 +1330,15 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
           fullWidth
           sx={{
             '& .MuiDialog-paper': {
-              border: '1px solid #e3f2fd',
+              border: '1px solid #e8f5e9',
               boxShadow: '0 8px 32px rgba(25, 118, 210, 0.15)'
             }
           }}
         >
-          <DialogTitle sx={{ color: '#1976d2', fontWeight: 600 }}>
+          <DialogTitle sx={{ color: '#2e7d32', fontWeight: 600 }}>
             {t('booking.details.selectRoomDialog.title')}
             {loadingRooms && (
-              <CircularProgress size={20} sx={{ ml: 2, color: '#1976d2' }} />
+              <CircularProgress size={20} sx={{ ml: 2, color: '#2e7d32' }} />
             )}
           </DialogTitle>
           <DialogContent>
@@ -1358,7 +1358,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                       onClick={() => handleRoomSelect(room)}
                       sx={{
                         '&:hover': {
-                          backgroundColor: '#e3f2fd',
+                          backgroundColor: '#e8f5e9',
                         },
                         borderRadius: 1,
                         mb: 0.5,
@@ -1366,7 +1366,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                     >
                       <ListItemText
                         primary={
-                          <Typography variant="body1" sx={{ color: '#1976d2', fontWeight: 500 }}>
+                          <Typography variant="body1" sx={{ color: '#2e7d32', fontWeight: 500 }}>
                             {t('booking.details.selectRoomDialog.roomInfo', {
                               roomNumber: room.roomNumber,
                               roomType: room.roomType
@@ -1403,9 +1403,9 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
             <Button 
               onClick={() => setRoomDialogOpen(false)}
               sx={{
-                color: '#1976d2',
+                color: '#2e7d32',
                 '&:hover': {
-                  backgroundColor: '#e3f2fd'
+                  backgroundColor: '#e8f5e9'
                 }
               }}
             >
@@ -1446,9 +1446,9 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
               }}
               variant="contained"
               sx={{
-                backgroundColor: '#1976d2',
+                backgroundColor: '#2e7d32',
                 '&:hover': {
-                  backgroundColor: '#115293'
+                  backgroundColor: '#a52f0a'
                 }
               }}
             >

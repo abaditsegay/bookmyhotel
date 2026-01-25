@@ -96,6 +96,7 @@ interface ValidatedTextFieldProps {
   size?: 'small' | 'medium';
   autoComplete?: string;
   InputProps?: any;
+  inputRef?: React.Ref<HTMLInputElement>;
   onChange?: (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   onBlur?: (event: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   onFocus?: (event: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
@@ -140,6 +141,7 @@ export const ValidatedInput: React.FC<ValidatedTextFieldProps> = ({
   showValidationIcon = true,
   error = false,
   helperText,
+  inputRef,
   ...props
 }) => {
   const getValidationIcon = () => {
@@ -164,6 +166,7 @@ export const ValidatedInput: React.FC<ValidatedTextFieldProps> = ({
   return (
     <ValidatedTextField
       {...props}
+      inputRef={inputRef}
       validationState={validationState}
       error={error || validationState === 'error'}
       helperText={helperText}

@@ -312,14 +312,39 @@ const AdminDashboard: React.FC = () => {
             <TableContainer component={Paper} sx={{ mt: 2 }}>
               <Table aria-label="hotels table">
                 <TableHead>
-                  <TableRow sx={{ backgroundColor: 'grey.50' }}>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Hotel Name</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Location</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Status</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Rooms</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Rating</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Registered</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Actions</TableCell>
+                  <TableRow 
+                    sx={{
+                      background: 'linear-gradient(135deg, #64748b 0%, #475569 50%, #334155 100%)',
+                      boxShadow: '0 4px 12px rgba(100, 116, 139, 0.15)',
+                      '& .MuiTableCell-head': {
+                        color: '#ffffff',
+                        fontWeight: 600,
+                        fontSize: '0.95rem',
+                        letterSpacing: '0.5px',
+                        textTransform: 'uppercase',
+                        border: 'none',
+                        padding: '20px 16px',
+                        position: 'relative',
+                        textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                        '&::after': {
+                          content: '""',
+                          position: 'absolute',
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          height: '3px',
+                          background: 'linear-gradient(90deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.6) 100%)'
+                        }
+                      }
+                    }}
+                  >
+                    <TableCell>Hotel Name</TableCell>
+                    <TableCell>Location</TableCell>
+                    <TableCell>Status</TableCell>
+                    <TableCell>Rooms</TableCell>
+                    <TableCell>Rating</TableCell>
+                    <TableCell>Registered</TableCell>
+                    <TableCell>Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -484,14 +509,39 @@ const AdminDashboard: React.FC = () => {
             <TableContainer component={Paper} sx={{ mt: 2 }}>
               <Table aria-label="users table">
                 <TableHead>
-                  <TableRow sx={{ backgroundColor: 'grey.50' }}>
-                    <TableCell sx={{ fontWeight: 'bold' }}>User Name</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Email</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Role</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Status</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Last Login</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Created</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Actions</TableCell>
+                  <TableRow 
+                    sx={{
+                      background: 'linear-gradient(135deg, #64748b 0%, #475569 50%, #334155 100%)',
+                      boxShadow: '0 4px 12px rgba(100, 116, 139, 0.15)',
+                      '& .MuiTableCell-head': {
+                        color: '#ffffff',
+                        fontWeight: 600,
+                        fontSize: '0.95rem',
+                        letterSpacing: '0.5px',
+                        textTransform: 'uppercase',
+                        border: 'none',
+                        padding: '20px 16px',
+                        position: 'relative',
+                        textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                        '&::after': {
+                          content: '""',
+                          position: 'absolute',
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          height: '3px',
+                          background: 'linear-gradient(90deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.6) 100%)'
+                        }
+                      }
+                    }}
+                  >
+                    <TableCell>User Name</TableCell>
+                    <TableCell>Email</TableCell>
+                    <TableCell>Role</TableCell>
+                    <TableCell>Status</TableCell>
+                    <TableCell>Last Login</TableCell>
+                    <TableCell>Created</TableCell>
+                    <TableCell>Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>

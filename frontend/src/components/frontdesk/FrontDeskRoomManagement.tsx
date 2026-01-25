@@ -31,7 +31,13 @@ import {
   TextField
 } from '@mui/material';
 import {
-  Edit as EditIcon
+  Edit as EditIcon,
+  CheckCircle as AvailableIcon,
+  Info as OccupiedIcon,
+  Error as OutOfOrderIcon,
+  Warning as MaintenanceIcon,
+  CleaningServices as CleaningIcon,
+  Report as DirtyIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { buildApiUrl } from '../../config/apiConfig';
@@ -216,6 +222,20 @@ const FrontDeskRoomManagement: React.FC<FrontDeskRoomManagementProps> = ({ onRoo
     { value: 'CLEANING', label: t('dashboard.frontDesk.roomManagement.roomStatuses.cleaning'), color: 'secondary' as const },
     { value: 'DIRTY', label: t('dashboard.frontDesk.roomManagement.roomStatuses.dirty'), color: 'default' as const }
   ];
+  
+  // Get status icon based on room status
+  const getStatusIcon = (status: string): JSX.Element | undefined => {
+    switch (status) {
+      case 'AVAILABLE': return <AvailableIcon sx={{ fontSize: 18 }} />;
+      case 'OCCUPIED': return <OccupiedIcon sx={{ fontSize: 18 }} />;
+      case 'OUT_OF_ORDER': return <OutOfOrderIcon sx={{ fontSize: 18 }} />;
+      case 'MAINTENANCE': return <MaintenanceIcon sx={{ fontSize: 18 }} />;
+      case 'CLEANING': return <CleaningIcon sx={{ fontSize: 18 }} />;
+      case 'DIRTY': return <DirtyIcon sx={{ fontSize: 18 }} />;
+      default: return undefined;
+    }
+  };
+  
   const [rooms, setRooms] = useState<RoomResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -482,7 +502,32 @@ const FrontDeskRoomManagement: React.FC<FrontDeskRoomManagementProps> = ({ onRoo
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
-            <TableRow>
+            <TableRow
+              sx={{
+                background: 'linear-gradient(135deg, #64748b 0%, #475569 50%, #334155 100%)',
+                boxShadow: '0 4px 12px rgba(100, 116, 139, 0.15)',
+                '& .MuiTableCell-head': {
+                  color: '#ffffff',
+                  fontWeight: 600,
+                  fontSize: '0.95rem',
+                  letterSpacing: '0.5px',
+                  textTransform: 'uppercase',
+                  border: 'none',
+                  padding: '20px 16px',
+                  position: 'relative',
+                  textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                  '&::after': {
+                    content: '""',
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: '3px',
+                    background: 'linear-gradient(90deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.6) 100%)'
+                  }
+                }
+              }}
+            >
               <TableCell>{t('dashboard.frontDesk.roomManagement.tableHeaders.roomNumber')}</TableCell>
               <TableCell>{t('dashboard.frontDesk.roomManagement.tableHeaders.type')}</TableCell>
               <TableCell>{t('dashboard.frontDesk.roomManagement.tableHeaders.status')}</TableCell>
@@ -506,9 +551,16 @@ const FrontDeskRoomManagement: React.FC<FrontDeskRoomManagementProps> = ({ onRoo
                   <TableCell>{getRoomTypeLabel(room.roomType)}</TableCell>
                   <TableCell>
                     <Chip 
+                      icon={getStatusIcon(room.status)}
                       label={statusConfig.label}
                       color={statusConfig.color}
-                      size="small"
+                      size="medium"
+                      sx={{
+                        fontWeight: 600,
+                        fontSize: '0.875rem',
+                        py: 2.5,
+                        px: 1,
+                      }}
                     />
                   </TableCell>
                   <TableCell>
