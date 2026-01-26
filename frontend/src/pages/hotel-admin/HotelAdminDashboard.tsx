@@ -24,6 +24,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { hotelAdminApi, BookingStats, HotelStatistics } from '../../services/hotelAdminApi';
 import { Hotel } from '../../types/hotel';
+import { getErrorMessage } from '../../utils/errorHandler';
 import UnifiedRoomManagement from '../../components/common/UnifiedRoomManagement';
 import StaffManagement from './StaffManagement';
 import StaffScheduleManagement from '../../components/StaffScheduleManagement';
@@ -275,13 +276,13 @@ const HotelAdminDashboard: React.FC = () => {
       if (!bookingStatsResult.success) {
         // console.error('Failed to load booking stats:', bookingStatsResult.message);
       }
-    } catch (error) {
+    } catch (error: any) {
       // console.error('Failed to load reports data:', error);
       setReportsData({
         hotelStats: null,
         bookingStats: null,
         loading: false,
-        error: 'Failed to load reports data'
+        error: getErrorMessage(error)
       });
     }
   };
@@ -312,9 +313,9 @@ const HotelAdminDashboard: React.FC = () => {
       } else {
         setHotelError(result.message || 'Failed to load hotel data');
       }
-    } catch (err) {
+    } catch (err: any) {
       // console.error('Error loading hotel data:', err);
-      setHotelError('Failed to load hotel data');
+      setHotelError(getErrorMessage(err));
     } finally {
       setHotelLoading(false);
     }

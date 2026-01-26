@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { formatCurrency, formatCurrencyWithDecimals } from '../../utils/currencyUtils';
 import {
   Dialog,
@@ -16,14 +16,20 @@ import {
   IconButton,
   Tooltip,
   useTheme,
+  CircularProgress,
+  Snackbar,
+  Alert,
+  TextField,
+  DialogTitle,
 } from '@mui/material';
 import {
   Print as PrintIcon,
   Download as DownloadIcon,
   Email as EmailIcon,
 } from '@mui/icons-material';
-import { ConsolidatedReceipt } from '../../services/frontDeskApi';
+import { ConsolidatedReceipt, frontDeskApiService } from '../../services/frontDeskApi';
 import { formatDateForDisplay } from '../../utils/dateUtils';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface CheckoutReceiptDialogProps {
   open: boolean;
@@ -39,6 +45,20 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
   guestName,
 }) => {
   const theme = useTheme();
+  const { user, token } = useAuth();
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [emailDialogOpen, setEmailDialogOpen] = useState(false);
+  const [recipientEmail, setRecipientEmail] = useState('');
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: 'success' | 'error';
+  }>({
+    open: false,
+    message: '',
+    severity: 'success',
+  });
+
   if (!receipt) return null;
 
   const formatDate = (dateString: string) => formatDateForDisplay(dateString);
@@ -454,8 +474,82 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
   };
 
   const handleEmail = () => {
-    // This would integrate with the existing email receipt functionality
-    alert('Email receipt functionality would be integrated here');
+    // Open email dialog with guest's email pre-filled
+    setRecipientEmail(receipt.guestEmail || '');
+    setEmailDialogOpen(true);
+  };
+
+  const handleCloseEmailDialog = () => {
+    setEmailDialogOpen(false);
+    setRecipientEmail('');
+  };
+
+  const handleSendEmail = async () => {
+    if (!receipt.reservationId || !token) {
+      setSnackbar({
+        open: true,
+        message: 'Unable to send email: missing reservation information',
+        severity: 'error',
+      });
+      return;
+    }
+
+    if (!recipientEmail || !recipientEmail.trim()) {
+      setSnackbar({
+        open: true,
+        message: 'Please enter a valid email address',
+        severity: 'error',
+      });
+      return;
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(recipientEmail)) {
+      setSnackbar({
+        open: true,
+        message: 'Please enter a valid email address',
+        severity: 'error',
+      });
+      return;
+    }
+
+    setEmailLoading(true);
+    try {
+      const result = await frontDeskApiService.emailReceipt(
+        token,
+        receipt.reservationId,
+        user?.tenantId || null,
+        recipientEmail
+      );
+
+      if (result.success) {
+        setSnackbar({
+          open: true,
+          message: `Receipt sent successfully to ${recipientEmail}`,
+          severity: 'success',
+        });
+        handleCloseEmailDialog();
+      } else {
+        setSnackbar({
+          open: true,
+          message: result.message || 'Failed to send receipt',
+          severity: 'error',
+        });
+      }
+    } catch (error) {
+      setSnackbar({
+        open: true,
+        message: 'An error occurred while sending the receipt',
+        severity: 'error',
+      });
+    } finally {
+      setEmailLoading(false);
+    }
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
   };
 
   return (
@@ -855,6 +949,72 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
           Close
         </Button>
       </DialogActions>
+
+      {/* Email Dialog */}
+      <Dialog
+        open={emailDialogOpen}
+        onClose={handleCloseEmailDialog}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Send Receipt via Email</DialogTitle>
+        <DialogContent>
+          <Box sx={{ pt: 2 }}>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              Enter the email address where you want to send the receipt. The guest's email is pre-filled below.
+            </Typography>
+            <TextField
+              autoFocus
+              fullWidth
+              label="Recipient Email Address"
+              type="email"
+              value={recipientEmail}
+              onChange={(e) => setRecipientEmail(e.target.value)}
+              placeholder="guest@example.com"
+              helperText="You can modify the email address before sending"
+              disabled={emailLoading}
+              sx={{ mb: 2 }}
+            />
+            <Typography variant="caption" color="text.secondary">
+              <strong>Booking:</strong> {receipt.confirmationNumber}
+            </Typography>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button 
+            onClick={handleCloseEmailDialog}
+            disabled={emailLoading}
+            sx={{ textTransform: 'none' }}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleSendEmail}
+            variant="contained"
+            disabled={emailLoading || !recipientEmail.trim()}
+            startIcon={emailLoading ? <CircularProgress size={20} /> : <EmailIcon />}
+            sx={{ textTransform: 'none' }}
+          >
+            {emailLoading ? 'Sending...' : 'Send Email'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Snackbar for email notifications */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={handleCloseSnackbar} 
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Dialog>
   );
 };

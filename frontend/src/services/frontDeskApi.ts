@@ -560,6 +560,36 @@ export const frontDeskApiService = {
   },
 
   /**
+   * Email receipt to guest
+   */
+  emailReceipt: async (token: string, reservationId: number, tenantId: string | null = null, email?: string): Promise<{ success: boolean; message?: string }> => {
+    try {
+      const headers = {
+        ...getAuthHeaders(token, tenantId),
+        'Content-Type': 'application/json',
+      };
+      const response = await fetch(`${API_BASE_URL}/checkout/receipt/${reservationId}/email`, {
+        method: 'POST',
+        headers,
+        body: email ? JSON.stringify({ email }) : undefined,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Failed to send receipt email');
+      }
+
+      const message = await response.text();
+      return { success: true, message };
+    } catch (error) {
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to send receipt email' 
+      };
+    }
+  },
+
+  /**
    * Mark guest as no-show
    */
   markNoShow: async (token: string, reservationId: number, tenantId: string | null = null): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {

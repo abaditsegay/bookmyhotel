@@ -34,7 +34,12 @@ import jakarta.validation.constraints.Positive;
         @Index(name = "idx_reservation_assigned_room", columnList = "assigned_room_id"),
         @Index(name = "idx_reservation_guest", columnList = "guest_id"),
         @Index(name = "idx_reservation_dates", columnList = "check_in_date, check_out_date"),
-        @Index(name = "idx_reservation_status", columnList = "status")
+        @Index(name = "idx_reservation_status", columnList = "status"),
+        // Performance optimization indexes
+        @Index(name = "idx_confirmation_number", columnList = "confirmation_number", unique = true),
+        @Index(name = "idx_payment_reference", columnList = "payment_reference"),
+        @Index(name = "idx_hotel_status_checkin", columnList = "hotel_id, status, check_in_date"),
+        @Index(name = "idx_guest_email_status", columnList = "guest_email, status")
 })
 public class Reservation extends HotelScopedEntity {
 

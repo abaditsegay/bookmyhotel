@@ -6,6 +6,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -65,6 +66,33 @@ public class CheckoutReceiptController {
             return ResponseEntity.ok(receipt);
         } catch (Exception e) {
             return ResponseEntity.status(500).build();
+        }
+    }
+
+    @PostMapping("/{reservationId}/email")
+    public ResponseEntity<String> emailReceipt(
+            @PathVariable Long reservationId,
+            @RequestBody(required = false) java.util.Map<String, String> requestBody) {
+        try {
+            String customEmail = requestBody != null ? requestBody.get("email") : null;
+            checkoutReceiptService.emailReceipt(reservationId, "system", customEmail);
+            return ResponseEntity.ok("Receipt sent successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Failed to send receipt: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/{tenantName}/{reservationId}/email")
+    public ResponseEntity<String> emailTenantReceipt(
+            @PathVariable String tenantName,
+            @PathVariable Long reservationId,
+            @RequestBody(required = false) java.util.Map<String, String> requestBody) {
+        try {
+            String customEmail = requestBody != null ? requestBody.get("email") : null;
+            checkoutReceiptService.emailReceipt(reservationId, "system", customEmail);
+            return ResponseEntity.ok("Receipt sent successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Failed to send receipt: " + e.getMessage());
         }
     }
 }

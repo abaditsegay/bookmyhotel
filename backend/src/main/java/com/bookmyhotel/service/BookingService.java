@@ -60,7 +60,7 @@ import com.stripe.param.PaymentIntentCreateParams;
  * Booking service
  */
 @Service
-@Transactional
+@Transactional(timeout = 30)
 public class BookingService {
 
     private static final Logger logger = LoggerFactory.getLogger(BookingService.class);

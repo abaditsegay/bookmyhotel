@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
  * Service for financial audit and compliance tracking
  */
 @Service
-@Transactional
+@Transactional(timeout = 30)
 public class FinancialAuditService {
 
     private static final Logger logger = LoggerFactory.getLogger(FinancialAuditService.class);
@@ -95,7 +95,7 @@ public class FinancialAuditService {
     /**
      * Generate daily financial reconciliation
      */
-    @Transactional(readOnly = true)
+    @Transactional(readOnly = true, timeout = 30)
     public DailyFinancialReconciliationDto generateDailyReconciliation(Long hotelId, LocalDate date) {
         try {
             DailyFinancialReconciliationDto reconciliation = new DailyFinancialReconciliationDto(date, hotelId);
@@ -103,9 +103,15 @@ public class FinancialAuditService {
             LocalDateTime startOfDay = date.atStartOfDay();
             LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
 
-            // Get all reservations for the day
+            // Get reservations for the day (limit to prevent memory issues)
+            // Note: For hotels with >1000 reservations/day, consider streaming or pagination
             List<Reservation> reservations = reservationRepository.findByHotelIdAndDateRange(hotelId, startOfDay,
                     endOfDay);
+            
+            if (reservations.size() > 1000) {
+                logger.warn("Large number of reservations ({}) for hotel {} on {}. Consider implementing pagination.",
+                        reservations.size(), hotelId, date);
+            }
 
             // Calculate payment summary
             calculatePaymentSummary(reconciliation, reservations);
