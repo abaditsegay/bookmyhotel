@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { COLORS, getGradient } from '../../theme/themeColors';
 import {
   Box,
   Paper,
@@ -38,7 +39,6 @@ import {
   ToggleOn as ToggleOnIcon,
   ToggleOff as ToggleOffIcon,
 } from '@mui/icons-material';
-import { COLORS } from '../../theme/themeColors';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { 

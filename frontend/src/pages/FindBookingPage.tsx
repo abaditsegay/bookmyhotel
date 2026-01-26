@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { COLORS, getGradient } from '../theme/themeColors';
 import {
   Container,
   Typography,
@@ -19,7 +20,6 @@ import { useNavigate } from 'react-router-dom';
 import { hotelApiService } from '../services/hotelApi';
 import { BookingResponse } from '../types/hotel';
 import { formatDateForDisplay } from '../utils/dateUtils';
-import { COLORS } from '../theme/themeColors';
 import { getRoomTypeLabel } from '../constants/roomTypes';
 
 // Helper function to get payment status color
@@ -100,8 +100,8 @@ const FindBookingPage: React.FC = () => {
       sx={{
         minHeight: '100vh',
         background: theme.palette.mode === 'dark' 
-          ? 'linear-gradient(135deg, #121212 0%, #1e1e1e 100%)'
-          : 'linear-gradient(135deg, #ffffff 0%, #ffffff 100%)',
+          ? getGradient('dark')
+          : getGradient('white'),
         py: 4,
       }}
     >

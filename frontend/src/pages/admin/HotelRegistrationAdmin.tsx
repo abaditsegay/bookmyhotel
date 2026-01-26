@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { COLORS, getGradient } from '../../theme/themeColors';
 import {
   Container,
   Typography,
@@ -21,7 +22,6 @@ import {
   Card,
   CardContent,
 } from '@mui/material';
-import { COLORS } from '../../theme/themeColors';
 import { Refresh, CheckCircle, Cancel, Visibility } from '@mui/icons-material';
 
 interface HotelRegistration {

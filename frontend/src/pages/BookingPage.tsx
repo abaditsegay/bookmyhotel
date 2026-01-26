@@ -25,6 +25,10 @@ import {
   useTheme,
   useMediaQuery,
   alpha,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -49,6 +53,7 @@ import { PaymentMethod } from '../types/shop';
 import NumberStepper from '../components/common/NumberStepper';
 import BookingSummary from '../components/booking/BookingSummary';
 import { buildApiUrl } from '../config/apiConfig';
+import { extractBookingErrorMessage } from '../utils/errorHandling';
 
 interface BookingPageState {
   room?: AvailableRoom;
@@ -113,6 +118,7 @@ const BookingPage: React.FC = () => {
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [errorDialogOpen, setErrorDialogOpen] = useState(false);
   const [hotelData, setHotelData] = useState<any>(null);
   
   // Hotel tax rates from backend
@@ -431,7 +437,9 @@ const BookingPage: React.FC = () => {
         }
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred while booking');
+      const errorMessage = extractBookingErrorMessage(err);
+      setError(errorMessage);
+      setErrorDialogOpen(true);
     } finally {
       setLoading(false);
     }
@@ -623,8 +631,8 @@ const BookingPage: React.FC = () => {
           </Box>
         </Box>
 
-        {/* Error Alert */}
-        {error && (
+        {/* Error Alert - still show inline for validation errors */}
+        {error && !errorDialogOpen && (
           <Alert severity="error" sx={{ mb: 3 }}>
             {error}
           </Alert>
@@ -1661,6 +1669,45 @@ const BookingPage: React.FC = () => {
           </Grid>
         </Grid>
       </Container>
+
+      {/* Error Dialog */}
+      <Dialog
+        open={errorDialogOpen}
+        onClose={() => setErrorDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle
+          sx={{
+            backgroundColor: (theme) => alpha(theme.palette.error.main, 0.1),
+            color: 'error.main',
+            fontWeight: 600,
+          }}
+        >
+          ⚠️ Booking Error
+        </DialogTitle>
+        <DialogContent sx={{ mt: 2 }}>
+          <Typography
+            variant="body1"
+            sx={{
+              color: 'text.primary',
+              lineHeight: 1.6,
+            }}
+          >
+            {error}
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button
+            onClick={() => setErrorDialogOpen(false)}
+            variant="contained"
+            color="primary"
+            fullWidth
+          >
+            OK
+          </Button>
+        </DialogActions>
+      </Dialog>
     </LocalizationProvider>
   );
 };

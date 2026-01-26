@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { COLORS, getGradient } from '../theme/themeColors';
 import {
   Box,
   Typography,
@@ -165,10 +166,10 @@ const NotificationsPage: React.FC = () => {
         <TableHead>
           <TableRow
             sx={{
-              background: 'linear-gradient(135deg, #64748b 0%, #475569 50%, #334155 100%)',
+              background: getGradient('slate'),
               boxShadow: '0 4px 12px rgba(100, 116, 139, 0.15)',
               '& .MuiTableCell-head': {
-                color: '#ffffff',
+                color: COLORS.WHITE,
                 fontWeight: 600,
                 fontSize: '0.95rem',
                 letterSpacing: '0.5px',
@@ -184,7 +185,7 @@ const NotificationsPage: React.FC = () => {
                   left: 0,
                   right: 0,
                   height: '3px',
-                  background: 'linear-gradient(90deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.6) 100%)'
+                  background: getGradient('white')
                 }
               }
             }}
@@ -631,10 +632,10 @@ const NotificationsPage: React.FC = () => {
                           <TableHead>
                             <TableRow
                               sx={{
-                                background: 'linear-gradient(135deg, #64748b 0%, #475569 50%, #334155 100%)',
+                                background: getGradient('slate'),
                                 boxShadow: '0 4px 12px rgba(100, 116, 139, 0.15)',
                                 '& .MuiTableCell-head': {
-                                  color: '#ffffff',
+                                  color: COLORS.WHITE,
                                   fontWeight: 600,
                                   fontSize: '0.95rem',
                                   letterSpacing: '0.5px',
@@ -650,7 +651,7 @@ const NotificationsPage: React.FC = () => {
                                     left: 0,
                                     right: 0,
                                     height: '3px',
-                                    background: 'linear-gradient(90deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.6) 100%)'
+                                    background: getGradient('white')
                                   }
                                 }
                               }}

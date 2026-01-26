@@ -47,9 +47,15 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
   const handlePrint = () => {
     const primaryColor = theme.palette.primary.main;
     
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
-      printWindow.document.write(`
+    // Create a hidden iframe for printing
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+    
+    const iframeDoc = iframe.contentWindow?.document;
+    if (iframeDoc) {
+      iframeDoc.open();
+      iframeDoc.write(`
         <!DOCTYPE html>
         <html>
           <head>
@@ -78,6 +84,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                 padding: 30px 20px 20px;
                 border-bottom: 1px solid #e0e0e0;
                 margin-bottom: 20px;
+                text-align: center;
               }
               
               .header h1 {
@@ -97,6 +104,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                 display: flex;
                 gap: 15px;
                 align-items: center;
+                justify-content: center;
               }
               
               .badge {
@@ -425,8 +433,18 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
           </body>
         </html>
       `);
-      printWindow.document.close();
-      printWindow.print();
+      iframeDoc.close();
+      
+      // Wait for content to load, then print
+      iframe.onload = () => {
+        iframe.contentWindow?.focus();
+        iframe.contentWindow?.print();
+        
+        // Remove iframe after printing
+        setTimeout(() => {
+          document.body.removeChild(iframe);
+        }, 1000);
+      };
     }
   };
 
@@ -466,81 +484,60 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
           <Box sx={{ 
             p: 4, 
             borderBottom: '1px solid #e0e0e0',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'flex-start'
+            textAlign: 'center'
           }}>
-            <Box>
-              <Typography variant="h4" sx={{ fontWeight: 700, mb: 0.5, color: '#212121' }}>
-                {receipt.hotelName}
+            <Typography variant="h4" sx={{ fontWeight: 700, mb: 0.5, color: '#212121' }}>
+              {receipt.hotelName}
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              {receipt.hotelAddress}
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', justifyContent: 'center', mb: 2 }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, color: '#666' }}>
+                Official Receipt
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                {receipt.hotelAddress}
-              </Typography>
-            </Box>
-            <Box sx={{ textAlign: 'right' }}>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
                 Receipt #{receipt.receiptNumber}
               </Typography>
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                <Tooltip title="Print Receipt">
-                  <IconButton 
-                    size="small"
-                    onClick={handlePrint} 
-                    sx={{ 
-                      border: '1px solid #e0e0e0',
-                      '&:hover': { bgcolor: '#f5f5f5' },
-                    }}
-                  >
-                    <PrintIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title="Download PDF">
-                  <IconButton 
-                    size="small"
-                    onClick={handleDownload} 
-                    sx={{ 
-                      border: '1px solid #e0e0e0',
-                      '&:hover': { bgcolor: '#f5f5f5' },
-                    }}
-                  >
-                    <DownloadIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title="Email Receipt">
-                  <IconButton 
-                    size="small"
-                    onClick={handleEmail} 
-                    sx={{ 
-                      border: '1px solid #e0e0e0',
-                      '&:hover': { bgcolor: '#f5f5f5' },
-                    }}
-                  >
-                    <EmailIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              </Box>
             </Box>
-          </Box>
-
-          {/* Booking Summary Section */}
-          <Box sx={{ p: 4, borderBottom: '1px solid #e0e0e0' }}>
-            <Typography 
-              variant="body2" 
-              sx={{ 
-                fontWeight: 600, 
-                mb: 1,
-                color: '#666',
-                textTransform: 'uppercase',
-                fontSize: '0.7rem',
-                letterSpacing: '0.5px'
-              }}
-            >
-              Official Receipt
-            </Typography>
-            <Typography variant="body2" sx={{ color: '#666', fontSize: '0.85rem' }}>
-              Receipt #{receipt.receiptNumber}
-            </Typography>
+            <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+              <Tooltip title="Print Receipt">
+                <IconButton 
+                  size="small"
+                  onClick={handlePrint} 
+                  sx={{ 
+                    border: '1px solid #e0e0e0',
+                    '&:hover': { bgcolor: '#f5f5f5' },
+                  }}
+                >
+                  <PrintIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Download PDF">
+                <IconButton 
+                  size="small"
+                  onClick={handleDownload} 
+                  sx={{ 
+                    border: '1px solid #e0e0e0',
+                    '&:hover': { bgcolor: '#f5f5f5' },
+                  }}
+                >
+                  <DownloadIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Email Receipt">
+                <IconButton 
+                  size="small"
+                  onClick={handleEmail} 
+                  sx={{ 
+                    border: '1px solid #e0e0e0',
+                    '&:hover': { bgcolor: '#f5f5f5' },
+                  }}
+                >
+                  <EmailIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </Box>
           </Box>
 
           {/* Guest Information Section */}

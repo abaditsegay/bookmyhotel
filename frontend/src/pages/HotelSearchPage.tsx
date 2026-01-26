@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { COLORS, getGradient } from '../theme/themeColors';
 import {
   Typography,
   Box,
@@ -56,8 +57,8 @@ const HotelSearchPage: React.FC = () => {
       sx={{
         minHeight: '100vh',
         background: theme.palette.mode === 'dark' 
-          ? 'linear-gradient(135deg, #121212 0%, #1e1e1e 100%)'
-          : 'linear-gradient(135deg, #ffffff 0%, #ffffff 100%)',
+          ? getGradient('dark')
+          : getGradient('white'),
         py: 4,
       }}
     >
@@ -93,9 +94,9 @@ const HotelSearchPage: React.FC = () => {
             >
               <Box sx={{ 
                 p: 3, 
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background: getGradient('purple'),
                 color: 'white',
-                borderBottom: '1px solid #e0e0e0' 
+                borderBottom: `1px solid ${COLORS.BORDER_LIGHT}` 
               }}>
                 <Typography variant="h6" gutterBottom sx={{ textAlign: 'center', mb: 0, fontWeight: 'bold' }}>
                   🎉 Special Deals
@@ -117,10 +118,10 @@ const HotelSearchPage: React.FC = () => {
                   borderRadius: '0px',
                 },
                 '&::-webkit-scrollbar-thumb': {
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  background: getGradient('purple'),
                   borderRadius: '0px',
                   '&:hover': {
-                    background: 'linear-gradient(135deg, #556bea 0%, #653ba2 100%)',
+                    background: getGradient('purple'),
                   }
                 }
               }}>

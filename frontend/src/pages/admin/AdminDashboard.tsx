@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { COLORS, getGradient } from '../../theme/themeColors';
 import {
   Typography,
   Button,
@@ -36,7 +37,6 @@ import {
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { adminApiService, UserManagementResponse, HotelDTO, PagedResponse } from '../../services/adminApi';
-import { COLORS } from '../../theme/themeColors';
 
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -314,10 +314,10 @@ const AdminDashboard: React.FC = () => {
                 <TableHead>
                   <TableRow 
                     sx={{
-                      background: 'linear-gradient(135deg, #64748b 0%, #475569 50%, #334155 100%)',
+                      background: getGradient('slate'),
                       boxShadow: '0 4px 12px rgba(100, 116, 139, 0.15)',
                       '& .MuiTableCell-head': {
-                        color: '#ffffff',
+                        color: COLORS.WHITE,
                         fontWeight: 600,
                         fontSize: '0.95rem',
                         letterSpacing: '0.5px',
@@ -333,7 +333,7 @@ const AdminDashboard: React.FC = () => {
                           left: 0,
                           right: 0,
                           height: '3px',
-                          background: 'linear-gradient(90deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.6) 100%)'
+                          background: getGradient('white')
                         }
                       }
                     }}
@@ -511,10 +511,10 @@ const AdminDashboard: React.FC = () => {
                 <TableHead>
                   <TableRow 
                     sx={{
-                      background: 'linear-gradient(135deg, #64748b 0%, #475569 50%, #334155 100%)',
+                      background: getGradient('slate'),
                       boxShadow: '0 4px 12px rgba(100, 116, 139, 0.15)',
                       '& .MuiTableCell-head': {
-                        color: '#ffffff',
+                        color: COLORS.WHITE,
                         fontWeight: 600,
                         fontSize: '0.95rem',
                         letterSpacing: '0.5px',
@@ -530,7 +530,7 @@ const AdminDashboard: React.FC = () => {
                           left: 0,
                           right: 0,
                           height: '3px',
-                          background: 'linear-gradient(90deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.6) 100%)'
+                          background: getGradient('white')
                         }
                       }
                     }}

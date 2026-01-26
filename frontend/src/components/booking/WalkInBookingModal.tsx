@@ -34,6 +34,7 @@ import { formatCurrency, formatCurrencyWithDecimals } from '../../utils/currency
 import { API_CONFIG, buildApiUrl } from '../../config/apiConfig';
 import NumberStepper from '../common/NumberStepper';
 import { COLORS, addAlpha } from '../../theme/themeColors';
+import { extractBookingErrorMessage } from '../../utils/errorHandling';
 
 // API base URL for backend calls
 const API_BASE_URL = API_CONFIG.SERVER_URL;
@@ -446,62 +447,8 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
     } catch (error) {
       // console.error('Failed to create walk-in booking:', error);
       
-      // Extract meaningful error message
-      let errorMessage = 'Failed to create booking. Please try again.';
-      
-      if (error instanceof Error) {
-        const message = error.message.toLowerCase();
-        const originalMessage = error.message;
-        
-        // Check for specific backend error messages first (exact matches)
-        if (originalMessage.includes('An active reservation already exists for this email address')) {
-          errorMessage = '⚠️ This email address already has an active booking. Please use a different email address or contact the front desk to modify the existing booking.';
-        } else if (originalMessage.includes('Guest name is required')) {
-          errorMessage = '📝 Please enter the guest\'s full name.';
-        } else if (originalMessage.includes('Guest email is required')) {
-          errorMessage = '📧 Please enter a valid email address for the guest.';
-        } else if (originalMessage.includes('Check-in date must be before check-out date')) {
-          errorMessage = '📅 Check-in date must be before the check-out date. Please adjust your dates.';
-        } else if (originalMessage.includes('Check-in date cannot be in the past')) {
-          errorMessage = '📅 Check-in date cannot be in the past. Please select a future date.';
-        } else if (originalMessage.includes('Number of guests must be greater than 0')) {
-          errorMessage = '👥 Please specify at least 1 guest for the booking.';
-        } else if (originalMessage.includes('Hotel ID is required')) {
-          errorMessage = '🏨 Hotel information is missing. Please refresh the page and try again.';
-        } else if (originalMessage.includes('Room type is required')) {
-          errorMessage = '🛏️ Please select a room type for the booking.';
-        }
-        // Check for general error patterns (case-insensitive)
-        else if (message.includes('email') && (message.includes('already') || message.includes('exists') || message.includes('duplicate'))) {
-          errorMessage = '⚠️ This email address is already associated with an existing booking. Please use a different email address.';
-        } else if (message.includes('guest already has') || message.includes('customer already') || message.includes('booking already exists')) {
-          errorMessage = '⚠️ A booking already exists for this guest. Please check existing bookings or use a different email address.';
-        } else if (message.includes('no available rooms') || 
-            message.includes('room not available') ||
-            message.includes('room is not available') ||
-            message.includes('room does not belong') ||
-            message.includes('room already occupied')) {
-          errorMessage = '🛏️ The selected room is no longer available. Please choose a different room or refresh the available rooms.';
-        } else if (message.includes('room not found')) {
-          errorMessage = '🛏️ The selected room could not be found. Please refresh and try again.';
-        } else if (message.includes('guest information') || message.includes('invalid guest')) {
-          errorMessage = '📝 Please check the guest information and try again.';
-        } else if (message.includes('payment')) {
-          errorMessage = '💳 There was an issue processing the payment information. Please try again.';
-        } else if (message.includes('date') || message.includes('check-in') || message.includes('check-out')) {
-          errorMessage = '📅 Please check the check-in and check-out dates and try again.';
-        } else if (message.includes('conflict') || message.includes('constraint')) {
-          errorMessage = '⚠️ There is a booking conflict. Please check the guest information or select different dates.';
-        } else if (message.includes('insufficient') || message.includes('capacity')) {
-          errorMessage = '👥 The selected room cannot accommodate the number of guests. Please choose a different room.';
-        } else if (originalMessage && originalMessage !== 'Failed to create booking. Please try again.' && 
-                   originalMessage !== 'There was an issue with your booking request' &&
-                   originalMessage.length > 10) {
-          // Use the actual error message if it's meaningful and not generic
-          errorMessage = originalMessage;
-        }
-      }
-      
+      // Use the centralized error handling utility
+      const errorMessage = extractBookingErrorMessage(error);
       setError(errorMessage);
     } finally {
       setLoading(false);

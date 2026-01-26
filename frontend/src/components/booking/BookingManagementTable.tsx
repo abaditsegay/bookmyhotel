@@ -1005,7 +1005,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                           fontSize: '0.95rem'
                         }}
                       >
-                        {booking.paymentReference || 'N/A'}
+                        {booking.paymentReference || 'FRONTDESK'}
                       </Typography>
                     </TableCell>
                     <TableCell>

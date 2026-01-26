@@ -80,6 +80,37 @@ export const COLORS = {
   BG_ERROR_LIGHT: '#ffebee',    // Light red background
   BG_INFO_LIGHT: '#e3f2fd',     // Light blue background
   BG_DEFAULT_LIGHT: '#f5f5f5',  // Light grey background
+  
+  // Slate/Dark backgrounds (Professional UI)
+  SLATE_50: '#f8fafc',
+  SLATE_400: '#94a3b8',
+  SLATE_500: '#64748b',
+  SLATE_600: '#475569',
+  SLATE_700: '#334155',
+  SLATE_800: '#1e293b',
+  SLATE_900: '#0f172a',
+  
+  // Purple accent (for special highlights)
+  PURPLE_400: '#c084fc',
+  PURPLE_500: '#a855f7',
+  PURPLE_600: '#9333ea',
+  PURPLE_700: '#7e22ce',
+  
+  // Common borders and dividers
+  BORDER_LIGHT: '#e0e0e0',      // Light gray border (Material Grey 300)
+  BORDER_DEFAULT: '#ddd',       // Default border
+  DIVIDER: '#e5e7eb',           // Divider color
+  
+  // Black variations
+  BLACK: '#000000',             // Pure black
+  BLACK_ALPHA_87: 'rgba(0, 0, 0, 0.87)', // High emphasis text
+  BLACK_ALPHA_60: 'rgba(0, 0, 0, 0.60)', // Medium emphasis text
+  
+  // Gradient presets
+  GRADIENT_PURPLE: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+  GRADIENT_SLATE: 'linear-gradient(135deg, #64748b 0%, #475569 50%, #334155 100%)',
+  GRADIENT_WHITE: 'linear-gradient(135deg, #ffffff 0%, #ffffff 100%)',
+  GRADIENT_DARK: 'linear-gradient(135deg, #121212 0%, #1e1e1e 100%)',
 } as const;
 
 // Color palette access
@@ -184,7 +215,17 @@ export const getFormColor = (state: 'default' | 'hover' | 'focus' | 'error' = 'd
 };
 
 // Gradient helpers
-export const getGradient = (type: 'primary' | 'secondary' | 'success' = 'primary', mode: 'light' | 'dark' = 'light'): string => {
+export const getGradient = (
+  type: 'primary' | 'secondary' | 'success' | 'slate' | 'purple' | 'white' | 'dark' = 'primary',
+  mode: 'light' | 'dark' = 'light'
+): string => {
+  // Handle new gradient types
+  if (type === 'slate') return COLORS.GRADIENT_SLATE;
+  if (type === 'purple') return COLORS.GRADIENT_PURPLE;
+  if (type === 'white') return COLORS.GRADIENT_WHITE;
+  if (type === 'dark') return COLORS.GRADIENT_DARK;
+  
+  // Handle original gradient types
   const gradients = getThemeColors(mode).gradients;
   
   switch (type) {

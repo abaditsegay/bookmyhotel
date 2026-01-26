@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { COLORS, addAlpha } from '../theme/themeColors';
 import {
   Container,
   Paper,
@@ -38,8 +39,6 @@ import { useAuth } from '../contexts/AuthContext';
 import { buildApiUrl } from '../config/apiConfig';
 import { formatCurrencyWithDecimals } from '../utils/currencyUtils';
 
-import { COLORS, addAlpha } from '../theme/themeColors';
-
 // Print-specific CSS styles
 const printStyles = `
   @media screen {
@@ -62,7 +61,7 @@ const printStyles = `
       padding: 0;
       font-size: 12pt;
       line-height: 1.4;
-      color: #000 !important;
+      color: ${COLORS.BLACK} !important;
       background: white !important;
     }
     
@@ -83,21 +82,21 @@ const printStyles = `
       font-size: 20pt;
       font-weight: bold;
       margin-bottom: 10pt;
-      color: #000 !important;
+      color: ${COLORS.BLACK} !important;
     }
     
     .print-title {
       font-size: 16pt;
       font-weight: bold;
       margin-bottom: 10pt;
-      color: #000 !important;
+      color: ${COLORS.BLACK} !important;
     }
     
     .print-confirmation {
       font-size: 14pt;
       font-weight: bold;
       margin-bottom: 20pt;
-      color: #000 !important;
+      color: ${COLORS.BLACK} !important;
     }
     
     .print-table {
@@ -108,14 +107,14 @@ const printStyles = `
     
     .print-table td {
       padding: 8pt;
-      border: 1px solid #ddd;
+      border: 1px solid ${COLORS.BORDER_DEFAULT};
       vertical-align: top;
     }
     
     .print-table .label {
       width: 30%;
       font-weight: bold;
-      background-color: #ffffff;
+      background-color: ${COLORS.WHITE};
     }
     
     .print-table .value {
@@ -130,7 +129,7 @@ const printStyles = `
       font-size: 14pt;
       font-weight: bold;
       margin-bottom: 10pt;
-      color: #000 !important;
+      color: ${COLORS.BLACK} !important;
     }
     
     .print-bullet {
@@ -141,7 +140,7 @@ const printStyles = `
       text-align: center;
       margin-top: 20pt;
       font-size: 12pt;
-      color: #000 !important;
+      color: ${COLORS.BLACK} !important;
     }
   }
 `;
@@ -1129,7 +1128,7 @@ const BookingConfirmationPage: React.FC = () => {
             <Box 
               sx={{ 
                 p: isMobile ? 2 : 3, 
-                border: '1px solid #e0e0e0', 
+                border: `1px solid ${COLORS.BORDER_LIGHT}`, 
                 borderRadius: 2, 
                 height: '100%',
               }}
@@ -1176,7 +1175,7 @@ const BookingConfirmationPage: React.FC = () => {
             <Box 
               sx={{ 
                 p: isMobile ? 2 : 3, 
-                border: '1px solid #e0e0e0', 
+                border: `1px solid ${COLORS.BORDER_LIGHT}`, 
                 borderRadius: 2, 
                 height: '100%',
               }}
@@ -1230,7 +1229,7 @@ const BookingConfirmationPage: React.FC = () => {
             <Box 
               sx={{ 
                 p: isMobile ? 2 : 3, 
-                border: '1px solid #e0e0e0', 
+                border: `1px solid ${COLORS.BORDER_LIGHT}`, 
                 borderRadius: 2, 
                 height: '100%',
               }}
@@ -1281,7 +1280,7 @@ const BookingConfirmationPage: React.FC = () => {
             <Box 
               sx={{ 
                 p: isMobile ? 2 : 3, 
-                border: '1px solid #e0e0e0', 
+                border: `1px solid ${COLORS.BORDER_LIGHT}`, 
                 borderRadius: 2, 
                 height: '100%',
               }}

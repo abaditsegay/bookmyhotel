@@ -123,20 +123,18 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
     }
   };
 
-  const getSeverityBalloon = (severity: string) => {
-    // Normalize severity to uppercase to handle case variations
+  const getPriorityColor = (severity: string) => {
     const normalizedSeverity = severity?.toUpperCase();
-    
     switch (normalizedSeverity) {
-      case 'HIGH': 
-        return <CircleIcon sx={{ fontSize: '16px', color: 'error.main' }} />;
-      case 'MEDIUM': 
-        return <CircleIcon sx={{ fontSize: '16px', color: 'warning.main' }} />;
-      case 'LOW': 
-        return <CircleIcon sx={{ fontSize: '16px', color: 'success.main' }} />;
-      default: 
-        return <CircleIcon sx={{ fontSize: '16px', color: 'text.disabled' }} />;
+      case 'HIGH': return '#f44336'; // Red
+      case 'MEDIUM': return '#ff9800'; // Orange
+      case 'LOW': return '#4caf50'; // Green
+      default: return '#9e9e9e'; // Gray
     }
+  };
+
+  const getSeverityBalloon = (severity: string) => {
+    return <CircleIcon sx={{ fontSize: '16px', color: getPriorityColor(severity) }} />;
   };
 
   const handleSeverityChange = (event: SelectChangeEvent<string>) => {
@@ -246,8 +244,8 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
               '& .MuiSelect-select': {
                 color: '#000000', // Black text
               },
-              '& .MuiSvgIcon-root': {
-                color: '#1a237e', // Deep blue icon
+              '& .MuiSelect-icon': {
+                color: '#1a237e', // Deep blue dropdown arrow icon only
               },
             }}
           >
@@ -267,19 +265,19 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
             >
               <MenuItem value="HIGH">
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <CircleIcon sx={{ fontSize: '14px', color: 'error.main' }} />
+                  <CircleIcon sx={{ fontSize: '14px', color: getPriorityColor('HIGH') }} />
                   {t('widgets.todos.priorityHigh')}
                 </Box>
               </MenuItem>
               <MenuItem value="MEDIUM">
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <CircleIcon sx={{ fontSize: '14px', color: 'warning.main' }} />
+                  <CircleIcon sx={{ fontSize: '14px', color: getPriorityColor('MEDIUM') }} />
                   {t('widgets.todos.priorityMedium')}
                 </Box>
               </MenuItem>
               <MenuItem value="LOW">
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <CircleIcon sx={{ fontSize: '14px', color: 'success.main' }} />
+                  <CircleIcon sx={{ fontSize: '14px', color: getPriorityColor('LOW') }} />
                   {t('widgets.todos.priorityLow')}
                 </Box>
               </MenuItem>

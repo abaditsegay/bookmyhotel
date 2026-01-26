@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getGradient } from '../theme/themeColors';
 import { 
   Box, 
   Button, 
@@ -208,7 +209,7 @@ const LoginPage: React.FC = () => {
         minHeight: '100vh',
         background: theme.palette.mode === 'dark' 
           ? `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.grey[900]} 100%)`
-          : `linear-gradient(135deg, #ffffff 0%, #ffffff 100%)`,
+          : getGradient('white'),
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',

@@ -466,6 +466,11 @@ public class HotelAdminController {
             request.setPaymentMethodId("pay_at_frontdesk");
         }
 
+        // Set payment reference to FRONTDESK for walk-in bookings
+        if (request.getPaymentReference() == null || request.getPaymentReference().trim().isEmpty()) {
+            request.setPaymentReference("FRONTDESK");
+        }
+
         // For walk-in bookings, create as anonymous guest so email goes to guest, not
         // staff
         // Pass null as userEmail to ensure guest gets the confirmation email

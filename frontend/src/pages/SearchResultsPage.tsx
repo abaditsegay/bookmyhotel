@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { COLORS, getGradient } from '../theme/themeColors';
 import {
   Container,
   Typography,
@@ -27,7 +28,6 @@ import {
   HotelSearchRequest, 
   HotelSearchResult,
 } from '../types/hotel';
-import { COLORS } from '../theme/themeColors';
 
 const SearchResultsPage: React.FC = () => {
   // Updated to neutral design matching LoginPage
@@ -216,7 +216,7 @@ const SearchResultsPage: React.FC = () => {
       <Box
         sx={{
           minHeight: '100vh',
-          background: 'linear-gradient(135deg, #ffffff 0%, #ffffff 100%)',
+          background: getGradient('white'),
         }}
       >
         <Container maxWidth="lg" sx={{ py: isMobile ? 2 : 4, px: isMobile ? 1 : 3 }}>
@@ -254,7 +254,7 @@ const SearchResultsPage: React.FC = () => {
     <Box
       sx={{
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #ffffff 0%, #ffffff 100%)',
+        background: getGradient('white'),
       }}
     >
       <Container 

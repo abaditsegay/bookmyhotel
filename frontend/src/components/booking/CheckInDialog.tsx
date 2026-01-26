@@ -222,8 +222,8 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
         if (assignedRoom) {
           setSelectedRoomId(assignedRoom.id);
           setSelectedRoomType(assignedRoom.roomType);
-          // Use the booking's original total since room hasn't changed
-          // This prevents false price differences due to rounding or timing issues
+          // IMPORTANT: Always use the booking's original total when a room is already assigned
+          // The backend stores totalAmount as SUBTOTAL ONLY (without taxes)
           setCalculatedPricePerNight(assignedRoom.pricePerNight);
           setCalculatedTotal(booking.totalAmount);
         }
@@ -232,9 +232,10 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
         // Only set the room type if it exists in the available options
         const validRoomType = roomTypeOptions.includes(booking.roomType) ? booking.roomType : '';
         setSelectedRoomType(validRoomType);
-        // Reset price only when no room is assigned
-        setCalculatedTotal(0);
-        setCalculatedPricePerNight(0);
+        // IMPORTANT: Use the original booking total, not recalculated
+        // The backend stores totalAmount as SUBTOTAL ONLY (without taxes)
+        setCalculatedTotal(booking.totalAmount);
+        setCalculatedPricePerNight(booking.pricePerNight || 0);
       }
       
       // Initialize current room number state
@@ -254,15 +255,14 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
       // Find the assigned room details to get the room type and price
       const assignedRoom = availableRooms.find(room => room.id === roomId);
       
-      // Update price immediately when room is selected (including taxes)
+      // Update price immediately when room is selected
+      // IMPORTANT: Backend stores totalAmount as SUBTOTAL ONLY (without taxes)
+      // Taxes are calculated at checkout, NOT during check-in
       if (assignedRoom) {
         const subtotal = assignedRoom.pricePerNight * nights;
-        const vatAmount = subtotal * hotelVatRate;
-        const serviceTaxAmount = subtotal * hotelServiceTaxRate;
-        const totalWithTaxes = subtotal + vatAmount + serviceTaxAmount;
         
         setCalculatedPricePerNight(assignedRoom.pricePerNight);
-        setCalculatedTotal(totalWithTaxes);
+        setCalculatedTotal(subtotal); // Store subtotal only, no taxes
       }
       
       const result = await frontDeskApiService.updateBookingRoomAssignment(
@@ -377,83 +377,73 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
     //   bookingTotalAmount: booking?.totalAmount
     // });
 
+    // IMPORTANT: Backend stores totalAmount as SUBTOTAL ONLY (no taxes included)
+    // When checking in, we should ALWAYS use the original booking's totalAmount
+    // unless the user explicitly changes to a DIFFERENT room type
+
     if (selectedRoomId && availableRooms.length > 0) {
-      // Specific room selected - use its exact price
+      // Specific room selected - check if room type changed
       const selectedRoom = availableRooms.find(room => room.id === selectedRoomId);
       if (selectedRoom) {
-        // Check if this is the originally assigned room
-        const isOriginalRoom = booking?.roomNumber && selectedRoom.roomNumber === booking.roomNumber;
+        // Check if room type is different from original booking
+        const roomTypeChanged = booking?.roomType && selectedRoom.roomType !== booking.roomType;
         
-        // console.log('🔍 Room comparison:', {
+        // console.log('🔍 Room selection:', {
         //   selectedRoomNumber: selectedRoom.roomNumber,
-        //   bookingRoomNumber: booking?.roomNumber,
-        //   isOriginalRoom,
+        //   selectedRoomType: selectedRoom.roomType,
+        //   bookingRoomType: booking?.roomType,
+        //   roomTypeChanged,
         //   bookingTotalAmount: booking?.totalAmount,
-        //   willUseOriginalTotal: isOriginalRoom && booking?.totalAmount
+        //   willUseOriginalTotal: !roomTypeChanged && booking?.totalAmount
         // });
         
-        if (isOriginalRoom && booking?.totalAmount) {
-          // Use the original booking total to prevent false price differences
-          // console.log('✅ Using original booking total (room unchanged):', booking.totalAmount);
+        if (!roomTypeChanged && booking?.totalAmount) {
+          // Room type is the same - use original booking total (no recalculation)
+          // console.log('✅ Using original booking total (same room type):', booking.totalAmount);
           setCalculatedPricePerNight(selectedRoom.pricePerNight);
           setCalculatedTotal(booking.totalAmount);
         } else {
-          // Room changed or no original booking - calculate with current tax rates
+          // Room type changed - recalculate price WITHOUT taxes (to match backend)
+          // Backend stores totalAmount as subtotal only
           const subtotal = selectedRoom.pricePerNight * nights;
-          const vatAmount = subtotal * hotelVatRate;
-          const serviceTaxAmount = subtotal * hotelServiceTaxRate;
-          const totalWithTaxes = subtotal + vatAmount + serviceTaxAmount;
           
-          // console.log('💰 Price calculation from selected room (room changed):', {
+          // console.log('💰 Price calculation (room type changed):', {
           //   roomNumber: selectedRoom.roomNumber,
+          //   roomType: selectedRoom.roomType,
           //   pricePerNight: selectedRoom.pricePerNight,
           //   nights,
-          //   subtotal,
-          //   vatRate: hotelVatRate,
-          //   vatAmount,
-          //   serviceTaxRate: hotelServiceTaxRate,
-          //   serviceTaxAmount,
-          //   totalWithTaxes
+          //   subtotal
           // });
           
           setCalculatedPricePerNight(selectedRoom.pricePerNight);
-          setCalculatedTotal(totalWithTaxes);
+          setCalculatedTotal(subtotal);
         }
       }
     } else if (selectedRoomType && availableRooms.length > 0) {
-      // Room type selected but no specific room - use first room of that type
-      const roomsOfType = availableRooms.filter(room => room.roomType === selectedRoomType);
-      // console.log('🏨 Rooms of type', selectedRoomType, ':', roomsOfType.length);
-      if (roomsOfType.length > 0) {
-        const firstRoomOfType = roomsOfType[0];
-        const subtotal = firstRoomOfType.pricePerNight * nights;
-        const vatAmount = subtotal * hotelVatRate;
-        const serviceTaxAmount = subtotal * hotelServiceTaxRate;
-        const totalWithTaxes = subtotal + vatAmount + serviceTaxAmount;
-        
-        // console.log('💰 Price calculation from room type:', {
-        //   roomNumber: firstRoomOfType.roomNumber,
-        //   pricePerNight: firstRoomOfType.pricePerNight,
-        //   nights,
-        //   subtotal,
-        //   vatRate: hotelVatRate,
-        //   vatAmount,
-        //   serviceTaxRate: hotelServiceTaxRate,
-        //   serviceTaxAmount,
-        //   totalWithTaxes
-        // });
-        
-        setCalculatedPricePerNight(firstRoomOfType.pricePerNight);
-        setCalculatedTotal(totalWithTaxes);
+      // Room type selected but no specific room
+      // Check if this is the same room type as the original booking
+      const roomTypeChanged = booking?.roomType && selectedRoomType !== booking.roomType;
+      
+      if (!roomTypeChanged && booking?.totalAmount) {
+        // Same room type - use original booking total
+        const originalPricePerNight = booking.pricePerNight || (booking.totalAmount / nights);
+        setCalculatedPricePerNight(originalPricePerNight);
+        setCalculatedTotal(booking.totalAmount);
       } else {
-        // console.log('⚠️ No rooms found for type:', selectedRoomType);
+        // Room type changed but no specific room selected yet
+        // Don't calculate price - wait for room selection
         setCalculatedPricePerNight(0);
         setCalculatedTotal(0);
       }
     } else {
-      // console.log('🔄 Resetting price to 0');
-      setCalculatedPricePerNight(0);
-      setCalculatedTotal(0);
+      // console.log('🔄 Resetting price to original or 0');
+      if (booking?.totalAmount) {
+        setCalculatedTotal(booking.totalAmount);
+        setCalculatedPricePerNight(booking.pricePerNight || 0);
+      } else {
+        setCalculatedPricePerNight(0);
+        setCalculatedTotal(0);
+      }
     }
   }, [selectedRoomId, selectedRoomType, availableRooms, nights, hotelVatRate, hotelServiceTaxRate, booking]);
 
@@ -1158,43 +1148,38 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
               </Grid>
               
               <Grid item xs={12}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                  <Typography variant="body1" color="text.secondary">
-                    Subtotal
-                  </Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                    {formatCurrencyWithDecimals(calculatedPricePerNight * nights)}
-                  </Typography>
-                </Box>
-                
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                  <Typography variant="body2" color="text.secondary">
-                    VAT ({(hotelVatRate * 100).toFixed(2)}%)
-                  </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                    {formatCurrencyWithDecimals(calculatedPricePerNight * nights * hotelVatRate)}
-                  </Typography>
-                </Box>
-                
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                  <Typography variant="body2" color="text.secondary">
-                    Service Tax ({(hotelServiceTaxRate * 100).toFixed(2)}%)
-                  </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                    {formatCurrencyWithDecimals(calculatedPricePerNight * nights * hotelServiceTaxRate)}
-                  </Typography>
-                </Box>
-                
-                <Divider sx={{ my: 2, borderColor: 'success.light' }} />
-                
-                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography variant="h6" sx={{ fontWeight: 700, color: 'success.dark' }}>
-                    Total Amount
-                  </Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 800, color: 'success.main' }}>
-                    {formatCurrencyWithDecimals(calculatedTotal)}
-                  </Typography>
-                </Box>
+                {calculatedTotal > 0 ? (
+                  <>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                      <Typography variant="h6" sx={{ fontWeight: 700, color: 'success.dark' }}>
+                        Room Charges (Subtotal)
+                      </Typography>
+                      <Typography variant="h6" sx={{ fontWeight: 800, color: 'success.main' }}>
+                        {formatCurrencyWithDecimals(calculatedTotal)}
+                      </Typography>
+                    </Box>
+                    
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontStyle: 'italic', mt: 1 }}>
+                      Note: Taxes (VAT & Service Tax) will be calculated and applied at checkout
+                    </Typography>
+                  </>
+                ) : (
+                  <Box sx={{ 
+                    display: 'flex', 
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    py: 3,
+                    px: 2
+                  }}>
+                    <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.secondary', mb: 1, textAlign: 'center' }}>
+                      💰 Select a room to view pricing
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
+                      Price will appear once you select a specific room
+                    </Typography>
+                  </Box>
+                )}
               </Grid>
               
               {priceDifference !== 0 && (

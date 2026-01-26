@@ -1,53 +1,15 @@
-import React from 'react';
-import { Typography, Box, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
+import React, { lazy, Suspense } from 'react';
+import { Typography, Box, Dialog, DialogTitle, DialogContent, DialogActions, Button, CircularProgress } from '@mui/material';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { SnackbarProvider } from 'notistack';
 import './i18n'; // Initialize i18n
 import EnhancedLayout from './components/layout/EnhancedLayout';
 import { ErrorBoundary } from './components/common';
 import { NotificationProvider } from './components/common';
-// PWA install functionality disabled
-// import PWAInstallPrompt from './components/common/PWAInstallPrompt';
-// import { usePWAInstall } from './hooks/usePWAInstall';
 import ProtectedRoute from './components/ProtectedRoute';
 import { useAuth } from './contexts/AuthContext';
-import HotelSearchPage from './pages/HotelSearchPage';
-import SearchResultsPage from './pages/SearchResultsPage';
-import HotelListPage from './pages/HotelListPage';
-import HotelDetailPage from './pages/HotelDetailPage';
-import BookingPage from './pages/BookingPage';
-import BookingConfirmationPage from './pages/BookingConfirmationPage';
-import FindBookingPage from './pages/FindBookingPage';
-import BookingSearchPage from './pages/BookingSearchPage';
-import LoginPage from './pages/LoginPage';
-import GuestAuthPage from './pages/GuestAuthPage';
-import ProfilePage from './pages/ProfilePage';
-import AdminDashboard from './pages/admin/AdminDashboard';
-import HotelRegistrationAdmin from './pages/admin/HotelRegistrationAdmin';
-import HotelRegistrationForm from './pages/admin/HotelRegistrationForm';
-import HotelManagementAdmin from './pages/admin/HotelManagementAdmin';
-import TenantManagementAdmin from './pages/admin/TenantManagementAdmin';
-import UserManagementAdmin from './pages/admin/UserManagementAdmin';
-import UserRegistrationForm from './pages/admin/UserRegistrationForm';
-import DesignSystemDemo from './components/DesignSystemDemo';
-import Phase2Demo from './components/Phase2Demo';
-import Phase3Demo from './components/demo/Phase3Demo';
-import UserViewEdit from './pages/admin/UserViewEdit';
-import HotelViewEdit from './pages/admin/HotelViewEdit';
-import HotelAdminDashboard from './pages/hotel-admin/HotelAdminDashboard';
-import { ErrorBoundaryDemo } from './components/demo';
+// Eager-loaded components (small or critical)
 import NotFoundPage from './pages/NotFoundPage';
-import RoomManagement from './pages/hotel-admin/RoomManagement';
-import RoomViewEdit from './pages/hotel-admin/RoomViewEdit';
-import StaffManagement from './pages/hotel-admin/StaffManagement';
-import StaffDetails from './pages/hotel-admin/StaffDetails';
-import StaffScheduleManagement from './components/StaffScheduleManagement';
-import StaffScheduleDashboard from './components/StaffScheduleDashboard';
-import FrontDeskDashboard from './pages/frontdesk/FrontDeskDashboard';
-import FrontDeskUnifiedBookingDetails from './pages/frontdesk/FrontDeskUnifiedBookingDetails';
-import HotelAdminBookingDetails from './pages/hotel-admin/HotelAdminBookingDetails';
-import BookingManagementPage from './pages/BookingManagementPage';
-import GuestBookingManagementPage from './pages/GuestBookingManagementPage';
 import { SystemDashboardPage } from './pages/SystemDashboardPage';
 import MyBookings from './components/MyBookings';
 import HousekeepingPage from './pages/housekeeping/HousekeepingPage';
@@ -56,6 +18,73 @@ import StaffDashboardPage from './pages/StaffDashboardPage';
 import ShopRoutes from './pages/shop/ShopRoutes';
 import PublicHotelRegistration from './pages/PublicHotelRegistration';
 import NotificationsPage from './pages/NotificationsPage';
+
+// Lazy load all page components for code splitting
+const HotelSearchPage = lazy(() => import('./pages/HotelSearchPage'));
+const SearchResultsPage = lazy(() => import('./pages/SearchResultsPage'));
+const HotelListPage = lazy(() => import('./pages/HotelListPage'));
+const HotelDetailPage = lazy(() => import('./pages/HotelDetailPage'));
+const BookingPage = lazy(() => import('./pages/BookingPage'));
+const BookingConfirmationPage = lazy(() => import('./pages/BookingConfirmationPage'));
+const FindBookingPage = lazy(() => import('./pages/FindBookingPage'));
+const BookingSearchPage = lazy(() => import('./pages/BookingSearchPage'));
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const GuestAuthPage = lazy(() => import('./pages/GuestAuthPage'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+
+// Admin pages
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
+const HotelRegistrationAdmin = lazy(() => import('./pages/admin/HotelRegistrationAdmin'));
+const HotelRegistrationForm = lazy(() => import('./pages/admin/HotelRegistrationForm'));
+const HotelManagementAdmin = lazy(() => import('./pages/admin/HotelManagementAdmin'));
+const TenantManagementAdmin = lazy(() => import('./pages/admin/TenantManagementAdmin'));
+const UserManagementAdmin = lazy(() => import('./pages/admin/UserManagementAdmin'));
+const UserRegistrationForm = lazy(() => import('./pages/admin/UserRegistrationForm'));
+const UserViewEdit = lazy(() => import('./pages/admin/UserViewEdit'));
+const HotelViewEdit = lazy(() => import('./pages/admin/HotelViewEdit'));
+
+// Hotel Admin pages
+const HotelAdminDashboard = lazy(() => import('./pages/hotel-admin/HotelAdminDashboard'));
+const RoomManagement = lazy(() => import('./pages/hotel-admin/RoomManagement'));
+const RoomViewEdit = lazy(() => import('./pages/hotel-admin/RoomViewEdit'));
+const StaffManagement = lazy(() => import('./pages/hotel-admin/StaffManagement'));
+const StaffDetails = lazy(() => import('./pages/hotel-admin/StaffDetails'));
+const HotelAdminBookingDetails = lazy(() => import('./pages/hotel-admin/HotelAdminBookingDetails'));
+
+// Front Desk pages
+const FrontDeskDashboard = lazy(() => import('./pages/frontdesk/FrontDeskDashboard'));
+const FrontDeskUnifiedBookingDetails = lazy(() => import('./pages/frontdesk/FrontDeskUnifiedBookingDetails'));
+
+// Booking Management
+const BookingManagementPage = lazy(() => import('./pages/BookingManagementPage'));
+const GuestBookingManagementPage = lazy(() => import('./pages/GuestBookingManagementPage'));
+
+// Demo & Staff components
+const DesignSystemDemo = lazy(() => import('./components/DesignSystemDemo'));
+const Phase2Demo = lazy(() => import('./components/Phase2Demo'));
+const Phase3Demo = lazy(() => import('./components/demo/Phase3Demo'));
+const StaffScheduleManagement = lazy(() => import('./components/StaffScheduleManagement'));
+const StaffScheduleDashboard = lazy(() => import('./components/StaffScheduleDashboard'));
+const ErrorBoundaryDemo = lazy(() => import('./components/demo').then(m => ({ default: m.ErrorBoundaryDemo })));
+
+// Loading fallback component
+const PageLoader: React.FC = () => (
+  <Box
+    sx={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      minHeight: '60vh',
+      flexDirection: 'column',
+      gap: 2,
+    }}
+  >
+    <CircularProgress size={60} />
+    <Typography variant="body1" color="text.secondary">
+      Loading...
+    </Typography>
+  </Box>
+);
 
 // Lazy load SystemModule for better performance
 const SystemModule = React.lazy(() => import('./modules/SystemModule'));
@@ -229,6 +258,7 @@ function App() {
             }}
           >
           <EnhancedLayout hideSidebar={!isAuthenticated} maxWidth={isFullWidthRoute ? false : 'xl'}>
+          <Suspense fallback={<PageLoader />}>
           <Routes>
         <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />} />
         <Route path="/dashboard" element={<RoleBasedRouter />} />
@@ -275,12 +305,6 @@ function App() {
           <PlaceholderPage 
             title="Register" 
             message="User registration feature coming soon!" 
-          />
-        } />
-        <Route path="/dashboard" element={
-          <PlaceholderPage 
-            title="Dashboard" 
-            message="User dashboard coming soon!" 
           />
         } />
         <Route path="/bookings" element={
@@ -557,6 +581,7 @@ function App() {
         {/* Catch-all route for 404 Not Found */}
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
+      </Suspense>
       
       {/* PWA Install Prompt functionality disabled 
       <PWAInstallPrompt 

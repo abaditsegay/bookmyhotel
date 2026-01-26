@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { COLORS, getGradient } from '../../theme/themeColors';
 import {
   Paper,
   Table,
