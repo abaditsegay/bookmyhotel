@@ -146,7 +146,8 @@ public class HotelRegistrationAdminController {
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             // Log the error for debugging
-            // System.err.println("Error approving registration " + id + ": " + e.getMessage());
+            // System.err.println("Error approving registration " + id + ": " +
+            // e.getMessage());
             logger.error("Operation failed", e);
             return ResponseEntity.badRequest().body(null);
         }

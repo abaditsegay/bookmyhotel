@@ -26,32 +26,36 @@ export { getThemeColors };
 
 // Convenience exports for common colors (these will update automatically when brand colors change)
 export const COLORS = {
-  // Interactive elements (buttons, links, form focus) - Navy Blue Theme
-  PRIMARY: '#1565c0',           // Navy blue (Blue 800)
-  PRIMARY_HOVER: '#0d47a1',     // Darker blue for hover (Blue 900)
-  PRIMARY_PRESSED: '#0d47a1',   // Dark blue for pressed (Blue 900)
+  // Interactive elements (buttons, links, form focus) - Premium Business Theme
+  PRIMARY: '#1a365d',           // Deep Navy (Premium)
+  PRIMARY_HOVER: '#2a4a6d',     // Lighter navy for hover
+  PRIMARY_PRESSED: '#0f2744',   // Darker navy for pressed
   
-  SECONDARY: '#42a5f5',         // Light blue for secondary (Blue 400)
-  SECONDARY_HOVER: '#1565c0',   // Medium blue for secondary hover
+  SECONDARY: '#E8B86D',         // Warm Gold for secondary
+  SECONDARY_HOVER: '#F0C880',   // Light gold for secondary hover
   
   // Status colors - Professional hotel management colors
-  CONFIRMED: '#1565c0',         // Blue for confirmed bookings
-  PENDING: '#fb8c00',           // Professional orange for pending (Material Orange 600)
-  SUCCESS: '#1976d2',           // Blue for success states (Material Blue 700)
-  ERROR: '#d32f2f',             // Professional red for errors (Material Red 700)
-  CANCELLED: '#757575',         // Gray for cancelled (Material Grey 600)
-  CHECKED_IN: '#1976d2',        // Blue for checked in (success)
-  CHECKED_OUT: '#1565c0',       // Blue for checked out (completed)
+  CONFIRMED: '#2196F3',         // Blue for confirmed bookings
+  PENDING: '#9E9E9E',           // Gray for pending
+  SUCCESS: '#2e7d32',           // Forest green for success
+  ERROR: '#d32f2f',             // Professional red for errors
+  CANCELLED: '#757575',         // Gray for cancelled
+  CHECKED_IN: '#2e7d32',        // Green for checked in
+  CHECKED_OUT: '#607D8B',       // Blue gray for checked out
+  AVAILABLE: '#4CAF50',         // Green for available rooms
+  OCCUPIED: '#FF9800',          // Orange for occupied
+  MAINTENANCE: '#F44336',       // Red for maintenance
+  CLEANING: '#FFD54F',          // Yellow for cleaning
   
-  // Form elements - Blue theme
-  INPUT_FOCUS: '#1565c0',       // Blue focus color
-  INPUT_HOVER: '#42a5f5',       // Light blue hover
-  INPUT_BORDER: '#e0e0e0',      // Neutral gray border (Material Grey 300)
+  // Form elements - Premium theme
+  INPUT_FOCUS: '#1a365d',       // Navy focus color
+  INPUT_HOVER: '#2d63ab',       // Light navy hover
+  INPUT_BORDER: '#e0e0e0',      // Neutral gray border
   INPUT_ERROR: '#d32f2f',       // Red for errors
   
-  // Surface colors - Professional neutral theme
-  CARD_BORDER: '#e0e0e0',       // Neutral gray card borders
-  CARD_HOVER: '#fafafa',        // Very light gray hover (Material Grey 50)
+  // Surface colors - Premium neutral theme
+  CARD_BORDER: 'transparent',   // No border for premium feel
+  CARD_HOVER: '#f8f9fa',        // Very light gray hover
   
   // Additional UI colors
   WARNING: '#ff9800',           // Orange for warnings (Material Orange 500)
@@ -106,11 +110,18 @@ export const COLORS = {
   BLACK_ALPHA_87: 'rgba(0, 0, 0, 0.87)', // High emphasis text
   BLACK_ALPHA_60: 'rgba(0, 0, 0, 0.60)', // Medium emphasis text
   
-  // Gradient presets
+  // Gradient presets - Premium
+  GRADIENT_PRIMARY: 'linear-gradient(135deg, #1a365d 0%, #0f2744 100%)',
+  GRADIENT_SECONDARY: 'linear-gradient(135deg, #E8B86D 0%, #D4A355 100%)',
+  GRADIENT_ACCENT: 'linear-gradient(135deg, #63B3ED 0%, #3182CE 100%)',
+  GRADIENT_WARM: 'linear-gradient(135deg, #F0C880 0%, #E8B86D 100%)',
   GRADIENT_PURPLE: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
   GRADIENT_SLATE: 'linear-gradient(135deg, #64748b 0%, #475569 50%, #334155 100%)',
   GRADIENT_WHITE: 'linear-gradient(135deg, #ffffff 0%, #ffffff 100%)',
-  GRADIENT_DARK: 'linear-gradient(135deg, #121212 0%, #1e1e1e 100%)',
+  GRADIENT_DARK: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+  // Glass effects
+  GLASS_LIGHT: 'rgba(255, 255, 255, 0.7)',
+  GLASS_DARK: 'rgba(30, 30, 30, 0.7)',
 } as const;
 
 // Color palette access

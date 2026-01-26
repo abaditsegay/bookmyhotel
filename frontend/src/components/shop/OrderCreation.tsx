@@ -862,6 +862,14 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                 size="large"
                 onClick={handleCreateOrder}
                 disabled={loading || orderItems.length === 0}
+                sx={{
+                  '&.Mui-disabled': {
+                    backgroundColor: 'primary.main',
+                    opacity: 0.6,
+                    color: 'white',
+                    cursor: 'not-allowed'
+                  }
+                }}
               >
                 {loading 
                   ? t('shop.orders.creation.processing')

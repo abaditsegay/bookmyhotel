@@ -37,17 +37,17 @@ public class HotelManagementController {
     public ResponseEntity<List<HotelResponse>> getAllHotels() {
         try {
             String tenantId = TenantContext.getTenantId();
-            
+
             if (tenantId == null) {
                 throw new IllegalStateException("Tenant context is not set");
             }
-            
+
             List<HotelDTO> hotels = hotelManagementService.getHotelsByTenantForDropdown(tenantId);
-            
+
             List<HotelResponse> response = hotels.stream()
                     .map(hotel -> new HotelResponse(hotel.getId(), hotel.getName()))
                     .collect(Collectors.toList());
-            
+
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             // Log the error for debugging
@@ -64,7 +64,8 @@ public class HotelManagementController {
         private Long id;
         private String name;
 
-        public HotelResponse() {}
+        public HotelResponse() {
+        }
 
         public HotelResponse(Long id, String name) {
             this.id = id;

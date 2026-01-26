@@ -36,10 +36,10 @@ public class AwsS3Config {
     @Bean
     public S3Client s3Client() {
         // Use static credentials if provided, otherwise use default credential chain
-        if (accessKeyId != null && !accessKeyId.isBlank() && 
-            secretAccessKey != null && !secretAccessKey.isBlank()) {
+        if (accessKeyId != null && !accessKeyId.isBlank() &&
+                secretAccessKey != null && !secretAccessKey.isBlank()) {
             AwsBasicCredentials awsCredentials = AwsBasicCredentials.create(accessKeyId, secretAccessKey);
-            
+
             return S3Client.builder()
                     .region(Region.of(awsRegion))
                     .credentialsProvider(StaticCredentialsProvider.create(awsCredentials))

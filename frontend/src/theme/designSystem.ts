@@ -80,53 +80,53 @@ export const designSystem = {
     }
   },
 
-  // Color system with semantic meanings
+  // Color system with semantic meanings - Premium Business Theme
   colors: {
     primary: {
-      50: '#e3f2fd',
-      100: '#bbdefb',
-      200: '#90caf9',
-      300: '#64b5f6',
-      400: '#42a5f5',
-      500: '#2196f3',
-      600: '#1e88e5',
-      700: '#1976d2',
-      800: '#1565c0',
-      900: '#0d47a1',
-      main: '#1565c0',
-      light: '#42a5f5',
-      dark: '#0d47a1',
+      50: '#e6ecf5',
+      100: '#c0d0e6',
+      200: '#96b1d5',
+      300: '#6c92c4',
+      400: '#4d7ab8',
+      500: '#2d63ab',
+      600: '#285ba4',
+      700: '#22519a',
+      800: '#1c4791',
+      900: '#1a365d',
+      main: '#1a365d',
+      light: '#2d63ab',
+      dark: '#0f2744',
       contrastText: '#ffffff',
-      25: '#f0f7ff'
+      25: '#f0f4f8'
     },
     secondary: {
-      main: '#757575',
-      light: '#9e9e9e',
-      dark: '#424242',
-      contrastText: '#ffffff'
+      main: '#E8B86D',
+      light: '#F0C880',
+      dark: '#D4A355',
+      contrastText: '#1a365d'
     },
     success: {
-      main: '#4caf50',
-      light: '#81c784',
-      dark: '#388e3c',
+      main: '#2e7d32',
+      light: '#4caf50',
+      dark: '#1b5e20',
       contrastText: '#ffffff'
     },
     warning: {
-      main: '#ff9800',
-      light: '#ffb74d',
-      dark: '#f57c00',
-      contrastText: '#000000'
+      main: '#f57c00',
+      light: '#ff9800',
+      dark: '#e65100',
+      contrastText: '#ffffff'
     },
     error: {
-      main: '#f44336',
-      light: '#e57373',
-      dark: '#d32f2f',
+      main: '#d32f2f',
+      light: '#f44336',
+      dark: '#c62828',
       contrastText: '#ffffff'
     },
     info: {
-      main: '#1565c0',
-      light: '#42a5f5',
-      dark: '#0d47a1',
+      main: '#63B3ED',
+      light: '#90CDF4',
+      dark: '#3182CE',
       contrastText: '#ffffff'
     },
     text: {
@@ -136,18 +136,67 @@ export const designSystem = {
       hint: 'rgba(0, 0, 0, 0.38)'
     },
     background: {
-      default: '#ffffff',
-      paper: '#ffffff',
-      light: '#f5f5f5'
+      default: '#FAFAFA',
+      paper: '#FFFFFF',
+      light: '#F5F5F5'
     },
-    divider: 'rgba(0, 0, 0, 0.12)'
+    divider: 'rgba(0, 0, 0, 0.12)',
+    // Enhanced surface hierarchy
+    surfaces: {
+      elevated: '#FFFFFF',
+      base: '#FAFAFA',
+      sunken: '#F5F5F5',
+      overlay: 'rgba(0, 0, 0, 0.6)'
+    },
+    // Interactive states
+    interactive: {
+      primary: '#1a365d',
+      primaryHover: '#2a4a6d',
+      primaryActive: '#0f2744',
+      secondary: '#E8B86D',
+      secondaryHover: '#F0C880'
+    },
+    // Hotel industry status colors
+    status: {
+      available: '#4CAF50',
+      booked: '#2196F3',
+      occupied: '#FF9800',
+      maintenance: '#F44336',
+      cleaning: '#FFD54F',
+      pending: '#9E9E9E',
+      checkedOut: '#607D8B'
+    }
+  },
+
+  // Glass morphism effects
+  effects: {
+    glass: {
+      background: 'rgba(255, 255, 255, 0.7)',
+      backdropFilter: 'blur(10px)',
+      WebkitBackdropFilter: 'blur(10px)',
+      border: '1px solid rgba(255, 255, 255, 0.18)',
+      boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)'
+    },
+    glassDark: {
+      background: 'rgba(30, 30, 30, 0.7)',
+      backdropFilter: 'blur(10px)',
+      WebkitBackdropFilter: 'blur(10px)',
+      border: '1px solid rgba(255, 255, 255, 0.1)',
+      boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.5)'
+    },
+    gradient: {
+      primary: 'linear-gradient(135deg, #1a365d 0%, #0f2744 100%)',
+      secondary: 'linear-gradient(135deg, #E8B86D 0%, #D4A355 100%)',
+      accent: 'linear-gradient(135deg, #63B3ED 0%, #3182CE 100%)',
+      warm: 'linear-gradient(135deg, #F0C880 0%, #E8B86D 100%)'
+    }
   },
 
   // Elevation/Shadow system
   shadows: {
     none: 'none',
     xs: '0 1px 2px rgba(0, 0, 0, 0.05)',
-    sm: '0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24)',
+    sm: '0 2px 4px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06)',
     md: '0 4px 6px rgba(0, 0, 0, 0.16), 0 1px 3px rgba(0, 0, 0, 0.23)',
     lg: '0 10px 25px rgba(0, 0, 0, 0.19), 0 6px 10px rgba(0, 0, 0, 0.23)',
     xl: '0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22)',

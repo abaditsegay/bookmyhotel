@@ -355,28 +355,34 @@ public class HotelAdminService {
     @Cacheable(value = CacheConfig.ROOMS_BY_HOTEL_CACHE, key = "'admin:' + #adminEmail + ':page:' + #page + ':size:' + #size + ':search:' + (#search != null ? #search : 'null') + ':type:' + (#roomType != null ? #roomType : 'null') + ':available:' + (#available != null ? #available : 'null')")
     public Page<RoomDTO> getHotelRooms(String adminEmail, int page, int size, String search, String roomType,
             Boolean available) {
-        // System.err.println("🔍 HotelAdminService.getHotelRooms called with adminEmail: " + adminEmail);
+        // System.err.println("🔍 HotelAdminService.getHotelRooms called with
+        // adminEmail: " + adminEmail);
         User admin = getUserByEmail(adminEmail);
-        // System.err.println("🔍 Retrieved admin user: " + admin.getId() + ", email: " + admin.getEmail());
+        // System.err.println("🔍 Retrieved admin user: " + admin.getId() + ", email: "
+        // + admin.getEmail());
         Hotel hotel = admin.getHotel();
 
         if (hotel == null) {
             throw new RuntimeException("Hotel admin is not associated with any hotel");
         }
 
-        // System.err.println("🔍 Admin associated with hotel: " + hotel.getId() + ", name: " + hotel.getName());
+        // System.err.println("🔍 Admin associated with hotel: " + hotel.getId() + ",
+        // name: " + hotel.getName());
 
         Pageable pageable = PageRequest.of(page, size);
 
         // Get all rooms for this hotel using hotel ID instead of hotel entity
         List<Room> allRooms = roomRepository.findByHotelId(hotel.getId());
-        // System.err.println("🔍 Found " + allRooms.size() + " total rooms for hotel ID: " + hotel.getId());
+        // System.err.println("🔍 Found " + allRooms.size() + " total rooms for hotel
+        // ID: " + hotel.getId());
 
         if (allRooms.isEmpty()) {
-            // System.err.println("🔍 No rooms found in database for hotel ID: " + hotel.getId());
+            // System.err.println("🔍 No rooms found in database for hotel ID: " +
+            // hotel.getId());
         } else {
             // System.err.println("🔍 Room IDs: "
-            //         + allRooms.stream().map(r -> r.getId()).collect(java.util.stream.Collectors.toList()));
+            // + allRooms.stream().map(r ->
+            // r.getId()).collect(java.util.stream.Collectors.toList()));
         }
 
         // Apply filters
@@ -391,7 +397,8 @@ public class HotelAdminService {
                                 (room.getDescription() != null
                                         && room.getDescription().toLowerCase().contains(searchLower));
                         // System.err.println(
-                        //         "🔍 Search filter '" + search + "' on room " + room.getRoomNumber() + ": " + matches);
+                        // "🔍 Search filter '" + search + "' on room " + room.getRoomNumber() + ": " +
+                        // matches);
                     }
 
                     // Room type filter
@@ -409,15 +416,18 @@ public class HotelAdminService {
                 })
                 .collect(Collectors.toList());
 
-        // System.err.println("🔍 After filtering: " + filteredRooms.size() + " rooms remain");
+        // System.err.println("🔍 After filtering: " + filteredRooms.size() + " rooms
+        // remain");
         // System.err.println(
-        //         "🔍 Filters applied - search: '" + search + "', roomType: '" + roomType + "', available: " + available);
+        // "🔍 Filters applied - search: '" + search + "', roomType: '" + roomType + "',
+        // available: " + available);
 
         // Manual pagination with bounds checking
         int start = page * size;
         int end = Math.min(start + size, filteredRooms.size());
 
-        // System.err.println("🔍 Pagination - page: " + page + ", size: " + size + ", start: " + start + ", end: " + end);
+        // System.err.println("🔍 Pagination - page: " + page + ", size: " + size + ",
+        // start: " + start + ", end: " + end);
 
         List<Room> pageContent;
         if (start >= filteredRooms.size()) {
@@ -537,7 +547,8 @@ public class HotelAdminService {
                             uploadedImages.add(convertToImageDTO(galleryImageEntity));
                         } catch (Exception e) {
                             // Log error but continue with other images
-                            // System.err.println("Failed to upload gallery image " + (i + 1) + ": " + e.getMessage());
+                            // System.err.println("Failed to upload gallery image " + (i + 1) + ": " +
+                            // e.getMessage());
                         }
                     }
                 }
@@ -625,14 +636,17 @@ public class HotelAdminService {
 
         // System.out.println("🔥 Admin found: " + admin.getEmail());
         // System.out.println(
-        //         "🔥 Hotel: " + (hotel != null ? hotel.getName() + " (Hotel ID: " + hotel.getId() + ")" : "null"));
+        // "🔥 Hotel: " + (hotel != null ? hotel.getName() + " (Hotel ID: " +
+        // hotel.getId() + ")" : "null"));
 
         Room room = roomRepository.findById(roomId).orElse(null);
         // System.out.println("🔥 Room found: "
-        //         + (room != null ? "Yes - Room Number: " + room.getRoomNumber() + " (ID: " + room.getId() + ")" : "No"));
+        // + (room != null ? "Yes - Room Number: " + room.getRoomNumber() + " (ID: " +
+        // room.getId() + ")" : "No"));
 
         if (room == null) {
-            // System.out.println("🔥 ERROR: Room with database ID " + roomId + " not found in database");
+            // System.out.println("🔥 ERROR: Room with database ID " + roomId + " not found
+            // in database");
             throw new RuntimeException("Room not found");
         }
 
@@ -645,37 +659,43 @@ public class HotelAdminService {
             throw new RuntimeException("Room does not belong to your hotel");
         }
 
-        // System.out.println("🔥 Checking for active reservations for Room " + room.getRoomNumber() + " (ID: "
-        //         + room.getId() + ")...");
+        // System.out.println("🔥 Checking for active reservations for Room " +
+        // room.getRoomNumber() + " (ID: "
+        // + room.getId() + ")...");
         // Check if room has active reservations
         List<Reservation> activeReservations = reservationRepository.findByAssignedRoomAndStatusIn(
                 room,
                 Arrays.asList(ReservationStatus.CONFIRMED, ReservationStatus.CHECKED_IN));
 
-        // System.out.println("🔥 Active reservations found: " + activeReservations.size());
+        // System.out.println("🔥 Active reservations found: " +
+        // activeReservations.size());
         if (!activeReservations.isEmpty()) {
             // System.out.println("🔥 ERROR: Cannot delete room with active reservations");
             throw new RuntimeException(
                     "Cannot delete room with active reservations. Please complete or cancel existing reservations first.");
         }
 
-        // System.out.println("🔥 Checking for all reservations for Room " + room.getRoomNumber() + "...");
+        // System.out.println("🔥 Checking for all reservations for Room " +
+        // room.getRoomNumber() + "...");
         // Check if room has any reservations (past or future) and nullify the
         // assignedRoom reference
         List<Reservation> allReservations = reservationRepository.findByAssignedRoom(room);
         // System.out.println("🔥 Total reservations found: " + allReservations.size());
 
         for (Reservation reservation : allReservations) {
-            // System.out.println("🔥 Nullifying reservation " + reservation.getId() + " (Confirmation: "
-            //         + reservation.getConfirmationNumber() + ")");
+            // System.out.println("🔥 Nullifying reservation " + reservation.getId() + "
+            // (Confirmation: "
+            // + reservation.getConfirmationNumber() + ")");
             reservation.setAssignedRoom(null);
             reservationRepository.save(reservation);
         }
 
-        // System.out.println("🔥 Deleting Room " + room.getRoomNumber() + " (ID: " + room.getId() + ")...");
+        // System.out.println("🔥 Deleting Room " + room.getRoomNumber() + " (ID: " +
+        // room.getId() + ")...");
         // Now safe to delete the room
         roomRepository.delete(room);
-        // System.out.println("🔥 SUCCESS: Room " + room.getRoomNumber() + " deleted successfully");
+        // System.out.println("🔥 SUCCESS: Room " + room.getRoomNumber() + " deleted
+        // successfully");
     }
 
     /**
@@ -810,8 +830,9 @@ public class HotelAdminService {
         // System.out.println("🔍 Today's date: " + today);
 
         for (Reservation r : allReservations) {
-            // System.out.println("🔍 Reservation " + r.getId() + " - Status: " + r.getStatus() +
-            //         ", Check-in: " + r.getCheckInDate() + ", Check-out: " + r.getCheckOutDate());
+            // System.out.println("🔍 Reservation " + r.getId() + " - Status: " +
+            // r.getStatus() +
+            // ", Check-in: " + r.getCheckInDate() + ", Check-out: " + r.getCheckOutDate());
         }
 
         // Count confirmed bookings (CONFIRMED status or CHECKED_IN status)
@@ -819,12 +840,14 @@ public class HotelAdminService {
         // and all CHECKED_IN bookings regardless of dates
         long confirmedBookings = allReservations.stream()
                 .filter(r -> {
-                    // System.out.println("🔍 Processing reservation " + r.getId() + " - Status: " + r.getStatus() +
-                    //         ", Check-in: " + r.getCheckInDate() + ", Check-out: " + r.getCheckOutDate());
+                    // System.out.println("🔍 Processing reservation " + r.getId() + " - Status: " +
+                    // r.getStatus() +
+                    // ", Check-in: " + r.getCheckInDate() + ", Check-out: " + r.getCheckOutDate());
 
                     // Count CHECKED_IN bookings regardless of dates (current guests)
                     if (r.getStatus() == ReservationStatus.CHECKED_IN) {
-                        // System.out.println("🔍 Reservation " + r.getId() + " included - CHECKED_IN guest");
+                        // System.out.println("🔍 Reservation " + r.getId() + " included - CHECKED_IN
+                        // guest");
                         return true;
                     }
 
@@ -840,7 +863,8 @@ public class HotelAdminService {
                         return isValidBooking;
                     }
 
-                    // System.out.println("🔍 Reservation " + r.getId() + " excluded - status: " + r.getStatus());
+                    // System.out.println("🔍 Reservation " + r.getId() + " excluded - status: " +
+                    // r.getStatus());
                     return false;
                 })
                 .count();
@@ -908,13 +932,17 @@ public class HotelAdminService {
 
     // Helper methods
     private User getUserByEmail(String email) {
-        // System.err.println("🔍 HotelAdminService.getUserByEmail called with email: " + email);
+        // System.err.println("🔍 HotelAdminService.getUserByEmail called with email: "
+        // + email);
         Optional<User> userOpt = userRepository.findByEmailWithHotel(email);
-        // System.err.println("🔍 userRepository.findByEmailWithHotel returned: " + userOpt.isPresent());
+        // System.err.println("🔍 userRepository.findByEmailWithHotel returned: " +
+        // userOpt.isPresent());
         if (userOpt.isPresent()) {
             User user = userOpt.get();
-            // System.err.println("🔍 Found user with ID: " + user.getId() + ", email: " + user.getEmail());
-            // System.err.println("🔍 User hotel: " + (user.getHotel() != null ? user.getHotel().getId() : "null"));
+            // System.err.println("🔍 Found user with ID: " + user.getId() + ", email: " +
+            // user.getEmail());
+            // System.err.println("🔍 User hotel: " + (user.getHotel() != null ?
+            // user.getHotel().getId() : "null"));
             return user;
         } else {
             // System.err.println("🔍 User not found, throwing exception");

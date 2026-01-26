@@ -161,7 +161,7 @@ const NotificationsPage: React.FC = () => {
   };
 
   const renderNotificationsTable = (notifications: BookingNotification[]) => (
-    <TableContainer component={Paper}>
+    <TableContainer>
       <Table sx={{ minWidth: 650 }} aria-label="notifications table">
         <TableHead>
           <TableRow
@@ -211,6 +211,7 @@ const NotificationsPage: React.FC = () => {
                 backgroundColor: notification.status === 'UNREAD' ? 'rgba(33, 150, 243, 0.1)' : 'inherit',
                 opacity: notification.status === 'ARCHIVED' ? 0.6 : 1,
                 cursor: 'pointer',
+                transition: 'background-color 0.2s',
                 '&:hover': { backgroundColor: notification.status === 'UNREAD' ? 'rgba(33, 150, 243, 0.15)' : 'action.hover' }
               }}
               onClick={() => openDetails(notification)}
@@ -354,118 +355,131 @@ const NotificationsPage: React.FC = () => {
   }
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={{ width: '100%', height: '100%' }}>
       {/* Header */}
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          <NotificationsActiveIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
-          Booking Notifications
-        </Typography>
-        <Box display="flex" gap={2}>
-          <Button
-            variant="outlined"
-            startIcon={<RefreshIcon />}
-            onClick={triggerRefresh || loadNotifications}
-            disabled={loading}
-          >
-            Refresh
-          </Button>
-          {stats.totalUnread > 0 && (
+      <Box 
+        sx={{ 
+          px: 3, 
+          pt: 3, 
+          pb: 2,
+          borderBottom: 1,
+          borderColor: 'divider',
+          backgroundColor: 'background.paper'
+        }}
+      >
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+          <Typography variant="h4" component="h1">
+            <NotificationsActiveIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+            Booking Notifications
+          </Typography>
+          <Box display="flex" gap={2}>
             <Button
-              variant="contained"
-              startIcon={<InfoIcon />}
-              onClick={markAllAsRead}
+              variant="outlined"
+              startIcon={<RefreshIcon />}
+              onClick={triggerRefresh || loadNotifications}
+              disabled={loading}
             >
-              Mark All Read ({stats.totalUnread})
+              Refresh
             </Button>
-          )}
+            {stats.totalUnread > 0 && (
+              <Button
+                variant="contained"
+                startIcon={<InfoIcon />}
+                onClick={markAllAsRead}
+              >
+                Mark All Read ({stats.totalUnread})
+              </Button>
+            )}
+          </Box>
         </Box>
-      </Box>
 
-      {/* Error Alert */}
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
-          {error}
-        </Alert>
-      )}
+        {/* Error Alert */}
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+            {error}
+          </Alert>
+        )}
 
-      {/* Filters */}
-      <Box display="flex" gap={2} mb={3}>
-        <FormControl size="small" sx={{ minWidth: 150 }}>
-          <InputLabel>Filter by Type</InputLabel>
-          <Select
-            value={typeFilter}
-            label="Filter by Type"
+        {/* Filters */}
+        <Box display="flex" gap={2}>
+          <FormControl size="small" sx={{ minWidth: 150 }}>
+            <InputLabel>Filter by Type</InputLabel>
+            <Select
+              value={typeFilter}
+              label="Filter by Type"
+              onChange={(e) => {
+                setTypeFilter(e.target.value);
+                setPage(0);
+              }}
+            >
+              <MenuItem value="ALL">All Notifications</MenuItem>
+              <MenuItem value="CANCELLED">Cancelled Only</MenuItem>
+              <MenuItem value="MODIFIED">Modified Only</MenuItem>
+            </Select>
+          </FormControl>
+          
+          <TextField
+            size="small"
+            placeholder="Search by confirmation number..."
+            value={confirmationFilter}
             onChange={(e) => {
-              setTypeFilter(e.target.value);
-              setPage(0); // Reset to first page when filter changes
+              setConfirmationFilter(e.target.value);
+              setPage(0);
             }}
-          >
-            <MenuItem value="ALL">All Notifications</MenuItem>
-            <MenuItem value="CANCELLED">Cancelled Only</MenuItem>
-            <MenuItem value="MODIFIED">Modified Only</MenuItem>
-          </Select>
-        </FormControl>
-        
-        <TextField
-          size="small"
-          placeholder="Search by confirmation number..."
-          value={confirmationFilter}
-          onChange={(e) => {
-            setConfirmationFilter(e.target.value);
-            setPage(0); // Reset to first page when search changes
-          }}
-          sx={{ minWidth: 250 }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon />
-              </InputAdornment>
-            ),
-            endAdornment: confirmationFilter && (
-              <InputAdornment position="end">
-                <IconButton
-                  size="small"
-                  onClick={() => setConfirmationFilter('')}
-                  edge="end"
-                >
-                  <ClearIcon />
-                </IconButton>
-              </InputAdornment>
-            ),
-          }}
-        />
+            sx={{ minWidth: 250 }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              ),
+              endAdornment: confirmationFilter && (
+                <InputAdornment position="end">
+                  <IconButton
+                    size="small"
+                    onClick={() => setConfirmationFilter('')}
+                    edge="end"
+                  >
+                    <ClearIcon />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Box>
       </Box>
 
       {/* Notifications Table */}
-      {getFilteredNotifications().length > 0 ? (
-        <>
-          {renderNotificationsTable(getPaginatedNotifications())}
-          <TablePagination
-            component="div"
-            count={getFilteredNotifications().length}
-            page={page}
-            onPageChange={handlePageChange}
-            rowsPerPage={rowsPerPage}
-            onRowsPerPageChange={handleRowsPerPageChange}
-            rowsPerPageOptions={[5, 10, 25, 50, 100]}
-            sx={{ borderTop: 1, borderColor: 'divider' }}
-          />
-        </>
-      ) : (
-        <Box textAlign="center" py={4}>
-          <InfoIcon color="action" sx={{ fontSize: 64, mb: 2 }} />
-          <Typography variant="h6" color="textSecondary">
-            No notifications found
-          </Typography>
-          <Typography variant="body2" color="textSecondary">
-            {typeFilter !== 'ALL' || confirmationFilter.trim() 
-              ? 'Try adjusting your filters or search terms' 
-              : 'No notifications available at this time'
-            }
-          </Typography>
-        </Box>
-      )}
+      <Box sx={{ width: '100%' }}>
+        {getFilteredNotifications().length > 0 ? (
+          <>
+            {renderNotificationsTable(getPaginatedNotifications())}
+            <TablePagination
+              component="div"
+              count={getFilteredNotifications().length}
+              page={page}
+              onPageChange={handlePageChange}
+              rowsPerPage={rowsPerPage}
+              onRowsPerPageChange={handleRowsPerPageChange}
+              rowsPerPageOptions={[5, 10, 25, 50, 100]}
+              sx={{ borderTop: 1, borderColor: 'divider' }}
+            />
+          </>
+        ) : (
+          <Box textAlign="center" py={8}>
+            <InfoIcon color="action" sx={{ fontSize: 64, mb: 2 }} />
+            <Typography variant="h6" color="textSecondary">
+              No notifications found
+            </Typography>
+            <Typography variant="body2" color="textSecondary">
+              {typeFilter !== 'ALL' || confirmationFilter.trim() 
+                ? 'Try adjusting your filters or search terms' 
+                : 'No notifications available at this time'
+              }
+            </Typography>
+          </Box>
+        )}
+      </Box>
 
       {/* Notification Details Dialog */}
       <Dialog 

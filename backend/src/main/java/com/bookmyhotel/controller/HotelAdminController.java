@@ -537,7 +537,7 @@ public class HotelAdminController {
                 // Get room type images - convert room type string to ID
                 try {
                     logger.info("🔍 DEBUG: Received room type request: {}", roomType);
-                    
+
                     // Handle both formats: "ROOM_TYPE_1" (from frontend) and "STANDARD" (enum name)
                     Long roomTypeId;
                     if (roomType.matches("ROOM_TYPE_\\d+")) {
@@ -551,7 +551,7 @@ public class HotelAdminController {
                         logger.info("🔍 DEBUG: Converted room type {} to ID: {} (ordinal: {})", roomType, roomTypeId,
                                 roomTypeEnum.ordinal());
                     }
-                    
+
                     logger.info("🔍 DEBUG: Retrieving images for hotel ID: {}, room type ID: {}", hotel.getId(),
                             roomTypeId);
 
@@ -604,10 +604,11 @@ public class HotelAdminController {
         try {
             // Debug logging
             // System.out.println("🔍 ROOM TYPE UPLOAD DEBUG:");
-            // System.out.println("  roomType parameter: " + roomType);
-            // System.out.println("  isHotelGeneral parameter: " + isHotelGeneral);
+            // System.out.println(" roomType parameter: " + roomType);
+            // System.out.println(" isHotelGeneral parameter: " + isHotelGeneral);
             // System.out
-            //         .println("  heroImage filename: " + (heroImage != null ? heroImage.getOriginalFilename() : "null"));
+            // .println(" heroImage filename: " + (heroImage != null ?
+            // heroImage.getOriginalFilename() : "null"));
 
             String tenantId = TenantContext.getTenantId();
             HotelDTO hotel = hotelAdminService.getMyHotel(auth.getName());
@@ -624,7 +625,7 @@ public class HotelAdminController {
             // Check if this is a room type image upload
             if (roomType != null && !roomType.trim().isEmpty()) {
                 // System.out.println("🎯 TAKING ROOM TYPE UPLOAD PATH");
-                // System.out.println("  roomType: " + roomType);
+                // System.out.println(" roomType: " + roomType);
 
                 // This is a room type image upload
                 ImageCategory category = ImageCategory.ROOM_TYPE_HERO; // Room type images default to hero
@@ -660,7 +661,7 @@ public class HotelAdminController {
                 } else {
                     category = ImageCategory.HOTEL_GALLERY; // Default to gallery
                 }
-                // System.out.println("  category: " + category);
+                // System.out.println(" category: " + category);
 
                 uploadedImage = hotelImageService.uploadHotelImage(
                         tenantId, hotel.getId(), category, heroImage, heroAltText, null);

@@ -89,7 +89,8 @@ public class RoomBulkUploadService {
 
                     // Parse data rows
                     String[] values = line.split(",");
-                    // System.out.println("Row " + rowNumber + " values: " + java.util.Arrays.toString(values));
+                    // System.out.println("Row " + rowNumber + " values: " +
+                    // java.util.Arrays.toString(values));
                     Map<String, Object> room = new HashMap<>();
                     List<String> rowErrors = new ArrayList<>();
 
@@ -189,7 +190,8 @@ public class RoomBulkUploadService {
             result.put("success", false);
             result.put("message", "Error reading CSV file: " + e.getMessage());
         } catch (Exception e) {
-            // System.err.println("Unexpected error during CSV validation: " + e.getMessage());
+            // System.err.println("Unexpected error during CSV validation: " +
+            // e.getMessage());
             result.put("success", false);
             result.put("message", "An unexpected error occurred while processing your request");
         }
@@ -207,7 +209,8 @@ public class RoomBulkUploadService {
 
         // System.out.println("🔥 UPLOAD SERVICE CALLED");
         // System.out.println("🔥 Hotel ID: " + hotelId);
-        // System.out.println("🔥 File: " + (file != null ? file.getOriginalFilename() : "null"));
+        // System.out.println("🔥 File: " + (file != null ? file.getOriginalFilename() :
+        // "null"));
         // System.out.println("🔥 Skip errors: " + skipErrors);
 
         // First validate the CSV
@@ -221,7 +224,8 @@ public class RoomBulkUploadService {
         List<Map<String, Object>> successfulRooms = (List<Map<String, Object>>) data.get("successfulRooms");
         List<Map<String, Object>> validationErrors = (List<Map<String, Object>>) data.get("validationErrors");
 
-        // System.out.println("🔥 Successful rooms from validation: " + successfulRooms.size());
+        // System.out.println("🔥 Successful rooms from validation: " +
+        // successfulRooms.size());
         // System.out.println("🔥 Validation errors: " + validationErrors.size());
 
         if (!skipErrors && !validationErrors.isEmpty()) {

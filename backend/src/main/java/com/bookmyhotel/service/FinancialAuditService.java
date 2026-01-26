@@ -104,10 +104,11 @@ public class FinancialAuditService {
             LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
 
             // Get reservations for the day (limit to prevent memory issues)
-            // Note: For hotels with >1000 reservations/day, consider streaming or pagination
+            // Note: For hotels with >1000 reservations/day, consider streaming or
+            // pagination
             List<Reservation> reservations = reservationRepository.findByHotelIdAndDateRange(hotelId, startOfDay,
                     endOfDay);
-            
+
             if (reservations.size() > 1000) {
                 logger.warn("Large number of reservations ({}) for hotel {} on {}. Consider implementing pagination.",
                         reservations.size(), hotelId, date);

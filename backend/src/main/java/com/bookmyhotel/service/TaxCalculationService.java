@@ -12,7 +12,8 @@ import java.math.RoundingMode;
 
 /**
  * Centralized service for all tax calculations
- * This ensures consistent tax computation across booking, checkout, and shop services
+ * This ensures consistent tax computation across booking, checkout, and shop
+ * services
  * 
  * Tax calculation rules:
  * - VAT (Value Added Tax): Typically 17% in Ethiopia, configurable per hotel
@@ -31,22 +32,22 @@ import java.math.RoundingMode;
 public class TaxCalculationService {
 
     private static final Logger logger = LoggerFactory.getLogger(TaxCalculationService.class);
-    
+
     // Pricing constants
     public static final int PRICE_SCALE = 2;
     public static final RoundingMode PRICE_ROUNDING = RoundingMode.HALF_UP;
-    
+
     // Default tax rates (fallback if hotel config not available)
     public static final BigDecimal DEFAULT_VAT_RATE = new BigDecimal("0.17");
     public static final BigDecimal DEFAULT_SERVICE_TAX_RATE = new BigDecimal("0.05");
-    
+
     @Autowired
     private HotelPricingConfigService hotelPricingConfigService;
-    
+
     /**
      * Calculate taxes for a given subtotal amount
      * 
-     * @param hotelId The hotel ID to fetch tax configuration
+     * @param hotelId  The hotel ID to fetch tax configuration
      * @param subtotal The base amount (before taxes)
      * @return TaxBreakdown with VAT, service tax, and total
      */
@@ -55,25 +56,26 @@ public class TaxCalculationService {
             logger.warn("Invalid subtotal for tax calculation: {}", subtotal);
             return new TaxBreakdown(BigDecimal.ZERO, BigDecimal.ZERO);
         }
-        
+
         try {
             // Get tax rates from hotel configuration
             BigDecimal vatRate = hotelPricingConfigService.getVatRate(hotelId);
             BigDecimal serviceTaxRate = hotelPricingConfigService.getServiceTaxRate(hotelId);
-            
+
             return calculateTaxesWithRates(subtotal, vatRate, serviceTaxRate);
-            
+
         } catch (Exception e) {
             logger.error("Error fetching tax rates for hotel {}, using defaults: {}", hotelId, e.getMessage());
             return calculateTaxesWithRates(subtotal, DEFAULT_VAT_RATE, DEFAULT_SERVICE_TAX_RATE);
         }
     }
-    
+
     /**
-     * Calculate taxes with explicit rates (useful for testing or custom calculations)
+     * Calculate taxes with explicit rates (useful for testing or custom
+     * calculations)
      * 
-     * @param subtotal The base amount (before taxes)
-     * @param vatRate VAT rate as decimal (e.g., 0.17 for 17%)
+     * @param subtotal       The base amount (before taxes)
+     * @param vatRate        VAT rate as decimal (e.g., 0.17 for 17%)
      * @param serviceTaxRate Service tax rate as decimal (e.g., 0.05 for 5%)
      * @return TaxBreakdown with VAT, service tax, and total
      */
@@ -81,7 +83,7 @@ public class TaxCalculationService {
         if (subtotal == null || subtotal.compareTo(BigDecimal.ZERO) <= 0) {
             return new TaxBreakdown(BigDecimal.ZERO, BigDecimal.ZERO);
         }
-        
+
         // Ensure rates are non-null
         if (vatRate == null) {
             vatRate = DEFAULT_VAT_RATE;
@@ -89,21 +91,21 @@ public class TaxCalculationService {
         if (serviceTaxRate == null) {
             serviceTaxRate = DEFAULT_SERVICE_TAX_RATE;
         }
-        
+
         // Calculate individual tax amounts
         BigDecimal vatAmount = subtotal.multiply(vatRate)
                 .setScale(PRICE_SCALE, PRICE_ROUNDING);
-        
+
         BigDecimal serviceTaxAmount = subtotal.multiply(serviceTaxRate)
                 .setScale(PRICE_SCALE, PRICE_ROUNDING);
-        
+
         return new TaxBreakdown(vatAmount, serviceTaxAmount);
     }
-    
+
     /**
      * Calculate total amount including taxes
      * 
-     * @param hotelId The hotel ID to fetch tax configuration
+     * @param hotelId  The hotel ID to fetch tax configuration
      * @param subtotal The base amount (before taxes)
      * @return Total amount (subtotal + VAT + service tax)
      */
@@ -112,7 +114,7 @@ public class TaxCalculationService {
         return subtotal.add(taxes.getVatAmount()).add(taxes.getServiceTaxAmount())
                 .setScale(PRICE_SCALE, PRICE_ROUNDING);
     }
-    
+
     /**
      * Calculate total tax rate for a hotel (VAT + Service Tax)
      * 
@@ -129,11 +131,11 @@ public class TaxCalculationService {
             return DEFAULT_VAT_RATE.add(DEFAULT_SERVICE_TAX_RATE);
         }
     }
-    
+
     /**
      * Validate that a price is positive and properly scaled
      * 
-     * @param amount The amount to validate
+     * @param amount  The amount to validate
      * @param context Description of where this price is used (for logging)
      * @throws IllegalArgumentException if price is invalid
      */
@@ -145,11 +147,11 @@ public class TaxCalculationService {
             throw new IllegalArgumentException("Price must be positive in " + context + ": " + amount);
         }
         if (amount.scale() > PRICE_SCALE) {
-            logger.warn("Price in {} has excessive decimal places: {}. Should be scaled to {}.", 
+            logger.warn("Price in {} has excessive decimal places: {}. Should be scaled to {}.",
                     context, amount, PRICE_SCALE);
         }
     }
-    
+
     /**
      * Round amount to standard price scale
      * 

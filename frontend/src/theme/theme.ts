@@ -19,17 +19,36 @@ const themeOptions: ThemeOptions = {
   },
   
   typography: {
-    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
-    h1: designSystem.typography.h1,
-    h2: designSystem.typography.h2,
-    h3: designSystem.typography.h3,
-    h4: designSystem.typography.h4,
+    fontFamily: '"Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+    h1: {
+      ...designSystem.typography.h1,
+      fontSize: '3rem',
+      fontWeight: 700,
+      letterSpacing: '-0.02em'
+    },
+    h2: {
+      ...designSystem.typography.h2,
+      fontSize: '2.25rem',
+      fontWeight: 700
+    },
+    h3: {
+      ...designSystem.typography.h3,
+      fontWeight: 600
+    },
+    h4: {
+      ...designSystem.typography.h4,
+      fontWeight: 600
+    },
     h5: designSystem.typography.h5,
     h6: designSystem.typography.h6,
     body1: designSystem.typography.body1,
     body2: designSystem.typography.body2,
     caption: designSystem.typography.caption,
-    button: designSystem.typography.button
+    button: {
+      ...designSystem.typography.button,
+      fontWeight: 600,
+      letterSpacing: '0.02em'
+    }
   },
 
   spacing: designSystem.spacing.sm, // Base spacing unit (8px)
@@ -67,56 +86,82 @@ const themeOptions: ThemeOptions = {
   ],
 
   components: {
-    // Button component customization
+    // Button component customization - Premium
     MuiButton: {
       styleOverrides: {
         root: {
           textTransform: 'none',
-          fontWeight: 500,
+          fontWeight: 600,
           borderRadius: designSystem.borderRadius.md,
-          transition: `all ${animations.duration.short}ms ${animations.easing.easeInOut}`
+          padding: '10px 24px',
+          transition: `all ${animations.duration.standard}ms ${animations.easing.easeInOut}`
         },
         contained: {
-          boxShadow: designSystem.shadows.sm,
+          background: 'linear-gradient(135deg, #1a365d 0%, #0f2744 100%)',
+          boxShadow: '0 4px 15px rgba(26, 54, 93, 0.25)',
           '&:hover': {
-            boxShadow: designSystem.shadows.md
+            background: 'linear-gradient(135deg, #2a4a6d 0%, #1a365d 100%)',
+            boxShadow: '0 6px 20px rgba(26, 54, 93, 0.35)',
+            transform: 'translateY(-2px)'
+          },
+          '&:active': {
+            transform: 'translateY(0)',
+            boxShadow: '0 2px 8px rgba(26, 54, 93, 0.25)'
           }
         },
         outlined: {
-          borderWidth: '1.5px',
+          borderWidth: '2px',
+          borderColor: designSystem.colors.primary.main,
           '&:hover': {
-            borderWidth: '1.5px'
+            borderWidth: '2px',
+            backgroundColor: 'rgba(26, 54, 93, 0.04)',
+            transform: 'translateY(-1px)'
+          }
+        },
+        text: {
+          '&:hover': {
+            backgroundColor: 'rgba(26, 54, 93, 0.04)'
           }
         }
       }
     },
 
-    // Card component customization
+    // Card component customization - Premium
     MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: designSystem.borderRadius.lg,
-          border: `1px solid ${designSystem.colors.primary[50]}`,
-          boxShadow: designSystem.shadows.card,
-          transition: `all ${animations.duration.short}ms ${animations.easing.easeInOut}`,
+          borderRadius: designSystem.borderRadius.xl,
+          border: 'none',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           '&:hover': {
-            boxShadow: designSystem.shadows.cardHover
+            boxShadow: '0 8px 30px rgba(0, 0, 0, 0.12)',
+            transform: 'translateY(-4px)'
           }
         }
       }
     },
 
-    // TextField component customization
+    // TextField component customization - Premium
     MuiTextField: {
       styleOverrides: {
         root: {
           '& .MuiOutlinedInput-root': {
             borderRadius: designSystem.borderRadius.md,
-            '&:hover .MuiOutlinedInput-notchedOutline': {
-              borderColor: designSystem.colors.primary.main
+            backgroundColor: '#FFFFFF',
+            transition: `all ${animations.duration.standard}ms ${animations.easing.easeInOut}`,
+            '& fieldset': {
+              borderColor: '#E0E0E0',
+              borderWidth: '1.5px'
             },
-            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-              borderColor: designSystem.colors.primary.main
+            '&:hover fieldset': {
+              borderColor: designSystem.colors.primary.light,
+              borderWidth: '1.5px'
+            },
+            '&.Mui-focused fieldset': {
+              borderColor: designSystem.colors.primary.main,
+              borderWidth: '2px',
+              boxShadow: '0 0 0 3px rgba(26, 54, 93, 0.1)'
             }
           },
           '& .MuiInputLabel-root.Mui-focused': {
@@ -126,17 +171,26 @@ const themeOptions: ThemeOptions = {
       }
     },
 
-    // FormControl component customization
+    // FormControl component customization - Premium
     MuiFormControl: {
       styleOverrides: {
         root: {
           '& .MuiOutlinedInput-root': {
             borderRadius: designSystem.borderRadius.md,
-            '&:hover .MuiOutlinedInput-notchedOutline': {
-              borderColor: designSystem.colors.primary.main
+            backgroundColor: '#FFFFFF',
+            transition: `all ${animations.duration.standard}ms ${animations.easing.easeInOut}`,
+            '& fieldset': {
+              borderColor: '#E0E0E0',
+              borderWidth: '1.5px'
             },
-            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-              borderColor: designSystem.colors.primary.main
+            '&:hover fieldset': {
+              borderColor: designSystem.colors.primary.light,
+              borderWidth: '1.5px'
+            },
+            '&.Mui-focused fieldset': {
+              borderColor: designSystem.colors.primary.main,
+              borderWidth: '2px',
+              boxShadow: '0 0 0 3px rgba(26, 54, 93, 0.1)'
             }
           },
           '& .MuiInputLabel-root.Mui-focused': {
@@ -146,22 +200,29 @@ const themeOptions: ThemeOptions = {
       }
     },
 
-    // Dialog component customization
+    // Dialog component customization - Premium
     MuiDialog: {
       styleOverrides: {
         paper: {
-          borderRadius: designSystem.borderRadius.lg,
-          boxShadow: designSystem.shadows.dialog
+          borderRadius: designSystem.borderRadius.xl,
+          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.25)',
+          backgroundColor: '#FFFFFF'
         }
       }
     },
 
-    // Chip component customization
+    // Chip component customization - Premium
     MuiChip: {
       styleOverrides: {
         root: {
           borderRadius: designSystem.borderRadius.md,
-          fontWeight: 500
+          fontWeight: 600,
+          transition: 'all 0.2s ease'
+        },
+        filled: {
+          '&:hover': {
+            transform: 'scale(1.02)'
+          }
         }
       }
     },

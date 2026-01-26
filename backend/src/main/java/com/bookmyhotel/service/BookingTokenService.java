@@ -68,10 +68,12 @@ public class BookingTokenService {
             }
 
             Long reservationId = claims.get("reservationId", Long.class);
-            // System.out.println("JWT validation successful for reservation ID: " + reservationId);
+            // System.out.println("JWT validation successful for reservation ID: " +
+            // reservationId);
             return reservationId;
         } catch (Exception e) {
-            // System.err.println("JWT validation error: " + e.getClass().getSimpleName() + " - " + e.getMessage());
+            // System.err.println("JWT validation error: " + e.getClass().getSimpleName() +
+            // " - " + e.getMessage());
             logger.error("Operation failed", e);
             return null;
         }
@@ -94,7 +96,8 @@ public class BookingTokenService {
             // System.out.println("JWT email extraction successful: " + email);
             return email;
         } catch (Exception e) {
-            // System.err.println("JWT email extraction error: " + e.getClass().getSimpleName() + " - " + e.getMessage());
+            // System.err.println("JWT email extraction error: " +
+            // e.getClass().getSimpleName() + " - " + e.getMessage());
             logger.error("Operation failed", e);
             return null;
         }

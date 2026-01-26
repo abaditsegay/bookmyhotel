@@ -205,6 +205,7 @@ function App() {
                            location.pathname.startsWith('/operations') ||
                            location.pathname.startsWith('/staff') ||
                            location.pathname.startsWith('/shop') ||
+                           location.pathname.startsWith('/notifications') ||
                            location.pathname.startsWith('/hotels/search') ||
                            location.pathname === '/home';
 

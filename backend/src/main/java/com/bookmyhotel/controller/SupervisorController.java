@@ -369,7 +369,8 @@ public class SupervisorController {
             } catch (Exception housekeepingError) {
                 // Log but don't fail if housekeeping_staff table has issues
                 // System.err.println(
-                //         "Warning: Could not fetch from housekeeping_staff table: " + housekeepingError.getMessage());
+                // "Warning: Could not fetch from housekeeping_staff table: " +
+                // housekeepingError.getMessage());
             }
 
             return ResponseEntity.ok(Map.of(

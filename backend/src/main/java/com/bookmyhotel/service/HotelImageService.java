@@ -76,7 +76,7 @@ public class HotelImageService {
         this.hotelRepository = hotelRepository;
         this.roomRepository = roomRepository;
     }
-    
+
     @PostConstruct
     public void init() {
         // Log configuration after injection is complete
@@ -429,10 +429,10 @@ public class HotelImageService {
         String sanitizedHotelName = hotelName.toLowerCase()
                 .replaceAll("[^a-z0-9\\s-]", "")
                 .replaceAll("\\s+", "-");
-        
+
         String extension = getFileExtension(originalFilename);
         String filename;
-        
+
         if (roomType != null) {
             // Room type image: hotelName/standard.jpg, hotelName/deluxe.jpg
             filename = roomType.toString().toLowerCase() + "." + extension;
@@ -442,7 +442,7 @@ public class HotelImageService {
             filename = "main." + extension;
             logger.debug("📁 Hotel main image: {}/{}", sanitizedHotelName, filename);
         }
-        
+
         String finalKey = sanitizedHotelName + "/" + filename;
         logger.debug("✅ Generated file key: {}", finalKey);
         return finalKey;
@@ -452,15 +452,15 @@ public class HotelImageService {
         try {
             // Create full file path: /opt/bookmyhotel/uploads/images/{key}
             Path filePath = Paths.get(baseUploadDirectory, key);
-            
+
             // Create directories if they don't exist
             Files.createDirectories(filePath.getParent());
-            
+
             // Save file to filesystem
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-            
+
             logger.info("✅ File uploaded to local filesystem: {}", filePath);
-            
+
             // Return URL path: /uploads/images/{key}
             return baseImageUrl + "/" + key;
         } catch (Exception e) {
@@ -498,7 +498,7 @@ public class HotelImageService {
         // Extract key from local filesystem URL or S3 URL
         // Local: http://localhost:8080/uploads/images/{key}
         // S3: https://bucket.s3.region.amazonaws.com/{key}
-        
+
         if (imageUrl.contains("/uploads/images/")) {
             // Local filesystem URL
             int index = imageUrl.indexOf("/uploads/images/");

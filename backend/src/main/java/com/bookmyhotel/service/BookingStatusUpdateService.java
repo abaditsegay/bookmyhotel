@@ -100,7 +100,7 @@ public class BookingStatusUpdateService {
         // Create booking notification if status changed to CANCELLED
         if (newStatus == ReservationStatus.CANCELLED) {
             // System.out.println("📢 Creating cancellation notification for reservation: "
-            //         + generateConfirmationNumber(reservation.getId()));
+            // + generateConfirmationNumber(reservation.getId()));
             try {
                 String reason = "Booking cancelled by " + initiatedBy;
                 bookingChangeNotificationService.createCancellationNotification(
@@ -111,12 +111,14 @@ public class BookingStatusUpdateService {
                 // System.out.println("✅ Successfully created cancellation notification");
             } catch (Exception e) {
                 // Log error but don't fail the status update
-                // System.err.println("❌ Failed to create cancellation notification: " + e.getMessage());
+                // System.err.println("❌ Failed to create cancellation notification: " +
+                // e.getMessage());
                 logger.error("Operation failed", e);
             }
         }
 
-        // System.out.println("✅ Status updated successfully: " + oldStatus + " → " + newStatus);
+        // System.out.println("✅ Status updated successfully: " + oldStatus + " → " +
+        // newStatus);
 
         // Trigger automated room status consistency check for the affected room
         if (room != null) {

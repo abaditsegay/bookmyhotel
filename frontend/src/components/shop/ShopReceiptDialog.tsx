@@ -588,18 +588,36 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
           </Box>
         </DialogContent>
 
-        <DialogActions sx={{ p: 3, bgcolor: '#f5f5f5' }}>
+        <DialogActions sx={{ p: 3, bgcolor: '#f5f5f5', justifyContent: 'space-between' }}>
           <Button 
-            onClick={handleCloseAndRefresh} 
+            onClick={onClose} 
             variant="outlined"
+            color="error"
             sx={{ 
               minWidth: 120,
               textTransform: 'none',
-              borderColor: '#e0e0e0',
-              color: '#616161',
+              borderColor: '#f44336',
+              color: '#d32f2f',
               '&:hover': {
-                borderColor: '#bdbdbd',
-                bgcolor: '#fafafa'
+                borderColor: '#d32f2f',
+                bgcolor: 'rgba(244, 67, 54, 0.04)'
+              }
+            }}
+          >
+            {t('common.cancel')}
+          </Button>
+          <Button 
+            onClick={handleCloseAndRefresh} 
+            variant="contained"
+            sx={{ 
+              minWidth: 120,
+              textTransform: 'none',
+              background: 'linear-gradient(135deg, #1a365d 0%, #0f2744 100%)',
+              boxShadow: '0 4px 15px rgba(26, 54, 93, 0.25)',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #2a4a6d 0%, #1a365d 100%)',
+                boxShadow: '0 6px 20px rgba(26, 54, 93, 0.35)',
+                transform: 'translateY(-2px)'
               }
             }}
           >

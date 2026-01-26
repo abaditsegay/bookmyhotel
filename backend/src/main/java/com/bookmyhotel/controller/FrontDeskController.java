@@ -436,9 +436,10 @@ public class FrontDeskController {
 
         // Log the walk-in booking creation for audit purposes
         String staffEmail = auth.getName();
-        // System.out.println("Walk-in booking created by front desk staff: " + staffEmail +
-        //         " with confirmation number: " + response.getConfirmationNumber() +
-        //         " for guest email: " + request.getGuestEmail());
+        // System.out.println("Walk-in booking created by front desk staff: " +
+        // staffEmail +
+        // " with confirmation number: " + response.getConfirmationNumber() +
+        // " for guest email: " + request.getGuestEmail());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }

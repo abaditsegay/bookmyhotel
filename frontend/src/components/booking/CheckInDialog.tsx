@@ -1029,14 +1029,23 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                                 </Typography>
                                 <Chip 
                                   label={`${formatCurrency(room.pricePerNight || 0)}/night`} 
-                                  size="small" 
+                                  size="medium" 
                                   sx={{
-                                    backgroundColor: selectedRoomId === room.id ? 'primary.main' : 'primary.light',
-                                    color: selectedRoomId === room.id ? 'white' : 'primary.main',
-                                    fontWeight: 600,
+                                    background: selectedRoomId === room.id 
+                                      ? 'linear-gradient(135deg, #E8B86D 0%, #D4A355 100%)'
+                                      : 'linear-gradient(135deg, #F0C880 0%, #E8B86D 100%)',
+                                    color: selectedRoomId === room.id ? '#1a365d' : '#1a365d',
+                                    fontWeight: 700,
+                                    fontSize: '0.95rem',
+                                    px: 2,
+                                    py: 2.5,
+                                    height: 'auto',
+                                    boxShadow: '0 2px 8px rgba(232, 184, 109, 0.3)',
+                                    transition: 'all 0.3s ease',
                                     '&:hover': {
-                                      backgroundColor: 'primary.main',
-                                      color: 'white'
+                                      background: 'linear-gradient(135deg, #E8B86D 0%, #D4A355 100%)',
+                                      boxShadow: '0 4px 12px rgba(232, 184, 109, 0.4)',
+                                      transform: 'translateY(-1px)'
                                     }
                                   }}
                                 />
