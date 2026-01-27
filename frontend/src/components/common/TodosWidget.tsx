@@ -153,18 +153,18 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
 
   return (
     <Paper
-      elevation={5}
+      elevation={2}
       sx={{
         width,
         height,
         display: 'flex',
         flexDirection: 'column',
-        background: 'linear-gradient(150deg, #3c73aa 0%, #4c85c0 50%, #5d96d2 100%)',
+        background: 'linear-gradient(165deg, #ffffff 0%, #f7f7fb 60%, #f0f4ff 100%)',
         p: 2.5,
         borderRadius: 3,
         overflow: 'hidden',
         border: `1px solid ${alpha(COLORS.PRIMARY, 0.08)}`,
-        boxShadow: '0 8px 18px rgba(0, 0, 0, 0.16)',
+        boxShadow: '0 12px 28px rgba(26, 54, 93, 0.08)',
       }}
     >
       {/* Header */}
@@ -172,10 +172,10 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
         variant="h6" 
         sx={{ 
           mb: 2, 
-          color: COLORS.WHITE,
+          color: COLORS.PRIMARY,
           fontWeight: 700,
           letterSpacing: '0.04em',
-          borderBottom: `1px solid ${alpha(COLORS.PRIMARY, 0.28)}`,
+          borderBottom: `1px solid ${alpha(COLORS.PRIMARY, 0.12)}`,
           pb: 1.25
         }}
       >
@@ -205,22 +205,22 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
             width: '100%', 
             mb: 1,
             '& .MuiOutlinedInput-root': {
-              backgroundColor: 'rgba(255, 255, 255, 0.22)',
+              backgroundColor: '#ffffff',
               '& fieldset': {
-                borderColor: alpha(COLORS.WHITE, 0.14),
+                borderColor: alpha(COLORS.PRIMARY, 0.12),
               },
               '&:hover fieldset': {
-                borderColor: alpha(COLORS.PRIMARY, 0.36),
+                borderColor: alpha(COLORS.PRIMARY, 0.28),
               },
               '&.Mui-focused fieldset': {
                 borderColor: COLORS.PRIMARY,
               },
             },
             '& .MuiInputBase-input': {
-              color: COLORS.WHITE,
+              color: COLORS.TEXT_PRIMARY,
             },
             '& .MuiInputBase-input::placeholder': {
-              color: alpha(COLORS.WHITE, 0.75),
+              color: alpha(COLORS.PRIMARY, 0.55),
               opacity: 1,
             },
           }}
@@ -231,29 +231,29 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
             sx={{ 
               minWidth: 100,
               '& .MuiOutlinedInput-root': {
-                backgroundColor: 'rgba(255, 255, 255, 0.22)',
+                backgroundColor: '#ffffff',
                 '& fieldset': {
-                  borderColor: alpha(COLORS.WHITE, 0.14),
+                  borderColor: alpha(COLORS.PRIMARY, 0.12),
                 },
                 '&:hover fieldset': {
-                  borderColor: alpha(COLORS.PRIMARY, 0.36),
+                  borderColor: alpha(COLORS.PRIMARY, 0.28),
                 },
                 '&.Mui-focused fieldset': {
                   borderColor: COLORS.PRIMARY,
                 },
               },
               '& .MuiInputLabel-root': {
-                color: alpha(COLORS.WHITE, 0.75),
+                color: alpha(COLORS.PRIMARY, 0.7),
               },
               '& .MuiSelect-select': {
-                color: COLORS.WHITE,
+                color: COLORS.PRIMARY,
               },
               '& .MuiSelect-icon': {
-                color: COLORS.WHITE,
+                color: COLORS.PRIMARY,
               },
             }}
           >
-            <InputLabel sx={{ color: alpha(COLORS.WHITE, 0.75) }}>{t('widgets.todos.priority')}</InputLabel>
+            <InputLabel sx={{ color: alpha(COLORS.PRIMARY, 0.7) }}>{t('widgets.todos.priority')}</InputLabel>
             <Select
               value={severity}
               label={t('widgets.todos.priority')}
@@ -317,7 +317,7 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
             <ListItem>
               <ListItemText 
                 primary={t('widgets.todos.noTodos')} 
-                sx={{ '& .MuiListItemText-primary': { color: alpha(COLORS.WHITE, 0.75), fontStyle: 'italic' } }}
+                sx={{ '& .MuiListItemText-primary': { color: alpha(COLORS.PRIMARY, 0.6), fontStyle: 'italic' } }}
               />
             </ListItem>
           ) : (
@@ -326,17 +326,17 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
                 key={todo.id}
                 sx={{
                   border: '1px solid',
-                  borderColor: alpha(COLORS.WHITE, 0.06),
+                  borderColor: alpha(COLORS.PRIMARY, 0.1),
                   borderRadius: 1.5,
                   mb: 1.2,
                   backgroundColor: todo.completed 
-                    ? 'rgba(255, 255, 255, 0.24)'
-                    : 'rgba(255, 255, 255, 0.3)',
+                    ? 'rgba(26, 54, 93, 0.04)'
+                    : 'rgba(26, 54, 93, 0.06)',
                   transition: 'all 0.2s ease',
                   '&:hover': {
                     backgroundColor: todo.completed
-                        ? 'rgba(255, 255, 255, 0.3)'
-                        : 'rgba(255, 255, 255, 0.34)',
+                        ? 'rgba(26, 54, 93, 0.07)'
+                        : 'rgba(26, 54, 93, 0.1)',
                   },
                   cursor: 'pointer'
                 }}
@@ -351,8 +351,8 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
                       variant="body2"
                       sx={{
                         textDecoration: todo.completed ? 'line-through' : 'none',
-                        color: COLORS.WHITE,
-                        opacity: todo.completed ? 0.78 : 1,
+                        color: COLORS.TEXT_PRIMARY,
+                        opacity: todo.completed ? 0.7 : 1,
                         fontWeight: todo.completed ? 400 : 600,
                       }}
                     >
