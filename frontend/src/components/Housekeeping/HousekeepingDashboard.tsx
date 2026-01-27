@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { COLORS } from '../../theme/themeColors';
 import {
   Box,
   Grid,
@@ -784,9 +785,9 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                       <TableRow
                         sx={{
                           background: 'linear-gradient(135deg, #f5f5f5 0%, #fafafa 50%, #f5f5f5 100%)',
-                          borderBottom: '2px solid #E8B86D',
+                          borderBottom: `2px solid ${COLORS.PRIMARY}`,
                           '& .MuiTableCell-head': {
-                            color: '#B8860B',
+                            color: COLORS.PRIMARY,
                             fontWeight: 700,
                             fontSize: '0.95rem',
                             letterSpacing: '0.5px',

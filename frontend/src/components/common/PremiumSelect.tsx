@@ -1,5 +1,6 @@
 import React from 'react';
 import { FormControl, InputLabel, Select, SelectProps, FormControlProps, SelectChangeEvent, SxProps, Theme } from '@mui/material';
+import { COLORS } from '../../theme/themeColors';
 
 interface PremiumSelectProps {
   label: string;
@@ -35,9 +36,9 @@ const PremiumSelect: React.FC<PremiumSelectProps> = ({
       fontSize: '0.7rem',
       fontWeight: 600,
       letterSpacing: '0.5px',
-      color: '#666',
+      color: COLORS.PRIMARY,
       '&.Mui-focused': {
-        color: '#666', // Keep dark on focus, not gold
+        color: `${COLORS.PRIMARY} !important`, // Keep consistent dark focus
       },
     },
     '& .MuiOutlinedInput-root': {
@@ -92,9 +93,9 @@ const PremiumSelect: React.FC<PremiumSelectProps> = ({
           fontSize: '0.7rem',
           fontWeight: 600,
           letterSpacing: '0.5px',
-          color: '#666',
+          color: COLORS.PRIMARY,
           '&.Mui-focused': {
-            color: '#666', // Keep dark on focus, not gold
+            color: `${COLORS.PRIMARY} !important`, // Keep dark on focus, not gold
           },
         }}
       >

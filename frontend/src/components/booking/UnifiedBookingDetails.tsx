@@ -4,16 +4,12 @@ import {
   Typography,
   Box,
   Button,
-  TextField,
   Grid,
   Chip,
   IconButton,
   Divider,
   Card,
   CardContent,
-  FormControl,
-  InputLabel,
-  Select,
   MenuItem,
   Alert,
   Snackbar,
@@ -44,6 +40,7 @@ import { ROOM_TYPE_VALUES } from '../../constants/roomTypes';
 import { formatDateForDisplay, formatDateForInput } from '../../utils/dateUtils';
 import { formatCurrency } from '../../utils/currencyUtils';
 import PremiumTextField from '../common/PremiumTextField';
+import PremiumSelect from '../common/PremiumSelect';
 
 // Unified BookingData interface
 export interface BookingData {
@@ -790,7 +787,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
             >
               <ArrowBackIcon />
             </IconButton>
-            <Typography variant="h4" component="h1" sx={{ color: '#B8860B', fontWeight: 600 }}>
+            <Typography variant="h4" component="h1" sx={{ color: '#333', fontWeight: 600 }}>
               {pageTitle}
             </Typography>
           </Box>
@@ -798,18 +795,20 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
           <Box sx={{ display: 'flex', gap: 1 }}>
             {!isEditing ? (
               <Button
-                variant="outlined"
+                variant="contained"
                 startIcon={<EditIcon />}
                 onClick={handleEdit}
                 disabled={!booking || !canModifyBooking(booking.status)}
                 title={booking && !canModifyBooking(booking.status) ? `Cannot edit booking with status: ${booking.status}` : undefined}
                 sx={{
-                  borderColor: '#B8860B',
-                  color: '#B8860B',
+                  backgroundColor: '#E8B86D',
+                  color: '#1b1b1b',
                   '&:hover': {
-                    borderColor: '#1b5e20',
-                    backgroundColor: '#e8f5e9',
-                    color: '#1b5e20'
+                    backgroundColor: '#d2a254'
+                  },
+                  '&:disabled': {
+                    backgroundColor: '#e0e0e0',
+                    color: '#9e9e9e'
                   }
                 }}
               >
@@ -864,7 +863,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
               }
             }}>
               <CardContent>
-                <Typography variant="h6" gutterBottom sx={{ color: '#B8860B', fontWeight: 600 }}>
+                <Typography variant="h6" gutterBottom sx={{ color: '#333', fontWeight: 600 }}>
                   {t('booking.details.guestInformation')}
                 </Typography>
                 <Divider sx={{ mb: 2, borderColor: '#e8f5e9' }} />
@@ -903,7 +902,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
               }
             }}>
               <CardContent>
-                <Typography variant="h6" gutterBottom sx={{ color: '#B8860B', fontWeight: 600 }}>
+                <Typography variant="h6" gutterBottom sx={{ color: '#333', fontWeight: 600 }}>
                   {t('booking.details.bookingDetails')}
                 </Typography>
                 <Divider sx={{ mb: 2, borderColor: '#e8f5e9' }} />
@@ -919,34 +918,18 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     {isEditing ? (
-                      <FormControl 
+                      <PremiumSelect
                         fullWidth
-                        sx={{
-                          '& .MuiOutlinedInput-root': {
-                            '&:hover .MuiOutlinedInput-notchedOutline': {
-                              borderColor: '#B8860B',
-                            },
-                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                              borderColor: '#B8860B',
-                            },
-                          },
-                          '& .MuiInputLabel-root.Mui-focused': {
-                            color: '#B8860B',
-                          },
-                        }}
+                        label={t('booking.details.status')}
+                        value={currentBooking?.status || ''}
+                        onChange={(e) => handleFieldChange('status', e.target.value)}
                       >
-                        <InputLabel>{t('booking.details.status')}</InputLabel>
-                        <Select
-                          value={currentBooking?.status || ''}
-                          onChange={(e) => handleFieldChange('status', e.target.value)}
-                        >
-                          <MenuItem value="CONFIRMED">Confirmed</MenuItem>
-                          <MenuItem value="CHECKED_IN">Checked In</MenuItem>
-                          <MenuItem value="CHECKED_OUT">Checked Out</MenuItem>
-                          <MenuItem value="CANCELLED">Cancelled</MenuItem>
-                          <MenuItem value="PENDING">Pending</MenuItem>
-                        </Select>
-                      </FormControl>
+                        <MenuItem value="CONFIRMED">Confirmed</MenuItem>
+                        <MenuItem value="CHECKED_IN">Checked In</MenuItem>
+                        <MenuItem value="CHECKED_OUT">Checked Out</MenuItem>
+                        <MenuItem value="CANCELLED">Cancelled</MenuItem>
+                        <MenuItem value="PENDING">Pending</MenuItem>
+                      </PremiumSelect>
                     ) : (
                       <Box>
                         <Typography variant="caption" display="block" color="text.secondary">
@@ -987,7 +970,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
               }
             }}>
               <CardContent>
-                <Typography variant="h6" gutterBottom sx={{ color: '#B8860B', fontWeight: 600 }}>
+                <Typography variant="h6" gutterBottom sx={{ color: '#333', fontWeight: 600 }}>
                   {t('booking.details.hotelRoomInformation')}
                 </Typography>
                 <Divider sx={{ mb: 2, borderColor: '#e8f5e9' }} />
@@ -1011,38 +994,22 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                   </Grid>
                   <Grid item xs={12} sm={8}>
                     {isEditing ? (
-                      <FormControl 
+                      <PremiumSelect
                         fullWidth
-                        sx={{
-                          '& .MuiOutlinedInput-root': {
-                            '&:hover .MuiOutlinedInput-notchedOutline': {
-                              borderColor: '#B8860B',
-                            },
-                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                              borderColor: '#B8860B',
-                            },
-                          },
-                          '& .MuiInputLabel-root.Mui-focused': {
-                            color: '#B8860B',
-                          },
+                        label={t('booking.details.roomType')}
+                        value={currentBooking?.roomType || ''}
+                        onChange={(e) => {
+                          handleFieldChange('roomType', e.target.value);
+                          // Room number clearing is handled inside handleFieldChange for room type changes
+                          setSelectedRoomId(null);
                         }}
                       >
-                        <InputLabel>{t('booking.details.roomType')}</InputLabel>
-                        <Select
-                          value={currentBooking?.roomType || ''}
-                          onChange={(e) => {
-                            handleFieldChange('roomType', e.target.value);
-                            // Room number clearing is handled inside handleFieldChange for room type changes
-                            setSelectedRoomId(null);
-                          }}
-                        >
-                          {availableRoomTypes.map((type) => (
-                            <MenuItem key={type} value={type}>
-                              {type}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
+                        {availableRoomTypes.map((type) => (
+                          <MenuItem key={type} value={type}>
+                            {type}
+                          </MenuItem>
+                        ))}
+                      </PremiumSelect>
                     ) : (
                       <PremiumTextField
                         fullWidth
@@ -1140,7 +1107,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
               }
             }}>
               <CardContent>
-                <Typography variant="h6" gutterBottom sx={{ color: '#B8860B', fontWeight: 600 }}>
+                <Typography variant="h6" gutterBottom sx={{ color: '#333', fontWeight: 600 }}>
                   {t('booking.details.stayInformation')}
                 </Typography>
                 <Divider sx={{ mb: 2, borderColor: '#e8f5e9' }} />
@@ -1216,7 +1183,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
               }
             }}>
               <CardContent>
-                <Typography variant="h6" gutterBottom sx={{ color: '#B8860B', fontWeight: 600 }}>
+                <Typography variant="h6" gutterBottom sx={{ color: '#333', fontWeight: 600 }}>
                   {t('booking.details.additionalInformation')}
                 </Typography>
                 <Divider sx={{ mb: 2, borderColor: '#e8f5e9' }} />
@@ -1257,7 +1224,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
             }
           }}
         >
-          <DialogTitle sx={{ color: '#B8860B', fontWeight: 600 }}>
+          <DialogTitle sx={{ color: '#333', fontWeight: 600 }}>
             {t('booking.details.selectRoomDialog.title')}
             {loadingRooms && (
               <CircularProgress size={20} sx={{ ml: 2, color: '#B8860B' }} />

@@ -15,6 +15,7 @@ import {
   InputLabel,
   SelectChangeEvent,
   Paper,
+  alpha,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -24,6 +25,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { Todo, useTodoApi } from '../../services/todoApi';
+import { COLORS } from '../../theme/themeColors';
 
 interface TodosWidgetProps {
   width?: string | number;
@@ -32,7 +34,7 @@ interface TodosWidgetProps {
 
 export const TodosWidget: React.FC<TodosWidgetProps> = ({ 
   width = '100%', 
-  height = 400 
+  height = '100%'
 }) => {
   const { user } = useAuth();
   const todoApi = useTodoApi();
@@ -151,17 +153,18 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
 
   return (
     <Paper
-      elevation={3}
+      elevation={5}
       sx={{
         width,
         height,
         display: 'flex',
         flexDirection: 'column',
-        backgroundColor: '#e8eaf6', // Light deep blue background
-        p: 2,
-        borderRadius: 2,
+        background: 'linear-gradient(150deg, #3c73aa 0%, #4c85c0 50%, #5d96d2 100%)',
+        p: 2.5,
+        borderRadius: 3,
         overflow: 'hidden',
-        border: '2px solid #1a237e', // Deep blue border
+        border: `1px solid ${alpha(COLORS.PRIMARY, 0.08)}`,
+        boxShadow: '0 8px 18px rgba(0, 0, 0, 0.16)',
       }}
     >
       {/* Header */}
@@ -169,10 +172,11 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
         variant="h6" 
         sx={{ 
           mb: 2, 
-          color: '#000000', // Black
+          color: COLORS.WHITE,
           fontWeight: 700,
-          borderBottom: '2px solid #1a237e',
-          pb: 1
+          letterSpacing: '0.04em',
+          borderBottom: `1px solid ${alpha(COLORS.PRIMARY, 0.28)}`,
+          pb: 1.25
         }}
       >
         {t('widgets.todos.title')}
@@ -180,7 +184,7 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
 
       {/* Error display */}
       {error && (
-        <Typography color="error" variant="body2" sx={{ mb: 1, color: '#d32f2f' }}>
+        <Typography color="error" variant="body2" sx={{ mb: 1, color: '#ef9a9a' }}>
           {error}
         </Typography>
       )}
@@ -201,23 +205,23 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
             width: '100%', 
             mb: 1,
             '& .MuiOutlinedInput-root': {
-              backgroundColor: '#f5f5f5', // Soft gray background
+              backgroundColor: 'rgba(255, 255, 255, 0.22)',
               '& fieldset': {
-                borderColor: '#1a237e', // Deep blue border
+                borderColor: alpha(COLORS.WHITE, 0.14),
               },
               '&:hover fieldset': {
-                borderColor: '#283593', // Lighter deep blue on hover
+                borderColor: alpha(COLORS.PRIMARY, 0.36),
               },
               '&.Mui-focused fieldset': {
-                borderColor: '#0d1657', // Darker deep blue when focused
+                borderColor: COLORS.PRIMARY,
               },
             },
             '& .MuiInputBase-input': {
-              color: '#000000', // Black text
+              color: COLORS.WHITE,
             },
             '& .MuiInputBase-input::placeholder': {
-              color: '#1a237e', // Deep blue placeholder
-              opacity: 0.7,
+              color: alpha(COLORS.WHITE, 0.75),
+              opacity: 1,
             },
           }}
         />
@@ -227,29 +231,29 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
             sx={{ 
               minWidth: 100,
               '& .MuiOutlinedInput-root': {
-                backgroundColor: '#f5f5f5', // Soft gray background
+                backgroundColor: 'rgba(255, 255, 255, 0.22)',
                 '& fieldset': {
-                  borderColor: '#1a237e', // Deep blue border
+                  borderColor: alpha(COLORS.WHITE, 0.14),
                 },
                 '&:hover fieldset': {
-                  borderColor: '#283593', // Lighter deep blue on hover
+                  borderColor: alpha(COLORS.PRIMARY, 0.36),
                 },
                 '&.Mui-focused fieldset': {
-                  borderColor: '#0d1657', // Darker deep blue when focused
+                  borderColor: COLORS.PRIMARY,
                 },
               },
               '& .MuiInputLabel-root': {
-                color: '#1a237e', // Deep blue label
+                color: alpha(COLORS.WHITE, 0.75),
               },
               '& .MuiSelect-select': {
-                color: '#000000', // Black text
+                color: COLORS.WHITE,
               },
               '& .MuiSelect-icon': {
-                color: '#1a237e', // Deep blue dropdown arrow icon only
+                color: COLORS.WHITE,
               },
             }}
           >
-            <InputLabel sx={{ color: '#1a237e' }}>{t('widgets.todos.priority')}</InputLabel>
+            <InputLabel sx={{ color: alpha(COLORS.WHITE, 0.75) }}>{t('widgets.todos.priority')}</InputLabel>
             <Select
               value={severity}
               label={t('widgets.todos.priority')}
@@ -290,14 +294,14 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
             onClick={handleAddTodo}
             disabled={!newTodoTitle.trim()}
             sx={{
-              backgroundColor: '#ffd54f', // Warm gold button
-              color: '#000000',
+              backgroundColor: COLORS.PRIMARY,
+              color: COLORS.WHITE,
               '&:hover': {
-                backgroundColor: '#ffb300', // Darker gold on hover
+                backgroundColor: COLORS.PRIMARY_HOVER,
               },
               '&:disabled': {
-                backgroundColor: '#fff9c4', // Light gold when disabled
-                color: '#9e9e9e',
+                backgroundColor: alpha(COLORS.WHITE, 0.08),
+                color: alpha(COLORS.WHITE, 0.45),
               },
             }}
           >
@@ -307,13 +311,13 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
       </Box>
 
       {/* TODOs List */}
-      <Box sx={{ flex: 1, overflow: 'auto' }}>
+      <Box sx={{ flex: 1, overflow: 'auto', mt: 1 }}>
         <List dense>
           {todos.length === 0 ? (
             <ListItem>
               <ListItemText 
                 primary={t('widgets.todos.noTodos')} 
-                sx={{ '& .MuiListItemText-primary': { color: '#1a237e', fontStyle: 'italic' } }}
+                sx={{ '& .MuiListItemText-primary': { color: alpha(COLORS.WHITE, 0.75), fontStyle: 'italic' } }}
               />
             </ListItem>
           ) : (
@@ -322,17 +326,17 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
                 key={todo.id}
                 sx={{
                   border: '1px solid',
-                  borderColor: '#1a237e', // Deep blue border
-                  borderRadius: 1,
-                  mb: 1,
+                  borderColor: alpha(COLORS.WHITE, 0.06),
+                  borderRadius: 1.5,
+                  mb: 1.2,
                   backgroundColor: todo.completed 
-                    ? '#e0e0e0' // Soft gray completed background
-                    : '#f5f5f5', // Light gray default background
+                    ? 'rgba(255, 255, 255, 0.24)'
+                    : 'rgba(255, 255, 255, 0.3)',
                   transition: 'all 0.2s ease',
                   '&:hover': {
                     backgroundColor: todo.completed
-                      ? '#bdbdbd' // Medium gray completed hover
-                      : '#e0e0e0', // Soft gray default hover
+                        ? 'rgba(255, 255, 255, 0.3)'
+                        : 'rgba(255, 255, 255, 0.34)',
                   },
                   cursor: 'pointer'
                 }}
@@ -347,8 +351,9 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
                       variant="body2"
                       sx={{
                         textDecoration: todo.completed ? 'line-through' : 'none',
-                        color: '#000000', // Black text
-                        fontWeight: todo.completed ? 400 : 500,
+                        color: COLORS.WHITE,
+                        opacity: todo.completed ? 0.78 : 1,
+                        fontWeight: todo.completed ? 400 : 600,
                       }}
                     >
                       {todo.title}
@@ -362,9 +367,9 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
                     todo.id && handleDeleteTodo(todo.id);
                   }}
                   sx={{
-                    color: '#d32f2f', // Professional red for delete button
+                    color: '#ef9a9a',
                     '&:hover': {
-                      backgroundColor: '#e8eaf6', // Light deep blue background on hover
+                      backgroundColor: 'rgba(239, 154, 154, 0.12)',
                     },
                   }}
                 >

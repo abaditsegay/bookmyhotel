@@ -4,7 +4,6 @@ import {
   Typography,
   Box,
   Button,
-  TextField,
   Grid,
   Chip,
   IconButton,
@@ -28,6 +27,7 @@ import {
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { hotelAdminApi, StaffResponse } from '../../services/hotelAdminApi';
+import PremiumTextField from '../../components/common/PremiumTextField';
 
 const StaffDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -283,43 +283,39 @@ const StaffDetails: React.FC = () => {
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="First Name"
                       value={currentStaff?.firstName || ''}
                       onChange={(e) => handleFieldChange('firstName', e.target.value)}
                       disabled={!isEditing}
-                      variant={isEditing ? 'outlined' : 'filled'}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Last Name"
                       value={currentStaff?.lastName || ''}
                       onChange={(e) => handleFieldChange('lastName', e.target.value)}
                       disabled={!isEditing}
-                      variant={isEditing ? 'outlined' : 'filled'}
                     />
                   </Grid>
                   <Grid item xs={12}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Email"
                       value={currentStaff?.email || ''}
                       onChange={(e) => handleFieldChange('email', e.target.value)}
                       disabled={!isEditing}
-                      variant={isEditing ? 'outlined' : 'filled'}
                     />
                   </Grid>
                   <Grid item xs={12}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Phone"
                       value={currentStaff?.phone || ''}
                       onChange={(e) => handleFieldChange('phone', e.target.value)}
                       disabled={!isEditing}
-                      variant={isEditing ? 'outlined' : 'filled'}
                     />
                   </Grid>
                 </Grid>
@@ -338,12 +334,11 @@ const StaffDetails: React.FC = () => {
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Staff ID"
                       value={currentStaff?.id || ''}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                   <Grid item xs={12}>
@@ -371,12 +366,11 @@ const StaffDetails: React.FC = () => {
                     </Box>
                   </Grid>
                   <Grid item xs={12}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Hotel"
                       value={currentStaff?.hotelName || ''}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                 </Grid>
@@ -447,31 +441,28 @@ const StaffDetails: React.FC = () => {
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Account Created"
                       value={currentStaff ? formatDate(currentStaff.createdAt) : ''}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                   <Grid item xs={12}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Last Updated"
                       value={currentStaff ? formatDate(currentStaff.updatedAt) : ''}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                   {currentStaff?.lastLogin && (
                     <Grid item xs={12}>
-                      <TextField
+                      <PremiumTextField
                         fullWidth
                         label="Last Login"
                         value={formatDate(currentStaff.lastLogin)}
                         disabled
-                        variant="filled"
                       />
                     </Grid>
                   )}

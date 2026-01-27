@@ -46,6 +46,9 @@ import { buildApiUrl } from '../../config/apiConfig';
 import { hotelAdminApi, RoomCreateRequest } from '../../services/hotelAdminApi';
 import * as frontDeskApi from '../../services/frontDeskApi';
 import { ROOM_TYPES, getRoomTypeLabel } from '../../constants/roomTypes';
+import PremiumTextField from './PremiumTextField';
+import PremiumSelect from './PremiumSelect';
+import { COLORS } from '../../theme/themeColors';
 
 // Import hotel admin specific components conditionally
 let RoomTypePricing: any = null;
@@ -421,7 +424,7 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
                 },
               },
               '& .MuiInputLabel-root.Mui-focused': {
-                color: '#B8860B',
+                color: COLORS.PRIMARY,
                 fontWeight: 600,
               },
             }}>
@@ -461,7 +464,7 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
                 },
               },
               '& .MuiInputLabel-root.Mui-focused': {
-                color: '#B8860B',
+                color: COLORS.PRIMARY,
                 fontWeight: 600,
               },
             }}>
@@ -508,7 +511,7 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
                     background: 'linear-gradient(135deg, #f5f5f5 0%, #fafafa 50%, #f5f5f5 100%)',
                     borderBottom: '2px solid #E8B86D',
                     '& .MuiTableCell-head': {
-                      color: '#B8860B',
+                      color: COLORS.PRIMARY,
                       fontWeight: 700,
                       fontSize: '0.95rem',
                       letterSpacing: '0.5px',
@@ -614,28 +617,27 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
         <DialogTitle>{t(`${translationPrefix}.createRoom.title`)}</DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
-            <TextField
+            <PremiumTextField
               fullWidth
               label={t(`${translationPrefix}.createRoom.roomNumber`)}
               value={roomForm.roomNumber}
               onChange={(e) => setRoomForm({ ...roomForm, roomNumber: e.target.value })}
               required
             />
-            <FormControl fullWidth required>
-              <InputLabel>{t(`${translationPrefix}.createRoom.roomType`)}</InputLabel>
-              <Select
-                value={roomForm.roomType}
-                label={t(`${translationPrefix}.createRoom.roomType`)}
-                onChange={(e) => setRoomForm({ ...roomForm, roomType: e.target.value })}
-              >
-                {ROOM_TYPES.map((roomType) => (
-                  <MenuItem key={roomType.value} value={roomType.value}>
-                    {roomType.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <TextField
+            <PremiumSelect
+              fullWidth
+              label={t(`${translationPrefix}.createRoom.roomType`)}
+              value={roomForm.roomType}
+              onChange={(e) => setRoomForm({ ...roomForm, roomType: e.target.value })}
+              required
+            >
+              {ROOM_TYPES.map((roomType) => (
+                <MenuItem key={roomType.value} value={roomType.value}>
+                  {roomType.label}
+                </MenuItem>
+              ))}
+            </PremiumSelect>
+            <PremiumTextField
               fullWidth
               label={t(`${translationPrefix}.createRoom.pricePerNight`)}
               type="number"
@@ -644,7 +646,7 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
               required
               inputProps={{ min: 0, step: 0.01 }}
             />
-            <TextField
+            <PremiumTextField
               fullWidth
               label={t(`${translationPrefix}.createRoom.capacity`)}
               type="number"
@@ -653,7 +655,7 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
               required
               inputProps={{ min: 1, max: 10 }}
             />
-            <TextField
+            <PremiumTextField
               fullWidth
               label={t(`${translationPrefix}.createRoom.description`)}
               multiline

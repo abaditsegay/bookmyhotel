@@ -43,7 +43,7 @@ import {
   Add as AddIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
-import { getGradient, getInteractiveColor } from '../theme/themeColors';
+import { COLORS } from '../theme/themeColors';
 import PremiumTextField from './common/PremiumTextField';
 import PremiumSelect from './common/PremiumSelect';
 import PremiumDatePicker from './common/PremiumDatePicker';
@@ -572,9 +572,9 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
         borderRadius: 3,
         boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)'
       }}>
-        <Box display="flex" alignItems="center" justifyContent="space-between" mb={3} pb={2} borderBottom="2px solid #E8B86D">
+        <Box display="flex" alignItems="center" justifyContent="space-between" mb={3} pb={2} borderBottom={`2px solid ${COLORS.PRIMARY}`}>
           <Box display="flex" alignItems="center">
-            <ScheduleIcon sx={{ mr: 1.5, color: '#B8860B', fontSize: 28 }} />
+            <ScheduleIcon sx={{ mr: 1.5, color: COLORS.PRIMARY, fontSize: 28 }} />
             <Typography variant="h5" component="h2" sx={{ fontWeight: 700, color: '#333' }}>
               Staff Schedules
             </Typography>
@@ -589,11 +589,11 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
               }}
               startIcon={<AddIcon />}
               sx={{
-                backgroundColor: '#E8B86D',
+                backgroundColor: COLORS.PRIMARY,
                 color: 'white',
                 fontWeight: 600,
                 '&:hover': {
-                  backgroundColor: '#B8860B'
+                  backgroundColor: COLORS.PRIMARY_HOVER
                 }
               }}
             >
@@ -604,12 +604,12 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
               onClick={() => setShowUploadModal(true)}
               startIcon={<UploadIcon />}
               sx={{
-                borderColor: '#E8B86D',
-                color: '#B8860B',
+                borderColor: COLORS.PRIMARY,
+                color: COLORS.PRIMARY,
                 fontWeight: 600,
                 '&:hover': {
-                  borderColor: '#B8860B',
-                  backgroundColor: 'rgba(232, 184, 109, 0.08)'
+                  borderColor: COLORS.PRIMARY_HOVER,
+                  backgroundColor: 'rgba(26, 54, 93, 0.08)'
                 }
               }}
             >
@@ -709,9 +709,9 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
                   color: '#666',
                   fontWeight: 600,
                   '&:hover': {
-                    borderColor: '#E8B86D',
-                    backgroundColor: 'rgba(232, 184, 109, 0.08)',
-                    color: '#B8860B'
+                    borderColor: COLORS.PRIMARY,
+                    backgroundColor: 'rgba(26, 54, 93, 0.08)',
+                    color: COLORS.PRIMARY
                   }
                 }}
               >
@@ -738,9 +738,9 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
               <TableRow
                 sx={{
                   background: 'linear-gradient(135deg, #f5f5f5 0%, #fafafa 50%, #f5f5f5 100%)',
-                  borderBottom: '2px solid #E8B86D',
+                  borderBottom: `2px solid ${COLORS.PRIMARY}`,
                   '& .MuiTableCell-head': {
-                    color: '#B8860B',
+                    color: COLORS.PRIMARY,
                     fontWeight: 700,
                     fontSize: '0.75rem',
                     letterSpacing: '0.5px',
@@ -825,10 +825,10 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
                           size="small"
                           onClick={() => handleEdit(schedule)}
                           sx={{
-                            color: '#E8B86D',
+                            color: COLORS.PRIMARY,
                             '&:hover': {
-                              backgroundColor: 'rgba(232, 184, 109, 0.08)',
-                              color: '#B8860B'
+                              backgroundColor: 'rgba(26, 54, 93, 0.08)',
+                              color: COLORS.PRIMARY_HOVER
                             }
                           }}
                         >
@@ -869,11 +869,11 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
             <Button 
               variant="contained"
               sx={{ 
-                backgroundColor: '#E8B86D',
+                backgroundColor: COLORS.PRIMARY,
                 color: 'white',
                 fontWeight: 600,
                 '&:hover': { 
-                  backgroundColor: '#B8860B',
+                  backgroundColor: COLORS.PRIMARY_HOVER,
                 },
               }}
               onClick={() => {
@@ -903,9 +903,9 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
                 fontWeight: 500,
               },
               '& .MuiIconButton-root': {
-                color: '#E8B86D',
+                  color: COLORS.PRIMARY,
                 '&:hover': {
-                  backgroundColor: 'rgba(232, 184, 109, 0.08)',
+                    backgroundColor: 'rgba(26, 54, 93, 0.08)',
                 },
                 '&.Mui-disabled': {
                   color: '#d0d0d0',
@@ -934,12 +934,12 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
         <DialogTitle 
           sx={{ 
             pb: 2,
-            borderBottom: '2px solid #E8B86D',
-            background: 'linear-gradient(135deg, rgba(232, 184, 109, 0.05) 0%, rgba(255, 255, 255, 0.9) 100%)',
+            borderBottom: `2px solid ${COLORS.PRIMARY}`,
+            background: 'linear-gradient(135deg, rgba(26, 54, 93, 0.08) 0%, rgba(255, 255, 255, 0.95) 100%)',
           }}
         >
           <Box display="flex" alignItems="center" gap={1.5}>
-            <ScheduleIcon sx={{ fontSize: 28, color: '#E8B86D' }} />
+            <ScheduleIcon sx={{ fontSize: 28, color: COLORS.PRIMARY }} />
             <Typography variant="h5" fontWeight={700} color="#333">
               {editingSchedule ? 'Edit Schedule' : 'Create New Schedule'}
             </Typography>
@@ -1130,9 +1130,9 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
                 color: '#666',
                 fontWeight: 600,
                 '&:hover': {
-                  borderColor: '#E8B86D',
-                  backgroundColor: 'rgba(232, 184, 109, 0.08)',
-                  color: '#B8860B'
+                  borderColor: COLORS.PRIMARY,
+                  backgroundColor: 'rgba(26, 54, 93, 0.08)',
+                  color: COLORS.PRIMARY
                 }
               }}
             >
@@ -1143,11 +1143,11 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
               variant="contained"
               startIcon={editingSchedule ? <EditIcon /> : <AddIcon />}
               sx={{
-                backgroundColor: '#E8B86D',
+                backgroundColor: COLORS.PRIMARY,
                 color: 'white',
                 fontWeight: 600,
                 '&:hover': {
-                  backgroundColor: '#B8860B',
+                  backgroundColor: COLORS.PRIMARY_HOVER,
                 }
               }}
             >
@@ -1175,12 +1175,12 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
         <DialogTitle 
           sx={{ 
             pb: 2,
-            borderBottom: '2px solid #E8B86D',
-            background: 'linear-gradient(135deg, rgba(232, 184, 109, 0.05) 0%, rgba(255, 255, 255, 0.9) 100%)',
+            borderBottom: `2px solid ${COLORS.PRIMARY}`,
+            background: 'linear-gradient(135deg, rgba(26, 54, 93, 0.08) 0%, rgba(255, 255, 255, 0.95) 100%)',
           }}
         >
           <Box display="flex" alignItems="center" gap={1.5}>
-            <UploadIcon sx={{ fontSize: 28, color: '#E8B86D' }} />
+            <UploadIcon sx={{ fontSize: 28, color: COLORS.PRIMARY }} />
             <Typography variant="h5" fontWeight={700} color="#333">
               Upload Schedule File
             </Typography>

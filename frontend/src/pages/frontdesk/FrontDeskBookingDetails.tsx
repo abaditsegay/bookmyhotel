@@ -4,16 +4,12 @@ import {
   Typography,
   Box,
   Button,
-  TextField,
   Grid,
   Chip,
   IconButton,
   Divider,
   Card,
   CardContent,
-  FormControl,
-  InputLabel,
-  Select,
   MenuItem,
   Alert,
   Snackbar,
@@ -28,6 +24,7 @@ import {
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import PremiumTextField from '../../components/common/PremiumTextField';
+import PremiumSelect from '../../components/common/PremiumSelect';
 import { frontDeskApiService } from '../../services/frontDeskApi';
 import { ROOM_TYPES } from '../../constants/roomTypes';
 import { formatCurrency } from '../../utils/currencyUtils';
@@ -426,19 +423,18 @@ const FrontDeskBookingDetails: React.FC = () => {
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     {isEditing ? (
-                      <FormControl fullWidth>
-                        <InputLabel>Status</InputLabel>
-                        <Select
-                          value={currentBooking?.status || ''}
-                          onChange={(e) => handleFieldChange('status', e.target.value)}
-                        >
-                          <MenuItem value="CONFIRMED">Confirmed</MenuItem>
-                          <MenuItem value="CHECKED_IN">Checked In</MenuItem>
-                          <MenuItem value="CHECKED_OUT">Checked Out</MenuItem>
-                          <MenuItem value="CANCELLED">Cancelled</MenuItem>
-                          <MenuItem value="PENDING">Pending</MenuItem>
-                        </Select>
-                      </FormControl>
+                      <PremiumSelect
+                        fullWidth
+                        label="Status"
+                        value={currentBooking?.status || ''}
+                        onChange={(e) => handleFieldChange('status', e.target.value)}
+                      >
+                        <MenuItem value="CONFIRMED">Confirmed</MenuItem>
+                        <MenuItem value="CHECKED_IN">Checked In</MenuItem>
+                        <MenuItem value="CHECKED_OUT">Checked Out</MenuItem>
+                        <MenuItem value="CANCELLED">Cancelled</MenuItem>
+                        <MenuItem value="PENDING">Pending</MenuItem>
+                      </PremiumSelect>
                     ) : (
                       <Box>
                         <Typography variant="caption" display="block" color="text.secondary">
@@ -497,20 +493,18 @@ const FrontDeskBookingDetails: React.FC = () => {
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     {isEditing && currentBooking?.status?.toUpperCase() === 'CONFIRMED' ? (
-                      <FormControl fullWidth>
-                        <InputLabel>Room Type</InputLabel>
-                        <Select
-                          value={currentBooking?.roomType || ''}
-                          onChange={(e) => handleFieldChange('roomType', e.target.value)}
-                          label="Room Type"
-                        >
-                          {ROOM_TYPES.map((roomType) => (
-                            <MenuItem key={roomType.value} value={roomType.value}>
-                              {roomType.value}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
+                      <PremiumSelect
+                        fullWidth
+                        label="Room Type"
+                        value={currentBooking?.roomType || ''}
+                        onChange={(e) => handleFieldChange('roomType', e.target.value)}
+                      >
+                        {ROOM_TYPES.map((roomType) => (
+                          <MenuItem key={roomType.value} value={roomType.value}>
+                            {roomType.value}
+                          </MenuItem>
+                        ))}
+                      </PremiumSelect>
                     ) : (
                       <PremiumTextField
                         fullWidth

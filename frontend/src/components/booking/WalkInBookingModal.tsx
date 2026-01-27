@@ -622,8 +622,8 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                               },
                               '& .MuiInputLabel-root': {
                                 '&.Mui-focused': {
-                                  color: '#B8860B',
-                                  fontWeight: 600,
+                                  color: COLORS.PRIMARY,
+                                  fontWeight: 700,
                                 },
                               },
                             }
@@ -666,8 +666,8 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                               },
                               '& .MuiInputLabel-root': {
                                 '&.Mui-focused': {
-                                  color: '#B8860B',
-                                  fontWeight: 600,
+                                  color: COLORS.PRIMARY,
+                                  fontWeight: 700,
                                 },
                               },
                             }
@@ -785,7 +785,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                           </Typography>
                         )}
                         <Typography variant="h6" sx={{
-                          color: '#B8860B',
+                          color: COLORS.PRIMARY,
                           fontWeight: 'bold',
                           fontSize: '1.2rem'
                         }}>
@@ -1042,7 +1042,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                     <Box sx={{
                       p: 2,
                       bgcolor: 'rgba(232, 184, 109, 0.1)',
-                      color: '#B8860B',
+                      color: COLORS.PRIMARY,
                       borderRadius: 2,
                       textAlign: 'center',
                       border: '1px solid',

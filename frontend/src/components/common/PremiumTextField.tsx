@@ -1,5 +1,6 @@
 import React from 'react';
 import { TextField, TextFieldProps } from '@mui/material';
+import { COLORS } from '../../theme/themeColors';
 
 /**
  * Premium styled TextField component for forms
@@ -17,9 +18,9 @@ const PremiumTextField: React.FC<TextFieldProps> = (props) => {
           fontSize: '0.7rem',
           fontWeight: 600,
           letterSpacing: '0.5px',
-          color: '#666',
+          color: COLORS.PRIMARY,
           '&.Mui-focused': {
-            color: '#B8860B',
+            color: `${COLORS.PRIMARY} !important`,
             fontWeight: 600,
           },
           ...props.InputLabelProps?.sx,
@@ -81,9 +82,9 @@ const PremiumTextField: React.FC<TextFieldProps> = (props) => {
           fontSize: '0.7rem',
           fontWeight: 600,
           letterSpacing: '0.5px',
-          color: '#666',
+          color: COLORS.PRIMARY,
           '&.Mui-focused': {
-            color: '#B8860B',
+            color: `${COLORS.PRIMARY} !important`,
             fontWeight: 600,
           },
         },

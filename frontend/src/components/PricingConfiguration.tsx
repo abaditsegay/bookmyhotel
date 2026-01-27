@@ -29,7 +29,7 @@ import {
   Info as InfoIcon
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
-import { getGradient, getInteractiveColor, getFormColor } from '../theme/themeColors';
+import { getGradient, getInteractiveColor, getFormColor, COLORS } from '../theme/themeColors';
 
 // Utility functions for converting between percentage (0-100) and decimal (0.0-1.0) values
 const toDecimal = (percentage: number): number => {
@@ -404,9 +404,9 @@ const PricingConfigurationComponent: React.FC = () => {
                 borderLeft: '4px solid #E8B86D',
                 borderRadius: 2,
               }}>
-                <SettingsIcon sx={{ color: '#B8860B' }} />
+                <SettingsIcon sx={{ color: COLORS.PRIMARY }} />
                 <Box>
-                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: '#B8860B' }}>
+                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: COLORS.PRIMARY }}>
                     {t('dashboard.hotelAdmin.pricingConfiguration.generalSettings.title')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -506,9 +506,9 @@ const PricingConfigurationComponent: React.FC = () => {
                 borderLeft: '4px solid #E8B86D',
                 borderRadius: 2,
               }}>
-                <ReceiptIcon sx={{ color: '#B8860B' }} />
+                <ReceiptIcon sx={{ color: COLORS.PRIMARY }} />
                 <Box>
-                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: '#B8860B' }}>
+                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: COLORS.PRIMARY }}>
                     {t('dashboard.hotelAdmin.pricingConfiguration.taxConfiguration.title')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -593,9 +593,9 @@ const PricingConfigurationComponent: React.FC = () => {
                 borderLeft: '4px solid #E8B86D',
                 borderRadius: 2,
               }}>
-                <DiscountIcon sx={{ color: '#B8860B' }} />
+                <DiscountIcon sx={{ color: COLORS.PRIMARY }} />
                 <Box>
-                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: '#B8860B' }}>
+                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: COLORS.PRIMARY }}>
                     {t('dashboard.hotelAdmin.pricingConfiguration.seasonalMultipliers.title')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -669,9 +669,9 @@ const PricingConfigurationComponent: React.FC = () => {
                 borderLeft: '4px solid #E8B86D',
                 borderRadius: 2,
               }}>
-                <SettingsIcon sx={{ color: '#B8860B' }} />
+                <SettingsIcon sx={{ color: COLORS.PRIMARY }} />
                 <Box>
-                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: '#B8860B' }}>
+                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: COLORS.PRIMARY }}>
                     {t('dashboard.hotelAdmin.pricingConfiguration.bookingRules.title')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">

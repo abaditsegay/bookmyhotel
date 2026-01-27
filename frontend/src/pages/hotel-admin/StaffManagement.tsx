@@ -42,6 +42,7 @@ import {
 import { hotelAdminApi, StaffResponse, StaffCreateRequest } from '../../services/hotelAdminApi';
 import { useAuth } from '../../contexts/AuthContext';
 import PremiumTextField from '../../components/common/PremiumTextField';
+import PremiumSelect from '../../components/common/PremiumSelect';
 import { useNavigate } from 'react-router-dom';
 
 interface StaffFilters {
@@ -326,33 +327,29 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
               />
             </Grid>
             <Grid item xs={12} md={3}>
-              <FormControl fullWidth>
-                <InputLabel>Role</InputLabel>
-                <Select
-                  value={filters.role}
-                  label="Role"
-                  onChange={(e) => handleFilterChange('role', e.target.value)}
-                >
-                  <MenuItem value="">All Roles</MenuItem>
-                  {staffRoles.map(role => (
-                    <MenuItem key={role} value={role}>{role.replace('_', ' ')}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+              <PremiumSelect
+                fullWidth
+                label="Role"
+                value={filters.role}
+                onChange={(e) => handleFilterChange('role', e.target.value)}
+              >
+                <MenuItem value="">All Roles</MenuItem>
+                {staffRoles.map(role => (
+                  <MenuItem key={role} value={role}>{role.replace('_', ' ')}</MenuItem>
+                ))}
+              </PremiumSelect>
             </Grid>
             <Grid item xs={12} md={3}>
-              <FormControl fullWidth>
-                <InputLabel>Status</InputLabel>
-                <Select
-                  value={filters.status}
-                  label="Status"
-                  onChange={(e) => handleFilterChange('status', e.target.value)}
-                >
+              <PremiumSelect
+                fullWidth
+                label="Status"
+                value={filters.status}
+                onChange={(e) => handleFilterChange('status', e.target.value)}
+              >
                   {statusOptions.map(status => (
-                    <MenuItem key={status} value={status}>{status}</MenuItem>
+                    <MenuItem key={status} value={status === 'ALL' ? '' : status}>{status}</MenuItem>
                   ))}
-                </Select>
-              </FormControl>
+              </PremiumSelect>
             </Grid>
             <Grid item xs={12} md={2}>
               <Box sx={{ display: 'flex', gap: 1 }}>
@@ -381,27 +378,12 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
               <TableHead>
                 <TableRow
                   sx={{
-                    background: 'linear-gradient(135deg, #64748b 0%, #475569 50%, #334155 100%)',
-                    boxShadow: '0 4px 12px rgba(100, 116, 139, 0.15)',
+                    background: 'linear-gradient(135deg, #f5f5f5 0%, #fafafa 50%, #f5f5f5 100%)',
+                    borderBottom: '2px solid #E8B86D',
                     '& .MuiTableCell-head': {
-                      color: '#ffffff',
-                      fontWeight: 600,
-                      fontSize: '0.95rem',
-                      letterSpacing: '0.5px',
+                      color: COLORS.PRIMARY,
+                      fontWeight: 700,
                       textTransform: 'uppercase',
-                      border: 'none',
-                      padding: '20px 16px',
-                      position: 'relative',
-                      textShadow: '0 1px 2px rgba(0,0,0,0.1)',
-                      '&::after': {
-                        content: '""',
-                        position: 'absolute',
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        height: '3px',
-                        background: 'linear-gradient(90deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.6) 100%)'
-                      }
                     }
                   }}
                 >

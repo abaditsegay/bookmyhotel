@@ -14,6 +14,7 @@ import {
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
+import { COLORS } from '../../theme/themeColors';
 
 interface CalendarEvent {
   id: string;
@@ -185,16 +186,17 @@ const CalendarWidget: React.FC = () => {
 
   return (
     <Paper
-      elevation={0}
+      elevation={2}
       sx={{
         p: 0,
         height: 'fit-content',
-        borderRadius: 2,
+        borderRadius: 3,
         overflow: 'hidden',
         position: 'relative',
         zIndex: 'auto',
-        backgroundColor: '#e8f5e9', // Light blue background
-        border: 'none',
+        background: 'linear-gradient(140deg, #3c73aa 0%, #4a85be 50%, #5a95ce 100%)',
+        border: `1px solid ${alpha(COLORS.PRIMARY, 0.1)}`,
+        boxShadow: '0 8px 18px rgba(0, 0, 0, 0.16)',
       }}
     >
       {/* Month Navigation Header */}
@@ -205,9 +207,10 @@ const CalendarWidget: React.FC = () => {
           justifyContent: 'center',
           py: 2,
           px: 2,
-          backgroundColor: 'primary.main',
-          color: 'white',
+          background: `linear-gradient(135deg, ${alpha(COLORS.PRIMARY, 0.78)} 0%, ${alpha(COLORS.PRIMARY, 0.88)} 60%, ${COLORS.PRIMARY_HOVER} 100%)`,
+          color: COLORS.WHITE,
           position: 'relative',
+          borderBottom: `1px solid ${alpha(COLORS.PRIMARY_HOVER, 0.35)}`,
         }}
       >
         <IconButton 
@@ -216,9 +219,9 @@ const CalendarWidget: React.FC = () => {
           sx={{
             position: 'absolute',
             left: 8,
-            color: 'white',
+            color: COLORS.WHITE,
             '&:hover': {
-              backgroundColor: alpha('#ffffff', 0.1),
+              backgroundColor: alpha('#ffffff', 0.12),
             },
           }}
         >
@@ -229,7 +232,7 @@ const CalendarWidget: React.FC = () => {
           variant="h6" 
           sx={{ 
             fontWeight: 700, 
-            color: 'white',
+              color: COLORS.WHITE,
             textAlign: 'center',
             fontSize: '1.1rem',
             textTransform: 'uppercase',
@@ -245,9 +248,9 @@ const CalendarWidget: React.FC = () => {
           sx={{
             position: 'absolute',
             right: 8,
-            color: 'white',
+            color: COLORS.WHITE,
             '&:hover': {
-              backgroundColor: alpha('#ffffff', 0.1),
+              backgroundColor: alpha('#ffffff', 0.12),
             },
           }}
         >
@@ -259,8 +262,8 @@ const CalendarWidget: React.FC = () => {
       <Box
         sx={{
           display: 'flex',
-          backgroundColor: 'rgba(255, 255, 255, 0.1)', // Very subtle background
-          borderBottom: '1px solid rgba(0, 0, 0, 0.1)', // Subtle border
+          backgroundColor: 'rgba(255, 255, 255, 0.2)',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.24)',
         }}
       >
           {[
@@ -278,7 +281,7 @@ const CalendarWidget: React.FC = () => {
                 flex: 1,
                 py: 1.5,
                 textAlign: 'center',
-                borderRight: index < 6 ? '1px solid rgba(0, 0, 0, 0.1)' : 'none', // Subtle border
+                borderRight: index < 6 ? '1px solid rgba(255, 255, 255, 0.22)' : 'none',
               }}
             >
               <Typography
@@ -286,7 +289,7 @@ const CalendarWidget: React.FC = () => {
                 sx={{
                   fontSize: '0.75rem',
                   fontWeight: 600,
-                  color: '#555555', // Dark gray text for contrast
+                  color: alpha(COLORS.WHITE, 0.85),
                   textTransform: 'uppercase',
                 }}
               >
@@ -309,7 +312,7 @@ const CalendarWidget: React.FC = () => {
               sx={{
                 display: 'flex',
                 borderBottom: weekIndex < Math.ceil(calendarDays.length / 7) - 1 
-                  ? '1px solid rgba(0, 0, 0, 0.1)' // Subtle border
+                  ? '1px solid rgba(255, 255, 255, 0.22)'
                   : 'none',
               }}
             >
@@ -325,17 +328,19 @@ const CalendarWidget: React.FC = () => {
                     alignItems: 'center',
                     justifyContent: 'center',
                     cursor: date ? 'pointer' : 'default',
-                    borderRight: dayIndex < 6 ? '1px solid rgba(0, 0, 0, 0.1)' : 'none', // Subtle border
+                    borderRight: dayIndex < 6 ? '1px solid rgba(255, 255, 255, 0.22)' : 'none',
                     backgroundColor: date ? (
                       isSelected(date) 
-                        ? 'primary.main'
+                        ? COLORS.PRIMARY
                         : isToday(date) 
-                          ? 'primary.100'
-                          : 'transparent'
+                          ? alpha(COLORS.PRIMARY, 0.32)
+                          : 'rgba(255, 255, 255, 0.12)'
                     ) : 'transparent',
                     transition: 'all 0.2s ease',
                     '&:hover': date ? {
-                      backgroundColor: (theme) => isSelected(date) ? theme.palette.primary.main : theme.palette.primary.light,
+                      backgroundColor: isSelected(date) 
+                        ? COLORS.PRIMARY_HOVER 
+                        : alpha(COLORS.PRIMARY, 0.26),
                     } : {},
                   }}
                 >
@@ -344,13 +349,13 @@ const CalendarWidget: React.FC = () => {
                       <Typography
                         variant="body2"
                         sx={{
-                          fontWeight: isToday(date) ? 600 : isSelected(date) ? 600 : 400,
+                          fontWeight: isToday(date) ? 700 : isSelected(date) ? 700 : 600,
                           color: isSelected(date) 
-                            ? 'white'
+                            ? COLORS.WHITE
                             : isToday(date)
-                            ? '#2d5a5a' // Darker teal for today
-                            : '#333333', // Dark gray text for better contrast
-                          fontSize: '0.9rem',
+                            ? alpha(COLORS.WHITE, 0.9)
+                            : alpha(COLORS.WHITE, 0.8),
+                          fontSize: '1.05rem',
                           mb: 0.25,
                         }}
                       >
@@ -376,7 +381,7 @@ const CalendarWidget: React.FC = () => {
                           <Typography
                             variant="caption"
                             sx={{
-                              color: theme.palette.text.secondary,
+                              color: alpha(COLORS.WHITE, 0.7),
                               fontSize: '0.6rem',
                               ml: 0.25,
                             }}

@@ -47,6 +47,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { hotelAdminApi, RoomResponse, RoomCreateRequest, RoomUpdateRequest } from '../../services/hotelAdminApi';
 import PremiumTextField from '../../components/common/PremiumTextField';
+import PremiumSelect from '../../components/common/PremiumSelect';
 import { useAuth } from '../../contexts/AuthContext';
 import { formatCurrency } from '../../utils/currencyUtils';
 import RoomTypePricing from '../../components/RoomTypePricing';
@@ -875,18 +876,17 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
                 />
               </Grid>
               <Grid item xs={12} md={6}>
-                <FormControl fullWidth required>
-                  <InputLabel>Room Type</InputLabel>
-                  <Select
-                    value={roomForm.roomType}
-                    label="Room Type"
-                    onChange={(e) => setRoomForm({ ...roomForm, roomType: e.target.value as any })}
-                  >
-                    {roomTypes.map(type => (
-                      <MenuItem key={type} value={type}>{type}</MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                <PremiumSelect
+                  fullWidth
+                  label="Room Type"
+                  value={roomForm.roomType}
+                  onChange={(e) => setRoomForm({ ...roomForm, roomType: e.target.value as any })}
+                  required
+                >
+                  {roomTypes.map(type => (
+                    <MenuItem key={type} value={type}>{type}</MenuItem>
+                  ))}
+                </PremiumSelect>
               </Grid>
               <Grid item xs={12} md={6}>
                 <PremiumTextField
@@ -955,18 +955,17 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
                   />
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <FormControl fullWidth required>
-                    <InputLabel>Room Type</InputLabel>
-                    <Select
-                      value={editForm.roomType}
-                      label="Room Type"
-                      onChange={(e) => setEditForm({ ...editForm, roomType: e.target.value as any })}
-                    >
-                      {roomTypes.map(type => (
-                        <MenuItem key={type} value={type}>{type}</MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
+                  <PremiumSelect
+                    fullWidth
+                    label="Room Type"
+                    value={editForm.roomType}
+                    onChange={(e) => setEditForm({ ...editForm, roomType: e.target.value as any })}
+                    required
+                  >
+                    {roomTypes.map(type => (
+                      <MenuItem key={type} value={type}>{type}</MenuItem>
+                    ))}
+                  </PremiumSelect>
                 </Grid>
                 <Grid item xs={12} md={6}>
                   <PremiumTextField

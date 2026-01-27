@@ -38,6 +38,7 @@ import PricingConfiguration from '../../components/PricingConfiguration';
 import HotelImageManagement from './HotelImageManagement';
 import HousekeepingPage from '../housekeeping/HousekeepingPage';
 import { getBookingStatusColor } from '../../utils/statusColors';
+import { COLORS } from '../../theme/themeColors';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -1185,7 +1186,7 @@ const HotelAdminDashboard: React.FC = () => {
                       borderRadius: 2
                     }}>
                       <CardContent>
-                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: '#B8860B' }}>
+                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: COLORS.PRIMARY }}>
                           {t('dashboard.hotelAdmin.reports.bookingStatusOverview')}
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
@@ -1227,7 +1228,7 @@ const HotelAdminDashboard: React.FC = () => {
                       borderRadius: 2
                     }}>
                       <CardContent>
-                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: '#B8860B' }}>
+                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: COLORS.PRIMARY }}>
                           {t('dashboard.hotelAdmin.reports.staffByRole')}
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
@@ -1271,7 +1272,7 @@ const HotelAdminDashboard: React.FC = () => {
                       borderRadius: 2
                     }}>
                       <CardContent>
-                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: '#B8860B' }}>
+                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: COLORS.PRIMARY }}>
                           {t('dashboard.hotelAdmin.reports.todaysOperations')}
                         </Typography>
                         <Grid container spacing={3}>
@@ -1359,7 +1360,7 @@ const HotelAdminDashboard: React.FC = () => {
                       }
                     }}>
                       <CardContent>
-                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: '#B8860B' }}>
+                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: COLORS.PRIMARY }}>
                           {t('dashboard.hotelAdmin.reports.currentMonthPerformance')}
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 2, fontWeight: 600 }}>
@@ -1400,7 +1401,7 @@ const HotelAdminDashboard: React.FC = () => {
                       }
                     }}>
                       <CardContent>
-                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: '#B8860B' }}>
+                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: COLORS.PRIMARY }}>
                           {t('dashboard.hotelAdmin.reports.yearToDateRevenue')}
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 2, fontWeight: 600 }}>
@@ -1436,7 +1437,7 @@ const HotelAdminDashboard: React.FC = () => {
                       }
                     }}>
                       <CardContent>
-                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: '#B8860B' }}>
+                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: COLORS.PRIMARY }}>
                           {t('dashboard.hotelAdmin.reports.bookingAnalytics')}
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 2, fontWeight: 600 }}>
@@ -1476,7 +1477,7 @@ const HotelAdminDashboard: React.FC = () => {
                     borderRadius: 2
                   }}>
                     <CardContent>
-                      <Typography variant="h6" sx={{ fontWeight: 700, mb: 3, color: '#B8860B' }}>
+                      <Typography variant="h6" sx={{ fontWeight: 700, mb: 3, color: COLORS.PRIMARY }}>
                         {t('dashboard.hotelAdmin.reports.bookingStatusOverview')}
                       </Typography>
                       <Grid container spacing={2}>
@@ -1531,7 +1532,7 @@ const HotelAdminDashboard: React.FC = () => {
                         }
                       }}>
                         <CardContent>
-                          <Typography variant="h6" sx={{ fontWeight: 700, mb: 3, color: '#B8860B' }}>
+                          <Typography variant="h6" sx={{ fontWeight: 700, mb: 3, color: COLORS.PRIMARY }}>
                             {t('dashboard.hotelAdmin.reports.roomTypeDistribution')}
                           </Typography>
                           {Object.entries(reportsData.hotelStats.roomsByType).map(([roomType, count]) => (
@@ -1571,7 +1572,7 @@ const HotelAdminDashboard: React.FC = () => {
                         }
                       }}>
                         <CardContent>
-                          <Typography variant="h6" sx={{ fontWeight: 700, mb: 3, color: '#B8860B' }}>
+                          <Typography variant="h6" sx={{ fontWeight: 700, mb: 3, color: COLORS.PRIMARY }}>
                             {t('dashboard.hotelAdmin.reports.staffByRole')}
                           </Typography>
                           {reportsData.hotelStats?.staffByRole && Object.keys(reportsData.hotelStats.staffByRole).length > 0 ? (
@@ -1621,7 +1622,7 @@ const HotelAdminDashboard: React.FC = () => {
                       }
                     }}>
                       <CardContent>
-                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 3, color: '#B8860B' }}>
+                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 3, color: COLORS.PRIMARY }}>
                           {t('dashboard.hotelAdmin.reports.upcomingActivity')}
                         </Typography>
                         <Box sx={{ mb: 2 }}>
@@ -1653,7 +1654,7 @@ const HotelAdminDashboard: React.FC = () => {
                       }
                     }}>
                       <CardContent>
-                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 3, color: '#B8860B' }}>
+                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 3, color: COLORS.PRIMARY }}>
                           {t('dashboard.hotelAdmin.reports.dailyOperationsSummary')}
                         </Typography>
                         <Box sx={{ mb: 2 }}>
@@ -1691,7 +1692,7 @@ const HotelAdminDashboard: React.FC = () => {
                       borderRadius: 2
                     }}>
                       <CardContent>
-                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 3, color: '#B8860B' }}>
+                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 3, color: COLORS.PRIMARY }}>
                           {t('dashboard.hotelAdmin.reports.weeklyActivityTrends')}
                         </Typography>
                         <Grid container spacing={2}>
@@ -1795,7 +1796,7 @@ const HotelAdminDashboard: React.FC = () => {
                       }}
                     >
                       <CardContent>
-                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 3, color: '#B8860B' }}>
+                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 3, color: COLORS.PRIMARY }}>
                           {t('dashboard.hotelAdmin.reports.quickActionsNavigation')}
                         </Typography>
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>

@@ -26,6 +26,7 @@ import {
   ListItem,
   ListItemText,
   ListItemButton,
+  SelectChangeEvent,
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -37,6 +38,7 @@ import {
 import { COLORS } from '../../theme/themeColors';
 import { useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import PremiumTextField from '../../components/common/PremiumTextField';
+import PremiumSelect from '../../components/common/PremiumSelect';
 import { useAuth } from '../../contexts/AuthContext';
 import { hotelAdminApi, RoomResponse } from '../../services/hotelAdminApi';
 import { ROOM_TYPE_VALUES } from '../../constants/roomTypes';
@@ -663,19 +665,18 @@ const BookingViewEdit: React.FC = () => {
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     {isEditing ? (
-                      <FormControl fullWidth>
-                        <InputLabel>Status</InputLabel>
-                        <Select
-                          value={currentBooking?.status || ''}
-                          onChange={(e) => handleFieldChange('status', e.target.value)}
-                        >
-                          <MenuItem value="CONFIRMED">Confirmed</MenuItem>
-                          <MenuItem value="CHECKED_IN">Checked In</MenuItem>
-                          <MenuItem value="CHECKED_OUT">Checked Out</MenuItem>
-                          <MenuItem value="CANCELLED">Cancelled</MenuItem>
-                          <MenuItem value="PENDING">Pending</MenuItem>
-                        </Select>
-                      </FormControl>
+                      <PremiumSelect
+                        fullWidth
+                        label="Status"
+                        value={currentBooking?.status || ''}
+                        onChange={(e: SelectChangeEvent<string>) => handleFieldChange('status', e.target.value as string)}
+                      >
+                        <MenuItem value="CONFIRMED">Confirmed</MenuItem>
+                        <MenuItem value="CHECKED_IN">Checked In</MenuItem>
+                        <MenuItem value="CHECKED_OUT">Checked Out</MenuItem>
+                        <MenuItem value="CANCELLED">Cancelled</MenuItem>
+                        <MenuItem value="PENDING">Pending</MenuItem>
+                      </PremiumSelect>
                     ) : (
                       <Box>
                         <Typography variant="caption" display="block" color="text.secondary">
@@ -734,24 +735,23 @@ const BookingViewEdit: React.FC = () => {
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     {isEditing ? (
-                      <FormControl fullWidth>
-                        <InputLabel>Room Type</InputLabel>
-                        <Select
-                          value={currentBooking?.roomType || ''}
-                          onChange={(e) => {
-                            handleFieldChange('roomType', e.target.value);
-                            // Clear room number when room type changes
-                            handleFieldChange('roomNumber', '');
-                            setSelectedRoomId(null);
-                          }}
-                        >
-                          {availableRoomTypes.map((type) => (
-                            <MenuItem key={type} value={type}>
-                              {type}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
+                      <PremiumSelect
+                        fullWidth
+                        label="Room Type"
+                        value={currentBooking?.roomType || ''}
+                        onChange={(e: SelectChangeEvent<string>) => {
+                          handleFieldChange('roomType', e.target.value as string);
+                          // Clear room number when room type changes
+                          handleFieldChange('roomNumber', '');
+                          setSelectedRoomId(null);
+                        }}
+                      >
+                        {availableRoomTypes.map((type) => (
+                          <MenuItem key={type} value={type}>
+                            {type}
+                          </MenuItem>
+                        ))}
+                      </PremiumSelect>
                     ) : (
                       <PremiumTextField
                         fullWidth
@@ -764,12 +764,11 @@ const BookingViewEdit: React.FC = () => {
                   <Grid item xs={12} sm={6}>
                     {isEditing ? (
                       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                        <TextField
+                        <PremiumTextField
                           fullWidth
                           label="Room Number"
                           value={currentBooking?.roomNumber || ''}
                           onChange={(e) => handleFieldChange('roomNumber', e.target.value)}
-                          variant="outlined"
                           placeholder="Enter room number or select from available rooms"
                         />
                         <Button
