@@ -59,7 +59,7 @@ const root = ReactDOM.createRoot(
 
 root.render(
   <React.StrictMode>
-    <BrowserRouter future={{ v7_relativeSplatPath: true }}>
+    <BrowserRouter future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
           <CssBaseline />

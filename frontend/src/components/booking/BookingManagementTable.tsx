@@ -21,12 +21,9 @@ import {
   Snackbar,
   TablePagination,
   Tooltip,
-  TextField,
   InputAdornment,
   CircularProgress,
-  Select,
   MenuItem,
-  FormControl,
   useTheme
 } from '@mui/material';
 import {
@@ -56,6 +53,8 @@ import BookingNotificationEvents from '../../utils/bookingNotificationEvents';
 import { TableRowSkeleton } from '../common/SkeletonLoaders';
 import { NoBookings } from '../common/EmptyState';
 import { COLORS } from '../../theme/themeColors';
+import PremiumTextField from '../common/PremiumTextField';
+import PremiumSelect from '../common/PremiumSelect';
 
 interface BookingManagementTableProps {
   mode: 'hotel-admin' | 'front-desk';
@@ -762,16 +761,20 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
         )}
         
         {/* Search Input */}
-        <TextField
-          placeholder={t('booking.management.searchPlaceholder')}
+        <PremiumTextField
+          label={t('booking.management.searchLabel', 'Search Bookings')}
+          placeholder={t('booking.management.searchPlaceholder', 'Search by guest, room, or reference')}
           value={searchTerm}
           onChange={handleSearchChange}
           InputProps={searchInputProps}
           disabled={loading}
           sx={{ 
             flexGrow: 1,
-            maxWidth: 400,
-            ml: title ? 2 : 0
+            maxWidth: 420,
+            ml: title ? 2 : 0,
+            '& .MuiOutlinedInput-root': {
+              minHeight: 46,
+            }
           }}
           size="small"
         />
@@ -1028,35 +1031,50 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                     <TableCell>
                       {mode === 'hotel-admin' && editingPaymentStatus === booking.reservationId ? (
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <FormControl size="small" sx={{ minWidth: 120 }}>
-                            <Select
-                              value={normalizePaymentStatus(booking.paymentStatus || 'PENDING')}
-                              onChange={(e) => {
-                                const newStatus = e.target.value;
-                                const currentStatus = normalizePaymentStatus(booking.paymentStatus || 'PENDING');
-                                if (newStatus !== currentStatus) {
-                                  handlePaymentStatusConfirm(
-                                    booking.reservationId, 
-                                    currentStatus, 
-                                    newStatus,
-                                    booking.guestName
-                                  );
+                          <PremiumSelect
+                            label="Payment Status"
+                            value={normalizePaymentStatus(booking.paymentStatus || 'PENDING')}
+                            onChange={(e) => {
+                              const newStatus = e.target.value;
+                              const currentStatus = normalizePaymentStatus(booking.paymentStatus || 'PENDING');
+                              if (newStatus !== currentStatus) {
+                                handlePaymentStatusConfirm(
+                                  booking.reservationId,
+                                  currentStatus,
+                                  newStatus,
+                                  booking.guestName
+                                );
+                              }
+                            }}
+                            disabled={updatingPaymentStatus}
+                            formControlProps={{
+                              sx: {
+                                minWidth: 170,
+                                '& .MuiFormLabel-root': {
+                                  textTransform: 'uppercase',
+                                  fontSize: '0.65rem',
+                                  fontWeight: 700,
+                                  letterSpacing: '0.5px'
                                 }
-                              }}
-                              disabled={updatingPaymentStatus}
-                              sx={{
-                                height: '32px',
-                                '& .MuiSelect-select': {
-                                  padding: '4px 8px',
-                                  fontSize: '0.85rem'
-                                }
-                              }}
-                            >
-                              <MenuItem value="PENDING">PENDING</MenuItem>
-                              <MenuItem value="PROCESSING">PROCESSING</MenuItem>
-                              <MenuItem value="COMPLETED">COMPLETED</MenuItem>
-                            </Select>
-                          </FormControl>
+                              },
+                            }}
+                            sx={{
+                              '& .MuiSelect-select': {
+                                padding: '8px 10px',
+                                fontSize: '0.85rem',
+                                fontWeight: 700,
+                                color: COLORS.PRIMARY,
+                              },
+                              '& .MuiOutlinedInput-root': {
+                                height: 40,
+                                backgroundColor: '#fafafa',
+                              },
+                            }}
+                          >
+                            <MenuItem value="PENDING">PENDING</MenuItem>
+                            <MenuItem value="PROCESSING">PROCESSING</MenuItem>
+                            <MenuItem value="COMPLETED">COMPLETED</MenuItem>
+                          </PremiumSelect>
                           <IconButton
                             size="small"
                             onClick={handlePaymentStatusCancel}
@@ -1252,22 +1270,32 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                 : '1px solid #e5e7eb',
               '& .MuiTablePagination-toolbar': {
                 padding: '12px 24px',
-                color: muiTheme.palette.text.primary
+                color: muiTheme.palette.text.primary,
+                gap: 2,
               },
               '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
-                color: muiTheme.palette.text.secondary,
-                fontWeight: 500,
-                fontSize: '0.975rem'
+                color: COLORS.PRIMARY,
+                fontWeight: 600,
+                fontSize: '0.85rem',
+                letterSpacing: '0.4px',
+                textTransform: 'uppercase'
               },
               '& .MuiTablePagination-select': {
-                backgroundColor: muiTheme.palette.background.paper,
-                border: themeMode === 'dark' 
-                  ? '1px solid rgba(255, 255, 255, 0.2)' 
-                  : '1px solid #d1d5db',
+                backgroundColor: '#fafafa',
+                border: '1px solid #d1d5db',
+                borderLeft: `3px solid ${COLORS.GOLD || '#E8B86D'}`,
                 borderRadius: '6px',
-                padding: '4px 8px',
-                color: muiTheme.palette.text.primary,
-                fontWeight: 500
+                padding: '6px 10px',
+                color: COLORS.PRIMARY,
+                fontWeight: 600,
+                minHeight: 38,
+                '&:hover': {
+                  borderColor: '#c7c7c7'
+                },
+                '&:focus': {
+                  borderColor: COLORS.PRIMARY,
+                  borderLeftColor: COLORS.PRIMARY
+                }
               },
               '& .MuiTablePagination-actions button': {
                 color: themeMode === 'dark' ? '#60a5fa' : '#667eea',

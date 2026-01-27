@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Card, CardContent, Skeleton, Grid } from '@mui/material';
+import { Box, Card, CardContent, Skeleton, Grid, TableRow, TableCell } from '@mui/material';
 
 /**
  * Skeleton loader for booking cards
@@ -53,11 +53,13 @@ export const ProductCardSkeleton: React.FC = () => (
  * Skeleton loader for table rows
  */
 export const TableRowSkeleton: React.FC<{ columns?: number }> = ({ columns = 5 }) => (
-  <Box sx={{ display: 'flex', gap: 2, py: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
+  <TableRow>
     {Array.from({ length: columns }).map((_, index) => (
-      <Skeleton key={index} variant="text" width={`${100 / columns}%`} />
+      <TableCell key={index} sx={{ py: 2 }}>
+        <Skeleton variant="text" width="100%" />
+      </TableCell>
     ))}
-  </Box>
+  </TableRow>
 );
 
 /**

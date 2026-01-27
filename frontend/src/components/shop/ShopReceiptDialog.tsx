@@ -21,6 +21,7 @@ import {
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { ShopOrder } from '../../types/shop';
+import { getPremiumTableHeadSx } from './premiumStyles';
 
 interface ShopReceiptDialogProps {
   open: boolean;
@@ -412,20 +413,20 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
               </Typography>
               <Table sx={{ minWidth: 650 }}>
                 <TableHead>
-                  <TableRow sx={{ bgcolor: '#fafafa' }}>
-                    <TableCell sx={{ fontWeight: 600, color: '#616161', textTransform: 'uppercase', fontSize: '0.75rem' }}>
+                  <TableRow sx={getPremiumTableHeadSx({ compact: true })}>
+                    <TableCell>
                       {t('shopReceipt.product')}
                     </TableCell>
-                    <TableCell align="center" sx={{ fontWeight: 600, color: '#616161', textTransform: 'uppercase', fontSize: '0.75rem' }}>
+                    <TableCell align="center">
                       {t('shopReceipt.sku')}
                     </TableCell>
-                    <TableCell align="center" sx={{ fontWeight: 600, color: '#616161', textTransform: 'uppercase', fontSize: '0.75rem' }}>
+                    <TableCell align="center">
                       {t('shopReceipt.qty')}
                     </TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 600, color: '#616161', textTransform: 'uppercase', fontSize: '0.75rem' }}>
+                    <TableCell align="right">
                       {t('shopReceipt.unitPrice')}
                     </TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 600, color: '#616161', textTransform: 'uppercase', fontSize: '0.75rem' }}>
+                    <TableCell align="right">
                       {t('shopReceipt.total')}
                     </TableCell>
                   </TableRow>

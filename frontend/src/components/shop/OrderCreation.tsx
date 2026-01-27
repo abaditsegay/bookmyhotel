@@ -43,6 +43,8 @@ import { Product, ShopOrderCreateRequest, PaymentMethod, DeliveryType, ProductCa
 import ShopReceiptDialog from './ShopReceiptDialog';
 import PaymentDialog from './PaymentDialog';
 import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
+import { COLORS, addAlpha } from '../../theme/themeColors';
+import { getPremiumTableHeadSx } from './premiumStyles';
 
 interface OrderItem {
   product: Product;
@@ -383,7 +385,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
   const getStockStatusColor = (stockStatus: string) => {
     switch (stockStatus) {
       case 'OUT_OF_STOCK': return '#f44336'; // Red
-      case 'LOW_STOCK': return '#ff9800'; // Orange
+      case 'LOW_STOCK': return COLORS.WARNING;
       case 'IN_STOCK': return '#4caf50'; // Green
       default: return '#9e9e9e'; // Grey
     }
@@ -509,39 +511,39 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                           cursor: isOutOfStock ? 'not-allowed' : 'pointer',
                           position: 'relative',
                           border: isSelected ? '2px solid' : '1px solid',
-                          borderColor: isSelected ? '#E8B86D' : 'rgba(26, 54, 93, 0.15)',
+                          borderColor: isSelected ? COLORS.PRIMARY : addAlpha(COLORS.PRIMARY, 0.15),
                           background: isSelected 
-                            ? 'linear-gradient(135deg, rgba(232, 184, 109, 0.08) 0%, rgba(26, 54, 93, 0.03) 100%)' 
+                            ? `linear-gradient(135deg, ${addAlpha(COLORS.PRIMARY, 0.1)} 0%, ${addAlpha(COLORS.SECONDARY, 0.08)} 100%)`
                             : isOutOfStock 
-                              ? 'rgba(0,0,0,0.04)' 
-                              : 'rgba(255,255,255,0.9)',
+                              ? addAlpha(COLORS.BLACK, 0.04) 
+                              : addAlpha(COLORS.WHITE, 0.95),
                           backdropFilter: 'blur(10px)',
                           opacity: isOutOfStock ? 0.55 : 1,
                           boxShadow: isSelected 
-                            ? '0 8px 24px rgba(232, 184, 109, 0.25), 0 4px 8px rgba(26, 54, 93, 0.1)' 
+                            ? `0 8px 24px ${addAlpha(COLORS.PRIMARY, 0.22)}, 0 4px 8px ${addAlpha(COLORS.PRIMARY, 0.12)}`
                             : '0 2px 8px rgba(0,0,0,0.06)',
                           '&:hover': { 
                             boxShadow: isOutOfStock 
                               ? '0 2px 8px rgba(0,0,0,0.06)' 
                               : isSelected 
-                                ? '0 12px 32px rgba(232, 184, 109, 0.3), 0 6px 12px rgba(26, 54, 93, 0.15)' 
-                                : '0 8px 24px rgba(26, 54, 93, 0.12)',
+                                ? `0 12px 32px ${addAlpha(COLORS.PRIMARY, 0.28)}, 0 6px 12px ${addAlpha(COLORS.PRIMARY, 0.16)}`
+                                : `0 8px 24px ${addAlpha(COLORS.PRIMARY, 0.16)}`,
                             transform: isOutOfStock ? 'none' : 'translateY(-4px)',
-                            borderColor: isOutOfStock ? 'rgba(26, 54, 93, 0.15)' : (isSelected ? '#E8B86D' : 'rgba(26, 54, 93, 0.25)')
+                            borderColor: isOutOfStock ? addAlpha(COLORS.PRIMARY, 0.15) : (isSelected ? COLORS.PRIMARY : addAlpha(COLORS.PRIMARY, 0.25))
                           },
                           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                         }}
                         onClick={() => !isOutOfStock && addProductToOrder(product)}
                       >
-                        {/* Selection indicator with premium gold */}
+                        {/* Selection indicator with premium primary */}
                         {isSelected && (
                           <Box
                             sx={{
                               position: 'absolute',
                               top: 8,
                               right: 8,
-                              background: 'linear-gradient(135deg, #E8B86D 0%, #D4A05D 100%)',
-                              color: 'white',
+                              background: COLORS.GRADIENT_PRIMARY,
+                              color: COLORS.WHITE,
                               borderRadius: '50%',
                               width: 28,
                               height: 28,
@@ -551,7 +553,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                               fontSize: '0.85rem',
                               fontWeight: 700,
                               zIndex: 1,
-                              boxShadow: '0 2px 8px rgba(232, 184, 109, 0.4)'
+                              boxShadow: `0 2px 8px ${addAlpha(COLORS.PRIMARY, 0.35)}`
                             }}
                           >
                             {selectedQuantity}
@@ -594,7 +596,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                           >
                             {product.name}
                           </Typography>
-                          <Typography variant="caption" sx={{ color: isOutOfStock ? 'text.disabled' : '#64748b', fontSize: '0.75rem' }}>
+                          <Typography variant="caption" sx={{ color: isOutOfStock ? 'text.disabled' : COLORS.SLATE_500, fontSize: '0.75rem' }}>
                             SKU: {product.sku}
                           </Typography>
                           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1.5 }}>
@@ -602,9 +604,9 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                               label={product.category.replace('_', ' ')}
                               size="small"
                               sx={{ 
-                                background: 'linear-gradient(135deg, rgba(26, 54, 93, 0.08) 0%, rgba(26, 54, 93, 0.12) 100%)',
-                                color: '#1a365d',
-                                border: '1px solid rgba(26, 54, 93, 0.2)',
+                                background: `linear-gradient(135deg, ${addAlpha(COLORS.PRIMARY, 0.08)} 0%, ${addAlpha(COLORS.PRIMARY, 0.12)} 100%)`,
+                                color: COLORS.PRIMARY,
+                                border: `1px solid ${addAlpha(COLORS.PRIMARY, 0.2)}`,
                                 fontWeight: 600,
                                 fontSize: '0.7rem',
                                 letterSpacing: '0.3px',
@@ -617,8 +619,8 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                                 fontWeight: 700,
                                 fontSize: '1rem',
                                 background: isSelected 
-                                  ? 'linear-gradient(135deg, #E8B86D 0%, #D4A05D 100%)' 
-                                  : isOutOfStock ? 'none' : 'linear-gradient(135deg, #1a365d 0%, #2a4a6d 100%)',
+                                  ? COLORS.GRADIENT_PRIMARY
+                                  : isOutOfStock ? 'none' : COLORS.GRADIENT_PRIMARY,
                                 backgroundClip: 'text',
                                 WebkitBackgroundClip: 'text',
                                 WebkitTextFillColor: isOutOfStock ? 'rgba(0,0,0,0.38)' : 'transparent'
@@ -658,7 +660,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                               sx={{ 
                                 display: 'block',
                                 mt: 0.75,
-                                color: '#E8B86D',
+                                color: COLORS.PRIMARY,
                                 fontWeight: 700,
                                 fontSize: '0.75rem',
                                 letterSpacing: '0.3px'
@@ -695,11 +697,11 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
         {/* Order Summary - Premium styling */}
         <Grid item xs={12} md={4}>
           <Card sx={{ 
-            background: 'linear-gradient(135deg, rgba(26, 54, 93, 0.03) 0%, rgba(232, 184, 109, 0.06) 100%)',
+            background: `linear-gradient(135deg, ${addAlpha(COLORS.PRIMARY, 0.04)} 0%, ${addAlpha(COLORS.SECONDARY, 0.06)} 100%)`,
             backdropFilter: 'blur(20px)',
             border: '2px solid',
-            borderColor: 'rgba(232, 184, 109, 0.3)',
-            boxShadow: '0 8px 32px rgba(26, 54, 93, 0.12), 0 4px 16px rgba(232, 184, 109, 0.1)',
+            borderColor: addAlpha(COLORS.PRIMARY, 0.22),
+            boxShadow: `0 8px 32px ${addAlpha(COLORS.PRIMARY, 0.14)}, 0 4px 16px ${addAlpha(COLORS.SECONDARY, 0.12)}`,
             position: 'sticky',
             top: 16,
             '& .MuiCardContent-root': {
@@ -712,10 +714,10 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                 alignItems: 'center', 
                 gap: 1,
                 fontWeight: 700,
-                color: '#1a365d',
+                color: COLORS.PRIMARY,
                 letterSpacing: '-0.01em'
               }}>
-                <ReceiptIcon sx={{ color: '#E8B86D' }} />
+                <ReceiptIcon sx={{ color: COLORS.PRIMARY }} />
                 {t('shop.orders.creation.orderSummary')}
               </Typography>
 
@@ -813,7 +815,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                   <TableContainer>
                     <Table size="small">
                       <TableHead>
-                        <TableRow>
+                        <TableRow sx={getPremiumTableHeadSx({ compact: true })}>
                           <TableCell>{t('shop.orders.creation.item')}</TableCell>
                           <TableCell align="center">{t('shop.orders.creation.qty')}</TableCell>
                           <TableCell align="right">{t('shop.orders.creation.price')}</TableCell>
@@ -882,7 +884,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                   </Typography>
                 </Box>
               )}              {/* Total */}
-              <Divider sx={{ mb: 2, borderColor: 'rgba(232, 184, 109, 0.2)' }} />
+              <Divider sx={{ mb: 2, borderColor: addAlpha(COLORS.PRIMARY, 0.2) }} />
               <Box sx={{ 
                 display: 'flex', 
                 justifyContent: 'space-between', 
@@ -890,15 +892,15 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                 mb: 3,
                 p: 2,
                 borderRadius: 2,
-                background: 'linear-gradient(135deg, rgba(232, 184, 109, 0.08) 0%, rgba(26, 54, 93, 0.05) 100%)',
-                border: '1px solid rgba(232, 184, 109, 0.2)'
+                background: `linear-gradient(135deg, ${addAlpha(COLORS.PRIMARY, 0.08)} 0%, ${addAlpha(COLORS.SECONDARY, 0.06)} 100%)`,
+                border: `1px solid ${addAlpha(COLORS.PRIMARY, 0.2)}`
               }}>
-                <Typography variant="h6" sx={{ fontWeight: 700, color: '#1a365d' }}>{t('shop.orders.creation.total')}</Typography>
+                <Typography variant="h6" sx={{ fontWeight: 700, color: COLORS.PRIMARY }}>{t('shop.orders.creation.total')}</Typography>
                 <Typography 
                   variant="h5" 
                   sx={{
                     fontWeight: 800,
-                    background: 'linear-gradient(135deg, #E8B86D 0%, #D4A05D 100%)',
+                    background: COLORS.GRADIENT_PRIMARY,
                     backgroundClip: 'text',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent'
@@ -916,7 +918,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                 onClick={handleCreateOrder}
                 disabled={loading || orderItems.length === 0}
                 sx={{
-                  background: 'linear-gradient(135deg, #1a365d 0%, #2a4a6d 100%)',
+                  background: COLORS.GRADIENT_PRIMARY,
                   color: 'white',
                   fontWeight: 700,
                   fontSize: '1rem',
@@ -926,12 +928,12 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                   boxShadow: '0 4px 16px rgba(26, 54, 93, 0.3)',
                   transition: 'all 0.3s ease',
                   '&:hover': {
-                    background: 'linear-gradient(135deg, #2a4a6d 0%, #1a365d 100%)',
-                    boxShadow: '0 6px 24px rgba(26, 54, 93, 0.4)',
+                    background: COLORS.GRADIENT_PRIMARY,
+                    boxShadow: `0 6px 24px ${addAlpha(COLORS.PRIMARY, 0.4)}`,
                     transform: 'translateY(-2px)'
                   },
                   '&.Mui-disabled': {
-                    background: 'linear-gradient(135deg, #1a365d 0%, #2a4a6d 100%)',
+                    background: COLORS.GRADIENT_PRIMARY,
                     opacity: 0.6,
                     color: 'white'
                   }

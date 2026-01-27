@@ -40,6 +40,7 @@ import {
 import { format } from 'date-fns';
 import { roomChargeApiService } from '../../services/roomChargeApi';
 import { RoomCharge, RoomChargeCreateRequest, RoomChargeType } from '../../types/shop';
+import { getPremiumTableHeadSx } from './premiumStyles';
 
 interface RoomChargesProps {
   hotelId: number;
@@ -312,32 +313,7 @@ const RoomChargesManagement: React.FC<RoomChargesProps> = ({ hotelId }) => {
           <TableContainer component={Paper}>
             <Table>
               <TableHead>
-                <TableRow
-                  sx={{
-                    background: 'linear-gradient(135deg, #64748b 0%, #475569 50%, #334155 100%)',
-                    boxShadow: '0 4px 12px rgba(100, 116, 139, 0.15)',
-                    '& .MuiTableCell-head': {
-                      color: '#ffffff',
-                      fontWeight: 600,
-                      fontSize: '0.95rem',
-                      letterSpacing: '0.5px',
-                      textTransform: 'uppercase',
-                      border: 'none',
-                      padding: '20px 16px',
-                      position: 'relative',
-                      textShadow: '0 1px 2px rgba(0,0,0,0.1)',
-                      '&::after': {
-                        content: '""',
-                        position: 'absolute',
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        height: '3px',
-                        background: 'linear-gradient(90deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.6) 100%)'
-                      }
-                    }
-                  }}
-                >
+                <TableRow sx={getPremiumTableHeadSx()}>
                   <TableCell>Date</TableCell>
                   <TableCell>Guest</TableCell>
                   <TableCell>Room</TableCell>

@@ -47,6 +47,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { shopApiService } from '../../services/shopApi';
 import { useAuthenticatedApi } from '../../hooks/useAuthenticatedApi';
 import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
+import { getPremiumTableHeadSx } from './premiumStyles';
 
 interface OrderItem {
   product: {
@@ -561,7 +562,7 @@ const PaymentPage: React.FC = () => {
         <TableContainer component={Paper} elevation={1} sx={{ mb: 3 }}>
           <Table>
             <TableHead>
-              <TableRow>
+              <TableRow sx={getPremiumTableHeadSx({ compact: true })}>
                 <TableCell>Item</TableCell>
                 <TableCell align="center">Quantity</TableCell>
                 <TableCell align="right">Unit Price</TableCell>

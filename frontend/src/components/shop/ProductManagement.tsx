@@ -48,10 +48,14 @@ import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
 import { Product, ProductCreateRequest, ProductCategory } from '../../types/shop';
 import { translateProducts } from '../../utils/productTranslation';
 import { TableRowSkeleton } from '../common/SkeletonLoaders';
+import { getPremiumTableHeadSx } from './premiumStyles';
 import { NoProducts } from '../common/EmptyState';
 import { useTableSort } from '../../hooks/useTableSort';
 import { SortableTableCell } from '../common/SortableTableCell';
 import { useCsvExport } from '../../hooks/useCsvExport';
+import { COLORS, addAlpha } from '../../theme/themeColors';
+import PremiumTextField from '../common/PremiumTextField';
+import PremiumSelect from '../common/PremiumSelect';
 
 const ProductManagement: React.FC = () => {
   const { t } = useTranslation();
@@ -439,32 +443,7 @@ const ProductManagement: React.FC = () => {
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
-            <TableRow
-              sx={{
-                background: 'linear-gradient(135deg, #64748b 0%, #475569 50%, #334155 100%)',
-                boxShadow: '0 4px 12px rgba(100, 116, 139, 0.15)',
-                '& .MuiTableCell-head': {
-                  color: '#ffffff',
-                  fontWeight: 600,
-                  fontSize: '0.95rem',
-                  letterSpacing: '0.5px',
-                  textTransform: 'uppercase',
-                  border: 'none',
-                  padding: '20px 16px',
-                  position: 'relative',
-                  textShadow: '0 1px 2px rgba(0,0,0,0.1)',
-                  '&::after': {
-                    content: '""',
-                    position: 'absolute',
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    height: '3px',
-                    background: 'linear-gradient(90deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.6) 100%)'
-                  }
-                }
-              }}
-            >
+            <TableRow sx={getPremiumTableHeadSx()}>
               <SortableTableCell
                 label={t('shop.products.table.name')}
                 sortKey="name"
@@ -624,14 +603,33 @@ const ProductManagement: React.FC = () => {
       />
 
       {/* Create/Edit Dialog */}
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="md" fullWidth>
-        <DialogTitle>
+      <Dialog 
+        open={openDialog} 
+        onClose={() => setOpenDialog(false)} 
+        maxWidth="md" 
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            boxShadow: `0 18px 48px ${addAlpha(COLORS.PRIMARY, 0.12)}`,
+            border: `1px solid ${addAlpha(COLORS.PRIMARY, 0.08)}`,
+            backgroundColor: COLORS.WHITE
+          }
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 700, color: COLORS.PRIMARY }}>
           {editingProduct ? t('shop.products.editProduct') : t('shop.products.addProduct')}
         </DialogTitle>
-        <DialogContent>
+        <DialogContent dividers sx={{
+          borderColor: addAlpha(COLORS.PRIMARY, 0.08),
+          backgroundColor: COLORS.WHITE,
+          px: 3,
+          pt: 2,
+          pb: 3
+        }}>
           <Grid container spacing={2} sx={{ mt: 1 }}>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label={t('shop.products.form.name')}
                 value={formData.name}
@@ -640,7 +638,7 @@ const ProductManagement: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label={t('shop.products.form.sku')}
                 value={formData.sku}
@@ -649,7 +647,7 @@ const ProductManagement: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label={t('shop.products.form.description')}
                 value={formData.description}
@@ -659,23 +657,22 @@ const ProductManagement: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <FormControl fullWidth required>
-                <InputLabel>{t('shop.products.form.category')}</InputLabel>
-                <Select
-                  value={formData.category}
-                  label={t('shop.products.form.category')}
-                  onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value as ProductCategory }))}
-                >
-                  {Object.values(ProductCategory).map((category) => (
-                    <MenuItem key={category} value={category}>
-                      {t(`categoryNames.${category}`)}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+              <PremiumSelect
+                fullWidth
+                required
+                label={t('shop.products.form.category')}
+                value={formData.category}
+                onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value as ProductCategory }))}
+              >
+                {Object.values(ProductCategory).map((category) => (
+                  <MenuItem key={category} value={category}>
+                    {t(`categoryNames.${category}`)}
+                  </MenuItem>
+                ))}
+              </PremiumSelect>
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label={t('shop.products.form.price')}
                 type="number"
@@ -688,7 +685,7 @@ const ProductManagement: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label={t('shop.products.form.costPrice')}
                 type="number"
@@ -700,7 +697,7 @@ const ProductManagement: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label={t('shop.products.form.stock')}
                 type="number"
@@ -710,7 +707,7 @@ const ProductManagement: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label={t('shop.products.form.minimumStockLevel')}
                 type="number"
@@ -719,7 +716,7 @@ const ProductManagement: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label={t('shop.products.form.maximumStockLevel')}
                 type="number"
@@ -728,7 +725,7 @@ const ProductManagement: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label={t('shop.products.form.weightGrams')}
                 type="number"
@@ -737,7 +734,7 @@ const ProductManagement: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label={t('shop.products.form.imageUrl')}
                 value={formData.imageUrl}
@@ -745,7 +742,7 @@ const ProductManagement: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label={t('shop.products.form.notes')}
                 value={formData.notes}
@@ -756,11 +753,33 @@ const ProductManagement: React.FC = () => {
             </Grid>
           </Grid>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenDialog(false)}>{t('common.cancel')}</Button>
+        <DialogActions sx={{ px: 3, py: 2.5, gap: 1.5 }}>
+          <Button 
+            onClick={() => setOpenDialog(false)}
+            variant="outlined"
+            sx={{
+              borderColor: addAlpha(COLORS.PRIMARY, 0.3),
+              color: COLORS.PRIMARY,
+              fontWeight: 600,
+              textTransform: 'none'
+            }}
+          >
+            {t('common.cancel')}
+          </Button>
           <Button
             onClick={editingProduct ? handleUpdateProduct : handleCreateProduct}
             variant="contained"
+            sx={{
+              backgroundColor: COLORS.PRIMARY,
+              color: COLORS.WHITE,
+              fontWeight: 700,
+              textTransform: 'none',
+              boxShadow: `0 8px 20px ${addAlpha(COLORS.PRIMARY, 0.18)}`,
+              '&:hover': {
+                backgroundColor: COLORS.PRIMARY_HOVER,
+                boxShadow: `0 10px 24px ${addAlpha(COLORS.PRIMARY, 0.24)}`
+              }
+            }}
           >
             {editingProduct ? t('common.save') : t('common.add')}
           </Button>

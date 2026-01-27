@@ -23,6 +23,7 @@ import OrderManagement from './OrderManagement';
 import OrderCreation from './OrderCreation';
 import LowStockProducts from './LowStockProducts';
 import { StatCardSkeleton } from '../common/SkeletonLoaders';
+import { premiumTabsPaperSx, premiumTabsSx } from './premiumStyles';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -414,42 +415,13 @@ const ShopDashboard: React.FC = () => {
       )}
 
       {/* Navigation Tabs with premium styling */}
-      <Paper sx={{ 
-        mb: 3,
-        background: 'linear-gradient(135deg, rgba(26, 54, 93, 0.02) 0%, rgba(232, 184, 109, 0.03) 100%)',
-        backdropFilter: 'blur(10px)',
-        border: '1px solid rgba(26, 54, 93, 0.1)',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
-      }}>
+      <Paper sx={premiumTabsPaperSx}>
         <Tabs
           value={currentTab}
           onChange={handleTabChange}
           variant="scrollable"
           scrollButtons="auto"
-          sx={{
-            '& .MuiTab-root': {
-              fontWeight: 600,
-              fontSize: '0.95rem',
-              textTransform: 'none',
-              color: '#64748b',
-              minHeight: 56,
-              transition: 'all 0.3s ease',
-              '&:hover': {
-                color: '#1a365d',
-                background: 'rgba(26, 54, 93, 0.04)'
-              },
-              '&.Mui-selected': {
-                color: '#1a365d',
-                fontWeight: 700
-              }
-            },
-            '& .MuiTabs-indicator': {
-              height: 3,
-              background: 'linear-gradient(90deg, #E8B86D 0%, #D4A05D 100%)',
-              borderRadius: '3px 3px 0 0',
-              boxShadow: '0 -2px 8px rgba(232, 184, 109, 0.3)'
-            }
-          }}
+          sx={premiumTabsSx}
         >
           <Tab label={t('shop.dashboard.tabs.newOrder')} />
           <Tab label={t('shop.dashboard.tabs.products')} />
