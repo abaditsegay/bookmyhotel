@@ -159,12 +159,12 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
         height,
         display: 'flex',
         flexDirection: 'column',
-        background: 'linear-gradient(165deg, #ffffff 0%, #f7f7fb 60%, #f0f4ff 100%)',
+        background: 'linear-gradient(165deg, #ffffff 0%, #fafbfd 60%, #f6f8ff 100%)',
         p: 2.5,
         borderRadius: 3,
         overflow: 'hidden',
-        border: `1px solid ${alpha(COLORS.PRIMARY, 0.08)}`,
-        boxShadow: '0 12px 28px rgba(26, 54, 93, 0.08)',
+        border: `1px solid ${alpha(COLORS.PRIMARY, 0.06)}`,
+        boxShadow: '0 10px 22px rgba(26, 54, 93, 0.06)',
       }}
     >
       {/* Header */}
@@ -296,12 +296,15 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
             sx={{
               backgroundColor: COLORS.PRIMARY,
               color: COLORS.WHITE,
+              minWidth: 88,
               '&:hover': {
                 backgroundColor: COLORS.PRIMARY_HOVER,
               },
               '&:disabled': {
-                backgroundColor: alpha(COLORS.WHITE, 0.08),
-                color: alpha(COLORS.WHITE, 0.45),
+                backgroundColor: alpha(COLORS.PRIMARY, 0.08),
+                color: alpha(COLORS.PRIMARY, 0.55),
+                border: `1px solid ${alpha(COLORS.PRIMARY, 0.18)}`,
+                boxShadow: 'none',
               },
             }}
           >
