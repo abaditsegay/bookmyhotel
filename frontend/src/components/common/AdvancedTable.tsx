@@ -23,6 +23,7 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import { designSystem } from '../../theme/designSystem';
+import { COLORS } from '../../theme/themeColors';
 
 export type SortDirection = 'asc' | 'desc';
 
@@ -252,9 +253,11 @@ const AdvancedTable: React.FC<AdvancedTableProps> = ({
                     minWidth: column.minWidth,
                   }}
                   sx={{
-                    fontWeight: 600,
-                    backgroundColor: theme.palette.background.default,
-                    borderBottom: `2px solid ${theme.palette.divider}`,
+                    fontWeight: 700,
+                    color: COLORS.PRIMARY,
+                    letterSpacing: '0.4px',
+                    background: 'linear-gradient(135deg, rgba(26, 54, 93, 0.06) 0%, rgba(26, 54, 93, 0.12) 100%)',
+                    borderBottom: `2px solid ${COLORS.PRIMARY}`,
                   }}
                 >
                   {column.sortable ? (
@@ -264,7 +267,7 @@ const AdvancedTable: React.FC<AdvancedTableProps> = ({
                       onClick={() => handleSort(column.id)}
                       sx={{
                         '&.Mui-active': {
-                          color: theme.palette.primary.main,
+                          color: COLORS.PRIMARY,
                         },
                       }}
                     >
@@ -276,7 +279,15 @@ const AdvancedTable: React.FC<AdvancedTableProps> = ({
                 </TableCell>
               ))}
               {actions.length > 0 && (
-                <TableCell align="center" sx={{ fontWeight: 600 }}>
+                <TableCell 
+                  align="center" 
+                  sx={{ 
+                    fontWeight: 700,
+                    color: COLORS.PRIMARY,
+                    background: 'linear-gradient(135deg, rgba(26, 54, 93, 0.06) 0%, rgba(26, 54, 93, 0.12) 100%)',
+                    borderBottom: `2px solid ${COLORS.PRIMARY}`,
+                  }}
+                >
                   Actions
                 </TableCell>
               )}

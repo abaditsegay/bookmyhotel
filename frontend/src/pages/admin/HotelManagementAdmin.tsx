@@ -801,27 +801,17 @@ const HotelManagementAdmin: React.FC = () => {
                 <TableHead>
                   <TableRow
                     sx={{
-                      background: 'linear-gradient(135deg, #64748b 0%, #475569 50%, #334155 100%)',
-                      boxShadow: '0 4px 12px rgba(100, 116, 139, 0.15)',
+                      background: 'linear-gradient(135deg, rgba(26, 54, 93, 0.08) 0%, rgba(26, 54, 93, 0.16) 100%)',
+                      borderBottom: `2px solid ${COLORS.PRIMARY}`,
                       '& .MuiTableCell-head': {
-                        color: '#ffffff',
+                        color: COLORS.PRIMARY,
                         fontWeight: 600,
                         fontSize: '0.95rem',
                         letterSpacing: '0.5px',
                         textTransform: 'uppercase',
                         border: 'none',
                         padding: '20px 16px',
-                        position: 'relative',
-                        textShadow: '0 1px 2px rgba(0,0,0,0.1)',
-                        '&::after': {
-                          content: '""',
-                          position: 'absolute',
-                          bottom: 0,
-                          left: 0,
-                          right: 0,
-                          height: '3px',
-                          background: 'linear-gradient(90deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.6) 100%)'
-                        }
+                        position: 'relative'
                       }
                     }}
                   >
@@ -1002,27 +992,17 @@ const HotelManagementAdmin: React.FC = () => {
                 <TableHead>
                   <TableRow
                     sx={{
-                      background: 'linear-gradient(135deg, #64748b 0%, #475569 50%, #334155 100%)',
-                      boxShadow: '0 4px 12px rgba(100, 116, 139, 0.15)',
+                      background: 'linear-gradient(135deg, rgba(26, 54, 93, 0.08) 0%, rgba(26, 54, 93, 0.16) 100%)',
+                      borderBottom: `2px solid ${COLORS.PRIMARY}`,
                       '& .MuiTableCell-head': {
-                        color: '#ffffff',
+                        color: COLORS.PRIMARY,
                         fontWeight: 600,
                         fontSize: '0.95rem',
                         letterSpacing: '0.5px',
                         textTransform: 'uppercase',
                         border: 'none',
                         padding: '20px 16px',
-                        position: 'relative',
-                        textShadow: '0 1px 2px rgba(0,0,0,0.1)',
-                        '&::after': {
-                          content: '""',
-                          position: 'absolute',
-                          bottom: 0,
-                          left: 0,
-                          right: 0,
-                          height: '3px',
-                          background: 'linear-gradient(90deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.6) 100%)'
-                        }
+                        position: 'relative'
                       }
                     }}
                   >
