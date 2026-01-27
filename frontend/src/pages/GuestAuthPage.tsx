@@ -12,6 +12,7 @@ import {
   Tab,
   Link,
 } from '@mui/material';
+import PremiumTextField from '../components/common/PremiumTextField';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { API_CONFIG } from '../config/apiConfig';
@@ -359,7 +360,7 @@ const GuestAuthPage: React.FC = () => {
             {/* Login Tab */}
             <TabPanel value={tabValue} index={0}>
               <Box component="form" onSubmit={handleLogin}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Email"
                   type="email"
@@ -369,7 +370,7 @@ const GuestAuthPage: React.FC = () => {
                   required
                   autoComplete="email"
                 />
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Password"
                   type="password"
@@ -455,7 +456,7 @@ const GuestAuthPage: React.FC = () => {
             {/* Registration Tab */}
             <TabPanel value={tabValue} index={1}>
               <Box component="form" onSubmit={handleRegister}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="First Name"
                   value={firstName}
@@ -463,7 +464,7 @@ const GuestAuthPage: React.FC = () => {
                   margin="normal"
                   required
                 />
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Last Name"
                   value={lastName}
@@ -471,7 +472,7 @@ const GuestAuthPage: React.FC = () => {
                   margin="normal"
                   required
                 />
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Email"
                   type="email"
@@ -481,14 +482,14 @@ const GuestAuthPage: React.FC = () => {
                   required
                   autoComplete="email"
                 />
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Phone (optional)"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   margin="normal"
                 />
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Password"
                   type="password"
@@ -498,7 +499,7 @@ const GuestAuthPage: React.FC = () => {
                   required
                   autoComplete="new-password"
                 />
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Confirm Password"
                   type="password"

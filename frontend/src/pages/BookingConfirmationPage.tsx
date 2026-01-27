@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { COLORS, addAlpha } from '../theme/themeColors';
+import PremiumTextField from '../components/common/PremiumTextField';
 import {
   Container,
   Paper,
@@ -1531,22 +1532,15 @@ const BookingConfirmationPage: React.FC = () => {
           </Typography>
         </DialogTitle>
         <DialogContent sx={{ pb: 2 }}>
-          <TextField
+          <PremiumTextField
             autoFocus={!isMobile}
             margin="dense"
             label={t('bookingConfirmation.emailDialog.emailLabel')}
             type="email"
             fullWidth
-            variant="outlined"
             value={emailAddress}
             onChange={(e) => setEmailAddress(e.target.value)}
-            sx={{ 
-              mb: 3,
-              '& .MuiOutlinedInput-root': {
-                borderRadius: 2,
-                minHeight: isMobile ? 56 : 'auto',
-              }
-            }}
+            sx={{ mb: 3 }}
           />
           <FormControlLabel
             control={

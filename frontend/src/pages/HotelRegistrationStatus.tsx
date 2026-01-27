@@ -11,6 +11,7 @@ import {
   CardContent,
   Chip,
   IconButton,
+  Grid,
 } from '@mui/material';
 import {
   ArrowBack,
@@ -22,6 +23,7 @@ import {
   Visibility,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import PremiumDisplayField from '../components/common/PremiumDisplayField';
 
 interface RegistrationStatus {
   id: number;
@@ -189,54 +191,53 @@ const HotelRegistrationStatus: React.FC = () => {
               </Box>
             </Box>
 
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="subtitle2" color="text.secondary">
-                Contact Person
-              </Typography>
-              <Typography variant="body1">
-                {registration.contactPerson}
-              </Typography>
-            </Box>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <PremiumDisplayField
+                  label="Contact Person"
+                  value={registration.contactPerson}
+                  isEditMode={false}
+                />
+              </Grid>
 
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="subtitle2" color="text.secondary">
-                Contact Email
-              </Typography>
-              <Typography variant="body1">
-                {registration.contactEmail}
-              </Typography>
-            </Box>
+              <Grid item xs={12} sm={6}>
+                <PremiumDisplayField
+                  label="Contact Email"
+                  value={registration.contactEmail}
+                  isEditMode={false}
+                />
+              </Grid>
 
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="subtitle2" color="text.secondary">
-                Submitted
-              </Typography>
-              <Typography variant="body1">
-                {formatDate(registration.submittedAt)}
-              </Typography>
-            </Box>
+              <Grid item xs={12} sm={6}>
+                <PremiumDisplayField
+                  label="Submitted"
+                  value={formatDate(registration.submittedAt)}
+                  isEditMode={false}
+                />
+              </Grid>
 
-            {registration.reviewedAt && (
-              <Box sx={{ mb: 3 }}>
-                <Typography variant="subtitle2" color="text.secondary">
-                  Reviewed
-                </Typography>
-                <Typography variant="body1">
-                  {formatDate(registration.reviewedAt)}
-                </Typography>
-              </Box>
-            )}
+              {registration.reviewedAt && (
+                <Grid item xs={12} sm={6}>
+                  <PremiumDisplayField
+                    label="Reviewed"
+                    value={formatDate(registration.reviewedAt)}
+                    isEditMode={false}
+                  />
+                </Grid>
+              )}
 
-            {registration.reviewComments && (
-              <Box sx={{ mb: 3 }}>
-                <Typography variant="subtitle2" color="text.secondary">
-                  Comments
-                </Typography>
-                <Typography variant="body1">
-                  {registration.reviewComments}
-                </Typography>
-              </Box>
-            )}
+              {registration.reviewComments && (
+                <Grid item xs={12}>
+                  <PremiumDisplayField
+                    label="Comments"
+                    value={registration.reviewComments}
+                    isEditMode={false}
+                    multiline
+                    rows={3}
+                  />
+                </Grid>
+              )}
+            </Grid>
 
             {/* Status-specific information */}
             {registration.status.toLowerCase() === 'pending' && (

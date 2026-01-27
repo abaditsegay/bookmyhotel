@@ -37,6 +37,7 @@ import {
 } from '@mui/icons-material';
 import { COLORS } from '../../theme/themeColors';
 import { useAuthenticatedApi } from '../../hooks/useAuthenticatedApi';
+import PremiumDisplayField from '../../components/common/PremiumDisplayField';
 
 interface UserData {
   id: number;
@@ -267,52 +268,43 @@ const UserViewEdit: React.FC = () => {
               
               <Grid container spacing={3}>
                 <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
+                  <PremiumDisplayField
                     label="First Name"
-                    value={currentUser.firstName || ''}
-                    onChange={(e) => handleInputChange('firstName', e.target.value)}
-                    disabled={!isEditing}
-                    variant={isEditing ? 'outlined' : 'filled'}
+                    value={currentUser.firstName}
+                    isEditMode={isEditing}
+                    onChange={(value) => handleInputChange('firstName', value)}
+                    required
                   />
                 </Grid>
                 
                 <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
+                  <PremiumDisplayField
                     label="Last Name"
-                    value={currentUser.lastName || ''}
-                    onChange={(e) => handleInputChange('lastName', e.target.value)}
-                    disabled={!isEditing}
-                    variant={isEditing ? 'outlined' : 'filled'}
+                    value={currentUser.lastName}
+                    isEditMode={isEditing}
+                    onChange={(value) => handleInputChange('lastName', value)}
+                    required
                   />
                 </Grid>
 
                 <Grid item xs={12}>
-                  <TextField
-                    fullWidth
+                  <PremiumDisplayField
                     label="Email"
-                    value={currentUser.email || ''}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                    disabled={!isEditing}
-                    variant={isEditing ? 'outlined' : 'filled'}
-                    InputProps={{
-                      startAdornment: <EmailIcon sx={{ mr: 1, color: 'text.secondary' }} />,
-                    }}
+                    value={currentUser.email}
+                    isEditMode={isEditing}
+                    onChange={(value) => handleInputChange('email', value)}
+                    type="email"
+                    required
                   />
                 </Grid>
 
                 <Grid item xs={12}>
-                  <TextField
-                    fullWidth
+                  <PremiumDisplayField
                     label="Phone"
-                    value={currentUser.phone || ''}
-                    onChange={(e) => handleInputChange('phone', e.target.value)}
-                    disabled={!isEditing}
-                    variant={isEditing ? 'outlined' : 'filled'}
-                    InputProps={{
-                      startAdornment: <PhoneIcon sx={{ mr: 1, color: 'text.secondary' }} />,
-                    }}
+                    value={currentUser.phone}
+                    isEditMode={isEditing}
+                    onChange={(value) => handleInputChange('phone', value)}
+                    type="tel"
                   />
                 </Grid>
               </Grid>

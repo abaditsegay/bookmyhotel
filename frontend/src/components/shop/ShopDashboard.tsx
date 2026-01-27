@@ -183,18 +183,56 @@ const ShopDashboard: React.FC = () => {
           ))}
         </Grid>
       ) : dashboardStats && (
-        <Grid container spacing={1.5} sx={{ mb: 1.5 }}>
+        <Grid container spacing={2} sx={{ mb: 3 }}>
           <Grid item xs={12} sm={6} md={3}>
-            <Card>
-              <CardContent sx={{ py: 1, px: 1.5 }}>
+            <Card 
+              sx={{
+                background: 'linear-gradient(135deg, rgba(26, 54, 93, 0.05) 0%, rgba(232, 184, 109, 0.05) 100%)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(26, 54, 93, 0.1)',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: '0 8px 24px rgba(26, 54, 93, 0.15)'
+                }
+              }}
+            >
+              <CardContent sx={{ py: 2, px: 2.5 }}>
                 <Box>
-                  <Typography color="textSecondary" gutterBottom variant="caption" sx={{ fontSize: '0.7rem' }}>
+                  <Typography 
+                    color="textSecondary" 
+                    gutterBottom 
+                    variant="caption" 
+                    sx={{ 
+                      fontSize: '0.75rem',
+                      fontWeight: 600,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                      color: '#1a365d'
+                    }}
+                  >
                     {t('shop.dashboard.stats.totalProducts')}
                   </Typography>
-                  <Typography variant="h6" sx={{ lineHeight: 1.2 }}>
+                  <Typography 
+                    variant="h5" 
+                    sx={{ 
+                      lineHeight: 1.2,
+                      fontWeight: 700,
+                      color: '#1a365d',
+                      mb: 0.5
+                    }}
+                  >
                     {dashboardStats.totalProducts}
                   </Typography>
-                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                  <Typography 
+                    variant="caption" 
+                    sx={{ 
+                      fontSize: '0.75rem',
+                      color: '#E8B86D',
+                      fontWeight: 600
+                    }}
+                  >
                     {dashboardStats.activeProducts} {t('shop.dashboard.stats.activeProducts').toLowerCase()}
                   </Typography>
                 </Box>
@@ -203,16 +241,54 @@ const ShopDashboard: React.FC = () => {
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <Card>
-              <CardContent sx={{ py: 1, px: 1.5 }}>
+            <Card
+              sx={{
+                background: 'linear-gradient(135deg, rgba(26, 54, 93, 0.05) 0%, rgba(232, 184, 109, 0.05) 100%)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(26, 54, 93, 0.1)',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: '0 8px 24px rgba(26, 54, 93, 0.15)'
+                }
+              }}
+            >
+              <CardContent sx={{ py: 2, px: 2.5 }}>
                 <Box>
-                  <Typography color="textSecondary" gutterBottom variant="caption" sx={{ fontSize: '0.7rem' }}>
+                  <Typography 
+                    color="textSecondary" 
+                    gutterBottom 
+                    variant="caption" 
+                    sx={{ 
+                      fontSize: '0.75rem',
+                      fontWeight: 600,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                      color: '#1a365d'
+                    }}
+                  >
                     {t('shop.orders.status.pending')} {t('shop.dashboard.tabs.orders')}
                   </Typography>
-                  <Typography variant="h6" sx={{ lineHeight: 1.2 }}>
+                  <Typography 
+                    variant="h5" 
+                    sx={{ 
+                      lineHeight: 1.2,
+                      fontWeight: 700,
+                      color: '#1a365d',
+                      mb: 0.5
+                    }}
+                  >
                     {dashboardStats.pendingOrders}
                   </Typography>
-                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                  <Typography 
+                    variant="caption" 
+                    sx={{ 
+                      fontSize: '0.75rem',
+                      color: '#E8B86D',
+                      fontWeight: 600
+                    }}
+                  >
                     of {dashboardStats.totalOrders} {t('shop.dashboard.stats.totalOrders').toLowerCase()}
                   </Typography>
                 </Box>
@@ -221,16 +297,57 @@ const ShopDashboard: React.FC = () => {
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <Card>
-              <CardContent sx={{ py: 1, px: 1.5 }}>
+            <Card
+              sx={{
+                background: 'linear-gradient(135deg, rgba(232, 184, 109, 0.1) 0%, rgba(26, 54, 93, 0.05) 100%)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(232, 184, 109, 0.2)',
+                boxShadow: '0 4px 12px rgba(232, 184, 109, 0.15)',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: '0 8px 24px rgba(232, 184, 109, 0.25)'
+                }
+              }}
+            >
+              <CardContent sx={{ py: 2, px: 2.5 }}>
                 <Box>
-                  <Typography color="textSecondary" gutterBottom variant="caption" sx={{ fontSize: '0.7rem' }}>
+                  <Typography 
+                    color="textSecondary" 
+                    gutterBottom 
+                    variant="caption" 
+                    sx={{ 
+                      fontSize: '0.75rem',
+                      fontWeight: 600,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                      color: '#1a365d'
+                    }}
+                  >
                     {t('shop.dashboard.stats.revenue')}
                   </Typography>
-                  <Typography variant="h6" sx={{ lineHeight: 1.2 }}>
+                  <Typography 
+                    variant="h5" 
+                    sx={{ 
+                      lineHeight: 1.2,
+                      fontWeight: 700,
+                      background: 'linear-gradient(135deg, #E8B86D 0%, #D4A05D 100%)',
+                      backgroundClip: 'text',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      mb: 0.5
+                    }}
+                  >
                     ${dashboardStats.totalRevenue.toFixed(2)}
                   </Typography>
-                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                  <Typography 
+                    variant="caption" 
+                    sx={{ 
+                      fontSize: '0.75rem',
+                      color: '#1a365d',
+                      fontWeight: 600
+                    }}
+                  >
                     {formatCurrencyWithDecimals(dashboardStats.totalRevenue || 0)}
                   </Typography>
                 </Box>
@@ -239,16 +356,54 @@ const ShopDashboard: React.FC = () => {
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <Card>
-              <CardContent sx={{ py: 1, px: 1.5 }}>
+            <Card
+              sx={{
+                background: 'linear-gradient(135deg, rgba(26, 54, 93, 0.05) 0%, rgba(232, 184, 109, 0.05) 100%)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(26, 54, 93, 0.1)',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: '0 8px 24px rgba(26, 54, 93, 0.15)'
+                }
+              }}
+            >
+              <CardContent sx={{ py: 2, px: 2.5 }}>
                 <Box>
-                  <Typography color="textSecondary" gutterBottom variant="caption" sx={{ fontSize: '0.7rem' }}>
+                  <Typography 
+                    color="textSecondary" 
+                    gutterBottom 
+                    variant="caption" 
+                    sx={{ 
+                      fontSize: '0.75rem',
+                      fontWeight: 600,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                      color: '#1a365d'
+                    }}
+                  >
                     Low Stock Products
                   </Typography>
-                  <Typography variant="h6" sx={{ lineHeight: 1.2 }}>
+                  <Typography 
+                    variant="h5" 
+                    sx={{ 
+                      lineHeight: 1.2,
+                      fontWeight: 700,
+                      color: '#ff9800',
+                      mb: 0.5
+                    }}
+                  >
                     {dashboardStats.lowStockProducts}
                   </Typography>
-                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                  <Typography 
+                    variant="caption" 
+                    sx={{ 
+                      fontSize: '0.75rem',
+                      color: '#d32f2f',
+                      fontWeight: 600
+                    }}
+                  >
                     {dashboardStats.outOfStockProducts} out of stock
                   </Typography>
                 </Box>
@@ -258,13 +413,43 @@ const ShopDashboard: React.FC = () => {
         </Grid>
       )}
 
-      {/* Navigation Tabs */}
-      <Paper sx={{ mb: 3 }}>
+      {/* Navigation Tabs with premium styling */}
+      <Paper sx={{ 
+        mb: 3,
+        background: 'linear-gradient(135deg, rgba(26, 54, 93, 0.02) 0%, rgba(232, 184, 109, 0.03) 100%)',
+        backdropFilter: 'blur(10px)',
+        border: '1px solid rgba(26, 54, 93, 0.1)',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
+      }}>
         <Tabs
           value={currentTab}
           onChange={handleTabChange}
           variant="scrollable"
           scrollButtons="auto"
+          sx={{
+            '& .MuiTab-root': {
+              fontWeight: 600,
+              fontSize: '0.95rem',
+              textTransform: 'none',
+              color: '#64748b',
+              minHeight: 56,
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                color: '#1a365d',
+                background: 'rgba(26, 54, 93, 0.04)'
+              },
+              '&.Mui-selected': {
+                color: '#1a365d',
+                fontWeight: 700
+              }
+            },
+            '& .MuiTabs-indicator': {
+              height: 3,
+              background: 'linear-gradient(90deg, #E8B86D 0%, #D4A05D 100%)',
+              borderRadius: '3px 3px 0 0',
+              boxShadow: '0 -2px 8px rgba(232, 184, 109, 0.3)'
+            }
+          }}
         >
           <Tab label={t('shop.dashboard.tabs.newOrder')} />
           <Tab label={t('shop.dashboard.tabs.products')} />

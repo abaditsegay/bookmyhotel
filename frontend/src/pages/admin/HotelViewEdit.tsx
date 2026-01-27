@@ -55,6 +55,8 @@ import {
 import { COLORS } from '../../theme/themeColors';
 import { useAuthenticatedApi } from '../../hooks/useAuthenticatedApi';
 import { useTenant } from '../../contexts/TenantContext';
+import PremiumDisplayField from '../../components/common/PremiumDisplayField';
+import PremiumTextField from '../../components/common/PremiumTextField';
 
 interface HotelData {
   id: number;
@@ -442,110 +444,52 @@ const HotelViewEdit: React.FC = () => {
                   
                   <Grid container spacing={3}>
                     <Grid item xs={12}>
-                      <TextField
-                        fullWidth
+                      <PremiumDisplayField
                         label="Hotel Name"
-                        value={currentHotel.name || ''}
-                        onChange={(e) => handleInputChange('name', e.target.value)}
-                        disabled={!isEditing}
-                        variant={isEditing ? 'outlined' : 'filled'}
-                        sx={{
-                          '& .MuiFilledInput-root': {
-                            bgcolor: 'grey.50',
-                            '&:hover': { bgcolor: 'grey.100' }
-                          }
-                        }}
+                        value={currentHotel.name}
+                        isEditMode={isEditing}
+                        onChange={(value) => handleInputChange('name', value)}
+                        required
                       />
                     </Grid>
                     
                     <Grid item xs={12}>
-                      <TextField
-                        fullWidth
+                      <PremiumDisplayField
                         label="Description"
+                        value={currentHotel.description}
+                        isEditMode={isEditing}
+                        onChange={(value) => handleInputChange('description', value)}
                         multiline
                         rows={4}
-                        value={currentHotel.description || ''}
-                        onChange={(e) => handleInputChange('description', e.target.value)}
-                        disabled={!isEditing}
-                        variant={isEditing ? 'outlined' : 'filled'}
-                        sx={{
-                          '& .MuiFilledInput-root': {
-                            bgcolor: 'grey.50',
-                            '&:hover': { bgcolor: 'grey.100' }
-                          }
-                        }}
                       />
                     </Grid>
 
                     <Grid item xs={12} sm={6}>
-                      <TextField
-                        fullWidth
+                      <PremiumDisplayField
                         label="Phone Number"
-                        value={currentHotel.phone || ''}
-                        onChange={(e) => handleInputChange('phone', e.target.value)}
-                        disabled={!isEditing}
-                        variant={isEditing ? 'outlined' : 'filled'}
-                        InputProps={{
-                          startAdornment: (
-                            <Box sx={{ mr: 1, display: 'flex', alignItems: 'center' }}>
-                              <PhoneIcon sx={{ color: 'primary.main' }} />
-                            </Box>
-                          ),
-                        }}
-                        sx={{
-                          '& .MuiFilledInput-root': {
-                            bgcolor: 'grey.50',
-                            '&:hover': { bgcolor: 'grey.100' }
-                          }
-                        }}
+                        value={currentHotel.phone}
+                        isEditMode={isEditing}
+                        onChange={(value) => handleInputChange('phone', value)}
                       />
                     </Grid>
 
                     <Grid item xs={12} sm={6}>
-                      <TextField
-                        fullWidth
+                      <PremiumDisplayField
                         label="Email Address"
-                        value={currentHotel.email || ''}
-                        onChange={(e) => handleInputChange('email', e.target.value)}
-                        disabled={!isEditing}
-                        variant={isEditing ? 'outlined' : 'filled'}
-                        InputProps={{
-                          startAdornment: (
-                            <Box sx={{ mr: 1, display: 'flex', alignItems: 'center' }}>
-                              <EmailIcon sx={{ color: 'primary.main' }} />
-                            </Box>
-                          ),
-                        }}
-                        sx={{
-                          '& .MuiFilledInput-root': {
-                            bgcolor: 'grey.50',
-                            '&:hover': { bgcolor: 'grey.100' }
-                          }
-                        }}
+                        value={currentHotel.email}
+                        isEditMode={isEditing}
+                        onChange={(value) => handleInputChange('email', value)}
+                        type="email"
                       />
                     </Grid>
 
                     <Grid item xs={12}>
-                      <TextField
-                        fullWidth
+                      <PremiumDisplayField
                         label="Website URL"
-                        value={currentHotel.website || ''}
-                        onChange={(e) => handleInputChange('website', e.target.value)}
-                        disabled={!isEditing}
-                        variant={isEditing ? 'outlined' : 'filled'}
-                        InputProps={{
-                          startAdornment: (
-                            <Box sx={{ mr: 1, display: 'flex', alignItems: 'center' }}>
-                              <WebsiteIcon sx={{ color: 'primary.main' }} />
-                            </Box>
-                          ),
-                        }}
-                        sx={{
-                          '& .MuiFilledInput-root': {
-                            bgcolor: 'grey.50',
-                            '&:hover': { bgcolor: 'grey.100' }
-                          }
-                        }}
+                        value={currentHotel.website}
+                        isEditMode={isEditing}
+                        onChange={(value) => handleInputChange('website', value)}
+                        type="url"
                       />
                     </Grid>
                   </Grid>
@@ -566,87 +510,52 @@ const HotelViewEdit: React.FC = () => {
                   
                   <Grid container spacing={3}>
                     <Grid item xs={12}>
-                      <TextField
+                      <PremiumTextField
                         fullWidth
                         label="Street Address"
                         value={currentHotel.address || ''}
                         onChange={(e) => handleInputChange('address', e.target.value)}
                         disabled={!isEditing}
-                        variant={isEditing ? 'outlined' : 'filled'}
-                        sx={{
-                          '& .MuiFilledInput-root': {
-                            bgcolor: 'grey.50',
-                            '&:hover': { bgcolor: 'grey.100' }
-                          }
-                        }}
                       />
                     </Grid>
 
                     <Grid item xs={12} sm={6}>
-                      <TextField
+                      <PremiumTextField
                         fullWidth
                         label="City"
                         value={currentHotel.city || ''}
                         onChange={(e) => handleInputChange('city', e.target.value)}
                         disabled={!isEditing}
-                        variant={isEditing ? 'outlined' : 'filled'}
-                        sx={{
-                          '& .MuiFilledInput-root': {
-                            bgcolor: 'grey.50',
-                            '&:hover': { bgcolor: 'grey.100' }
-                          }
-                        }}
                       />
                     </Grid>
 
                     <Grid item xs={12} sm={6}>
-                      <TextField
+                      <PremiumTextField
                         fullWidth
                         label="State/Province"
                         value={currentHotel.state || ''}
                         onChange={(e) => handleInputChange('state', e.target.value)}
                         disabled={!isEditing}
-                        variant={isEditing ? 'outlined' : 'filled'}
-                        sx={{
-                          '& .MuiFilledInput-root': {
-                            bgcolor: 'grey.50',
-                            '&:hover': { bgcolor: 'grey.100' }
-                          }
-                        }}
                       />
                     </Grid>
 
                     <Grid item xs={12} sm={6}>
-                      <TextField
+                      <PremiumTextField
                         fullWidth
                         label="ZIP/Postal Code"
                         value={currentHotel.zipCode || ''}
                         onChange={(e) => handleInputChange('zipCode', e.target.value)}
                         disabled={!isEditing}
-                        variant={isEditing ? 'outlined' : 'filled'}
-                        sx={{
-                          '& .MuiFilledInput-root': {
-                            bgcolor: 'grey.50',
-                            '&:hover': { bgcolor: 'grey.100' }
-                          }
-                        }}
                       />
                     </Grid>
 
                     <Grid item xs={12} sm={6}>
-                      <TextField
+                      <PremiumTextField
                         fullWidth
                         label="Country"
                         value={currentHotel.country || ''}
                         onChange={(e) => handleInputChange('country', e.target.value)}
                         disabled={!isEditing}
-                        variant={isEditing ? 'outlined' : 'filled'}
-                        sx={{
-                          '& .MuiFilledInput-root': {
-                            bgcolor: 'grey.50',
-                            '&:hover': { bgcolor: 'grey.100' }
-                          }
-                        }}
                       />
                     </Grid>
                   </Grid>
@@ -667,13 +576,12 @@ const HotelViewEdit: React.FC = () => {
                   
                   <Grid container spacing={3}>
                     <Grid item xs={12} sm={6}>
-                      <TextField
+                      <PremiumTextField
                         fullWidth
                         label="Check-in Time"
                         value={currentHotel.checkInTime || ''}
                         onChange={(e) => handleInputChange('checkInTime', e.target.value)}
                         disabled={!isEditing}
-                        variant={isEditing ? 'outlined' : 'filled'}
                         InputProps={{
                           startAdornment: (
                             <Box sx={{ mr: 1, display: 'flex', alignItems: 'center' }}>
@@ -681,23 +589,16 @@ const HotelViewEdit: React.FC = () => {
                             </Box>
                           ),
                         }}
-                        sx={{
-                          '& .MuiFilledInput-root': {
-                            bgcolor: 'grey.50',
-                            '&:hover': { bgcolor: 'grey.100' }
-                          }
-                        }}
                       />
                     </Grid>
 
                     <Grid item xs={12} sm={6}>
-                      <TextField
+                      <PremiumTextField
                         fullWidth
                         label="Check-out Time"
                         value={currentHotel.checkOutTime || ''}
                         onChange={(e) => handleInputChange('checkOutTime', e.target.value)}
                         disabled={!isEditing}
-                        variant={isEditing ? 'outlined' : 'filled'}
                         InputProps={{
                           startAdornment: (
                             <Box sx={{ mr: 1, display: 'flex', alignItems: 'center' }}>
@@ -705,23 +606,16 @@ const HotelViewEdit: React.FC = () => {
                             </Box>
                           ),
                         }}
-                        sx={{
-                          '& .MuiFilledInput-root': {
-                            bgcolor: 'grey.50',
-                            '&:hover': { bgcolor: 'grey.100' }
-                          }
-                        }}
                       />
                     </Grid>
 
                     <Grid item xs={12} sm={6}>
-                      <TextField
+                      <PremiumTextField
                         fullWidth
                         label="Currency"
                         value={currentHotel.currency || ''}
                         onChange={(e) => handleInputChange('currency', e.target.value)}
                         disabled={!isEditing}
-                        variant={isEditing ? 'outlined' : 'filled'}
                         InputProps={{
                           startAdornment: (
                             <Box sx={{ mr: 1, display: 'flex', alignItems: 'center' }}>
@@ -729,35 +623,22 @@ const HotelViewEdit: React.FC = () => {
                             </Box>
                           ),
                         }}
-                        sx={{
-                          '& .MuiFilledInput-root': {
-                            bgcolor: 'grey.50',
-                            '&:hover': { bgcolor: 'grey.100' }
-                          }
-                        }}
                       />
                     </Grid>
 
                     <Grid item xs={12} sm={6}>
-                      <TextField
+                      <PremiumTextField
                         fullWidth
                         label="Time Zone"
                         value={currentHotel.timeZone || ''}
                         onChange={(e) => handleInputChange('timeZone', e.target.value)}
                         disabled={!isEditing}
-                        variant={isEditing ? 'outlined' : 'filled'}
                         InputProps={{
                           startAdornment: (
                             <Box sx={{ mr: 1, display: 'flex', alignItems: 'center' }}>
                               <PublicIcon sx={{ color: 'warning.main' }} />
                             </Box>
                           ),
-                        }}
-                        sx={{
-                          '& .MuiFilledInput-root': {
-                            bgcolor: 'grey.50',
-                            '&:hover': { bgcolor: 'grey.100' }
-                          }
                         }}
                       />
                     </Grid>

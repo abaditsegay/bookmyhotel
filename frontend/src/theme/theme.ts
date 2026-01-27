@@ -107,6 +107,12 @@ const themeOptions: ThemeOptions = {
           '&:active': {
             transform: 'translateY(0)',
             boxShadow: '0 2px 8px rgba(26, 54, 93, 0.25)'
+          },
+          '&.Mui-disabled': {
+            background: '#f5f5f5',
+            color: '#999',
+            boxShadow: 'none',
+            border: '2px solid #E8B86D',
           }
         },
         outlined: {

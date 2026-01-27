@@ -6,10 +6,6 @@ import {
   Typography,
   Button,
   Grid,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
   MenuItem,
   Alert,
   Switch,
@@ -22,6 +18,8 @@ import {
   useTheme,
   alpha
 } from '@mui/material';
+import PremiumTextField from './common/PremiumTextField';
+import PremiumSelect from './common/PremiumSelect';
 import {
   Save as SaveIcon,
   Refresh as RefreshIcon,
@@ -293,37 +291,7 @@ const PricingConfigurationComponent: React.FC = () => {
     <Box sx={{ 
       p: 3, 
       bgcolor: 'background.default', 
-      minHeight: '100vh',
-      '& .MuiTextField-root': {
-        '& .MuiOutlinedInput-root': {
-          '&:hover fieldset': {
-            borderColor: getFormColor('hover'),
-          },
-          '&.Mui-focused fieldset': {
-            borderColor: getFormColor('focus'),
-          },
-        },
-        '& .MuiInputLabel-root': {
-          '&.Mui-focused': {
-            color: getFormColor('focus'),
-          },
-        },
-      },
-      '& .MuiFormControl-root': {
-        '& .MuiOutlinedInput-root': {
-          '&:hover .MuiOutlinedInput-notchedOutline': {
-            borderColor: getFormColor('hover'),
-          },
-          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-            borderColor: getFormColor('focus'),
-          },
-        },
-        '& .MuiInputLabel-root': {
-          '&.Mui-focused': {
-            color: getFormColor('focus'),
-          },
-        },
-      },
+      minHeight: '100vh'
     }}>
       {/* Action Buttons */}
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mb: 3 }}>
@@ -433,11 +401,12 @@ const PricingConfigurationComponent: React.FC = () => {
                 bgcolor: 'background.default',
                 border: '1px solid',
                 borderColor: 'divider',
+                borderLeft: '4px solid #E8B86D',
                 borderRadius: 2,
               }}>
-                <SettingsIcon sx={{ color: getInteractiveColor() }} />
+                <SettingsIcon sx={{ color: '#B8860B' }} />
                 <Box>
-                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: getInteractiveColor() }}>
+                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: '#B8860B' }}>
                     {t('dashboard.hotelAdmin.pricingConfiguration.generalSettings.title')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -448,57 +417,25 @@ const PricingConfigurationComponent: React.FC = () => {
 
               <Grid container spacing={3}>
                 <Grid item xs={12} md={6}>
-                  <FormControl fullWidth>
-                    <InputLabel>{t('dashboard.hotelAdmin.pricingConfiguration.generalSettings.pricingStrategy')}</InputLabel>
-                    <Select
-                      value={config.pricingStrategy}
-                      onChange={(e) => handleInputChange('pricingStrategy', e.target.value)}
-                      label={t('dashboard.hotelAdmin.pricingConfiguration.generalSettings.pricingStrategy')}
-                      disabled // Always use Fixed Pricing
-                      sx={{
-                        '& .MuiOutlinedInput-root': {
-                          backgroundColor: 'background.paper',
-                          borderRadius: 2,
-                          '&:hover .MuiOutlinedInput-notchedOutline': {
-                            borderColor: getFormColor('hover'),
-                          },
-                          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                            borderColor: getFormColor('focus'),
-                          }
-                        },
-                        '& .MuiInputLabel-root.Mui-focused': {
-                          color: getFormColor('focus'),
-                        }
-                      }}
-                    >
-                      <MenuItem value="FIXED">{t('dashboard.hotelAdmin.pricingConfiguration.generalSettings.fixedPricing')}</MenuItem>
-                      <MenuItem value="SEASONAL" disabled>{t('dashboard.hotelAdmin.pricingConfiguration.generalSettings.seasonalPricing')}</MenuItem>
-                      <MenuItem value="DYNAMIC" disabled>{t('dashboard.hotelAdmin.pricingConfiguration.generalSettings.dynamicPricing')}</MenuItem>
-                    </Select>
-                  </FormControl>
+                  <PremiumSelect
+                    fullWidth
+                    label={t('dashboard.hotelAdmin.pricingConfiguration.generalSettings.pricingStrategy')}
+                    value={config.pricingStrategy}
+                    onChange={(e) => handleInputChange('pricingStrategy', e.target.value)}
+                    disabled
+                  >
+                    <MenuItem value="FIXED">{t('dashboard.hotelAdmin.pricingConfiguration.generalSettings.fixedPricing')}</MenuItem>
+                    <MenuItem value="SEASONAL" disabled>{t('dashboard.hotelAdmin.pricingConfiguration.generalSettings.seasonalPricing')}</MenuItem>
+                    <MenuItem value="DYNAMIC" disabled>{t('dashboard.hotelAdmin.pricingConfiguration.generalSettings.dynamicPricing')}</MenuItem>
+                  </PremiumSelect>
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label={t('dashboard.hotelAdmin.pricingConfiguration.generalSettings.currencyCode')}
                     value={config.currencyCode}
                     onChange={(e) => handleInputChange('currencyCode', e.target.value)}
                     placeholder="ETB"
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        backgroundColor: 'background.paper',
-                        borderRadius: 2,
-                        '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: getFormColor('hover'),
-                        },
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: getFormColor('focus'),
-                        }
-                      },
-                      '& .MuiInputLabel-root.Mui-focused': {
-                        color: getFormColor('focus'),
-                      }
-                    }}
                   />
                 </Grid>
                 <Grid item xs={12}>
@@ -566,11 +503,12 @@ const PricingConfigurationComponent: React.FC = () => {
                 bgcolor: 'background.default',
                 border: '1px solid',
                 borderColor: 'divider',
+                borderLeft: '4px solid #E8B86D',
                 borderRadius: 2,
               }}>
-                <ReceiptIcon sx={{ color: getInteractiveColor() }} />
+                <ReceiptIcon sx={{ color: '#B8860B' }} />
                 <Box>
-                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: getInteractiveColor() }}>
+                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: '#B8860B' }}>
                     {t('dashboard.hotelAdmin.pricingConfiguration.taxConfiguration.title')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -595,7 +533,7 @@ const PricingConfigurationComponent: React.FC = () => {
 
               <Grid container spacing={3}>
                 <Grid item xs={12} md={4}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label={t('dashboard.hotelAdmin.pricingConfiguration.taxConfiguration.vatRate')}
                     type="number"
@@ -603,25 +541,10 @@ const PricingConfigurationComponent: React.FC = () => {
                     onChange={(e) => handleInputChange('vatRate', parseFloat(e.target.value) || 0)}
                     inputProps={{ min: 0, max: 100, step: 0.1 }}
                     helperText={t('dashboard.hotelAdmin.pricingConfiguration.taxConfiguration.vatRateHelper', { rate: calculateTaxPercentage(config.vatRate) })}
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        backgroundColor: 'background.paper',
-                        borderRadius: 2,
-                        '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: getFormColor('hover'),
-                        },
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: getFormColor('focus'),
-                        }
-                      },
-                      '& .MuiInputLabel-root.Mui-focused': {
-                        color: getFormColor('focus'),
-                      }
-                    }}
                   />
                 </Grid>
                 <Grid item xs={12} md={4}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label={t('dashboard.hotelAdmin.pricingConfiguration.taxConfiguration.serviceTaxRate')}
                     type="number"
@@ -629,25 +552,10 @@ const PricingConfigurationComponent: React.FC = () => {
                     onChange={(e) => handleInputChange('serviceTaxRate', parseFloat(e.target.value) || 0)}
                     inputProps={{ min: 0, max: 100, step: 0.1 }}
                     helperText={t('dashboard.hotelAdmin.pricingConfiguration.taxConfiguration.serviceTaxRateHelper', { rate: calculateTaxPercentage(config.serviceTaxRate) })}
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        backgroundColor: 'background.paper',
-                        borderRadius: 2,
-                        '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: getFormColor('hover'),
-                        },
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: getFormColor('focus'),
-                        }
-                      },
-                      '& .MuiInputLabel-root.Mui-focused': {
-                        color: getFormColor('focus'),
-                      }
-                    }}
                   />
                 </Grid>
                 <Grid item xs={12} md={4}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label={t('dashboard.hotelAdmin.pricingConfiguration.taxConfiguration.cityTaxRate')}
                     type="number"
@@ -655,21 +563,6 @@ const PricingConfigurationComponent: React.FC = () => {
                     onChange={(e) => handleInputChange('cityTaxRate', parseFloat(e.target.value) || 0)}
                     inputProps={{ min: 0, max: 100, step: 0.1 }}
                     helperText={t('dashboard.hotelAdmin.pricingConfiguration.taxConfiguration.cityTaxRateHelper', { rate: calculateTaxPercentage(config.cityTaxRate) })}
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        backgroundColor: 'background.paper',
-                        borderRadius: 2,
-                        '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: getFormColor('hover'),
-                        },
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: getFormColor('focus'),
-                        }
-                      },
-                      '& .MuiInputLabel-root.Mui-focused': {
-                        color: getFormColor('focus'),
-                      }
-                    }}
                   />
                 </Grid>
               </Grid>
@@ -697,11 +590,12 @@ const PricingConfigurationComponent: React.FC = () => {
                 bgcolor: 'background.default',
                 border: '1px solid',
                 borderColor: 'divider',
+                borderLeft: '4px solid #E8B86D',
                 borderRadius: 2,
               }}>
-                <DiscountIcon sx={{ color: getInteractiveColor() }} />
+                <DiscountIcon sx={{ color: '#B8860B' }} />
                 <Box>
-                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: getInteractiveColor() }}>
+                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: '#B8860B' }}>
                     {t('dashboard.hotelAdmin.pricingConfiguration.seasonalMultipliers.title')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -726,7 +620,7 @@ const PricingConfigurationComponent: React.FC = () => {
 
               <Grid container spacing={3}>
                 <Grid item xs={12} md={6}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label={t('dashboard.hotelAdmin.pricingConfiguration.seasonalMultipliers.peakSeasonMultiplier')}
                     type="number"
@@ -734,25 +628,10 @@ const PricingConfigurationComponent: React.FC = () => {
                     onChange={(e) => handleInputChange('peakSeasonMultiplier', parseFloat(e.target.value) || 1)}
                     inputProps={{ min: 0.1, step: 0.1 }}
                     helperText={t('dashboard.hotelAdmin.pricingConfiguration.seasonalMultipliers.peakSeasonHelper', { value: config.peakSeasonMultiplier.toFixed(1), percentage: calculatePercentageChange(config.peakSeasonMultiplier) })}
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        backgroundColor: 'background.paper',
-                        borderRadius: 2,
-                        '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: getFormColor('hover'),
-                        },
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: getFormColor('focus'),
-                        }
-                      },
-                      '& .MuiInputLabel-root.Mui-focused': {
-                        color: getFormColor('focus'),
-                      }
-                    }}
                   />
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label={t('dashboard.hotelAdmin.pricingConfiguration.seasonalMultipliers.offSeasonMultiplier')}
                     type="number"
@@ -760,21 +639,6 @@ const PricingConfigurationComponent: React.FC = () => {
                     onChange={(e) => handleInputChange('offSeasonMultiplier', parseFloat(e.target.value) || 1)}
                     inputProps={{ min: 0.1, step: 0.1 }}
                     helperText={t('dashboard.hotelAdmin.pricingConfiguration.seasonalMultipliers.offSeasonHelper', { value: config.offSeasonMultiplier.toFixed(1), percentage: calculatePercentageChange(config.offSeasonMultiplier) })}
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        backgroundColor: 'background.paper',
-                        borderRadius: 2,
-                        '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: getFormColor('hover'),
-                        },
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: getFormColor('focus'),
-                        }
-                      },
-                      '& .MuiInputLabel-root.Mui-focused': {
-                        color: getFormColor('focus'),
-                      }
-                    }}
                   />
                 </Grid>
               </Grid>
@@ -802,11 +666,12 @@ const PricingConfigurationComponent: React.FC = () => {
                 bgcolor: 'background.default',
                 border: '1px solid',
                 borderColor: 'divider',
+                borderLeft: '4px solid #E8B86D',
                 borderRadius: 2,
               }}>
-                <SettingsIcon sx={{ color: getInteractiveColor() }} />
+                <SettingsIcon sx={{ color: '#B8860B' }} />
                 <Box>
-                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: getInteractiveColor() }}>
+                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: '#B8860B' }}>
                     {t('dashboard.hotelAdmin.pricingConfiguration.bookingRules.title')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -817,78 +682,33 @@ const PricingConfigurationComponent: React.FC = () => {
 
               <Grid container spacing={3}>
                 <Grid item xs={12} md={4}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label={t('dashboard.hotelAdmin.pricingConfiguration.bookingRules.minimumStayNights')}
                     type="number"
                     value={config.minimumStayNights}
                     onChange={(e) => handleInputChange('minimumStayNights', parseInt(e.target.value) || 1)}
                     inputProps={{ min: 1 }}
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        backgroundColor: 'background.paper',
-                        borderRadius: 2,
-                        '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: getFormColor('hover'),
-                        },
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: getFormColor('focus'),
-                        }
-                      },
-                      '& .MuiInputLabel-root.Mui-focused': {
-                        color: getFormColor('focus'),
-                      }
-                    }}
                   />
                 </Grid>
                 <Grid item xs={12} md={4}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label={t('dashboard.hotelAdmin.pricingConfiguration.bookingRules.minimumAdvanceBookingHours')}
                     type="number"
                     value={config.minimumAdvanceBookingHours}
                     onChange={(e) => handleInputChange('minimumAdvanceBookingHours', parseInt(e.target.value) || 0)}
                     inputProps={{ min: 0 }}
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        backgroundColor: 'background.paper',
-                        borderRadius: 2,
-                        '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: getFormColor('hover'),
-                        },
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: getFormColor('focus'),
-                        }
-                      },
-                      '& .MuiInputLabel-root.Mui-focused': {
-                        color: getFormColor('focus'),
-                      }
-                    }}
                   />
                 </Grid>
                 <Grid item xs={12} md={4}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label={t('dashboard.hotelAdmin.pricingConfiguration.bookingRules.maximumAdvanceBookingDays')}
                     type="number"
                     value={config.maximumAdvanceBookingDays}
                     onChange={(e) => handleInputChange('maximumAdvanceBookingDays', parseInt(e.target.value) || 365)}
                     inputProps={{ min: 1 }}
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        backgroundColor: 'background.paper',
-                        borderRadius: 2,
-                        '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: getFormColor('hover'),
-                        },
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: getFormColor('focus'),
-                        }
-                      },
-                      '& .MuiInputLabel-root.Mui-focused': {
-                        color: getFormColor('focus'),
-                      }
-                    }}
                   />
                 </Grid>
               </Grid>
@@ -931,7 +751,7 @@ const PricingConfigurationComponent: React.FC = () => {
 
               <Grid container spacing={3}>
                 <Grid item xs={12} md={6}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label={t('dashboard.hotelAdmin.pricingConfiguration.discountsFees.earlyBookingDaysThreshold')}
                     type="number"
@@ -939,25 +759,10 @@ const PricingConfigurationComponent: React.FC = () => {
                     onChange={(e) => handleInputChange('earlyBookingDaysThreshold', parseInt(e.target.value) || 30)}
                     inputProps={{ min: 1 }}
                     helperText={t('dashboard.hotelAdmin.pricingConfiguration.discountsFees.earlyBookingDaysHelperText')}
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        backgroundColor: 'background.paper',
-                        borderRadius: 2,
-                        '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: getInteractiveColor(),
-                        },
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: getInteractiveColor(),
-                        }
-                      },
-                      '& .MuiInputLabel-root.Mui-focused': {
-                        color: getInteractiveColor(),
-                      }
-                    }}
                   />
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label={t('dashboard.hotelAdmin.pricingConfiguration.discountsFees.earlyBookingDiscountRate')}
                     type="number"
@@ -965,25 +770,10 @@ const PricingConfigurationComponent: React.FC = () => {
                     onChange={(e) => handleInputChange('earlyBookingDiscountRate', parseFloat(e.target.value) || 0)}
                     inputProps={{ min: 0, max: 100, step: 0.1 }}
                     helperText={t('dashboard.hotelAdmin.pricingConfiguration.discountsFees.discountHelper', { value: config.earlyBookingDiscountRate.toFixed(1), percentage: calculateDiscountPercentage(config.earlyBookingDiscountRate) })}
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        backgroundColor: 'background.paper',
-                        borderRadius: 2,
-                        '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: getInteractiveColor(),
-                        },
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: getInteractiveColor(),
-                        }
-                      },
-                      '& .MuiInputLabel-root.Mui-focused': {
-                        color: getInteractiveColor(),
-                      }
-                    }}
                   />
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label={t('dashboard.hotelAdmin.pricingConfiguration.discountsFees.loyaltyDiscountRate')}
                     type="number"
@@ -991,25 +781,10 @@ const PricingConfigurationComponent: React.FC = () => {
                     onChange={(e) => handleInputChange('loyaltyDiscountRate', parseFloat(e.target.value) || 0)}
                     inputProps={{ min: 0, max: 100, step: 0.1 }}
                     helperText={t('dashboard.hotelAdmin.pricingConfiguration.discountsFees.discountHelper', { value: config.loyaltyDiscountRate.toFixed(1), percentage: calculateDiscountPercentage(config.loyaltyDiscountRate) })}
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        backgroundColor: 'background.paper',
-                        borderRadius: 2,
-                        '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: getInteractiveColor(),
-                        },
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: getInteractiveColor(),
-                        }
-                      },
-                      '& .MuiInputLabel-root.Mui-focused': {
-                        color: getInteractiveColor(),
-                      }
-                    }}
                   />
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label={t('dashboard.hotelAdmin.pricingConfiguration.discountsFees.cancellationFeeRate')}
                     type="number"
@@ -1017,25 +792,10 @@ const PricingConfigurationComponent: React.FC = () => {
                     onChange={(e) => handleInputChange('cancellationFeeRate', parseFloat(e.target.value) || 0)}
                     inputProps={{ min: 0, max: 100, step: 0.1 }}
                     helperText={t('dashboard.hotelAdmin.pricingConfiguration.discountsFees.feeHelper', { value: config.cancellationFeeRate.toFixed(1), percentage: calculateFeePercentage(config.cancellationFeeRate) })}
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        backgroundColor: 'background.paper',
-                        borderRadius: 2,
-                        '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: getInteractiveColor(),
-                        },
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: getInteractiveColor(),
-                        }
-                      },
-                      '& .MuiInputLabel-root.Mui-focused': {
-                        color: getInteractiveColor(),
-                      }
-                    }}
                   />
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label={t('dashboard.hotelAdmin.pricingConfiguration.discountsFees.modificationFeeRate')}
                     type="number"
@@ -1043,25 +803,10 @@ const PricingConfigurationComponent: React.FC = () => {
                     onChange={(e) => handleInputChange('modificationFeeRate', parseFloat(e.target.value) || 0)}
                     inputProps={{ min: 0, max: 100, step: 0.1 }}
                     helperText={t('dashboard.hotelAdmin.pricingConfiguration.discountsFees.feeHelper', { value: config.modificationFeeRate.toFixed(1), percentage: calculateFeePercentage(config.modificationFeeRate) })}
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        backgroundColor: 'background.paper',
-                        borderRadius: 2,
-                        '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: getInteractiveColor(),
-                        },
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: getInteractiveColor(),
-                        }
-                      },
-                      '& .MuiInputLabel-root.Mui-focused': {
-                        color: getInteractiveColor(),
-                      }
-                    }}
                   />
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label={t('dashboard.hotelAdmin.pricingConfiguration.discountsFees.noShowPenaltyRate')}
                     type="number"
@@ -1069,21 +814,6 @@ const PricingConfigurationComponent: React.FC = () => {
                     onChange={(e) => handleInputChange('noShowPenaltyRate', parseFloat(e.target.value) || 1)}
                     inputProps={{ min: 0, max: 100, step: 0.1 }}
                     helperText={t('dashboard.hotelAdmin.pricingConfiguration.discountsFees.penaltyHelper', { value: config.noShowPenaltyRate.toFixed(1), percentage: calculateFeePercentage(config.noShowPenaltyRate) })}
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        backgroundColor: 'background.paper',
-                        borderRadius: 2,
-                        '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: getInteractiveColor(),
-                        },
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: getInteractiveColor(),
-                        }
-                      },
-                      '& .MuiInputLabel-root.Mui-focused': {
-                        color: getInteractiveColor(),
-                      }
-                    }}
                   />
                 </Grid>
               </Grid>
@@ -1140,7 +870,7 @@ const PricingConfigurationComponent: React.FC = () => {
 
               <Grid container spacing={3}>
                 <Grid item xs={12} sm={6} md={3}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label={t('dashboard.hotelAdmin.pricingConfiguration.cancellationRefundPolicies.refund7PlusDays')}
                     type="number"
@@ -1148,25 +878,10 @@ const PricingConfigurationComponent: React.FC = () => {
                     onChange={(e) => handleInputChange('refundPolicy7PlusDays', parseFloat(e.target.value) || 0)}
                     inputProps={{ min: 0, max: 100, step: 1 }}
                     helperText={t('dashboard.hotelAdmin.pricingConfiguration.cancellationRefundPolicies.refundHelper7Plus', { value: config.refundPolicy7PlusDays || 100 })}
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        backgroundColor: 'background.paper',
-                        borderRadius: 2,
-                        '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: getInteractiveColor(),
-                        },
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: getInteractiveColor(),
-                        }
-                      },
-                      '& .MuiInputLabel-root.Mui-focused': {
-                        color: getInteractiveColor(),
-                      }
-                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label={t('dashboard.hotelAdmin.pricingConfiguration.cancellationRefundPolicies.refund3To7Days')}
                     type="number"
@@ -1174,25 +889,10 @@ const PricingConfigurationComponent: React.FC = () => {
                     onChange={(e) => handleInputChange('refundPolicy3To7Days', parseFloat(e.target.value) || 0)}
                     inputProps={{ min: 0, max: 100, step: 1 }}
                     helperText={t('dashboard.hotelAdmin.pricingConfiguration.cancellationRefundPolicies.refundHelper3To7', { value: config.refundPolicy3To7Days || 50 })}
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        backgroundColor: 'background.paper',
-                        borderRadius: 2,
-                        '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: getInteractiveColor(),
-                        },
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: getInteractiveColor(),
-                        }
-                      },
-                      '& .MuiInputLabel-root.Mui-focused': {
-                        color: getInteractiveColor(),
-                      }
-                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label={t('dashboard.hotelAdmin.pricingConfiguration.cancellationRefundPolicies.refund1To2Days')}
                     type="number"
@@ -1200,25 +900,10 @@ const PricingConfigurationComponent: React.FC = () => {
                     onChange={(e) => handleInputChange('refundPolicy1To2Days', parseFloat(e.target.value) || 0)}
                     inputProps={{ min: 0, max: 100, step: 1 }}
                     helperText={t('dashboard.hotelAdmin.pricingConfiguration.cancellationRefundPolicies.refundHelper1To2', { value: config.refundPolicy1To2Days || 25 })}
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        backgroundColor: 'background.paper',
-                        borderRadius: 2,
-                        '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: getInteractiveColor(),
-                        },
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: getInteractiveColor(),
-                        }
-                      },
-                      '& .MuiInputLabel-root.Mui-focused': {
-                        color: getInteractiveColor(),
-                      }
-                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label={t('dashboard.hotelAdmin.pricingConfiguration.cancellationRefundPolicies.refundSameDay')}
                     type="number"
@@ -1226,21 +911,6 @@ const PricingConfigurationComponent: React.FC = () => {
                     onChange={(e) => handleInputChange('refundPolicySameDay', parseFloat(e.target.value) || 0)}
                     inputProps={{ min: 0, max: 100, step: 1 }}
                     helperText={t('dashboard.hotelAdmin.pricingConfiguration.cancellationRefundPolicies.refundHelperSameDay', { value: config.refundPolicySameDay || 0 })}
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        backgroundColor: 'background.paper',
-                        borderRadius: 2,
-                        '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: getInteractiveColor(),
-                        },
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: getInteractiveColor(),
-                        }
-                      },
-                      '& .MuiInputLabel-root.Mui-focused': {
-                        color: getInteractiveColor(),
-                      }
-                    }}
                   />
                 </Grid>
               </Grid>
@@ -1295,7 +965,7 @@ const PricingConfigurationComponent: React.FC = () => {
                 </Box>
               </Box>
 
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label={t('dashboard.hotelAdmin.pricingConfiguration.additionalNotes.configurationNotes')}
                 multiline
@@ -1303,21 +973,6 @@ const PricingConfigurationComponent: React.FC = () => {
                 value={config.notes || ''}
                 onChange={(e) => handleInputChange('notes', e.target.value)}
                 placeholder={t('dashboard.hotelAdmin.pricingConfiguration.additionalNotes.placeholder')}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    backgroundColor: 'background.paper',
-                    borderRadius: 2,
-                    '&:hover .MuiOutlinedInput-notchedOutline': {
-                      borderColor: getInteractiveColor(),
-                    },
-                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                      borderColor: getInteractiveColor(),
-                    }
-                  },
-                  '& .MuiInputLabel-root.Mui-focused': {
-                    color: getInteractiveColor(),
-                  }
-                }}
               />
             </CardContent>
           </Card>

@@ -28,6 +28,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { adminApiService, CreateUserRequest, TenantDTO, HotelDTO } from '../../services/adminApi';
 import { useAuth } from '../../contexts/AuthContext';
 import { COLORS } from '../../theme/themeColors';
+import PremiumTextField from '../../components/common/PremiumTextField';
 
 interface UserFormData {
   // Basic Information
@@ -252,7 +253,7 @@ const UserRegistrationForm: React.FC = () => {
         return (
           <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="First Name"
                 value={formData.firstName}
@@ -262,7 +263,7 @@ const UserRegistrationForm: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Last Name"
                 value={formData.lastName}
@@ -272,7 +273,7 @@ const UserRegistrationForm: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Email Address"
                 type="email"
@@ -283,7 +284,7 @@ const UserRegistrationForm: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Username"
                 value={formData.username}
@@ -299,7 +300,7 @@ const UserRegistrationForm: React.FC = () => {
         return (
           <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Password"
                 type="password"
@@ -311,7 +312,7 @@ const UserRegistrationForm: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Confirm Password"
                 type="password"
@@ -387,7 +388,7 @@ const UserRegistrationForm: React.FC = () => {
         return (
           <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Phone Number"
                 value={formData.phone}
@@ -396,7 +397,7 @@ const UserRegistrationForm: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Address"
                 value={formData.address}
@@ -405,7 +406,7 @@ const UserRegistrationForm: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="City"
                 value={formData.city}
@@ -414,7 +415,7 @@ const UserRegistrationForm: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="State/Province"
                 value={formData.state}
@@ -423,7 +424,7 @@ const UserRegistrationForm: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Country"
                 value={formData.country}
@@ -432,7 +433,7 @@ const UserRegistrationForm: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="ZIP/Postal Code"
                 value={formData.zipCode}

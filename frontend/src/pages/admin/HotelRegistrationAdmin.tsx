@@ -23,6 +23,7 @@ import {
   CardContent,
 } from '@mui/material';
 import { Refresh, CheckCircle, Cancel, Visibility } from '@mui/icons-material';
+import PremiumDisplayField from '../../components/common/PremiumDisplayField';
 
 interface HotelRegistration {
   id: number;
@@ -348,41 +349,99 @@ const HotelRegistrationAdmin: React.FC = () => {
             <Box sx={{ mt: 2 }}>
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={6}>
-                  <Typography variant="subtitle2">Hotel Name</Typography>
-                  <Typography variant="body1">{selectedRegistration.hotelName}</Typography>
+                  <PremiumDisplayField
+                    label="Hotel Name"
+                    value={selectedRegistration.hotelName}
+                    isEditMode={false}
+                  />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <Typography variant="subtitle2">Contact Person</Typography>
-                  <Typography variant="body1">{selectedRegistration.contactPerson}</Typography>
+                  <PremiumDisplayField
+                    label="Contact Person"
+                    value={selectedRegistration.contactPerson}
+                    isEditMode={false}
+                  />
                 </Grid>
                 <Grid item xs={12}>
-                  <Typography variant="subtitle2">Description</Typography>
-                  <Typography variant="body1">{selectedRegistration.description}</Typography>
+                  <PremiumDisplayField
+                    label="Description"
+                    value={selectedRegistration.description}
+                    isEditMode={false}
+                    multiline
+                    rows={3}
+                  />
                 </Grid>
                 <Grid item xs={12}>
-                  <Typography variant="subtitle2">Address</Typography>
-                  <Typography variant="body1">
-                    {selectedRegistration.address}, {selectedRegistration.city}, {selectedRegistration.country}
-                  </Typography>
+                  <PremiumDisplayField
+                    label="Address"
+                    value={`${selectedRegistration.address}, ${selectedRegistration.city}, ${selectedRegistration.country}`}
+                    isEditMode={false}
+                  />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <Typography variant="subtitle2">Phone</Typography>
-                  <Typography variant="body1">{selectedRegistration.phone}</Typography>
+                  <PremiumDisplayField
+                    label="Phone"
+                    value={selectedRegistration.phone}
+                    isEditMode={false}
+                  />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <Typography variant="subtitle2">Email</Typography>
-                  <Typography variant="body1">{selectedRegistration.contactEmail}</Typography>
+                  <PremiumDisplayField
+                    label="Email"
+                    value={selectedRegistration.contactEmail}
+                    isEditMode={false}
+                  />
                 </Grid>
                 {selectedRegistration.licenseNumber && (
                   <Grid item xs={12} sm={6}>
-                    <Typography variant="subtitle2">License Number</Typography>
-                    <Typography variant="body1">{selectedRegistration.licenseNumber}</Typography>
+                    <PremiumDisplayField
+                      label="License Number"
+                      value={selectedRegistration.licenseNumber}
+                      isEditMode={false}
+                    />
                   </Grid>
                 )}
                 {selectedRegistration.taxId && (
                   <Grid item xs={12} sm={6}>
-                    <Typography variant="subtitle2">Tax ID</Typography>
-                    <Typography variant="body1">{selectedRegistration.taxId}</Typography>
+                    <PremiumDisplayField
+                      label="Tax ID"
+                      value={selectedRegistration.taxId}
+                      isEditMode={false}
+                    />
+                  </Grid>
+                )}
+                <Grid item xs={12} sm={6}>
+                  <PremiumDisplayField
+                    label="Status"
+                    value={selectedRegistration.status}
+                    isEditMode={false}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <PremiumDisplayField
+                    label="Submitted At"
+                    value={formatDate(selectedRegistration.submittedAt)}
+                    isEditMode={false}
+                  />
+                </Grid>
+                {selectedRegistration.reviewedAt && (
+                  <Grid item xs={12} sm={6}>
+                    <PremiumDisplayField
+                      label="Reviewed At"
+                      value={formatDate(selectedRegistration.reviewedAt)}
+                      isEditMode={false}
+                    />
+                  </Grid>
+                )}
+                {selectedRegistration.reviewComments && (
+                  <Grid item xs={12}>
+                    <PremiumDisplayField
+                      label="Review Comments"
+                      value={selectedRegistration.reviewComments}
+                      isEditMode={false}
+                      multiline
+                      rows={3}
+                    />
                   </Grid>
                 )}
               </Grid>

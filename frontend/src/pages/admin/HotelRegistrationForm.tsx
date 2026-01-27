@@ -4,7 +4,6 @@ import {
   Typography,
   Paper,
   Box,
-  TextField,
   Button,
   Grid,
   FormControl,
@@ -26,6 +25,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthenticatedApi } from '../../hooks/useAuthenticatedApi';
 import { useTenant } from '../../contexts/TenantContext';
 import { COLORS } from '../../theme/themeColors';
+import PremiumTextField from '../../components/common/PremiumTextField';
 
 interface HotelFormData {
   // Basic Information
@@ -162,7 +162,7 @@ const HotelRegistrationForm: React.FC = () => {
         return (
           <Grid container spacing={3}>
             <Grid item xs={12}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Hotel Name"
                 value={formData.hotelName}
@@ -172,7 +172,7 @@ const HotelRegistrationForm: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Description"
                 value={formData.description}
@@ -205,7 +205,7 @@ const HotelRegistrationForm: React.FC = () => {
         return (
           <Grid container spacing={3}>
             <Grid item xs={12}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Address"
                 value={formData.address}
@@ -215,7 +215,7 @@ const HotelRegistrationForm: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="City"
                 value={formData.city}
@@ -225,7 +225,7 @@ const HotelRegistrationForm: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="State/Province"
                 value={formData.state}
@@ -234,7 +234,7 @@ const HotelRegistrationForm: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Country"
                 value={formData.country}
@@ -244,7 +244,7 @@ const HotelRegistrationForm: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="ZIP/Postal Code"
                 value={formData.zipCode}
@@ -259,7 +259,7 @@ const HotelRegistrationForm: React.FC = () => {
         return (
           <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Phone Number"
                 value={formData.phone}
@@ -269,7 +269,7 @@ const HotelRegistrationForm: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Email Address"
                 type="email"
@@ -280,7 +280,7 @@ const HotelRegistrationForm: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Website"
                 value={formData.website}
@@ -289,7 +289,7 @@ const HotelRegistrationForm: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Contact Person"
                 value={formData.contactPerson}
@@ -305,7 +305,7 @@ const HotelRegistrationForm: React.FC = () => {
         return (
           <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Business License Number"
                 value={formData.licenseNumber}
@@ -315,7 +315,7 @@ const HotelRegistrationForm: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Tax ID"
                 value={formData.taxId}

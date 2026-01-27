@@ -42,7 +42,7 @@ const LoginPage: React.FC = () => {
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
   
-  const { login, error: authError, clearError, isAuthenticated, user, isInitializing } = useAuth();
+  const { login, error: authError, clearError, isAuthenticated, user, isInitializing, getDashboardPath } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -59,8 +59,9 @@ const LoginPage: React.FC = () => {
         return;
       }
       
-      // Otherwise, redirect based on user role to their dashboard
-      navigate('/dashboard', { replace: true });
+      // Otherwise, redirect directly to the user's role-specific dashboard
+      const dashboardPath = getDashboardPath();
+      navigate(dashboardPath, { replace: true });
     }
   }, [isAuthenticated, user, isInitializing, redirectTo, bookingData, navigate]);
 
@@ -70,17 +71,9 @@ const LoginPage: React.FC = () => {
     setLoading(true);
 
     try {
-      const success = await login(email, password);
-      if (success) {
-        // Check if there's a redirect with booking data
-        if (redirectTo && bookingData) {
-          navigate(redirectTo, { state: bookingData });
-        } else {
-          // Navigate to dashboard, which will redirect based on user role
-          navigate('/dashboard');
-        }
-      }
-      // Note: If login fails, the error will be set in authError by AuthContext
+      await login(email, password);
+      // Note: Navigation will be handled by the useEffect hook once user state is updated
+      // This prevents calling getDashboardPath() before user state is set
     } catch (err) {
       // console.error('Login error:', err);
     } finally {

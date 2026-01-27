@@ -46,6 +46,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { hotelAdminApi, RoomResponse, RoomCreateRequest, RoomUpdateRequest } from '../../services/hotelAdminApi';
+import PremiumTextField from '../../components/common/PremiumTextField';
 import { useAuth } from '../../contexts/AuthContext';
 import { formatCurrency } from '../../utils/currencyUtils';
 import RoomTypePricing from '../../components/RoomTypePricing';
@@ -546,7 +547,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
 
         {/* Search and Filters - Front Desk Style */}
         <Box sx={{ mb: 3, display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
-          <TextField
+          <PremiumTextField
             label="Search rooms"
             value={searchTerm}
             onChange={handleSearchChange}
@@ -865,7 +866,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
           <DialogContent>
             <Grid container spacing={2} sx={{ mt: 1 }}>
               <Grid item xs={12} md={6}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Room Number"
                   value={roomForm.roomNumber}
@@ -888,7 +889,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
                 </FormControl>
               </Grid>
               <Grid item xs={12} md={6}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Price per Night"
                   type="number"
@@ -899,7 +900,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
                 />
               </Grid>
               <Grid item xs={12} md={6}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Capacity"
                   type="number"
@@ -910,7 +911,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
                 />
               </Grid>
               <Grid item xs={12}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Description"
                   multiline
@@ -945,7 +946,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
             {selectedRoom && (
               <Grid container spacing={2} sx={{ mt: 1 }}>
                 <Grid item xs={12} md={6}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label="Room Number"
                     value={selectedRoom.roomNumber}
@@ -968,7 +969,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
                   </FormControl>
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label="Price per Night"
                     type="number"
@@ -979,7 +980,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
                   />
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label="Capacity"
                     type="number"
@@ -990,7 +991,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
                   />
                 </Grid>
                 <Grid item xs={12}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label="Description"
                     multiline

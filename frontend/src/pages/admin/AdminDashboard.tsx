@@ -37,6 +37,7 @@ import {
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { adminApiService, UserManagementResponse, HotelDTO, PagedResponse } from '../../services/adminApi';
+import PremiumTextField from '../../components/common/PremiumTextField';
 
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -279,7 +280,7 @@ const AdminDashboard: React.FC = () => {
 
             {/* Search and Filter Controls */}
             <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
-              <TextField
+              <PremiumTextField
                 size="small"
                 placeholder="Search hotels..."
                 value={hotelSearchTerm}
@@ -462,7 +463,7 @@ const AdminDashboard: React.FC = () => {
 
             {/* Search and Filter Controls */}
             <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
-              <TextField
+              <PremiumTextField
                 size="small"
                 placeholder="Search users..."
                 value={userSearchTerm}

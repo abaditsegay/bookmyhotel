@@ -12,6 +12,7 @@ import {
   useMediaQuery,
   Stack,
 } from '@mui/material';
+import PremiumTextField from '../components/common/PremiumTextField';
 import { useTranslation } from 'react-i18next';
 import StandardCard from '../components/common/StandardCard';
 import StandardButton from '../components/common/StandardButton';
@@ -142,27 +143,15 @@ const FindBookingPage: React.FC = () => {
 
           <form onSubmit={handleSearch}>
             <Stack spacing={3} direction={{ xs: 'column', md: 'row' }}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label={t('booking.find.fields.confirmationNumber')}
                 value={confirmationNumber}
                 onChange={handleConfirmationNumberChange}
                 placeholder={t('booking.find.fields.confirmationNumberPlaceholder')}
                 required
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    backgroundColor: theme.palette.background.paper,
-                    borderRadius: 0,
-                    '&:hover .MuiOutlinedInput-notchedOutline': {
-                      borderColor: 'primary.main',
-                    },
-                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                      borderWidth: 2,
-                    },
-                  },
-                }}
               />
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label={t('booking.find.fields.email')}
                 type="email"
@@ -170,18 +159,6 @@ const FindBookingPage: React.FC = () => {
                 onChange={handleEmailChange}
                 placeholder={t('booking.find.fields.emailPlaceholder')}
                 required
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    backgroundColor: theme.palette.background.paper,
-                    borderRadius: 0,
-                    '&:hover .MuiOutlinedInput-notchedOutline': {
-                      borderColor: 'primary.main',
-                    },
-                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                      borderWidth: 2,
-                    },
-                  },
-                }}
               />
             </Stack>
 

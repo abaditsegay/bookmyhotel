@@ -10,6 +10,7 @@ import {
   TextField,
   Grid
 } from '@mui/material';
+import PremiumTextField from '../components/common/PremiumTextField';
 
 const PublicHotelRegistration: React.FC = () => {
   const navigate = useNavigate();
@@ -142,7 +143,7 @@ const PublicHotelRegistration: React.FC = () => {
 
           <Grid container spacing={2} sx={{ mt: 1 }}>
             <Grid item xs={12} sm={6}>
-              <TextField
+              <PremiumTextField
                 label="Hotel Name"
                 fullWidth
                 required
@@ -153,7 +154,7 @@ const PublicHotelRegistration: React.FC = () => {
             </Grid>
             
             <Grid item xs={12} sm={6}>
-              <TextField
+              <PremiumTextField
                 label="Contact Person"
                 fullWidth
                 required
@@ -164,7 +165,7 @@ const PublicHotelRegistration: React.FC = () => {
             </Grid>
             
             <Grid item xs={12}>
-              <TextField
+              <PremiumTextField
                 label="Description"
                 multiline
                 rows={3}
@@ -176,7 +177,7 @@ const PublicHotelRegistration: React.FC = () => {
             </Grid>
             
             <Grid item xs={12}>
-              <TextField
+              <PremiumTextField
                 label="Address"
                 fullWidth
                 required
@@ -187,7 +188,7 @@ const PublicHotelRegistration: React.FC = () => {
             </Grid>
             
             <Grid item xs={12} sm={6}>
-              <TextField
+              <PremiumTextField
                 label="City"
                 fullWidth
                 required
@@ -198,7 +199,7 @@ const PublicHotelRegistration: React.FC = () => {
             </Grid>
 
             <Grid item xs={12} sm={6}>
-              <TextField
+              <PremiumTextField
                 label="Country"
                 fullWidth
                 required
@@ -209,7 +210,7 @@ const PublicHotelRegistration: React.FC = () => {
             </Grid>
             
             <Grid item xs={12} sm={6}>
-              <TextField
+              <PremiumTextField
                 label="Phone (Communication)"
                 fullWidth
                 required
@@ -221,7 +222,7 @@ const PublicHotelRegistration: React.FC = () => {
             </Grid>
 
             <Grid item xs={12} sm={6}>
-              <TextField
+              <PremiumTextField
                 label="Mobile Payment Phone"
                 fullWidth
                 required
@@ -233,7 +234,7 @@ const PublicHotelRegistration: React.FC = () => {
             </Grid>
 
             <Grid item xs={12} sm={6}>
-              <TextField
+              <PremiumTextField
                 label="Mobile Payment Phone 2 (Optional)"
                 fullWidth
                 value={registrationForm.mobilePaymentPhone2}
@@ -244,7 +245,7 @@ const PublicHotelRegistration: React.FC = () => {
             </Grid>
 
             <Grid item xs={12} sm={6}>
-              <TextField
+              <PremiumTextField
                 label="Contact Email"
                 type="email"
                 fullWidth
@@ -256,7 +257,7 @@ const PublicHotelRegistration: React.FC = () => {
             </Grid>
 
             <Grid item xs={12} sm={6}>
-              <TextField
+              <PremiumTextField
                 label="License Number"
                 fullWidth
                 value={registrationForm.licenseNumber}
@@ -266,7 +267,7 @@ const PublicHotelRegistration: React.FC = () => {
             </Grid>
 
             <Grid item xs={12} sm={6}>
-              <TextField
+              <PremiumTextField
                 label="Tax ID"
                 fullWidth
                 value={registrationForm.taxId}
@@ -276,7 +277,7 @@ const PublicHotelRegistration: React.FC = () => {
             </Grid>
 
             <Grid item xs={12}>
-              <TextField
+              <PremiumTextField
                 label="Website URL"
                 fullWidth
                 value={registrationForm.websiteUrl}
@@ -286,7 +287,7 @@ const PublicHotelRegistration: React.FC = () => {
             </Grid>
 
             <Grid item xs={12}>
-              <TextField
+              <PremiumTextField
                 label="Facility Amenities"
                 multiline
                 rows={2}
@@ -298,7 +299,7 @@ const PublicHotelRegistration: React.FC = () => {
             </Grid>
 
             <Grid item xs={12} sm={4}>
-              <TextField
+              <PremiumTextField
                 label="Number of Rooms"
                 type="number"
                 fullWidth
@@ -309,7 +310,7 @@ const PublicHotelRegistration: React.FC = () => {
             </Grid>
 
             <Grid item xs={12} sm={4}>
-              <TextField
+              <PremiumTextField
                 label="Check-in Time"
                 type="time"
                 fullWidth
@@ -319,7 +320,7 @@ const PublicHotelRegistration: React.FC = () => {
             </Grid>
 
             <Grid item xs={12} sm={4}>
-              <TextField
+              <PremiumTextField
                 label="Check-out Time"
                 type="time"
                 fullWidth

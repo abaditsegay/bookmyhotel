@@ -17,7 +17,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField,
   FormControl,
   InputLabel,
   Select,
@@ -31,6 +30,7 @@ import {
   Divider,
   CircularProgress
 } from '@mui/material';
+import PremiumTextField from './common/PremiumTextField';
 import {
   Add as AddIcon,
   Edit as EditIcon,
@@ -396,27 +396,16 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
                 <TableHead>
                   <TableRow
                     sx={{
-                      background: 'linear-gradient(135deg, #64748b 0%, #475569 50%, #334155 100%)',
-                      boxShadow: '0 4px 12px rgba(100, 116, 139, 0.15)',
+                      background: 'linear-gradient(135deg, #f5f5f5 0%, #fafafa 50%, #f5f5f5 100%)',
+                      borderBottom: '2px solid #E8B86D',
                       '& .MuiTableCell-head': {
-                        color: '#ffffff',
-                        fontWeight: 600,
+                        color: '#B8860B',
+                        fontWeight: 700,
                         fontSize: '0.95rem',
                         letterSpacing: '0.5px',
                         textTransform: 'uppercase',
                         border: 'none',
                         padding: '20px 16px',
-                        position: 'relative',
-                        textShadow: '0 1px 2px rgba(0,0,0,0.1)',
-                        '&::after': {
-                          content: '""',
-                          position: 'absolute',
-                          bottom: 0,
-                          left: 0,
-                          right: 0,
-                          height: '3px',
-                          background: 'linear-gradient(90deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.6) 100%)'
-                        }
                       }
                     }}
                   >
@@ -527,7 +516,32 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
         <DialogContent>
           <Grid container spacing={3} sx={{ mt: 1 }}>
             <Grid item xs={12} md={6}>
-              <FormControl fullWidth required>
+              <FormControl fullWidth required
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: '#fafafa',
+                    borderLeft: '2px solid #E8B86D',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      backgroundColor: 'rgba(232, 184, 109, 0.04)',
+                      '& fieldset': {
+                        borderColor: '#E8B86D',
+                      },
+                    },
+                    '&.Mui-focused': {
+                      backgroundColor: '#fffef8',
+                      '& fieldset': {
+                        borderColor: '#E8B86D',
+                        borderWidth: '2px',
+                      },
+                    },
+                  },
+                  '& .MuiInputLabel-root.Mui-focused': {
+                    color: '#B8860B',
+                    fontWeight: 600,
+                  },
+                }}
+              >
                 <InputLabel>Room Type</InputLabel>
                 <Select
                   value={formData.roomType}
@@ -548,7 +562,7 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
               </FormControl>
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Base Price per Night"
                 type="number"
@@ -563,7 +577,7 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
               />
             </Grid>
             <Grid item xs={12} md={4}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Weekend Multiplier"
                 value={pricingMultipliers.weekendMultiplier.toFixed(1)}
@@ -571,22 +585,11 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
                   readOnly: true,
                 }}
                 helperText="From hotel pricing configuration"
-                variant="outlined"
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    backgroundColor: 'rgba(0, 0, 0, 0.04)',
-                    '& fieldset': {
-                      borderColor: 'rgba(0, 0, 0, 0.23)',
-                    },
-                  },
-                  '& .MuiInputBase-input': {
-                    color: 'text.primary',
-                  }
-                }}
+                disabled
               />
             </Grid>
             <Grid item xs={12} md={4}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Holiday Multiplier"
                 value={pricingMultipliers.holidayMultiplier.toFixed(1)}
@@ -594,22 +597,11 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
                   readOnly: true,
                 }}
                 helperText="From hotel pricing configuration"
-                variant="outlined"
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    backgroundColor: 'rgba(0, 0, 0, 0.04)',
-                    '& fieldset': {
-                      borderColor: 'rgba(0, 0, 0, 0.23)',
-                    },
-                  },
-                  '& .MuiInputBase-input': {
-                    color: 'text.primary',
-                  }
-                }}
+                disabled
               />
             </Grid>
             <Grid item xs={12} md={4}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Peak Season Multiplier"
                 value={pricingMultipliers.peakSeasonMultiplier.toFixed(1)}
@@ -617,22 +609,11 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
                   readOnly: true,
                 }}
                 helperText="From hotel pricing configuration"
-                variant="outlined"
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    backgroundColor: 'rgba(0, 0, 0, 0.04)',
-                    '& fieldset': {
-                      borderColor: 'rgba(0, 0, 0, 0.23)',
-                    },
-                  },
-                  '& .MuiInputBase-input': {
-                    color: 'text.primary',
-                  }
-                }}
+                disabled
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Currency"
                 value={formData.currency}
@@ -652,7 +633,7 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
               />
             </Grid>
             <Grid item xs={12}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Description"
                 multiline

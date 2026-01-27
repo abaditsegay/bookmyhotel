@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { COLORS, getGradient } from '../theme/themeColors';
+import PremiumTextField from '../components/common/PremiumTextField';
 import {
   Box,
   Typography,
@@ -418,7 +419,7 @@ const NotificationsPage: React.FC = () => {
             </Select>
           </FormControl>
           
-          <TextField
+          <PremiumTextField
             size="small"
             placeholder="Search by confirmation number..."
             value={confirmationFilter}

@@ -36,6 +36,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import PremiumTextField from '../common/PremiumTextField';
 import { useAuth } from '../../contexts/AuthContext';
 import { shopApiService } from '../../services/shopApi';
 import { Product, ShopOrderCreateRequest, PaymentMethod, DeliveryType, ProductCategory, ShopOrder, ShopOrderUtils } from '../../types/shop';
@@ -123,9 +124,8 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
     }
 
     const existingItem = orderItems.find(item => item.product.id === product.id);
-    if (existingItem) {
-      updateItemQuantity(product.id, existingItem.quantity + 1);
-    } else {
+    // Only add if not already in the order - quantity adjustment done via +/- buttons in order summary
+    if (!existingItem) {
       setOrderItems(prev => [...prev, { product, quantity: 1 }]);
     }
   };
@@ -417,7 +417,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
               {/* Product Filters */}
               <Grid container spacing={2} sx={{ mb: 2 }}>
                 <Grid item xs={12} md={8}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label={t('shop.orders.creation.searchProducts')}
                     value={searchTerm}
@@ -508,44 +508,57 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                         sx={{ 
                           cursor: isOutOfStock ? 'not-allowed' : 'pointer',
                           position: 'relative',
-                          border: isSelected ? '3px solid' : '2px solid',
-                          borderColor: isSelected ? 'primary.main' : 'grey.400',
-                          backgroundColor: isSelected ? 'action.selected' : isOutOfStock ? 'action.disabledBackground' : 'background.paper',
-                          opacity: isOutOfStock ? 0.6 : 1,
-                          boxShadow: 1,
+                          border: isSelected ? '2px solid' : '1px solid',
+                          borderColor: isSelected ? '#E8B86D' : 'rgba(26, 54, 93, 0.15)',
+                          background: isSelected 
+                            ? 'linear-gradient(135deg, rgba(232, 184, 109, 0.08) 0%, rgba(26, 54, 93, 0.03) 100%)' 
+                            : isOutOfStock 
+                              ? 'rgba(0,0,0,0.04)' 
+                              : 'rgba(255,255,255,0.9)',
+                          backdropFilter: 'blur(10px)',
+                          opacity: isOutOfStock ? 0.55 : 1,
+                          boxShadow: isSelected 
+                            ? '0 8px 24px rgba(232, 184, 109, 0.25), 0 4px 8px rgba(26, 54, 93, 0.1)' 
+                            : '0 2px 8px rgba(0,0,0,0.06)',
                           '&:hover': { 
-                            boxShadow: isOutOfStock ? 1 : 3,
-                            borderColor: isOutOfStock ? 'grey.400' : (isSelected ? 'primary.main' : 'primary.light')
+                            boxShadow: isOutOfStock 
+                              ? '0 2px 8px rgba(0,0,0,0.06)' 
+                              : isSelected 
+                                ? '0 12px 32px rgba(232, 184, 109, 0.3), 0 6px 12px rgba(26, 54, 93, 0.15)' 
+                                : '0 8px 24px rgba(26, 54, 93, 0.12)',
+                            transform: isOutOfStock ? 'none' : 'translateY(-4px)',
+                            borderColor: isOutOfStock ? 'rgba(26, 54, 93, 0.15)' : (isSelected ? '#E8B86D' : 'rgba(26, 54, 93, 0.25)')
                           },
-                          transition: 'all 0.2s ease-in-out'
+                          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                         }}
                         onClick={() => !isOutOfStock && addProductToOrder(product)}
                       >
-                        {/* Selection indicator */}
+                        {/* Selection indicator with premium gold */}
                         {isSelected && (
                           <Box
                             sx={{
                               position: 'absolute',
                               top: 8,
                               right: 8,
-                              backgroundColor: 'primary.main',
+                              background: 'linear-gradient(135deg, #E8B86D 0%, #D4A05D 100%)',
                               color: 'white',
                               borderRadius: '50%',
-                              width: 24,
-                              height: 24,
+                              width: 28,
+                              height: 28,
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
-                              fontSize: '0.75rem',
-                              fontWeight: 'bold',
-                              zIndex: 1
+                              fontSize: '0.85rem',
+                              fontWeight: 700,
+                              zIndex: 1,
+                              boxShadow: '0 2px 8px rgba(232, 184, 109, 0.4)'
                             }}
                           >
                             {selectedQuantity}
                           </Box>
                         )}
 
-                        {/* Stock Status Badge - Bottom Right */}
+                        {/* Stock Status Badge - Premium styling */}
                         <Box
                           sx={{
                             position: 'absolute',
@@ -553,50 +566,62 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                             right: 8,
                             backgroundColor: stockStatusColor,
                             color: 'white',
-                            borderRadius: '12px',
-                            px: 1,
-                            py: 0.25,
+                            borderRadius: '16px',
+                            px: 1.25,
+                            py: 0.4,
                             fontSize: '0.7rem',
-                            fontWeight: 'bold',
+                            fontWeight: 700,
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.3px',
                             zIndex: 2,
-                            boxShadow: 1
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                            border: '1px solid rgba(255,255,255,0.2)'
                           }}
                         >
                           {stockStatusLabel}
                         </Box>
                         
-                        <CardContent sx={{ p: 2, pb: 4 }}>
+                        <CardContent sx={{ p: 2.5, pb: 4.5 }}>
                           <Typography 
                             variant="subtitle2" 
                             noWrap
                             sx={{ 
-                              fontWeight: isSelected ? 'bold' : 'normal',
-                              color: isSelected ? 'primary.main' : (isOutOfStock ? 'text.disabled' : 'text.primary')
+                              fontWeight: isSelected ? 700 : 600,
+                              fontSize: '0.9rem',
+                              color: isSelected ? '#1a365d' : (isOutOfStock ? 'text.disabled' : 'text.primary'),
+                              mb: 0.5
                             }}
                           >
                             {product.name}
                           </Typography>
-                          <Typography variant="caption" color={isOutOfStock ? 'text.disabled' : 'text.secondary'}>
+                          <Typography variant="caption" sx={{ color: isOutOfStock ? 'text.disabled' : '#64748b', fontSize: '0.75rem' }}>
                             SKU: {product.sku}
                           </Typography>
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1.5 }}>
                             <Chip
                               label={product.category.replace('_', ' ')}
                               size="small"
                               sx={{ 
-                                backgroundColor: 'white',
-                                color: 'primary.main',
-                                border: '1px solid',
-                                borderColor: 'primary.main',
-                                fontWeight: 'medium',
-                                opacity: isOutOfStock ? 0.7 : 1
+                                background: 'linear-gradient(135deg, rgba(26, 54, 93, 0.08) 0%, rgba(26, 54, 93, 0.12) 100%)',
+                                color: '#1a365d',
+                                border: '1px solid rgba(26, 54, 93, 0.2)',
+                                fontWeight: 600,
+                                fontSize: '0.7rem',
+                                letterSpacing: '0.3px',
+                                opacity: isOutOfStock ? 0.6 : 1
                               }}
                             />
                             <Typography 
                               variant="body2" 
                               sx={{ 
-                                fontWeight: 'bold',
-                                color: isSelected ? 'primary.main' : (isOutOfStock ? 'text.disabled' : 'text.primary')
+                                fontWeight: 700,
+                                fontSize: '1rem',
+                                background: isSelected 
+                                  ? 'linear-gradient(135deg, #E8B86D 0%, #D4A05D 100%)' 
+                                  : isOutOfStock ? 'none' : 'linear-gradient(135deg, #1a365d 0%, #2a4a6d 100%)',
+                                backgroundClip: 'text',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: isOutOfStock ? 'rgba(0,0,0,0.38)' : 'transparent'
                               }}
                             >
                               {formatCurrencyWithDecimals(product.price || 0)}
@@ -632,9 +657,11 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                               variant="caption" 
                               sx={{ 
                                 display: 'block',
-                                mt: 0.5,
-                                color: 'primary.main',
-                                fontWeight: 'medium'
+                                mt: 0.75,
+                                color: '#E8B86D',
+                                fontWeight: 700,
+                                fontSize: '0.75rem',
+                                letterSpacing: '0.3px'
                               }}
                             >
                               {t('shop.orders.creation.selected')} {selectedQuantity} {selectedQuantity !== 1 ? t('shop.orders.creation.itemPlural') : t('shop.orders.creation.itemSingular')}
@@ -665,22 +692,30 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
           </Card>
         </Grid>
 
-        {/* Order Summary */}
+        {/* Order Summary - Premium styling */}
         <Grid item xs={12} md={4}>
           <Card sx={{ 
-            backgroundColor: theme.palette.mode === 'dark' 
-              ? theme.palette.grey[800] 
-              : theme.palette.grey[100],
+            background: 'linear-gradient(135deg, rgba(26, 54, 93, 0.03) 0%, rgba(232, 184, 109, 0.06) 100%)',
+            backdropFilter: 'blur(20px)',
             border: '2px solid',
-            borderColor: theme.palette.primary.main,
-            boxShadow: theme.shadows[3],
+            borderColor: 'rgba(232, 184, 109, 0.3)',
+            boxShadow: '0 8px 32px rgba(26, 54, 93, 0.12), 0 4px 16px rgba(232, 184, 109, 0.1)',
+            position: 'sticky',
+            top: 16,
             '& .MuiCardContent-root': {
               backgroundColor: 'transparent'
             }
           }}>
             <CardContent>
-              <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <ReceiptIcon color="primary" />
+              <Typography variant="h6" gutterBottom sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 1,
+                fontWeight: 700,
+                color: '#1a365d',
+                letterSpacing: '-0.01em'
+              }}>
+                <ReceiptIcon sx={{ color: '#E8B86D' }} />
                 {t('shop.orders.creation.orderSummary')}
               </Typography>
 
@@ -714,7 +749,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
 
                 {/* Room Number - only show for room charges */}
                 {purchaseType === 'ROOM_CHARGE' && (
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label={t('shop.orders.creation.roomNumber')}
                     value={roomNumber}
@@ -755,7 +790,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                         ))}
                       </Select>
                     </FormControl>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label={t('shop.orders.creation.deliveryAddress')}
                       value={deliveryAddress}
@@ -847,10 +882,28 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                   </Typography>
                 </Box>
               )}              {/* Total */}
-              <Divider sx={{ mb: 2 }} />
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                <Typography variant="h6">{t('shop.orders.creation.total')}</Typography>
-                <Typography variant="h6" color="primary">
+              <Divider sx={{ mb: 2, borderColor: 'rgba(232, 184, 109, 0.2)' }} />
+              <Box sx={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center', 
+                mb: 3,
+                p: 2,
+                borderRadius: 2,
+                background: 'linear-gradient(135deg, rgba(232, 184, 109, 0.08) 0%, rgba(26, 54, 93, 0.05) 100%)',
+                border: '1px solid rgba(232, 184, 109, 0.2)'
+              }}>
+                <Typography variant="h6" sx={{ fontWeight: 700, color: '#1a365d' }}>{t('shop.orders.creation.total')}</Typography>
+                <Typography 
+                  variant="h5" 
+                  sx={{
+                    fontWeight: 800,
+                    background: 'linear-gradient(135deg, #E8B86D 0%, #D4A05D 100%)',
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent'
+                  }}
+                >
                   ETB {calculateTotal()?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </Typography>
               </Box>
@@ -863,11 +916,24 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                 onClick={handleCreateOrder}
                 disabled={loading || orderItems.length === 0}
                 sx={{
+                  background: 'linear-gradient(135deg, #1a365d 0%, #2a4a6d 100%)',
+                  color: 'white',
+                  fontWeight: 700,
+                  fontSize: '1rem',
+                  py: 1.5,
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  boxShadow: '0 4px 16px rgba(26, 54, 93, 0.3)',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, #2a4a6d 0%, #1a365d 100%)',
+                    boxShadow: '0 6px 24px rgba(26, 54, 93, 0.4)',
+                    transform: 'translateY(-2px)'
+                  },
                   '&.Mui-disabled': {
-                    backgroundColor: 'primary.main',
+                    background: 'linear-gradient(135deg, #1a365d 0%, #2a4a6d 100%)',
                     opacity: 0.6,
-                    color: 'white',
-                    cursor: 'not-allowed'
+                    color: 'white'
                   }
                 }}
               >

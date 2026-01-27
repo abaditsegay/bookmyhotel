@@ -32,6 +32,7 @@ import { hotelAdminApi } from '../../services/hotelAdminApi';
 import { frontDeskApiService } from '../../services/frontDeskApi';
 import { formatCurrency, formatCurrencyWithDecimals } from '../../utils/currencyUtils';
 import { API_CONFIG, buildApiUrl } from '../../config/apiConfig';
+import PremiumTextField from '../common/PremiumTextField';
 import NumberStepper from '../common/NumberStepper';
 import { COLORS, addAlpha } from '../../theme/themeColors';
 import { extractBookingErrorMessage } from '../../utils/errorHandling';
@@ -516,112 +517,40 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                 
                 <Grid container spacing={3}>
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label={t('walkInBooking.guestInformation.firstName')}
                       value={guestInfo.firstName}
                       onChange={handleGuestInfoChange('firstName')}
                       required
-                      variant="outlined"
-                      sx={{
-                        '& .MuiInputBase-root': {
-                          backgroundColor: theme.palette.background.paper,
-                          borderRadius: 2,
-                        },
-                        '& .MuiOutlinedInput-root': {
-                          '&:hover fieldset': {
-                            borderColor: COLORS.PRIMARY,
-                          },
-                          '&.Mui-focused fieldset': {
-                            borderColor: COLORS.PRIMARY,
-                          },
-                        },
-                        '& .MuiInputLabel-root.Mui-focused': {
-                          color: COLORS.PRIMARY,
-                        },
-                      }}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label={t('walkInBooking.guestInformation.lastName')}
                       value={guestInfo.lastName}
                       onChange={handleGuestInfoChange('lastName')}
                       required
-                      variant="outlined"
-                      sx={{
-                        '& .MuiInputBase-root': {
-                          backgroundColor: theme.palette.background.paper,
-                          borderRadius: 2,
-                        },
-                        '& .MuiOutlinedInput-root': {
-                          '&:hover fieldset': {
-                            borderColor: COLORS.PRIMARY,
-                          },
-                          '&.Mui-focused fieldset': {
-                            borderColor: COLORS.PRIMARY,
-                          },
-                        },
-                        '& .MuiInputLabel-root.Mui-focused': {
-                          color: COLORS.PRIMARY,
-                        },
-                      }}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label={t('walkInBooking.guestInformation.email')}
                       type="email"
                       value={guestInfo.email}
                       onChange={handleGuestInfoChange('email')}
                       required
-                      variant="outlined"
-                      sx={{
-                        '& .MuiInputBase-root': {
-                          backgroundColor: theme.palette.background.paper,
-                          borderRadius: 2,
-                        },
-                        '& .MuiOutlinedInput-root': {
-                          '&:hover fieldset': {
-                            borderColor: COLORS.PRIMARY,
-                          },
-                          '&.Mui-focused fieldset': {
-                            borderColor: COLORS.PRIMARY,
-                          },
-                        },
-                        '& .MuiInputLabel-root.Mui-focused': {
-                          color: COLORS.PRIMARY,
-                        },
-                      }}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label={t('walkInBooking.guestInformation.phone')}
                       value={guestInfo.phone}
                       onChange={handleGuestInfoChange('phone')}
                       required
-                      variant="outlined"
-                      sx={{
-                        '& .MuiInputBase-root': {
-                          backgroundColor: theme.palette.background.paper,
-                          borderRadius: 2,
-                        },
-                        '& .MuiOutlinedInput-root': {
-                          '&:hover fieldset': {
-                            borderColor: COLORS.PRIMARY,
-                          },
-                          '&.Mui-focused fieldset': {
-                            borderColor: COLORS.PRIMARY,
-                          },
-                        },
-                        '& .MuiInputLabel-root.Mui-focused': {
-                          color: COLORS.PRIMARY,
-                        },
-                      }}
                     />
                   </Grid>
                 </Grid>
@@ -671,19 +600,31 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                             fullWidth: true,
                             sx: {
                               '& .MuiInputBase-root': {
-                                backgroundColor: theme.palette.background.paper,
+                                backgroundColor: '#fafafa',
                                 borderRadius: 2,
+                                borderLeft: '2px solid #E8B86D',
+                                transition: 'all 0.3s ease',
                               },
                               '& .MuiOutlinedInput-root': {
-                                '&:hover fieldset': {
-                                  borderColor: COLORS.PRIMARY,
+                                '&:hover': {
+                                  backgroundColor: 'rgba(232, 184, 109, 0.04)',
+                                  '& fieldset': {
+                                    borderColor: '#E8B86D',
+                                  },
                                 },
-                                '&.Mui-focused fieldset': {
-                                  borderColor: COLORS.PRIMARY,
+                                '&.Mui-focused': {
+                                  backgroundColor: '#fffef8',
+                                  '& fieldset': {
+                                    borderColor: '#E8B86D',
+                                    borderWidth: '2px',
+                                  },
                                 },
                               },
-                              '& .MuiInputLabel-root.Mui-focused': {
-                                color: COLORS.PRIMARY,
+                              '& .MuiInputLabel-root': {
+                                '&.Mui-focused': {
+                                  color: '#B8860B',
+                                  fontWeight: 600,
+                                },
                               },
                             }
                           } 
@@ -703,19 +644,31 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                             fullWidth: true,
                             sx: {
                               '& .MuiInputBase-root': {
-                                backgroundColor: theme.palette.background.paper,
+                                backgroundColor: '#fafafa',
                                 borderRadius: 2,
+                                borderLeft: '2px solid #E8B86D',
+                                transition: 'all 0.3s ease',
                               },
                               '& .MuiOutlinedInput-root': {
-                                '&:hover fieldset': {
-                                  borderColor: COLORS.PRIMARY,
+                                '&:hover': {
+                                  backgroundColor: 'rgba(232, 184, 109, 0.04)',
+                                  '& fieldset': {
+                                    borderColor: '#E8B86D',
+                                  },
                                 },
-                                '&.Mui-focused fieldset': {
-                                  borderColor: COLORS.PRIMARY,
+                                '&.Mui-focused': {
+                                  backgroundColor: '#fffef8',
+                                  '& fieldset': {
+                                    borderColor: '#E8B86D',
+                                    borderWidth: '2px',
+                                  },
                                 },
                               },
-                              '& .MuiInputLabel-root.Mui-focused': {
-                                color: COLORS.PRIMARY,
+                              '& .MuiInputLabel-root': {
+                                '&.Mui-focused': {
+                                  color: '#B8860B',
+                                  fontWeight: 600,
+                                },
                               },
                             }
                           } 
@@ -777,59 +730,64 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                     <Card 
                       sx={{ 
                         cursor: 'pointer',
-                        border: selectedRoom?.id === room.id ? '2px solid' : '1px solid',
-                        borderColor: selectedRoom?.id === room.id ? COLORS.PRIMARY : theme.palette.divider,
-                        backgroundColor: theme.palette.background.paper,
-                        transform: selectedRoom?.id === room.id ? 'scale(1.02)' : 'scale(1)',
-                        boxShadow: selectedRoom?.id === room.id ? '0 4px 12px rgba(21, 101, 192, 0.15)' : '0 2px 8px rgba(0, 0, 0, 0.08)',
-                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                        position: 'relative',
+                        border: selectedRoom?.id === room.id ? '3px solid' : '1px solid',
+                        borderColor: selectedRoom?.id === room.id ? '#E8B86D' : 'divider',
+                        borderLeft: selectedRoom?.id === room.id ? '6px solid #E8B86D' : '3px solid #E8B86D',
+                        backgroundColor: selectedRoom?.id === room.id ? 'action.selected' : 'background.paper',
+                        elevation: 0,
+                        borderRadius: 2,
+                        transition: 'all 0.2s ease-in-out',
                         '&:hover': {
-                          transform: 'scale(1.02)',
-                          borderColor: COLORS.PRIMARY,
-                          boxShadow: '0 4px 12px rgba(21, 101, 192, 0.15)',
+                          borderColor: '#E8B86D',
+                          backgroundColor: 'action.hover',
+                          transform: 'translateY(-2px)',
+                          boxShadow: 3,
                         }
                       }}
                       onClick={() => setSelectedRoom(room)}
                     >
-
-                      <CardContent sx={{ 
-                        color: 'inherit',
-                      }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                      <CardContent sx={{ p: 3 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
                           <Typography variant="h6" sx={{ 
-                            fontWeight: 600,
-                            color: selectedRoom?.id === room.id ? COLORS.PRIMARY : 'inherit'
+                            fontWeight: 'bold',
+                            color: 'text.primary',
+                            fontSize: '1.1rem'
                           }}>
                             {t('walkInBooking.roomSelection.roomNumber')} {room.roomNumber}
                           </Typography>
                           <Chip 
-                            label={room.roomType} 
+                            label={room.roomType.toUpperCase()} 
                             size="small" 
+                            variant="outlined"
                             sx={{
-                              backgroundColor: selectedRoom?.id === room.id ? 'rgba(21, 101, 192, 0.1)' : theme.palette.action.hover,
-                              color: selectedRoom?.id === room.id ? COLORS.PRIMARY : theme.palette.text.primary,
-                              border: selectedRoom?.id === room.id ? `1px solid ${COLORS.PRIMARY}` : `1px solid ${theme.palette.divider}`
+                              borderColor: '#E8B86D',
+                              color: '#B8860B',
+                              fontWeight: 'medium',
+                              fontSize: '0.75rem'
                             }}
                           />
                         </Box>
                         <Typography variant="body2" sx={{ 
-                          color: theme.palette.text.secondary,
-                          mb: 1
+                          color: 'text.secondary',
+                          mb: 1,
+                          fontSize: '0.875rem'
                         }}>
                           {t('walkInBooking.roomSelection.capacity')}: {t(room.capacity === 1 ? 'walkInBooking.roomSelection.capacityText' : 'walkInBooking.roomSelection.capacityTextPlural', { count: room.capacity })}
                         </Typography>
                         {room.description && (
                           <Typography variant="body2" sx={{ 
-                            color: theme.palette.text.secondary,
-                            mb: 1
+                            color: 'text.secondary',
+                            mb: 3,
+                            fontSize: '0.875rem',
+                            lineHeight: 1.4
                           }}>
                             {room.description}
                           </Typography>
                         )}
                         <Typography variant="h6" sx={{
-                          color: COLORS.PRIMARY,
-                          fontWeight: 700
+                          color: '#B8860B',
+                          fontWeight: 'bold',
+                          fontSize: '1.2rem'
                         }}>
                           {formatCurrency(room.pricePerNight || 0)}{t('walkInBooking.roomSelection.perNightShort')}
                         </Typography>
@@ -842,7 +800,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
             
             {selectedRoom && (
               <Box sx={{ mt: 2 }}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label={t('walkInBooking.roomSelection.specialRequests')}
                   multiline
@@ -850,23 +808,6 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                   value={specialRequests}
                   onChange={handleSpecialRequestsChange}
                   placeholder={t('walkInBooking.roomSelection.specialRequestsPlaceholder')}
-                  sx={{
-                    '& .MuiInputBase-root': {
-                      backgroundColor: theme.palette.background.paper,
-                      borderRadius: 2,
-                    },
-                    '& .MuiOutlinedInput-root': {
-                      '&:hover fieldset': {
-                        borderColor: COLORS.PRIMARY,
-                      },
-                      '&.Mui-focused fieldset': {
-                        borderColor: COLORS.PRIMARY,
-                      },
-                    },
-                    '& .MuiInputLabel-root.Mui-focused': {
-                      color: COLORS.PRIMARY,
-                    },
-                  }}
                 />
               </Box>
             )}
@@ -881,9 +822,10 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
               textAlign: 'center',
               mb: 4,
               p: 3,
-              backgroundColor: theme.palette.background.paper,
+              backgroundColor: 'background.paper',
               borderRadius: 2,
-              border: `2px solid ${theme.palette.divider}`,
+              border: '1px solid',
+              borderColor: 'divider',
               boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
             }}>
               <Typography variant="h5" sx={{ 
@@ -902,8 +844,10 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
               {/* Guest Information */}
               <Grid item xs={12} sm={6}>
                 <Card elevation={2} sx={{ 
-                  backgroundColor: theme.palette.background.paper,
-                  border: `2px solid ${theme.palette.divider}`,
+                  backgroundColor: 'background.paper',
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  borderLeft: '4px solid #E8B86D',
                   borderRadius: 2,
                   boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
                 }}>
@@ -913,7 +857,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                       alignItems: 'center',
                       mb: 2,
                     }}>
-                      <Typography variant="h6" sx={{ fontWeight: 700, color: COLORS.PRIMARY }}>
+                      <Typography variant="h6" sx={{ fontWeight: 700 }}>
                         {t('walkInBooking.confirmation.guestInformation')}
                       </Typography>
                     </Box>                    <Box sx={{ space: 1.5 }}>
@@ -949,8 +893,9 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
               {/* Stay Details */}
               <Grid item xs={12} sm={6}>
                 <Card elevation={2} sx={{ 
-                  backgroundColor: theme.palette.background.paper,
-                  border: `2px solid ${theme.palette.divider}`,
+                  backgroundColor: 'background.paper',
+                  border: '1px solid',
+                  borderColor: 'divider',
                   borderRadius: 2,
                   boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
                 }}>
@@ -960,7 +905,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                       alignItems: 'center',
                       mb: 2,
                     }}>
-                      <Typography variant="h6" sx={{ fontWeight: 700, color: COLORS.PRIMARY }}>
+                      <Typography variant="h6" sx={{ fontWeight: 700 }}>
                         {t('walkInBooking.confirmation.stayDetails')}
                       </Typography>
                     </Box>
@@ -1008,8 +953,9 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
               {/* Pricing Summary */}
               <Grid item xs={12}>
                 <Card elevation={3} sx={{ 
-                  backgroundColor: theme.palette.background.paper,
-                  border: `2px solid ${theme.palette.divider}`,
+                  backgroundColor: 'background.paper',
+                  border: '1px solid',
+                  borderColor: 'divider',
                   borderRadius: 2,
                   boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
                 }}>
@@ -1019,7 +965,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                       alignItems: 'center',
                       mb: 3,
                     }}>
-                      <Typography variant="h6" sx={{ fontWeight: 700, color: COLORS.PRIMARY }}>
+                      <Typography variant="h6" sx={{ fontWeight: 700 }}>
                         {t('walkInBooking.confirmation.pricingSummary')}
                       </Typography>
                     </Box>
@@ -1081,7 +1027,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                       justifyContent: 'space-between', 
                       alignItems: 'center',
                       p: 2,
-                      bgcolor: COLORS.PRIMARY,
+                      bgcolor: '#E8B86D',
                       borderRadius: 2,
                       mb: 2,
                     }}>
@@ -1095,11 +1041,12 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                     
                     <Box sx={{
                       p: 2,
-                      bgcolor: addAlpha(COLORS.PRIMARY, 0.1),
-                      color: COLORS.PRIMARY,
+                      bgcolor: 'rgba(232, 184, 109, 0.1)',
+                      color: '#B8860B',
                       borderRadius: 2,
                       textAlign: 'center',
-                      border: `1px solid ${theme.palette.divider}`,
+                      border: '1px solid',
+                      borderColor: 'divider',
                     }}>
                       <Typography variant="body1" sx={{ fontWeight: 600 }}>
                         {t('walkInBooking.confirmation.paymentNote')}

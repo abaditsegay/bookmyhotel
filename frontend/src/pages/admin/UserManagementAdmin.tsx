@@ -49,6 +49,8 @@ import {
   TenantDTO,
   HotelDTO
 } from '../../services/adminApi';
+import PremiumTextField from '../../components/common/PremiumTextField';
+import PremiumSelect from '../../components/common/PremiumSelect';
 
 interface UserFilters {
   search: string;
@@ -423,7 +425,7 @@ const UserManagementAdmin: React.FC = () => {
         </Typography>
         <Grid container spacing={2}>
           <Grid item xs={12} md={4}>
-            <TextField
+            <PremiumTextField
               fullWidth
               label="Search"
               value={filters.search}
@@ -605,7 +607,7 @@ const UserManagementAdmin: React.FC = () => {
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 1 }}>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="First Name"
                 value={userForm.firstName || ''}
@@ -614,7 +616,7 @@ const UserManagementAdmin: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Last Name"
                 value={userForm.lastName || ''}
@@ -623,7 +625,7 @@ const UserManagementAdmin: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Email"
                 type="email"
@@ -633,7 +635,7 @@ const UserManagementAdmin: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Password"
                 type="password"
@@ -643,7 +645,7 @@ const UserManagementAdmin: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Phone"
                 value={userForm.phone || ''}
@@ -652,83 +654,77 @@ const UserManagementAdmin: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <FormControl fullWidth required>
-                <InputLabel>Role</InputLabel>
-                <Select
-                  value={userForm.roles.length > 0 ? userForm.roles[0] : ''}
-                  onChange={(e) => {
-                    const selectedRole = e.target.value;
-                    const isHotelBoundRole = ['HOTEL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING'].includes(selectedRole);
-                    // console.log('Role selected:', selectedRole, 'Is hotel bound:', isHotelBoundRole);
-                    setUserForm({ 
-                      ...userForm, 
-                      roles: [selectedRole],
-                      // Clear hotel/tenant selection if role changes to a non-hotel-bound role
-                      hotelId: isHotelBoundRole ? userForm.hotelId : undefined,
-                      tenantId: isHotelBoundRole ? userForm.tenantId : undefined
-                    });
-                  }}
-                  label="Role"
-                >
-                  {roleOptions.map((role) => (
-                    <MenuItem key={role} value={role}>
-                      {role.replace('_', ' ')}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+              <PremiumSelect
+                fullWidth
+                required
+                label="Role"
+                value={userForm.roles.length > 0 ? userForm.roles[0] : ''}
+                onChange={(e) => {
+                  const selectedRole = e.target.value as string;
+                  const isHotelBoundRole = ['HOTEL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING'].includes(selectedRole);
+                  setUserForm({ 
+                    ...userForm, 
+                    roles: [selectedRole],
+                    hotelId: isHotelBoundRole ? userForm.hotelId : undefined,
+                    tenantId: isHotelBoundRole ? userForm.tenantId : undefined
+                  });
+                }}
+              >
+                {roleOptions.map((role) => (
+                  <MenuItem key={role} value={role}>
+                    {role.replace('_', ' ')}
+                  </MenuItem>
+                ))}
+              </PremiumSelect>
             </Grid>
             
             {/* Tenant Selection - Show for hotel-bound roles */}
             {(() => {
               const shouldShow = (userForm.roles.includes('HOTEL_ADMIN') || userForm.roles.includes('FRONTDESK') || userForm.roles.includes('HOUSEKEEPING'));
-              // console.log('Should show tenant selection:', shouldShow, 'User roles:', userForm.roles);
               return shouldShow;
             })() && (
               <Grid item xs={12} md={6}>
-                <FormControl fullWidth required>
-                  <InputLabel>Tenant</InputLabel>
-                  <Select
-                    value={userForm.tenantId || ''}
-                    onChange={(e) => {
-                      const selectedTenantId = e.target.value;
-                      setUserForm({ 
-                        ...userForm, 
-                        tenantId: selectedTenantId,
-                        hotelId: undefined // Clear hotel selection when tenant changes
-                      });
-                    }}
-                    label="Tenant"
-                    disabled={loadingTenants}
-                  >
-                    {tenants.map((tenant) => (
-                      <MenuItem key={tenant.tenantId} value={tenant.tenantId}>
-                        {tenant.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                <PremiumSelect
+                  fullWidth
+                  required
+                  label="Tenant"
+                  value={userForm.tenantId || ''}
+                  disabled={loadingTenants}
+                  onChange={(e) => {
+                    const selectedTenantId = e.target.value as string;
+                    setUserForm({ 
+                      ...userForm, 
+                      tenantId: selectedTenantId,
+                      hotelId: undefined
+                    });
+                  }}
+                >
+                  {tenants.map((tenant) => (
+                    <MenuItem key={tenant.tenantId} value={tenant.tenantId}>
+                      {tenant.name}
+                    </MenuItem>
+                  ))}
+                </PremiumSelect>
               </Grid>
             )}
 
             {/* Hotel Selection - Show for hotel-bound roles when tenant is selected */}
             {(userForm.roles.includes('HOTEL_ADMIN') || userForm.roles.includes('FRONTDESK') || userForm.roles.includes('HOUSEKEEPING')) && userForm.tenantId && (
               <Grid item xs={12} md={6}>
-                <FormControl fullWidth required>
-                  <InputLabel>Hotel</InputLabel>
-                  <Select
-                    value={userForm.hotelId || ''}
-                    onChange={(e) => setUserForm({ ...userForm, hotelId: e.target.value as number })}
-                    label="Hotel"
-                    disabled={loadingHotels}
-                  >
-                    {hotels.map((hotel) => (
-                      <MenuItem key={hotel.id} value={hotel.id}>
-                        {hotel.name} - {hotel.city}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                <PremiumSelect
+                  fullWidth
+                  required
+                  label="Hotel"
+                  value={userForm.hotelId || ''}
+                  disabled={loadingHotels}
+                  onChange={(e) => setUserForm({ ...userForm, hotelId: e.target.value as number })}
+                >
+                  {hotels.map((hotel) => (
+                    <MenuItem key={hotel.id} value={hotel.id}>
+                      {hotel.name} - {hotel.city}
+                    </MenuItem>
+                  ))}
+                </PremiumSelect>
               </Grid>
             )}
           </Grid>
@@ -758,7 +754,7 @@ const UserManagementAdmin: React.FC = () => {
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 1 }}>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="First Name"
                 value={editForm.firstName || ''}
@@ -767,7 +763,7 @@ const UserManagementAdmin: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Last Name"
                 value={editForm.lastName || ''}
@@ -776,7 +772,7 @@ const UserManagementAdmin: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Email"
                 type="email"
@@ -786,7 +782,7 @@ const UserManagementAdmin: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Phone"
                 value={editForm.phone || ''}
@@ -795,20 +791,19 @@ const UserManagementAdmin: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <FormControl fullWidth required>
-                <InputLabel>Role</InputLabel>
-                <Select
-                  value={editForm.roles.length > 0 ? editForm.roles[0] : ''}
-                  onChange={(e) => setEditForm({ ...editForm, roles: [e.target.value] })}
-                  label="Role"
-                >
-                  {roleOptions.map((role) => (
-                    <MenuItem key={role} value={role}>
-                      {role.replace('_', ' ')}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+              <PremiumSelect
+                fullWidth
+                required
+                label="Role"
+                value={editForm.roles.length > 0 ? editForm.roles[0] : ''}
+                onChange={(e) => setEditForm({ ...editForm, roles: [e.target.value as string] })}
+              >
+                {roleOptions.map((role) => (
+                  <MenuItem key={role} value={role}>
+                    {role.replace('_', ' ')}
+                  </MenuItem>
+                ))}
+              </PremiumSelect>
             </Grid>
           </Grid>
         </DialogContent>

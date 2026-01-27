@@ -36,6 +36,7 @@ import {
 } from '@mui/icons-material';
 import { COLORS } from '../../theme/themeColors';
 import { useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
+import PremiumTextField from '../../components/common/PremiumTextField';
 import { useAuth } from '../../contexts/AuthContext';
 import { hotelAdminApi, RoomResponse } from '../../services/hotelAdminApi';
 import { ROOM_TYPE_VALUES } from '../../constants/roomTypes';
@@ -620,23 +621,21 @@ const BookingViewEdit: React.FC = () => {
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Guest Name"
                       value={currentBooking?.guestName || ''}
                       onChange={(e) => handleFieldChange('guestName', e.target.value)}
                       disabled={!isEditing}
-                      variant={isEditing ? 'outlined' : 'filled'}
                     />
                   </Grid>
                   <Grid item xs={12}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Email"
                       value={currentBooking?.guestEmail || ''}
                       onChange={(e) => handleFieldChange('guestEmail', e.target.value)}
                       disabled={!isEditing}
-                      variant={isEditing ? 'outlined' : 'filled'}
                     />
                   </Grid>
                 </Grid>
@@ -655,12 +654,11 @@ const BookingViewEdit: React.FC = () => {
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Confirmation Number"
                       value={currentBooking?.confirmationNumber || ''}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
@@ -719,21 +717,19 @@ const BookingViewEdit: React.FC = () => {
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Hotel Name"
                       value={currentBooking?.hotelName || ''}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                   <Grid item xs={12}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Hotel Address"
                       value={currentBooking?.hotelAddress || ''}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
@@ -757,12 +753,11 @@ const BookingViewEdit: React.FC = () => {
                         </Select>
                       </FormControl>
                     ) : (
-                      <TextField
+                      <PremiumTextField
                         fullWidth
                         label="Room Type"
                         value={currentBooking?.roomType || ''}
                         disabled
-                        variant="filled"
                       />
                     )}
                   </Grid>
@@ -788,12 +783,11 @@ const BookingViewEdit: React.FC = () => {
                         </Button>
                       </Box>
                     ) : (
-                      <TextField
+                      <PremiumTextField
                         fullWidth
                         label="Room Number"
                         value={currentBooking?.roomNumber || 'TBA (To Be Assigned)'}
                         disabled
-                        variant="filled"
                       />
                     )}
                   </Grid>
@@ -828,48 +822,44 @@ const BookingViewEdit: React.FC = () => {
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Check-in Date"
                       value={currentBooking?.checkInDate || ''}
                       type="date"
                       onChange={(e) => handleFieldChange('checkInDate', e.target.value)}
                       disabled={!isEditing}
-                      variant={isEditing ? 'outlined' : 'filled'}
                       InputLabelProps={{ shrink: true }}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Check-out Date"
                       value={currentBooking?.checkOutDate || ''}
                       type="date"
                       onChange={(e) => handleFieldChange('checkOutDate', e.target.value)}
                       disabled={!isEditing}
-                      variant={isEditing ? 'outlined' : 'filled'}
                       InputLabelProps={{ shrink: true }}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Price per Night"
                       value={loadingRoomTypePricing ? 'Calculating...' : formatCurrency(currentBooking?.pricePerNight || 0)}
                       disabled
-                      variant="filled"
                       InputProps={{
                         endAdornment: loadingRoomTypePricing ? <CircularProgress size={20} /> : undefined
                       }}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Total Amount"
                       value={loadingRoomTypePricing ? 'Calculating...' : formatCurrency(currentBooking?.totalAmount || 0)}
                       disabled
-                      variant="filled"
                       InputProps={{
                         endAdornment: loadingRoomTypePricing ? <CircularProgress size={20} /> : undefined
                       }}
@@ -891,21 +881,19 @@ const BookingViewEdit: React.FC = () => {
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Booking Date"
                       value={currentBooking ? formatDate(currentBooking.createdAt) : ''}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Payment Intent ID"
                       value={currentBooking?.paymentIntentId || 'N/A'}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                 </Grid>

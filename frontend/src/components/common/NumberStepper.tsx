@@ -2,9 +2,9 @@ import React from 'react';
 import {
   Box,
   IconButton,
-  TextField,
   useTheme
 } from '@mui/material';
+import PremiumTextField from './PremiumTextField';
 import {
   Add as AddIcon,
   Remove as RemoveIcon
@@ -53,7 +53,7 @@ const NumberStepper: React.FC<NumberStepperProps> = ({
   };
 
   return (
-    <TextField
+    <PremiumTextField
       label={label}
       value={value}
       onChange={handleInputChange}

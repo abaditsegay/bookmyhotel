@@ -377,10 +377,54 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
                   </InputAdornment>
                 ),
               }}
-              sx={{ minWidth: 250 }}
+              sx={{ 
+                minWidth: 250,
+                '& .MuiOutlinedInput-root': {
+                  backgroundColor: '#fafafa',
+                  borderLeft: '2px solid #E8B86D',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    backgroundColor: 'rgba(232, 184, 109, 0.04)',
+                    '& fieldset': {
+                      borderColor: '#E8B86D',
+                    },
+                  },
+                  '&.Mui-focused': {
+                    backgroundColor: '#fffef8',
+                    '& fieldset': {
+                      borderColor: '#E8B86D',
+                      borderWidth: '2px',
+                    },
+                  },
+                },
+              }}
             />
 
-            <FormControl sx={{ minWidth: 200 }}>
+            <FormControl sx={{ 
+              minWidth: 200,
+              '& .MuiOutlinedInput-root': {
+                backgroundColor: '#fafafa',
+                borderLeft: '2px solid #E8B86D',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  backgroundColor: 'rgba(232, 184, 109, 0.04)',
+                  '& fieldset': {
+                    borderColor: '#E8B86D',
+                  },
+                },
+                '&.Mui-focused': {
+                  backgroundColor: '#fffef8',
+                  '& fieldset': {
+                    borderColor: '#E8B86D',
+                    borderWidth: '2px',
+                  },
+                },
+              },
+              '& .MuiInputLabel-root.Mui-focused': {
+                color: '#B8860B',
+                fontWeight: 600,
+              },
+            }}>
               <InputLabel>{t(`${translationPrefix}.statusFilter`)}</InputLabel>
               <Select
                 value={statusFilter}
@@ -396,7 +440,31 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
               </Select>
             </FormControl>
 
-            <FormControl sx={{ minWidth: 200 }}>
+            <FormControl sx={{ 
+              minWidth: 200,
+              '& .MuiOutlinedInput-root': {
+                backgroundColor: '#fafafa',
+                borderLeft: '2px solid #E8B86D',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  backgroundColor: 'rgba(232, 184, 109, 0.04)',
+                  '& fieldset': {
+                    borderColor: '#E8B86D',
+                  },
+                },
+                '&.Mui-focused': {
+                  backgroundColor: '#fffef8',
+                  '& fieldset': {
+                    borderColor: '#E8B86D',
+                    borderWidth: '2px',
+                  },
+                },
+              },
+              '& .MuiInputLabel-root.Mui-focused': {
+                color: '#B8860B',
+                fontWeight: 600,
+              },
+            }}>
               <InputLabel>{t(`${translationPrefix}.roomTypeFilter`)}</InputLabel>
               <Select
                 value={roomTypeFilter}
@@ -437,27 +505,16 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
               <TableHead>
                 <TableRow
                   sx={{
-                    background: 'linear-gradient(135deg, #64748b 0%, #475569 50%, #334155 100%)',
-                    boxShadow: '0 4px 12px rgba(100, 116, 139, 0.15)',
+                    background: 'linear-gradient(135deg, #f5f5f5 0%, #fafafa 50%, #f5f5f5 100%)',
+                    borderBottom: '2px solid #E8B86D',
                     '& .MuiTableCell-head': {
-                      color: '#ffffff',
-                      fontWeight: 600,
+                      color: '#B8860B',
+                      fontWeight: 700,
                       fontSize: '0.95rem',
                       letterSpacing: '0.5px',
                       textTransform: 'uppercase',
                       border: 'none',
                       padding: '20px 16px',
-                      position: 'relative',
-                      textShadow: '0 1px 2px rgba(0,0,0,0.1)',
-                      '&::after': {
-                        content: '""',
-                        position: 'absolute',
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        height: '3px',
-                        background: 'linear-gradient(90deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.6) 100%)'
-                      }
                     }
                   }}
                 >

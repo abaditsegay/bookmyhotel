@@ -30,8 +30,12 @@ import {
   useMediaQuery,
   useTheme,
   Fab,
-  List
+  List,
+  Divider
 } from '@mui/material';
+import PremiumTextField from '../common/PremiumTextField';
+import PremiumSelect from '../common/PremiumSelect';
+import PremiumDatePicker from '../common/PremiumDatePicker';
 import {
   CheckCircle as CheckCircleIcon,
   PlayArrow as PlayArrowIcon,
@@ -40,7 +44,9 @@ import {
   Visibility as VisibilityIcon,
   FilterList as FilterListIcon,
   Clear as ClearIcon,
-  Refresh as RefreshIcon
+  Refresh as RefreshIcon,
+  PersonAdd as PersonAddIcon,
+  AddTask as AddTaskIcon
 } from '@mui/icons-material';
 import { housekeepingSupervisorApi } from '../../services/housekeepingSupervisorApi';
 import { HousekeepingTask, HousekeepingStaff, HousekeepingTaskType, TaskPriority, CreateHousekeepingTaskRequest, HousekeepingTaskStatus } from '../../types/operations';
@@ -483,54 +489,85 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
       </Grid>
 
       {/* Tasks Table */}
-      <Card>
-        <CardContent sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
+      <Card sx={{
+        border: '1px solid',
+        borderColor: 'divider',
+        borderRadius: 3,
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)'
+      }}>
+        <CardContent sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
           <Box sx={{ 
             display: 'flex', 
             flexDirection: { xs: 'column', sm: 'row' },
             justifyContent: 'space-between', 
-            mb: 2,
-            gap: { xs: 1, sm: 0 }
+            mb: 3,
+            gap: { xs: 2, sm: 0 },
+            pb: 2,
+            borderBottom: '2px solid #E8B86D'
           }}>
             <Typography 
-              variant={isMobile ? "subtitle1" : "h6"}
-              sx={{ mb: { xs: 1, sm: 0 } }}
+              variant={isMobile ? "h6" : "h5"}
+              sx={{ mb: { xs: 1, sm: 0 }, fontWeight: 700, color: '#333' }}
             >
               {isHousekeepingStaff() ? 'My Tasks' : 'All Tasks'} ({filteredTasks.length} of {tasks.length} tasks)
             </Typography>
             <Box sx={{ 
               display: 'flex', 
-              gap: 1,
+              gap: 1.5,
               flexDirection: { xs: 'row', sm: 'row' },
               flexWrap: { xs: 'wrap', sm: 'nowrap' },
-              justifyContent: { xs: 'center', sm: 'flex-end' }
+              justifyContent: { xs: 'flex-start', sm: 'flex-end' }
             }}>
               {isManagementRole() && (
                 <>
                   <Button 
-                    variant="contained" 
-                    color="primary"
+                    variant="contained"
                     onClick={() => setAddTaskDialog(true)}
                     disabled={loading}
                     size={isMobile ? "small" : "medium"}
+                    sx={{
+                      backgroundColor: '#E8B86D',
+                      color: 'white',
+                      fontWeight: 600,
+                      '&:hover': {
+                        backgroundColor: '#B8860B'
+                      }
+                    }}
                   >
                     Add Task
                   </Button>
                   <Button 
-                    variant="outlined" 
-                    color="secondary"
+                    variant="outlined"
                     onClick={() => setAddStaffDialog(true)}
                     disabled={loading}
                     size={isMobile ? "small" : "medium"}
+                    sx={{
+                      borderColor: '#E8B86D',
+                      color: '#B8860B',
+                      fontWeight: 600,
+                      '&:hover': {
+                        borderColor: '#B8860B',
+                        backgroundColor: 'rgba(232, 184, 109, 0.08)'
+                      }
+                    }}
                   >
                     Manage Staff
                   </Button>
                 </>
               )}
               <Button 
-                variant="outlined" 
+                variant="outlined"
                 onClick={loadTasks}
                 size={isMobile ? "small" : "medium"}
+                startIcon={<RefreshIcon />}
+                sx={{
+                  borderColor: '#e0e0e0',
+                  color: '#666',
+                  '&:hover': {
+                    borderColor: '#E8B86D',
+                    backgroundColor: 'rgba(232, 184, 109, 0.08)'
+                  }
+                }}
               >
                 Refresh
               </Button>
@@ -541,13 +578,15 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
           {isManagementRole() && (
             <Box sx={{ 
               display: 'flex', 
-              gap: { xs: 1, md: 2 }, 
-              mb: 2, 
+              gap: { xs: 1.5, md: 2 }, 
+              mb: 3, 
               flexWrap: 'wrap', 
               alignItems: 'center',
-              '& .MuiFormControl-root': {
-                minWidth: { xs: 140, md: 150 }
-              }
+              p: 2.5,
+              backgroundColor: '#fafafa',
+              borderRadius: 2,
+              border: '1px solid',
+              borderColor: 'divider'
             }}>
               <Typography 
                 variant="body2" 
@@ -555,49 +594,47 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                   display: 'flex', 
                   alignItems: 'center', 
                   gap: 1,
-                  fontSize: { xs: '0.8rem', md: '0.875rem' }
+                  fontSize: { xs: '0.8rem', md: '0.875rem' },
+                  fontWeight: 600,
+                  color: 'text.secondary'
                 }}
               >
                 <FilterListIcon fontSize="small" />
                 Filters:
               </Typography>
               
-              <FormControl size="small">
-                <InputLabel>Assigned To</InputLabel>
-                <Select
-                  value={filterAssignedTo}
-                  label="Assigned To"
-                  onChange={(e) => setFilterAssignedTo(e.target.value)}
-                >
-                  <MenuItem value="all">All Tasks</MenuItem>
-                  <MenuItem value="unassigned">Unassigned</MenuItem>
-                  {availableStaff.map((staff) => (
-                    <MenuItem key={staff.id} value={staff.id.toString()}>
-                      {staff.user ? 
-                        `${staff.user.firstName} ${staff.user.lastName}` :
-                        `Staff ID: ${staff.employeeId}`
-                      }
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+              <PremiumSelect
+                value={filterAssignedTo}
+                label="Assigned To"
+                onChange={(e) => setFilterAssignedTo(e.target.value)}
+                sx={{ minWidth: { xs: 140, md: 180 } }}
+              >
+                <MenuItem value="all">All Tasks</MenuItem>
+                <MenuItem value="unassigned">Unassigned</MenuItem>
+                {availableStaff.map((staff) => (
+                  <MenuItem key={staff.id} value={staff.id.toString()}>
+                    {staff.user ? 
+                      `${staff.user.firstName} ${staff.user.lastName}` :
+                      `Staff ID: ${staff.employeeId}`
+                    }
+                  </MenuItem>
+                ))}
+              </PremiumSelect>
 
-              <FormControl size="small">
-                <InputLabel>Status</InputLabel>
-                <Select
-                  value={filterStatus}
-                  label="Status"
-                  onChange={(e) => setFilterStatus(e.target.value)}
-                >
-                  <MenuItem value="all">All Status</MenuItem>
-                  <MenuItem value={HousekeepingTaskStatus.PENDING}>Pending</MenuItem>
-                  <MenuItem value={HousekeepingTaskStatus.ASSIGNED}>Assigned</MenuItem>
-                  <MenuItem value={HousekeepingTaskStatus.IN_PROGRESS}>In Progress</MenuItem>
-                  <MenuItem value={HousekeepingTaskStatus.COMPLETED}>Completed</MenuItem>
-                  <MenuItem value={HousekeepingTaskStatus.ON_HOLD}>On Hold</MenuItem>
-                  <MenuItem value={HousekeepingTaskStatus.CANCELLED}>Cancelled</MenuItem>
-                </Select>
-              </FormControl>
+              <PremiumSelect
+                value={filterStatus}
+                label="Status"
+                onChange={(e) => setFilterStatus(e.target.value)}
+                sx={{ minWidth: { xs: 140, md: 180 } }}
+              >
+                <MenuItem value="all">All Status</MenuItem>
+                <MenuItem value={HousekeepingTaskStatus.PENDING}>Pending</MenuItem>
+                <MenuItem value={HousekeepingTaskStatus.ASSIGNED}>Assigned</MenuItem>
+                <MenuItem value={HousekeepingTaskStatus.IN_PROGRESS}>In Progress</MenuItem>
+                <MenuItem value={HousekeepingTaskStatus.COMPLETED}>Completed</MenuItem>
+                <MenuItem value={HousekeepingTaskStatus.ON_HOLD}>On Hold</MenuItem>
+                <MenuItem value={HousekeepingTaskStatus.CANCELLED}>Cancelled</MenuItem>
+              </PremiumSelect>
 
               <Button
                 variant="outlined"
@@ -606,6 +643,17 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                 onClick={() => {
                   setFilterAssignedTo('all');
                   setFilterStatus('all');
+                }}
+                sx={{
+                  borderColor: '#e0e0e0',
+                  color: '#666',
+                  fontWeight: 600,
+                  px: 2,
+                  '&:hover': {
+                    borderColor: '#E8B86D',
+                    backgroundColor: 'rgba(232, 184, 109, 0.08)',
+                    color: '#B8860B'
+                  }
                 }}
               >
                 Clear Filters
@@ -735,27 +783,17 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                     <TableHead>
                       <TableRow
                         sx={{
-                          background: 'linear-gradient(135deg, #64748b 0%, #475569 50%, #334155 100%)',
-                          boxShadow: '0 4px 12px rgba(100, 116, 139, 0.15)',
+                          background: 'linear-gradient(135deg, #f5f5f5 0%, #fafafa 50%, #f5f5f5 100%)',
+                          borderBottom: '2px solid #E8B86D',
                           '& .MuiTableCell-head': {
-                            color: '#ffffff',
-                            fontWeight: 600,
+                            color: '#B8860B',
+                            fontWeight: 700,
                             fontSize: '0.95rem',
                             letterSpacing: '0.5px',
                             textTransform: 'uppercase',
                             border: 'none',
                             padding: '20px 16px',
-                            position: 'relative',
-                            textShadow: '0 1px 2px rgba(0,0,0,0.1)',
-                            '&::after': {
-                              content: '""',
-                              position: 'absolute',
-                              bottom: 0,
-                              left: 0,
-                              right: 0,
-                              height: '3px',
-                              background: 'linear-gradient(90deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.6) 100%)'
-                            }
+                            position: 'relative'
                           }
                         }}
                       >
@@ -912,124 +950,205 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
           setStatusDialog(false);
           setIsViewOnlyMode(false);
         }} 
-        maxWidth="sm" 
+        maxWidth="md" 
         fullWidth
         fullScreen={isMobile}
-      >
-        <DialogTitle>
-          {isViewOnlyMode 
-            ? 'Task Details'
-            : isHousekeepingStaff() 
-              ? 'Update Task Status' 
-              : 'Task Details & Status'
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)'
           }
+        }}
+      >
+        <DialogTitle sx={{ 
+          borderBottom: '2px solid #E8B86D',
+          pb: 2,
+          background: 'linear-gradient(135deg, #fafafa 0%, #ffffff 100%)'
+        }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <AssignmentIcon sx={{ fontSize: 28, color: '#B8860B' }} />
+            <Typography variant="h5" sx={{ fontWeight: 700, color: '#333' }}>
+              {isViewOnlyMode 
+                ? 'Task Details'
+                : isHousekeepingStaff() 
+                  ? 'Update Task Status' 
+                  : 'Task Details & Status'
+              }
+            </Typography>
+          </Box>
         </DialogTitle>
-        <DialogContent>
+        <DialogContent sx={{ pt: 3, pb: 2 }}>
           {selectedTask && (
             <Box>
-              <Typography variant="h6" gutterBottom>
-                {selectedTask.title}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                Room: {selectedTask.roomNumber || 'N/A'} | Type: {selectedTask.taskType}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                Current Status: {selectedTask.status}
-              </Typography>
-              {selectedTask.description && (
-                <Typography variant="body2" gutterBottom>
-                  Description: {selectedTask.description}
+              {/* Task Title */}
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="h6" sx={{ fontWeight: 700, color: '#333', mb: 2 }}>
+                  {selectedTask.title}
                 </Typography>
-              )}
-              
-              {/* Assignment Info */}
-              {selectedTask.assignedUser && (
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Assigned To: {selectedTask.assignedUser.firstName && selectedTask.assignedUser.lastName ? 
-                    `${selectedTask.assignedUser.firstName} ${selectedTask.assignedUser.lastName}` :
-                    `User ID: ${selectedTask.assignedUser.id}`
-                  }
+                <Divider sx={{ mb: 2 }} />
+                
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                      <Typography variant="caption" sx={{ color: 'text.secondary', textTransform: 'uppercase', fontWeight: 600 }}>
+                        Room Number
+                      </Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                        {selectedTask.roomNumber || 'N/A'}
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  
+                  <Grid item xs={12} sm={6}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                      <Typography variant="caption" sx={{ color: 'text.secondary', textTransform: 'uppercase', fontWeight: 600 }}>
+                        Task Type
+                      </Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                        {selectedTask.taskType.replace(/_/g, ' ')}
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  
+                  <Grid item xs={12}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                      <Typography variant="caption" sx={{ color: 'text.secondary', textTransform: 'uppercase', fontWeight: 600 }}>
+                        Current Status
+                      </Typography>
+                      <Chip 
+                        label={selectedTask.status}
+                        size="small"
+                        sx={{ 
+                          fontWeight: 600,
+                          width: 'fit-content',
+                          backgroundColor: selectedTask.status.toLowerCase() === 'completed' ? '#4caf50' :
+                                         selectedTask.status.toLowerCase() === 'in_progress' ? '#2196f3' :
+                                         selectedTask.status.toLowerCase() === 'pending' ? '#ff9800' : '#666',
+                          color: 'white'
+                        }}
+                      />
+                    </Box>
+                  </Grid>
+                </Grid>
+              </Box>
+              {/* Additional Information */}
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', mb: 2 }}>
+                  Additional Information
                 </Typography>
-              )}
-              
-              {/* Dates */}
-              {selectedTask.dueDate && (
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Due Date: {new Date(selectedTask.dueDate).toLocaleString()}
-                </Typography>
-              )}
+                <Divider sx={{ mb: 2 }} />
+                
+                <Grid container spacing={2.5}>
+                  {selectedTask.description && (
+                    <Grid item xs={12}>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                        <Typography variant="caption" sx={{ color: 'text.secondary', textTransform: 'uppercase', fontWeight: 600 }}>
+                          Description
+                        </Typography>
+                        <Typography variant="body2" sx={{ lineHeight: 1.6 }}>
+                          {selectedTask.description}
+                        </Typography>
+                      </Box>
+                    </Grid>
+                  )}
+                  
+                  {selectedTask.assignedUser && (
+                    <Grid item xs={12} sm={6}>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                        <Typography variant="caption" sx={{ color: 'text.secondary', textTransform: 'uppercase', fontWeight: 600 }}>
+                          Assigned To
+                        </Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                          {selectedTask.assignedUser.firstName && selectedTask.assignedUser.lastName ? 
+                            `${selectedTask.assignedUser.firstName} ${selectedTask.assignedUser.lastName}` :
+                            `User ID: ${selectedTask.assignedUser.id}`
+                          }
+                        </Typography>
+                      </Box>
+                    </Grid>
+                  )}
+                  
+                  {selectedTask.dueDate && (
+                    <Grid item xs={12} sm={6}>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                        <Typography variant="caption" sx={{ color: 'text.secondary', textTransform: 'uppercase', fontWeight: 600 }}>
+                          Due Date
+                        </Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                          {new Date(selectedTask.dueDate).toLocaleString()}
+                        </Typography>
+                      </Box>
+                    </Grid>
+                  )}
+                </Grid>
+              </Box>
               
               {/* Status update section for eligible users and tasks */}
               {!isViewOnlyMode && (isHousekeepingStaff() || isManagementRole()) && 
                !['completed', 'cancelled'].includes(selectedTask.status.toLowerCase()) && (
-                <Box sx={{ mt: 2 }}>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
-                    {isHousekeepingStaff() ? 'Update your task progress:' : 'Update task status:'}
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', mb: 2 }}>
+                    {isHousekeepingStaff() ? 'Update Your Task Progress' : 'Update Task Status'}
                   </Typography>
+                  <Divider sx={{ mb: 2 }} />
                   
                   {/* Status Selection for Management */}
                   {isManagementRole() && (
-                    <FormControl fullWidth sx={{ mt: 1, mb: 2 }}>
-                      <InputLabel>Change Status To</InputLabel>
-                      <Select
-                        value=""
-                        label="Change Status To"
-                        onChange={(e) => {
-                          if (e.target.value) {
-                            handleUpdateStatus(e.target.value);
-                          }
-                        }}
-                      >
-                        {selectedTask.status.toLowerCase() !== 'pending' && (
-                          <MenuItem value="PENDING">Mark as Pending</MenuItem>
-                        )}
-                        {selectedTask.status.toLowerCase() !== 'assigned' && selectedTask.assignedUser && (
-                          <MenuItem value="ASSIGNED">Mark as Assigned</MenuItem>
-                        )}
-                        {selectedTask.status.toLowerCase() !== 'in_progress' && (
-                          <MenuItem value="IN_PROGRESS">Mark as In Progress</MenuItem>
-                        )}
-                        {selectedTask.status.toLowerCase() !== 'completed' && (
-                          <MenuItem value="COMPLETED">Mark as Completed</MenuItem>
-                        )}
-                        {selectedTask.status.toLowerCase() !== 'cancelled' && (
-                          <MenuItem value="CANCELLED">Cancel Task</MenuItem>
-                        )}
-                      </Select>
-                    </FormControl>
+                    <PremiumSelect
+                      fullWidth
+                      value=""
+                      label="Change Status To"
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          handleUpdateStatus(e.target.value);
+                        }
+                      }}
+                    >
+                      {selectedTask.status.toLowerCase() !== 'pending' && (
+                        <MenuItem value="PENDING">Mark as Pending</MenuItem>
+                      )}
+                      {selectedTask.status.toLowerCase() !== 'assigned' && selectedTask.assignedUser && (
+                        <MenuItem value="ASSIGNED">Mark as Assigned</MenuItem>
+                      )}
+                      {selectedTask.status.toLowerCase() !== 'in_progress' && (
+                        <MenuItem value="IN_PROGRESS">Mark as In Progress</MenuItem>
+                      )}
+                      {selectedTask.status.toLowerCase() !== 'completed' && (
+                        <MenuItem value="COMPLETED">Mark as Completed</MenuItem>
+                      )}
+                      {selectedTask.status.toLowerCase() !== 'cancelled' && (
+                        <MenuItem value="CANCELLED">Cancel Task</MenuItem>
+                      )}
+                    </PremiumSelect>
                   )}
                 </Box>
               )}
               
               {!isViewOnlyMode && (
-                <TextField
-                  fullWidth
-                  multiline
-                  rows={3}
-                  label="Notes (optional)"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  sx={{ mt: 2 }}
-                  placeholder={isHousekeepingStaff() 
-                    ? "Add any notes about your progress or issues encountered..."
-                    : "Add notes about this task..."
-                  }
-                />
+                <Box sx={{ mb: 2 }}>
+                  <PremiumTextField
+                    fullWidth
+                    multiline
+                    rows={4}
+                    label="Notes (optional)"
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder={isHousekeepingStaff() 
+                      ? "Add any notes about your progress or issues encountered..."
+                      : "Add notes about this task..."
+                    }
+                  />
+                </Box>
               )}
               
               {/* Show existing notes in view-only mode */}
               {isViewOnlyMode && selectedTask.notes && (
-                <Box sx={{ mt: 2 }}>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
-                    Notes:
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', mb: 2 }}>
+                    Notes
                   </Typography>
-                  <Typography variant="body2" sx={{ 
-                    p: 1, 
-                    backgroundColor: 'grey.50', 
-                    borderRadius: 1,
-                    border: '1px solid',
-                    borderColor: 'grey.300'
-                  }}>
+                  <Divider sx={{ mb: 2 }} />
+                  <Typography variant="body2" sx={{ lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
                     {selectedTask.notes}
                   </Typography>
                 </Box>
@@ -1037,11 +1156,22 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
             </Box>
           )}
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => {
-            setStatusDialog(false);
-            setIsViewOnlyMode(false);
-          }}>
+        <DialogActions sx={{ px: 3, py: 2.5, borderTop: '1px solid', borderColor: 'divider', gap: 1.5 }}>
+          <Button 
+            onClick={() => {
+              setStatusDialog(false);
+              setIsViewOnlyMode(false);
+            }}
+            variant="outlined"
+            sx={{
+              borderColor: '#e0e0e0',
+              color: '#666',
+              '&:hover': {
+                borderColor: '#E8B86D',
+                backgroundColor: 'rgba(232, 184, 109, 0.08)'
+              }
+            }}
+          >
             {isViewOnlyMode ? 'Close' : isHousekeepingStaff() ? 'Cancel' : 'Close'}
           </Button>
           
@@ -1052,7 +1182,16 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                 <Button 
                   onClick={() => handleUpdateStatus('IN_PROGRESS')} 
                   variant="contained"
-                  color="primary"
+                  startIcon={<PlayArrowIcon />}
+                  sx={{
+                    backgroundColor: '#2196f3',
+                    color: 'white',
+                    fontWeight: 600,
+                    px: 3,
+                    '&:hover': {
+                      backgroundColor: '#1976d2'
+                    }
+                  }}
                 >
                   Start Task
                 </Button>
@@ -1060,8 +1199,17 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
               {(selectedTask.status.toLowerCase() === 'in_progress') && (
                 <Button 
                   onClick={() => handleUpdateStatus('COMPLETED')} 
-                  variant="contained" 
-                  color="success"
+                  variant="contained"
+                  startIcon={<CheckCircleIcon />}
+                  sx={{
+                    backgroundColor: '#4caf50',
+                    color: 'white',
+                    fontWeight: 600,
+                    px: 3,
+                    '&:hover': {
+                      backgroundColor: '#388e3c'
+                    }
+                  }}
                 >
                   Complete Task
                 </Button>
@@ -1107,118 +1255,218 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
         maxWidth="md" 
         fullWidth
         fullScreen={isMobile}
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)'
+          }
+        }}
       >
-        <DialogTitle>Create New Housekeeping Task</DialogTitle>
-        <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-            <TextField
-              label="Task Title"
-              value={newTask.title}
-              onChange={(e) => handleTaskFieldChange('title', e.target.value)}
-              fullWidth
-              required
-            />
-            
-            <TextField
-              label="Description"
-              value={newTask.description}
-              onChange={(e) => handleTaskFieldChange('description', e.target.value)}
-              fullWidth
-              multiline
-              rows={3}
-              required
-            />
-            
-            <Box sx={{ display: 'flex', gap: 2 }}>
-              <FormControl fullWidth>
-                <InputLabel>Task Type</InputLabel>
-                <Select
-                  value={newTask.taskType}
-                  label="Task Type"
-                  onChange={(e) => handleTaskFieldChange('taskType', e.target.value)}
-                >
-                  <MenuItem value={HousekeepingTaskType.ROOM_CLEANING}>Room Cleaning</MenuItem>
-                  <MenuItem value={HousekeepingTaskType.DEEP_CLEANING}>Deep Cleaning</MenuItem>
-                  <MenuItem value={HousekeepingTaskType.LAUNDRY}>Laundry</MenuItem>
-                  <MenuItem value={HousekeepingTaskType.PUBLIC_AREA_CLEANING}>Public Area Cleaning</MenuItem>
-                  <MenuItem value={HousekeepingTaskType.INVENTORY_CHECK}>Inventory Check</MenuItem>
-                  <MenuItem value={HousekeepingTaskType.MAINTENANCE_REQUEST}>Maintenance Request</MenuItem>
-                </Select>
-              </FormControl>
-              
-              <FormControl fullWidth>
-                <InputLabel>Priority</InputLabel>
-                <Select
-                  value={newTask.priority}
-                  label="Priority"
-                  onChange={(e) => handleTaskFieldChange('priority', e.target.value)}
-                >
-                  <MenuItem value={TaskPriority.LOW}>Low</MenuItem>
-                  <MenuItem value={TaskPriority.NORMAL}>Normal</MenuItem>
-                  <MenuItem value={TaskPriority.HIGH}>High</MenuItem>
-                  <MenuItem value={TaskPriority.URGENT}>Urgent</MenuItem>
-                  <MenuItem value={TaskPriority.CRITICAL}>Critical</MenuItem>
-                </Select>
-              </FormControl>
+        <DialogTitle sx={{ 
+          borderBottom: '2px solid #E8B86D',
+          pb: 2,
+          background: 'linear-gradient(135deg, #fafafa 0%, #ffffff 100%)'
+        }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <AddTaskIcon sx={{ fontSize: 28, color: '#B8860B' }} />
+            <Typography variant="h5" sx={{ fontWeight: 700, color: '#333' }}>
+              Create New Housekeeping Task
+            </Typography>
+          </Box>
+        </DialogTitle>
+        <DialogContent sx={{ pt: 3, pb: 2 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            {/* Basic Information */}
+            <Box>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', mb: 2 }}>
+                Basic Information
+              </Typography>
+              <Divider sx={{ mb: 2.5 }} />
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+                <PremiumTextField
+                  label="Task Title"
+                  value={newTask.title}
+                  onChange={(e) => handleTaskFieldChange('title', e.target.value)}
+                  fullWidth
+                  required
+                  placeholder="Enter a clear, descriptive title for the task"
+                />
+                
+                <PremiumTextField
+                  label="Description"
+                  value={newTask.description}
+                  onChange={(e) => handleTaskFieldChange('description', e.target.value)}
+                  fullWidth
+                  multiline
+                  rows={3}
+                  required
+                  placeholder="Provide detailed description of what needs to be done"
+                />
+              </Box>
             </Box>
             
-            <Box sx={{ display: 'flex', gap: 2 }}>
-              <TextField
-                label="Room Number"
-                value={newTask.roomNumber}
-                onChange={(e) => handleTaskFieldChange('roomNumber', e.target.value)}
-                fullWidth
-                required
-              />
-              
-              <TextField
-                label="Floor Number"
-                type="number"
-                value={newTask.floorNumber || ''}
-                onChange={(e) => handleTaskFieldChange('floorNumber', e.target.value ? parseInt(e.target.value) : undefined)}
-                fullWidth
-              />
+            {/* Task Classification */}
+            <Box>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', mb: 2 }}>
+                Task Classification
+              </Typography>
+              <Divider sx={{ mb: 2.5 }} />
+              <Grid container spacing={2.5}>
+                <Grid item xs={12} sm={6}>
+                  <PremiumSelect
+                    fullWidth
+                    value={newTask.taskType}
+                    label="Task Type"
+                    onChange={(e) => handleTaskFieldChange('taskType', e.target.value)}
+                  >
+                    <MenuItem value={HousekeepingTaskType.ROOM_CLEANING}>Room Cleaning</MenuItem>
+                    <MenuItem value={HousekeepingTaskType.DEEP_CLEANING}>Deep Cleaning</MenuItem>
+                    <MenuItem value={HousekeepingTaskType.LAUNDRY}>Laundry</MenuItem>
+                    <MenuItem value={HousekeepingTaskType.PUBLIC_AREA_CLEANING}>Public Area Cleaning</MenuItem>
+                    <MenuItem value={HousekeepingTaskType.INVENTORY_CHECK}>Inventory Check</MenuItem>
+                    <MenuItem value={HousekeepingTaskType.MAINTENANCE_REQUEST}>Maintenance Request</MenuItem>
+                  </PremiumSelect>
+                </Grid>
+                
+                <Grid item xs={12} sm={6}>
+                  <PremiumSelect
+                    fullWidth
+                    value={newTask.priority}
+                    label="Priority"
+                    onChange={(e) => handleTaskFieldChange('priority', e.target.value)}
+                  >
+                    <MenuItem value={TaskPriority.LOW}>Low</MenuItem>
+                    <MenuItem value={TaskPriority.NORMAL}>Normal</MenuItem>
+                    <MenuItem value={TaskPriority.HIGH}>High</MenuItem>
+                    <MenuItem value={TaskPriority.URGENT}>Urgent</MenuItem>
+                    <MenuItem value={TaskPriority.CRITICAL}>Critical</MenuItem>
+                  </PremiumSelect>
+                </Grid>
+              </Grid>
             </Box>
             
-            <Box sx={{ display: 'flex', gap: 2 }}>
-              <TextField
-                label="Estimated Duration (minutes)"
-                type="number"
-                value={newTask.estimatedDuration}
-                onChange={(e) => handleTaskFieldChange('estimatedDuration', parseInt(e.target.value) || 60)}
-                fullWidth
-                inputProps={{ min: 15, step: 15 }}
-              />
-              
-              <TextField
-                label="Due Date"
-                type="datetime-local"
-                value={newTask.dueDate}
-                onChange={(e) => handleTaskFieldChange('dueDate', e.target.value)}
-                fullWidth
-                required
-                InputLabelProps={{ shrink: true }}
-              />
+            {/* Location Details */}
+            <Box>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', mb: 2 }}>
+                Location Details
+              </Typography>
+              <Divider sx={{ mb: 2.5 }} />
+              <Grid container spacing={2.5}>
+                <Grid item xs={12} sm={6}>
+                  <PremiumTextField
+                    label="Room Number"
+                    value={newTask.roomNumber}
+                    onChange={(e) => handleTaskFieldChange('roomNumber', e.target.value)}
+                    fullWidth
+                    required
+                    placeholder="e.g., 101, 205"
+                  />
+                </Grid>
+                
+                <Grid item xs={12} sm={6}>
+                  <PremiumTextField
+                    label="Floor Number"
+                    type="number"
+                    value={newTask.floorNumber || ''}
+                    onChange={(e) => handleTaskFieldChange('floorNumber', e.target.value ? parseInt(e.target.value) : undefined)}
+                    fullWidth
+                    placeholder="Optional"
+                  />
+                </Grid>
+              </Grid>
             </Box>
             
-            <TextField
-              label="Additional Notes"
-              value={newTask.notes}
-              onChange={(e) => handleTaskFieldChange('notes', e.target.value)}
-              fullWidth
-              multiline
-              rows={2}
-            />
+            {/* Scheduling */}
+            <Box>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', mb: 2 }}>
+                Scheduling
+              </Typography>
+              <Divider sx={{ mb: 2.5 }} />
+              <Grid container spacing={2.5}>
+                <Grid item xs={12} sm={6}>
+                  <PremiumTextField
+                    label="Estimated Duration (minutes)"
+                    type="number"
+                    value={newTask.estimatedDuration}
+                    onChange={(e) => handleTaskFieldChange('estimatedDuration', parseInt(e.target.value) || 60)}
+                    fullWidth
+                    inputProps={{ min: 15, step: 15 }}
+                    placeholder="e.g., 60"
+                  />
+                </Grid>
+                
+                <Grid item xs={12} sm={6}>
+                  <PremiumDatePicker
+                    label="Due Date & Time"
+                    value={newTask.dueDate ? new Date(newTask.dueDate) : null}
+                    onChange={(date) => {
+                      if (date) {
+                        const isoString = date.toISOString().slice(0, 16);
+                        handleTaskFieldChange('dueDate', isoString);
+                      }
+                    }}
+                    slotProps={{
+                      textField: {
+                        fullWidth: true,
+                        required: true
+                      }
+                    }}
+                  />
+                </Grid>
+              </Grid>
+            </Box>
+            
+            {/* Additional Information */}
+            <Box>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', mb: 2 }}>
+                Additional Information
+              </Typography>
+              <Divider sx={{ mb: 2.5 }} />
+              <PremiumTextField
+                label="Additional Notes"
+                value={newTask.notes}
+                onChange={(e) => handleTaskFieldChange('notes', e.target.value)}
+                fullWidth
+                multiline
+                rows={3}
+                placeholder="Add any special instructions or requirements"
+              />
+            </Box>
           </Box>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setAddTaskDialog(false)}>
+        <DialogActions sx={{ px: 3, py: 2.5, borderTop: '1px solid', borderColor: 'divider', gap: 1.5 }}>
+          <Button 
+            onClick={() => setAddTaskDialog(false)}
+            variant="outlined"
+            sx={{
+              borderColor: '#e0e0e0',
+              color: '#666',
+              '&:hover': {
+                borderColor: '#E8B86D',
+                backgroundColor: 'rgba(232, 184, 109, 0.08)'
+              }
+            }}
+          >
             Cancel
           </Button>
           <Button 
             onClick={handleCreateTask}
             variant="contained"
             disabled={loading || !newTask.title.trim() || !newTask.description.trim() || !newTask.dueDate || !newTask.roomNumber?.trim()}
+            startIcon={<AddTaskIcon />}
+            sx={{
+              backgroundColor: '#E8B86D',
+              color: 'white',
+              fontWeight: 600,
+              px: 3,
+              '&:hover': {
+                backgroundColor: '#B8860B'
+              },
+              '&:disabled': {
+                backgroundColor: '#e0e0e0',
+                color: '#999'
+              }
+            }}
           >
             Create Task
           </Button>
@@ -1232,56 +1480,109 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
         maxWidth="sm" 
         fullWidth
         fullScreen={isMobile}
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)'
+          }
+        }}
       >
-        <DialogTitle>Assign Task to Staff Member</DialogTitle>
-        <DialogContent>
-          <Box sx={{ mt: 2 }}>
-            <FormControl fullWidth>
-              <InputLabel>Select Staff Member</InputLabel>
-              <Select
-                value={selectedStaffId}
-                label="Select Staff Member"
-                onChange={(e) => setSelectedStaffId(e.target.value)}
-              >
-                <MenuItem value="">
-                  <em>Unassigned</em>
-                </MenuItem>
-                {availableStaff.length === 0 ? (
-                  <>
-                    <MenuItem disabled>
-                      <em>No staff members available</em>
-                    </MenuItem>
-                    <MenuItem onClick={() => {
-                      setAssignDialog(false);
-                      setAddStaffDialog(true);
-                    }}>
-                      <Box sx={{ color: 'primary.main', fontWeight: 'bold' }}>
-                        + Create New Staff Member
-                      </Box>
-                    </MenuItem>
-                  </>
-                ) : (
-                  availableStaff.map((staff) => (
-                    <MenuItem key={staff.id} value={staff.id.toString()}>
-                      {staff.user ? 
-                        `${staff.user.firstName} ${staff.user.lastName} (${staff.employeeId})` :
-                        `Staff ID: ${staff.employeeId}`
-                      }
-                    </MenuItem>
-                  ))
-                )}
-              </Select>
-            </FormControl>
+        <DialogTitle sx={{ 
+          borderBottom: '2px solid #E8B86D',
+          pb: 2,
+          background: 'linear-gradient(135deg, #fafafa 0%, #ffffff 100%)'
+        }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <PersonAddIcon sx={{ fontSize: 28, color: '#B8860B' }} />
+            <Typography variant="h5" sx={{ fontWeight: 700, color: '#333' }}>
+              Assign Task to Staff Member
+            </Typography>
           </Box>
+        </DialogTitle>
+        <DialogContent sx={{ pt: 3, pb: 2 }}>
+          <Card 
+            elevation={0}
+            sx={{ 
+              backgroundColor: '#fafafa',
+              border: '1px solid',
+              borderColor: 'divider',
+              borderLeft: '4px solid #E8B86D',
+              borderRadius: 2,
+              p: 2.5
+            }}
+          >
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#333', mb: 2, textTransform: 'uppercase', fontSize: '0.75rem' }}>
+              Select Staff Member
+            </Typography>
+            <PremiumSelect
+              fullWidth
+              value={selectedStaffId}
+              label="Staff Member"
+              onChange={(e) => setSelectedStaffId(e.target.value)}
+            >
+              <MenuItem value="">
+                <em>Unassigned</em>
+              </MenuItem>
+              {availableStaff.length === 0 ? (
+                <>
+                  <MenuItem disabled>
+                    <em>No staff members available</em>
+                  </MenuItem>
+                  <MenuItem onClick={() => {
+                    setAssignDialog(false);
+                    setAddStaffDialog(true);
+                  }}>
+                    <Box sx={{ color: '#B8860B', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <PersonAddIcon fontSize="small" />
+                      Create New Staff Member
+                    </Box>
+                  </MenuItem>
+                </>
+              ) : (
+                availableStaff.map((staff) => (
+                  <MenuItem key={staff.id} value={staff.id.toString()}>
+                    {staff.user ? 
+                      `${staff.user.firstName} ${staff.user.lastName} (${staff.employeeId})` :
+                      `Staff ID: ${staff.employeeId}`
+                    }
+                  </MenuItem>
+                ))
+              )}
+            </PremiumSelect>
+          </Card>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setAssignDialog(false)}>
+        <DialogActions sx={{ px: 3, py: 2.5, borderTop: '1px solid', borderColor: 'divider', gap: 1.5 }}>
+          <Button 
+            onClick={() => setAssignDialog(false)}
+            variant="outlined"
+            sx={{
+              borderColor: '#e0e0e0',
+              color: '#666',
+              '&:hover': {
+                borderColor: '#E8B86D',
+                backgroundColor: 'rgba(232, 184, 109, 0.08)'
+              }
+            }}
+          >
             Cancel
           </Button>
           <Button 
             onClick={handleAssignTask}
             variant="contained"
             disabled={!selectedStaffId}
+            sx={{
+              backgroundColor: '#E8B86D',
+              color: 'white',
+              fontWeight: 600,
+              px: 3,
+              '&:hover': {
+                backgroundColor: '#B8860B'
+              },
+              '&:disabled': {
+                backgroundColor: '#e0e0e0',
+                color: '#999'
+              }
+            }}
           >
             Assign Task
           </Button>
@@ -1295,74 +1596,145 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
         maxWidth="sm" 
         fullWidth
         fullScreen={isMobile}
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)'
+          }
+        }}
       >
-        <DialogTitle>Add Housekeeping Staff Member</DialogTitle>
-        <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-            <TextField
-              label="Email"
-              type="email"
-              value={newStaff.email}
-              onChange={(e) => handleStaffFieldChange('email', e.target.value)}
-              fullWidth
-              required
-            />
-            
-            <Box sx={{ display: 'flex', gap: 2 }}>
-              <TextField
-                label="First Name"
-                value={newStaff.firstName}
-                onChange={(e) => handleStaffFieldChange('firstName', e.target.value)}
-                fullWidth
-                required
-              />
-              <TextField
-                label="Last Name"
-                value={newStaff.lastName}
-                onChange={(e) => handleStaffFieldChange('lastName', e.target.value)}
-                fullWidth
-                required
-              />
+        <DialogTitle sx={{ 
+          borderBottom: '2px solid #E8B86D',
+          pb: 2,
+          background: 'linear-gradient(135deg, #fafafa 0%, #ffffff 100%)'
+        }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <PersonAddIcon sx={{ fontSize: 28, color: '#B8860B' }} />
+            <Typography variant="h5" sx={{ fontWeight: 700, color: '#333' }}>
+              Add Housekeeping Staff Member
+            </Typography>
+          </Box>
+        </DialogTitle>
+        <DialogContent sx={{ pt: 3, pb: 2 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <Box>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', mb: 2 }}>
+                Contact Information
+              </Typography>
+              <Divider sx={{ mb: 2.5 }} />
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+                <PremiumTextField
+                  label="Email"
+                  type="email"
+                  value={newStaff.email}
+                  onChange={(e) => handleStaffFieldChange('email', e.target.value)}
+                  fullWidth
+                  required
+                  placeholder="staff@example.com"
+                />
+                
+                <PremiumTextField
+                  label="Phone Number"
+                  value={newStaff.phone}
+                  onChange={(e) => handleStaffFieldChange('phone', e.target.value)}
+                  fullWidth
+                  placeholder="+1 234 567 8900"
+                />
+              </Box>
             </Box>
             
-            <Box sx={{ display: 'flex', gap: 2 }}>
-              <TextField
-                label="Employee ID"
-                value={newStaff.employeeId}
-                onChange={(e) => handleStaffFieldChange('employeeId', e.target.value)}
-                fullWidth
-                required
-              />
-              <FormControl fullWidth>
-                <InputLabel>Shift Type</InputLabel>
-                <Select
-                  value={newStaff.shiftType}
-                  label="Shift Type"
-                  onChange={(e) => handleStaffFieldChange('shiftType', e.target.value)}
-                >
-                  <MenuItem value="DAY">Day Shift</MenuItem>
-                  <MenuItem value="NIGHT">Night Shift</MenuItem>
-                  <MenuItem value="ROTATING">Rotating Shift</MenuItem>
-                </Select>
-              </FormControl>
+            <Box>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', mb: 2 }}>
+                Personal Details
+              </Typography>
+              <Divider sx={{ mb: 2.5 }} />
+              <Grid container spacing={2.5}>
+                <Grid item xs={12} sm={6}>
+                  <PremiumTextField
+                    label="First Name"
+                    value={newStaff.firstName}
+                    onChange={(e) => handleStaffFieldChange('firstName', e.target.value)}
+                    fullWidth
+                    required
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <PremiumTextField
+                    label="Last Name"
+                    value={newStaff.lastName}
+                    onChange={(e) => handleStaffFieldChange('lastName', e.target.value)}
+                    fullWidth
+                    required
+                  />
+                </Grid>
+              </Grid>
             </Box>
             
-            <TextField
-              label="Phone Number"
-              value={newStaff.phone}
-              onChange={(e) => handleStaffFieldChange('phone', e.target.value)}
-              fullWidth
-            />
+            <Box>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', mb: 2 }}>
+                Employment Details
+              </Typography>
+              <Divider sx={{ mb: 2.5 }} />
+              <Grid container spacing={2.5}>
+                <Grid item xs={12} sm={6}>
+                  <PremiumTextField
+                    label="Employee ID"
+                    value={newStaff.employeeId}
+                    onChange={(e) => handleStaffFieldChange('employeeId', e.target.value)}
+                    fullWidth
+                    required
+                    placeholder="EMP-001"
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <PremiumSelect
+                    fullWidth
+                    value={newStaff.shiftType}
+                    label="Shift Type"
+                    onChange={(e) => handleStaffFieldChange('shiftType', e.target.value)}
+                  >
+                    <MenuItem value="DAY">Day Shift</MenuItem>
+                    <MenuItem value="NIGHT">Night Shift</MenuItem>
+                    <MenuItem value="ROTATING">Rotating Shift</MenuItem>
+                  </PremiumSelect>
+                </Grid>
+              </Grid>
+            </Box>
           </Box>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setAddStaffDialog(false)}>
+        <DialogActions sx={{ px: 3, py: 2.5, borderTop: '1px solid', borderColor: 'divider', gap: 1.5 }}>
+          <Button 
+            onClick={() => setAddStaffDialog(false)}
+            variant="outlined"
+            sx={{
+              borderColor: '#e0e0e0',
+              color: '#666',
+              '&:hover': {
+                borderColor: '#E8B86D',
+                backgroundColor: 'rgba(232, 184, 109, 0.08)'
+              }
+            }}
+          >
             Cancel
           </Button>
           <Button 
             onClick={handleCreateStaff}
             variant="contained"
             disabled={loading || !newStaff.email.trim() || !newStaff.firstName.trim() || !newStaff.lastName.trim() || !newStaff.employeeId.trim()}
+            startIcon={<PersonAddIcon />}
+            sx={{
+              backgroundColor: '#E8B86D',
+              color: 'white',
+              fontWeight: 600,
+              px: 3,
+              '&:hover': {
+                backgroundColor: '#B8860B'
+              },
+              '&:disabled': {
+                backgroundColor: '#e0e0e0',
+                color: '#999'
+              }
+            }}
           >
             Create Staff Member
           </Button>

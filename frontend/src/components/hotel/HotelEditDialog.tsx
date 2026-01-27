@@ -20,6 +20,8 @@ import {
 import { Hotel } from '../../types/hotel';
 import { adminApiService, TenantDTO } from '../../services/adminApi';
 import { useAuth } from '../../contexts/AuthContext';
+import PremiumTextField from '../common/PremiumTextField';
+import PremiumSelect from '../common/PremiumSelect';
 
 interface HotelEditDialogProps {
   open: boolean;
@@ -225,7 +227,7 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
             )}
             
             <Grid item xs={12} sm={6}>
-              <TextField
+              <PremiumTextField
                 label="Hotel Name"
                 fullWidth
                 required
@@ -237,7 +239,7 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
             </Grid>
             
             <Grid item xs={12} sm={6}>
-              <TextField
+              <PremiumTextField
                 label="Email"
                 type="email"
                 fullWidth
@@ -249,30 +251,29 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
             </Grid>
             
             <Grid item xs={12} sm={6}>
-              <FormControl fullWidth disabled={saving || loadingTenants || (user?.roles?.includes('HOTEL_ADMIN') || user?.roles?.includes('HOTEL_MANAGER'))}>
-                <InputLabel>Tenant *</InputLabel>
-                <Select
-                  value={formData.tenantId || ''}
-                  label="Tenant *"
-                  onChange={handleTenantChange}
-                >
-                  <MenuItem value="">
-                    <em>Select a tenant</em>
+              <PremiumSelect
+                label="Tenant *"
+                fullWidth
+                value={formData.tenantId || ''}
+                onChange={handleTenantChange}
+                disabled={saving || loadingTenants || (user?.roles?.includes('HOTEL_ADMIN') || user?.roles?.includes('HOTEL_MANAGER'))}
+              >
+                <MenuItem value="">
+                  <em>Select a tenant</em>
+                </MenuItem>
+                {tenants.map((tenant) => (
+                  <MenuItem key={tenant.tenantId} value={tenant.tenantId}>
+                    {tenant.name} {tenant.subdomain ? `(${tenant.subdomain})` : ''}
                   </MenuItem>
-                  {tenants.map((tenant) => (
-                    <MenuItem key={tenant.tenantId} value={tenant.tenantId}>
-                      {tenant.name} {tenant.subdomain ? `(${tenant.subdomain})` : ''}
-                    </MenuItem>
-                  ))}
-                </Select>
-                {(user?.roles?.includes('HOTEL_ADMIN') || user?.roles?.includes('HOTEL_MANAGER')) && (
-                  <FormHelperText>Hotel admins can only edit their own hotel</FormHelperText>
-                )}
-              </FormControl>
+                ))}
+              </PremiumSelect>
+              {(user?.roles?.includes('HOTEL_ADMIN') || user?.roles?.includes('HOTEL_MANAGER')) && (
+                <FormHelperText>Hotel admins can only edit their own hotel</FormHelperText>
+              )}
             </Grid>
             
             <Grid item xs={12}>
-              <TextField
+              <PremiumTextField
                 label="Description"
                 multiline
                 rows={3}
@@ -285,7 +286,7 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
             </Grid>
             
             <Grid item xs={12}>
-              <TextField
+              <PremiumTextField
                 label="Address"
                 fullWidth
                 required
@@ -297,7 +298,7 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
             </Grid>
             
             <Grid item xs={12} sm={6}>
-              <TextField
+              <PremiumTextField
                 label="City"
                 fullWidth
                 value={formData.city || ''}
@@ -308,7 +309,7 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
             </Grid>
             
             <Grid item xs={12} sm={6}>
-              <TextField
+              <PremiumTextField
                 label="Country"
                 fullWidth
                 value={formData.country || ''}
@@ -319,7 +320,7 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
             </Grid>
             
             <Grid item xs={12} sm={6}>
-              <TextField
+              <PremiumTextField
                 label="Communication Phone"
                 fullWidth
                 value={formData.phone || ''}
@@ -331,7 +332,7 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
             </Grid>
             
             <Grid item xs={12} sm={6}>
-              <TextField
+              <PremiumTextField
                 label="Primary Payment Phone"
                 fullWidth
                 value={formData.mobilePaymentPhone || ''}
@@ -343,7 +344,7 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
             </Grid>
             
             <Grid item xs={12} sm={6}>
-              <TextField
+              <PremiumTextField
                 label="Secondary Payment Phone"
                 fullWidth
                 value={formData.mobilePaymentPhone2 || ''}
@@ -355,7 +356,7 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
             </Grid>
             
             <Grid item xs={12} sm={6}>
-              <TextField
+              <PremiumTextField
                 label="Number of Rooms"
                 type="number"
                 fullWidth

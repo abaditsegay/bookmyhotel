@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import PremiumTextField from '../components/common/PremiumTextField';
 import {
   Typography,
   Grid,
@@ -679,9 +680,8 @@ export const SystemDashboardPage: React.FC = () => {
                   {/* Search and Filter Controls */}
                   <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
                     {/* Search Field */}
-                    <TextField
+                    <PremiumTextField
                       fullWidth
-                      variant="outlined"
                       placeholder="Search API endpoints..."
                       value={apiSearchQuery}
                       onChange={(e) => setApiSearchQuery(e.target.value)}

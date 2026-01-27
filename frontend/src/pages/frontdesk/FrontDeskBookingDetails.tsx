@@ -27,6 +27,7 @@ import {
 } from '@mui/icons-material';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import PremiumTextField from '../../components/common/PremiumTextField';
 import { frontDeskApiService } from '../../services/frontDeskApi';
 import { ROOM_TYPES } from '../../constants/roomTypes';
 import { formatCurrency } from '../../utils/currencyUtils';
@@ -383,23 +384,21 @@ const FrontDeskBookingDetails: React.FC = () => {
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Guest Name"
                       value={currentBooking?.guestName || ''}
                       onChange={(e) => handleFieldChange('guestName', e.target.value)}
                       disabled={!isEditing}
-                      variant={isEditing ? 'outlined' : 'filled'}
                     />
                   </Grid>
                   <Grid item xs={12}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Email"
                       value={currentBooking?.guestEmail || ''}
                       onChange={(e) => handleFieldChange('guestEmail', e.target.value)}
                       disabled={!isEditing}
-                      variant={isEditing ? 'outlined' : 'filled'}
                     />
                   </Grid>
                 </Grid>
@@ -418,12 +417,11 @@ const FrontDeskBookingDetails: React.FC = () => {
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Confirmation Number"
                       value={currentBooking?.confirmationNumber || ''}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
@@ -482,21 +480,19 @@ const FrontDeskBookingDetails: React.FC = () => {
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Hotel Name"
                       value={currentBooking?.hotelName || ''}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                   <Grid item xs={12}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Hotel Address"
                       value={currentBooking?.hotelAddress || ''}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
@@ -516,32 +512,29 @@ const FrontDeskBookingDetails: React.FC = () => {
                         </Select>
                       </FormControl>
                     ) : (
-                      <TextField
+                      <PremiumTextField
                         fullWidth
                         label="Room Type"
                         value={currentBooking?.roomType || ''}
                         disabled
-                        variant="filled"
                       />
                     )}
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     {isEditing && currentBooking?.status?.toUpperCase() === 'CONFIRMED' ? (
-                      <TextField
+                      <PremiumTextField
                         fullWidth
                         label="Room Number"
                         value={currentBooking?.roomNumber || 'TBA (To Be Assigned)'}
                         onChange={(e) => handleFieldChange('roomNumber', e.target.value)}
-                        variant="outlined"
                         placeholder="Enter room number or assign during check-in"
                       />
                     ) : (
-                      <TextField
+                      <PremiumTextField
                         fullWidth
                         label="Room Number"
                         value={currentBooking?.roomNumber || 'TBA (To Be Assigned)'}
                         disabled
-                        variant="filled"
                       />
                     )}
                   </Grid>
@@ -561,45 +554,41 @@ const FrontDeskBookingDetails: React.FC = () => {
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Check-in Date"
                       value={currentBooking?.checkInDate || ''}
                       type="date"
                       onChange={(e) => handleFieldChange('checkInDate', e.target.value)}
                       disabled={!isEditing}
-                      variant={isEditing ? 'outlined' : 'filled'}
                       InputLabelProps={{ shrink: true }}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Check-out Date"
                       value={currentBooking?.checkOutDate || ''}
                       type="date"
                       onChange={(e) => handleFieldChange('checkOutDate', e.target.value)}
                       disabled={!isEditing}
-                      variant={isEditing ? 'outlined' : 'filled'}
                       InputLabelProps={{ shrink: true }}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Price per Night"
                       value={formatCurrency(currentBooking?.pricePerNight || 0)}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Total Amount"
                       value={formatCurrency(currentBooking?.totalAmount || 0)}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                 </Grid>
@@ -618,21 +607,19 @@ const FrontDeskBookingDetails: React.FC = () => {
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Booking Date"
                       value={currentBooking ? formatDate(currentBooking.createdAt) : ''}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Payment Intent ID"
                       value={currentBooking?.paymentIntentId || 'N/A'}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                 </Grid>

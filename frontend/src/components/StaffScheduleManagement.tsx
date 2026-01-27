@@ -29,15 +29,24 @@ import {
   TablePagination,
   Stack,
   useTheme,
+  Divider,
 } from '@mui/material';
 import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   FilterList as FilterIcon,
   Cancel as CancelIcon,
+  Schedule as ScheduleIcon,
+  Upload as UploadIcon,
+  Refresh as RefreshIcon,
+  Clear as ClearIcon,
+  Add as AddIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import { getGradient, getInteractiveColor } from '../theme/themeColors';
+import PremiumTextField from './common/PremiumTextField';
+import PremiumSelect from './common/PremiumSelect';
+import PremiumDatePicker from './common/PremiumDatePicker';
 
 /**
  * Create authenticated fetch request headers
@@ -558,17 +567,19 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
       <Paper elevation={0} sx={{ 
         p: 3, 
         mb: 3,
-        backgroundColor: theme.palette.background.paper,
-        border: `1px solid ${theme.palette.divider}`
+        border: '1px solid',
+        borderColor: 'divider',
+        borderRadius: 3,
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)'
       }}>
-        <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+        <Box display="flex" alignItems="center" justifyContent="space-between" mb={3} pb={2} borderBottom="2px solid #E8B86D">
           <Box display="flex" alignItems="center">
-            <FilterIcon sx={{ mr: 1, color: theme.palette.text.secondary }} />
-            <Typography variant="h6" component="h2">
-              Filters
+            <ScheduleIcon sx={{ mr: 1.5, color: '#B8860B', fontSize: 28 }} />
+            <Typography variant="h5" component="h2" sx={{ fontWeight: 700, color: '#333' }}>
+              Staff Schedules
             </Typography>
           </Box>
-          <Box sx={{ display: 'flex', gap: 2 }}>
+          <Box sx={{ display: 'flex', gap: 1.5 }}>
             <Button
               variant="contained"
               onClick={() => {
@@ -576,27 +587,57 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
                 resetForm();
                 setShowModal(true);
               }}
+              startIcon={<AddIcon />}
+              sx={{
+                backgroundColor: '#E8B86D',
+                color: 'white',
+                fontWeight: 600,
+                '&:hover': {
+                  backgroundColor: '#B8860B'
+                }
+              }}
             >
               Add Schedule
             </Button>
             <Button
               variant="outlined"
               onClick={() => setShowUploadModal(true)}
+              startIcon={<UploadIcon />}
+              sx={{
+                borderColor: '#E8B86D',
+                color: '#B8860B',
+                fontWeight: 600,
+                '&:hover': {
+                  borderColor: '#B8860B',
+                  backgroundColor: 'rgba(232, 184, 109, 0.08)'
+                }
+              }}
             >
               Upload Schedule
             </Button>
           </Box>
         </Box>
-        <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} sm={6} md={3}>
-            <FormControl fullWidth size="small">
-              <InputLabel>Hotel</InputLabel>
-              <Select
+        
+        <Box sx={{ 
+          p: 2.5,
+          backgroundColor: '#fafafa',
+          borderRadius: 2,
+          border: '1px solid',
+          borderColor: 'divider',
+          mb: 2
+        }}>
+          <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary', mb: 2.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <FilterIcon fontSize="small" />
+            Filters
+          </Typography>
+          <Grid container spacing={2.5} alignItems="center">
+            <Grid item xs={12} sm={6} md={3}>
+              <PremiumSelect
+                fullWidth
                 value={selectedHotel}
                 label="Hotel"
                 onChange={(e) => setSelectedHotel(e.target.value as number | '')}
-                disabled={isHotelAdmin} // Disable for hotel admins
-                sx={isHotelAdmin ? { backgroundColor: theme.palette.action.hover } : {}}
+                disabled={isHotelAdmin}
               >
                 {isHotelAdmin && user?.hotelId && user?.hotelName ? (
                   <MenuItem value={parseInt(user.hotelId)}>{user.hotelName}</MenuItem>
@@ -608,13 +649,11 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
                     ))}
                   </>
                 )}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={6} md={2}>
-            <FormControl fullWidth size="small">
-              <InputLabel>Department</InputLabel>
-              <Select
+              </PremiumSelect>
+            </Grid>
+            <Grid item xs={12} sm={6} md={2}>
+              <PremiumSelect
+                fullWidth
                 value={selectedDepartment}
                 label="Department"
                 onChange={(e) => setSelectedDepartment(e.target.value as string)}
@@ -623,24 +662,32 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
                 {departments.map(dept => (
                   <MenuItem key={dept} value={dept}>{dept.replace('_', ' ')}</MenuItem>
                 ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={6} md={2}>
-            <TextField
-              fullWidth
-              size="small"
-              type="date"
-              label="Date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              InputLabelProps={{ shrink: true }}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6} md={2}>
-            <FormControl fullWidth size="small">
-              <InputLabel>Status</InputLabel>
-              <Select
+              </PremiumSelect>
+            </Grid>
+            <Grid item xs={12} sm={6} md={2}>
+              <PremiumDatePicker
+                label="Date"
+                value={selectedDate ? new Date(selectedDate) : null}
+                onChange={(date) => {
+                  if (date) {
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    setSelectedDate(`${year}-${month}-${day}`);
+                  } else {
+                    setSelectedDate('');
+                  }
+                }}
+                slotProps={{
+                  textField: {
+                    fullWidth: true
+                  }
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={2}>
+              <PremiumSelect
+                fullWidth
                 value={selectedStatus}
                 label="Status"
                 onChange={(e) => setSelectedStatus(e.target.value as string)}
@@ -649,49 +696,57 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
                 {statuses.map(status => (
                   <MenuItem key={status} value={status}>{status.replace('_', ' ')}</MenuItem>
                 ))}
-              </Select>
-            </FormControl>
+              </PremiumSelect>
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <Button
+                variant="outlined"
+                onClick={clearFilters}
+                fullWidth
+                startIcon={<ClearIcon />}
+                sx={{
+                  borderColor: '#e0e0e0',
+                  color: '#666',
+                  fontWeight: 600,
+                  '&:hover': {
+                    borderColor: '#E8B86D',
+                    backgroundColor: 'rgba(232, 184, 109, 0.08)',
+                    color: '#B8860B'
+                  }
+                }}
+              >
+                Clear Filters
+              </Button>
+            </Grid>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <Button
-              variant="outlined"
-              onClick={clearFilters}
-              fullWidth
-            >
-              Clear Filters
-            </Button>
-          </Grid>
-        </Grid>
+        </Box>
       </Paper>
 
       {/* Schedules Table */}
-      <Paper elevation={1}>
+      <Paper 
+        elevation={1}
+        sx={{
+          border: '1px solid #e0e0e0',
+          borderRadius: 3,
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+          overflow: 'hidden'
+        }}
+      >
         <TableContainer>
           <Table>
             <TableHead>
               <TableRow
                 sx={{
-                  background: 'linear-gradient(135deg, #64748b 0%, #475569 50%, #334155 100%)',
-                  boxShadow: '0 4px 12px rgba(100, 116, 139, 0.15)',
+                  background: 'linear-gradient(135deg, #f5f5f5 0%, #fafafa 50%, #f5f5f5 100%)',
+                  borderBottom: '2px solid #E8B86D',
                   '& .MuiTableCell-head': {
-                    color: '#ffffff',
-                    fontWeight: 600,
-                    fontSize: '0.95rem',
+                    color: '#B8860B',
+                    fontWeight: 700,
+                    fontSize: '0.75rem',
                     letterSpacing: '0.5px',
                     textTransform: 'uppercase',
                     border: 'none',
-                    padding: '20px 16px',
-                    position: 'relative',
-                    textShadow: '0 1px 2px rgba(0,0,0,0.1)',
-                    '&::after': {
-                      content: '""',
-                      position: 'absolute',
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      height: '3px',
-                      background: 'linear-gradient(90deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.6) 100%)'
-                    }
+                    padding: '16px',
                   }
                 }}
               >
@@ -737,20 +792,18 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
                   </TableCell>
                   <TableCell>{schedule.department.replace('_', ' ')}</TableCell>
                   <TableCell>
-                    <FormControl size="small" sx={{ minWidth: 120 }}>
-                      <Select
-                        value={schedule.status}
-                        onChange={(e) => handleStatusUpdate(schedule.id, e.target.value)}
-                        variant="outlined"
-                        size="small"
-                      >
-                        {statuses.map(status => (
-                          <MenuItem key={status} value={status}>
-                            {status.replace('_', ' ')}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
+                    <PremiumSelect
+                      value={schedule.status}
+                      label=""
+                      onChange={(e) => handleStatusUpdate(schedule.id, e.target.value)}
+                      sx={{ minWidth: 120 }}
+                    >
+                      {statuses.map(status => (
+                        <MenuItem key={status} value={status}>
+                          {status.replace('_', ' ')}
+                        </MenuItem>
+                      ))}
+                    </PremiumSelect>
                   </TableCell>
                   <TableCell>
                     <Typography 
@@ -769,18 +822,30 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
                     <Stack direction="row" spacing={1} justifyContent="center">
                       <Tooltip title="Edit Schedule">
                         <IconButton 
-                          size="small" 
-                          color="primary"
+                          size="small"
                           onClick={() => handleEdit(schedule)}
+                          sx={{
+                            color: '#E8B86D',
+                            '&:hover': {
+                              backgroundColor: 'rgba(232, 184, 109, 0.08)',
+                              color: '#B8860B'
+                            }
+                          }}
                         >
                           <EditIcon />
                         </IconButton>
                       </Tooltip>
                       <Tooltip title="Delete Schedule">
                         <IconButton 
-                          size="small" 
-                          color="error"
+                          size="small"
                           onClick={() => handleDelete(schedule.id)}
+                          sx={{
+                            color: '#666',
+                            '&:hover': {
+                              backgroundColor: 'rgba(211, 47, 47, 0.08)',
+                              color: '#d32f2f'
+                            }
+                          }}
                         >
                           <DeleteIcon />
                         </IconButton>
@@ -804,16 +869,12 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
             <Button 
               variant="contained"
               sx={{ 
-                background: getGradient('primary'),
+                backgroundColor: '#E8B86D',
                 color: 'white',
-                fontWeight: 500,
+                fontWeight: 600,
                 '&:hover': { 
-                  background: getGradient('primary'),
-                  backgroundColor: getInteractiveColor('hover'),
+                  backgroundColor: '#B8860B',
                 },
-                '&:active': {
-                  backgroundColor: getInteractiveColor('pressed'),
-                }
               }}
               onClick={() => {
                 setEditingSchedule(null);
@@ -835,6 +896,22 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
             page={page}
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}
+            sx={{
+              borderTop: '1px solid #e0e0e0',
+              '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                color: '#666',
+                fontWeight: 500,
+              },
+              '& .MuiIconButton-root': {
+                color: '#E8B86D',
+                '&:hover': {
+                  backgroundColor: 'rgba(232, 184, 109, 0.08)',
+                },
+                '&.Mui-disabled': {
+                  color: '#d0d0d0',
+                }
+              }
+            }}
           />
         )}
       </Paper>
@@ -848,15 +925,24 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
         PaperProps={{
           elevation: 0,
           sx: { 
-            borderRadius: 2,
-            backgroundColor: theme.palette.background.paper,
-            border: `1px solid ${theme.palette.divider}`
+            borderRadius: 3,
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
+            border: '1px solid #e0e0e0'
           }
         }}
       >
-        <DialogTitle sx={{ pb: 1 }}>
-          <Box display="flex" alignItems="center">
-            {editingSchedule ? 'Edit Schedule' : 'Create New Schedule'}
+        <DialogTitle 
+          sx={{ 
+            pb: 2,
+            borderBottom: '2px solid #E8B86D',
+            background: 'linear-gradient(135deg, rgba(232, 184, 109, 0.05) 0%, rgba(255, 255, 255, 0.9) 100%)',
+          }}
+        >
+          <Box display="flex" alignItems="center" gap={1.5}>
+            <ScheduleIcon sx={{ fontSize: 28, color: '#E8B86D' }} />
+            <Typography variant="h5" fontWeight={700} color="#333">
+              {editingSchedule ? 'Edit Schedule' : 'Create New Schedule'}
+            </Typography>
           </Box>
         </DialogTitle>
         
@@ -870,98 +956,93 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
             )}
             <Grid container spacing={3}>
               <Grid item xs={12} md={6}>
-                <FormControl fullWidth>
-                  <InputLabel>Staff Member</InputLabel>
-                  <Select
-                    value={formData.staffId}
-                    label="Staff Member"
-                    onChange={(e) => {
-                      const selectedStaffId = parseInt(e.target.value as string);
-                      const selectedStaff = staff.find(member => member.id === selectedStaffId);
-                      
-                      // Get primary role from either roles array or single role field
-                      let selectedRole = '';
-                      if (selectedStaff?.roles && selectedStaff.roles.length > 0) {
-                        selectedRole = selectedStaff.roles[0]; // Use first role as primary
-                      } else if (selectedStaff?.role) {
-                        selectedRole = selectedStaff.role;
+                <PremiumSelect
+                  fullWidth
+                  value={formData.staffId}
+                  label="Staff Member"
+                  onChange={(e) => {
+                    const selectedStaffId = parseInt(e.target.value as string);
+                    const selectedStaff = staff.find(member => member.id === selectedStaffId);
+                    
+                    // Get primary role from either roles array or single role field
+                    let selectedRole = '';
+                    if (selectedStaff?.roles && selectedStaff.roles.length > 0) {
+                      selectedRole = selectedStaff.roles[0]; // Use first role as primary
+                    } else if (selectedStaff?.role) {
+                      selectedRole = selectedStaff.role;
+                    }
+                    
+                    // Map role to department for backend compatibility
+                    let department = 'FRONTDESK'; // default
+                    if (selectedRole === 'HOUSEKEEPING') department = 'HOUSEKEEPING';
+                    else if (selectedRole === 'HOTEL_ADMIN' || selectedRole === 'FRONTDESK') department = 'FRONTDESK';
+                    
+                    setFormData({
+                      ...formData, 
+                      staffId: selectedStaffId,
+                      role: selectedRole,
+                      department: department
+                    });
+                  }}
+                  required
+                >
+                  <MenuItem value="">Select Staff Member</MenuItem>
+                  {staff.length === 0 ? (
+                    <MenuItem disabled value="">No staff members available</MenuItem>
+                  ) : (
+                    staff.map(member => {
+                      // Get primary role for display
+                      let displayRole = '';
+                      if (member.roles && member.roles.length > 0) {
+                        displayRole = member.roles[0]; // Use first role as primary
+                      } else if (member.role) {
+                        displayRole = member.role;
                       }
                       
-                      // Map role to department for backend compatibility
-                      let department = 'FRONTDESK'; // default
-                      if (selectedRole === 'HOUSEKEEPING') department = 'HOUSEKEEPING';
-                      else if (selectedRole === 'HOTEL_ADMIN' || selectedRole === 'FRONTDESK') department = 'FRONTDESK';
-                      
-                      setFormData({
-                        ...formData, 
-                        staffId: selectedStaffId,
-                        role: selectedRole,
-                        department: department
-                      });
-                    }}
-                    required
-                  >
-                    <MenuItem value="">Select Staff Member</MenuItem>
-                    {staff.length === 0 ? (
-                      <MenuItem disabled value="">No staff members available</MenuItem>
-                    ) : (
-                      staff.map(member => {
-                        // Get primary role for display
-                        let displayRole = '';
-                        if (member.roles && member.roles.length > 0) {
-                          displayRole = member.roles[0]; // Use first role as primary
-                        } else if (member.role) {
-                          displayRole = member.role;
-                        }
-                        
-                        return (
-                          <MenuItem key={member.id} value={member.id}>
-                            {member.firstName} {member.lastName} ({displayRole})
-                          </MenuItem>
-                        );
-                      })
-                    )}
-                  </Select>
-                  {staff.length === 0 && (
-                    <Typography variant="caption" color="warning.main" sx={{ mt: 1 }}>
-                      No staff members found. Please check your authentication or contact your administrator.
-                    </Typography>
+                      return (
+                        <MenuItem key={member.id} value={member.id}>
+                          {member.firstName} {member.lastName} ({displayRole})
+                        </MenuItem>
+                      );
+                    })
                   )}
-                </FormControl>
+                </PremiumSelect>
+                {staff.length === 0 && (
+                  <Typography variant="caption" color="warning.main" sx={{ mt: 1 }}>
+                    No staff members found. Please check your authentication or contact your administrator.
+                  </Typography>
+                )}
               </Grid>
               
               <Grid item xs={12} md={6}>
-                <FormControl fullWidth>
-                  <InputLabel>Hotel</InputLabel>
-                  <Select
-                    value={formData.hotelId}
-                    label="Hotel"
-                    onChange={(e) => setFormData({...formData, hotelId: parseInt(e.target.value as string)})}
-                    required
-                    disabled={isHotelAdmin} // Disable for hotel admins
-                    sx={isHotelAdmin ? { backgroundColor: theme.palette.action.hover } : {}}
-                  >
-                    {isHotelAdmin && user?.hotelId && user?.hotelName ? (
-                      <MenuItem value={parseInt(user.hotelId)}>{user.hotelName}</MenuItem>
-                    ) : (
-                      <>
-                        <MenuItem value="">Select Hotel</MenuItem>
-                        {hotels.map(hotel => (
-                          <MenuItem key={hotel.id} value={hotel.id}>{hotel.name}</MenuItem>
-                        ))}
-                      </>
-                    )}
-                  </Select>
-                  {isHotelAdmin && (
-                    <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
-                      Hotel is automatically selected based on your admin role
-                    </Typography>
+                <PremiumSelect
+                  fullWidth
+                  value={formData.hotelId}
+                  label="Hotel"
+                  onChange={(e) => setFormData({...formData, hotelId: parseInt(e.target.value as string)})}
+                  required
+                  disabled={isHotelAdmin}
+                >
+                  {isHotelAdmin && user?.hotelId && user?.hotelName ? (
+                    <MenuItem value={parseInt(user.hotelId)}>{user.hotelName}</MenuItem>
+                  ) : (
+                    <>
+                      <MenuItem value="">Select Hotel</MenuItem>
+                      {hotels.map(hotel => (
+                        <MenuItem key={hotel.id} value={hotel.id}>{hotel.name}</MenuItem>
+                      ))}
+                    </>
                   )}
-                </FormControl>
+                </PremiumSelect>
+                {isHotelAdmin && (
+                  <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
+                    Hotel is automatically selected based on your admin role
+                  </Typography>
+                )}
               </Grid>
               
               <Grid item xs={12} md={4}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   type="date"
                   label="Date"
@@ -976,7 +1057,7 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
               </Grid>
               
               <Grid item xs={12} md={4}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   type="time"
                   label="Start Time"
@@ -988,7 +1069,7 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
               </Grid>
               
               <Grid item xs={12} md={4}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   type="time"
                   label="End Time"
@@ -1000,23 +1081,21 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
               </Grid>
               
               <Grid item xs={12} md={6}>
-                <FormControl fullWidth>
-                  <InputLabel>Shift Type</InputLabel>
-                  <Select
-                    value={formData.shiftType}
-                    label="Shift Type"
-                    onChange={(e) => setFormData({...formData, shiftType: e.target.value})}
-                    required
-                  >
-                    {shiftTypes.map(type => (
-                      <MenuItem key={type} value={type}>{type.replace('_', ' ')}</MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                <PremiumSelect
+                  fullWidth
+                  value={formData.shiftType}
+                  label="Shift Type"
+                  onChange={(e) => setFormData({...formData, shiftType: e.target.value})}
+                  required
+                >
+                  {shiftTypes.map(type => (
+                    <MenuItem key={type} value={type}>{type.replace('_', ' ')}</MenuItem>
+                  ))}
+                </PremiumSelect>
               </Grid>
               
               <Grid item xs={12} md={6}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Role"
                   value={formData.role ? formData.role.replace('_', ' ') : ''}
@@ -1024,18 +1103,12 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
                   InputProps={{
                     readOnly: true,
                   }}
-                  sx={{
-                    '& .MuiInputBase-input.Mui-disabled': {
-                      WebkitTextFillColor: theme.palette.text.disabled,
-                      backgroundColor: theme.palette.action.disabled,
-                    },
-                  }}
                   helperText="Role is automatically set based on selected staff member"
                 />
               </Grid>
               
               <Grid item xs={12}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   multiline
                   rows={3}
@@ -1048,17 +1121,35 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
             </Grid>
           </DialogContent>
           
-          <DialogActions sx={{ p: 3 }}>
+          <DialogActions sx={{ p: 3, gap: 1.5 }}>
             <Button 
-              onClick={() => setShowModal(false)} 
-              color="inherit"
+              onClick={() => setShowModal(false)}
+              variant="outlined"
+              sx={{
+                borderColor: '#e0e0e0',
+                color: '#666',
+                fontWeight: 600,
+                '&:hover': {
+                  borderColor: '#E8B86D',
+                  backgroundColor: 'rgba(232, 184, 109, 0.08)',
+                  color: '#B8860B'
+                }
+              }}
             >
               Cancel
             </Button>
             <Button 
               type="submit" 
-              variant="contained" 
-              sx={{ ml: 1 }}
+              variant="contained"
+              startIcon={editingSchedule ? <EditIcon /> : <AddIcon />}
+              sx={{
+                backgroundColor: '#E8B86D',
+                color: 'white',
+                fontWeight: 600,
+                '&:hover': {
+                  backgroundColor: '#B8860B',
+                }
+              }}
             >
               {editingSchedule ? 'Update Schedule' : 'Create Schedule'}
             </Button>
@@ -1075,15 +1166,24 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
         PaperProps={{
           elevation: 0,
           sx: { 
-            borderRadius: 2,
-            backgroundColor: theme.palette.background.paper,
-            border: `1px solid ${theme.palette.divider}`
+            borderRadius: 3,
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
+            border: '1px solid #e0e0e0'
           }
         }}
       >
-        <DialogTitle sx={{ pb: 1 }}>
-          <Box display="flex" alignItems="center">
-            Upload Schedule File
+        <DialogTitle 
+          sx={{ 
+            pb: 2,
+            borderBottom: '2px solid #E8B86D',
+            background: 'linear-gradient(135deg, rgba(232, 184, 109, 0.05) 0%, rgba(255, 255, 255, 0.9) 100%)',
+          }}
+        >
+          <Box display="flex" alignItems="center" gap={1.5}>
+            <UploadIcon sx={{ fontSize: 28, color: '#E8B86D' }} />
+            <Typography variant="h5" fontWeight={700} color="#333">
+              Upload Schedule File
+            </Typography>
           </Box>
         </DialogTitle>
         

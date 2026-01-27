@@ -45,6 +45,7 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import { adminApiService, HotelDTO, UpdateHotelRequest } from '../../services/adminApi';
 import HotelEditDialog from '../../components/hotel/HotelEditDialog';
+import PremiumTextField from '../../components/common/PremiumTextField';
 
 interface Hotel extends HotelDTO {}
 
@@ -499,7 +500,7 @@ const HotelManagementAdmin: React.FC = () => {
             <Paper sx={{ p: 2, mb: 2 }}>
               <Grid container spacing={2}>
                 <Grid item xs={12} md={6}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label="Search hotels..."
                     value={searchTerm}
@@ -815,7 +816,7 @@ const HotelManagementAdmin: React.FC = () => {
           <DialogContent>
             <Grid container spacing={2} sx={{ mt: 1 }}>
               <Grid item xs={12} sm={6}>
-                <TextField
+                <PremiumTextField
                   label="Hotel Name"
                   fullWidth
                   required
@@ -825,7 +826,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
               
               <Grid item xs={12} sm={6}>
-                <TextField
+                <PremiumTextField
                   label="Contact Person"
                   fullWidth
                   required
@@ -835,7 +836,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
               
               <Grid item xs={12}>
-                <TextField
+                <PremiumTextField
                   label="Description"
                   multiline
                   rows={3}
@@ -846,7 +847,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
               
               <Grid item xs={12}>
-                <TextField
+                <PremiumTextField
                   label="Address"
                   fullWidth
                   required
@@ -856,7 +857,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
               
               <Grid item xs={12} sm={6}>
-                <TextField
+                <PremiumTextField
                   label="City"
                   fullWidth
                   required
@@ -866,7 +867,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
               
               <Grid item xs={12} sm={6}>
-                <TextField
+                <PremiumTextField
                   label="Country"
                   fullWidth
                   required
@@ -876,7 +877,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
               
               <Grid item xs={12} sm={6}>
-                <TextField
+                <PremiumTextField
                   label="Phone"
                   fullWidth
                   required
@@ -886,7 +887,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
 
               <Grid item xs={12} sm={6}>
-                <TextField
+                <PremiumTextField
                   label="Contact Email"
                   type="email"
                   fullWidth
@@ -897,7 +898,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
 
               <Grid item xs={12} sm={6}>
-                <TextField
+                <PremiumTextField
                   label="License Number"
                   fullWidth
                   value={registrationForm.licenseNumber}
@@ -906,7 +907,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
 
               <Grid item xs={12} sm={6}>
-                <TextField
+                <PremiumTextField
                   label="Tax ID"
                   fullWidth
                   value={registrationForm.taxId}
@@ -915,7 +916,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
 
               <Grid item xs={12}>
-                <TextField
+                <PremiumTextField
                   label="Website URL"
                   fullWidth
                   value={registrationForm.websiteUrl}
@@ -924,7 +925,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
 
               <Grid item xs={12}>
-                <TextField
+                <PremiumTextField
                   label="Facility Amenities"
                   multiline
                   rows={2}
@@ -936,7 +937,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
 
               <Grid item xs={12} sm={4}>
-                <TextField
+                <PremiumTextField
                   label="Number of Rooms"
                   type="number"
                   fullWidth
@@ -946,7 +947,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
 
               <Grid item xs={12} sm={4}>
-                <TextField
+                <PremiumTextField
                   label="Check-in Time"
                   type="time"
                   fullWidth
@@ -956,7 +957,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
 
               <Grid item xs={12} sm={4}>
-                <TextField
+                <PremiumTextField
                   label="Check-out Time"
                   type="time"
                   fullWidth
@@ -1186,125 +1187,113 @@ const HotelManagementAdmin: React.FC = () => {
             {selectedHotel && (
               <Grid container spacing={2} sx={{ mt: 1 }}>
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Hotel Name"
                     fullWidth
                     value={selectedHotel.name || ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
                 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Email"
                     type="email"
                     fullWidth
                     value={selectedHotel.email || ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
                 
                 <Grid item xs={12}>
-                  <TextField
+                  <PremiumTextField
                     label="Description"
                     multiline
                     rows={3}
                     fullWidth
                     value={selectedHotel.description || ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
                 
                 <Grid item xs={12}>
-                  <TextField
+                  <PremiumTextField
                     label="Address"
                     fullWidth
                     value={selectedHotel.address || ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
                 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="City"
                     fullWidth
                     value={selectedHotel.city || ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
                 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Country"
                     fullWidth
                     value={selectedHotel.country || ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
                 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Phone"
                     fullWidth
                     value={selectedHotel.phone || ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Status"
                     fullWidth
                     value={selectedHotel.isActive ? 'Active' : 'Inactive'}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Total Rooms"
                     fullWidth
                     value={selectedHotel.totalRooms?.toString() || '0'}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Available Rooms"
                     fullWidth
                     value={selectedHotel.availableRooms?.toString() || '0'}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Created At"
                     fullWidth
                     value={selectedHotel.createdAt ? new Date(selectedHotel.createdAt).toLocaleString() : ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Last Updated"
                     fullWidth
                     value={selectedHotel.updatedAt ? new Date(selectedHotel.updatedAt).toLocaleString() : ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
               </Grid>

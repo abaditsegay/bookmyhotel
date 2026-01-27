@@ -55,6 +55,9 @@ const HotelAdminBookingDetails = lazy(() => import('./pages/hotel-admin/HotelAdm
 const FrontDeskDashboard = lazy(() => import('./pages/frontdesk/FrontDeskDashboard'));
 const FrontDeskUnifiedBookingDetails = lazy(() => import('./pages/frontdesk/FrontDeskUnifiedBookingDetails'));
 
+// Debug pages
+const RoleDashboardDebug = lazy(() => import('./pages/RoleDashboardDebug'));
+
 // Booking Management
 const BookingManagementPage = lazy(() => import('./pages/BookingManagementPage'));
 const GuestBookingManagementPage = lazy(() => import('./pages/GuestBookingManagementPage'));
@@ -578,6 +581,9 @@ function App() {
             <StaffScheduleDashboard />
           </ProtectedRoute>
         } />
+        
+        {/* Debug Route for Dashboard Testing */}
+        <Route path="/debug/role-dashboard" element={<RoleDashboardDebug />} />
         
         {/* Catch-all route for 404 Not Found */}
         <Route path="*" element={<NotFoundPage />} />

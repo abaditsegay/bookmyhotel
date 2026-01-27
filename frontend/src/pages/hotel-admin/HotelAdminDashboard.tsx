@@ -997,23 +997,49 @@ const HotelAdminDashboard: React.FC = () => {
         <TabPanel value={activeTab} index={6}>
           {/* Reports Tab - Enhanced with More Data */}
           <Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Typography variant="h6" sx={{ 
-                fontWeight: 'bold',
-                color: theme.palette.primary.main 
-              }}>
-                {t('dashboard.hotelAdmin.reports.title')}
-              </Typography>
+            <Box 
+              sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'space-between', 
+                mb: 3, 
+                pb: 2, 
+                borderBottom: '2px solid #E8B86D',
+                background: 'linear-gradient(135deg, rgba(232, 184, 109, 0.05) 0%, rgba(255, 255, 255, 0.9) 100%)',
+                px: 2,
+                py: 2,
+                borderRadius: 2
+              }}
+            >
+              <Box display="flex" alignItems="center" gap={1.5}>
+                <Box 
+                  sx={{ 
+                    fontSize: 28, 
+                    color: '#E8B86D',
+                    display: 'flex',
+                    alignItems: 'center'
+                  }}
+                >
+                  📊
+                </Box>
+                <Typography variant="h5" sx={{ 
+                  fontWeight: 700,
+                  color: '#333'
+                }}>
+                  {t('dashboard.hotelAdmin.reports.title')}
+                </Typography>
+              </Box>
               <Button
                 variant="outlined"
                 onClick={loadReportsData}
                 disabled={reportsData.loading}
                 sx={{
-                  borderColor: theme.palette.primary.main,
-                  color: theme.palette.primary.main,
+                  borderColor: '#E8B86D',
+                  color: '#B8860B',
+                  fontWeight: 600,
                   '&:hover': {
-                    backgroundColor: theme.palette.primary.light + '20', // 20% opacity
-                    borderColor: theme.palette.primary.main
+                    borderColor: '#B8860B',
+                    backgroundColor: 'rgba(232, 184, 109, 0.08)'
                   }
                 }}
               >
@@ -1042,14 +1068,21 @@ const HotelAdminDashboard: React.FC = () => {
                 <Grid container spacing={2} sx={{ mb: 3 }}>
                   <Grid item xs={12} sm={6} md={3}>
                     <Card elevation={0} sx={{ 
-                      backgroundColor: theme.palette.background.paper,
-                      border: `1px solid ${theme.palette.divider}`
+                      backgroundColor: '#fafafa',
+                      border: '1px solid #e0e0e0',
+                      borderLeft: '2px solid #E8B86D',
+                      borderRadius: 2,
+                      transition: 'all 0.2s',
+                      '&:hover': {
+                        boxShadow: '0 4px 12px rgba(232, 184, 109, 0.15)',
+                        transform: 'translateY(-2px)'
+                      }
                     }}>
                       <CardContent sx={{ textAlign: 'center', py: 2 }}>
-                        <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1 }}>
+                        <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1, color: '#E8B86D' }}>
                           {reportsData.hotelStats?.totalRooms || 0}
                         </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1, fontWeight: 600 }}>
                           {t('dashboard.hotelAdmin.metrics.totalRooms')}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
@@ -1061,14 +1094,21 @@ const HotelAdminDashboard: React.FC = () => {
                   
                   <Grid item xs={12} sm={6} md={3}>
                     <Card elevation={0} sx={{ 
-                      backgroundColor: theme.palette.background.paper,
-                      border: `1px solid ${theme.palette.divider}`
+                      backgroundColor: '#fafafa',
+                      border: '1px solid #e0e0e0',
+                      borderLeft: '2px solid #E8B86D',
+                      borderRadius: 2,
+                      transition: 'all 0.2s',
+                      '&:hover': {
+                        boxShadow: '0 4px 12px rgba(232, 184, 109, 0.15)',
+                        transform: 'translateY(-2px)'
+                      }
                     }}>
                       <CardContent sx={{ textAlign: 'center', py: 2 }}>
-                        <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1 }}>
+                        <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1, color: '#4caf50' }}>
                           ${reportsData.bookingStats?.currentYearRevenue?.toLocaleString() || '0'}
                         </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1, fontWeight: 600 }}>
                           {t('dashboard.hotelAdmin.reports.yearRevenue')}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
@@ -1080,14 +1120,21 @@ const HotelAdminDashboard: React.FC = () => {
                   
                   <Grid item xs={12} sm={6} md={3}>
                     <Card elevation={0} sx={{ 
-                      backgroundColor: theme.palette.background.paper,
-                      border: `1px solid ${theme.palette.divider}`
+                      backgroundColor: '#fafafa',
+                      border: '1px solid #e0e0e0',
+                      borderLeft: '2px solid #E8B86D',
+                      borderRadius: 2,
+                      transition: 'all 0.2s',
+                      '&:hover': {
+                        boxShadow: '0 4px 12px rgba(232, 184, 109, 0.15)',
+                        transform: 'translateY(-2px)'
+                      }
                     }}>
                       <CardContent sx={{ textAlign: 'center', py: 2 }}>
-                        <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1 }}>
+                        <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1, color: '#2196f3' }}>
                           {reportsData.bookingStats?.totalBookings || 0}
                         </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1, fontWeight: 600 }}>
                           {t('dashboard.hotelAdmin.reports.totalBookings')}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
@@ -1102,14 +1149,21 @@ const HotelAdminDashboard: React.FC = () => {
                   
                   <Grid item xs={12} sm={6} md={3}>
                     <Card elevation={0} sx={{ 
-                      backgroundColor: theme.palette.background.paper,
-                      border: `1px solid ${theme.palette.divider}`
+                      backgroundColor: '#fafafa',
+                      border: '1px solid #e0e0e0',
+                      borderLeft: '2px solid #E8B86D',
+                      borderRadius: 2,
+                      transition: 'all 0.2s',
+                      '&:hover': {
+                        boxShadow: '0 4px 12px rgba(232, 184, 109, 0.15)',
+                        transform: 'translateY(-2px)'
+                      }
                     }}>
                       <CardContent sx={{ textAlign: 'center', py: 2 }}>
-                        <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1 }}>
+                        <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1, color: '#9c27b0' }}>
                           {reportsData.hotelStats?.activeStaff || 0}
                         </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1, fontWeight: 600 }}>
                           {t('dashboard.hotelAdmin.metrics.activeStaff')}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
@@ -1125,11 +1179,13 @@ const HotelAdminDashboard: React.FC = () => {
                   {/* Booking Status Breakdown */}
                   <Grid item xs={12} md={6}>
                     <Card elevation={0} sx={{ 
-                      backgroundColor: theme.palette.background.paper,
-                      border: `1px solid ${theme.palette.divider}`
+                      backgroundColor: '#fafafa',
+                      border: '1px solid #e0e0e0',
+                      borderLeft: '2px solid #E8B86D',
+                      borderRadius: 2
                     }}>
                       <CardContent>
-                        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: theme.palette.primary.main }}>
+                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: '#B8860B' }}>
                           {t('dashboard.hotelAdmin.reports.bookingStatusOverview')}
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
@@ -1141,9 +1197,9 @@ const HotelAdminDashboard: React.FC = () => {
                             justifyContent: 'space-between', 
                             alignItems: 'center', 
                             py: 1, 
-                            borderBottom: `1px solid ${theme.palette.divider}` 
+                            borderBottom: '1px solid #e0e0e0' 
                           }}>
-                            <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>
+                            <Typography variant="body2" sx={{ textTransform: 'capitalize', fontWeight: 500 }}>
                               {status.replace('_', ' ')}
                             </Typography>
                             <Chip 
@@ -1165,11 +1221,13 @@ const HotelAdminDashboard: React.FC = () => {
                   {/* Staff Distribution */}
                   <Grid item xs={12} md={6}>
                     <Card elevation={0} sx={{ 
-                      backgroundColor: theme.palette.background.paper,
-                      border: `1px solid ${theme.palette.divider}`
+                      backgroundColor: '#fafafa',
+                      border: '1px solid #e0e0e0',
+                      borderLeft: '2px solid #E8B86D',
+                      borderRadius: 2
                     }}>
                       <CardContent>
-                        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: theme.palette.primary.main }}>
+                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: '#B8860B' }}>
                           {t('dashboard.hotelAdmin.reports.staffByRole')}
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
@@ -1181,18 +1239,19 @@ const HotelAdminDashboard: React.FC = () => {
                             justifyContent: 'space-between', 
                             alignItems: 'center', 
                             py: 1, 
-                            borderBottom: `1px solid ${theme.palette.divider}` 
+                            borderBottom: '1px solid #e0e0e0' 
                           }}>
-                            <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>
+                            <Typography variant="body2" sx={{ textTransform: 'capitalize', fontWeight: 500 }}>
                               {role.replace('_', ' ')}
                             </Typography>
                             <Chip 
                               label={count} 
                               size="small" 
                               sx={{ 
-                                backgroundColor: theme.palette.primary.main, 
-                                color: theme.palette.primary.contrastText,
-                                '&:hover': { backgroundColor: theme.palette.primary.dark }
+                                backgroundColor: '#E8B86D', 
+                                color: 'white',
+                                fontWeight: 600,
+                                '&:hover': { backgroundColor: '#B8860B' }
                               }} 
                             />
                           </Box>
@@ -1206,11 +1265,13 @@ const HotelAdminDashboard: React.FC = () => {
                 <Grid container spacing={3} sx={{ mb: 3 }}>
                   <Grid item xs={12}>
                     <Card elevation={0} sx={{ 
-                      backgroundColor: theme.palette.background.paper,
-                      border: `1px solid ${theme.palette.divider}`
+                      backgroundColor: '#fafafa',
+                      border: '1px solid #e0e0e0',
+                      borderLeft: '2px solid #E8B86D',
+                      borderRadius: 2
                     }}>
                       <CardContent>
-                        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: theme.palette.primary.main }}>
+                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: '#B8860B' }}>
                           {t('dashboard.hotelAdmin.reports.todaysOperations')}
                         </Typography>
                         <Grid container spacing={3}>
@@ -1218,14 +1279,19 @@ const HotelAdminDashboard: React.FC = () => {
                             <Box sx={{ 
                               textAlign: 'center', 
                               p: 2, 
-                              backgroundColor: theme.palette.background.paper, 
-                              borderRadius: 1,
-                              border: `1px solid ${theme.palette.divider}`
+                              backgroundColor: 'white', 
+                              borderRadius: 2,
+                              border: '1px solid #e0e0e0',
+                              transition: 'all 0.2s',
+                              '&:hover': {
+                                boxShadow: '0 4px 12px rgba(232, 184, 109, 0.15)',
+                                transform: 'translateY(-2px)'
+                              }
                             }}>
-                              <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                              <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#E8B86D' }}>
                                 {Math.round(((reportsData.hotelStats?.bookedRooms || 0) / (reportsData.hotelStats?.totalRooms || 1)) * 100)}%
                               </Typography>
-                              <Typography variant="body2" color="text.secondary">
+                              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
                                 {t('dashboard.hotelAdmin.reports.occupancyRate')}
                               </Typography>
                             </Box>
@@ -1234,14 +1300,19 @@ const HotelAdminDashboard: React.FC = () => {
                             <Box sx={{ 
                               textAlign: 'center', 
                               p: 2, 
-                              backgroundColor: theme.palette.background.paper, 
-                              borderRadius: 1,
-                              border: `1px solid ${theme.palette.divider}`
+                              backgroundColor: 'white', 
+                              borderRadius: 2,
+                              border: '1px solid #e0e0e0',
+                              transition: 'all 0.2s',
+                              '&:hover': {
+                                boxShadow: '0 4px 12px rgba(232, 184, 109, 0.15)',
+                                transform: 'translateY(-2px)'
+                              }
                             }}>
-                              <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                              <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#4caf50' }}>
                                 {reportsData.bookingStats?.upcomingCheckIns || 0}
                               </Typography>
-                              <Typography variant="body2" color="text.secondary">
+                              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
                                 {t('dashboard.hotelAdmin.reports.expectedCheckins')}
                               </Typography>
                             </Box>
@@ -1250,14 +1321,19 @@ const HotelAdminDashboard: React.FC = () => {
                             <Box sx={{ 
                               textAlign: 'center', 
                               p: 2, 
-                              backgroundColor: theme.palette.background.paper, 
-                              borderRadius: 1,
-                              border: `1px solid ${theme.palette.divider}`
+                              backgroundColor: 'white', 
+                              borderRadius: 2,
+                              border: '1px solid #e0e0e0',
+                              transition: 'all 0.2s',
+                              '&:hover': {
+                                boxShadow: '0 4px 12px rgba(232, 184, 109, 0.15)',
+                                transform: 'translateY(-2px)'
+                              }
                             }}>
-                              <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                              <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#2196f3' }}>
                                 {reportsData.bookingStats?.upcomingCheckOuts || 0}
                               </Typography>
-                              <Typography variant="body2" color="text.secondary">
+                              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
                                 {t('dashboard.hotelAdmin.reports.expectedCheckouts')}
                               </Typography>
                             </Box>
@@ -1272,21 +1348,28 @@ const HotelAdminDashboard: React.FC = () => {
                 <Grid container spacing={3} sx={{ mb: 3 }}>
                   <Grid item xs={12} md={4}>
                     <Card elevation={0} sx={{ 
-                      backgroundColor: theme.palette.background.paper,
-                      border: `1px solid ${theme.palette.divider}`
+                      backgroundColor: '#fafafa',
+                      border: '1px solid #e0e0e0',
+                      borderLeft: '2px solid #E8B86D',
+                      borderRadius: 2,
+                      transition: 'all 0.2s',
+                      '&:hover': {
+                        boxShadow: '0 4px 12px rgba(232, 184, 109, 0.15)',
+                        transform: 'translateY(-2px)'
+                      }
                     }}>
                       <CardContent>
-                        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: theme.palette.primary.main }}>
+                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: '#B8860B' }}>
                           {t('dashboard.hotelAdmin.reports.currentMonthPerformance')}
                         </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2, fontWeight: 600 }}>
                           {t('dashboard.hotelAdmin.reports.monthToDateMetrics')}
                         </Typography>
                         <Box sx={{ mb: 2 }}>
-                          <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                          <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#E8B86D' }}>
                             {reportsData.bookingStats?.thisMonthBookings || 0}
                           </Typography>
-                          <Typography variant="body2" color="text.secondary">
+                          <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
                             {t('dashboard.hotelAdmin.reports.bookingsThisMonth')}
                           </Typography>
                         </Box>
@@ -1306,21 +1389,28 @@ const HotelAdminDashboard: React.FC = () => {
                   
                   <Grid item xs={12} md={4}>
                     <Card elevation={0} sx={{ 
-                      backgroundColor: theme.palette.background.paper,
-                      border: `1px solid ${theme.palette.divider}`
+                      backgroundColor: '#fafafa',
+                      border: '1px solid #e0e0e0',
+                      borderLeft: '2px solid #E8B86D',
+                      borderRadius: 2,
+                      transition: 'all 0.2s',
+                      '&:hover': {
+                        boxShadow: '0 4px 12px rgba(232, 184, 109, 0.15)',
+                        transform: 'translateY(-2px)'
+                      }
                     }}>
                       <CardContent>
-                        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: theme.palette.primary.main }}>
+                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: '#B8860B' }}>
                           {t('dashboard.hotelAdmin.reports.yearToDateRevenue')}
                         </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2, fontWeight: 600 }}>
                           {t('dashboard.hotelAdmin.reports.totalRevenue')}
                         </Typography>
                         <Box sx={{ mb: 2 }}>
-                          <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                          <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#4caf50' }}>
                             ${reportsData.bookingStats?.currentYearRevenue?.toLocaleString() || '0'}
                           </Typography>
-                          <Typography variant="body2" color="text.secondary">
+                          <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
                             {t('dashboard.hotelAdmin.reports.generatedFromBookings')}
                           </Typography>
                         </Box>
@@ -1335,21 +1425,28 @@ const HotelAdminDashboard: React.FC = () => {
                   
                   <Grid item xs={12} md={4}>
                     <Card elevation={0} sx={{ 
-                      backgroundColor: theme.palette.background.paper,
-                      border: `1px solid ${theme.palette.divider}`
+                      backgroundColor: '#fafafa',
+                      border: '1px solid #e0e0e0',
+                      borderLeft: '2px solid #E8B86D',
+                      borderRadius: 2,
+                      transition: 'all 0.2s',
+                      '&:hover': {
+                        boxShadow: '0 4px 12px rgba(232, 184, 109, 0.15)',
+                        transform: 'translateY(-2px)'
+                      }
                     }}>
                       <CardContent>
-                        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: theme.palette.primary.main }}>
+                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: '#B8860B' }}>
                           {t('dashboard.hotelAdmin.reports.bookingAnalytics')}
                         </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2, fontWeight: 600 }}>
                           {t('dashboard.hotelAdmin.reports.comprehensiveBookingMetrics')}
                         </Typography>
                         <Box sx={{ mb: 2 }}>
-                          <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                          <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#2196f3' }}>
                             {reportsData.bookingStats?.totalBookings || 0}
                           </Typography>
-                          <Typography variant="body2" color="text.secondary">
+                          <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
                             {t('dashboard.hotelAdmin.reports.totalBookings')}
                           </Typography>
                         </Box>
@@ -1373,22 +1470,30 @@ const HotelAdminDashboard: React.FC = () => {
                 {reportsData.bookingStats?.statusBreakdown && (
                   <Card elevation={0} sx={{ 
                     mb: 3,
-                    backgroundColor: theme.palette.background.paper,
-                    border: `1px solid ${theme.palette.divider}`
+                    backgroundColor: '#fafafa',
+                    border: '1px solid #e0e0e0',
+                    borderLeft: '2px solid #E8B86D',
+                    borderRadius: 2
                   }}>
                     <CardContent>
-                      <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3, color: theme.palette.primary.main }}>
+                      <Typography variant="h6" sx={{ fontWeight: 700, mb: 3, color: '#B8860B' }}>
                         {t('dashboard.hotelAdmin.reports.bookingStatusOverview')}
                       </Typography>
                       <Grid container spacing={2}>
                         {Object.entries(reportsData.bookingStats.statusBreakdown).map(([status, count]) => (
                           <Grid item xs={12} sm={6} md={3} key={status}>
                             <Card elevation={0} sx={{ 
-                              backgroundColor: theme.palette.background.paper,
-                              border: `1px solid ${theme.palette.divider}`
+                              backgroundColor: 'white',
+                              border: '1px solid #e0e0e0',
+                              borderRadius: 2,
+                              transition: 'all 0.2s',
+                              '&:hover': {
+                                boxShadow: '0 4px 12px rgba(232, 184, 109, 0.15)',
+                                transform: 'translateY(-2px)'
+                              }
                             }}>
                               <CardContent sx={{ textAlign: 'center', py: 2 }}>
-                                <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1 }}>
+                                <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1, color: '#E8B86D' }}>
                                   {count}
                                 </Typography>
                                 <Chip 
@@ -1415,26 +1520,33 @@ const HotelAdminDashboard: React.FC = () => {
                   <Grid container spacing={3} sx={{ mb: 3 }}>
                     <Grid item xs={12} md={6}>
                       <Card elevation={0} sx={{ 
-                        backgroundColor: theme.palette.background.paper,
-                        border: `1px solid ${theme.palette.divider}`
+                        backgroundColor: '#fafafa',
+                        border: '1px solid #e0e0e0',
+                        borderLeft: '2px solid #E8B86D',
+                        borderRadius: 2,
+                        transition: 'all 0.2s',
+                        '&:hover': {
+                          boxShadow: '0 4px 12px rgba(232, 184, 109, 0.15)',
+                          transform: 'translateY(-2px)'
+                        }
                       }}>
                         <CardContent>
-                          <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3, color: theme.palette.primary.main }}>
+                          <Typography variant="h6" sx={{ fontWeight: 700, mb: 3, color: '#B8860B' }}>
                             {t('dashboard.hotelAdmin.reports.roomTypeDistribution')}
                           </Typography>
                           {Object.entries(reportsData.hotelStats.roomsByType).map(([roomType, count]) => (
                             <Box key={roomType} sx={{ mb: 2 }}>
-                              <Typography variant="body2" sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                              <Typography variant="body2" sx={{ display: 'flex', justifyContent: 'space-between', fontWeight: 600 }}>
                                 <span>{roomType.replace('_', ' ')}</span>
                                 <span><strong>{t('dashboard.hotelAdmin.reports.roomsCount', { count })}</strong></span>
                               </Typography>
-                              <Box sx={{ width: '100%', bgcolor: theme.palette.action.hover, borderRadius: 1, mt: 0.5 }}>
+                              <Box sx={{ width: '100%', bgcolor: '#e0e0e0', borderRadius: 1, mt: 0.5 }}>
                                 <Box 
                                   sx={{ 
                                     width: `${reportsData.hotelStats && reportsData.hotelStats.totalRooms > 0 
                                       ? (Number(count) / reportsData.hotelStats.totalRooms) * 100 
                                       : 0}%`, 
-                                    bgcolor: theme.palette.primary.main, 
+                                    bgcolor: '#E8B86D', 
                                     height: 6, 
                                     borderRadius: 1 
                                   }} 
@@ -1448,27 +1560,34 @@ const HotelAdminDashboard: React.FC = () => {
 
                     <Grid item xs={12} md={6}>
                       <Card elevation={0} sx={{ 
-                        backgroundColor: theme.palette.background.paper,
-                        border: `1px solid ${theme.palette.divider}`
+                        backgroundColor: '#fafafa',
+                        border: '1px solid #e0e0e0',
+                        borderLeft: '2px solid #E8B86D',
+                        borderRadius: 2,
+                        transition: 'all 0.2s',
+                        '&:hover': {
+                          boxShadow: '0 4px 12px rgba(232, 184, 109, 0.15)',
+                          transform: 'translateY(-2px)'
+                        }
                       }}>
                         <CardContent>
-                          <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3, color: theme.palette.primary.main }}>
+                          <Typography variant="h6" sx={{ fontWeight: 700, mb: 3, color: '#B8860B' }}>
                             {t('dashboard.hotelAdmin.reports.staffByRole')}
                           </Typography>
                           {reportsData.hotelStats?.staffByRole && Object.keys(reportsData.hotelStats.staffByRole).length > 0 ? (
                             Object.entries(reportsData.hotelStats.staffByRole).map(([role, count]) => (
                               <Box key={role} sx={{ mb: 2 }}>
-                                <Typography variant="body2" sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <Typography variant="body2" sx={{ display: 'flex', justifyContent: 'space-between', fontWeight: 600 }}>
                                   <span>{role.replace('_', ' ')}</span>
                                   <span><strong>{t('dashboard.hotelAdmin.reports.staffCount', { count })}</strong></span>
                                 </Typography>
-                                <Box sx={{ width: '100%', bgcolor: theme.palette.action.hover, borderRadius: 1, mt: 0.5 }}>
+                                <Box sx={{ width: '100%', bgcolor: '#e0e0e0', borderRadius: 1, mt: 0.5 }}>
                                   <Box 
                                     sx={{ 
                                       width: `${reportsData.hotelStats && reportsData.hotelStats.totalStaff > 0 
                                         ? (Number(count) / reportsData.hotelStats.totalStaff) * 100 
                                         : 0}%`, 
-                                      bgcolor: theme.palette.primary.main, 
+                                      bgcolor: '#E8B86D', 
                                       height: 6, 
                                       borderRadius: 1 
                                     }} 
@@ -1491,22 +1610,29 @@ const HotelAdminDashboard: React.FC = () => {
                 <Grid container spacing={3}>
                   <Grid item xs={12} md={6}>
                     <Card elevation={0} sx={{ 
-                      backgroundColor: theme.palette.background.paper,
-                      border: `1px solid ${theme.palette.divider}`
+                      backgroundColor: '#fafafa',
+                      border: '1px solid #e0e0e0',
+                      borderLeft: '2px solid #E8B86D',
+                      borderRadius: 2,
+                      transition: 'all 0.2s',
+                      '&:hover': {
+                        boxShadow: '0 4px 12px rgba(232, 184, 109, 0.15)',
+                        transform: 'translateY(-2px)'
+                      }
                     }}>
                       <CardContent>
-                        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3, color: theme.palette.primary.main }}>
+                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 3, color: '#B8860B' }}>
                           {t('dashboard.hotelAdmin.reports.upcomingActivity')}
                         </Typography>
                         <Box sx={{ mb: 2 }}>
-                          <Typography variant="body2" color="text.secondary">{t('dashboard.hotelAdmin.reports.upcomingCheckInsWeek')}</Typography>
-                          <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                          <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>{t('dashboard.hotelAdmin.reports.upcomingCheckInsWeek')}</Typography>
+                          <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#4caf50' }}>
                             {t('dashboard.hotelAdmin.reports.guestsCount', { count: reportsData.bookingStats?.upcomingCheckIns || 0 })}
                           </Typography>
                         </Box>
                         <Box>
-                          <Typography variant="body2" color="text.secondary">{t('dashboard.hotelAdmin.reports.upcomingCheckOutsWeek')}</Typography>
-                          <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                          <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>{t('dashboard.hotelAdmin.reports.upcomingCheckOutsWeek')}</Typography>
+                          <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#2196f3' }}>
                             {t('dashboard.hotelAdmin.reports.guestsCount', { count: reportsData.bookingStats?.upcomingCheckOuts || 0 })}
                           </Typography>
                         </Box>
@@ -1516,28 +1642,35 @@ const HotelAdminDashboard: React.FC = () => {
                   
                   <Grid item xs={12} md={6}>
                     <Card elevation={0} sx={{ 
-                      backgroundColor: theme.palette.background.paper,
-                      border: `1px solid ${theme.palette.divider}`
+                      backgroundColor: '#fafafa',
+                      border: '1px solid #e0e0e0',
+                      borderLeft: '2px solid #E8B86D',
+                      borderRadius: 2,
+                      transition: 'all 0.2s',
+                      '&:hover': {
+                        boxShadow: '0 4px 12px rgba(232, 184, 109, 0.15)',
+                        transform: 'translateY(-2px)'
+                      }
                     }}>
                       <CardContent>
-                        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3, color: theme.palette.primary.main }}>
+                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 3, color: '#B8860B' }}>
                           {t('dashboard.hotelAdmin.reports.dailyOperationsSummary')}
                         </Typography>
                         <Box sx={{ mb: 2 }}>
-                          <Typography variant="body2" color="text.secondary">{t('dashboard.hotelAdmin.reports.todaysCheckIns')}</Typography>
-                          <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                          <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>{t('dashboard.hotelAdmin.reports.todaysCheckIns')}</Typography>
+                          <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#4caf50' }}>
                             {t('dashboard.hotelAdmin.reports.expectedCount', { count: Math.round((reportsData.bookingStats?.upcomingCheckIns || 0) / 7) })}
                           </Typography>
                         </Box>
                         <Box sx={{ mb: 2 }}>
-                          <Typography variant="body2" color="text.secondary">{t('dashboard.hotelAdmin.reports.todaysCheckOuts')}</Typography>
-                          <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                          <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>{t('dashboard.hotelAdmin.reports.todaysCheckOuts')}</Typography>
+                          <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#2196f3' }}>
                             {t('dashboard.hotelAdmin.reports.expectedCount', { count: Math.round((reportsData.bookingStats?.upcomingCheckOuts || 0) / 7) })}
                           </Typography>
                         </Box>
                         <Box>
-                          <Typography variant="body2" color="text.secondary">{t('dashboard.hotelAdmin.metrics.currentOccupancyRate')}</Typography>
-                          <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                          <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>{t('dashboard.hotelAdmin.metrics.currentOccupancyRate')}</Typography>
+                          <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#E8B86D' }}>
                             {reportsData.hotelStats && reportsData.hotelStats.totalRooms > 0 
                               ? Math.round((reportsData.hotelStats.bookedRooms / reportsData.hotelStats.totalRooms) * 100)
                               : 0}%
@@ -1552,11 +1685,13 @@ const HotelAdminDashboard: React.FC = () => {
                 <Grid container spacing={3} sx={{ mt: 2 }}>
                   <Grid item xs={12}>
                     <Card elevation={0} sx={{ 
-                      backgroundColor: theme.palette.background.paper,
-                      border: `1px solid ${theme.palette.divider}`
+                      backgroundColor: '#fafafa',
+                      border: '1px solid #e0e0e0',
+                      borderLeft: '2px solid #E8B86D',
+                      borderRadius: 2
                     }}>
                       <CardContent>
-                        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3, color: theme.palette.primary.main }}>
+                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 3, color: '#B8860B' }}>
                           {t('dashboard.hotelAdmin.reports.weeklyActivityTrends')}
                         </Typography>
                         <Grid container spacing={2}>
@@ -1564,14 +1699,19 @@ const HotelAdminDashboard: React.FC = () => {
                             <Box sx={{ 
                               textAlign: 'center', 
                               p: 2, 
-                              backgroundColor: theme.palette.background.paper,
-                              border: `1px solid ${theme.palette.divider}`, 
-                              borderRadius: 1 
+                              backgroundColor: 'white',
+                              border: '1px solid #e0e0e0', 
+                              borderRadius: 2,
+                              transition: 'all 0.2s',
+                              '&:hover': {
+                                boxShadow: '0 4px 12px rgba(232, 184, 109, 0.15)',
+                                transform: 'translateY(-2px)'
+                              }
                             }}>
-                              <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                              <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#4caf50' }}>
                                 {reportsData.bookingStats?.upcomingCheckIns || 0}
                               </Typography>
-                              <Typography variant="body2" color="text.secondary">
+                              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
                                 {t('dashboard.hotelAdmin.reports.checkInsNext7Days')}
                               </Typography>
                             </Box>
@@ -1580,14 +1720,19 @@ const HotelAdminDashboard: React.FC = () => {
                             <Box sx={{ 
                               textAlign: 'center', 
                               p: 2, 
-                              backgroundColor: theme.palette.background.paper,
-                              border: `1px solid ${theme.palette.divider}`, 
-                              borderRadius: 1 
+                              backgroundColor: 'white',
+                              border: '1px solid #e0e0e0', 
+                              borderRadius: 2,
+                              transition: 'all 0.2s',
+                              '&:hover': {
+                                boxShadow: '0 4px 12px rgba(232, 184, 109, 0.15)',
+                                transform: 'translateY(-2px)'
+                              }
                             }}>
-                              <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                              <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#2196f3' }}>
                                 {reportsData.bookingStats?.upcomingCheckOuts || 0}
                               </Typography>
-                              <Typography variant="body2" color="text.secondary">
+                              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
                                 {t('dashboard.hotelAdmin.reports.checkOutsNext7Days')}
                               </Typography>
                             </Box>
@@ -1596,14 +1741,19 @@ const HotelAdminDashboard: React.FC = () => {
                             <Box sx={{ 
                               textAlign: 'center', 
                               p: 2, 
-                              backgroundColor: theme.palette.background.paper,
-                              border: `1px solid ${theme.palette.divider}`, 
-                              borderRadius: 1 
+                              backgroundColor: 'white',
+                              border: '1px solid #e0e0e0', 
+                              borderRadius: 2,
+                              transition: 'all 0.2s',
+                              '&:hover': {
+                                boxShadow: '0 4px 12px rgba(232, 184, 109, 0.15)',
+                                transform: 'translateY(-2px)'
+                              }
                             }}>
-                              <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                              <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#E8B86D' }}>
                                 {reportsData.hotelStats?.availableRooms || 0}
                               </Typography>
-                              <Typography variant="body2" color="text.secondary">
+                              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
                                 {t('dashboard.hotelAdmin.metrics.availableRooms')}
                               </Typography>
                             </Box>
@@ -1612,14 +1762,19 @@ const HotelAdminDashboard: React.FC = () => {
                             <Box sx={{ 
                               textAlign: 'center', 
                               p: 2, 
-                              backgroundColor: theme.palette.background.paper,
-                              border: `1px solid ${theme.palette.divider}`, 
-                              borderRadius: 1 
+                              backgroundColor: 'white',
+                              border: '1px solid #e0e0e0', 
+                              borderRadius: 2,
+                              transition: 'all 0.2s',
+                              '&:hover': {
+                                boxShadow: '0 4px 12px rgba(232, 184, 109, 0.15)',
+                                transform: 'translateY(-2px)'
+                              }
                             }}>
-                              <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                              <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#9c27b0' }}>
                                 {reportsData.hotelStats?.activeStaff || 0}
                               </Typography>
-                              <Typography variant="body2" color="text.secondary">
+                              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
                                 {t('dashboard.hotelAdmin.metrics.activeStaff')}
                               </Typography>
                             </Box>
@@ -1633,12 +1788,14 @@ const HotelAdminDashboard: React.FC = () => {
                     <Card 
                       elevation={0}
                       sx={{ 
-                        backgroundColor: theme.palette.background.paper,
-                        border: `1px solid ${theme.palette.divider}`
+                        backgroundColor: '#fafafa',
+                        border: '1px solid #e0e0e0',
+                        borderLeft: '2px solid #E8B86D',
+                        borderRadius: 2
                       }}
                     >
                       <CardContent>
-                        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3, color: theme.palette.primary.main }}>
+                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 3, color: '#B8860B' }}>
                           {t('dashboard.hotelAdmin.reports.quickActionsNavigation')}
                         </Typography>
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
@@ -1647,11 +1804,12 @@ const HotelAdminDashboard: React.FC = () => {
                             size="small"
                             onClick={() => setActiveTab(3)}
                             sx={{
-                              borderColor: theme.palette.primary.main,
-                              color: theme.palette.primary.main,
+                              borderColor: '#E8B86D',
+                              color: '#B8860B',
+                              fontWeight: 600,
                               '&:hover': {
-                                backgroundColor: theme.palette.primary.light + '20', // 20% opacity
-                                borderColor: theme.palette.primary.main
+                                backgroundColor: 'rgba(232, 184, 109, 0.1)',
+                                borderColor: '#B8860B'
                               }
                             }}
                           >
@@ -1662,11 +1820,12 @@ const HotelAdminDashboard: React.FC = () => {
                             size="small"
                             onClick={() => setActiveTab(2)}
                             sx={{
-                              borderColor: theme.palette.primary.main,
-                              color: theme.palette.primary.main,
+                              borderColor: '#E8B86D',
+                              color: '#B8860B',
+                              fontWeight: 600,
                               '&:hover': {
-                                backgroundColor: theme.palette.primary.light + '20', // 20% opacity
-                                borderColor: theme.palette.primary.main
+                                backgroundColor: 'rgba(232, 184, 109, 0.1)',
+                                borderColor: '#B8860B'
                               }
                             }}
                           >
@@ -1677,11 +1836,12 @@ const HotelAdminDashboard: React.FC = () => {
                             size="small"
                             onClick={() => setActiveTab(1)}
                             sx={{
-                              borderColor: theme.palette.primary.main,
-                              color: theme.palette.primary.main,
+                              borderColor: '#E8B86D',
+                              color: '#B8860B',
+                              fontWeight: 600,
                               '&:hover': {
-                                backgroundColor: theme.palette.primary.light + '20', // 20% opacity
-                                borderColor: theme.palette.primary.main
+                                backgroundColor: 'rgba(232, 184, 109, 0.1)',
+                                borderColor: '#B8860B'
                               }
                             }}
                           >
@@ -1692,11 +1852,12 @@ const HotelAdminDashboard: React.FC = () => {
                             size="small"
                             onClick={() => setActiveTab(4)}
                             sx={{
-                              borderColor: theme.palette.primary.main,
-                              color: theme.palette.primary.main,
+                              borderColor: '#E8B86D',
+                              color: '#B8860B',
+                              fontWeight: 600,
                               '&:hover': {
-                                backgroundColor: theme.palette.primary.light + '20', // 20% opacity
-                                borderColor: theme.palette.primary.main
+                                backgroundColor: 'rgba(232, 184, 109, 0.1)',
+                                borderColor: '#B8860B'
                               }
                             }}
                           >

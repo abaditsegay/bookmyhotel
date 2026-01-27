@@ -32,6 +32,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { hotelAdminApi, RoomResponse } from '../../services/hotelAdminApi';
 import { ROOM_TYPES } from '../../constants/roomTypes';
+import PremiumDisplayField from '../../components/common/PremiumDisplayField';
 
 const RoomViewEdit: React.FC = () => {
   const { t } = useTranslation();
@@ -261,13 +262,12 @@ const RoomViewEdit: React.FC = () => {
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
+                    <PremiumDisplayField
                       label={t('rooms.details.roomNumber')}
-                      value={currentRoom?.roomNumber || ''}
-                      onChange={(e) => handleFieldChange('roomNumber', e.target.value)}
-                      disabled={!isEditing}
-                      variant={isEditing ? 'outlined' : 'filled'}
+                      value={currentRoom?.roomNumber}
+                      isEditMode={isEditing}
+                      onChange={(value) => handleFieldChange('roomNumber', value)}
+                      required
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
@@ -296,23 +296,19 @@ const RoomViewEdit: React.FC = () => {
                     )}
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
+                    <PremiumDisplayField
                       label={t('rooms.details.roomId')}
-                      value={currentRoom?.id || ''}
-                      disabled
-                      variant="filled"
+                      value={currentRoom?.id?.toString()}
+                      isEditMode={false}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
+                    <PremiumDisplayField
                       label={t('rooms.details.capacity')}
+                      value={currentRoom?.capacity?.toString()}
+                      isEditMode={isEditing}
+                      onChange={(value) => handleFieldChange('capacity', parseInt(value) || 0)}
                       type="number"
-                      value={currentRoom?.capacity || ''}
-                      onChange={(e) => handleFieldChange('capacity', parseInt(e.target.value))}
-                      disabled={!isEditing}
-                      variant={isEditing ? 'outlined' : 'filled'}
                     />
                   </Grid>
                 </Grid>
@@ -331,17 +327,12 @@ const RoomViewEdit: React.FC = () => {
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
-                    <TextField
-                      fullWidth
+                    <PremiumDisplayField
                       label={t('rooms.details.pricePerNight')}
+                      value={currentRoom?.pricePerNight ? `ETB ${currentRoom.pricePerNight}` : undefined}
+                      isEditMode={isEditing}
+                      onChange={(value) => handleFieldChange('pricePerNight', parseFloat(value.replace('ETB ', '')) || 0)}
                       type="number"
-                      value={currentRoom?.pricePerNight || ''}
-                      onChange={(e) => handleFieldChange('pricePerNight', parseFloat(e.target.value))}
-                      disabled={!isEditing}
-                      variant={isEditing ? 'outlined' : 'filled'}
-                      InputProps={{
-                        startAdornment: 'ETB ',
-                      }}
                     />
                   </Grid>
                   <Grid item xs={12}>

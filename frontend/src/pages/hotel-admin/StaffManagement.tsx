@@ -41,6 +41,7 @@ import {
 } from '@mui/icons-material';
 import { hotelAdminApi, StaffResponse, StaffCreateRequest } from '../../services/hotelAdminApi';
 import { useAuth } from '../../contexts/AuthContext';
+import PremiumTextField from '../../components/common/PremiumTextField';
 import { useNavigate } from 'react-router-dom';
 
 interface StaffFilters {
@@ -310,7 +311,7 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
         <Paper sx={{ p: 2, mb: 2 }}>
           <Grid container spacing={2} alignItems="center">
             <Grid item xs={12} md={4}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Search staff..."
                 value={filters.search}
@@ -515,7 +516,7 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
           <DialogContent>
             <Grid container spacing={2} sx={{ mt: 1 }}>
               <Grid item xs={12} md={6}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Email"
                   type="email"
@@ -525,7 +526,7 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
                 />
               </Grid>
               <Grid item xs={12} md={6}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Password"
                   type="password"
@@ -541,7 +542,7 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
                 />
               </Grid>
               <Grid item xs={12} md={6}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="First Name"
                   value={staffForm.firstName}
@@ -550,7 +551,7 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
                 />
               </Grid>
               <Grid item xs={12} md={6}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Last Name"
                   value={staffForm.lastName}
@@ -559,7 +560,7 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
                 />
               </Grid>
               <Grid item xs={12}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Phone (Optional)"
                   value={staffForm.phone}

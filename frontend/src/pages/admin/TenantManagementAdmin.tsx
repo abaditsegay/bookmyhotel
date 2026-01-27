@@ -49,6 +49,7 @@ import {
   CreateTenantRequest, 
   UpdateTenantRequest 
 } from '../../services/adminApi';
+import PremiumTextField from '../../components/common/PremiumTextField';
 
 interface TenantFilters {
   search: string;
@@ -338,7 +339,7 @@ const TenantManagementAdmin: React.FC = () => {
         <Paper sx={{ p: 2, mb: 2 }}>
           <Grid container spacing={2} alignItems="center">
             <Grid item xs={12} md={4}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Search tenants..."
                 value={filters.search}
@@ -533,7 +534,7 @@ const TenantManagementAdmin: React.FC = () => {
           <DialogContent>
             <Grid container spacing={2} sx={{ mt: 1 }}>
               <Grid item xs={12}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Tenant Name"
                   value={tenantForm.name || ''}
@@ -542,7 +543,7 @@ const TenantManagementAdmin: React.FC = () => {
                 />
               </Grid>
               <Grid item xs={12}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Subdomain (Optional)"
                   value={tenantForm.subdomain || ''}
@@ -551,7 +552,7 @@ const TenantManagementAdmin: React.FC = () => {
                 />
               </Grid>
               <Grid item xs={12}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Description"
                   value={tenantForm.description || ''}
@@ -585,7 +586,7 @@ const TenantManagementAdmin: React.FC = () => {
           <DialogContent>
             <Grid container spacing={2} sx={{ mt: 1 }}>
               <Grid item xs={12}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Tenant Name"
                   value={editForm.name || ''}
@@ -594,7 +595,7 @@ const TenantManagementAdmin: React.FC = () => {
                 />
               </Grid>
               <Grid item xs={12}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Subdomain (Optional)"
                   value={editForm.subdomain || ''}
@@ -603,7 +604,7 @@ const TenantManagementAdmin: React.FC = () => {
                 />
               </Grid>
               <Grid item xs={12}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Description"
                   value={editForm.description || ''}
@@ -663,74 +664,67 @@ const TenantManagementAdmin: React.FC = () => {
             {selectedTenant && (
               <Grid container spacing={2} sx={{ mt: 1 }}>
                 <Grid item xs={12}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label="Tenant Name"
                     value={selectedTenant.name || ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
                 
                 <Grid item xs={12}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label="Subdomain"
                     value={selectedTenant.subdomain || ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
                 
                 <Grid item xs={12}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label="Description"
                     multiline
                     rows={3}
                     value={selectedTenant.description || ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
                 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label="Status"
                     value={selectedTenant.isActive ? 'Active' : 'Inactive'}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label="Tenant ID"
                     value={selectedTenant.tenantId || ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label="Created At"
                     value={selectedTenant.createdAt ? new Date(selectedTenant.createdAt).toLocaleString() : ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label="Last Updated"
                     value={selectedTenant.updatedAt ? new Date(selectedTenant.updatedAt).toLocaleString() : ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
               </Grid>

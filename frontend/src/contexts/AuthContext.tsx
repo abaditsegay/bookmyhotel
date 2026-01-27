@@ -42,6 +42,7 @@ interface AuthContextType {
   onTokenChange?: (token: string) => void;
   clearError: () => void;
   clearSessionExpired: () => void; // Add method to clear session expired state
+  getDashboardPath: () => string; // Get the appropriate dashboard path for the current user
   // Helper functions for role checking
   hasRole: (role: string) => boolean;
   hasAnyRole: (roles: string[]) => boolean;
@@ -484,6 +485,88 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
     return hasAnyRole(['FRONTDESK', 'HOTEL_ADMIN', 'ADMIN']);
   };
 
+  const getDashboardPath = (): string => {
+    if (!user) {
+      console.log('[getDashboardPath] No user found, redirecting to hotel search');
+      return '/hotels/search';
+    }
+
+    console.log('[getDashboardPath] User object:', {
+      email: user.email,
+      role: user.role,
+      roles: user.roles,
+      tenantId: user.tenantId,
+      hotelId: user.hotelId
+    });
+
+    // Normalize roles array - handle various backend formats
+    const normalizedRoles: string[] = [];
+    
+    if (user.roles && Array.isArray(user.roles)) {
+      user.roles.forEach(role => {
+        if (typeof role === 'string') {
+          // Remove ROLE_ prefix if present
+          const cleanRole = role.replace(/^ROLE_/, '');
+          normalizedRoles.push(cleanRole.toUpperCase());
+        } else if (role && typeof role === 'object' && 'name' in role) {
+          // Handle role objects with name property
+          const cleanRole = (role as any).name.replace(/^ROLE_/, '');
+          normalizedRoles.push(cleanRole.toUpperCase());
+        }
+      });
+    }
+    
+    // Add legacy single role if present
+    if (user.role && typeof user.role === 'string') {
+      const cleanRole = user.role.replace(/^ROLE_/, '');
+      if (!normalizedRoles.includes(cleanRole.toUpperCase())) {
+        normalizedRoles.push(cleanRole.toUpperCase());
+      }
+    }
+
+    console.log('[getDashboardPath] Normalized roles:', normalizedRoles);
+
+    // Check normalized roles
+    if (normalizedRoles.length > 0) {
+      // System-wide users
+      if (normalizedRoles.includes('SYSTEM_ADMIN') || (normalizedRoles.includes('ADMIN') && !user.tenantId)) {
+        console.log('[getDashboardPath] Redirecting to /system-dashboard');
+        return '/system-dashboard';
+      }
+      
+      // Tenant-bound users - priority order
+      if (normalizedRoles.includes('HOTEL_ADMIN')) {
+        console.log('[getDashboardPath] Redirecting to /hotel-admin/dashboard');
+        return '/hotel-admin/dashboard';
+      }
+      
+      if (normalizedRoles.includes('ADMIN') && user.tenantId) {
+        console.log('[getDashboardPath] Redirecting to /admin/dashboard');
+        return '/admin/dashboard';
+      }
+      
+      if (normalizedRoles.includes('FRONTDESK')) {
+        console.log('[getDashboardPath] Redirecting to /frontdesk/dashboard');
+        return '/frontdesk/dashboard';
+      }
+      
+      if (normalizedRoles.includes('OPERATIONS_SUPERVISOR')) {
+        console.log('[getDashboardPath] Redirecting to /operations/dashboard');
+        return '/operations/dashboard';
+      }
+      
+      if (normalizedRoles.includes('HOUSEKEEPING') || normalizedRoles.includes('MAINTENANCE')) {
+        console.log('[getDashboardPath] Redirecting to /staff/dashboard');
+        return '/staff/dashboard';
+      }
+    }
+    
+    // Default fallback
+    console.log('[getDashboardPath] No matching role found, redirecting to hotel search');
+    console.log('[getDashboardPath] User roles were:', user.roles, 'User role was:', user.role);
+    return '/hotels/search';
+  };
+
   const value: AuthContextType = {
     user,
     loading,
@@ -500,6 +583,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
     onTokenChange,
     clearError,
     clearSessionExpired,
+    getDashboardPath,
     hasRole,
     hasAnyRole,
     isFrontDesk,

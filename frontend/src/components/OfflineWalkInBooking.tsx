@@ -3,7 +3,6 @@ import {
   Typography,
   Box,
   Button,
-  TextField,
   Grid,
   Card,
   Alert,
@@ -24,6 +23,8 @@ import {
 
   useTheme,
 } from '@mui/material';
+import PremiumTextField from './common/PremiumTextField';
+import PremiumDatePicker from './common/PremiumDatePicker';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -270,100 +271,40 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
 
               <Grid container spacing={3}>
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label={t('dashboard.hotelAdmin.offlineBooking.guestInformation.firstName')}
                     value={guestInfo.firstName}
                     onChange={handleGuestInfoChange('firstName')}
                     required
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        backgroundColor: 'background.paper',
-                        borderRadius: 2,
-                        '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: COLORS.PRIMARY,
-                        },
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: COLORS.PRIMARY,
-                        },
-                      },
-                      '& .MuiInputLabel-root.Mui-focused': {
-                        color: COLORS.PRIMARY,
-                      },
-                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label={t('dashboard.hotelAdmin.offlineBooking.guestInformation.lastName')}
                     value={guestInfo.lastName}
                     onChange={handleGuestInfoChange('lastName')}
                     required
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        backgroundColor: 'background.paper',
-                        borderRadius: 2,
-                        '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: COLORS.PRIMARY,
-                        },
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: COLORS.PRIMARY,
-                        },
-                      },
-                      '& .MuiInputLabel-root.Mui-focused': {
-                        color: COLORS.PRIMARY,
-                      },
-                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label={t('dashboard.hotelAdmin.offlineBooking.guestInformation.email')}
                     type="email"
                     value={guestInfo.email}
                     onChange={handleGuestInfoChange('email')}
                     required
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        backgroundColor: 'background.paper',
-                        borderRadius: 2,
-                        '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: COLORS.PRIMARY,
-                        },
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: COLORS.PRIMARY,
-                        },
-                      },
-                      '& .MuiInputLabel-root.Mui-focused': {
-                        color: COLORS.PRIMARY,
-                      },
-                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label={t('dashboard.hotelAdmin.offlineBooking.guestInformation.phone')}
                     value={guestInfo.phone}
                     onChange={handleGuestInfoChange('phone')}
                     required
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        backgroundColor: 'background.paper',
-                        borderRadius: 2,
-                        '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: COLORS.PRIMARY,
-                        },
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: COLORS.PRIMARY,
-                        },
-                      },
-                      '& .MuiInputLabel-root.Mui-focused': {
-                        color: COLORS.PRIMARY,
-                      },
-                    }}
                   />
                 </Grid>
               </Grid>
@@ -394,61 +335,21 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
               <Grid container spacing={3}>
                 <Grid item xs={12} sm={4}>
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
-                    <DatePicker
+                    <PremiumDatePicker
                       label={t('dashboard.hotelAdmin.offlineBooking.bookingDetails.checkInDate')}
                       value={checkInDate}
                       onChange={(newValue) => newValue && setCheckInDate(newValue)}
                       minDate={new Date()}
-                      slotProps={{ 
-                        textField: { 
-                          fullWidth: true,
-                          sx: {
-                            '& .MuiOutlinedInput-root': {
-                              backgroundColor: 'background.paper',
-                              borderRadius: 2,
-                              '&:hover .MuiOutlinedInput-notchedOutline': {
-                                borderColor: COLORS.PRIMARY,
-                              },
-                              '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                                borderColor: COLORS.PRIMARY,
-                              },
-                            },
-                            '& .MuiInputLabel-root.Mui-focused': {
-                              color: COLORS.PRIMARY,
-                            },
-                          }
-                        } 
-                      }}
                     />
                   </LocalizationProvider>
                 </Grid>
                 <Grid item xs={12} sm={4}>
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
-                    <DatePicker
+                    <PremiumDatePicker
                       label={t('dashboard.hotelAdmin.offlineBooking.bookingDetails.checkOutDate')}
                       value={checkOutDate}
                       onChange={(newValue) => newValue && setCheckOutDate(newValue)}
                       minDate={addDays(checkInDate, 1)}
-                      slotProps={{ 
-                        textField: { 
-                          fullWidth: true,
-                          sx: {
-                            '& .MuiOutlinedInput-root': {
-                              backgroundColor: 'background.paper',
-                              borderRadius: 2,
-                              '&:hover .MuiOutlinedInput-notchedOutline': {
-                                borderColor: COLORS.PRIMARY,
-                              },
-                              '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                                borderColor: COLORS.PRIMARY,
-                              },
-                            },
-                            '& .MuiInputLabel-root.Mui-focused': {
-                              color: COLORS.PRIMARY,
-                            },
-                          }
-                        } 
-                      }}
                     />
                   </LocalizationProvider>
                 </Grid>
@@ -474,7 +375,6 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
             <Box sx={{ mb: 3 }}>
               <Typography variant="h6" sx={{ 
                 fontWeight: 'bold',
-                color: COLORS.PRIMARY,
                 mb: 1
               }}>
                 {t('dashboard.hotelAdmin.offlineBooking.bookingDetails.availableRoomsTitle')}
@@ -509,7 +409,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
             >
               {roomsLoading ? (
                 <Box sx={{ textAlign: 'center', py: 4 }}>
-                  <CircularProgress size={40} sx={{ color: COLORS.PRIMARY }} />
+                  <CircularProgress size={40} />
                   <Typography variant="body2" sx={{ mt: 2, color: 'text.secondary' }}>
                     Loading available rooms...
                   </Typography>
@@ -531,17 +431,18 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                         <Card 
                           sx={{ 
                             cursor: 'pointer',
-                            border: selectedRoom?.id === room.id ? '2px solid' : '1px solid',
-                            borderColor: selectedRoom?.id === room.id ? theme.palette.primary.main : 'divider',
-                            backgroundColor: selectedRoom?.id === room.id ? theme.palette.action.selected : 'background.paper',
+                            border: selectedRoom?.id === room.id ? '3px solid' : '1px solid',
+                            borderColor: selectedRoom?.id === room.id ? '#E8B86D' : 'divider',
+                            borderLeft: selectedRoom?.id === room.id ? '6px solid #E8B86D' : '3px solid #E8B86D',
+                            backgroundColor: selectedRoom?.id === room.id ? 'action.selected' : 'background.paper',
                             elevation: 0,
-                            borderRadius: 3,
+                            borderRadius: 2,
                             transition: 'all 0.2s ease-in-out',
                             '&:hover': {
-                              borderColor: theme.palette.primary.main,
-                              backgroundColor: theme.palette.action.hover,
+                              borderColor: '#E8B86D',
+                              backgroundColor: 'action.hover',
                               transform: 'translateY(-2px)',
-                              boxShadow: theme.shadows[4],
+                              boxShadow: 3,
                             }
                           }}
                           onClick={() => setSelectedRoom(room)}
@@ -560,8 +461,8 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                                 size="small" 
                                 variant="outlined"
                                 sx={{
-                                  borderColor: COLORS.PRIMARY,
-                                  color: COLORS.PRIMARY,
+                                  borderColor: '#E8B86D',
+                                  color: '#B8860B',
                                   fontWeight: 'medium',
                                   fontSize: '0.75rem'
                                 }}
@@ -588,7 +489,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                               </Typography>
                             )}
                             <Typography variant="h6" sx={{
-                              color: COLORS.PRIMARY,
+                              color: '#B8860B',
                               fontWeight: 'bold',
                               fontSize: '1.2rem'
                             }}>
@@ -602,7 +503,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
 
                   {selectedRoom && (
                     <Box sx={{ mt: 3, mb: 2 }}>
-                      <TextField
+                      <PremiumTextField
                         fullWidth
                         label={t('dashboard.hotelAdmin.offlineBooking.bookingDetails.specialRequests')}
                         multiline
@@ -610,21 +511,6 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                         value={specialRequests}
                         onChange={handleSpecialRequestsChange}
                         placeholder="Any special requests or notes for the guest stay..."
-                        sx={{
-                          '& .MuiOutlinedInput-root': {
-                            backgroundColor: 'background.paper',
-                            borderRadius: 2,
-                            '&:hover .MuiOutlinedInput-notchedOutline': {
-                              borderColor: 'text.primary',
-                            },
-                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                              borderColor: 'text.primary',
-                            },
-                          },
-                          '& .MuiInputLabel-root.Mui-focused': {
-                            color: 'text.primary',
-                          },
-                        }}
                       />
                     </Box>
                   )}
@@ -649,7 +535,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                 {selectedRoom && (
                   <Typography variant="body2" sx={{ 
                     fontWeight: 'medium',
-                    color: COLORS.PRIMARY
+                    color: '#B8860B'
                   }}>
                     ✓ Room {selectedRoom.roomNumber} selected
                   </Typography>
@@ -678,16 +564,8 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                   disabled={loading || !selectedRoom || roomsLoading}
                   sx={{ 
                     minWidth: 120,
-                    bgcolor: COLORS.PRIMARY,
-                    color: 'white',
                     fontWeight: 'bold',
                     textTransform: 'uppercase',
-                    '&:hover': {
-                      bgcolor: theme.palette.primary.dark,
-                    },
-                    '&:disabled': {
-                      bgcolor: 'action.disabled',
-                    }
                   }}
                 >
                   {roomsLoading ? t('dashboard.hotelAdmin.offlineBooking.actions.loading') : t('dashboard.hotelAdmin.offlineBooking.actions.next')}
@@ -705,19 +583,19 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
               textAlign: 'center',
               mb: 4,
               p: 3,
-              backgroundColor: theme.palette.background.paper,
+              backgroundColor: 'background.paper',
               borderRadius: 2,
-              border: `2px solid ${theme.palette.divider}`,
+              border: '1px solid',
+              borderColor: 'divider',
               boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
             }}>
               <Typography variant="h5" sx={{ 
                 fontWeight: 700,
-                color: theme.palette.text.primary,
                 mb: 1,
               }}>
                 {t('dashboard.hotelAdmin.offlineBooking.confirmation.title')}
               </Typography>
-              <Typography variant="body1" sx={{ color: theme.palette.text.secondary }}>
+              <Typography variant="body1" sx={{ color: 'text.secondary' }}>
                 {t('dashboard.hotelAdmin.offlineBooking.confirmation.description')}
               </Typography>
             </Box>
@@ -726,8 +604,9 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
               {/* Guest Information */}
               <Grid item xs={12} sm={6}>
                 <Card elevation={2} sx={{ 
-                  backgroundColor: theme.palette.background.paper,
-                  border: `2px solid ${theme.palette.divider}`,
+                  backgroundColor: 'background.paper',
+                  border: '1px solid',
+                  borderColor: 'divider',
                   borderRadius: 2,
                   boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
                 }}>
@@ -737,13 +616,13 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                       alignItems: 'center',
                       mb: 2,
                     }}>
-                      <Typography variant="h6" sx={{ fontWeight: 700, color: COLORS.PRIMARY }}>
+                      <Typography variant="h6" sx={{ fontWeight: 700 }}>
                         {t('dashboard.hotelAdmin.offlineBooking.confirmation.guestInformationTitle')}
                       </Typography>
                     </Box>
                     <Box sx={{ space: 1.5 }}>
                       <Box sx={{ mb: 1.5 }}>
-                        <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700 }}>
+                        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700 }}>
                           {t('walkInBooking.confirmation.fullName')}
                         </Typography>
                         <Typography variant="body1" sx={{ fontWeight: 600 }}>
@@ -751,7 +630,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                         </Typography>
                       </Box>
                       <Box sx={{ mb: 1.5 }}>
-                        <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700 }}>
+                        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700 }}>
                           {t('dashboard.hotelAdmin.offlineBooking.confirmation.emailLabel')}
                         </Typography>
                         <Typography variant="body1" sx={{ fontWeight: 600 }}>
@@ -759,7 +638,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                         </Typography>
                       </Box>
                       <Box>
-                        <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700 }}>
+                        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700 }}>
                           {t('dashboard.hotelAdmin.offlineBooking.confirmation.phoneLabel')}
                         </Typography>
                         <Typography variant="body1" sx={{ fontWeight: 600 }}>
@@ -774,8 +653,9 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
               {/* Stay Details */}
               <Grid item xs={12} sm={6}>
                 <Card elevation={2} sx={{ 
-                  backgroundColor: theme.palette.background.paper,
-                  border: `2px solid ${theme.palette.divider}`,
+                  backgroundColor: 'background.paper',
+                  border: '1px solid',
+                  borderColor: 'divider',
                   borderRadius: 2,
                   boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
                 }}>
@@ -785,14 +665,14 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                       alignItems: 'center',
                       mb: 2,
                     }}>
-                      <Typography variant="h6" sx={{ fontWeight: 700, color: COLORS.PRIMARY }}>
+                      <Typography variant="h6" sx={{ fontWeight: 700 }}>
                         {t('dashboard.hotelAdmin.offlineBooking.confirmation.roomDetailsTitle')}
                       </Typography>
                     </Box>
                     
                     <Box sx={{ space: 1.5 }}>
                       <Box sx={{ mb: 1.5 }}>
-                        <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700 }}>
+                        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700 }}>
                           {t('dashboard.hotelAdmin.offlineBooking.confirmation.roomLabel')}
                         </Typography>
                         <Typography variant="body1" sx={{ fontWeight: 600 }}>
@@ -800,7 +680,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                         </Typography>
                       </Box>
                       <Box sx={{ mb: 1.5 }}>
-                        <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700 }}>
+                        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700 }}>
                           {t('dashboard.hotelAdmin.offlineBooking.confirmation.checkInLabel')} - {t('dashboard.hotelAdmin.offlineBooking.confirmation.checkOutLabel')}
                         </Typography>
                         <Typography variant="body1" sx={{ fontWeight: 600 }}>
@@ -808,7 +688,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                         </Typography>
                       </Box>
                       <Box sx={{ mb: 1.5 }}>
-                        <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700 }}>
+                        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700 }}>
                           {t('dashboard.hotelAdmin.offlineBooking.confirmation.guestsLabel')}
                         </Typography>
                         <Typography variant="body1" sx={{ fontWeight: 600 }}>
@@ -817,7 +697,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                       </Box>
                       {specialRequests && (
                         <Box>
-                          <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700 }}>
+                          <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700 }}>
                             {t('dashboard.hotelAdmin.offlineBooking.confirmation.specialRequestsLabel')}
                           </Typography>
                           <Typography variant="body2" sx={{ fontWeight: 600, fontStyle: 'italic' }}>
@@ -833,8 +713,9 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
               {/* Pricing Summary */}
               <Grid item xs={12}>
                 <Card elevation={3} sx={{ 
-                  backgroundColor: theme.palette.background.paper,
-                  border: `2px solid ${theme.palette.divider}`,
+                  backgroundColor: 'background.paper',
+                  border: '1px solid',
+                  borderColor: 'divider',
                   borderRadius: 2,
                   boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
                 }}>
@@ -844,17 +725,18 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                       alignItems: 'center',
                       mb: 3,
                     }}>
-                      <Typography variant="h6" sx={{ fontWeight: 700, color: COLORS.PRIMARY }}>
+                      <Typography variant="h6" sx={{ fontWeight: 700 }}>
                         {t('dashboard.hotelAdmin.offlineBooking.confirmation.pricingSummaryTitle')}
                       </Typography>
                     </Box>
                     
                     <Box sx={{ 
                       p: 2,
-                      bgcolor: theme.palette.action.hover,
+                      bgcolor: 'action.hover',
                       borderRadius: 2,
                       mb: 2,
-                      border: `1px solid ${theme.palette.divider}`,
+                      border: '1px solid',
+                      borderColor: 'divider',
                     }}>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                         <Typography variant="body1">
@@ -876,7 +758,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                       justifyContent: 'space-between', 
                       alignItems: 'center',
                       p: 2,
-                      bgcolor: COLORS.PRIMARY,
+                      bgcolor: '#E8B86D',
                       borderRadius: 2,
                       mb: 2,
                     }}>
@@ -890,11 +772,12 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                     
                     <Box sx={{
                       p: 2,
-                      bgcolor: addAlpha(COLORS.PRIMARY, 0.1),
-                      color: COLORS.PRIMARY,
+                      bgcolor: 'rgba(232, 184, 109, 0.1)',
+                      color: '#B8860B',
                       borderRadius: 2,
                       textAlign: 'center',
-                      border: `1px solid ${theme.palette.divider}`,
+                      border: '1px solid',
+                      borderColor: 'divider',
                     }}>
                       <Typography variant="body1" sx={{ fontWeight: 600 }}>
                         {t('dashboard.hotelAdmin.offlineBooking.confirmation.paymentNote')}
@@ -1594,7 +1477,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
         <DialogTitle>{t('dashboard.hotelAdmin.offlineBooking.guestSearchDialog.title')}</DialogTitle>
         <DialogContent>
           <Box sx={{ mb: 2 }}>
-            <TextField
+            <PremiumTextField
               fullWidth
               label={t('dashboard.hotelAdmin.offlineBooking.guestSearchDialog.searchPlaceholder')}
               value={guestSearchQuery}

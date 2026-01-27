@@ -257,24 +257,26 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
         <DialogContent sx={{ p: 0 }}>
           <Box className="print-content" sx={{ 
             bgcolor: 'white', 
-            m: 3, 
+            m: 2, 
             borderRadius: 2,
             boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
           }}>
             {/* Header Section */}
             <Box sx={{ 
-              p: 4, 
+              p: 2.5, 
               borderBottom: '1px solid #e0e0e0',
               display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'flex-start'
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 1.5
             }}>
-              <Box>
-                <Typography variant="h4" sx={{ fontWeight: 700, mb: 0.5, color: '#212121' }}>
+              {/* Centered Hotel Info */}
+              <Box sx={{ textAlign: 'center', width: '100%' }}>
+                <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.25, color: '#212121' }}>
                   {displayHotelName}
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {order.hotelAddress || hotelAddress || '1234 Main Street, Downtown'}
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>
+                  {order.hotelAddress || hotelAddress || '123 Main Street, Downtown'}
                 </Typography>
                 {(order.hotelTaxId || hotelTaxId) && (
                   <Typography variant="body2" color="text.secondary">
@@ -282,115 +284,102 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                   </Typography>
                 )}
               </Box>
-              <Box sx={{ textAlign: 'right' }}>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+              
+              {/* Centered Receipt Number/Title */}
+              <Box sx={{ textAlign: 'center', width: '100%' }}>
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>
                   {t('shopReceipt.receiptNumber')}{order.orderNumber}
                 </Typography>
-                <Typography 
-                  variant="caption" 
-                  sx={{ 
-                    px: 2, 
-                    py: 0.5, 
-                    borderRadius: 1, 
-                    backgroundColor: getStatusColor(order.status),
-                    color: 'white',
-                    fontWeight: 600,
-                    textTransform: 'uppercase',
-                    fontSize: '0.7rem',
-                    display: 'inline-block',
-                    mb: 1
-                  }}
-                >
-                  {receiptStatus}
-                </Typography>
-                <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
-                  <Tooltip title={t('shopReceipt.printReceipt')}>
-                    <IconButton 
-                      size="small"
-                      onClick={handlePrint} 
-                      sx={{ 
-                        border: '1px solid #e0e0e0',
-                        '&:hover': { bgcolor: '#f5f5f5' },
-                      }}
-                    >
-                      <PrintIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title={t('shopReceipt.downloadReceipt')}>
-                    <IconButton 
-                      size="small"
-                      onClick={handleDownload} 
-                      sx={{ 
-                        border: '1px solid #e0e0e0',
-                        '&:hover': { bgcolor: '#f5f5f5' },
-                      }}
-                    >
-                      <DownloadIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                </Box>
+              </Box>
+              
+              {/* Action Buttons */}
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <Tooltip title={t('shopReceipt.printReceipt')}>
+                  <IconButton 
+                    size="small"
+                    onClick={handlePrint} 
+                    sx={{ 
+                      border: '1px solid #e0e0e0',
+                      '&:hover': { bgcolor: '#f5f5f5' },
+                    }}
+                  >
+                    <PrintIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title={t('shopReceipt.downloadReceipt')}>
+                  <IconButton 
+                    size="small"
+                    onClick={handleDownload} 
+                    sx={{ 
+                      border: '1px solid #e0e0e0',
+                      '&:hover': { bgcolor: '#f5f5f5' },
+                    }}
+                  >
+                    <DownloadIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
               </Box>
             </Box>
 
             {/* Customer & Order Information */}
-            <Box sx={{ p: 4 }}>
+            <Box sx={{ p: 2.5 }}>
               <Typography 
-                variant="h6" 
+                variant="subtitle1" 
                 sx={{ 
                   fontWeight: 600, 
-                  mb: 3,
+                  mb: 2,
                   color: '#212121',
                   borderLeft: (theme) => `4px solid ${theme.palette.primary.main}`,
-                  pl: 2
+                  pl: 1.5
                 }}
               >
                 {t('shopReceipt.customerInformation')}
               </Typography>
-              <Grid container spacing={3}>
+              <Grid container spacing={2}>
                 <Grid item xs={6}>
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="body2" sx={{ color: '#666', mb: 0.5 }}>
+                  <Box sx={{ mb: 1.5 }}>
+                    <Typography variant="body2" sx={{ color: '#666', mb: 0.25, fontSize: '0.8rem' }}>
                       {t('shopReceipt.name')}:
                     </Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
                       {order.customerName || t('shopReceipt.anonymousCustomer')}
                     </Typography>
                   </Box>
                   {order.customerEmail && (
-                    <Box sx={{ mb: 2 }}>
-                      <Typography variant="body2" sx={{ color: '#666', mb: 0.5 }}>
+                    <Box sx={{ mb: 1.5 }}>
+                      <Typography variant="body2" sx={{ color: '#666', mb: 0.25, fontSize: '0.8rem' }}>
                         {t('shopReceipt.email')}:
                       </Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
                         {order.customerEmail}
                       </Typography>
                     </Box>
                   )}
                   {order.customerPhone && (
                     <Box>
-                      <Typography variant="body2" sx={{ color: '#666', mb: 0.5 }}>
+                      <Typography variant="body2" sx={{ color: '#666', mb: 0.25, fontSize: '0.8rem' }}>
                         {t('shopReceipt.phone')}:
                       </Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
                         {order.customerPhone}
                       </Typography>
                     </Box>
                   )}
                 </Grid>
                 <Grid item xs={6}>
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="body2" sx={{ color: '#666', mb: 0.5 }}>
+                  <Box sx={{ mb: 1.5 }}>
+                    <Typography variant="body2" sx={{ color: '#666', mb: 0.25, fontSize: '0.8rem' }}>
                       {t('shopReceipt.orderDate')}:
                     </Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
                       {formatDate(order.orderDate)}
                     </Typography>
                   </Box>
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="body2" sx={{ color: '#666', mb: 0.5 }}>
+                  <Box sx={{ mb: 1.5 }}>
+                    <Typography variant="body2" sx={{ color: '#666', mb: 0.25, fontSize: '0.8rem' }}>
                       {t('shopReceipt.paymentMethod')}:
                     </Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
                       {order.paymentMethod === 'CASH' ? t('shopReceipt.cash') : (order.paymentMethod || t('shopReceipt.cash'))}
                     </Typography>
                   </Box>
@@ -407,12 +396,13 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
             </Box>
 
             {/* Order Items Table */}
-            <Box sx={{ px: 4, pb: 4 }}>
+            <Box sx={{ px: 2.5, pb: 2.5 }}>
               <Typography 
-                variant="h6" 
+                variant="subtitle1" 
                 sx={{ 
                   fontWeight: 600, 
-                  mb: 3,
+                  mb: 2,
+                  fontSize: '0.9rem',
                   color: '#212121',
                   borderLeft: (theme) => `4px solid ${theme.palette.primary.main}`,
                   pl: 2
@@ -493,13 +483,13 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                   {/* VAT Row */}
                   {(order.vatAmount || 0) > 0 && (
                     <TableRow>
-                      <TableCell colSpan={4} sx={{ pt: 3, borderBottom: 'none' }}>
-                        <Typography variant="body2" sx={{ fontWeight: 500, fontStyle: 'italic' }}>
+                      <TableCell colSpan={4} sx={{ pt: 2, borderBottom: 'none' }}>
+                        <Typography variant="body2" sx={{ fontWeight: 500, fontStyle: 'italic', fontSize: '0.85rem' }}>
                           VAT (15.00%)
                         </Typography>
                       </TableCell>
-                      <TableCell align="right" sx={{ pt: 3, borderBottom: 'none' }}>
-                        <Typography variant="body2" sx={{ fontWeight: 600, fontStyle: 'italic' }}>
+                      <TableCell align="right" sx={{ pt: 2, borderBottom: 'none' }}>
+                        <Typography variant="body2" sx={{ fontWeight: 600, fontStyle: 'italic', fontSize: '0.85rem' }}>
                           {formatCurrencyWithDecimals(order.vatAmount || 0)}
                         </Typography>
                       </TableCell>
@@ -509,13 +499,13 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                   {/* Service Tax Row */}
                   {(order.serviceTaxAmount || 0) > 0 && (
                     <TableRow>
-                      <TableCell colSpan={4} sx={{ borderBottom: '2px solid #e0e0e0', pb: 2 }}>
-                        <Typography variant="body2" sx={{ fontWeight: 500, fontStyle: 'italic' }}>
+                      <TableCell colSpan={4} sx={{ borderBottom: '2px solid #e0e0e0', pb: 1.5 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 500, fontStyle: 'italic', fontSize: '0.85rem' }}>
                           Service Tax (5.00%)
                         </Typography>
                       </TableCell>
-                      <TableCell align="right" sx={{ borderBottom: '2px solid #e0e0e0', pb: 2 }}>
-                        <Typography variant="body2" sx={{ fontWeight: 600, fontStyle: 'italic' }}>
+                      <TableCell align="right" sx={{ borderBottom: '2px solid #e0e0e0', pb: 1.5 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 600, fontStyle: 'italic', fontSize: '0.85rem' }}>
                           {formatCurrencyWithDecimals(order.serviceTaxAmount || 0)}
                         </Typography>
                       </TableCell>
@@ -524,13 +514,13 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
 
                   {/* Total Row */}
                   <TableRow>
-                    <TableCell colSpan={4} sx={{ borderBottom: 'none', pt: 2 }}>
-                      <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                    <TableCell colSpan={4} sx={{ borderBottom: 'none', pt: 1.5 }}>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 700, fontSize: '0.95rem' }}>
                         TOTAL
                       </Typography>
                     </TableCell>
-                    <TableCell align="right" sx={{ borderBottom: 'none', pt: 2 }}>
-                      <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                    <TableCell align="right" sx={{ borderBottom: 'none', pt: 1.5 }}>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 700, fontSize: '1rem' }}>
                         {formatCurrencyWithDecimals(order.totalAmount)}
                       </Typography>
                     </TableCell>
@@ -541,12 +531,13 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
 
             {/* Order Notes if any */}
             {order.notes && (
-              <Box sx={{ px: 4, pb: 2 }}>
+              <Box sx={{ px: 2.5, pb: 1.5 }}>
                 <Typography 
-                  variant="h6" 
+                  variant="subtitle1" 
                   sx={{ 
                     fontWeight: 600, 
-                    mb: 2,
+                    mb: 1.5,
+                    fontSize: '0.9rem',
                     color: '#212121',
                     borderLeft: (theme) => `4px solid ${theme.palette.primary.main}`,
                     pl: 2
@@ -554,7 +545,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                 >
                   Order Notes
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.85rem' }}>
                   {order.notes}
                 </Typography>
               </Box>
@@ -562,21 +553,21 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
 
             {/* Footer */}
             <Box sx={{ 
-              p: 4, 
+              p: 2.5, 
               borderTop: '1px solid #e0e0e0',
               textAlign: 'center',
               bgcolor: '#fafafa'
             }}>
-              <Typography variant="body1" sx={{ fontWeight: 600, mb: 1 }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.75, fontSize: '0.9rem' }}>
                 {t('shopReceipt.thankYou')}
               </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5, fontSize: '0.85rem' }}>
                 {order.isDelivery && order.deliveryType === 'ROOM_DELIVERY' 
                   ? t('shopReceipt.roomDeliveryMessage')
                   : t('shopReceipt.pickupMessage')
                 }
               </Typography>
-              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2 }}>
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1.5, fontSize: '0.75rem' }}>
                 {t('shopReceipt.receiptGenerated')} {formatDate(new Date().toISOString())}
               </Typography>
               {frontDeskPerson && (

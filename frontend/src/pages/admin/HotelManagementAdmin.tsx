@@ -48,6 +48,9 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { adminApiService, HotelDTO, UpdateHotelRequest, TenantDTO, ApproveRegistrationRequest, HotelRegistrationResponse } from '../../services/adminApi';
+import PremiumTextField from '../../components/common/PremiumTextField';
+import PremiumSelect from '../../components/common/PremiumSelect';
+import PremiumDisplayField from '../../components/common/PremiumDisplayField';
 import HotelEditDialog from '../../components/hotel/HotelEditDialog';
 
 interface Hotel extends HotelDTO {}
@@ -767,7 +770,7 @@ const HotelManagementAdmin: React.FC = () => {
             <Paper sx={{ p: 2, mb: 2 }}>
               <Grid container spacing={2}>
                 <Grid item xs={12} md={6}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label="Search hotels..."
                     value={searchTerm}
@@ -1110,7 +1113,7 @@ const HotelManagementAdmin: React.FC = () => {
           <DialogContent>
             <Grid container spacing={2} sx={{ mt: 1 }}>
               <Grid item xs={12} sm={6}>
-                <TextField
+                <PremiumTextField
                   label="Hotel Name"
                   fullWidth
                   required
@@ -1120,7 +1123,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
               
               <Grid item xs={12} sm={6}>
-                <TextField
+                <PremiumTextField
                   label="Contact Person"
                   fullWidth
                   required
@@ -1130,7 +1133,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
               
               <Grid item xs={12}>
-                <TextField
+                <PremiumTextField
                   label="Description"
                   multiline
                   rows={3}
@@ -1141,7 +1144,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
               
               <Grid item xs={12}>
-                <TextField
+                <PremiumTextField
                   label="Address"
                   fullWidth
                   required
@@ -1151,7 +1154,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
               
               <Grid item xs={12} sm={6}>
-                <TextField
+                <PremiumTextField
                   label="City"
                   fullWidth
                   required
@@ -1161,7 +1164,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
               
               <Grid item xs={12} sm={6}>
-                <TextField
+                <PremiumTextField
                   label="Country"
                   fullWidth
                   required
@@ -1172,7 +1175,7 @@ const HotelManagementAdmin: React.FC = () => {
               
               {/* Row 5: Contact Email - moved before phone numbers */}
               <Grid item xs={12}>
-                <TextField
+                <PremiumTextField
                   label="Contact Email"
                   type="email"
                   fullWidth
@@ -1196,7 +1199,7 @@ const HotelManagementAdmin: React.FC = () => {
                   </Typography>
                   <Grid container spacing={2}>
                     <Grid item xs={12} sm={6}>
-                      <TextField
+                      <PremiumTextField
                         label="Phone (Communication)"
                         fullWidth
                         required
@@ -1209,7 +1212,7 @@ const HotelManagementAdmin: React.FC = () => {
                       {/* Empty space to match screenshot layout */}
                     </Grid>
                     <Grid item xs={12} sm={6}>
-                      <TextField
+                      <PremiumTextField
                         label="Mobile Payment Phone"
                         fullWidth
                         value={registrationForm.mobilePaymentPhone}
@@ -1218,7 +1221,7 @@ const HotelManagementAdmin: React.FC = () => {
                       />
                     </Grid>
                     <Grid item xs={12} sm={6}>
-                      <TextField
+                      <PremiumTextField
                         label="Mobile Payment Phone 2 (Optional)"
                         fullWidth
                         value={registrationForm.mobilePaymentPhone2}
@@ -1231,7 +1234,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
 
               <Grid item xs={12} sm={6}>
-                <TextField
+                <PremiumTextField
                   label="License Number"
                   fullWidth
                   value={registrationForm.licenseNumber}
@@ -1240,7 +1243,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
 
               <Grid item xs={12} sm={6}>
-                <TextField
+                <PremiumTextField
                   label="Tax ID"
                   fullWidth
                   value={registrationForm.taxId}
@@ -1249,7 +1252,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
 
               <Grid item xs={12}>
-                <TextField
+                <PremiumTextField
                   label="Website URL"
                   fullWidth
                   value={registrationForm.websiteUrl}
@@ -1258,7 +1261,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
 
               <Grid item xs={12}>
-                <TextField
+                <PremiumTextField
                   label="Facility Amenities"
                   multiline
                   rows={2}
@@ -1270,7 +1273,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
 
               <Grid item xs={12} sm={4}>
-                <TextField
+                <PremiumTextField
                   label="Number of Rooms"
                   fullWidth
                   value={registrationForm.numberOfRooms}
@@ -1280,7 +1283,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
 
               <Grid item xs={12} sm={4}>
-                <TextField
+                <PremiumTextField
                   label="Check-in Time"
                   type="time"
                   fullWidth
@@ -1290,7 +1293,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
 
               <Grid item xs={12} sm={4}>
-                <TextField
+                <PremiumTextField
                   label="Check-out Time"
                   type="time"
                   fullWidth
@@ -1333,144 +1336,197 @@ const HotelManagementAdmin: React.FC = () => {
             {selectedRegistration && (
               <Grid container spacing={2} sx={{ mt: 1 }}>
                 <Grid item xs={12} sm={6}>
-                  <TextField
-                    label="Hotel Name"
-                    fullWidth
-                    value={registrationEditMode ? editRegistrationForm.hotelName : selectedRegistration.hotelName}
-                    disabled={!registrationEditMode}
-                    variant={registrationEditMode ? "outlined" : "filled"}
-                    onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('hotelName', e.target.value) : undefined}
-                    required={registrationEditMode}
-                  />
+                  {registrationEditMode ? (
+                    <PremiumTextField
+                      label="Hotel Name"
+                      fullWidth
+                      value={editRegistrationForm.hotelName}
+                      onChange={(e) => handleEditRegistrationFormChange('hotelName', e.target.value)}
+                      required
+                    />
+                  ) : (
+                    <Box>
+                      <Typography variant="caption" sx={{ color: '#666', mb: 0.5, display: 'block', fontSize: '0.75rem' }}>
+                        Hotel Name
+                      </Typography>
+                      <Box sx={{
+                        p: 1.5,
+                        border: '1px solid #e0e0e0',
+                        borderRadius: 1,
+                        backgroundColor: '#fafafa',
+                        borderLeft: '3px solid #E8B86D'
+                      }}>
+                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                          {selectedRegistration.hotelName}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  )}
                 </Grid>
                 
                 <Grid item xs={12} sm={6}>
-                  <TextField
-                    label="Contact Person"
-                    fullWidth
-                    value={registrationEditMode ? editRegistrationForm.contactPerson : selectedRegistration.contactPerson}
-                    disabled={!registrationEditMode}
-                    variant={registrationEditMode ? "outlined" : "filled"}
-                    onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('contactPerson', e.target.value) : undefined}
-                    required={registrationEditMode}
-                  />
+                  {registrationEditMode ? (
+                    <PremiumTextField
+                      label="Contact Person"
+                      fullWidth
+                      value={editRegistrationForm.contactPerson}
+                      onChange={(e) => handleEditRegistrationFormChange('contactPerson', e.target.value)}
+                      required
+                    />
+                  ) : (
+                    <Box>
+                      <Typography variant="caption" sx={{ color: '#666', mb: 0.5, display: 'block', fontSize: '0.75rem' }}>
+                        Contact Person
+                      </Typography>
+                      <Box sx={{
+                        p: 1.5,
+                        border: '1px solid #e0e0e0',
+                        borderRadius: 1,
+                        backgroundColor: '#fafafa',
+                        borderLeft: '3px solid #E8B86D'
+                      }}>
+                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                          {selectedRegistration.contactPerson}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  )}
                 </Grid>
                 
                 <Grid item xs={12}>
-                  <TextField
-                    label="Description"
-                    multiline
-                    rows={3}
-                    fullWidth
-                    value={registrationEditMode ? editRegistrationForm.description : selectedRegistration.description}
-                    disabled={!registrationEditMode}
-                    variant={registrationEditMode ? "outlined" : "filled"}
-                    onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('description', e.target.value) : undefined}
-                  />
+                  {registrationEditMode ? (
+                    <PremiumTextField
+                      label="Description"
+                      multiline
+                      rows={3}
+                      fullWidth
+                      value={editRegistrationForm.description}
+                      onChange={(e) => handleEditRegistrationFormChange('description', e.target.value)}
+                    />
+                  ) : (
+                    <Box>
+                      <Typography variant="caption" sx={{ color: '#666', mb: 0.5, display: 'block', fontSize: '0.75rem' }}>
+                        Description
+                      </Typography>
+                      <Box sx={{
+                        p: 1.5,
+                        border: '1px solid #e0e0e0',
+                        borderRadius: 1,
+                        backgroundColor: '#fafafa',
+                        borderLeft: '3px solid #E8B86D',
+                        minHeight: '80px'
+                      }}>
+                        <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
+                          {selectedRegistration.description}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  )}
                 </Grid>
                 
                 <Grid item xs={12}>
-                  <TextField
-                    label="Address"
-                    fullWidth
-                    value={registrationEditMode ? editRegistrationForm.address : selectedRegistration.address}
-                    disabled={!registrationEditMode}
-                    variant={registrationEditMode ? "outlined" : "filled"}
-                    onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('address', e.target.value) : undefined}
-                    required={registrationEditMode}
-                  />
+                  {registrationEditMode ? (
+                    <PremiumTextField
+                      label="Address"
+                      fullWidth
+                      value={editRegistrationForm.address}
+                      onChange={(e) => handleEditRegistrationFormChange('address', e.target.value)}
+                      required
+                    />
+                  ) : (
+                    <Box>
+                      <Typography variant="caption" sx={{ color: '#666', mb: 0.5, display: 'block', fontSize: '0.75rem' }}>
+                        Address
+                      </Typography>
+                      <Box sx={{
+                        p: 1.5,
+                        border: '1px solid #e0e0e0',
+                        borderRadius: 1,
+                        backgroundColor: '#fafafa',
+                        borderLeft: '3px solid #E8B86D'
+                      }}>
+                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                          {selectedRegistration.address}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  )}
                 </Grid>
                 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumDisplayField
                     label="City"
-                    fullWidth
                     value={registrationEditMode ? editRegistrationForm.city : selectedRegistration.city}
-                    disabled={!registrationEditMode}
-                    variant={registrationEditMode ? "outlined" : "filled"}
-                    onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('city', e.target.value) : undefined}
-                    required={registrationEditMode}
+                    isEditMode={registrationEditMode}
+                    onChange={(value) => handleEditRegistrationFormChange('city', value)}
+                    required
                   />
                 </Grid>
                 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumDisplayField
                     label="Country"
-                    fullWidth
                     value={registrationEditMode ? editRegistrationForm.country : selectedRegistration.country}
-                    disabled={!registrationEditMode}
-                    variant={registrationEditMode ? "outlined" : "filled"}
-                    onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('country', e.target.value) : undefined}
-                    required={registrationEditMode}
+                    isEditMode={registrationEditMode}
+                    onChange={(value) => handleEditRegistrationFormChange('country', value)}
+                    required
                   />
                 </Grid>
 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumDisplayField
                     label="State"
-                    fullWidth
                     value={registrationEditMode ? editRegistrationForm.state : (selectedRegistration.state || '')}
-                    disabled={!registrationEditMode}
-                    variant={registrationEditMode ? "outlined" : "filled"}
-                    onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('state', e.target.value) : undefined}
+                    isEditMode={registrationEditMode}
+                    onChange={(value) => handleEditRegistrationFormChange('state', value)}
                   />
                 </Grid>
 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumDisplayField
                     label="Zip Code"
-                    fullWidth
                     value={registrationEditMode ? editRegistrationForm.zipCode : (selectedRegistration.zipCode || '')}
-                    disabled={!registrationEditMode}
-                    variant={registrationEditMode ? "outlined" : "filled"}
-                    onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('zipCode', e.target.value) : undefined}
+                    isEditMode={registrationEditMode}
+                    onChange={(value) => handleEditRegistrationFormChange('zipCode', value)}
                   />
                 </Grid>
                 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumDisplayField
                     label="Phone"
-                    fullWidth
                     value={registrationEditMode ? editRegistrationForm.phone : selectedRegistration.phone}
-                    disabled={!registrationEditMode}
-                    variant={registrationEditMode ? "outlined" : "filled"}
-                    onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('phone', e.target.value) : undefined}
-                    required={registrationEditMode}
+                    isEditMode={registrationEditMode}
+                    onChange={(value) => handleEditRegistrationFormChange('phone', value)}
+                    required
                   />
                 </Grid>
 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumDisplayField
                     label="Contact Email"
-                    fullWidth
                     value={registrationEditMode ? editRegistrationForm.contactEmail : selectedRegistration.contactEmail}
-                    disabled={!registrationEditMode}
-                    variant={registrationEditMode ? "outlined" : "filled"}
-                    onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('contactEmail', e.target.value) : undefined}
-                    required={registrationEditMode}
+                    isEditMode={registrationEditMode}
+                    onChange={(value) => handleEditRegistrationFormChange('contactEmail', value)}
                     type="email"
+                    required
                   />
                 </Grid>
 
                 {!registrationEditMode && (
                   <>
                     <Grid item xs={12} sm={6}>
-                      <TextField
+                      <PremiumDisplayField
                         label="Status"
-                        fullWidth
                         value={selectedRegistration.status}
-                        disabled
-                        variant="filled"
+                        isEditMode={false}
                       />
                     </Grid>
 
                     <Grid item xs={12} sm={6}>
-                      <TextField
+                      <PremiumDisplayField
                         label="Submitted At"
-                        fullWidth
                         value={formatDate(selectedRegistration.submittedAt)}
-                        disabled
-                        variant="filled"
+                        isEditMode={false}
                       />
                     </Grid>
                   </>
@@ -1478,82 +1534,70 @@ const HotelManagementAdmin: React.FC = () => {
 
                 {(selectedRegistration.licenseNumber || registrationEditMode) && (
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumDisplayField
                       label="License Number"
-                      fullWidth
                       value={registrationEditMode ? editRegistrationForm.licenseNumber : (selectedRegistration.licenseNumber || '')}
-                      disabled={!registrationEditMode}
-                      variant={registrationEditMode ? "outlined" : "filled"}
-                      onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('licenseNumber', e.target.value) : undefined}
+                      isEditMode={registrationEditMode}
+                      onChange={(value) => handleEditRegistrationFormChange('licenseNumber', value)}
                     />
                   </Grid>
                 )}
 
                 {(selectedRegistration.taxId || registrationEditMode) && (
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumDisplayField
                       label="Tax ID"
-                      fullWidth
                       value={registrationEditMode ? editRegistrationForm.taxId : (selectedRegistration.taxId || '')}
-                      disabled={!registrationEditMode}
-                      variant={registrationEditMode ? "outlined" : "filled"}
-                      onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('taxId', e.target.value) : undefined}
+                      isEditMode={registrationEditMode}
+                      onChange={(value) => handleEditRegistrationFormChange('taxId', value)}
                     />
                   </Grid>
                 )}
 
                 {(selectedRegistration.websiteUrl || registrationEditMode) && (
                   <Grid item xs={12}>
-                    <TextField
+                    <PremiumDisplayField
                       label="Website URL"
-                      fullWidth
                       value={registrationEditMode ? editRegistrationForm.websiteUrl : (selectedRegistration.websiteUrl || '')}
-                      disabled={!registrationEditMode}
-                      variant={registrationEditMode ? "outlined" : "filled"}
-                      onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('websiteUrl', e.target.value) : undefined}
+                      isEditMode={registrationEditMode}
+                      onChange={(value) => handleEditRegistrationFormChange('websiteUrl', value)}
                     />
                   </Grid>
                 )}
 
                 {(selectedRegistration.facilityAmenities || registrationEditMode) && (
                   <Grid item xs={12}>
-                    <TextField
+                    <PremiumDisplayField
                       label="Facility Amenities"
+                      value={registrationEditMode ? editRegistrationForm.facilityAmenities : (selectedRegistration.facilityAmenities || '')}
+                      isEditMode={registrationEditMode}
+                      onChange={(value) => handleEditRegistrationFormChange('facilityAmenities', value)}
                       multiline
                       rows={2}
-                      fullWidth
-                      value={registrationEditMode ? editRegistrationForm.facilityAmenities : (selectedRegistration.facilityAmenities || '')}
-                      disabled={!registrationEditMode}
-                      variant={registrationEditMode ? "outlined" : "filled"}
-                      onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('facilityAmenities', e.target.value) : undefined}
-                      placeholder={registrationEditMode ? "WiFi, Pool, Spa, Restaurant, etc." : undefined}
+                      placeholder="WiFi, Pool, Spa, Restaurant, etc."
                     />
                   </Grid>
                 )}
 
                 {(selectedRegistration.numberOfRooms || registrationEditMode) && (
                   <Grid item xs={12} sm={4}>
-                    <TextField
+                    <PremiumDisplayField
                       label="Number of Rooms"
-                      fullWidth
                       value={registrationEditMode ? editRegistrationForm.numberOfRooms : (selectedRegistration.numberOfRooms?.toString() || '')}
-                      disabled={!registrationEditMode}
-                      variant={registrationEditMode ? "outlined" : "filled"}
-                      onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('numberOfRooms', e.target.value) : undefined}
-                      placeholder={registrationEditMode ? "Enter number of rooms" : undefined}
+                      isEditMode={registrationEditMode}
+                      onChange={(value) => handleEditRegistrationFormChange('numberOfRooms', value)}
+                      placeholder="Enter number of rooms"
                     />
                   </Grid>
                 )}
 
                 {(selectedRegistration.checkInTime || registrationEditMode) && (
                   <Grid item xs={12} sm={4}>
-                    <TextField
+                    <PremiumDisplayField
                       label="Check-in Time"
-                      fullWidth
                       value={registrationEditMode ? editRegistrationForm.checkInTime : (selectedRegistration.checkInTime || '')}
-                      disabled={!registrationEditMode}
-                      variant={registrationEditMode ? "outlined" : "filled"}
-                      onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('checkInTime', e.target.value) : undefined}
+                      isEditMode={registrationEditMode}
+                      onChange={(value) => handleEditRegistrationFormChange('checkInTime', value)}
                       type="time"
                     />
                   </Grid>
@@ -1561,13 +1605,11 @@ const HotelManagementAdmin: React.FC = () => {
 
                 {(selectedRegistration.checkOutTime || registrationEditMode) && (
                   <Grid item xs={12} sm={4}>
-                    <TextField
+                    <PremiumDisplayField
                       label="Check-out Time"
-                      fullWidth
                       value={registrationEditMode ? editRegistrationForm.checkOutTime : (selectedRegistration.checkOutTime || '')}
-                      disabled={!registrationEditMode}
-                      variant={registrationEditMode ? "outlined" : "filled"}
-                      onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('checkOutTime', e.target.value) : undefined}
+                      isEditMode={registrationEditMode}
+                      onChange={(value) => handleEditRegistrationFormChange('checkOutTime', value)}
                       type="time"
                     />
                   </Grid>
@@ -1575,51 +1617,32 @@ const HotelManagementAdmin: React.FC = () => {
 
                 {!registrationEditMode && selectedRegistration.reviewedAt && (
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumDisplayField
                       label="Reviewed At"
-                      fullWidth
                       value={formatDate(selectedRegistration.reviewedAt)}
-                      disabled
-                      variant="filled"
+                      isEditMode={false}
                     />
                   </Grid>
                 )}
 
                 {!registrationEditMode && selectedRegistration.reviewComments && (
                   <Grid item xs={12}>
-                    <TextField
+                    <PremiumDisplayField
                       label="Review Comments"
+                      value={selectedRegistration.reviewComments}
+                      isEditMode={false}
                       multiline
                       rows={3}
-                      fullWidth
-                      value={selectedRegistration.reviewComments}
-                      disabled
-                      variant="filled"
-                    />
-                  </Grid>
-                )}
-
-                {/* Approved hotel ID field removed - not part of API response */}
-                {false && selectedRegistration && (
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      label="Created Hotel ID"
-                      fullWidth
-                      value=""
-                      disabled
-                      variant="filled"
                     />
                   </Grid>
                 )}
 
                 {!registrationEditMode && selectedRegistration.tenantId && (
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumDisplayField
                       label="Tenant ID"
-                      fullWidth
                       value={selectedRegistration.tenantId}
-                      disabled
-                      variant="filled"
+                      isEditMode={false}
                     />
                   </Grid>
                 )}
@@ -1651,125 +1674,113 @@ const HotelManagementAdmin: React.FC = () => {
             {selectedHotel && (
               <Grid container spacing={2} sx={{ mt: 1 }}>
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Hotel Name"
                     fullWidth
                     value={selectedHotel.name || ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
                 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Email"
                     type="email"
                     fullWidth
                     value={selectedHotel.email || ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
                 
                 <Grid item xs={12}>
-                  <TextField
+                  <PremiumTextField
                     label="Description"
                     multiline
                     rows={3}
                     fullWidth
                     value={selectedHotel.description || ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
                 
                 <Grid item xs={12}>
-                  <TextField
+                  <PremiumTextField
                     label="Address"
                     fullWidth
                     value={selectedHotel.address || ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
                 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="City"
                     fullWidth
                     value={selectedHotel.city || ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
                 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Country"
                     fullWidth
                     value={selectedHotel.country || ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
                 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Phone"
                     fullWidth
                     value={selectedHotel.phone || ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Status"
                     fullWidth
                     value={selectedHotel.isActive ? 'Active' : 'Inactive'}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Total Rooms"
                     fullWidth
                     value={selectedHotel.totalRooms?.toString() || '0'}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Available Rooms"
                     fullWidth
                     value={selectedHotel.availableRooms?.toString() || '0'}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Created At"
                     fullWidth
                     value={selectedHotel.createdAt ? new Date(selectedHotel.createdAt).toLocaleString() : ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Last Updated"
                     fullWidth
                     value={selectedHotel.updatedAt ? new Date(selectedHotel.updatedAt).toLocaleString() : ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
               </Grid>
