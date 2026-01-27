@@ -59,7 +59,7 @@ const HotelSearchPage: React.FC = () => {
         background: theme.palette.mode === 'dark' 
           ? getGradient('dark')
           : getGradient('white'),
-        py: 4,
+        pb: 4,
       }}
     >
     <Container 

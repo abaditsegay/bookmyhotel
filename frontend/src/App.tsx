@@ -190,6 +190,9 @@ const PlaceholderPage: React.FC<{ title: string; message: string }> = ({ title, 
 function App() {
   const { isAuthenticated, sessionExpired, clearSessionExpired } = useAuth();
   const location = useLocation();
+  
+
+  
   // PWA install functionality disabled
   // const { 
   //   showIOSPrompt, 

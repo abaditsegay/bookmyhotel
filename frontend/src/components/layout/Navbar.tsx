@@ -56,8 +56,15 @@ const Navbar: React.FC = () => {
 
   const handleNavigation = (path?: string) => {
     if (path) {
-      navigate(path);
+      // Workaround: React Router has issues updating from /hotels/search
+      // Use direct navigation to prevent visual glitches
+      if (location.pathname === '/hotels/search') {
+        window.location.href = path;
+      } else {
+        navigate(path);
+      }
     }
+    
     setMobileDrawerOpen(false);
     handleMenuClose();
   };
