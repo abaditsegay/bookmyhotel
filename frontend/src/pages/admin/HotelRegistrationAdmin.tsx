@@ -245,10 +245,10 @@ const HotelRegistrationAdmin: React.FC = () => {
           <TableHead>
             <TableRow
               sx={{
-                background: 'linear-gradient(135deg, #64748b 0%, #475569 50%, #334155 100%)',
-                boxShadow: '0 4px 12px rgba(100, 116, 139, 0.15)',
+                background: (theme) => `linear-gradient(135deg, ${theme.palette.grey[600]} 0%, ${theme.palette.grey[700]} 50%, ${theme.palette.grey[800]} 100%)`,
+                boxShadow: (theme) => `0 4px 12px ${theme.palette.grey[600]}26`,
                 '& .MuiTableCell-head': {
-                  color: '#ffffff',
+                  color: (theme) => theme.palette.grey[50],
                   fontWeight: 600,
                   fontSize: '0.95rem',
                   letterSpacing: '0.5px',

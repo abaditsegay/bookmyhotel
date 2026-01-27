@@ -779,9 +779,8 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
               onClick={handleBack} 
               sx={{ 
                 mr: 1,
-                color: '#B8860B',
                 '&:hover': {
-                  backgroundColor: '#e8f5e9'
+                  backgroundColor: 'action.hover'
                 }
               }}
             >
@@ -800,17 +799,6 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                 onClick={handleEdit}
                 disabled={!booking || !canModifyBooking(booking.status)}
                 title={booking && !canModifyBooking(booking.status) ? `Cannot edit booking with status: ${booking.status}` : undefined}
-                sx={{
-                  backgroundColor: '#E8B86D',
-                  color: '#1b1b1b',
-                  '&:hover': {
-                    backgroundColor: '#d2a254'
-                  },
-                  '&:disabled': {
-                    backgroundColor: '#e0e0e0',
-                    color: '#9e9e9e'
-                  }
-                }}
               >
                 {t('booking.details.edit')}
               </Button>
@@ -820,15 +808,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                   variant="outlined"
                   startIcon={<CancelIcon />}
                   onClick={handleCancel}
-                  sx={{
-                    borderColor: '#d32f2f',
-                    color: '#d32f2f',
-                    '&:hover': {
-                      borderColor: '#b71c1c',
-                      backgroundColor: '#ffebee',
-                      color: '#b71c1c'
-                    }
-                  }}
+                  color="error"
                 >
                   {t('booking.details.cancel')}
                 </Button>
@@ -837,12 +817,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                   startIcon={<SaveIcon />}
                   onClick={handleSave}
                   disabled={priceCalculating}
-                  sx={{
-                    backgroundColor: '#B8860B',
-                    '&:hover': {
-                      backgroundColor: '#a52f0a'
-                    }
-                  }}
+                  color="primary"
                 >
                   {priceCalculating ? t('booking.details.saving') : t('booking.details.save')}
                 </Button>

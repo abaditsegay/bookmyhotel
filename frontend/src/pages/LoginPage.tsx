@@ -296,7 +296,7 @@ const LoginPage: React.FC = () => {
                     '& .MuiOutlinedInput-root': {
                       backgroundColor: theme.palette.mode === 'dark' 
                         ? theme.palette.grey[800] 
-                        : '#ffffff',
+                        : theme.palette.background.paper,
                       borderRadius: 2,
                       '&:hover .MuiOutlinedInput-notchedOutline': {
                         borderColor: 'primary.main',
@@ -321,7 +321,7 @@ const LoginPage: React.FC = () => {
                     '& .MuiOutlinedInput-root': {
                       backgroundColor: theme.palette.mode === 'dark' 
                         ? theme.palette.grey[800] 
-                        : '#ffffff',
+                        : theme.palette.background.paper,
                       borderRadius: 2,
                       '&:hover .MuiOutlinedInput-notchedOutline': {
                         borderColor: 'primary.main',
@@ -375,7 +375,7 @@ const LoginPage: React.FC = () => {
                       '& .MuiOutlinedInput-root': {
                         backgroundColor: theme.palette.mode === 'dark' 
                           ? theme.palette.grey[800] 
-                          : '#ffffff',
+                          : theme.palette.background.paper,
                         borderRadius: 2,
                         '&:hover .MuiOutlinedInput-notchedOutline': {
                           borderColor: 'primary.main',
@@ -397,7 +397,7 @@ const LoginPage: React.FC = () => {
                       '& .MuiOutlinedInput-root': {
                         backgroundColor: theme.palette.mode === 'dark' 
                           ? theme.palette.grey[800] 
-                          : '#ffffff',
+                          : theme.palette.background.paper,
                         borderRadius: 2,
                         '&:hover .MuiOutlinedInput-notchedOutline': {
                           borderColor: 'primary.main',
@@ -422,7 +422,7 @@ const LoginPage: React.FC = () => {
                     '& .MuiOutlinedInput-root': {
                       backgroundColor: theme.palette.mode === 'dark' 
                         ? theme.palette.grey[800] 
-                        : '#ffffff',
+                        : theme.palette.background.paper,
                       borderRadius: 2,
                       '&:hover .MuiOutlinedInput-notchedOutline': {
                         borderColor: 'primary.main',
@@ -443,7 +443,7 @@ const LoginPage: React.FC = () => {
                     '& .MuiOutlinedInput-root': {
                       backgroundColor: theme.palette.mode === 'dark' 
                         ? theme.palette.grey[800] 
-                        : '#ffffff',
+                        : theme.palette.background.paper,
                       borderRadius: 2,
                       '&:hover .MuiOutlinedInput-notchedOutline': {
                         borderColor: 'primary.main',
@@ -467,7 +467,7 @@ const LoginPage: React.FC = () => {
                     '& .MuiOutlinedInput-root': {
                       backgroundColor: theme.palette.mode === 'dark' 
                         ? theme.palette.grey[800] 
-                        : '#ffffff',
+                        : theme.palette.background.paper,
                       borderRadius: 2,
                       '&:hover .MuiOutlinedInput-notchedOutline': {
                         borderColor: 'primary.main',
@@ -491,7 +491,7 @@ const LoginPage: React.FC = () => {
                     '& .MuiOutlinedInput-root': {
                       backgroundColor: theme.palette.mode === 'dark' 
                         ? theme.palette.grey[800] 
-                        : '#ffffff',
+                        : theme.palette.background.paper,
                       borderRadius: 2,
                       '&:hover .MuiOutlinedInput-notchedOutline': {
                         borderColor: 'primary.main',
@@ -589,7 +589,7 @@ const LoginPage: React.FC = () => {
                   p: 2,
                   background: theme.palette.mode === 'dark' 
                     ? theme.palette.grey[800] 
-                    : '#ffffff',
+                    : theme.palette.background.paper,
                   borderRadius: 0,
                   border: `1px solid ${theme.palette.divider}`,
                 }}
@@ -629,12 +629,12 @@ const LoginPage: React.FC = () => {
                     borderColor: theme.palette.primary.main,
                     backgroundColor: theme.palette.mode === 'dark' 
                       ? theme.palette.grey[900] 
-                      : '#ffffff',
+                      : theme.palette.background.paper,
                     '&:hover': {
                       borderColor: theme.palette.primary.dark,
                       backgroundColor: theme.palette.mode === 'dark' 
                         ? theme.palette.grey[800] 
-                        : '#ffffff',
+                        : theme.palette.background.paper,
                       transform: 'translateY(-2px)',
                       boxShadow: 'none',
                     },
@@ -671,12 +671,12 @@ const LoginPage: React.FC = () => {
                     borderColor: 'primary.main',
                     backgroundColor: theme.palette.mode === 'dark' 
                       ? theme.palette.grey[800] 
-                      : '#ffffff',
+                      : theme.palette.background.paper,
                     '&:hover': {
                       borderColor: 'primary.dark',
                       backgroundColor: theme.palette.mode === 'dark' 
                         ? theme.palette.grey[700] 
-                        : '#ffffff',
+                        : theme.palette.background.paper,
                       transform: 'translateY(-2px)',
                       boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
                     },
@@ -731,12 +731,12 @@ const LoginPage: React.FC = () => {
                     borderColor: 'secondary.main',
                     backgroundColor: theme.palette.mode === 'dark' 
                       ? theme.palette.grey[800] 
-                      : '#ffffff',
+                      : theme.palette.background.paper,
                     '&:hover': {
                       borderColor: 'secondary.dark',
                       backgroundColor: theme.palette.mode === 'dark' 
                         ? theme.palette.grey[700] 
-                        : '#ffffff',
+                        : theme.palette.background.paper,
                       transform: 'translateY(-2px)',
                       boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
                     },
@@ -768,12 +768,12 @@ const LoginPage: React.FC = () => {
                     borderColor: 'secondary.main',
                     backgroundColor: theme.palette.mode === 'dark' 
                       ? theme.palette.grey[800] 
-                      : '#ffffff',
+                      : theme.palette.background.paper,
                     '&:hover': {
                       borderColor: 'secondary.dark',
                       backgroundColor: theme.palette.mode === 'dark' 
                         ? theme.palette.grey[700] 
-                        : '#ffffff',
+                        : theme.palette.background.paper,
                       transform: 'translateY(-2px)',
                       boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
                     },

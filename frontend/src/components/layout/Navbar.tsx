@@ -56,15 +56,16 @@ const Navbar: React.FC = () => {
 
   const handleNavigation = (path?: string) => {
     if (path) {
-      // Workaround: React Router has issues updating from /hotels/search
-      // Use direct navigation to prevent visual glitches
+      // Known issue: React Router context doesn't update when navigating from /hotels/search
+      // This is due to the full-width layout with gradient background creating a context boundary
+      // Using direct navigation ensures clean, instant navigation without re-renders
       if (location.pathname === '/hotels/search') {
         window.location.href = path;
-      } else {
-        navigate(path);
+        return;
       }
+      
+      navigate(path);
     }
-    
     setMobileDrawerOpen(false);
     handleMenuClose();
   };
@@ -225,17 +226,17 @@ const Navbar: React.FC = () => {
             fontSize: '0.8rem', // Smaller font size
             fontWeight: user ? 'bold' : 'normal', // Bold for authenticated users
             textTransform: 'none', // Disable all caps
-            color: item.label === 'Shop' ? '#333' : getTextColor(), // Dark text for Shop button, white for others
+            color: item.label === 'Shop' ? theme.palette.text.primary : getTextColor(),
             backgroundColor: item.label === 'Shop' 
-              ? '#FFD700' // Yellow background for Shop button
+              ? theme.palette.warning.main
               : item.path && isActivePath(item.path) 
                 ? getActiveBackground()
                 : 'transparent',
             '&:hover': {
               backgroundColor: item.label === 'Shop' 
-                ? '#FFC107' // Darker yellow on hover for Shop button
+                ? theme.palette.warning.dark
                 : getHoverBackground(),
-              color: item.label === 'Shop' ? '#222' : getTextColor(), // Darker text on hover for Shop button
+              color: item.label === 'Shop' ? theme.palette.text.primary : getTextColor(),
             },
             // Ensure proper stacking and boundaries
             position: 'relative',
@@ -293,20 +294,20 @@ const Navbar: React.FC = () => {
             sx={{
               cursor: 'pointer',
               backgroundColor: item.label === 'Shop' 
-                ? '#FFD700' // Yellow background for Shop button
+                ? theme.palette.warning.main
                 : item.path && isActivePath(item.path) 
                   ? theme.palette.action.selected 
                   : 'transparent',
               '&:hover': {
                 backgroundColor: item.label === 'Shop' 
-                  ? '#FFC107' // Darker yellow on hover for Shop button
+                  ? theme.palette.warning.dark
                   : theme.palette.action.hover,
               },
             }}
           >
             <ListItemIcon sx={{ 
               color: item.label === 'Shop' 
-                ? '#333' // Dark icon for Shop button
+                ? theme.palette.text.primary
                 : item.path && isActivePath(item.path) ? theme.palette.primary.main : 'inherit' 
             }}>
               {item.icon}
@@ -317,7 +318,7 @@ const Navbar: React.FC = () => {
                 '& .MuiListItemText-primary': {
                   fontWeight: item.path && isActivePath(item.path) ? 600 : 400,
                   color: item.label === 'Shop' 
-                    ? '#333' // Dark text for Shop button
+                    ? theme.palette.text.primary
                     : item.path && isActivePath(item.path) ? theme.palette.primary.main : 'inherit',
                 }
               }}
@@ -569,14 +570,14 @@ const Navbar: React.FC = () => {
                 <Box
                   component="span"
                   sx={{
-                    color: '#FFD700',
+                    color: theme.palette.warning.main,
                     fontWeight: 900,
                     fontFamily: '"Pacifico", "Lobster", cursive',
                     fontSize: '1.25em',
                     fontStyle: 'italic',
                     letterSpacing: '0.05em',
-                    textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5), 0 0 1px #FFD700',
-                    WebkitTextStroke: '0.5px #FFD700',
+                    textShadow: `2px 2px 4px rgba(0, 0, 0, 0.5), 0 0 1px ${theme.palette.warning.main}`,
+                    WebkitTextStroke: `0.5px ${theme.palette.warning.main}`,
                   }}
                 >
                   Shegeroom

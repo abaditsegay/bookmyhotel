@@ -107,8 +107,8 @@ const RoleDashboardDebug: React.FC = () => {
       </Paper>
 
       {user && (
-        <Paper sx={{ p: 3, mt: 2, bgcolor: '#e3f2fd' }}>
-          <Typography variant="h6" gutterBottom color="primary">
+        <Paper sx={{ p: 3, mt: 2, bgcolor: 'primary.light', color: 'primary.contrastText' }}>
+          <Typography variant="h6" gutterBottom color="inherit">
             Your Expected Route
           </Typography>
           <Typography variant="body1">
@@ -122,7 +122,7 @@ const RoleDashboardDebug: React.FC = () => {
         </Paper>
       )}
 
-      <Paper sx={{ p: 3, mt: 2, bgcolor: '#fff3e0' }}>
+      <Paper sx={{ p: 3, mt: 2, bgcolor: 'warning.light' }}>
         <Typography variant="h6" gutterBottom>
           Debugging Tips
         </Typography>

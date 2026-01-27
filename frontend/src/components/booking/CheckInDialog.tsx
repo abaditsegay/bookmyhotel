@@ -478,7 +478,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
         pb: 2,
         pt: 3,
         px: 3,
-        background: 'linear-gradient(135deg, #B8860B 0%, #B8860B 50%, #E8B86D 100%)',
+        background: 'linear-gradient(135deg, #1e3a5f 0%, #1e3a5f 50%, #2c5f8d 100%)',
         color: 'white',
         position: 'relative',
         '&::after': {
@@ -488,7 +488,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
           left: 0,
           right: 0,
           height: '4px',
-          background: 'linear-gradient(90deg, #E8B86D 0%, #E8B86D 50%, #B8860B 100%)',
+          background: 'linear-gradient(90deg, #2c5f8d 0%, #1e3a5f 50%, #2c5f8d 100%)',
         }
       }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -521,8 +521,8 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
       
       <DialogContent sx={{ 
         p: 3, 
-        backgroundColor: '#fffef8',
-        backgroundImage: 'linear-gradient(135deg, #fffef8 0%, #fff9e6 100%)'
+        backgroundColor: '#f8f9fa',
+        backgroundImage: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)'
       }}>
         {error && (
           <Alert 
@@ -546,9 +546,9 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
           p: 3, 
           mb: 3,
           border: '1px solid',
-          borderColor: '#E8B86D',
+          borderColor: 'primary.light',
           borderRadius: 3,
-          background: 'linear-gradient(135deg, #ffffff 0%, #fffef8 100%)',
+          background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
           position: 'relative',
           overflow: 'hidden',
           '&::before': {
@@ -558,20 +558,20 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
             left: 0,
             right: 0,
             height: '4px',
-            background: 'linear-gradient(90deg, #B8860B 0%, #E8B86D 50%, #E8B86D 100%)',
+            background: 'linear-gradient(90deg, #1e3a5f 0%, #2c5f8d 50%, #1e3a5f 100%)',
           }
         }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
             <Box sx={{ 
               p: 1, 
               borderRadius: '50%', 
-              backgroundColor: '#E8B86D',
+              backgroundColor: 'primary.main',
               color: 'white'
             }}>
               <PersonIcon fontSize="small" />
             </Box>
             <Typography variant="h6" sx={{ 
-              color: '#B8860B',
+              color: 'primary.main',
               fontWeight: 700
             }}>
               Guest Information
@@ -602,7 +602,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                 label={booking.confirmationNumber} 
                 size="medium" 
                 sx={{
-                  backgroundColor: '#E8B86D',
+                  backgroundColor: 'primary.main',
                   color: 'white',
                   fontWeight: 600,
                   '&:hover': {
@@ -641,9 +641,9 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
           p: 3, 
           mb: 3,
           border: '1px solid',
-          borderColor: '#E8B86D',
+          borderColor: 'primary.light',
           borderRadius: 3,
-          background: 'linear-gradient(135deg, #ffffff 0%, #fffef8 100%)',
+          background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
           position: 'relative',
           overflow: 'hidden',
           '&::before': {
@@ -653,20 +653,20 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
             left: 0,
             right: 0,
             height: '3px',
-            background: 'linear-gradient(90deg, #4caf50 0%, #E8B86D 50%, #E8B86D 100%)',
+            background: 'linear-gradient(90deg, #4caf50 0%, #1e3a5f 50%, #2c5f8d 100%)',
           }
         }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
             <Box sx={{ 
               p: 1, 
               borderRadius: '50%', 
-              backgroundColor: currentRoomNumber && currentRoomNumber !== 'To be assigned' ? 'success.main' : 'warning.main',
+              backgroundColor: currentRoomNumber && currentRoomNumber !== 'To be assigned' ? 'success.main' : 'primary.main',
               color: 'white'
             }}>
               <RoomIcon fontSize="small" />
             </Box>
             <Typography variant="h6" sx={{ 
-              color: '#B8860B',
+              color: 'primary.main',
               fontWeight: 700
             }}>
               Assigned Room
@@ -682,8 +682,8 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                   </Typography>
                   <Typography variant="h5" sx={{ 
                     fontWeight: 800, 
-                    color: '#B8860B',
-                    background: 'linear-gradient(45deg, #B8860B, #E8B86D)',
+                    color: 'primary.main',
+                    background: 'linear-gradient(45deg, #1e3a5f, #2c5f8d)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent'
                   }}>
@@ -773,9 +773,9 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
           p: 3, 
           mb: 3,
           border: '1px solid',
-          borderColor: '#E8B86D',
+          borderColor: 'primary.light',
           borderRadius: 3,
-          background: 'linear-gradient(135deg, #ffffff 0%, #f5f9ff 100%)',
+          background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
           position: 'relative',
           overflow: 'hidden',
           '&::before': {
@@ -785,20 +785,20 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
             left: 0,
             right: 0,
             height: '3px',
-            background: 'linear-gradient(90deg, #E8B86D 0%, #E8B86D 50%, #4caf50 100%)',
+            background: 'linear-gradient(90deg, #1e3a5f 0%, #2c5f8d 50%, #4caf50 100%)',
           }
         }} data-testid="room-assignment-section">
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
             <Box sx={{ 
               p: 1, 
               borderRadius: '50%', 
-              backgroundColor: '#E8B86D',
+              backgroundColor: 'primary.main',
               color: 'white'
             }}>
               <RoomIcon fontSize="small" />
             </Box>
-            <Typography variant="h6" sx={{ 
-              color: '#B8860B',
+            <Typography variant="h6" sx={{
+              color: 'primary.main',
               fontWeight: 700
             }}>
               Room Assignment
@@ -832,17 +832,17 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
           
           {loadingRooms ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-                  <CircularProgress sx={{ color: '#B8860B' }} />
+                  <CircularProgress sx={{ color: 'primary.main' }} />
                 </Box>
               ) : (
                 <>
                   {/* Room Type Filter */}
                   <FormControl fullWidth margin="normal" sx={{ mb: 3 }}>
                     <InputLabel sx={{ 
-                      color: '#B8860B',
+                      color: 'primary.main',
                       fontWeight: 600,
                       '&.Mui-focused': {
-                        color: '#B8860B'
+                        color: 'primary.main'
                       }
                     }}>
                       Room Type
@@ -859,14 +859,14 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                         borderRadius: 2,
                         '& .MuiOutlinedInput-root': {
                           '& fieldset': {
-                            borderColor: '#E8B86D',
+                            borderColor: 'primary.light',
                             borderWidth: 1
                           },
                           '&:hover fieldset': {
-                            borderColor: '#E8B86D',
+                            borderColor: 'primary.main',
                           },
                           '&.Mui-focused fieldset': {
-                            borderColor: '#E8B86D',
+                            borderColor: 'primary.main',
                             borderWidth: 1
                           }
                         }
@@ -880,7 +880,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                             boxShadow: '0 8px 32px rgba(21, 101, 192, 0.2)',
                             borderRadius: 12,
                             border: '1px solid',
-                            borderColor: '#E8B86D'
+                            borderColor: 'primary.light'
                           },
                         },
                         MenuListProps: {
@@ -923,7 +923,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                                 backgroundColor: 'primary.light'
                               },
                               '&.Mui-selected': {
-                                backgroundColor: '#E8B86D',
+                                backgroundColor: 'primary.main',
                                 color: 'white',
                                 '&:hover': {
                                   backgroundColor: 'primary.dark'
@@ -937,7 +937,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                       })}
                     </Select>
                     <Typography variant="caption" sx={{ 
-                      color: '#B8860B', 
+                      color: 'primary.main', 
                       fontWeight: 600, 
                       mt: 1,
                       display: 'block'
@@ -948,7 +948,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
               <Typography variant="h6" sx={{ 
                 mt: 2, 
                 mb: 2,
-                color: '#B8860B',
+                color: 'primary.main',
                 fontWeight: 700,
                 display: 'flex',
                 alignItems: 'center',
@@ -980,7 +980,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                           backgroundColor: 'rgba(25, 118, 210, 0.08)',
                           transform: 'translateY(-2px)',
                           boxShadow: '0 8px 24px rgba(21, 101, 192, 0.15)',
-                          borderColor: '#E8B86D'
+                          borderColor: 'primary.main'
                         },
                         backgroundColor: selectedRoomId === room.id ? 'rgba(25, 118, 210, 0.12)' : 'transparent',
                         border: selectedRoomId === room.id ? 1 : 1,
