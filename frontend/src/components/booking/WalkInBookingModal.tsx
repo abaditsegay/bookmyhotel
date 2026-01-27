@@ -785,7 +785,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                           </Typography>
                         )}
                         <Typography variant="h6" sx={{
-                          color: COLORS.PRIMARY,
+                          color: '#B8860B',
                           fontWeight: 'bold',
                           fontSize: '1.2rem'
                         }}>
