@@ -440,7 +440,7 @@ const Navbar: React.FC = () => {
         elevation={2} // Add subtle elevation for better visual separation
         sx={{
           ...getNavbarBackground(),
-          height: 64, // Fixed height to prevent movement
+          height: 70, // Fixed height to prevent movement
           borderBottom: `1px solid ${theme.palette.divider}`, // Add subtle border for structure
           zIndex: theme.zIndex.appBar, // Ensure proper z-index above sidebar
           top: 0, // Explicitly set top position
@@ -451,8 +451,8 @@ const Navbar: React.FC = () => {
         <Toolbar 
           sx={{ 
             justifyContent: 'space-between',
-            minHeight: 64, // Fixed height to match AppBar
-            height: 64, // Fixed height to prevent movement
+            minHeight: 70, // Fixed height to match AppBar
+            height: 70, // Fixed height to prevent movement
             alignItems: 'center', // Center items vertically
             py: 0, // Remove padding to maintain fixed height
             px: { xs: 1, sm: 2 }, // Responsive padding
@@ -529,10 +529,10 @@ const Navbar: React.FC = () => {
                 variant="h4" 
                 component="div" 
                 sx={{ 
-                  fontWeight: 700,
+                  fontWeight: 900,
                   fontFamily: '"Pacifico", "Lobster", cursive',
                   fontStyle: 'italic',
-                  color: 'white',
+                  color: 'yellow',
                   textAlign: 'center',
                   fontSize: { md: '2rem', lg: '2.5rem' },
                   textShadow: '3px 3px 6px rgba(0, 0, 0, 0.4)',
