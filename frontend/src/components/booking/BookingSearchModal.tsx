@@ -103,11 +103,16 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
 
   const getPaymentStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
+      case 'completed':
       case 'paid': return 'success';
+      case 'processing':
       case 'pending': return 'warning';
       case 'pay_at_frontdesk': return 'info';
-      case 'failed': return 'error';
-      case 'refunded': return 'info';
+      case 'failed':
+      case 'cancelled': return 'error';
+      case 'refunded':
+      case 'partially_refunded': return 'info';
+      case 'forfeited': return 'warning';
       default: return 'default';
     }
   };

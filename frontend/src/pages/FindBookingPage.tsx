@@ -30,9 +30,17 @@ const getPaymentStatusColor = (theme: any, status?: string): string => {
       return theme.palette.success.main; // Success color from theme
     case 'PROCESSING':
       return theme.palette.primary.main; // Primary color from theme
+    case 'REFUNDED':
+    case 'PARTIALLY_REFUNDED':
+      return theme.palette.info.main; // Info color for refunds
+    case 'FAILED':
+    case 'CANCELLED':
+      return theme.palette.error.main; // Error color for failed/cancelled
+    case 'FORFEITED':
+      return theme.palette.warning.main; // Warning color for forfeited
     case 'PENDING':
     default:
-      return theme.palette.error.main; // Error color from theme
+      return theme.palette.warning.main; // Warning color from theme
   }
 };
 

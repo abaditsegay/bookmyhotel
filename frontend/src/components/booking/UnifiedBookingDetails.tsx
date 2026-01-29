@@ -713,11 +713,16 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
 
   const getPaymentStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'paid': return 'success';
+      case 'paid':
+      case 'completed': return 'success';
+      case 'processing':
       case 'pending': return 'warning';
       case 'pay_at_frontdesk': return 'info';
-      case 'failed': return 'error';
-      case 'refunded': return 'info';
+      case 'failed':
+      case 'cancelled': return 'error';
+      case 'refunded':
+      case 'partially_refunded': return 'info';
+      case 'forfeited': return 'warning';
       default: return 'default';
     }
   };

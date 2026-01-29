@@ -661,7 +661,11 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
       return 'COMPLETED';
     }
     // Ensure we only return valid enum values
-    if (['PENDING', 'PROCESSING', 'COMPLETED'].includes(normalized)) {
+    const validStatuses = [
+      'PENDING', 'PROCESSING', 'COMPLETED', 'REFUNDED', 
+      'PARTIALLY_REFUNDED', 'FAILED', 'CANCELLED', 'FORFEITED'
+    ];
+    if (validStatuses.includes(normalized)) {
       return normalized;
     }
     return 'PENDING';
@@ -1074,6 +1078,11 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                             <MenuItem value="PENDING">PENDING</MenuItem>
                             <MenuItem value="PROCESSING">PROCESSING</MenuItem>
                             <MenuItem value="COMPLETED">COMPLETED</MenuItem>
+                            <MenuItem value="REFUNDED">REFUNDED</MenuItem>
+                            <MenuItem value="PARTIALLY_REFUNDED">PARTIALLY REFUNDED</MenuItem>
+                            <MenuItem value="FAILED">FAILED</MenuItem>
+                            <MenuItem value="CANCELLED">CANCELLED</MenuItem>
+                            <MenuItem value="FORFEITED">FORFEITED</MenuItem>
                           </PremiumSelect>
                           <IconButton
                             size="small"

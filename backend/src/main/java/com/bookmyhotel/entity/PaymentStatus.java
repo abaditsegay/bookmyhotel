@@ -6,7 +6,12 @@ package com.bookmyhotel.entity;
 public enum PaymentStatus {
     PENDING("Payment is pending"),
     PROCESSING("Payment is being processed"),
-    COMPLETED("Payment has been completed");
+    COMPLETED("Payment has been completed"),
+    REFUNDED("Payment has been refunded"),
+    PARTIALLY_REFUNDED("Payment has been partially refunded"),
+    FAILED("Payment has failed"),
+    CANCELLED("Payment has been cancelled"),
+    FORFEITED("Payment forfeited due to no-show or cancellation");
 
     private final String description;
 
