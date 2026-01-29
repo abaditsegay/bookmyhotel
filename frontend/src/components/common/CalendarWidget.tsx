@@ -361,35 +361,6 @@ const CalendarWidget: React.FC = () => {
                       >
                         {date.getDate()}
                       </Typography>
-
-                      {/* Event indicators - simple dots */}
-                      <Box sx={{ display: 'flex', gap: 0.25, flexWrap: 'wrap', justifyContent: 'center' }}>
-                        {getEventsForDate(date).slice(0, 3).map((event, i) => (
-                          <Tooltip key={event.id} title={`${event.title}${event.description ? ` - ${event.description}` : ''}`}>
-                            <Box
-                              sx={{
-                                width: 6,
-                                height: 6,
-                                borderRadius: '50%',
-                                backgroundColor: getEventTypeColor(event.type),
-                                border: `1px solid ${alpha(getEventTypeColor(event.type), 0.7)}`,
-                              }}
-                            />
-                          </Tooltip>
-                        ))}
-                        {getEventsForDate(date).length > 3 && (
-                          <Typography
-                            variant="caption"
-                            sx={{
-                              color: alpha(COLORS.WHITE, 0.7),
-                              fontSize: '0.6rem',
-                              ml: 0.25,
-                            }}
-                          >
-                            +{getEventsForDate(date).length - 3}
-                          </Typography>
-                        )}
-                      </Box>
                     </>
                   )}
                 </Box>
