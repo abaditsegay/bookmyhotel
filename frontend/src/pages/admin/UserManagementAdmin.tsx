@@ -434,37 +434,33 @@ const UserManagementAdmin: React.FC = () => {
             />
           </Grid>
           <Grid item xs={12} md={4}>
-            <FormControl fullWidth>
-              <InputLabel>Role</InputLabel>
-              <Select
-                value={filters.role}
-                onChange={(e) => handleFilterChange('role', e.target.value)}
-                label="Role"
-              >
-                <MenuItem value="">All Roles</MenuItem>
-                {roleOptions.map((role) => (
-                  <MenuItem key={role} value={role}>
-                    {role.replace('_', ' ')}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            <PremiumSelect
+              fullWidth
+              label="Role"
+              value={filters.role}
+              onChange={(e) => handleFilterChange('role', e.target.value)}
+            >
+              <MenuItem value="">All Roles</MenuItem>
+              {roleOptions.map((role) => (
+                <MenuItem key={role} value={role}>
+                  {role.replace('_', ' ')}
+                </MenuItem>
+              ))}
+            </PremiumSelect>
           </Grid>
           <Grid item xs={12} md={4}>
-            <FormControl fullWidth>
-              <InputLabel>Status</InputLabel>
-              <Select
-                value={filters.status}
-                onChange={(e) => handleFilterChange('status', e.target.value)}
-                label="Status"
-              >
-                {statusOptions.map((status) => (
-                  <MenuItem key={status.value} value={status.value}>
-                    {status.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            <PremiumSelect
+              fullWidth
+              label="Status"
+              value={filters.status}
+              onChange={(e) => handleFilterChange('status', e.target.value)}
+            >
+              {statusOptions.map((status) => (
+                <MenuItem key={status.value} value={status.value}>
+                  {status.label}
+                </MenuItem>
+              ))}
+            </PremiumSelect>
           </Grid>
         </Grid>
       </Paper>
@@ -476,27 +472,16 @@ const UserManagementAdmin: React.FC = () => {
             <TableHead>
               <TableRow
                 sx={{
-                  background: 'linear-gradient(135deg, #64748b 0%, #475569 50%, #334155 100%)',
-                  boxShadow: '0 4px 12px rgba(100, 116, 139, 0.15)',
+                  background: 'linear-gradient(135deg, #f5f5f5 0%, #fafafa 50%, #f5f5f5 100%)',
+                  borderBottom: '2px solid #E8B86D',
                   '& .MuiTableCell-head': {
-                    color: '#ffffff',
-                    fontWeight: 600,
+                    color: '#2c5282',
+                    fontWeight: 700,
                     fontSize: '0.95rem',
                     letterSpacing: '0.5px',
                     textTransform: 'uppercase',
                     border: 'none',
                     padding: '20px 16px',
-                    position: 'relative',
-                    textShadow: '0 1px 2px rgba(0,0,0,0.1)',
-                    '&::after': {
-                      content: '""',
-                      position: 'absolute',
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      height: '3px',
-                      background: 'linear-gradient(90deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.6) 100%)'
-                    }
                   }
                 }}
               >
@@ -839,7 +824,7 @@ const UserManagementAdmin: React.FC = () => {
           <Typography sx={{ mb: 2 }}>
             Reset password for user "{selectedUser?.email}"?
           </Typography>
-          <TextField
+          <PremiumTextField
             fullWidth
             label="New Password"
             type="password"
@@ -857,99 +842,95 @@ const UserManagementAdmin: React.FC = () => {
       </Dialog>
 
       {/* Details Dialog */}
-      <Dialog open={detailsDialogOpen} onClose={() => setDetailsDialogOpen(false)} maxWidth="md" fullWidth>
+      <Dialog 
+        open={detailsDialogOpen} 
+        onClose={() => setDetailsDialogOpen(false)} 
+        maxWidth="md" 
+        fullWidth
+      >
         <DialogTitle>User Details</DialogTitle>
         <DialogContent>
           {selectedUser && (
             <Grid container spacing={2} sx={{ mt: 1 }}>
               <Grid item xs={12} sm={6}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="First Name"
                   value={selectedUser.firstName || ''}
                   disabled
-                  variant="filled"
                 />
               </Grid>
               
               <Grid item xs={12} sm={6}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Last Name"
                   value={selectedUser.lastName || ''}
                   disabled
-                  variant="filled"
                 />
               </Grid>
               
               <Grid item xs={12}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Email"
                   type="email"
                   value={selectedUser.email || ''}
                   disabled
-                  variant="filled"
                 />
               </Grid>
               
               <Grid item xs={12} sm={6}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Phone"
                   value={selectedUser.phone || ''}
                   disabled
-                  variant="filled"
                 />
               </Grid>
 
               <Grid item xs={12} sm={6}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Role"
                   value={selectedUser.roles.length > 0 ? selectedUser.roles[0].replace('_', ' ') : 'No Role'}
                   disabled
-                  variant="filled"
                 />
               </Grid>
 
               <Grid item xs={12} sm={6}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Status"
                   value={selectedUser.isActive ? 'Active' : 'Inactive'}
                   disabled
-                  variant="filled"
                 />
               </Grid>
 
               <Grid item xs={12} sm={6}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Created At"
                   value={selectedUser.createdAt ? new Date(selectedUser.createdAt).toLocaleString() : ''}
                   disabled
-                  variant="filled"
                 />
               </Grid>
 
               <Grid item xs={12} sm={6}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Last Login"
                   value="N/A"
                   disabled
-                  variant="filled"
                 />
               </Grid>
 
               <Grid item xs={12} sm={6}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="User ID"
                   value={selectedUser.id?.toString() || ''}
                   disabled
-                  variant="filled"
                 />
               </Grid>
             </Grid>

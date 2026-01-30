@@ -7,7 +7,6 @@ import {
   Box,
   Button,
   Paper,
-  TextField,
   Grid,
   Table,
   TableBody,
@@ -36,20 +35,20 @@ import {
 } from '@mui/material';
 import { 
   ArrowBack as ArrowBackIcon, 
-  Visibility as ViewIcon, 
+  Visibility as ViewIcon,
   Edit as EditIcon, 
   ToggleOn as ToggleOnIcon, 
   ToggleOff as ToggleOffIcon, 
   Delete as DeleteIcon,
   Add as AddIcon,
-  Check as CheckIcon,
-  Close as CloseIcon,
-  Refresh as RefreshIcon
+  Refresh as RefreshIcon,
+  RateReview as ReviewIcon,
+  CheckCircle as ApproveIcon,
+  Cancel as RejectIcon
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { adminApiService, HotelDTO, UpdateHotelRequest, TenantDTO, ApproveRegistrationRequest, HotelRegistrationResponse } from '../../services/adminApi';
 import PremiumTextField from '../../components/common/PremiumTextField';
-import PremiumSelect from '../../components/common/PremiumSelect';
 import PremiumDisplayField from '../../components/common/PremiumDisplayField';
 import HotelEditDialog from '../../components/hotel/HotelEditDialog';
 
@@ -195,7 +194,19 @@ const HotelManagementAdmin: React.FC = () => {
     try {
       adminApiService.setToken(token);
       const response = await adminApiService.getHotelRegistrations(page, rowsPerPage);
-      setRegistrations(response.content || response);
+      const registrationsData = response.content || response;
+      setRegistrations(registrationsData);
+      
+      // Calculate statistics from loaded registrations
+      if (Array.isArray(registrationsData)) {
+        setRegistrationStats({
+          total: registrationsData.length,
+          pending: registrationsData.filter(r => r.status === 'PENDING').length,
+          underReview: registrationsData.filter(r => r.status === 'UNDER_REVIEW').length,
+          approved: registrationsData.filter(r => r.status === 'APPROVED').length,
+          rejected: registrationsData.filter(r => r.status === 'REJECTED').length
+        });
+      }
     } catch (err) {
       // console.error('Error loading registrations:', err);
     }
@@ -214,32 +225,15 @@ const HotelManagementAdmin: React.FC = () => {
     }
   }, []);
 
-  const loadRegistrationStatistics = useCallback(async () => {
-    try {
-      adminApiService.setToken(token);
-      const data = await adminApiService.getHotelRegistrationStatistics();
-      setRegistrationStats({
-        pending: data.pendingRegistrations,
-        underReview: data.underReviewRegistrations,
-        approved: data.approvedRegistrations,
-        rejected: data.rejectedRegistrations,
-        total: data.totalRegistrations
-      });
-    } catch (err) {
-      // console.error('Error loading registration statistics:', err);
-    }
-  }, [token]);
-
   // Load registrations when tab changes
   useEffect(() => {
     if (activeTab === 0) {
       loadTenants(); // Load tenants when hotels tab is accessed to show tenant names
     } else if (activeTab === 1) {
       loadRegistrations();
-      loadRegistrationStatistics();
       loadTenants(); // Load tenants when registration tab is accessed
     }
-  }, [activeTab, loadRegistrations, loadRegistrationStatistics, loadTenants]);
+  }, [activeTab, loadRegistrations, loadTenants]);
 
   // Filter hotels based on search term and status
   const filteredHotels = useMemo(() => {
@@ -277,7 +271,6 @@ const HotelManagementAdmin: React.FC = () => {
     } else if (newValue === 1) {
       // Loading registrations for Hotel Registrations tab
       loadRegistrations();
-      loadRegistrationStatistics();
       loadTenants();
     }
   };
@@ -369,7 +362,6 @@ const HotelManagementAdmin: React.FC = () => {
         setTimeout(() => setSuccess(null), 3000);
         if (activeTab === 1) {
           loadRegistrations();
-          loadRegistrationStatistics();
         }
       } else {
         const errorData = await response.text();
@@ -392,6 +384,10 @@ const HotelManagementAdmin: React.FC = () => {
   const viewRegistration = (registration: HotelRegistrationResponse) => {
     setSelectedRegistration(registration);
     setRegistrationEditMode(false);
+    // Reset approval/rejection fields
+    setApprovalComments('');
+    setRejectionReason('');
+    setTenantId('');
     // Initialize edit form with registration data
     setEditRegistrationForm({
       hotelName: registration.hotelName || '',
@@ -532,6 +528,7 @@ const HotelManagementAdmin: React.FC = () => {
       await adminApiService.approveHotelRegistration(selectedRegistration.id, request);
       
       setApproveDialogOpen(false);
+      setRegistrationViewDialogOpen(false);
       setSelectedRegistration(null);
       setApprovalComments('');
       setTenantId('');
@@ -540,7 +537,6 @@ const HotelManagementAdmin: React.FC = () => {
       
       // Refresh both registrations and hotels list
       loadRegistrations();
-      loadRegistrationStatistics();
       loadHotels(); // Refresh hotels list to show the newly created hotel
     } catch (err) {
       // console.error('Error approving registration:', err);
@@ -552,35 +548,29 @@ const HotelManagementAdmin: React.FC = () => {
   const handleRejectRegistration = async () => {
     if (!selectedRegistration || !rejectionReason.trim()) {
       setError('Rejection reason is required');
+      setTimeout(() => setError(null), 3000);
       return;
     }
 
     try {
-      const response = await fetch(`/api/admin/hotel-registrations/${selectedRegistration.id}/reject`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          reason: rejectionReason
-        })
-      });
+      const request = {
+        reason: rejectionReason
+      };
 
-      if (response.ok) {
-        setRejectDialogOpen(false);
-        setSelectedRegistration(null);
-        setRejectionReason('');
-        setSuccess('Hotel registration rejected successfully');
-        setTimeout(() => setSuccess(null), 3000);
-        loadRegistrations();
-        loadRegistrationStatistics();
-      } else {
-        throw new Error('Failed to reject registration');
-      }
+      await adminApiService.rejectHotelRegistration(selectedRegistration.id, request);
+
+      setRejectDialogOpen(false);
+      setRegistrationViewDialogOpen(false);
+      setSelectedRegistration(null);
+      setRejectionReason('');
+      setSuccess('Hotel registration rejected successfully');
+      setTimeout(() => setSuccess(null), 3000);
+      
+      // Refresh data
+      loadRegistrations();
     } catch (err) {
-      // console.error('Error rejecting registration:', err);
       setError('Failed to reject hotel registration. Please try again.');
+      setTimeout(() => setError(null), 3000);
     }
   };
 
@@ -725,7 +715,6 @@ const HotelManagementAdmin: React.FC = () => {
                 loadHotels();
               } else {
                 loadRegistrations();
-                loadRegistrationStatistics();
               }
             }}
             sx={{ mr: 2 }}
@@ -1038,46 +1027,22 @@ const HotelManagementAdmin: React.FC = () => {
                       </TableCell>
                       <TableCell>{formatDate(registration.submittedAt)}</TableCell>
                       <TableCell>
-                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                          <Button
-                            size="small"
-                            startIcon={<ViewIcon />}
-                            onClick={() => viewRegistration(registration)}
-                            variant="outlined"
-                          >
-                            View
-                          </Button>
-                          
-                          {registration.status === 'PENDING' && (
-                            <>
-                              <Button
-                                size="small"
-                                startIcon={<CheckIcon />}
-                                onClick={() => openApprovalDialog(registration)}
-                                variant="contained"
-                                sx={{
-                                  backgroundColor: COLORS.PRIMARY,
-                                  '&:hover': {
-                                    backgroundColor: COLORS.PRIMARY,
-                                    filter: 'brightness(0.9)'
-                                  }
-                                }}
-                              >
-                                Approve
-                              </Button>
-                              <Button
-                                size="small"
-                                startIcon={<CloseIcon />}
-                                onClick={() => openRejectionDialog(registration)}
-                                variant="contained"
-                                color="error"
-                              >
-                                Reject
-                              </Button>
-                            </>
-                          )}
-
-                        </Box>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          startIcon={<ReviewIcon />}
+                          onClick={() => viewRegistration(registration)}
+                          sx={{
+                            borderColor: '#2c5282',
+                            color: '#2c5282',
+                            '&:hover': {
+                              borderColor: '#1e3a5f',
+                              backgroundColor: '#f0f4f8'
+                            }
+                          }}
+                        >
+                          Review
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -1297,9 +1262,16 @@ const HotelManagementAdmin: React.FC = () => {
 
         {/* Registration View Dialog */}
         <Dialog open={registrationViewDialogOpen} onClose={() => setRegistrationViewDialogOpen(false)} maxWidth="md" fullWidth>
-          <DialogTitle>
+          <DialogTitle
+            sx={{
+              borderBottom: '2px solid #E8B86D',
+              pb: 2,
+              fontWeight: 600,
+              color: '#2c5282'
+            }}
+          >
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span>Hotel Registration Details</span>
+              <span>Review Hotel Registration</span>
               {selectedRegistration?.status === 'PENDING' && !registrationEditMode && (
                 <Button
                   startIcon={<EditIcon />}
@@ -1629,7 +1601,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
             )}
           </DialogContent>
-          <DialogActions>
+          <DialogActions sx={{ px: 3, py: 2, borderTop: '1px solid #e0e0e0' }}>
             {registrationEditMode ? (
               <>
                 <Button onClick={handleCancelRegistrationEdit}>Cancel</Button>
@@ -1642,7 +1614,47 @@ const HotelManagementAdmin: React.FC = () => {
                 </Button>
               </>
             ) : (
-              <Button onClick={() => setRegistrationViewDialogOpen(false)}>Close</Button>
+              <>
+                <Button 
+                  onClick={() => setRegistrationViewDialogOpen(false)}
+                  sx={{ color: '#666' }}
+                >
+                  Close
+                </Button>
+                {selectedRegistration?.status === 'PENDING' && (
+                  <>
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      startIcon={<RejectIcon />}
+                      onClick={() => openRejectionDialog(selectedRegistration)}
+                      sx={{
+                        borderColor: '#d32f2f',
+                        '&:hover': {
+                          backgroundColor: '#ffebee',
+                          borderColor: '#c62828'
+                        }
+                      }}
+                    >
+                      Reject
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="success"
+                      startIcon={<ApproveIcon />}
+                      onClick={() => openApprovalDialog(selectedRegistration)}
+                      sx={{
+                        backgroundColor: '#2e7d32',
+                        '&:hover': {
+                          backgroundColor: '#1b5e20'
+                        }
+                      }}
+                    >
+                      Approve
+                    </Button>
+                  </>
+                )}
+              </>
             )}
           </DialogActions>
         </Dialog>
@@ -1824,7 +1836,16 @@ const HotelManagementAdmin: React.FC = () => {
           maxWidth="sm"
           fullWidth
         >
-          <DialogTitle>Approve Hotel Registration</DialogTitle>
+          <DialogTitle
+            sx={{
+              borderBottom: '2px solid #E8B86D',
+              pb: 2,
+              fontWeight: 600,
+              color: '#2c5282'
+            }}
+          >
+            Approve Hotel Registration
+          </DialogTitle>
           <DialogContent>
             <DialogContentText sx={{ mb: 2 }}>
               You are about to approve the registration for "{selectedRegistration?.hotelName}". 
@@ -1855,7 +1876,7 @@ const HotelManagementAdmin: React.FC = () => {
                 </FormControl>
               </Grid>
               <Grid item xs={12}>
-                <TextField
+                <PremiumTextField
                   label="Approval Comments (Optional)"
                   multiline
                   rows={3}
@@ -1898,13 +1919,22 @@ const HotelManagementAdmin: React.FC = () => {
           maxWidth="sm"
           fullWidth
         >
-          <DialogTitle>Reject Hotel Registration</DialogTitle>
+          <DialogTitle
+            sx={{
+              borderBottom: '2px solid #E8B86D',
+              pb: 2,
+              fontWeight: 600,
+              color: '#2c5282'
+            }}
+          >
+            Reject Hotel Registration
+          </DialogTitle>
           <DialogContent>
             <DialogContentText sx={{ mb: 2 }}>
               You are about to reject the registration for "{selectedRegistration?.hotelName}". 
               Please provide a reason for the rejection.
             </DialogContentText>
-            <TextField
+            <PremiumTextField
               label="Rejection Reason"
               multiline
               rows={4}
@@ -1913,8 +1943,10 @@ const HotelManagementAdmin: React.FC = () => {
               value={rejectionReason}
               onChange={(e) => setRejectionReason(e.target.value)}
               placeholder="Please provide a detailed reason for rejecting this registration..."
-              helperText="This reason will be visible to the hotel applicant"
             />
+            <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+              This reason will be visible to the hotel applicant
+            </Typography>
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setRejectDialogOpen(false)}>

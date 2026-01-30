@@ -458,6 +458,10 @@ const HotelImageManagement: React.FC = () => {
                       textTransform: 'none',
                       fontSize: '1rem',
                       fontWeight: 600,
+                      '&.Mui-disabled': {
+                        color: 'text.disabled',
+                        backgroundColor: 'rgba(0, 0, 0, 0.12)',
+                      }
                     }}
                   >
                     {hotelGeneralState.uploading ? 'Uploading...' : 'Upload Hotel Image'}
@@ -578,18 +582,20 @@ const HotelImageManagement: React.FC = () => {
             <AccordionSummary 
               expandIcon={<ExpandMoreIcon />}
               sx={{
-                bgcolor: 'secondary.main',
-                color: 'white',
+                bgcolor: 'grey.100',
+                color: 'text.primary',
                 borderRadius: '8px 8px 0 0',
+                borderBottom: '1px solid',
+                borderColor: 'divider',
                 '& .MuiAccordionSummary-expandIconWrapper': {
-                  color: 'white',
+                  color: 'text.secondary',
                 },
                 '&:hover': {
-                  bgcolor: 'secondary.dark',
+                  bgcolor: 'grey.200',
                 },
               }}
             >
-              <Typography variant="h6" sx={{ fontWeight: 600, textTransform: 'capitalize' }}>
+              <Typography variant="h6" sx={{ fontWeight: 500, textTransform: 'capitalize' }}>
                 {roomType.toLowerCase().replace('_', ' ')} Rooms
               </Typography>
             </AccordionSummary>
@@ -601,13 +607,13 @@ const HotelImageManagement: React.FC = () => {
                     elevation={0}
                     sx={{ 
                       height: '100%',
-                      border: '2px dashed',
-                      borderColor: 'secondary.light',
+                      border: '1px solid',
+                      borderColor: 'divider',
                       borderRadius: 2,
                       transition: 'all 0.3s ease',
                       '&:hover': {
-                        borderColor: 'secondary.main',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                        borderColor: 'primary.main',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
                       },
                     }}
                   >
@@ -623,7 +629,6 @@ const HotelImageManagement: React.FC = () => {
                           component="label"
                           fullWidth
                           startIcon={<UploadIcon />}
-                          color="secondary"
                           sx={{ 
                             py: 1.5,
                             borderStyle: 'dashed',
@@ -689,7 +694,7 @@ const HotelImageManagement: React.FC = () => {
                     <CardActions sx={{ p: 3, pt: 0 }}>
                       <Button
                         variant="contained"
-                        color="secondary"
+                        color="primary"
                         size="large"
                         startIcon={state.uploading ? <CircularProgress size={20} color="inherit" /> : <UploadIcon />}
                         onClick={() => handleUploadImages(roomType)}
@@ -700,6 +705,10 @@ const HotelImageManagement: React.FC = () => {
                           textTransform: 'none',
                           fontSize: '1rem',
                           fontWeight: 600,
+                          '&.Mui-disabled': {
+                            color: 'text.disabled',
+                            backgroundColor: 'rgba(0, 0, 0, 0.12)',
+                          }
                         }}
                       >
                         {state.uploading ? 'Uploading...' : 'Upload Room Image'}

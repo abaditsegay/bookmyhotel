@@ -1091,6 +1091,7 @@ public class BookingService {
         // Show actual room number if assigned, otherwise indicate assignment pending
         if (room != null && room.getRoomNumber() != null && !room.getRoomNumber().trim().isEmpty()) {
             response.setRoomNumber(room.getRoomNumber());
+            response.setAssignedRoomId(room.getId()); // Set the room ID for pre-assigned rooms
         } else {
             response.setRoomNumber("To be assigned");
         }

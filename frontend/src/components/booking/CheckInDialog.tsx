@@ -317,12 +317,47 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
     setError(null);
 
     try {
-      // Find the assigned room details to get the room ID
-      const assignedRoom = availableRooms.find(room => room.roomNumber === currentRoomNumber);
-      const roomId = assignedRoom?.id || selectedRoomId; // Fallback to selectedRoomId if not found
+      // First priority: use assignedRoomId if the room was pre-assigned (e.g., walk-in booking)
+      let roomId = booking.assignedRoomId;
+      
+      // Second priority: find the room in availableRooms or use selectedRoomId
+      if (!roomId) {
+        const assignedRoom = availableRooms.find(room => room.roomNumber === currentRoomNumber);
+        roomId = assignedRoom?.id || (selectedRoomId !== null ? selectedRoomId : undefined);
+      }
+      
+      // Last resort: reload rooms to find the assigned room
+      if (!roomId && currentRoomNumber) {
+        try {
+          // Get hotel ID
+          const rawHotelId = mode === 'hotel-admin' ? user?.hotelId : booking.hotelId;
+          const hotelId = typeof rawHotelId === 'string' ? parseInt(rawHotelId, 10) : rawHotelId;
+          
+          if (hotelId) {
+            // Reload available rooms for the booking dates to include the assigned room
+            const reloadResult = await frontDeskApiService.getAvailableRoomsForCheckin(
+              token,
+              hotelId,
+              tenant?.id || null,
+              booking.checkInDate,
+              booking.checkOutDate,
+              2
+            );
+            
+            if (reloadResult.success && reloadResult.data) {
+              const foundRoom = reloadResult.data.find((room: Room) => room.roomNumber === currentRoomNumber);
+              if (foundRoom) {
+                roomId = foundRoom.id;
+              }
+            }
+          }
+        } catch (fetchError) {
+          console.error('Error reloading room details:', fetchError);
+        }
+      }
       
       if (!roomId) {
-        setError('Could not find assigned room details. Please refresh and try again.');
+        setError('Could not find assigned room details. The room may have been deleted or is not available for these dates. Please assign a different room.');
         setLoading(false);
         return;
       }
@@ -331,7 +366,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
         token,
         booking.reservationId,
         roomId,
-        currentRoomType || booking.roomType, // Use current room type if available
+        currentRoomType || booking.roomType,
         tenant?.id || null
       );
 

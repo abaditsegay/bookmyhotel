@@ -163,6 +163,7 @@ public class BookingStatusUpdateService {
             response.setRoomNumber(room.getRoomNumber());
             response.setRoomType(room.getRoomType().name());
             response.setPricePerNight(room.getPricePerNight());
+            response.setAssignedRoomId(room.getId()); // Set the room ID for pre-assigned rooms
             response.setHotelName(room.getHotel().getName());
             response.setHotelAddress(room.getHotel().getAddress());
         } else {

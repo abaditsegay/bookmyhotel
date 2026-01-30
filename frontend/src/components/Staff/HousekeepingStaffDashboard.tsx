@@ -156,22 +156,37 @@ const HousekeepingStaffDashboard: React.FC = () => {
     setShowTaskDetails(true);
   };
 
-  // Mobile-optimized task card component
+  // Elegant Mobile-optimized task card component
   const TaskCard: React.FC<{ task: HousekeepingTask }> = ({ task }) => (
     <Card 
       sx={{ 
         mb: 2, 
         cursor: 'pointer',
-        '&:hover': { elevation: 4, transform: 'translateY(-2px)' },
-        transition: 'all 0.2s ease-in-out'
+        boxShadow: '0 1px 4px rgba(0, 0, 0, 0.05)',
+        borderRadius: 2,
+        border: '1px solid',
+        borderColor: 'divider',
+        transition: 'all 0.2s ease',
+        '&:hover': { 
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+          borderColor: 'primary.light',
+        }
       }}
       onClick={() => openTaskDetails(task)}
     >
       <CardContent sx={{ pb: 1 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <RoomIcon color="primary" fontSize="small" />
-            <Typography variant="h6" component="div">
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 1,
+          }}>
+            <RoomIcon sx={{ color: 'primary.main', fontSize: '1.1rem' }} />
+            <Typography 
+              variant="subtitle1" 
+              component="div"
+              sx={{ color: 'text.primary', fontWeight: 600 }}
+            >
               Room {task.roomNumber}
             </Typography>
           </Box>
@@ -179,41 +194,68 @@ const HousekeepingStaffDashboard: React.FC = () => {
             label={task.status}
             color={getStatusChipColor(task.status)}
             size="small"
+            sx={{
+              fontWeight: 600,
+              boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)'
+            }}
           />
         </Box>
         
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+        <Typography 
+          variant="body2" 
+          color="text.primary"
+          sx={{ 
+            mb: 2,
+            fontWeight: 500,
+            lineHeight: 1.5
+          }}
+        >
           {task.title || task.description}
         </Typography>
         
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
             <Chip
               label={task.taskType}
               color={getTaskTypeColor(task.taskType)}
               size="small"
+              sx={{
+                fontWeight: 600,
+                boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)'
+              }}
             />
             <Chip
               label={task.priority}
               color={task.priority === 'HIGH' ? 'error' : task.priority === 'NORMAL' ? 'warning' : 'default'}
               size="small"
               icon={<FlagIcon />}
+              sx={{
+                fontWeight: 600,
+                boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)'
+              }}
             />
           </Box>
           {task.dueDate && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: 0.5,
+              backgroundColor: 'action.hover',
+              padding: '4px 8px',
+              borderRadius: 1
+            }}>
               <AccessTimeIcon fontSize="small" color="action" />
-              <Typography variant="caption" color="text.secondary">
+              <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
                 {new Date(task.dueDate).toLocaleDateString()}
               </Typography>
             </Box>
           )}
         </Box>
         
-        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
           {canStartTask(task) && (
             <Button
-              variant="contained"
+              variant="outlined"
               color="primary"
               size="small"
               startIcon={<PlayArrowIcon />}
@@ -221,14 +263,23 @@ const HousekeepingStaffDashboard: React.FC = () => {
                 e.stopPropagation();
                 handleStartTask(task);
               }}
-              sx={{ minWidth: 'auto' }}
+              sx={{ 
+                minWidth: 'auto',
+                borderWidth: 1.5,
+                fontWeight: 500,
+                '&:hover': {
+                  borderWidth: 1.5,
+                  backgroundColor: 'primary.main',
+                  color: 'white',
+                }
+              }}
             >
               Start
             </Button>
           )}
           {canCompleteTask(task) && (
             <Button
-              variant="contained"
+              variant="outlined"
               color="success"
               size="small"
               startIcon={<CheckCircleIcon />}
@@ -236,7 +287,16 @@ const HousekeepingStaffDashboard: React.FC = () => {
                 e.stopPropagation();
                 handleCompleteTask(task);
               }}
-              sx={{ minWidth: 'auto' }}
+              sx={{ 
+                minWidth: 'auto',
+                borderWidth: 1.5,
+                fontWeight: 500,
+                '&:hover': {
+                  borderWidth: 1.5,
+                  backgroundColor: 'success.main',
+                  color: 'white',
+                }
+              }}
             >
               Complete
             </Button>
@@ -250,7 +310,15 @@ const HousekeepingStaffDashboard: React.FC = () => {
                 e.stopPropagation();
                 openStatusDialog(task);
               }}
-              sx={{ minWidth: 'auto' }}
+              sx={{ 
+                minWidth: 'auto',
+                borderWidth: 2,
+                fontWeight: 600,
+                '&:hover': {
+                  borderWidth: 2,
+                  backgroundColor: 'action.hover',
+                }
+              }}
             >
               Update
             </Button>
@@ -307,44 +375,82 @@ const HousekeepingStaffDashboard: React.FC = () => {
       p: { xs: 1, sm: 2, md: 3 },
       pb: { xs: 8, sm: 3 } // Extra bottom padding on mobile for FAB
     }}>
-      <Box sx={{ py: { xs: 1, md: 3 } }}>
+      <Box sx={{ py: { xs: 2, md: 4 } }}>
         <Typography 
-          variant={isMobile ? "h6" : "h5"} 
+          variant={isMobile ? "h5" : "h4"} 
           component="h1" 
           gutterBottom 
           sx={{ 
             display: 'flex', 
             alignItems: 'center', 
             gap: 2,
-            mb: { xs: 2, md: 3 }
+            mb: { xs: 3, md: 4 },
+            fontWeight: 600,
+            color: 'text.primary',
+            letterSpacing: '-0.5px'
           }}
         >
-          <CleaningIcon color="primary" />
+          <CleaningIcon 
+            sx={{ 
+              color: 'primary.main',
+              fontSize: { xs: '1.75rem', md: '2rem' }
+            }} 
+          />
           My Housekeeping Tasks
         </Typography>
 
-        {/* Stats Cards */}
+        {/* Elegant Premium Stats Cards */}
         {stats && (
-          <Grid container spacing={{ xs: 1, sm: 2, md: 3 }} sx={{ mb: { xs: 2, md: 4 } }}>
+          <Grid container spacing={{ xs: 2, sm: 2, md: 3 }} sx={{ mb: { xs: 3, md: 4 } }}>
             <Grid item xs={6} sm={6} md={3}>
-              <Card sx={{ height: '100%' }}>
+              <Card 
+                sx={{ 
+                  height: '100%',
+                  backgroundColor: 'background.paper',
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+                  transition: 'all 0.2s ease-in-out',
+                  '&:hover': {
+                    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.08)',
+                    borderColor: 'primary.main',
+                  }
+                }}
+              >
                 <CardContent sx={{ 
                   display: 'flex', 
+                  flexDirection: 'column',
                   alignItems: 'center', 
-                  gap: { xs: 1, sm: 2 },
-                  p: { xs: 1, sm: 2 },
-                  '&:last-child': { pb: { xs: 1, sm: 2 } }
+                  gap: { xs: 1, sm: 1.5 },
+                  p: { xs: 2, sm: 3 },
+                  '&:last-child': { pb: { xs: 2, sm: 3 } }
                 }}>
-                  <AssignmentIcon color="primary" fontSize={isMobile ? "medium" : "large"} />
-                  <Box>
+                  <AssignmentIcon 
+                    sx={{ 
+                      color: 'primary.main',
+                      fontSize: { xs: '1.75rem', md: '2.25rem' },
+                      opacity: 0.9
+                    }} 
+                  />
+                  <Box sx={{ textAlign: 'center' }}>
                     <Typography 
-                      color="textSecondary" 
-                      gutterBottom
-                      variant={isMobile ? "caption" : "body2"}
+                      sx={{ 
+                        color: 'text.secondary',
+                        fontWeight: 500,
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        mb: 0.5,
+                        letterSpacing: '0.5px'
+                      }}
                     >
                       Total Tasks
                     </Typography>
-                    <Typography variant={isMobile ? "h6" : "h4"}>
+                    <Typography 
+                      variant={isMobile ? "h5" : "h4"}
+                      sx={{ 
+                        color: 'text.primary',
+                        fontWeight: 600
+                      }}
+                    >
                       {stats.totalTasks || 0}
                     </Typography>
                   </Box>
@@ -352,24 +458,54 @@ const HousekeepingStaffDashboard: React.FC = () => {
               </Card>
             </Grid>
             <Grid item xs={6} sm={6} md={3}>
-              <Card sx={{ height: '100%' }}>
+              <Card 
+                sx={{ 
+                  height: '100%',
+                  backgroundColor: 'background.paper',
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+                  transition: 'all 0.2s ease-in-out',
+                  '&:hover': {
+                    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.08)',
+                    borderColor: 'warning.main',
+                  }
+                }}
+              >
                 <CardContent sx={{ 
                   display: 'flex', 
+                  flexDirection: 'column',
                   alignItems: 'center', 
-                  gap: { xs: 1, sm: 2 },
-                  p: { xs: 1, sm: 2 },
-                  '&:last-child': { pb: { xs: 1, sm: 2 } }
+                  gap: { xs: 1, sm: 1.5 },
+                  p: { xs: 2, sm: 3 },
+                  '&:last-child': { pb: { xs: 2, sm: 3 } }
                 }}>
-                  <ScheduleIcon color="warning" fontSize={isMobile ? "medium" : "large"} />
-                  <Box>
+                  <ScheduleIcon 
+                    sx={{ 
+                      color: 'warning.main',
+                      fontSize: { xs: '1.75rem', md: '2.25rem' },
+                      opacity: 0.9
+                    }} 
+                  />
+                  <Box sx={{ textAlign: 'center' }}>
                     <Typography 
-                      color="textSecondary" 
-                      gutterBottom
-                      variant={isMobile ? "caption" : "body2"}
+                      sx={{ 
+                        color: 'text.secondary',
+                        fontWeight: 500,
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        mb: 0.5,
+                        letterSpacing: '0.5px'
+                      }}
                     >
                       Pending
                     </Typography>
-                    <Typography variant={isMobile ? "h6" : "h4"}>
+                    <Typography 
+                      variant={isMobile ? "h5" : "h4"}
+                      sx={{ 
+                        color: 'text.primary',
+                        fontWeight: 600
+                      }}
+                    >
                       {stats.pendingTasks || 0}
                     </Typography>
                   </Box>
@@ -377,24 +513,54 @@ const HousekeepingStaffDashboard: React.FC = () => {
               </Card>
             </Grid>
             <Grid item xs={6} sm={6} md={3}>
-              <Card sx={{ height: '100%' }}>
+              <Card 
+                sx={{ 
+                  height: '100%',
+                  backgroundColor: 'background.paper',
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+                  transition: 'all 0.2s ease-in-out',
+                  '&:hover': {
+                    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.08)',
+                    borderColor: 'info.main',
+                  }
+                }}
+              >
                 <CardContent sx={{ 
                   display: 'flex', 
+                  flexDirection: 'column',
                   alignItems: 'center', 
-                  gap: { xs: 1, sm: 2 },
-                  p: { xs: 1, sm: 2 },
-                  '&:last-child': { pb: { xs: 1, sm: 2 } }
+                  gap: { xs: 1, sm: 1.5 },
+                  p: { xs: 2, sm: 3 },
+                  '&:last-child': { pb: { xs: 2, sm: 3 } }
                 }}>
-                  <PlayArrowIcon color="info" fontSize={isMobile ? "medium" : "large"} />
-                  <Box>
+                  <PlayArrowIcon 
+                    sx={{ 
+                      color: 'info.main',
+                      fontSize: { xs: '1.75rem', md: '2.25rem' },
+                      opacity: 0.9
+                    }} 
+                  />
+                  <Box sx={{ textAlign: 'center' }}>
                     <Typography 
-                      color="textSecondary" 
-                      gutterBottom
-                      variant={isMobile ? "caption" : "body2"}
+                      sx={{ 
+                        color: 'text.secondary',
+                        fontWeight: 500,
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        mb: 0.5,
+                        letterSpacing: '0.5px'
+                      }}
                     >
                       In Progress
                     </Typography>
-                    <Typography variant={isMobile ? "h6" : "h4"}>
+                    <Typography 
+                      variant={isMobile ? "h5" : "h4"}
+                      sx={{ 
+                        color: 'text.primary',
+                        fontWeight: 600
+                      }}
+                    >
                       {stats.inProgressTasks || 0}
                     </Typography>
                   </Box>
@@ -402,24 +568,54 @@ const HousekeepingStaffDashboard: React.FC = () => {
               </Card>
             </Grid>
             <Grid item xs={6} sm={6} md={3}>
-              <Card sx={{ height: '100%' }}>
+              <Card 
+                sx={{ 
+                  height: '100%',
+                  backgroundColor: 'background.paper',
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+                  transition: 'all 0.2s ease-in-out',
+                  '&:hover': {
+                    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.08)',
+                    borderColor: 'success.main',
+                  }
+                }}
+              >
                 <CardContent sx={{ 
                   display: 'flex', 
+                  flexDirection: 'column',
                   alignItems: 'center', 
-                  gap: { xs: 1, sm: 2 },
-                  p: { xs: 1, sm: 2 },
-                  '&:last-child': { pb: { xs: 1, sm: 2 } }
+                  gap: { xs: 1, sm: 1.5 },
+                  p: { xs: 2, sm: 3 },
+                  '&:last-child': { pb: { xs: 2, sm: 3 } }
                 }}>
-                  <CheckCircleIcon color="primary" fontSize={isMobile ? "medium" : "large"} />
-                  <Box>
+                  <CheckCircleIcon 
+                    sx={{ 
+                      color: 'success.main',
+                      fontSize: { xs: '1.75rem', md: '2.25rem' },
+                      opacity: 0.9
+                    }} 
+                  />
+                  <Box sx={{ textAlign: 'center' }}>
                     <Typography 
-                      color="textSecondary" 
-                      gutterBottom
-                      variant={isMobile ? "caption" : "body2"}
+                      sx={{ 
+                        color: 'text.secondary',
+                        fontWeight: 500,
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        mb: 0.5,
+                        letterSpacing: '0.5px'
+                      }}
                     >
                       Completed
                     </Typography>
-                    <Typography variant={isMobile ? "h6" : "h4"}>
+                    <Typography 
+                      variant={isMobile ? "h5" : "h4"}
+                      sx={{ 
+                        color: 'text.primary',
+                        fontWeight: 600
+                      }}
+                    >
                       {stats.completedTasks || 0}
                     </Typography>
                   </Box>
@@ -430,23 +626,46 @@ const HousekeepingStaffDashboard: React.FC = () => {
         )}
 
         {error && (
-          <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
+          <Alert 
+            severity="error" 
+            sx={{ 
+              mb: 3,
+              boxShadow: '0 4px 12px rgba(211, 47, 47, 0.15)',
+              borderRadius: 2
+            }} 
+            onClose={() => setError(null)}
+          >
             {error}
           </Alert>
         )}
 
-        {/* Tasks Section */}
-        <Card>
-          <CardContent sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
+        {/* Elegant Tasks Section */}
+        <Card 
+          sx={{ 
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+            borderRadius: 2,
+            overflow: 'hidden',
+            border: '1px solid',
+            borderColor: 'divider'
+          }}
+        >
+          <CardContent sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
             <Box sx={{ 
               display: 'flex', 
               justifyContent: 'space-between', 
               alignItems: 'center', 
-              mb: 2,
+              mb: 3,
               flexDirection: { xs: 'column', sm: 'row' },
-              gap: { xs: 1, sm: 0 }
+              gap: { xs: 2, sm: 0 }
             }}>
-              <Typography variant="h6">
+              <Typography 
+                variant="h6"
+                sx={{ 
+                  fontWeight: 600,
+                  color: 'text.primary',
+                  letterSpacing: '-0.3px'
+                }}
+              >
                 My Tasks ({tasks.length})
               </Typography>
               <Button 
@@ -454,6 +673,15 @@ const HousekeepingStaffDashboard: React.FC = () => {
                 disabled={loading}
                 size={isMobile ? "medium" : "large"}
                 startIcon={<RefreshIcon />}
+                variant="outlined"
+                sx={{
+                  borderWidth: 1.5,
+                  fontWeight: 500,
+                  '&:hover': {
+                    borderWidth: 1.5,
+                    backgroundColor: 'action.hover',
+                  }
+                }}
               >
                 Refresh
               </Button>
@@ -487,33 +715,32 @@ const HousekeepingStaffDashboard: React.FC = () => {
                     />
                   </Box>
                 ) : (
-                  /* Desktop Layout - Table */
-                  <TableContainer component={Paper}>
+                  /* Elegant Premium Desktop Layout - Table */
+                  <TableContainer 
+                    component={Paper}
+                    sx={{
+                      boxShadow: 'none',
+                      borderRadius: 0,
+                      overflow: 'hidden',
+                      border: 'none'
+                    }}
+                  >
                     <Table>
                       <TableHead>
                         <TableRow
                           sx={{
-                            background: 'linear-gradient(135deg, #64748b 0%, #475569 50%, #334155 100%)',
-                            boxShadow: '0 4px 12px rgba(100, 116, 139, 0.15)',
+                            backgroundColor: 'transparent',
+                            borderBottom: '1px solid',
+                            borderColor: 'divider',
                             '& .MuiTableCell-head': {
-                              color: '#ffffff',
-                              fontWeight: 600,
-                              fontSize: '0.95rem',
+                              color: '#1e293b',
+                              fontWeight: 700,
+                              fontSize: '0.6875rem',
                               letterSpacing: '0.5px',
                               textTransform: 'uppercase',
                               border: 'none',
-                              padding: '20px 16px',
-                              position: 'relative',
-                              textShadow: '0 1px 2px rgba(0,0,0,0.1)',
-                              '&::after': {
-                                content: '""',
-                                position: 'absolute',
-                                bottom: 0,
-                                left: 0,
-                                right: 0,
-                                height: '3px',
-                                background: 'linear-gradient(90deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.6) 100%)'
-                              }
+                              padding: '12px 16px',
+                              backgroundColor: 'transparent',
                             }
                           }}
                         >
@@ -527,22 +754,62 @@ const HousekeepingStaffDashboard: React.FC = () => {
                         </TableRow>
                       </TableHead>
                       <TableBody>
-                        {tasks.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((task) => (
-                          <TableRow key={task.id}>
+                        {tasks.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((task, index) => (
+                          <TableRow 
+                            key={task.id}
+                            sx={{
+                              transition: 'all 0.15s ease',
+                              '&:hover': {
+                                backgroundColor: 'action.hover',
+                              },
+                              '&:last-child .MuiTableCell-root': {
+                                borderBottom: 'none',
+                              },
+                              '& .MuiTableCell-root': {
+                                borderBottom: '1px solid',
+                                borderColor: 'divider',
+                                padding: '20px 16px',
+                              }
+                            }}
+                          >
                             <TableCell>
-                              <Typography variant="subtitle2">
-                                {task.roomNumber}
-                              </Typography>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <RoomIcon 
+                                  sx={{ 
+                                    color: 'text.secondary',
+                                    fontSize: '1.1rem'
+                                  }} 
+                                />
+                                <Typography 
+                                  variant="body2"
+                                  sx={{ fontWeight: 600, color: 'text.primary' }}
+                                >
+                                  {task.roomNumber}
+                                </Typography>
+                              </Box>
                             </TableCell>
                             <TableCell>
                               <Chip
                                 label={task.taskType}
                                 color={getTaskTypeColor(task.taskType)}
                                 size="small"
+                                variant="outlined"
+                                sx={{
+                                  fontWeight: 500,
+                                  borderWidth: 1.5,
+                                  fontSize: '0.75rem'
+                                }}
                               />
                             </TableCell>
                             <TableCell>
-                              <Typography variant="body2">
+                              <Typography 
+                                variant="body2"
+                                sx={{ 
+                                  fontWeight: 400,
+                                  color: 'text.primary',
+                                  lineHeight: 1.5
+                                }}
+                              >
                                 {task.title || task.description}
                               </Typography>
                             </TableCell>
@@ -551,6 +818,12 @@ const HousekeepingStaffDashboard: React.FC = () => {
                                 label={task.priority}
                                 color={task.priority === 'HIGH' ? 'error' : task.priority === 'NORMAL' ? 'warning' : 'default'}
                                 size="small"
+                                variant="outlined"
+                                sx={{
+                                  fontWeight: 500,
+                                  borderWidth: 1.5,
+                                  fontSize: '0.75rem'
+                                }}
                               />
                             </TableCell>
                             <TableCell>
@@ -558,38 +831,85 @@ const HousekeepingStaffDashboard: React.FC = () => {
                                 label={task.status}
                                 color={getStatusChipColor(task.status)}
                                 size="small"
+                                variant="filled"
+                                sx={{
+                                  fontWeight: 500,
+                                  fontSize: '0.75rem'
+                                }}
                               />
                             </TableCell>
                             <TableCell>
-                              {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'N/A'}
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <AccessTimeIcon 
+                                  sx={{ 
+                                    color: 'text.secondary',
+                                    fontSize: '1rem'
+                                  }} 
+                                />
+                                <Typography 
+                                  variant="body2"
+                                  sx={{ color: 'text.secondary', fontWeight: 400 }}
+                                >
+                                  {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'N/A'}
+                                </Typography>
+                              </Box>
                             </TableCell>
                             <TableCell>
-                              <Box sx={{ display: 'flex', gap: 1 }}>
+                              <Box sx={{ display: 'flex', gap: 0.5 }}>
                                 {canStartTask(task) && (
                                   <IconButton
-                                    color="primary"
+                                    size="small"
                                     onClick={() => handleStartTask(task)}
                                     title="Start Task"
+                                    sx={{
+                                      color: 'primary.main',
+                                      border: '1px solid',
+                                      borderColor: 'divider',
+                                      '&:hover': {
+                                        backgroundColor: 'primary.main',
+                                        color: 'white',
+                                        borderColor: 'primary.main',
+                                      }
+                                    }}
                                   >
-                                    <PlayArrowIcon />
+                                    <PlayArrowIcon fontSize="small" />
                                   </IconButton>
                                 )}
                                 {canCompleteTask(task) && (
                                   <IconButton
-                                    color="primary"
+                                    size="small"
                                     onClick={() => handleCompleteTask(task)}
                                     title="Complete Task"
+                                    sx={{
+                                      color: 'success.main',
+                                      border: '1px solid',
+                                      borderColor: 'divider',
+                                      '&:hover': {
+                                        backgroundColor: 'success.main',
+                                        color: 'white',
+                                        borderColor: 'success.main',
+                                      }
+                                    }}
                                   >
-                                    <CheckCircleIcon />
+                                    <CheckCircleIcon fontSize="small" />
                                   </IconButton>
                                 )}
                                 {canUpdateStatus(task) && (
                                   <IconButton
-                                    color="info"
+                                    size="small"
                                     onClick={() => openStatusDialog(task)}
                                     title="Update Status"
+                                    sx={{
+                                      color: 'text.secondary',
+                                      border: '1px solid',
+                                      borderColor: 'divider',
+                                      '&:hover': {
+                                        backgroundColor: 'action.hover',
+                                        color: 'text.primary',
+                                      }
+                                    }}
                                   >
-                                    <InfoIcon />
+                                    <InfoIcon fontSize="small" />
                                   </IconButton>
                                 )}
                               </Box>
@@ -617,7 +937,7 @@ const HousekeepingStaffDashboard: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Floating Refresh Button for Mobile */}
+        {/* Elegant Floating Refresh Button for Mobile */}
         {isMobile && (
           <Fab
             color="primary"
@@ -626,7 +946,11 @@ const HousekeepingStaffDashboard: React.FC = () => {
               position: 'fixed', 
               bottom: 16, 
               right: 16,
-              zIndex: 1000
+              zIndex: 1000,
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+              '&:hover': {
+                boxShadow: '0 6px 20px rgba(0, 0, 0, 0.2)',
+              }
             }}
             onClick={loadMyTasks}
             disabled={loading}
@@ -689,13 +1013,22 @@ const HousekeepingStaffDashboard: React.FC = () => {
             )}
           </DialogContent>
           <DialogActions sx={{ p: { xs: 2, sm: 1 } }}>
-            <Button onClick={() => setStatusDialog(false)} size={isMobile ? "large" : "medium"}>
+            <Button 
+              onClick={() => setStatusDialog(false)} 
+              size={isMobile ? "large" : "medium"}
+              sx={{
+                fontWeight: 500,
+              }}
+            >
               Cancel
             </Button>
             <Button 
               onClick={handleStatusUpdate} 
               variant="contained"
               size={isMobile ? "large" : "medium"}
+              sx={{
+                fontWeight: 500,
+              }}
             >
               Update Status
             </Button>

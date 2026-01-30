@@ -20,6 +20,7 @@ export interface Booking {
   pricePerNight?: number;
   hotelName?: string;
   hotelId?: number;
+  assignedRoomId?: number; // Room ID when room is pre-assigned (e.g., walk-in bookings)
 }
 
 export interface Room {

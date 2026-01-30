@@ -40,7 +40,10 @@ import {
   ToggleOn as ToggleOnIcon, 
   ToggleOff as ToggleOffIcon, 
   Delete as DeleteIcon,
-  Add as AddIcon
+  Add as AddIcon,
+  RateReview as ReviewIcon,
+  CheckCircle as ApproveIcon,
+  Cancel as RejectIcon
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { adminApiService, HotelDTO, UpdateHotelRequest } from '../../services/adminApi';
@@ -116,6 +119,11 @@ const HotelManagementAdmin: React.FC = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [registerDialogOpen, setRegisterDialogOpen] = useState(false);
   const [registrationViewDialogOpen, setRegistrationViewDialogOpen] = useState(false);
+
+  // Approval/Rejection form state
+  const [approvalComments, setApprovalComments] = useState('');
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [tenantId, setTenantId] = useState('');
 
   // Registration form state
   const [registrationForm, setRegistrationForm] = useState({
@@ -327,7 +335,89 @@ const HotelManagementAdmin: React.FC = () => {
 
   const viewRegistration = (registration: HotelRegistration) => {
     setSelectedRegistration(registration);
+    setApprovalComments('');
+    setRejectionReason('');
+    setTenantId('');
     setRegistrationViewDialogOpen(true);
+  };
+
+  const handleApproveRegistration = async () => {
+    if (!selectedRegistration || !tenantId.trim()) {
+      setError('Tenant ID is required for approval');
+      setTimeout(() => setError(null), 3000);
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/hotel-registrations/${selectedRegistration.id}/approve`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          comments: approvalComments,
+          tenantId: tenantId
+        })
+      });
+
+      if (response.ok) {
+        setRegistrationViewDialogOpen(false);
+        setSelectedRegistration(null);
+        setApprovalComments('');
+        setTenantId('');
+        setSuccess('Hotel registration approved successfully! The hotel is now active.');
+        setTimeout(() => setSuccess(null), 5000);
+        
+        // Refresh data
+        loadRegistrations();
+        loadRegistrationStatistics();
+        loadHotels();
+      } else {
+        throw new Error('Failed to approve registration');
+      }
+    } catch (err) {
+      setError('Failed to approve registration. Please try again.');
+      setTimeout(() => setError(null), 3000);
+    }
+  };
+
+  const handleRejectRegistration = async () => {
+    if (!selectedRegistration || !rejectionReason.trim()) {
+      setError('Rejection reason is required');
+      setTimeout(() => setError(null), 3000);
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/hotel-registrations/${selectedRegistration.id}/reject`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          reason: rejectionReason
+        })
+      });
+
+      if (response.ok) {
+        setRegistrationViewDialogOpen(false);
+        setSelectedRegistration(null);
+        setRejectionReason('');
+        setSuccess('Hotel registration rejected successfully');
+        setTimeout(() => setSuccess(null), 3000);
+        
+        // Refresh data
+        loadRegistrations();
+        loadRegistrationStatistics();
+      } else {
+        throw new Error('Failed to reject registration');
+      }
+    } catch (err) {
+      setError('Failed to reject hotel registration. Please try again.');
+      setTimeout(() => setError(null), 3000);
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -796,10 +886,19 @@ const HotelManagementAdmin: React.FC = () => {
                       <TableCell>
                         <Button
                           size="small"
-                          startIcon={<ViewIcon />}
+                          variant="outlined"
+                          startIcon={<ReviewIcon />}
                           onClick={() => viewRegistration(registration)}
+                          sx={{
+                            borderColor: '#2c5282',
+                            color: '#2c5282',
+                            '&:hover': {
+                              borderColor: '#1e3a5f',
+                              backgroundColor: '#f0f4f8'
+                            }
+                          }}
                         >
-                          View
+                          Review
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -979,204 +1078,286 @@ const HotelManagementAdmin: React.FC = () => {
           </DialogActions>
         </Dialog>
 
-        {/* Registration View Dialog */}
+        {/* Registration Review Dialog */}
         <Dialog open={registrationViewDialogOpen} onClose={() => setRegistrationViewDialogOpen(false)} maxWidth="md" fullWidth>
-          <DialogTitle>Hotel Registration Details</DialogTitle>
+          <DialogTitle
+            sx={{
+              borderBottom: '2px solid #E8B86D',
+              pb: 2,
+              fontWeight: 600,
+              color: '#2c5282'
+            }}
+          >
+            Review Hotel Registration
+          </DialogTitle>
           <DialogContent>
             {selectedRegistration && (
               <Grid container spacing={2} sx={{ mt: 1 }}>
+                <Grid item xs={12}>
+                  <Typography variant="subtitle2" sx={{ color: '#2c5282', fontWeight: 600, mb: 2 }}>
+                    Hotel Information
+                  </Typography>
+                </Grid>
+
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Hotel Name"
                     fullWidth
                     value={selectedRegistration.hotelName}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
                 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Contact Person"
                     fullWidth
                     value={selectedRegistration.contactPerson}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
                 
                 <Grid item xs={12}>
-                  <TextField
+                  <PremiumTextField
                     label="Description"
                     multiline
                     rows={3}
                     fullWidth
                     value={selectedRegistration.description}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
                 
                 <Grid item xs={12}>
-                  <TextField
+                  <PremiumTextField
                     label="Address"
                     fullWidth
                     value={selectedRegistration.address}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
                 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="City"
                     fullWidth
                     value={selectedRegistration.city}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
                 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Country"
                     fullWidth
                     value={selectedRegistration.country}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
                 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Phone"
                     fullWidth
                     value={selectedRegistration.phone}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Contact Email"
                     fullWidth
                     value={selectedRegistration.contactEmail}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Status"
                     fullWidth
                     value={selectedRegistration.status}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Submitted At"
                     fullWidth
                     value={formatDate(selectedRegistration.submittedAt)}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
 
                 {selectedRegistration.licenseNumber && (
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumTextField
                       label="License Number"
                       fullWidth
                       value={selectedRegistration.licenseNumber}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                 )}
 
                 {selectedRegistration.taxId && (
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumTextField
                       label="Tax ID"
                       fullWidth
                       value={selectedRegistration.taxId}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                 )}
 
                 {selectedRegistration.websiteUrl && (
                   <Grid item xs={12}>
-                    <TextField
+                    <PremiumTextField
                       label="Website URL"
                       fullWidth
                       value={selectedRegistration.websiteUrl}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                 )}
 
                 {selectedRegistration.facilityAmenities && (
                   <Grid item xs={12}>
-                    <TextField
+                    <PremiumTextField
                       label="Facility Amenities"
                       multiline
                       rows={2}
                       fullWidth
                       value={selectedRegistration.facilityAmenities}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                 )}
 
                 {selectedRegistration.numberOfRooms && (
                   <Grid item xs={12} sm={4}>
-                    <TextField
+                    <PremiumTextField
                       label="Number of Rooms"
                       fullWidth
                       value={selectedRegistration.numberOfRooms}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                 )}
 
                 {selectedRegistration.checkInTime && (
                   <Grid item xs={12} sm={4}>
-                    <TextField
+                    <PremiumTextField
                       label="Check-in Time"
                       fullWidth
                       value={selectedRegistration.checkInTime}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                 )}
 
                 {selectedRegistration.checkOutTime && (
                   <Grid item xs={12} sm={4}>
-                    <TextField
+                    <PremiumTextField
                       label="Check-out Time"
                       fullWidth
                       value={selectedRegistration.checkOutTime}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
+                )}
+
+                {selectedRegistration.status === 'PENDING' && (
+                  <>
+                    <Grid item xs={12}>
+                      <Typography variant="subtitle2" sx={{ color: '#2c5282', fontWeight: 600, mt: 2, mb: 1 }}>
+                        Review Actions
+                      </Typography>
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <PremiumTextField
+                        label="Tenant ID (Required for Approval)"
+                        fullWidth
+                        value={tenantId}
+                        onChange={(e) => setTenantId(e.target.value)}
+                        placeholder="Enter tenant identifier"
+                      />
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <PremiumTextField
+                        label="Approval Comments (Optional)"
+                        multiline
+                        rows={2}
+                        fullWidth
+                        value={approvalComments}
+                        onChange={(e) => setApprovalComments(e.target.value)}
+                        placeholder="Add any comments for approval"
+                      />
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <PremiumTextField
+                        label="Rejection Reason (Required for Rejection)"
+                        multiline
+                        rows={2}
+                        fullWidth
+                        value={rejectionReason}
+                        onChange={(e) => setRejectionReason(e.target.value)}
+                        placeholder="Provide reason if rejecting this registration"
+                      />
+                    </Grid>
+                  </>
                 )}
               </Grid>
             )}
           </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setRegistrationViewDialogOpen(false)}>Close</Button>
+          <DialogActions sx={{ px: 3, py: 2, borderTop: '1px solid #e0e0e0' }}>
+            <Button 
+              onClick={() => setRegistrationViewDialogOpen(false)}
+              sx={{ color: '#666' }}
+            >
+              Close
+            </Button>
+            {selectedRegistration?.status === 'PENDING' && (
+              <>
+                <Button
+                  variant="outlined"
+                  color="error"
+                  startIcon={<RejectIcon />}
+                  onClick={handleRejectRegistration}
+                  disabled={!rejectionReason.trim()}
+                  sx={{
+                    borderColor: '#d32f2f',
+                    '&:hover': {
+                      backgroundColor: '#ffebee',
+                      borderColor: '#c62828'
+                    }
+                  }}
+                >
+                  Reject
+                </Button>
+                <Button
+                  variant="contained"
+                  color="success"
+                  startIcon={<ApproveIcon />}
+                  onClick={handleApproveRegistration}
+                  disabled={!tenantId.trim()}
+                  sx={{
+                    backgroundColor: '#2e7d32',
+                    '&:hover': {
+                      backgroundColor: '#1b5e20'
+                    }
+                  }}
+                >
+                  Approve
+                </Button>
+              </>
+            )}
           </DialogActions>
         </Dialog>
 

@@ -27,6 +27,7 @@ public class BookingResponse {
     private String roomNumber;
     private String roomType;
     private BigDecimal pricePerNight;
+    private Long assignedRoomId; // Room ID when room is pre-assigned
 
     // Guest details
     private String guestName;
@@ -216,5 +217,13 @@ public class BookingResponse {
 
     public void setManagementUrl(String managementUrl) {
         this.managementUrl = managementUrl;
+    }
+
+    public Long getAssignedRoomId() {
+        return assignedRoomId;
+    }
+
+    public void setAssignedRoomId(Long assignedRoomId) {
+        this.assignedRoomId = assignedRoomId;
     }
 }
