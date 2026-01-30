@@ -353,16 +353,16 @@ const BookingConfirmationPage: React.FC = () => {
 
   const formatPaymentStatus = (status: string) => {
     switch (status.toUpperCase()) {
-      case 'PAY_AT_FRONTDESK': return t('bookingConfirmation.status.payAtFrontDesk');
+      case 'PAY_AT_FRONTDESK': return 'Pay at Front Desk';
       case 'PAID':
-      case 'COMPLETED': return t('bookingConfirmation.status.paid');
-      case 'PROCESSING': return t('bookingConfirmation.status.processing');
-      case 'PENDING': return t('bookingConfirmation.status.pending');
-      case 'FAILED': return t('bookingConfirmation.status.failed');
-      case 'CANCELLED': return t('bookingConfirmation.status.cancelled');
-      case 'REFUNDED': return t('bookingConfirmation.status.refunded');
-      case 'PARTIALLY_REFUNDED': return t('bookingConfirmation.status.partiallyRefunded');
-      case 'FORFEITED': return t('bookingConfirmation.status.forfeited');
+      case 'COMPLETED': return t('booking.paymentStatus.completed');
+      case 'PROCESSING': return t('booking.paymentStatus.processing');
+      case 'PENDING': return t('booking.paymentStatus.pending');
+      case 'FAILED': return t('booking.paymentStatus.failed');
+      case 'CANCELLED': return 'CANCELLED';
+      case 'REFUNDED': return 'REFUNDED';
+      case 'PARTIALLY_REFUNDED': return 'PARTIALLY REFUNDED';
+      case 'FORFEITED': return 'FORFEITED';
       default: return status;
     }
   };

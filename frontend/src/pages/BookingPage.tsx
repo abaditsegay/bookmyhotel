@@ -607,7 +607,7 @@ const BookingPage: React.FC = () => {
                   label={t('booking.guestBooking')} 
                   size="medium"
                   sx={{ 
-                    bgcolor: 'COLORS.SUCCESS',
+                    bgcolor: '#2e7d32',
                     color: 'white',
                     fontWeight: 700,
                     fontSize: '1rem',
@@ -733,7 +733,7 @@ const BookingPage: React.FC = () => {
                             📅 {nights} {nights !== 1 ? t('booking.page.nightsPlural') : t('booking.page.nights')}
                           </Typography>
                           <Typography variant="h6" sx={{ fontWeight: 700, color: COLORS.PRIMARY }}>
-                            {formatCurrency(totalAmount || 0)}
+                            {formatCurrency((roomData.pricePerNight || 0) * nights)}
                           </Typography>
                         </Box>
                       ) : (
