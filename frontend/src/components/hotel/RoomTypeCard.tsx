@@ -79,17 +79,17 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
       sx={{ 
         height: '100%',
         background: isAvailable 
-          ? theme.palette.background.paper
+          ? '#ffffff'
           : theme.palette.action.disabledBackground,
-        border: `1px solid ${isAvailable ? theme.palette.divider : theme.palette.action.disabled}`,
+        border: isAvailable ? '2px solid #E8B86D' : `1px solid ${theme.palette.action.disabled}`,
         borderRadius: 2,
-        boxShadow: isAvailable ? theme.shadows[2] : theme.shadows[1],
+        boxShadow: isAvailable ? '0 4px 12px rgba(232, 184, 109, 0.15)' : theme.shadows[1],
         transition: 'all 0.3s ease-in-out',
         opacity: isAvailable ? 1 : 0.7,
         '&:hover': {
           transform: isAvailable ? 'translateY(-8px)' : 'none',
-          boxShadow: isAvailable ? theme.shadows[8] : theme.shadows[1],
-          borderColor: isAvailable ? 'primary.light' : theme.palette.action.disabled,
+          boxShadow: isAvailable ? '0 8px 20px rgba(232, 184, 109, 0.25)' : theme.shadows[1],
+          borderColor: isAvailable ? '#d4a45a' : theme.palette.action.disabled,
         },
       }}
     >
@@ -204,7 +204,7 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
                 fontWeight: 700,
                 fontSize: isMobile ? '1.1rem' : '1.25rem',
                 lineHeight: 1.2,
-                color: 'text.primary',
+                color: '#2c5282',
               }}
             >
               {formatRoomTypeName(roomType.roomType)}
@@ -218,10 +218,10 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
               <Box 
                 sx={{ 
                   textAlign: 'right',
-                  background: COLORS.CARD_HOVER,
+                  background: 'rgba(232, 184, 109, 0.1)',
                   borderRadius: 2,
                   padding: 1,
-                  border: `1px solid ${COLORS.CARD_BORDER}`,
+                  border: '2px solid #E8B86D',
                 }}
               >
                 <Typography 
@@ -251,7 +251,7 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
         ) : (
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}>
             <Box>
-              <Typography variant="subtitle1" component="h3" gutterBottom>
+              <Typography variant="subtitle1" component="h3" gutterBottom sx={{ fontWeight: 700, color: '#2c5282' }}>
                 {formatRoomTypeName(roomType.roomType)}
               </Typography>
             </Box>
@@ -401,14 +401,14 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
                   fontSize: isMobile ? '0.85rem' : '0.95rem',
                   py: isMobile ? 1 : 1.2,
                   minHeight: isMobile ? '44px' : '48px',
-                  backgroundColor: COLORS.PRIMARY,
+                  backgroundColor: '#2c5282',
                   color: 'white',
-                  border: `2px solid ${COLORS.PRIMARY}`,
-                  boxShadow: theme.shadows[2],
+                  border: '2px solid #E8B86D',
+                  boxShadow: '0 2px 8px rgba(232, 184, 109, 0.2)',
                   '&:hover': {
-                    backgroundColor: COLORS.PRIMARY_HOVER,
-                    border: `2px solid ${COLORS.PRIMARY_HOVER}`,
-                    boxShadow: theme.shadows[4],
+                    backgroundColor: '#1e3a5f',
+                    border: '2px solid #d4a45a',
+                    boxShadow: '0 4px 12px rgba(232, 184, 109, 0.3)',
                     transform: 'translateY(-1px)',
                   },
                   '&:active': {
@@ -432,14 +432,14 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
                     fontSize: isMobile ? '0.85rem' : '0.95rem',
                     py: isMobile ? 1 : 1.2,
                     minHeight: isMobile ? '44px' : '48px',
-                    backgroundColor: COLORS.PRIMARY,
+                    backgroundColor: '#2c5282',
                     color: 'white',
-                    border: `2px solid ${COLORS.PRIMARY}`,
-                    boxShadow: theme.shadows[2],
+                    border: '2px solid #E8B86D',
+                    boxShadow: '0 2px 8px rgba(232, 184, 109, 0.2)',
                     '&:hover': {
-                      backgroundColor: COLORS.PRIMARY_HOVER,
-                      border: `2px solid ${COLORS.PRIMARY_HOVER}`,
-                      boxShadow: theme.shadows[4],
+                      backgroundColor: '#1e3a5f',
+                      border: '2px solid #d4a45a',
+                      boxShadow: '0 4px 12px rgba(232, 184, 109, 0.3)',
                       transform: 'translateY(-1px)',
                     },
                     '&:active': {
@@ -461,14 +461,14 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
                     py: isMobile ? 0.8 : 1,
                     minHeight: isMobile ? '40px' : '42px',
                     backgroundColor: 'transparent',
-                    color: COLORS.PRIMARY,
-                    border: `2px solid ${COLORS.PRIMARY}`,
+                    color: '#2c5282',
+                    border: '2px solid #E8B86D',
                     '&:hover': {
-                      backgroundColor: COLORS.CARD_HOVER,
-                      border: `2px solid ${COLORS.PRIMARY_HOVER}`,
-                      color: COLORS.PRIMARY_HOVER,
+                      backgroundColor: 'rgba(232, 184, 109, 0.1)',
+                      border: '2px solid #d4a45a',
+                      color: '#1e3a5f',
                       transform: 'translateY(-1px)',
-                      boxShadow: theme.shadows[4],
+                      boxShadow: '0 4px 12px rgba(232, 184, 109, 0.3)',
                     },
                     '&:active': {
                       transform: 'translateY(0)',
@@ -493,11 +493,11 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
                 minHeight: isMobile ? '44px' : '48px',
                 backgroundColor: theme.palette.action.disabledBackground,
                 color: theme.palette.text.disabled,
-                border: `2px solid ${COLORS.CARD_BORDER}`,
+                border: '2px solid #E8B86D',
                 '&.Mui-disabled': {
                   backgroundColor: theme.palette.action.disabledBackground,
                   color: theme.palette.text.disabled,
-                  border: `2px solid ${COLORS.CARD_BORDER}`,
+                  border: '2px solid #E8B86D',
                 }
               }}
             >

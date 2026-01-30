@@ -82,29 +82,28 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
 
   return (
     <Card 
-      elevation={isMobile ? 1 : 2}
+      elevation={0}
       sx={{ 
         display: 'flex',
         flexDirection: isLargeScreen ? 'row' : 'column',
         height: isLargeScreen ? '280px' : 'auto',
         mb: { xs: 2, md: 2 },
-        borderRadius: { xs: 2, md: 1 },
+        borderRadius: 2,
         overflow: 'hidden',
-        transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+        border: '2px solid #E8B86D',
+        boxShadow: '0 4px 12px rgba(232, 184, 109, 0.15)',
+        backgroundColor: '#ffffff',
+        transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, border-color 0.2s ease-in-out',
         '&:hover': {
-          transform: isMobile ? 'none' : 'translateY(-2px)', // Disable transform on mobile
-          boxShadow: isMobile ? 2 : 4,
+          transform: isMobile ? 'none' : 'translateY(-4px)',
+          boxShadow: '0 8px 20px rgba(232, 184, 109, 0.25)',
+          borderColor: '#d4a45a',
         },
         '&:active': isMobile ? {
           transform: 'scale(0.98)',
           transition: 'transform 0.1s ease-in-out',
         } : {},
         cursor: 'pointer',
-        // Mobile-specific styling
-        ...(isMobile && {
-          boxShadow: theme.shadows[2],
-          background: theme.palette.background.paper,
-        }),
       }}
       onClick={() => onViewHotel(hotel.id)}
     >
@@ -153,7 +152,7 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
                 component="h3" 
                 sx={{ 
                   fontWeight: 'bold', 
-                  color: 'primary.main',
+                  color: '#2c5282',
                   fontSize: '1.2rem',
                   lineHeight: 1.3,
                   mb: 1,
@@ -194,7 +193,7 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
           ) : (
             /* Desktop: Side-by-side layout */
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-              <Typography variant="h5" component="h3" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+              <Typography variant="h5" component="h3" sx={{ fontWeight: 'bold', color: '#2c5282' }}>
                 {hotel.name}
               </Typography>
               <Box sx={{ textAlign: 'right' }}>
@@ -340,7 +339,6 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
             {/* Full-width button */}
             <Button
               variant="contained"
-              color="primary"
               size="large"
               startIcon={<ViewIcon />}
               fullWidth
@@ -349,14 +347,19 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
                 onViewHotel(hotel.id);
               }}
               sx={{
-                minHeight: '48px', // Larger touch target
+                minHeight: '48px',
                 borderRadius: 2,
                 fontWeight: 'bold',
                 fontSize: '1rem',
                 textTransform: 'none',
-                boxShadow: 2,
+                backgroundColor: '#2c5282',
+                border: '2px solid #E8B86D',
+                color: '#ffffff',
+                boxShadow: '0 2px 8px rgba(232, 184, 109, 0.2)',
                 '&:hover': {
-                  boxShadow: 3,
+                  backgroundColor: '#1e3a5f',
+                  borderColor: '#d4a45a',
+                  boxShadow: '0 4px 12px rgba(232, 184, 109, 0.3)',
                 },
               }}
             >
@@ -387,11 +390,25 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
             
             <Button
               variant="contained"
-              color="primary"
               startIcon={<ViewIcon />}
               onClick={(e) => {
                 e.stopPropagation();
                 onViewHotel(hotel.id);
+              }}
+              sx={{
+                backgroundColor: '#2c5282',
+                border: '2px solid #E8B86D',
+                color: '#ffffff',
+                fontWeight: 600,
+                textTransform: 'none',
+                borderRadius: 2,
+                px: 3,
+                boxShadow: '0 2px 8px rgba(232, 184, 109, 0.2)',
+                '&:hover': {
+                  backgroundColor: '#1e3a5f',
+                  borderColor: '#d4a45a',
+                  boxShadow: '0 4px 12px rgba(232, 184, 109, 0.3)',
+                },
               }}
             >
               View Hotel

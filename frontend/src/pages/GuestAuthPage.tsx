@@ -5,7 +5,6 @@ import {
   Card,
   CardContent,
   Container,
-  TextField,
   Typography,
   Alert,
   Tabs,
@@ -245,7 +244,7 @@ const GuestAuthPage: React.FC = () => {
           justifyContent: 'center',
           py: 4,
           background: theme.palette.mode === 'light' 
-            ? `linear-gradient(135deg, ${alpha(theme.palette.primary.light, 0.08)} 0%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`
+            ? 'linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%)'
             : `linear-gradient(135deg, ${alpha(theme.palette.primary.dark, 0.1)} 0%, transparent 100%)`,
         }}
       >
@@ -255,11 +254,11 @@ const GuestAuthPage: React.FC = () => {
             width: '100%', 
             maxWidth: 500,
             boxShadow: theme.palette.mode === 'light' 
-              ? `0 12px 40px -4px ${alpha(theme.palette.primary.main, 0.15)}, 0 8px 16px -8px ${alpha(theme.palette.primary.main, 0.2)}`
+              ? '0 2px 8px rgba(232, 184, 109, 0.1)'
               : `0 8px 32px -4px ${alpha(theme.palette.primary.main, 0.25)}`,
             border: theme.palette.mode === 'dark' 
               ? `1px solid ${alpha(theme.palette.primary.main, 0.3)}`
-              : undefined,
+              : '1px solid #E8B86D',
             borderRadius: 3,
             overflow: 'hidden',
             position: 'relative',
@@ -270,7 +269,7 @@ const GuestAuthPage: React.FC = () => {
               left: 0,
               right: 0,
               height: 4,
-              background: `linear-gradient(90deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.light} 100%)`,
+              background: 'linear-gradient(90deg, #E8B86D 0%, #d4a45a 100%)',
               zIndex: 1,
             },
           }}
@@ -283,10 +282,7 @@ const GuestAuthPage: React.FC = () => {
               align="center"
               sx={{
                 fontWeight: 'bold',
-                background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-                backgroundClip: 'text',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
+                color: '#2c5282',
                 mb: 1,
               }}
             >
@@ -308,13 +304,11 @@ const GuestAuthPage: React.FC = () => {
 
             <Box 
               sx={{ 
-                borderBottom: 1, 
-                borderColor: 'divider', 
+                borderBottom: '2px solid #E8B86D', 
                 mt: 3,
                 '& .MuiTabs-indicator': {
-                  background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+                  backgroundColor: '#E8B86D',
                   height: 3,
-                  borderRadius: '2px 2px 0 0',
                 },
               }}
             >
@@ -330,12 +324,12 @@ const GuestAuthPage: React.FC = () => {
                     fontSize: '1rem',
                     color: theme.palette.text.secondary,
                     '&:hover': {
-                      color: theme.palette.primary.main,
-                      backgroundColor: alpha(theme.palette.primary.main, 0.04),
+                      color: '#2c5282',
+                      backgroundColor: '#fafafa',
                     },
                   },
                   '& .Mui-selected': {
-                    color: theme.palette.primary.main,
+                    color: '#2c5282',
                     fontWeight: 700,
                   },
                 }}
@@ -392,11 +386,12 @@ const GuestAuthPage: React.FC = () => {
                     fontWeight: 600,
                     textTransform: 'none',
                     borderRadius: 2,
-                    background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-                    boxShadow: `0 4px 16px ${alpha(theme.palette.primary.main, 0.35)}`,
+                    backgroundColor: '#2c5282',
+                    border: '2px solid #E8B86D',
+                    color: '#ffffff',
                     '&:hover': {
-                      background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
-                      boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
+                      backgroundColor: '#1e3a5f',
+                      borderColor: '#d4a45a',
                       transform: 'translateY(-1px)',
                     },
                     '&:active': {
@@ -406,7 +401,7 @@ const GuestAuthPage: React.FC = () => {
                     '&:disabled': {
                       background: theme.palette.action.disabledBackground,
                       color: theme.palette.action.disabled,
-                      boxShadow: 'none',
+                      border: '2px solid rgba(0,0,0,0.12)',
                     },
                     transition: 'all 0.2s ease',
                   }}
@@ -427,11 +422,11 @@ const GuestAuthPage: React.FC = () => {
                     textTransform: 'none',
                     borderRadius: 2,
                     borderWidth: 2,
-                    borderColor: theme.palette.primary.main,
-                    color: theme.palette.primary.main,
+                    borderColor: '#E8B86D',
+                    color: '#2c5282',
                     '&:hover': {
-                      borderColor: theme.palette.primary.dark,
-                      backgroundColor: alpha(theme.palette.primary.main, 0.08),
+                      borderColor: '#d4a45a',
+                      backgroundColor: '#fafafa',
                       borderWidth: 2,
                       transform: 'translateY(-1px)',
                     },
@@ -521,11 +516,12 @@ const GuestAuthPage: React.FC = () => {
                     fontWeight: 600,
                     textTransform: 'none',
                     borderRadius: 2,
-                    background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-                    boxShadow: `0 4px 16px ${alpha(theme.palette.primary.main, 0.35)}`,
+                    backgroundColor: '#2c5282',
+                    color: '#ffffff',
+                    border: '2px solid #E8B86D',
                     '&:hover': {
-                      background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
-                      boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
+                      backgroundColor: '#1e3a5f',
+                      borderColor: '#d4a45a',
                       transform: 'translateY(-1px)',
                     },
                     '&:active': {
@@ -535,7 +531,7 @@ const GuestAuthPage: React.FC = () => {
                     '&:disabled': {
                       background: theme.palette.action.disabledBackground,
                       color: theme.palette.action.disabled,
-                      boxShadow: 'none',
+                      border: '2px solid rgba(0,0,0,0.12)',
                     },
                     transition: 'all 0.2s ease',
                   }}
@@ -553,15 +549,14 @@ const GuestAuthPage: React.FC = () => {
                   component="button" 
                   onClick={() => setTabValue(1)}
                   sx={{
-                    color: theme.palette.primary.main,
+                    color: '#2c5282',
                     fontWeight: 600,
                     textDecoration: 'underline',
-                    textDecorationColor: alpha(theme.palette.primary.main, 0.6),
+                    textDecorationColor: '#E8B86D',
                     transition: 'all 0.2s ease',
                     '&:hover': {
-                      textDecorationColor: theme.palette.primary.main,
-                      color: theme.palette.primary.dark,
-                      textDecorationThickness: '2px',
+                      textDecorationColor: '#d4a45a',
+                      color: '#1e3a5f',
                     },
                   }}
                 >
@@ -572,15 +567,14 @@ const GuestAuthPage: React.FC = () => {
                   component="button" 
                   onClick={() => setTabValue(0)}
                   sx={{
-                    color: theme.palette.primary.main,
+                    color: '#2c5282',
                     fontWeight: 600,
                     textDecoration: 'underline',
-                    textDecorationColor: alpha(theme.palette.primary.main, 0.6),
+                    textDecorationColor: '#E8B86D',
                     transition: 'all 0.2s ease',
                     '&:hover': {
-                      textDecorationColor: theme.palette.primary.main,
-                      color: theme.palette.primary.dark,
-                      textDecorationThickness: '2px',
+                      textDecorationColor: '#d4a45a',
+                      color: '#1e3a5f',
                     },
                   }}
                 >

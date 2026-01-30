@@ -28,7 +28,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { hotelApiService } from '../services/hotelApi';
 import RoomCard from '../components/hotel/RoomCard';
 import RoomTypeCard from '../components/hotel/RoomTypeCard';
-import { COLORS } from '../theme/themeColors';
+import { COLORS, addAlpha } from '../theme/themeColors';
 import { formatCurrencyWithDecimals } from '../utils/currencyUtils';
 import { 
   HotelSearchRequest, 
@@ -347,19 +347,21 @@ const HotelDetailPage: React.FC = () => {
         image={getHotelImage('hero')}
         alt={hotel.name}
         sx={{ 
-          borderRadius: isMobile ? 1 : 2, 
+          borderRadius: 2, 
           mb: isMobile ? 2 : 3,
           objectFit: 'cover',
+          border: `3px solid ${COLORS.PRIMARY}`,
+          boxShadow: `0 4px 16px ${addAlpha(COLORS.PRIMARY, 0.2)}`,
         }}
       />
 
       {/* Hotel Information - Mobile Responsive */}
       <Card 
         sx={{
-          backgroundColor: theme.palette.background.paper,
-          border: `1px solid ${theme.palette.divider}`,
+          backgroundColor: '#ffffff',
+          border: `2px solid ${COLORS.PRIMARY}`,
           borderRadius: 2,
-          boxShadow: theme.shadows[2],
+          boxShadow: `0 4px 12px ${addAlpha(COLORS.PRIMARY, 0.15)}`,
           mb: isMobile ? 2 : 3,
         }}
       >
@@ -374,7 +376,7 @@ const HotelDetailPage: React.FC = () => {
                 gutterBottom 
                 sx={{ 
                   fontWeight: 700, 
-                  color: COLORS.PRIMARY,
+                  color: '#2c5282',
                   lineHeight: 1.2,
                 }}
               >
@@ -417,9 +419,9 @@ const HotelDetailPage: React.FC = () => {
                 sx={{ 
                   textAlign: 'center',
                   p: 2,
-                  backgroundColor: COLORS.CARD_HOVER,
+                  backgroundColor: addAlpha(COLORS.PRIMARY, 0.1),
                   borderRadius: 1,
-                  border: `1px solid ${COLORS.CARD_BORDER}`,
+                  border: `2px solid ${COLORS.PRIMARY}`,
                 }}
               >
                 <Typography variant="h5" sx={{ 
@@ -441,7 +443,7 @@ const HotelDetailPage: React.FC = () => {
           /* Desktop Layout - Side by Side */
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
             <Box sx={{ flexGrow: 1 }}>
-              <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 700, color: COLORS.PRIMARY }}>
+              <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 700, color: '#2c5282' }}>
                 {hotel.name}
               </Typography>
               
@@ -554,8 +556,8 @@ const HotelDetailPage: React.FC = () => {
           <Box sx={{ 
             mt: 2, 
             p: 1.5, 
-            backgroundColor: theme.palette.background.paper, 
-            border: `1px solid ${theme.palette.divider}`, 
+            backgroundColor: '#fafafa', 
+            border: `1px solid ${COLORS.PRIMARY}`, 
             borderRadius: 1 
           }}>
             <Typography variant="body2" sx={{ color: 'text.primary', fontWeight: 600 }}>
@@ -570,10 +572,10 @@ const HotelDetailPage: React.FC = () => {
       {searchRequest && (
         <Card 
           sx={{
-            backgroundColor: theme.palette.background.paper,
-            border: `1px solid ${theme.palette.divider}`,
+            backgroundColor: '#ffffff',
+            border: `2px solid ${COLORS.PRIMARY}`,
             borderRadius: 2,
-            boxShadow: theme.shadows[2],
+            boxShadow: `0 4px 12px ${addAlpha(COLORS.PRIMARY, 0.15)}`,
           }}
         >
           <CardContent sx={{ p: isMobile ? 2 : 3 }}>
@@ -583,7 +585,7 @@ const HotelDetailPage: React.FC = () => {
                 fontWeight: 700, 
                 mb: isMobile ? 1.5 : 2,
                 fontSize: isMobile ? '1.1rem' : undefined,
-                color: 'text.primary',
+                color: '#2c5282',
               }}
             >
               {useRoomTypes ? 

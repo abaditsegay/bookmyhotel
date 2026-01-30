@@ -10,7 +10,7 @@ import {
   useTheme,
   useMediaQuery,
 } from '@mui/material';
-import { Dayjs } from 'dayjs';
+import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
 import { COLORS } from '../../theme/themeColors';
@@ -21,8 +21,8 @@ interface BookingSummaryProps {
     roomType: string;
     pricePerNight?: number;
   };
-  checkInDate: Dayjs | null;
-  checkOutDate: Dayjs | null;
+  checkInDate: Date | null;
+  checkOutDate: Date | null;
   guests: number;
   nights: number;
   totalAmount: number;
@@ -56,14 +56,15 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
       <Card
         elevation={0}
         sx={{
-          borderRadius: { xs: 1, md: 2 },
-          border: `1px solid ${alpha(COLORS.PRIMARY, 0.1)}`,
+          borderRadius: 2,
+          border: '2px solid #E8B86D',
           overflow: 'hidden',
+          boxShadow: '0 4px 12px rgba(232, 184, 109, 0.15)',
         }}
       >
         <Box
           sx={{
-            bgcolor: COLORS.PRIMARY,
+            bgcolor: '#2c5282',
             color: 'white',
             p: { xs: 1.5, md: 2 },
           }}
@@ -95,7 +96,7 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
               variant={isMobile ? 'body1' : 'h6'} 
               sx={{ 
                 fontWeight: 600, 
-                color: COLORS.PRIMARY,
+                color: '#2c5282',
                 fontSize: { xs: '1rem', md: '1.25rem' },
               }}
             >
@@ -148,7 +149,7 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
                   fontSize: { xs: '0.8rem', md: '0.875rem' },
                 }}
               >
-                {checkInDate?.format('MMM DD, YYYY')}
+                {checkInDate ? format(checkInDate, 'MMM dd, yyyy') : ''}
               </Typography>
             </Box>
             <Box sx={{ 
@@ -171,7 +172,7 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
                   fontSize: { xs: '0.8rem', md: '0.875rem' },
                 }}
               >
-                {checkOutDate?.format('MMM DD, YYYY')}
+                {checkOutDate ? format(checkOutDate, 'MMM dd, yyyy') : ''}
               </Typography>
             </Box>
             <Box sx={{ 
@@ -316,11 +317,11 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
 
           {/* Total Section with Distinct Background */}
           <Box sx={{ 
-            backgroundColor: alpha(COLORS.PRIMARY, 0.08),
+            backgroundColor: 'rgba(232, 184, 109, 0.1)',
             borderRadius: 2,
             p: { xs: 1.5, md: 2 },
             mb: { xs: 1.5, md: 2 },
-            border: `1px solid ${alpha(COLORS.PRIMARY, 0.15)}`,
+            border: '2px solid #E8B86D',
           }}>
             <Box sx={{ 
               display: 'flex', 
@@ -333,7 +334,7 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
                 variant={isMobile ? 'body1' : 'h6'} 
                 sx={{ 
                   fontWeight: 700, 
-                  color: COLORS.PRIMARY,
+                  color: '#2c5282',
                   fontSize: { xs: '1.1rem', md: '1.25rem' },
                 }}
               >
@@ -343,7 +344,7 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
                 variant={isMobile ? 'body1' : 'h6'} 
                 sx={{ 
                   fontWeight: 700, 
-                  color: COLORS.PRIMARY,
+                  color: '#2c5282',
                   fontSize: { xs: '1.2rem', md: '1.25rem' },
                 }}
               >
@@ -356,9 +357,10 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
             severity="info" 
             sx={{ 
               borderRadius: 2,
-              bgcolor: (theme) => alpha(theme.palette.primary.main, 0.08),
+              bgcolor: 'rgba(232, 184, 109, 0.08)',
               color: 'text.secondary',
-              '& .MuiAlert-icon': { color: 'primary.main' },
+              border: '1px solid #E8B86D',
+              '& .MuiAlert-icon': { color: '#2c5282' },
               mb: 2,
             }}
           >
@@ -371,9 +373,10 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
             severity="info" 
             sx={{ 
               borderRadius: 2,
-              bgcolor: alpha(COLORS.PRIMARY, 0.05),
-              color: COLORS.PRIMARY,
-              '& .MuiAlert-icon': { color: COLORS.PRIMARY },
+              bgcolor: 'rgba(232, 184, 109, 0.05)',
+              color: '#2c5282',
+              border: '1px solid #E8B86D',
+              '& .MuiAlert-icon': { color: '#2c5282' },
             }}
           >
             <Typography variant="caption">

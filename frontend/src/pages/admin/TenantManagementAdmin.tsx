@@ -50,6 +50,7 @@ import {
   UpdateTenantRequest 
 } from '../../services/adminApi';
 import PremiumTextField from '../../components/common/PremiumTextField';
+import PremiumSelect from '../../components/common/PremiumSelect';
 
 interface TenantFilters {
   search: string;
@@ -354,18 +355,16 @@ const TenantManagementAdmin: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={3}>
-              <FormControl fullWidth>
-                <InputLabel>Status</InputLabel>
-                <Select
-                  value={filters.status}
-                  label="Status"
-                  onChange={(e) => handleFilterChange('status', e.target.value)}
-                >
-                  <MenuItem value="">All Status</MenuItem>
-                  <MenuItem value="ACTIVE">Active</MenuItem>
-                  <MenuItem value="INACTIVE">Inactive</MenuItem>
-                </Select>
-              </FormControl>
+              <PremiumSelect
+                fullWidth
+                label="Status"
+                value={filters.status}
+                onChange={(e) => handleFilterChange('status', e.target.value)}
+              >
+                <MenuItem value="">All Status</MenuItem>
+                <MenuItem value="ACTIVE">Active</MenuItem>
+                <MenuItem value="INACTIVE">Inactive</MenuItem>
+              </PremiumSelect>
             </Grid>
             <Grid item xs={12} md={5}>
               <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
@@ -394,27 +393,17 @@ const TenantManagementAdmin: React.FC = () => {
               <TableHead>
                 <TableRow
                   sx={{
-                    background: getGradient('slate'),
-                    boxShadow: '0 4px 12px rgba(100, 116, 139, 0.15)',
+                    background: 'linear-gradient(135deg, #f5f5f5 0%, #fafafa 100%)',
+                    borderBottom: '2px solid #E8B86D',
                     '& .MuiTableCell-head': {
-                      color: COLORS.WHITE,
-                      fontWeight: 600,
-                      fontSize: '0.95rem',
+                      color: '#2c5282',
+                      fontWeight: 700,
+                      fontSize: '0.875rem',
                       letterSpacing: '0.5px',
                       textTransform: 'uppercase',
                       border: 'none',
                       padding: '20px 16px',
-                      position: 'relative',
-                      textShadow: '0 1px 2px rgba(0,0,0,0.1)',
-                      '&::after': {
-                        content: '""',
-                        position: 'absolute',
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        height: '3px',
-                        background: getGradient('white')
-                      }
+                      position: 'relative'
                     }
                   }}
                 >

@@ -6,7 +6,6 @@ import {
   Card, 
   CardContent, 
   Container, 
-  TextField, 
   Typography, 
   Alert, 
   Divider, 
@@ -21,6 +20,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { API_CONFIG } from '../config/apiConfig';
+import PremiumTextField from '../components/common/PremiumTextField';
 
 const LoginPage: React.FC = () => {
   const { t } = useTranslation();
@@ -281,7 +281,7 @@ const LoginPage: React.FC = () => {
             {!showSignUp ? (
               // Sign In Form
               <Box component="form" onSubmit={handleSubmit} data-testid="login-form">
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label={t('auth.login.emailLabel')}
                   type="email"
@@ -292,22 +292,8 @@ const LoginPage: React.FC = () => {
                   autoComplete="email"
                   autoFocus
                   inputProps={{ 'data-testid': 'email-input' }}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      backgroundColor: theme.palette.mode === 'dark' 
-                        ? theme.palette.grey[800] 
-                        : theme.palette.background.paper,
-                      borderRadius: 2,
-                      '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'primary.main',
-                      },
-                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                        borderWidth: 2,
-                      },
-                    },
-                  }}
                 />
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label={t('auth.login.passwordLabel')}
                   type="password"
@@ -317,20 +303,6 @@ const LoginPage: React.FC = () => {
                   required
                   autoComplete="current-password"
                   inputProps={{ 'data-testid': 'password-input' }}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      backgroundColor: theme.palette.mode === 'dark' 
-                        ? theme.palette.grey[800] 
-                        : theme.palette.background.paper,
-                      borderRadius: 2,
-                      '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'primary.main',
-                      },
-                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                        borderWidth: 2,
-                      },
-                    },
-                  }}
                 />
                 <Button
                   type="submit"
@@ -364,52 +336,24 @@ const LoginPage: React.FC = () => {
               // Sign Up Form
               <Box component="form" onSubmit={handleRegister}>
                 <Stack direction="row" spacing={2}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label={t('auth.login.firstNameLabel')}
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
                     margin="normal"
                     required
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        backgroundColor: theme.palette.mode === 'dark' 
-                          ? theme.palette.grey[800] 
-                          : theme.palette.background.paper,
-                        borderRadius: 2,
-                        '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: 'primary.main',
-                        },
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderWidth: 2,
-                        },
-                      },
-                    }}
                   />
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label={t('auth.login.lastNameLabel')}
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
                     margin="normal"
                     required
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        backgroundColor: theme.palette.mode === 'dark' 
-                          ? theme.palette.grey[800] 
-                          : theme.palette.background.paper,
-                        borderRadius: 2,
-                        '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: 'primary.main',
-                        },
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderWidth: 2,
-                        },
-                      },
-                    }}
                   />
                 </Stack>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label={t('auth.login.emailLabel')}
                   type="email"
@@ -418,43 +362,15 @@ const LoginPage: React.FC = () => {
                   margin="normal"
                   required
                   autoComplete="email"
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      backgroundColor: theme.palette.mode === 'dark' 
-                        ? theme.palette.grey[800] 
-                        : theme.palette.background.paper,
-                      borderRadius: 2,
-                      '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'primary.main',
-                      },
-                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                        borderWidth: 2,
-                      },
-                    },
-                  }}
                 />
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label={t('auth.login.phoneLabel')}
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   margin="normal"
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      backgroundColor: theme.palette.mode === 'dark' 
-                        ? theme.palette.grey[800] 
-                        : theme.palette.background.paper,
-                      borderRadius: 2,
-                      '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'primary.main',
-                      },
-                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                        borderWidth: 2,
-                      },
-                    },
-                  }}
                 />
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label={t('auth.login.passwordLabel')}
                   type="password"
@@ -463,22 +379,8 @@ const LoginPage: React.FC = () => {
                   margin="normal"
                   required
                   autoComplete="new-password"
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      backgroundColor: theme.palette.mode === 'dark' 
-                        ? theme.palette.grey[800] 
-                        : theme.palette.background.paper,
-                      borderRadius: 2,
-                      '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'primary.main',
-                      },
-                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                        borderWidth: 2,
-                      },
-                    },
-                  }}
                 />
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label={t('auth.login.confirmPasswordLabel')}
                   type="password"
@@ -487,20 +389,6 @@ const LoginPage: React.FC = () => {
                   margin="normal"
                   required
                   autoComplete="new-password"
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      backgroundColor: theme.palette.mode === 'dark' 
-                        ? theme.palette.grey[800] 
-                        : theme.palette.background.paper,
-                      borderRadius: 2,
-                      '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'primary.main',
-                      },
-                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                        borderWidth: 2,
-                      },
-                    },
-                  }}
                 />
                 <Button
                   type="submit"

@@ -216,7 +216,7 @@ const SearchResultsPage: React.FC = () => {
       <Box
         sx={{
           minHeight: '100vh',
-          background: getGradient('white'),
+          background: 'linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%)',
         }}
       >
         <Container maxWidth="lg" sx={{ py: isMobile ? 2 : 4, px: isMobile ? 1 : 3 }}>
@@ -229,7 +229,8 @@ const SearchResultsPage: React.FC = () => {
                 borderRadius: 1,
                 textTransform: 'none',
                 fontWeight: 500,
-                borderColor: 'rgba(224, 224, 224, 0.5)',
+                borderColor: '#E8B86D',
+                borderWidth: '2px',
               }}
             >
               ← Back to Search
@@ -254,7 +255,7 @@ const SearchResultsPage: React.FC = () => {
     <Box
       sx={{
         minHeight: '100vh',
-        background: getGradient('white'),
+        background: 'linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%)',
       }}
     >
       <Container 
@@ -273,14 +274,14 @@ const SearchResultsPage: React.FC = () => {
             borderRadius: 1,
             textTransform: 'none',
             fontWeight: 500,
-            borderColor: 'rgba(224, 224, 224, 0.5)',
-            color: 'text.primary',
+            borderColor: '#E8B86D',
+            borderWidth: '2px',
+            color: '#2c5282',
             backgroundColor: 'white',
-            boxShadow: 'none',
             '&:hover': {
-              borderColor: 'primary.main',
-              backgroundColor: 'primary.main',
-              color: 'primary.contrastText',
+              borderColor: '#d4a45a',
+              backgroundColor: '#fafafa',
+              borderWidth: '2px',
               transform: 'translateY(-1px)',
             },
           }}
@@ -294,9 +295,9 @@ const SearchResultsPage: React.FC = () => {
         sx={{ 
           mb: 3,
           backgroundColor: 'white',
-          border: '1px solid rgba(224, 224, 224, 0.3)',
+          border: '2px solid #E8B86D',
           borderRadius: 1,
-          boxShadow: 'none',
+          boxShadow: '0 2px 8px rgba(232, 184, 109, 0.1)',
         }}
       >
         <CardContent sx={{ p: 3 }}>
@@ -305,7 +306,7 @@ const SearchResultsPage: React.FC = () => {
               variant="h5" 
               sx={{ 
                 fontWeight: 600,
-                color: 'text.primary',
+                color: '#2c5282',
                 mb: 1,
               }}
             >
@@ -336,13 +337,14 @@ const SearchResultsPage: React.FC = () => {
                 borderRadius: 2,
                 textTransform: 'none',
                 fontWeight: 600,
-                borderColor: COLORS.CARD_BORDER,
-                color: 'text.primary',
-                backgroundColor: COLORS.CARD_HOVER,
+                borderColor: '#E8B86D',
+                borderWidth: '2px',
+                color: '#2c5282',
+                backgroundColor: '#fafafa',
                 '&:hover': {
-                  borderColor: 'primary.main',
-                  backgroundColor: 'primary.main',
-                  color: 'primary.contrastText',
+                  borderColor: '#d4a45a',
+                  backgroundColor: '#f5f5f5',
+                  borderWidth: '2px',
                   transform: 'translateY(-1px)',
                 },
               }}
@@ -358,13 +360,14 @@ const SearchResultsPage: React.FC = () => {
                 borderRadius: 2,
                 textTransform: 'none',
                 fontWeight: 600,
-                borderColor: COLORS.CARD_BORDER,
-                color: 'text.primary',
-                backgroundColor: COLORS.CARD_HOVER,
+                borderColor: '#E8B86D',
+                borderWidth: '2px',
+                color: '#2c5282',
+                backgroundColor: '#fafafa',
                 '&:hover': {
-                  borderColor: 'primary.main',
-                  backgroundColor: 'primary.main',
-                  color: 'primary.contrastText',
+                  borderColor: '#d4a45a',
+                  backgroundColor: '#f5f5f5',
+                  borderWidth: '2px',
                   transform: 'translateY(-1px)',
                 },
               }}
@@ -401,9 +404,9 @@ const SearchResultsPage: React.FC = () => {
         <Card 
           sx={{ 
             backgroundColor: 'white',
-            border: '1px solid rgba(224, 224, 224, 0.3)',
+            border: '2px solid #E8B86D',
             borderRadius: 1,
-            boxShadow: 'none',
+            boxShadow: '0 2px 8px rgba(232, 184, 109, 0.1)',
           }}
         >
           <CardContent sx={{ p: 0 }}>

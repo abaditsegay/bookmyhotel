@@ -5,7 +5,6 @@ import {
   Typography,
   Box,
   Button,
-  TextField,
   Grid,
   Alert,
   Breadcrumbs,
@@ -38,10 +37,9 @@ import {
   Hotel as HotelIcon,
   Person as PersonIcon,
 } from '@mui/icons-material';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import dayjs, { Dayjs } from 'dayjs';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { addDays, format, differenceInDays } from 'date-fns';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
@@ -54,6 +52,8 @@ import NumberStepper from '../components/common/NumberStepper';
 import BookingSummary from '../components/booking/BookingSummary';
 import { buildApiUrl } from '../config/apiConfig';
 import { extractBookingErrorMessage } from '../utils/errorHandling';
+import PremiumTextField from '../components/common/PremiumTextField';
+import PremiumDatePicker from '../components/common/PremiumDatePicker';
 
 interface BookingPageState {
   room?: AvailableRoom;
@@ -88,11 +88,11 @@ const BookingPage: React.FC = () => {
   const bookingData = location.state as BookingPageState;
   
   // Form state - pre-populate with user data if available
-  const [checkInDate, setCheckInDate] = useState<Dayjs | null>(
-    bookingData?.searchRequest?.checkInDate ? dayjs(bookingData.searchRequest.checkInDate) : dayjs()
+  const [checkInDate, setCheckInDate] = useState<Date | null>(
+    bookingData?.searchRequest?.checkInDate ? new Date(bookingData.searchRequest.checkInDate) : new Date()
   );
-  const [checkOutDate, setCheckOutDate] = useState<Dayjs | null>(
-    bookingData?.searchRequest?.checkOutDate ? dayjs(bookingData.searchRequest.checkOutDate) : dayjs().add(1, 'day')
+  const [checkOutDate, setCheckOutDate] = useState<Date | null>(
+    bookingData?.searchRequest?.checkOutDate ? new Date(bookingData.searchRequest.checkOutDate) : addDays(new Date(), 1)
   );
   const [guests, setGuests] = useState(bookingData?.searchRequest?.guests || 1);
   const [firstName, setFirstName] = useState(user?.firstName || '');
@@ -257,7 +257,7 @@ const BookingPage: React.FC = () => {
 
   const calculateTotalAmount = () => {
     if (!checkInDate || !checkOutDate || !roomData) return 0;
-    const nights = checkOutDate.diff(checkInDate, 'day');
+    const nights = differenceInDays(checkOutDate, checkInDate);
     const subtotal = roomData.pricePerNight * nights;
     const vatAmount = subtotal * hotelVatRate;
     const serviceTaxAmount = subtotal * hotelServiceTaxRate;
@@ -399,8 +399,8 @@ const BookingPage: React.FC = () => {
       
       const bookingRequest = {
         hotelId: bookingData.hotelId,
-        checkInDate: checkInDate.format('YYYY-MM-DD'),
-        checkOutDate: checkOutDate.format('YYYY-MM-DD'),
+        checkInDate: format(checkInDate, 'yyyy-MM-dd'),
+        checkOutDate: format(checkOutDate, 'yyyy-MM-dd'),
         guests: guests,
         specialRequests: specialRequests.trim() || undefined,
         paymentMethodId: paymentMethod === 'pay_at_frontdesk' ? 'pay_at_frontdesk' : 'mock_payment_processed',
@@ -463,11 +463,11 @@ const BookingPage: React.FC = () => {
 
   const totalAmount = calculateTotalAmount();
   const nights = checkInDate && checkOutDate 
-    ? checkOutDate.diff(checkInDate, 'day')
+    ? differenceInDays(checkOutDate, checkInDate)
     : 0;
 
   return (
-    <LocalizationProvider dateAdapter={AdapterDayjs}>
+    <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Container 
         maxWidth={false}
         sx={{ 
@@ -481,8 +481,10 @@ const BookingPage: React.FC = () => {
         <Box sx={{ 
           mb: isMobile ? 2 : 3,
           p: isMobile ? 1.5 : 2,
-          backgroundColor: theme.palette.background.paper,
-          borderRadius: 1,
+          backgroundColor: '#ffffff',
+          borderRadius: 2,
+          border: '2px solid #E8B86D',
+          boxShadow: '0 4px 12px rgba(232, 184, 109, 0.15)',
         }}>
           {/* Back Navigation */}
           <Box sx={{ mb: isMobile ? 1 : 1.5 }}>
@@ -583,7 +585,7 @@ const BookingPage: React.FC = () => {
                   <Typography 
                     variant={isMobile ? 'h6' : 'h5'} 
                     sx={{ 
-                      color: 'text.primary',
+                      color: '#2c5282',
                       fontWeight: 600,
                     }}
                   >
@@ -657,10 +659,10 @@ const BookingPage: React.FC = () => {
                   alignItems: 'center', 
                   mb: 2,
                 }}>
-                  <HotelIcon sx={{ mr: 1, color: COLORS.PRIMARY }} />
+                  <HotelIcon sx={{ mr: 1, color: '#2c5282' }} />
                   <Typography 
                     variant={isMobile ? 'subtitle1' : 'h6'} 
-                    sx={{ fontWeight: 600, color: COLORS.PRIMARY }}
+                    sx={{ fontWeight: 600, color: '#2c5282' }}
                   >
                     {t('booking.page.roomDetails')}
                   </Typography>
@@ -751,57 +753,34 @@ const BookingPage: React.FC = () => {
             <form onSubmit={handleSubmit}>
           <Box sx={{ 
             p: isMobile ? 1.5 : 2, 
-            backgroundColor: theme.palette.background.paper,
-            borderRadius: 1,
-            border: `1px solid ${theme.palette.divider}`,
+            backgroundColor: '#ffffff',
+            borderRadius: 2,
+            border: '2px solid #E8B86D',
+            boxShadow: '0 4px 12px rgba(232, 184, 109, 0.15)',
           }}>
 
             <Grid container spacing={isMobile ? 1.5 : 2}>
               {/* Dates and Guests - stacked on mobile */}
               <Grid item xs={12} sm={4}>
-                <DatePicker
-                  label={t('booking.page.checkInDate')}
-                  value={checkInDate}
-                  onChange={setCheckInDate}
-                  minDate={dayjs()}
-                  slotProps={{
-                    textField: {
-                      fullWidth: true,
-                      required: true,
-                      sx: {
-                        '& .MuiInputBase-root': {
-                          minHeight: isMobile ? 56 : 'auto',
-                        },
-                      },
-                    },
-                    popper: {
-                      placement: isMobile ? 'bottom-start' : undefined,
-                    },
-                  }}
-                />
+                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                  <PremiumDatePicker
+                    label={t('booking.page.checkInDate')}
+                    value={checkInDate}
+                    onChange={setCheckInDate}
+                    minDate={new Date()}
+                  />
+                </LocalizationProvider>
               </Grid>
 
               <Grid item xs={12} sm={4}>
-                <DatePicker
-                  label={t('booking.page.checkOutDate')}
-                  value={checkOutDate}
-                  onChange={setCheckOutDate}
-                  minDate={checkInDate || dayjs()}
-                  slotProps={{
-                    textField: {
-                      fullWidth: true,
-                      required: true,
-                      sx: {
-                        '& .MuiInputBase-root': {
-                          minHeight: isMobile ? 56 : 'auto',
-                        },
-                      },
-                    },
-                    popper: {
-                      placement: isMobile ? 'bottom-start' : undefined,
-                    },
-                  }}
-                />
+                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                  <PremiumDatePicker
+                    label={t('booking.page.checkOutDate')}
+                    value={checkOutDate}
+                    onChange={setCheckOutDate}
+                    minDate={checkInDate || new Date()}
+                  />
+                </LocalizationProvider>
               </Grid>
 
               <Grid item xs={12} sm={4}>
@@ -829,10 +808,10 @@ const BookingPage: React.FC = () => {
                       alignItems: 'center', 
                       mb: 2,
                     }}>
-                      <PersonIcon sx={{ mr: 1, color: COLORS.PRIMARY }} />
+                      <PersonIcon sx={{ mr: 1, color: '#2c5282' }} />
                       <Typography 
                         variant={isMobile ? 'subtitle1' : 'h6'} 
-                        sx={{ fontWeight: 600, color: COLORS.PRIMARY }}
+                        sx={{ fontWeight: 600, color: '#2c5282' }}
                       >
                         {t('booking.page.guestInformation')}
                       </Typography>
@@ -877,14 +856,14 @@ const BookingPage: React.FC = () => {
                       // Enhanced guest input fields with professional styling
                       <Box sx={{ 
                         p: isMobile ? 1.5 : 2,
-                        backgroundColor: theme.palette.background.paper,
+                        backgroundColor: '#fafafa',
                         borderRadius: 1,
-                        border: `1px solid ${alpha(COLORS.PRIMARY, 0.1)}`,
+                        border: '1px solid #E8B86D',
                         mb: 2,
                       }}>
                         <Typography variant="body1" sx={{ 
                           fontWeight: 600,
-                          color: COLORS.PRIMARY,
+                          color: '#2c5282',
                           mb: 1.5,
                         }}>
                           {t('booking.page.guestDetails')}
@@ -892,33 +871,31 @@ const BookingPage: React.FC = () => {
                         
                         <Grid container spacing={isMobile ? 1.5 : 2}>
                           <Grid item xs={12} sm={6}>
-                            <TextField
+                            <PremiumTextField
                               label={t('booking.page.firstName')}
                               value={firstName}
                               onChange={handleFirstNameChange}
                               fullWidth
                               required
                               size="small"
-                              variant="outlined"
                               placeholder={t('booking.page.firstNamePlaceholder')}
                             />
                           </Grid>
 
                           <Grid item xs={12} sm={6}>
-                            <TextField
+                            <PremiumTextField
                               label={t('booking.page.lastName')}
                               value={lastName}
                               onChange={handleLastNameChange}
                               fullWidth
                               required
                               size="small"
-                              variant="outlined"
                               placeholder={t('booking.page.lastNamePlaceholder')}
                             />
                           </Grid>
 
                           <Grid item xs={12} sm={6}>
-                            <TextField
+                            <PremiumTextField
                               label={t('booking.page.emailAddress')}
                               type="email"
                               value={guestEmail}
@@ -926,19 +903,17 @@ const BookingPage: React.FC = () => {
                               fullWidth
                               required
                               size="small"
-                              variant="outlined"
                               placeholder={t('booking.page.emailPlaceholder')}
                             />
                           </Grid>
 
                           <Grid item xs={12} sm={6}>
-                            <TextField
+                            <PremiumTextField
                               label={t('booking.page.phoneNumber')}
                               value={guestPhone}
                               onChange={handleGuestPhoneChange}
                               fullWidth
                               size="small"
-                              variant="outlined"
                               placeholder={t('booking.page.phonePlaceholder')}
                             />
                           </Grid>
@@ -957,26 +932,25 @@ const BookingPage: React.FC = () => {
                     {/* Special Requests Section */}
                     <Box sx={{ 
                       p: isMobile ? 1.5 : 2,
-                      backgroundColor: theme.palette.background.paper,
+                      backgroundColor: '#fafafa',
                       borderRadius: 1,
-                      border: `1px solid ${alpha(COLORS.PRIMARY, 0.1)}`,
+                      border: '1px solid #E8B86D',
                     }}>
                       <Typography variant="body1" sx={{ 
                         fontWeight: 600,
-                        color: COLORS.PRIMARY,
+                        color: '#2c5282',
                         mb: 1,
                       }}>
                         Special Requests (Optional)
                       </Typography>
                       
-                      <TextField
+                      <PremiumTextField
                         value={specialRequests}
                         onChange={handleSpecialRequestsChange}
                         multiline
                         rows={isMobile ? 2 : 3}
                         fullWidth
                         size="small"
-                        variant="outlined"
                         placeholder="e.g., Late check-in, room preferences, dietary requirements..."
                       />
                       
@@ -1001,14 +975,15 @@ const BookingPage: React.FC = () => {
                             }}
                             sx={{
                               cursor: 'pointer',
-                              borderColor: alpha(COLORS.PRIMARY, 0.3),
-                              color: COLORS.PRIMARY,
+                              borderColor: '#E8B86D',
+                              color: '#2c5282',
+                              border: '1px solid #E8B86D',
                               '&:hover': {
-                                backgroundColor: alpha(COLORS.PRIMARY, 0.1),
-                                borderColor: COLORS.PRIMARY,
-                                color: COLORS.PRIMARY,
+                                backgroundColor: 'rgba(232, 184, 109, 0.1)',
+                                borderColor: '#d4a45a',
+                                color: '#1e3a5f',
                                 transform: 'translateY(-1px)',
-                                boxShadow: `0 2px 8px ${alpha(COLORS.PRIMARY, 0.2)}`,
+                                boxShadow: '0 2px 8px rgba(232, 184, 109, 0.3)',
                               },
                             }}
                           />
@@ -1050,10 +1025,10 @@ const BookingPage: React.FC = () => {
                       alignItems: 'center', 
                       mb: 2,
                     }}>
-                      <LockIcon sx={{ mr: 1, color: COLORS.PRIMARY }} />
+                      <LockIcon sx={{ mr: 1, color: '#2c5282' }} />
                       <Typography 
                         variant={isMobile ? 'subtitle1' : 'h6'} 
-                        sx={{ fontWeight: 600, color: COLORS.PRIMARY }}
+                        sx={{ fontWeight: 600, color: '#2c5282' }}
                       >
                         Payment Information
                       </Typography>
@@ -1062,9 +1037,9 @@ const BookingPage: React.FC = () => {
                     {/* Payment Method Selection */}
                     <Box sx={{ 
                       p: isMobile ? 1.5 : 2,
-                      backgroundColor: theme.palette.background.paper,
+                      backgroundColor: '#fafafa',
                       borderRadius: 1,
-                      border: `1px solid ${alpha(COLORS.PRIMARY, 0.1)}`,
+                      border: '1px solid #E8B86D',
                       mb: 2,
                     }}>
                       <FormControl component="fieldset">
@@ -1072,7 +1047,7 @@ const BookingPage: React.FC = () => {
                           component="legend" 
                           sx={{ 
                             fontWeight: 600, 
-                            color: COLORS.PRIMARY,
+                            color: '#2c5282',
                             fontSize: isMobile ? '0.875rem' : '1rem',
                             mb: 1,
                           }}
@@ -1203,9 +1178,9 @@ const BookingPage: React.FC = () => {
                     {paymentMethod === 'credit_card' && (
                       <Box sx={{ 
                         p: isMobile ? 1.5 : 2,
-                        backgroundColor: theme.palette.background.paper,
+                        backgroundColor: '#fafafa',
                         borderRadius: 1,
-                        border: `1px solid ${alpha(COLORS.PRIMARY, 0.1)}`,
+                        border: '1px solid #E8B86D',
                       }}>
                         <Box sx={{ textAlign: 'center', mb: 1.5 }}>
                           <CreditCardIcon sx={{ 
@@ -1223,7 +1198,7 @@ const BookingPage: React.FC = () => {
                         
                         <Grid container spacing={isMobile ? 1.5 : 2}>
                           <Grid item xs={12}>
-                            <TextField
+                            <PremiumTextField
                               label={t('booking.page.cardholderName')}
                               value={cardholderName}
                               onChange={handleCardholderNameChange}
@@ -1234,7 +1209,7 @@ const BookingPage: React.FC = () => {
                             />
                           </Grid>
                           <Grid item xs={12}>
-                            <TextField
+                            <PremiumTextField
                               label={t('booking.page.cardNumber')}
                               value={creditCardNumber}
                               onChange={(e) => {
@@ -1261,7 +1236,7 @@ const BookingPage: React.FC = () => {
                             />
                           </Grid>
                           <Grid item xs={6}>
-                            <TextField
+                            <PremiumTextField
                               label={t('booking.page.expiryDate')}
                               value={expiryDate}
                               onChange={(e) => {
@@ -1280,7 +1255,7 @@ const BookingPage: React.FC = () => {
                             />
                           </Grid>
                           <Grid item xs={6}>
-                            <TextField
+                            <PremiumTextField
                               label={t('booking.page.cvv')}
                               value={cvv}
                               onChange={(e) => {
@@ -1312,9 +1287,9 @@ const BookingPage: React.FC = () => {
                     {paymentMethod === 'mobile_money' && (
                       <Box sx={{ 
                         p: isMobile ? 1.5 : 2,
-                        backgroundColor: theme.palette.background.paper,
+                        backgroundColor: '#fafafa',
                         borderRadius: 1,
-                        border: `1px solid ${alpha(COLORS.PRIMARY, 0.1)}`,
+                        border: '1px solid #E8B86D',
                       }}>
                         <Box sx={{ textAlign: 'center', mb: 2 }}>
                           <PhoneIcon sx={{ 
@@ -1323,14 +1298,14 @@ const BookingPage: React.FC = () => {
                             mb: 1 
                           }} />
                           <Typography variant="h6" sx={{ 
-                            color: COLORS.PRIMARY,
+                            color: '#2c5282',
                             fontWeight: 700,
                             mb: 0.5,
                           }}>
                             {t('booking.page.mobileMoneyTransfer')} - {formatCurrency(totalAmount || 0)}
                           </Typography>
                           <Typography variant="body1" sx={{ 
-                            color: COLORS.PRIMARY,
+                            color: '#2c5282',
                             fontWeight: 600,
                             fontSize: '1.1rem',
                           }}>
@@ -1395,7 +1370,7 @@ const BookingPage: React.FC = () => {
                         
                         <Grid container spacing={isMobile ? 1.5 : 2}>
                           <Grid item xs={12}>
-                            <TextField
+                            <PremiumTextField
                               label={t('booking.page.yourMobileNumber')}
                               value={mobileNumber}
                               onChange={handleMobileNumberChange}
@@ -1413,7 +1388,7 @@ const BookingPage: React.FC = () => {
                             />
                           </Grid>
                           <Grid item xs={12}>
-                            <TextField
+                            <PremiumTextField
                               label={t('booking.page.mobileTransferReference')}
                               value={mobileTransferReference}
                               onChange={handleMobileTransferReferenceChange}
@@ -1475,9 +1450,9 @@ const BookingPage: React.FC = () => {
                     {paymentMethod === 'mbirr' && (
                       <Box sx={{ 
                         p: isMobile ? 1.5 : 2,
-                        backgroundColor: theme.palette.background.paper,
+                        backgroundColor: '#fafafa',
                         borderRadius: 1,
-                        border: `1px solid ${alpha(COLORS.PRIMARY, 0.1)}`,
+                        border: '1px solid #E8B86D',
                       }}>
                         <Box sx={{ textAlign: 'center', mb: 1.5 }}>
                           <PhoneIcon sx={{ 
@@ -1499,7 +1474,7 @@ const BookingPage: React.FC = () => {
                           </Typography>
                         </Alert>
                         
-                        <TextField
+                        <PremiumTextField
                           label="Ethiopian Mobile Number"
                           value={ethiopianPhoneNumber}
                           onChange={(e) => {
@@ -1528,9 +1503,9 @@ const BookingPage: React.FC = () => {
                     {paymentMethod === 'telebirr' && (
                       <Box sx={{ 
                         p: isMobile ? 1.5 : 2,
-                        backgroundColor: theme.palette.background.paper,
+                        backgroundColor: '#fafafa',
                         borderRadius: 1,
-                        border: `1px solid ${alpha(COLORS.PRIMARY, 0.1)}`,
+                        border: '1px solid #E8B86D',
                       }}>
                         <Box sx={{ textAlign: 'center', mb: 1.5 }}>
                           <PhoneIcon sx={{ 
@@ -1552,7 +1527,7 @@ const BookingPage: React.FC = () => {
                           </Typography>
                         </Alert>
                         
-                        <TextField
+                        <PremiumTextField
                           label="Ethiopian Mobile Number"
                           value={ethiopianPhoneNumber}
                           onChange={(e) => {
@@ -1639,6 +1614,14 @@ const BookingPage: React.FC = () => {
                 minHeight: 56,
                 fontWeight: 'bold',
                 fontSize: isMobile ? '1rem' : '0.875rem',
+                backgroundColor: '#2c5282',
+                border: '2px solid #E8B86D',
+                boxShadow: '0 2px 8px rgba(232, 184, 109, 0.2)',
+                '&:hover': {
+                  backgroundColor: '#1e3a5f',
+                  borderColor: '#d4a45a',
+                  boxShadow: '0 4px 12px rgba(232, 184, 109, 0.3)',
+                },
               }}
               startIcon={loading ? <CircularProgress size={16} /> : undefined}
             >
