@@ -492,7 +492,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                 backgroundColor: theme.palette.background.paper,
                 border: `2px solid ${theme.palette.divider}`,
                 borderRadius: 2,
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.08)}`,
               }}
             >
               <CardContent sx={{ p: 3 }}>
@@ -564,7 +564,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                 backgroundColor: theme.palette.background.paper,
                 border: `2px solid ${theme.palette.divider}`,
                 borderRadius: 2,
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.08)}`,
               }}
             >
               <CardContent sx={{ p: 3 }}>
@@ -600,22 +600,22 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                             fullWidth: true,
                             sx: {
                               '& .MuiInputBase-root': {
-                                backgroundColor: '#fafafa',
+                                backgroundColor: COLORS.BG_LIGHT,
                                 borderRadius: 2,
-                                borderLeft: '2px solid #E8B86D',
+                                borderLeft: `2px solid ${COLORS.SECONDARY}`,
                                 transition: 'all 0.3s ease',
                               },
                               '& .MuiOutlinedInput-root': {
                                 '&:hover': {
-                                  backgroundColor: 'rgba(232, 184, 109, 0.04)',
+                                  backgroundColor: addAlpha(COLORS.SECONDARY, 0.04),
                                   '& fieldset': {
-                                    borderColor: '#E8B86D',
+                                    borderColor: COLORS.SECONDARY,
                                   },
                                 },
                                 '&.Mui-focused': {
-                                  backgroundColor: '#fffef8',
+                                  backgroundColor: addAlpha(COLORS.SECONDARY, 0.08),
                                   '& fieldset': {
-                                    borderColor: '#E8B86D',
+                                    borderColor: COLORS.SECONDARY,
                                     borderWidth: '2px',
                                   },
                                 },
@@ -644,22 +644,22 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                             fullWidth: true,
                             sx: {
                               '& .MuiInputBase-root': {
-                                backgroundColor: '#fafafa',
+                                backgroundColor: COLORS.BG_LIGHT,
                                 borderRadius: 2,
-                                borderLeft: '2px solid #E8B86D',
+                                borderLeft: `2px solid ${COLORS.SECONDARY}`,
                                 transition: 'all 0.3s ease',
                               },
                               '& .MuiOutlinedInput-root': {
                                 '&:hover': {
-                                  backgroundColor: 'rgba(232, 184, 109, 0.04)',
+                                  backgroundColor: addAlpha(COLORS.SECONDARY, 0.04),
                                   '& fieldset': {
-                                    borderColor: '#E8B86D',
+                                    borderColor: COLORS.SECONDARY,
                                   },
                                 },
                                 '&.Mui-focused': {
-                                  backgroundColor: '#fffef8',
+                                  backgroundColor: addAlpha(COLORS.SECONDARY, 0.08),
                                   '& fieldset': {
-                                    borderColor: '#E8B86D',
+                                    borderColor: COLORS.SECONDARY,
                                     borderWidth: '2px',
                                   },
                                 },
@@ -731,14 +731,14 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                       sx={{ 
                         cursor: 'pointer',
                         border: selectedRoom?.id === room.id ? '3px solid' : '1px solid',
-                        borderColor: selectedRoom?.id === room.id ? '#E8B86D' : 'divider',
-                        borderLeft: selectedRoom?.id === room.id ? '6px solid #E8B86D' : '3px solid #E8B86D',
+                        borderColor: selectedRoom?.id === room.id ? COLORS.SECONDARY : 'divider',
+                        borderLeft: selectedRoom?.id === room.id ? `6px solid ${COLORS.SECONDARY}` : `3px solid ${COLORS.SECONDARY}`,
                         backgroundColor: selectedRoom?.id === room.id ? 'action.selected' : 'background.paper',
                         elevation: 0,
                         borderRadius: 2,
                         transition: 'all 0.2s ease-in-out',
                         '&:hover': {
-                          borderColor: '#E8B86D',
+                          borderColor: COLORS.SECONDARY,
                           backgroundColor: 'action.hover',
                           transform: 'translateY(-2px)',
                           boxShadow: 3,
@@ -760,8 +760,8 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                             size="small" 
                             variant="outlined"
                             sx={{
-                              borderColor: '#E8B86D',
-                              color: '#B8860B',
+                              borderColor: COLORS.SECONDARY,
+                              color: COLORS.SECONDARY,
                               fontWeight: 'medium',
                               fontSize: '0.75rem'
                             }}
@@ -785,7 +785,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                           </Typography>
                         )}
                         <Typography variant="h6" sx={{
-                          color: '#B8860B',
+                          color: COLORS.SECONDARY,
                           fontWeight: 'bold',
                           fontSize: '1.2rem'
                         }}>
@@ -826,7 +826,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
               borderRadius: 2,
               border: '1px solid',
               borderColor: 'divider',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+              boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.08)}`,
             }}>
               <Typography variant="h5" sx={{ 
                 fontWeight: 700,
@@ -847,9 +847,9 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                   backgroundColor: 'background.paper',
                   border: '1px solid',
                   borderColor: 'divider',
-                  borderLeft: '4px solid #E8B86D',
+                  borderLeft: `4px solid ${COLORS.SECONDARY}`,
                   borderRadius: 2,
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                  boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.08)}`,
                 }}>
                   <CardContent sx={{ p: 3 }}>
                     <Box sx={{ 
@@ -897,7 +897,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                   border: '1px solid',
                   borderColor: 'divider',
                   borderRadius: 2,
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                  boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.08)}`,
                 }}>
                   <CardContent sx={{ p: 3 }}>
                     <Box sx={{ 
@@ -957,7 +957,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                   border: '1px solid',
                   borderColor: 'divider',
                   borderRadius: 2,
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                  boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.08)}`,
                 }}>
                   <CardContent sx={{ p: 3 }}>
                     <Box sx={{ 
@@ -1027,21 +1027,21 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                       justifyContent: 'space-between', 
                       alignItems: 'center',
                       p: 2,
-                      bgcolor: '#E8B86D',
+                      bgcolor: COLORS.SECONDARY,
                       borderRadius: 2,
                       mb: 2,
                     }}>
-                      <Typography variant="h5" sx={{ color: 'white', fontWeight: 700 }}>
+                      <Typography variant="h5" sx={{ color: COLORS.WHITE, fontWeight: 700 }}>
                         {t('walkInBooking.confirmation.totalAmount')}
                       </Typography>
-                      <Typography variant="h4" sx={{ color: 'white', fontWeight: 700 }}>
+                      <Typography variant="h4" sx={{ color: COLORS.WHITE, fontWeight: 700 }}>
                         {formatCurrencyWithDecimals(calculateTotalAmount() || 0)}
                       </Typography>
                     </Box>
                     
                     <Box sx={{
                       p: 2,
-                      bgcolor: 'rgba(232, 184, 109, 0.1)',
+                      bgcolor: addAlpha(COLORS.SECONDARY, 0.1),
                       color: COLORS.PRIMARY,
                       borderRadius: 2,
                       textAlign: 'center',
@@ -1075,7 +1075,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
           minHeight: '70vh',
           borderRadius: 2,
           backgroundColor: theme.palette.background.paper,
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
+          boxShadow: `0 8px 32px ${addAlpha(COLORS.BLACK, 0.12)}`,
         }
       }}
     >
@@ -1132,14 +1132,14 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
             severity="error" 
             sx={{ 
               mb: 2,
-              backgroundColor: 'rgba(211, 47, 47, 0.1)',
-              border: '1px solid rgba(211, 47, 47, 0.3)',
+              backgroundColor: addAlpha(COLORS.ERROR, 0.1),
+              border: `1px solid ${addAlpha(COLORS.ERROR, 0.3)}`,
               borderRadius: 2,
               '& .MuiAlert-icon': {
-                color: '#d32f2f',
+                color: COLORS.ERROR,
               },
               '& .MuiAlert-message': {
-                color: '#d32f2f',
+                color: COLORS.ERROR,
                 fontWeight: 500,
                 fontSize: '0.95rem',
               },
@@ -1158,7 +1158,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
               left: 0,
               right: 0,
               bottom: 0,
-              backgroundColor: 'rgba(255, 255, 255, 0.7)',
+              backgroundColor: addAlpha(COLORS.WHITE, 0.7),
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',

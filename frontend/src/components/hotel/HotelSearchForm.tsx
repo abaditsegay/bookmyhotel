@@ -221,7 +221,7 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
                     },
                     backgroundColor: COLORS.PRIMARY,
                     border: `2px solid ${COLORS.PRIMARY}`,
-                    color: '#ffffff',
+                    color: COLORS.WHITE,
                     '&:hover': {
                       backgroundColor: COLORS.SECONDARY,
                       borderColor: COLORS.SECONDARY,
@@ -233,7 +233,7 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
                     '&:disabled': {
                       backgroundColor: 'action.disabled',
                       color: 'action.disabled',
-                      border: '2px solid rgba(0,0,0,0.12)',
+                      border: `2px solid ${addAlpha(COLORS.BLACK, 0.12)}`,
                     },
                   }}
                 >

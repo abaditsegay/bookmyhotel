@@ -117,6 +117,12 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
     }
   };
 
+  const getPaymentStatusPaletteColor = (status: string) => {
+    const key = getPaymentStatusColor(status);
+    const palette = (theme.palette as any)[key];
+    return palette?.main || theme.palette.grey[500];
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       weekday: 'short',
@@ -305,8 +311,8 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
                             px: 1,
                             py: 0.25,
                             borderRadius: 0.5,
-                            backgroundColor: getPaymentStatusColor(booking.paymentStatus),
-                            color: 'white',
+                            backgroundColor: getPaymentStatusPaletteColor(booking.paymentStatus),
+                            color: theme.palette.getContrastText(getPaymentStatusPaletteColor(booking.paymentStatus)),
                             fontSize: '0.7rem',
                             fontWeight: '500',
                             textTransform: 'uppercase',
@@ -324,7 +330,7 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
                             variant="caption" 
                             sx={{ 
                               fontFamily: 'monospace',
-                              backgroundColor: '#f0f0f0',
+                              backgroundColor: theme.palette.action.hover,
                               px: 0.5,
                               py: 0.25,
                               borderRadius: 0.5,

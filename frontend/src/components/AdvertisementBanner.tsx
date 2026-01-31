@@ -20,6 +20,7 @@ import { hotelApiService } from '../services/hotelApi';
 import { HotelSearchResult } from '../types/hotel';
 import { formatCurrencyWithDecimals } from '../utils/currencyUtils';
 import { useAuth } from '../contexts/AuthContext';
+import { COLORS, addAlpha } from '../theme/themeColors';
 
 interface AdvertisementBannerProps {
   maxAds?: number;
@@ -203,8 +204,8 @@ export default function AdvertisementBanner({ maxAds = 5 }: AdvertisementBannerP
                     position: 'absolute',
                     top: 8,
                     left: 8,
-                    backgroundColor: 'rgba(0,0,0,0.7)',
-                    color: 'white',
+                    backgroundColor: addAlpha(COLORS.BLACK, 0.7),
+                    color: COLORS.WHITE,
                     fontSize: '0.7rem'
                   }}
                 />

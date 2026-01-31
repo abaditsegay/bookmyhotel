@@ -26,6 +26,7 @@ import { HotelSearchResult } from '../../types/hotel';
 import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
 import RoomCard from './RoomCard';
 import RoomTypeCard from './RoomTypeCard';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 
 interface HotelDetailsCardProps {
   hotel: HotelSearchResult;
@@ -94,7 +95,7 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
         mb: isMobile ? 2 : 3,
         borderRadius: 2,
         overflow: 'hidden',
-        border: '1px solid rgba(224, 224, 224, 0.3)',
+        border: `1px solid ${addAlpha(COLORS.BORDER_LIGHT, 0.3)}`,
         display: horizontalLayout && isLargeScreen ? 'flex' : 'block',
         flexDirection: horizontalLayout && isLargeScreen ? 'row' : 'column',
         transition: 'all 0.3s ease-in-out',

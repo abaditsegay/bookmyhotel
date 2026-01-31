@@ -41,6 +41,7 @@ import { formatDateForDisplay, formatDateForInput } from '../../utils/dateUtils'
 import { formatCurrency } from '../../utils/currencyUtils';
 import PremiumTextField from '../common/PremiumTextField';
 import PremiumSelect from '../common/PremiumSelect';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 
 // Unified BookingData interface
 export interface BookingData {
@@ -791,7 +792,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
             >
               <ArrowBackIcon />
             </IconButton>
-            <Typography variant="h4" component="h1" sx={{ color: '#333', fontWeight: 600 }}>
+            <Typography variant="h4" component="h1" sx={{ color: COLORS.TEXT_PRIMARY, fontWeight: 600 }}>
               {pageTitle}
             </Typography>
           </Box>
@@ -836,17 +837,17 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
           {/* Guest Information */}
           <Grid item xs={12} md={6}>
             <Card sx={{ 
-              border: '1px solid #e8f5e9',
-              boxShadow: '0 2px 8px rgba(25, 118, 210, 0.1)',
+              border: `1px solid ${addAlpha(COLORS.SUCCESS, 0.15)}`,
+              boxShadow: `0 2px 8px ${addAlpha(COLORS.PRIMARY, 0.1)}`,
               '&:hover': {
-                boxShadow: '0 4px 16px rgba(25, 118, 210, 0.15)'
+                boxShadow: `0 4px 16px ${addAlpha(COLORS.PRIMARY, 0.15)}`
               }
             }}>
               <CardContent>
-                <Typography variant="h6" gutterBottom sx={{ color: '#333', fontWeight: 600 }}>
+                <Typography variant="h6" gutterBottom sx={{ color: COLORS.TEXT_PRIMARY, fontWeight: 600 }}>
                   {t('booking.details.guestInformation')}
                 </Typography>
-                <Divider sx={{ mb: 2, borderColor: '#e8f5e9' }} />
+                <Divider sx={{ mb: 2, borderColor: addAlpha(COLORS.SUCCESS, 0.15) }} />
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
@@ -875,17 +876,17 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
           {/* Booking Details */}
           <Grid item xs={12} md={6}>
             <Card sx={{ 
-              border: '1px solid #e8f5e9',
-              boxShadow: '0 2px 8px rgba(25, 118, 210, 0.1)',
+              border: `1px solid ${addAlpha(COLORS.SUCCESS, 0.15)}`,
+              boxShadow: `0 2px 8px ${addAlpha(COLORS.PRIMARY, 0.1)}`,
               '&:hover': {
-                boxShadow: '0 4px 16px rgba(25, 118, 210, 0.15)'
+                boxShadow: `0 4px 16px ${addAlpha(COLORS.PRIMARY, 0.15)}`
               }
             }}>
               <CardContent>
-                <Typography variant="h6" gutterBottom sx={{ color: '#333', fontWeight: 600 }}>
+                <Typography variant="h6" gutterBottom sx={{ color: COLORS.TEXT_PRIMARY, fontWeight: 600 }}>
                   {t('booking.details.bookingDetails')}
                 </Typography>
-                <Divider sx={{ mb: 2, borderColor: '#e8f5e9' }} />
+                <Divider sx={{ mb: 2, borderColor: addAlpha(COLORS.SUCCESS, 0.15) }} />
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
@@ -943,17 +944,17 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
           {/* Hotel & Room Information */}
           <Grid item xs={12} md={6}>
             <Card sx={{ 
-              border: '1px solid #e8f5e9',
-              boxShadow: '0 2px 8px rgba(25, 118, 210, 0.1)',
+              border: `1px solid ${addAlpha(COLORS.SUCCESS, 0.15)}`,
+              boxShadow: `0 2px 8px ${addAlpha(COLORS.PRIMARY, 0.1)}`,
               '&:hover': {
-                boxShadow: '0 4px 16px rgba(25, 118, 210, 0.15)'
+                boxShadow: `0 4px 16px ${addAlpha(COLORS.PRIMARY, 0.15)}`
               }
             }}>
               <CardContent>
-                <Typography variant="h6" gutterBottom sx={{ color: '#333', fontWeight: 600 }}>
+                <Typography variant="h6" gutterBottom sx={{ color: COLORS.TEXT_PRIMARY, fontWeight: 600 }}>
                   {t('booking.details.hotelRoomInformation')}
                 </Typography>
-                <Divider sx={{ mb: 2, borderColor: '#e8f5e9' }} />
+                <Divider sx={{ mb: 2, borderColor: addAlpha(COLORS.SUCCESS, 0.15) }} />
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
@@ -1008,12 +1009,12 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                         onClick={handleSelectRoom}
                         sx={{ 
                           height: '56px', // Match the height of the dropdown
-                          borderColor: '#B8860B',
-                          color: '#B8860B',
+                          borderColor: COLORS.SECONDARY,
+                          color: COLORS.SECONDARY,
                           '&:hover': {
-                            borderColor: '#a52f0a',
-                            backgroundColor: '#e8f5e9',
-                            color: '#a52f0a'
+                            borderColor: COLORS.SECONDARY,
+                            backgroundColor: addAlpha(COLORS.SUCCESS, 0.12),
+                            color: COLORS.SECONDARY
                           }
                         }}
                       >
@@ -1060,11 +1061,11 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                       <Alert 
                         severity="warning" 
                         sx={{ 
-                          backgroundColor: '#fff3cd', 
-                          color: '#856404',
-                          border: '1px solid #ffeaa7',
+                          backgroundColor: addAlpha(COLORS.WARNING, 0.15), 
+                          color: COLORS.WARNING,
+                          border: `1px solid ${addAlpha(COLORS.WARNING, 0.35)}`,
                           '& .MuiAlert-icon': {
-                            color: '#856404'
+                            color: COLORS.WARNING
                           }
                         }}
                       >
@@ -1080,17 +1081,17 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
           {/* Stay Information */}
           <Grid item xs={12} md={6}>
             <Card sx={{ 
-              border: '1px solid #e8f5e9',
-              boxShadow: '0 2px 8px rgba(25, 118, 210, 0.1)',
+              border: `1px solid ${addAlpha(COLORS.SUCCESS, 0.15)}`,
+              boxShadow: `0 2px 8px ${addAlpha(COLORS.PRIMARY, 0.1)}`,
               '&:hover': {
-                boxShadow: '0 4px 16px rgba(25, 118, 210, 0.15)'
+                boxShadow: `0 4px 16px ${addAlpha(COLORS.PRIMARY, 0.15)}`
               }
             }}>
               <CardContent>
-                <Typography variant="h6" gutterBottom sx={{ color: '#333', fontWeight: 600 }}>
+                <Typography variant="h6" gutterBottom sx={{ color: COLORS.TEXT_PRIMARY, fontWeight: 600 }}>
                   {t('booking.details.stayInformation')}
                 </Typography>
-                <Divider sx={{ mb: 2, borderColor: '#e8f5e9' }} />
+                <Divider sx={{ mb: 2, borderColor: addAlpha(COLORS.SUCCESS, 0.15) }} />
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={6}>
@@ -1136,11 +1137,11 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                       <Alert 
                         severity="warning" 
                         sx={{ 
-                          backgroundColor: '#fff3cd', 
-                          color: '#856404',
-                          border: '1px solid #ffeaa7',
+                          backgroundColor: addAlpha(COLORS.WARNING, 0.15), 
+                          color: COLORS.WARNING,
+                          border: `1px solid ${addAlpha(COLORS.WARNING, 0.35)}`,
                           '& .MuiAlert-icon': {
-                            color: '#856404'
+                            color: COLORS.WARNING
                           }
                         }}
                       >
@@ -1156,17 +1157,17 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
           {/* Additional Information */}
           <Grid item xs={12}>
             <Card sx={{ 
-              border: '1px solid #e8f5e9',
-              boxShadow: '0 2px 8px rgba(25, 118, 210, 0.1)',
+              border: `1px solid ${addAlpha(COLORS.SUCCESS, 0.15)}`,
+              boxShadow: `0 2px 8px ${addAlpha(COLORS.PRIMARY, 0.1)}`,
               '&:hover': {
-                boxShadow: '0 4px 16px rgba(25, 118, 210, 0.15)'
+                boxShadow: `0 4px 16px ${addAlpha(COLORS.PRIMARY, 0.15)}`
               }
             }}>
               <CardContent>
-                <Typography variant="h6" gutterBottom sx={{ color: '#333', fontWeight: 600 }}>
+                <Typography variant="h6" gutterBottom sx={{ color: COLORS.TEXT_PRIMARY, fontWeight: 600 }}>
                   {t('booking.details.additionalInformation')}
                 </Typography>
-                <Divider sx={{ mb: 2, borderColor: '#e8f5e9' }} />
+                <Divider sx={{ mb: 2, borderColor: addAlpha(COLORS.SUCCESS, 0.15) }} />
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={6}>
@@ -1199,15 +1200,15 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
           fullWidth
           sx={{
             '& .MuiDialog-paper': {
-              border: '1px solid #e8f5e9',
-              boxShadow: '0 8px 32px rgba(25, 118, 210, 0.15)'
+              border: `1px solid ${addAlpha(COLORS.SUCCESS, 0.15)}`,
+              boxShadow: `0 8px 32px ${addAlpha(COLORS.PRIMARY, 0.15)}`
             }
           }}
         >
-          <DialogTitle sx={{ color: '#333', fontWeight: 600 }}>
+          <DialogTitle sx={{ color: COLORS.TEXT_PRIMARY, fontWeight: 600 }}>
             {t('booking.details.selectRoomDialog.title')}
             {loadingRooms && (
-              <CircularProgress size={20} sx={{ ml: 2, color: '#B8860B' }} />
+              <CircularProgress size={20} sx={{ ml: 2, color: COLORS.SECONDARY }} />
             )}
           </DialogTitle>
           <DialogContent>
@@ -1227,7 +1228,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                       onClick={() => handleRoomSelect(room)}
                       sx={{
                         '&:hover': {
-                          backgroundColor: '#e8f5e9',
+                          backgroundColor: addAlpha(COLORS.SUCCESS, 0.12),
                         },
                         borderRadius: 1,
                         mb: 0.5,
@@ -1235,7 +1236,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                     >
                       <ListItemText
                         primary={
-                          <Typography variant="body1" sx={{ color: '#B8860B', fontWeight: 500 }}>
+                          <Typography variant="body1" sx={{ color: COLORS.SECONDARY, fontWeight: 500 }}>
                             {t('booking.details.selectRoomDialog.roomInfo', {
                               roomNumber: room.roomNumber,
                               roomType: room.roomType
@@ -1272,9 +1273,9 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
             <Button 
               onClick={() => setRoomDialogOpen(false)}
               sx={{
-                color: '#B8860B',
+                color: COLORS.SECONDARY,
                 '&:hover': {
-                  backgroundColor: '#e8f5e9'
+                  backgroundColor: addAlpha(COLORS.SUCCESS, 0.12)
                 }
               }}
             >
@@ -1294,12 +1295,12 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
           fullWidth
           sx={{
             '& .MuiDialog-paper': {
-              border: '1px solid #ffcdd2',
-              boxShadow: '0 8px 32px rgba(211, 47, 47, 0.15)'
+              border: `1px solid ${addAlpha(COLORS.ERROR, 0.25)}`,
+              boxShadow: `0 8px 32px ${addAlpha(COLORS.ERROR, 0.15)}`
             }
           }}
         >
-          <DialogTitle sx={{ color: '#d32f2f', fontWeight: 600 }}>
+          <DialogTitle sx={{ color: COLORS.ERROR, fontWeight: 600 }}>
             {t('booking.details.error')}
           </DialogTitle>
           <DialogContent>
@@ -1315,9 +1316,9 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
               }}
               variant="contained"
               sx={{
-                backgroundColor: '#B8860B',
+                backgroundColor: COLORS.SECONDARY,
                 '&:hover': {
-                  backgroundColor: '#a52f0a'
+                  backgroundColor: COLORS.SECONDARY_HOVER
                 }
               }}
             >

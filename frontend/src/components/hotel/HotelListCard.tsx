@@ -17,7 +17,7 @@ import {
   Visibility as ViewIcon,
 } from '@mui/icons-material';
 import { HotelSearchResult } from '../../types/hotel';
-import { COLORS } from '../../theme/themeColors';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
 import { formatCurrency } from '../../utils/currencyUtils';
 
@@ -90,14 +90,14 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
         mb: { xs: 2, md: 2 },
         borderRadius: 2,
         overflow: 'hidden',
-        border: '2px solid #E8B86D',
-        boxShadow: '0 4px 12px rgba(232, 184, 109, 0.15)',
-        backgroundColor: '#ffffff',
+        border: `2px solid ${COLORS.SECONDARY}`,
+        boxShadow: `0 4px 12px ${addAlpha(COLORS.SECONDARY, 0.15)}`,
+        backgroundColor: COLORS.WHITE,
         transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, border-color 0.2s ease-in-out',
         '&:hover': {
           transform: isMobile ? 'none' : 'translateY(-4px)',
-          boxShadow: '0 8px 20px rgba(232, 184, 109, 0.25)',
-          borderColor: '#d4a45a',
+          boxShadow: `0 8px 20px ${addAlpha(COLORS.SECONDARY, 0.25)}`,
+          borderColor: COLORS.SECONDARY_HOVER,
         },
         '&:active': isMobile ? {
           transform: 'scale(0.98)',
@@ -152,7 +152,7 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
                 component="h3" 
                 sx={{ 
                   fontWeight: 'bold', 
-                  color: '#2c5282',
+                  color: COLORS.PRIMARY,
                   fontSize: '1.2rem',
                   lineHeight: 1.3,
                   mb: 1,
@@ -193,7 +193,7 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
           ) : (
             /* Desktop: Side-by-side layout */
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-              <Typography variant="h5" component="h3" sx={{ fontWeight: 'bold', color: '#2c5282' }}>
+              <Typography variant="h5" component="h3" sx={{ fontWeight: 'bold', color: COLORS.PRIMARY }}>
                 {hotel.name}
               </Typography>
               <Box sx={{ textAlign: 'right' }}>
@@ -352,14 +352,14 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
                 fontWeight: 'bold',
                 fontSize: '1rem',
                 textTransform: 'none',
-                backgroundColor: '#2c5282',
-                border: '2px solid #E8B86D',
-                color: '#ffffff',
-                boxShadow: '0 2px 8px rgba(232, 184, 109, 0.2)',
+                backgroundColor: COLORS.PRIMARY,
+                border: `2px solid ${COLORS.SECONDARY}`,
+                color: COLORS.WHITE,
+                boxShadow: `0 2px 8px ${addAlpha(COLORS.SECONDARY, 0.2)}`,
                 '&:hover': {
-                  backgroundColor: '#1e3a5f',
-                  borderColor: '#d4a45a',
-                  boxShadow: '0 4px 12px rgba(232, 184, 109, 0.3)',
+                  backgroundColor: COLORS.PRIMARY_HOVER,
+                  borderColor: COLORS.SECONDARY_HOVER,
+                  boxShadow: `0 4px 12px ${addAlpha(COLORS.SECONDARY, 0.3)}`,
                 },
               }}
             >
@@ -396,18 +396,18 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
                 onViewHotel(hotel.id);
               }}
               sx={{
-                backgroundColor: '#2c5282',
-                border: '2px solid #E8B86D',
-                color: '#ffffff',
+                backgroundColor: COLORS.PRIMARY,
+                border: `2px solid ${COLORS.SECONDARY}`,
+                color: COLORS.WHITE,
                 fontWeight: 600,
                 textTransform: 'none',
                 borderRadius: 2,
                 px: 3,
-                boxShadow: '0 2px 8px rgba(232, 184, 109, 0.2)',
+                boxShadow: `0 2px 8px ${addAlpha(COLORS.SECONDARY, 0.2)}`,
                 '&:hover': {
-                  backgroundColor: '#1e3a5f',
-                  borderColor: '#d4a45a',
-                  boxShadow: '0 4px 12px rgba(232, 184, 109, 0.3)',
+                  backgroundColor: COLORS.PRIMARY_HOVER,
+                  borderColor: COLORS.SECONDARY_HOVER,
+                  boxShadow: `0 4px 12px ${addAlpha(COLORS.SECONDARY, 0.3)}`,
                 },
               }}
             >

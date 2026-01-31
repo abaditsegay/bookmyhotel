@@ -30,6 +30,7 @@ import {
 import { ConsolidatedReceipt, frontDeskApiService } from '../../services/frontDeskApi';
 import { formatDateForDisplay } from '../../utils/dateUtils';
 import { useAuth } from '../../contexts/AuthContext';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 
 interface CheckoutReceiptDialogProps {
   open: boolean;
@@ -96,13 +97,13 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
               body {
                 font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
                 line-height: 1.4;
-                color: #333;
-                background: white;
+                color: ${COLORS.TEXT_PRIMARY};
+                background: ${COLORS.WHITE};
               }
               
               .header {
                 padding: 30px 20px 20px;
-                border-bottom: 1px solid #e0e0e0;
+                border-bottom: 1px solid ${COLORS.BORDER_LIGHT};
                 margin-bottom: 20px;
                 text-align: center;
               }
@@ -111,12 +112,12 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                 font-size: 28px;
                 font-weight: 700;
                 margin-bottom: 6px;
-                color: #212121;
+                color: ${COLORS.TEXT_PRIMARY};
               }
               
               .header .address {
                 font-size: 14px;
-                color: #666;
+                color: ${COLORS.TEXT_SECONDARY};
                 margin-bottom: 15px;
               }
               
@@ -129,7 +130,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
               
               .badge {
                 font-size: 13px;
-                color: #666;
+                color: ${COLORS.TEXT_SECONDARY};
               }
               
               .badge.receipt {
@@ -137,7 +138,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
               }
               
               .badge.number {
-                color: #666;
+                color: ${COLORS.TEXT_SECONDARY};
                 font-size: 13px;
               }
               
@@ -148,15 +149,15 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
               }
               
               .section {
-                background: white;
+                background: ${COLORS.WHITE};
                 padding: 20px;
                 margin-bottom: 20px;
-                border: 1px solid #e0e0e0;
+                border: 1px solid ${COLORS.BORDER_LIGHT};
                 border-left: 4px solid ${primaryColor};
               }
               
               .section h2 {
-                color: #212121;
+                color: ${COLORS.TEXT_PRIMARY};
                 font-size: 16px;
                 font-weight: 600;
                 margin-bottom: 15px;
@@ -179,7 +180,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
               .info-label {
                 font-size: 12px;
                 font-weight: 600;
-                color: #666;
+                color: ${COLORS.TEXT_SECONDARY};
                 text-transform: uppercase;
                 margin-bottom: 4px;
               }
@@ -187,7 +188,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
               .info-value {
                 font-size: 14px;
                 font-weight: 500;
-                color: #333;
+                color: ${COLORS.TEXT_PRIMARY};
               }
               
               .info-value.highlight {
@@ -198,27 +199,27 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
               
               .divider {
                 height: 1px;
-                background: #e0e0e0;
+                background: ${COLORS.BORDER_LIGHT};
                 margin: 20px 0;
               }
               
               .table {
                 width: 100%;
                 border-collapse: collapse;
-                background: white;
-                border: 1px solid #e0e0e0;
+                background: ${COLORS.WHITE};
+                border: 1px solid ${COLORS.BORDER_LIGHT};
               }
               
               .table thead th {
-                background: #fafafa;
-                color: #666;
+                background: ${COLORS.BG_LIGHT};
+                color: ${COLORS.TEXT_SECONDARY};
                 padding: 12px;
                 text-align: left;
                 font-weight: 600;
                 font-size: 11px;
                 text-transform: uppercase;
                 letter-spacing: 0.5px;
-                border-bottom: 1px solid #e0e0e0;
+                border-bottom: 1px solid ${COLORS.BORDER_LIGHT};
               }
               
               .table thead th.center {
@@ -231,7 +232,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
               
               .table tbody td {
                 padding: 15px 12px;
-                border-bottom: 1px solid #f0f0f0;
+                border-bottom: 1px solid ${COLORS.DIVIDER};
                 font-size: 14px;
                 font-weight: 500;
               }
@@ -246,22 +247,22 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
               }
               
               .table tbody tr:hover {
-                background-color: #f9f9f9;
+                background-color: ${COLORS.BG_LIGHT};
               }
               
               .table tbody tr.subtotal td {
-                background-color: #f5f5f5;
-                border-top: 1px solid #e0e0e0;
+                background-color: ${COLORS.BG_DEFAULT};
+                border-top: 1px solid ${COLORS.BORDER_LIGHT};
                 font-weight: 600;
               }
               
               .table tbody tr.total {
-                background: white;
-                border-top: 2px solid #212121;
+                background: ${COLORS.WHITE};
+                border-top: 2px solid ${COLORS.TEXT_PRIMARY};
               }
               
               .table tbody tr.total td {
-                color: #212121;
+                color: ${COLORS.TEXT_PRIMARY};
                 border-bottom: none;
                 padding: 15px 12px;
                 font-weight: 700;
@@ -276,19 +277,19 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                 text-align: center;
                 margin-top: 30px;
                 padding: 20px;
-                background: white;
-                border-top: 1px solid #e0e0e0;
+                background: ${COLORS.WHITE};
+                border-top: 1px solid ${COLORS.BORDER_LIGHT};
               }
               
               .footer h3 {
-                color: #212121;
+                color: ${COLORS.TEXT_PRIMARY};
                 font-size: 18px;
                 font-weight: 600;
                 margin-bottom: 10px;
               }
               
               .footer p {
-                color: #666;
+                color: ${COLORS.TEXT_SECONDARY};
                 font-size: 12px;
                 margin-bottom: 5px;
               }
@@ -562,32 +563,32 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
         sx: { 
           minHeight: '90vh',
           borderRadius: 2,
-          bgcolor: '#f5f5f5',
+          bgcolor: COLORS.BG_DEFAULT,
         }
       }}
     >
       <DialogContent sx={{ p: 0 }}>
         {/* Main content wrapper with white background */}
         <Box sx={{ 
-          bgcolor: 'white', 
+          bgcolor: COLORS.WHITE, 
           m: 3, 
           borderRadius: 2,
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+          boxShadow: `0 1px 3px ${addAlpha(COLORS.BLACK, 0.1)}`
         }}>
           {/* Header Section */}
           <Box sx={{ 
             p: 4, 
-            borderBottom: '1px solid #e0e0e0',
+            borderBottom: `1px solid ${COLORS.BORDER_LIGHT}`,
             textAlign: 'center'
           }}>
-            <Typography variant="h4" sx={{ fontWeight: 700, mb: 0.5, color: '#212121' }}>
+            <Typography variant="h4" sx={{ fontWeight: 700, mb: 0.5, color: COLORS.TEXT_PRIMARY }}>
               {receipt.hotelName}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
               {receipt.hotelAddress}
             </Typography>
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', justifyContent: 'center', mb: 2 }}>
-              <Typography variant="body2" sx={{ fontWeight: 600, color: '#666' }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, color: COLORS.TEXT_SECONDARY }}>
                 Official Receipt
               </Typography>
               <Typography variant="body2" color="text.secondary">
@@ -600,8 +601,8 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                   size="small"
                   onClick={handlePrint} 
                   sx={{ 
-                    border: '1px solid #e0e0e0',
-                    '&:hover': { bgcolor: '#f5f5f5' },
+                    border: `1px solid ${COLORS.BORDER_LIGHT}`,
+                    '&:hover': { bgcolor: COLORS.BG_DEFAULT },
                   }}
                 >
                   <PrintIcon fontSize="small" />
@@ -612,8 +613,8 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                   size="small"
                   onClick={handleDownload} 
                   sx={{ 
-                    border: '1px solid #e0e0e0',
-                    '&:hover': { bgcolor: '#f5f5f5' },
+                    border: `1px solid ${COLORS.BORDER_LIGHT}`,
+                    '&:hover': { bgcolor: COLORS.BG_DEFAULT },
                   }}
                 >
                   <DownloadIcon fontSize="small" />
@@ -624,8 +625,8 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                   size="small"
                   onClick={handleEmail} 
                   sx={{ 
-                    border: '1px solid #e0e0e0',
-                    '&:hover': { bgcolor: '#f5f5f5' },
+                    border: `1px solid ${COLORS.BORDER_LIGHT}`,
+                    '&:hover': { bgcolor: COLORS.BG_DEFAULT },
                   }}
                 >
                   <EmailIcon fontSize="small" />
@@ -639,7 +640,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
             mx: 4, 
             mt: 4,
             p: 3,
-            border: '1px solid #e0e0e0',
+            border: `1px solid ${COLORS.BORDER_LIGHT}`,
             borderLeft: `4px solid ${theme.palette.primary.main}`
           }}>
             <Typography 
@@ -647,7 +648,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
               sx={{ 
                 fontWeight: 700, 
                 mb: 3,
-                color: '#212121',
+                color: COLORS.TEXT_PRIMARY,
                 fontSize: '1rem'
               }}
             >
@@ -656,7 +657,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
             <Grid container spacing={3}>
               <Grid item xs={6}>
                 <Box sx={{ mb: 2 }}>
-                  <Typography variant="caption" sx={{ color: '#666', textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
+                  <Typography variant="caption" sx={{ color: COLORS.TEXT_SECONDARY, textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
                     Full Name:
                   </Typography>
                   <Typography variant="body2" sx={{ fontWeight: 500, mt: 0.5 }}>
@@ -664,7 +665,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                   </Typography>
                 </Box>
                 <Box sx={{ mb: 2 }}>
-                  <Typography variant="caption" sx={{ color: '#666', textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
+                  <Typography variant="caption" sx={{ color: COLORS.TEXT_SECONDARY, textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
                     Email:
                   </Typography>
                   <Typography variant="body2" sx={{ fontWeight: 500, mt: 0.5 }}>
@@ -672,7 +673,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                   </Typography>
                 </Box>
                 <Box>
-                  <Typography variant="caption" sx={{ color: '#666', textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
+                  <Typography variant="caption" sx={{ color: COLORS.TEXT_SECONDARY, textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
                     Phone:
                   </Typography>
                   <Typography variant="body2" sx={{ fontWeight: 500, mt: 0.5 }}>
@@ -682,7 +683,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
               </Grid>
               <Grid item xs={6}>
                 <Box sx={{ mb: 2 }}>
-                  <Typography variant="caption" sx={{ color: '#666', textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
+                  <Typography variant="caption" sx={{ color: COLORS.TEXT_SECONDARY, textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
                     Confirmation:
                   </Typography>
                   <Typography variant="body2" sx={{ fontWeight: 700, color: theme.palette.primary.main, mt: 0.5 }}>
@@ -690,7 +691,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                   </Typography>
                 </Box>
                 <Box>
-                  <Typography variant="caption" sx={{ color: '#666', textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
+                  <Typography variant="caption" sx={{ color: COLORS.TEXT_SECONDARY, textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
                     Guests:
                   </Typography>
                   <Typography variant="body2" sx={{ fontWeight: 500, mt: 0.5 }}>
@@ -706,7 +707,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
             mx: 4, 
             mt: 3,
             p: 3,
-            border: '1px solid #e0e0e0',
+            border: `1px solid ${COLORS.BORDER_LIGHT}`,
             borderLeft: `4px solid ${theme.palette.primary.main}`
           }}>
             <Typography 
@@ -714,7 +715,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
               sx={{ 
                 fontWeight: 700, 
                 mb: 3,
-                color: '#212121',
+                color: COLORS.TEXT_PRIMARY,
                 fontSize: '1rem'
               }}
             >
@@ -723,7 +724,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
             <Grid container spacing={3}>
               <Grid item xs={6}>
                 <Box sx={{ mb: 2 }}>
-                  <Typography variant="caption" sx={{ color: '#666', textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
+                  <Typography variant="caption" sx={{ color: COLORS.TEXT_SECONDARY, textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
                     Room:
                   </Typography>
                   <Typography variant="body2" sx={{ fontWeight: 500, mt: 0.5 }}>
@@ -731,7 +732,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                   </Typography>
                 </Box>
                 <Box sx={{ mb: 2 }}>
-                  <Typography variant="caption" sx={{ color: '#666', textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
+                  <Typography variant="caption" sx={{ color: COLORS.TEXT_SECONDARY, textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
                     Check-in:
                   </Typography>
                   <Typography variant="body2" sx={{ fontWeight: 500, mt: 0.5 }}>
@@ -739,7 +740,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                   </Typography>
                 </Box>
                 <Box>
-                  <Typography variant="caption" sx={{ color: '#666', textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
+                  <Typography variant="caption" sx={{ color: COLORS.TEXT_SECONDARY, textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
                     Check-out:
                   </Typography>
                   <Typography variant="body2" sx={{ fontWeight: 500, mt: 0.5 }}>
@@ -749,7 +750,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
               </Grid>
               <Grid item xs={6}>
                 <Box sx={{ mb: 2 }}>
-                  <Typography variant="caption" sx={{ color: '#666', textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
+                  <Typography variant="caption" sx={{ color: COLORS.TEXT_SECONDARY, textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
                     Duration:
                   </Typography>
                   <Typography variant="body2" sx={{ fontWeight: 500, mt: 0.5 }}>
@@ -757,7 +758,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                   </Typography>
                 </Box>
                 <Box>
-                  <Typography variant="caption" sx={{ color: '#666', textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
+                  <Typography variant="caption" sx={{ color: COLORS.TEXT_SECONDARY, textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
                     Rate per night:
                   </Typography>
                   <Typography variant="body2" sx={{ fontWeight: 500, mt: 0.5 }}>
@@ -775,49 +776,49 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                 <TableRow>
                   <TableCell sx={{ 
                     fontWeight: 700, 
-                    bgcolor: '#fafafa',
+                    bgcolor: COLORS.BG_LIGHT,
                     textTransform: 'uppercase',
                     fontSize: '0.7rem',
                     letterSpacing: '0.5px',
-                    color: '#666',
-                    border: '1px solid #e0e0e0',
-                    borderBottom: '2px solid #e0e0e0'
+                    color: COLORS.TEXT_SECONDARY,
+                    border: `1px solid ${COLORS.BORDER_LIGHT}`,
+                    borderBottom: `2px solid ${COLORS.BORDER_LIGHT}`
                   }}>
                     Description
                   </TableCell>
                   <TableCell align="center" sx={{ 
                     fontWeight: 700, 
-                    bgcolor: '#fafafa',
+                    bgcolor: COLORS.BG_LIGHT,
                     textTransform: 'uppercase',
                     fontSize: '0.7rem',
                     letterSpacing: '0.5px',
-                    color: '#666',
-                    border: '1px solid #e0e0e0',
-                    borderBottom: '2px solid #e0e0e0'
+                    color: COLORS.TEXT_SECONDARY,
+                    border: `1px solid ${COLORS.BORDER_LIGHT}`,
+                    borderBottom: `2px solid ${COLORS.BORDER_LIGHT}`
                   }}>
                     QTY
                   </TableCell>
                   <TableCell align="right" sx={{ 
                     fontWeight: 700, 
-                    bgcolor: '#fafafa',
+                    bgcolor: COLORS.BG_LIGHT,
                     textTransform: 'uppercase',
                     fontSize: '0.7rem',
                     letterSpacing: '0.5px',
-                    color: '#666',
-                    border: '1px solid #e0e0e0',
-                    borderBottom: '2px solid #e0e0e0'
+                    color: COLORS.TEXT_SECONDARY,
+                    border: `1px solid ${COLORS.BORDER_LIGHT}`,
+                    borderBottom: `2px solid ${COLORS.BORDER_LIGHT}`
                   }}>
                     Unit Price
                   </TableCell>
                   <TableCell align="right" sx={{ 
                     fontWeight: 700, 
-                    bgcolor: '#fafafa',
+                    bgcolor: COLORS.BG_LIGHT,
                     textTransform: 'uppercase',
                     fontSize: '0.7rem',
                     letterSpacing: '0.5px',
-                    color: '#666',
-                    border: '1px solid #e0e0e0',
-                    borderBottom: '2px solid #e0e0e0'
+                    color: COLORS.TEXT_SECONDARY,
+                    border: `1px solid ${COLORS.BORDER_LIGHT}`,
+                    borderBottom: `2px solid ${COLORS.BORDER_LIGHT}`
                   }}>
                     Amount
                   </TableCell>
@@ -826,16 +827,16 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
               <TableBody>
                 {/* Room charges */}
                 <TableRow>
-                  <TableCell sx={{ border: '1px solid #e0e0e0' }}>
+                  <TableCell sx={{ border: `1px solid ${COLORS.BORDER_LIGHT}` }}>
                     Room Accommodation ({receipt.numberOfNights} night{receipt.numberOfNights > 1 ? 's' : ''})
                   </TableCell>
-                  <TableCell align="center" sx={{ border: '1px solid #e0e0e0' }}>
+                  <TableCell align="center" sx={{ border: `1px solid ${COLORS.BORDER_LIGHT}` }}>
                     {receipt.numberOfNights}
                   </TableCell>
-                  <TableCell align="right" sx={{ border: '1px solid #e0e0e0' }}>
+                  <TableCell align="right" sx={{ border: `1px solid ${COLORS.BORDER_LIGHT}` }}>
                     {formatCurrency(receipt.roomChargePerNight)}
                   </TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 600, border: '1px solid #e0e0e0' }}>
+                  <TableCell align="right" sx={{ fontWeight: 600, border: `1px solid ${COLORS.BORDER_LIGHT}` }}>
                     {formatCurrency(receipt.totalRoomCharges)}
                   </TableCell>
                 </TableRow>
@@ -843,16 +844,16 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                 {/* Shop/Additional charges */}
                 {receipt.additionalCharges && receipt.additionalCharges.length > 0 && receipt.additionalCharges.map((charge: any, index: number) => (
                   <TableRow key={index}>
-                    <TableCell sx={{ border: '1px solid #e0e0e0' }}>
+                    <TableCell sx={{ border: `1px solid ${COLORS.BORDER_LIGHT}` }}>
                       {charge.description}
                     </TableCell>
-                    <TableCell align="center" sx={{ border: '1px solid #e0e0e0' }}>
+                    <TableCell align="center" sx={{ border: `1px solid ${COLORS.BORDER_LIGHT}` }}>
                       {charge.quantity || 1}
                     </TableCell>
-                    <TableCell align="right" sx={{ border: '1px solid #e0e0e0' }}>
+                    <TableCell align="right" sx={{ border: `1px solid ${COLORS.BORDER_LIGHT}` }}>
                       {formatCurrency(charge.unitPrice || charge.amount)}
                     </TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 600, border: '1px solid #e0e0e0' }}>
+                    <TableCell align="right" sx={{ fontWeight: 600, border: `1px solid ${COLORS.BORDER_LIGHT}` }}>
                       {formatCurrency(charge.amount)}
                     </TableCell>
                   </TableRow>
@@ -861,10 +862,10 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                 {/* Taxes and fees */}
                 {receipt.taxesAndFees && receipt.taxesAndFees.length > 0 && receipt.taxesAndFees.map((tax: any, index: number) => (
                   <TableRow key={`tax-${index}`}>
-                    <TableCell colSpan={3} sx={{ textAlign: 'right', fontWeight: 500, border: '1px solid #e0e0e0' }}>
+                    <TableCell colSpan={3} sx={{ textAlign: 'right', fontWeight: 500, border: `1px solid ${COLORS.BORDER_LIGHT}` }}>
                       {tax.description}
                     </TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 600, border: '1px solid #e0e0e0' }}>
+                    <TableCell align="right" sx={{ fontWeight: 600, border: `1px solid ${COLORS.BORDER_LIGHT}` }}>
                       {formatCurrency(tax.amount)}
                     </TableCell>
                   </TableRow>
@@ -872,10 +873,10 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
 
                 {/* Taxes & Fees Subtotal */}
                 <TableRow>
-                  <TableCell colSpan={3} sx={{ textAlign: 'right', fontWeight: 700, border: '1px solid #e0e0e0' }}>
+                  <TableCell colSpan={3} sx={{ textAlign: 'right', fontWeight: 700, border: `1px solid ${COLORS.BORDER_LIGHT}` }}>
                     Taxes & Fees Subtotal
                   </TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 700, border: '1px solid #e0e0e0' }}>
+                  <TableCell align="right" sx={{ fontWeight: 700, border: `1px solid ${COLORS.BORDER_LIGHT}` }}>
                     {formatCurrency(receipt.totalTaxesAndFees)}
                   </TableCell>
                 </TableRow>
@@ -888,8 +889,8 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                       textAlign: 'right', 
                       fontWeight: 700,
                       fontSize: '1rem',
-                      bgcolor: '#fff',
-                      border: '2px solid #212121',
+                      bgcolor: COLORS.WHITE,
+                      border: `2px solid ${COLORS.TEXT_PRIMARY}`,
                       borderRight: 'none'
                     }}
                   >
@@ -900,8 +901,8 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                     sx={{ 
                       fontWeight: 700,
                       fontSize: '1rem',
-                      bgcolor: '#fff',
-                      border: '2px solid #212121',
+                      bgcolor: COLORS.WHITE,
+                      border: `2px solid ${COLORS.TEXT_PRIMARY}`,
                       borderLeft: 'none'
                     }}
                   >
@@ -918,7 +919,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
             mt: 4,
             mb: 4,
             pt: 3,
-            borderTop: '1px solid #e0e0e0',
+            borderTop: `1px solid ${COLORS.BORDER_LIGHT}`,
             textAlign: 'center'
           }}>
             <Typography variant="body1" sx={{ fontWeight: 600, mb: 1 }}>
@@ -931,18 +932,18 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
         </Box>
       </DialogContent>
 
-      <DialogActions sx={{ p: 3, bgcolor: '#f5f5f5' }}>
+      <DialogActions sx={{ p: 3, bgcolor: COLORS.BG_DEFAULT }}>
         <Button 
           onClick={onClose} 
           variant="outlined"
           sx={{ 
             minWidth: 120,
             textTransform: 'none',
-            borderColor: '#e0e0e0',
-            color: '#616161',
+            borderColor: COLORS.BORDER_LIGHT,
+            color: COLORS.TEXT_SECONDARY,
             '&:hover': {
-              borderColor: '#bdbdbd',
-              bgcolor: '#fafafa'
+              borderColor: COLORS.TEXT_DISABLED,
+              bgcolor: COLORS.BG_LIGHT
             }
           }}
         >

@@ -36,6 +36,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useTenant } from '../../contexts/TenantContext';
 import { Booking, Room } from '../../types/booking-shared';
 import { buildApiUrl } from '../../config/apiConfig';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 
 interface CheckInDialogProps {
   open: boolean;
@@ -55,6 +56,13 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
   const { token, user } = useAuth();
   const { tenant } = useTenant();
   const theme = useTheme();
+  const primaryMain = theme.palette.primary.main;
+  const primaryLight = theme.palette.primary.light;
+  const primaryDark = theme.palette.primary.dark;
+  const successMain = theme.palette.success.main;
+  const warningMain = theme.palette.warning.main;
+  const infoMain = theme.palette.info.main;
+  const errorMain = theme.palette.error.main;
   
   const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
   const [selectedRoomType, setSelectedRoomType] = useState<string>('');
@@ -498,10 +506,10 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
         sx: { 
           borderRadius: 4,
           zIndex: 9999,
-          backgroundColor: 'white',
-          boxShadow: '0 12px 40px rgba(232, 184, 109, 0.2)',
+          backgroundColor: 'background.paper',
+          boxShadow: `0 12px 40px ${addAlpha(COLORS.SECONDARY, 0.2)}`,
           border: '1px solid',
-          borderColor: '#E8B86D',
+          borderColor: COLORS.SECONDARY,
           overflow: 'hidden'
         }
       }}
@@ -513,8 +521,8 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
         pb: 2,
         pt: 3,
         px: 3,
-        background: 'linear-gradient(135deg, #1e3a5f 0%, #1e3a5f 50%, #2c5f8d 100%)',
-        color: 'white',
+        background: `linear-gradient(135deg, ${primaryDark} 0%, ${primaryDark} 50%, ${primaryMain} 100%)`,
+        color: COLORS.WHITE,
         position: 'relative',
         '&::after': {
           content: '""',
@@ -523,28 +531,28 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
           left: 0,
           right: 0,
           height: '4px',
-          background: 'linear-gradient(90deg, #2c5f8d 0%, #1e3a5f 50%, #2c5f8d 100%)',
+          background: `linear-gradient(90deg, ${primaryMain} 0%, ${primaryDark} 50%, ${primaryMain} 100%)`,
         }
       }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Box sx={{ 
             p: 1.5, 
             borderRadius: '50%', 
-            backgroundColor: 'rgba(255, 255, 255, 0.15)',
+            backgroundColor: addAlpha(COLORS.WHITE, 0.15),
             backdropFilter: 'blur(10px)'
           }}>
-            <PersonIcon sx={{ color: 'white', fontSize: 28 }} />
+            <PersonIcon sx={{ color: COLORS.WHITE, fontSize: 28 }} />
           </Box>
           <Box>
             <Typography variant="h5" sx={{ 
-              color: 'white', 
+              color: COLORS.WHITE, 
               fontWeight: 700,
-              textShadow: '0 2px 4px rgba(0,0,0,0.2)'
+              textShadow: `0 2px 4px ${addAlpha(COLORS.BLACK, 0.2)}`
             }}>
               Check-in Guest
             </Typography>
             <Typography variant="subtitle2" sx={{ 
-              color: 'rgba(255, 255, 255, 0.8)', 
+              color: addAlpha(COLORS.WHITE, 0.8), 
               fontWeight: 400,
               mt: 0.5
             }}>
@@ -556,8 +564,8 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
       
       <DialogContent sx={{ 
         p: 3, 
-        backgroundColor: '#f8f9fa',
-        backgroundImage: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)'
+        backgroundColor: COLORS.BG_LIGHT,
+        backgroundImage: `linear-gradient(135deg, ${COLORS.BG_PAPER} 0%, ${COLORS.BG_LIGHT} 100%)`
       }}>
         {error && (
           <Alert 
@@ -583,7 +591,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
           border: '1px solid',
           borderColor: 'primary.light',
           borderRadius: 3,
-          background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+          background: `linear-gradient(135deg, ${COLORS.BG_PAPER} 0%, ${COLORS.BG_LIGHT} 100%)`,
           position: 'relative',
           overflow: 'hidden',
           '&::before': {
@@ -593,7 +601,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
             left: 0,
             right: 0,
             height: '4px',
-            background: 'linear-gradient(90deg, #1e3a5f 0%, #2c5f8d 50%, #1e3a5f 100%)',
+            background: `linear-gradient(90deg, ${primaryDark} 0%, ${primaryMain} 50%, ${primaryDark} 100%)`,
           }
         }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
@@ -601,7 +609,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
               p: 1, 
               borderRadius: '50%', 
               backgroundColor: 'primary.main',
-              color: 'white'
+              color: COLORS.WHITE
             }}>
               <PersonIcon fontSize="small" />
             </Box>
@@ -638,7 +646,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                 size="medium" 
                 sx={{
                   backgroundColor: 'primary.main',
-                  color: 'white',
+                  color: COLORS.WHITE,
                   fontWeight: 600,
                   '&:hover': {
                     backgroundColor: 'primary.dark'
@@ -678,7 +686,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
           border: '1px solid',
           borderColor: 'primary.light',
           borderRadius: 3,
-          background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+          background: `linear-gradient(135deg, ${COLORS.BG_PAPER} 0%, ${COLORS.BG_LIGHT} 100%)`,
           position: 'relative',
           overflow: 'hidden',
           '&::before': {
@@ -688,7 +696,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
             left: 0,
             right: 0,
             height: '3px',
-            background: 'linear-gradient(90deg, #4caf50 0%, #1e3a5f 50%, #2c5f8d 100%)',
+            background: `linear-gradient(90deg, ${successMain} 0%, ${primaryDark} 50%, ${primaryMain} 100%)`,
           }
         }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
@@ -696,7 +704,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
               p: 1, 
               borderRadius: '50%', 
               backgroundColor: currentRoomNumber && currentRoomNumber !== 'To be assigned' ? 'success.main' : 'primary.main',
-              color: 'white'
+              color: COLORS.WHITE
             }}>
               <RoomIcon fontSize="small" />
             </Box>
@@ -718,7 +726,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                   <Typography variant="h5" sx={{ 
                     fontWeight: 800, 
                     color: 'primary.main',
-                    background: 'linear-gradient(45deg, #1e3a5f, #2c5f8d)',
+                    background: `linear-gradient(45deg, ${primaryDark}, ${primaryMain})`,
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent'
                   }}>
@@ -741,7 +749,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                         borderRadius: 2,
                         border: '1px solid',
                         borderColor: 'info.light',
-                        backgroundColor: 'rgba(33, 150, 243, 0.08)',
+                        backgroundColor: addAlpha(infoMain, 0.08),
                         '& .MuiAlert-icon': {
                           color: 'info.main'
                         }
@@ -761,7 +769,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                         borderRadius: 2,
                         border: '1px solid',
                         borderColor: 'success.light',
-                        backgroundColor: 'rgba(76, 175, 80, 0.08)',
+                        backgroundColor: addAlpha(successMain, 0.08),
                         '& .MuiAlert-icon': {
                           color: 'success.main'
                         }
@@ -785,7 +793,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                     borderRadius: 2,
                     border: '1px solid',
                     borderColor: 'warning.light',
-                    backgroundColor: 'rgba(255, 152, 0, 0.08)',
+                    backgroundColor: addAlpha(warningMain, 0.08),
                     '& .MuiAlert-icon': {
                       color: 'warning.main'
                     }
@@ -810,7 +818,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
           border: '1px solid',
           borderColor: 'primary.light',
           borderRadius: 3,
-          background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+          background: `linear-gradient(135deg, ${COLORS.BG_PAPER} 0%, ${COLORS.BG_LIGHT} 100%)`,
           position: 'relative',
           overflow: 'hidden',
           '&::before': {
@@ -820,7 +828,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
             left: 0,
             right: 0,
             height: '3px',
-            background: 'linear-gradient(90deg, #1e3a5f 0%, #2c5f8d 50%, #4caf50 100%)',
+            background: `linear-gradient(90deg, ${primaryDark} 0%, ${primaryMain} 50%, ${successMain} 100%)`,
           }
         }} data-testid="room-assignment-section">
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
@@ -828,7 +836,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
               p: 1, 
               borderRadius: '50%', 
               backgroundColor: 'primary.main',
-              color: 'white'
+              color: COLORS.WHITE
             }}>
               <RoomIcon fontSize="small" />
             </Box>
@@ -849,7 +857,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                 borderRadius: 2,
                 border: '1px solid',
                 borderColor: 'warning.light',
-                backgroundColor: 'rgba(255, 152, 0, 0.08)',
+                backgroundColor: addAlpha(warningMain, 0.08),
                 '& .MuiAlert-icon': {
                   color: 'warning.main'
                 }
@@ -911,8 +919,8 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                           style: {
                             maxHeight: 300,
                             zIndex: 9999,
-                            backgroundColor: 'white',
-                            boxShadow: '0 8px 32px rgba(21, 101, 192, 0.2)',
+                            backgroundColor: theme.palette.background.paper,
+                            boxShadow: `0 8px 32px ${addAlpha(primaryDark, 0.2)}`,
                             borderRadius: 12,
                             border: '1px solid',
                             borderColor: 'primary.light'
@@ -920,7 +928,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                         },
                         MenuListProps: {
                           style: {
-                            backgroundColor: 'white',
+                            backgroundColor: theme.palette.background.paper,
                             zIndex: 9999
                           }
                         },
@@ -953,13 +961,13 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                             key={roomType} 
                             value={roomType}
                             sx={{ 
-                              backgroundColor: index % 2 === 0 ? 'rgba(25, 118, 210, 0.04)' : 'background.paper',
+                              backgroundColor: index % 2 === 0 ? addAlpha(primaryMain, 0.04) : 'background.paper',
                               '&:hover': {
                                 backgroundColor: 'primary.light'
                               },
                               '&.Mui-selected': {
                                 backgroundColor: 'primary.main',
-                                color: 'white',
+                                color: COLORS.WHITE,
                                 '&:hover': {
                                   backgroundColor: 'primary.dark'
                                 }
@@ -1012,12 +1020,12 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                         cursor: 'pointer',
                         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                         '&:hover': { 
-                          backgroundColor: 'rgba(25, 118, 210, 0.08)',
+                          backgroundColor: addAlpha(primaryMain, 0.08),
                           transform: 'translateY(-2px)',
-                          boxShadow: '0 8px 24px rgba(21, 101, 192, 0.15)',
+                          boxShadow: `0 8px 24px ${addAlpha(primaryDark, 0.15)}`,
                           borderColor: 'primary.main'
                         },
-                        backgroundColor: selectedRoomId === room.id ? 'rgba(25, 118, 210, 0.12)' : 'transparent',
+                        backgroundColor: selectedRoomId === room.id ? addAlpha(primaryMain, 0.12) : 'transparent',
                         border: selectedRoomId === room.id ? 1 : 1,
                         borderColor: selectedRoomId === room.id ? 'primary.main' : 'primary.light',
                         borderRadius: 3,
@@ -1048,7 +1056,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                               sx={{
                                 color: 'primary.light',
                                 '&.Mui-checked': {
-                                  color: '#B8860B',
+                                  color: COLORS.SECONDARY,
                                 },
                               }}
                             />
@@ -1067,19 +1075,19 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                                   size="medium" 
                                   sx={{
                                     background: selectedRoomId === room.id 
-                                      ? 'linear-gradient(135deg, #E8B86D 0%, #D4A355 100%)'
-                                      : 'linear-gradient(135deg, #F0C880 0%, #E8B86D 100%)',
-                                    color: selectedRoomId === room.id ? '#1a365d' : '#1a365d',
+                                      ? COLORS.GRADIENT_SECONDARY
+                                      : COLORS.GRADIENT_WARM,
+                                    color: COLORS.PRIMARY,
                                     fontWeight: 700,
                                     fontSize: '0.95rem',
                                     px: 2,
                                     py: 2.5,
                                     height: 'auto',
-                                    boxShadow: '0 2px 8px rgba(232, 184, 109, 0.3)',
+                                    boxShadow: `0 2px 8px ${addAlpha(COLORS.SECONDARY, 0.3)}`,
                                     transition: 'all 0.3s ease',
                                     '&:hover': {
-                                      background: 'linear-gradient(135deg, #E8B86D 0%, #D4A355 100%)',
-                                      boxShadow: '0 4px 12px rgba(232, 184, 109, 0.4)',
+                                      background: COLORS.GRADIENT_SECONDARY,
+                                      boxShadow: `0 4px 12px ${addAlpha(COLORS.SECONDARY, 0.4)}`,
                                       transform: 'translateY(-1px)'
                                     }
                                   }}
@@ -1113,7 +1121,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                     borderRadius: 2,
                     border: '1px solid',
                     borderColor: 'warning.light',
-                    backgroundColor: 'rgba(255, 152, 0, 0.08)',
+                    backgroundColor: addAlpha(warningMain, 0.08),
                     '& .MuiAlert-icon': {
                       color: 'warning.main'
                     }
@@ -1133,7 +1141,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
             border: '1px solid',
             borderColor: 'success.light',
             borderRadius: 3,
-            background: 'linear-gradient(135deg, #ffffff 0%, #f1f8e9 100%)',
+            background: `linear-gradient(135deg, ${COLORS.BG_PAPER} 0%, ${addAlpha(successMain, 0.08)} 100%)`,
             position: 'relative',
             overflow: 'hidden',
             mb: 3,
@@ -1144,7 +1152,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
               left: 0,
               right: 0,
               height: '4px',
-              background: 'linear-gradient(90deg, ${theme.palette.primary.light} 0%, ${theme.palette.primary.light} 50%, ${theme.palette.primary.main} 100%)',
+              background: `linear-gradient(90deg, ${primaryLight} 0%, ${primaryLight} 50%, ${primaryMain} 100%)`,
             }
           }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
@@ -1232,7 +1240,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                   <Box sx={{ 
                     p: 2, 
                     borderRadius: 2,
-                    backgroundColor: priceDifference > 0 ? 'rgba(244, 67, 54, 0.08)' : 'rgba(76, 175, 80, 0.08)',
+                    backgroundColor: priceDifference > 0 ? addAlpha(errorMain, 0.08) : addAlpha(successMain, 0.08),
                     border: '1px solid',
                     borderColor: priceDifference > 0 ? 'error.light' : 'success.light'
                   }}>
@@ -1258,9 +1266,9 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
       <DialogActions sx={{ 
         p: 3,
         pt: 2,
-        background: 'linear-gradient(135deg, #fafcff 0%, #f0f7ff 100%)',
+        background: `linear-gradient(135deg, ${COLORS.BG_PAPER} 0%, ${addAlpha(primaryMain, 0.06)} 100%)`,
         borderTop: '1px solid',
-        borderColor: '#E8B86D',
+        borderColor: COLORS.SECONDARY,
         gap: 2
       }}>
         <Button 
@@ -1269,8 +1277,8 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
           variant="outlined"
           size="large"
           sx={{
-            borderColor: '#E8B86D',
-            color: '#B8860B',
+            borderColor: COLORS.SECONDARY,
+            color: COLORS.SECONDARY,
             borderWidth: 1,
             borderRadius: 2,
             px: 4,
@@ -1280,12 +1288,12 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
             fontSize: '1rem',
             '&:hover': {
               borderColor: 'primary.dark',
-              backgroundColor: 'rgba(25, 118, 210, 0.08)',
+              backgroundColor: addAlpha(primaryMain, 0.08),
               borderWidth: 1
             },
             '&:disabled': {
-              borderColor: '#e0e0e0',
-              color: '#9e9e9e'
+              borderColor: COLORS.BORDER_LIGHT,
+              color: COLORS.TEXT_DISABLED
             }
           }}
         >
@@ -1301,17 +1309,17 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
             disabled={loading}
             size="large"
             sx={{
-              background: 'linear-gradient(135deg, #B8860B 0%, #B8860B 50%, #E8B86D 100%)',
+              background: COLORS.GRADIENT_SECONDARY,
               fontWeight: 700,
               px: 4,
               py: 1.5,
               borderRadius: 2,
               textTransform: 'none',
               fontSize: '1rem',
-              boxShadow: '0 4px 16px rgba(184, 134, 11, 0.4)',
+              boxShadow: `0 4px 16px ${addAlpha(COLORS.SECONDARY, 0.4)}`,
               '&:hover': {
-                background: (theme) => `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.dark} 50%, ${theme.palette.primary.dark} 100%)`,
-                boxShadow: (theme) => `0 6px 20px ${theme.palette.primary.dark}88`,
+                background: `linear-gradient(135deg, ${primaryDark} 0%, ${primaryDark} 50%, ${primaryDark} 100%)`,
+                boxShadow: `0 6px 20px ${addAlpha(primaryDark, 0.5)}`,
                 transform: 'translateY(-2px)'
               },
               '&:active': {
@@ -1331,9 +1339,9 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
             size="large"
             sx={{
               background: !currentRoomNumber || currentRoomNumber === 'To be assigned' || loading 
-                ? '#e0e0e0' 
-                : 'linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 50%, #ff5722 100%)',
-              color: !currentRoomNumber || currentRoomNumber === 'To be assigned' || loading ? '#9e9e9e' : 'white',
+                ? COLORS.BORDER_LIGHT 
+                : `linear-gradient(135deg, ${primaryDark} 0%, ${primaryMain} 50%, ${theme.palette.warning.dark} 100%)`,
+              color: !currentRoomNumber || currentRoomNumber === 'To be assigned' || loading ? COLORS.TEXT_DISABLED : COLORS.WHITE,
               fontWeight: 700,
               px: 4,
               py: 1.5,
@@ -1342,18 +1350,18 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
               fontSize: '1rem',
               boxShadow: !currentRoomNumber || currentRoomNumber === 'To be assigned' || loading 
                 ? 'none' 
-                : '0 4px 16px rgba(216, 67, 21, 0.4)',
+                : `0 4px 16px ${addAlpha(theme.palette.warning.dark, 0.4)}`,
               '&:hover': !currentRoomNumber || currentRoomNumber === 'To be assigned' || loading ? {} : {
-                background: 'linear-gradient(135deg, #a52f0a 0%, ${theme.palette.primary.dark} 50%, ${theme.palette.primary.main} 100%)',
-                boxShadow: '0 6px 20px rgba(216, 67, 21, 0.5)',
+                background: `linear-gradient(135deg, ${theme.palette.warning.dark} 0%, ${primaryDark} 50%, ${primaryMain} 100%)`,
+                boxShadow: `0 6px 20px ${addAlpha(theme.palette.warning.dark, 0.5)}`,
                 transform: 'translateY(-2px)'
               },
               '&:active': {
                 transform: 'translateY(0px)'
               },
               '&:disabled': {
-                background: '#e0e0e0',
-                color: '#9e9e9e',
+                background: COLORS.BORDER_LIGHT,
+                color: COLORS.TEXT_DISABLED,
                 boxShadow: 'none'
               },
               transition: 'all 0.2s ease-in-out'
@@ -1386,7 +1394,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                       cursor: 'pointer',
                       border: newRoomAssignment === room.id ? '2px solid' : '1px solid',
                       borderColor: newRoomAssignment === room.id ? 'primary.main' : 'divider',
-                      '&:hover': { borderColor: '#E8B86D' }
+                      '&:hover': { borderColor: COLORS.SECONDARY }
                     }}
                     onClick={() => setNewRoomAssignment(room.id)}
                   >

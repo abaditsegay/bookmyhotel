@@ -15,7 +15,7 @@ import {
 import { useNavigate, useLocation } from 'react-router-dom';
 import { hotelApiService } from '../services/hotelApi';
 import HotelListCard from '../components/hotel/HotelListCard';
-import { COLORS, addAlpha } from '../theme/themeColors';
+import { COLORS, addAlpha, getGradient } from '../theme/themeColors';
 import { 
   HotelSearchRequest, 
   HotelSearchResult,
@@ -144,14 +144,14 @@ const HotelListPage: React.FC = () => {
         py: isMobile ? 2 : 4,
         px: isMobile ? 1 : 3,
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%)',
+        background: getGradient('white'),
       }}
     >
       {/* Combined Header and Actions Section */}
       <Card 
         sx={{ 
           mb: isMobile ? 3 : 4,
-          backgroundColor: '#ffffff',
+          backgroundColor: COLORS.WHITE,
           border: `2px solid ${COLORS.PRIMARY}`,
           borderRadius: 2,
           boxShadow: `0 4px 12px ${addAlpha(COLORS.PRIMARY, 0.15)}`,
@@ -162,7 +162,7 @@ const HotelListPage: React.FC = () => {
           {/* Combined Header Section */}
           <Box sx={{ 
             p: 3,
-            bgcolor: '#fafafa',
+            bgcolor: COLORS.BG_LIGHT,
             borderRadius: 2,
             border: `1px solid ${COLORS.PRIMARY}`,
           }}>
@@ -199,7 +199,7 @@ const HotelListPage: React.FC = () => {
                   borderRadius: 1,
                   fontSize: '0.875rem',
                   fontWeight: 600,
-                  border: '1px solid #E8B86D',
+                  border: `1px solid ${COLORS.SECONDARY}`,
                 }}
               >
                 {hotels.length} hotel{hotels.length === 1 ? '' : 's'} found
@@ -210,17 +210,17 @@ const HotelListPage: React.FC = () => {
                 sx={{ 
                   py: 1,
                   px: 2.5,
-                  bgcolor: '#ffffff',
-                  color: '#2c5282',
-                  border: '1px solid #E8B86D',
+                  bgcolor: COLORS.WHITE,
+                  color: COLORS.PRIMARY,
+                  border: `1px solid ${COLORS.SECONDARY}`,
                   borderRadius: 2,
                   fontWeight: 600,
                   textTransform: 'none',
                   fontSize: '0.875rem',
                   minWidth: 'auto',
                   '&:hover': {
-                    bgcolor: 'rgba(232, 184, 109, 0.1)',
-                    borderColor: '#d4a45a',
+                    bgcolor: addAlpha(COLORS.SECONDARY, 0.1),
+                    borderColor: COLORS.SECONDARY_HOVER,
                   },
                 }}
               >

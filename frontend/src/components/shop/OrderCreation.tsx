@@ -384,10 +384,10 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
 
   const getStockStatusColor = (stockStatus: string) => {
     switch (stockStatus) {
-      case 'OUT_OF_STOCK': return '#f44336'; // Red
+      case 'OUT_OF_STOCK': return COLORS.ERROR;
       case 'LOW_STOCK': return COLORS.WARNING;
-      case 'IN_STOCK': return '#4caf50'; // Green
-      default: return '#9e9e9e'; // Grey
+      case 'IN_STOCK': return COLORS.SUCCESS;
+      default: return COLORS.TEXT_DISABLED;
     }
   };
 
@@ -521,10 +521,10 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                           opacity: isOutOfStock ? 0.55 : 1,
                           boxShadow: isSelected 
                             ? `0 8px 24px ${addAlpha(COLORS.PRIMARY, 0.22)}, 0 4px 8px ${addAlpha(COLORS.PRIMARY, 0.12)}`
-                            : '0 2px 8px rgba(0,0,0,0.06)',
+                            : `0 2px 8px ${addAlpha(COLORS.BLACK, 0.06)}`,
                           '&:hover': { 
                             boxShadow: isOutOfStock 
-                              ? '0 2px 8px rgba(0,0,0,0.06)' 
+                              ? `0 2px 8px ${addAlpha(COLORS.BLACK, 0.06)}` 
                               : isSelected 
                                 ? `0 12px 32px ${addAlpha(COLORS.PRIMARY, 0.28)}, 0 6px 12px ${addAlpha(COLORS.PRIMARY, 0.16)}`
                                 : `0 8px 24px ${addAlpha(COLORS.PRIMARY, 0.16)}`,
@@ -567,7 +567,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                             bottom: 8,
                             right: 8,
                             backgroundColor: stockStatusColor,
-                            color: 'white',
+                            color: COLORS.WHITE,
                             borderRadius: '16px',
                             px: 1.25,
                             py: 0.4,
@@ -576,8 +576,8 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                             textTransform: 'uppercase',
                             letterSpacing: '0.3px',
                             zIndex: 2,
-                            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                            border: '1px solid rgba(255,255,255,0.2)'
+                            boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.15)}`,
+                            border: `1px solid ${addAlpha(COLORS.WHITE, 0.2)}`
                           }}
                         >
                           {stockStatusLabel}
@@ -590,7 +590,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                             sx={{ 
                               fontWeight: isSelected ? 700 : 600,
                               fontSize: '0.9rem',
-                              color: isSelected ? '#1a365d' : (isOutOfStock ? 'text.disabled' : 'text.primary'),
+                              color: isSelected ? COLORS.PRIMARY : (isOutOfStock ? 'text.disabled' : 'text.primary'),
                               mb: 0.5
                             }}
                           >
@@ -623,7 +623,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                                   : isOutOfStock ? 'none' : COLORS.GRADIENT_PRIMARY,
                                 backgroundClip: 'text',
                                 WebkitBackgroundClip: 'text',
-                                WebkitTextFillColor: isOutOfStock ? 'rgba(0,0,0,0.38)' : 'transparent'
+                                WebkitTextFillColor: isOutOfStock ? addAlpha(COLORS.BLACK, 0.38) : 'transparent'
                               }}
                             >
                               {formatCurrencyWithDecimals(product.price || 0)}
@@ -919,13 +919,13 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                 disabled={loading || orderItems.length === 0}
                 sx={{
                   background: COLORS.GRADIENT_PRIMARY,
-                  color: 'white',
+                  color: COLORS.WHITE,
                   fontWeight: 700,
                   fontSize: '1rem',
                   py: 1.5,
                   borderRadius: 2,
                   textTransform: 'none',
-                  boxShadow: '0 4px 16px rgba(26, 54, 93, 0.3)',
+                  boxShadow: `0 4px 16px ${addAlpha(COLORS.PRIMARY, 0.3)}`,
                   transition: 'all 0.3s ease',
                   '&:hover': {
                     background: COLORS.GRADIENT_PRIMARY,
@@ -935,7 +935,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                   '&.Mui-disabled': {
                     background: COLORS.GRADIENT_PRIMARY,
                     opacity: 0.6,
-                    color: 'white'
+                    color: COLORS.WHITE
                   }
                 }}
               >

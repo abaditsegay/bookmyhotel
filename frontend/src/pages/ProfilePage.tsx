@@ -24,7 +24,7 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import ThemeToggle from '../components/common/ThemeToggle';
-import { COLORS } from '../theme/themeColors';
+import { COLORS, addAlpha } from '../theme/themeColors';
 
 const ProfilePage: React.FC = () => {
   const { user, updateProfile, changePassword } = useAuth();
@@ -203,7 +203,7 @@ const ProfilePage: React.FC = () => {
                 backgroundColor: COLORS.PRIMARY,
                 fontSize: '2.5rem',
                 fontWeight: 'bold',
-                border: `4px solid ${COLORS.PRIMARY}20`,
+                border: `4px solid ${addAlpha(COLORS.PRIMARY, 0.2)}`,
               }}
             >
               {user?.firstName?.[0] || user?.email?.[0] || <PersonIcon />}
@@ -215,7 +215,7 @@ const ProfilePage: React.FC = () => {
               {user?.email}
             </Typography>
             <Typography variant="body2" color="text.secondary" gutterBottom sx={{ 
-              backgroundColor: 'rgba(0,0,0,0.04)', 
+              backgroundColor: addAlpha(COLORS.BLACK, 0.04), 
               px: 2, 
               py: 0.5, 
               borderRadius: 1,
@@ -397,7 +397,7 @@ const ProfilePage: React.FC = () => {
                 Account Type
               </Typography>
               <Typography variant="body1" sx={{ 
-                backgroundColor: `${COLORS.PRIMARY}15`, 
+                backgroundColor: addAlpha(COLORS.PRIMARY, 0.15), 
                 color: COLORS.PRIMARY,
                 px: 2, 
                 py: 0.5, 

@@ -25,7 +25,6 @@ import {
 } from '@mui/material';
 import PremiumTextField from './common/PremiumTextField';
 import PremiumDatePicker from './common/PremiumDatePicker';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { format, addDays } from 'date-fns';
@@ -432,14 +431,14 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                           sx={{ 
                             cursor: 'pointer',
                             border: selectedRoom?.id === room.id ? '3px solid' : '1px solid',
-                            borderColor: selectedRoom?.id === room.id ? '#E8B86D' : 'divider',
-                            borderLeft: selectedRoom?.id === room.id ? '6px solid #E8B86D' : '3px solid #E8B86D',
+                            borderColor: selectedRoom?.id === room.id ? COLORS.SECONDARY : 'divider',
+                            borderLeft: selectedRoom?.id === room.id ? `6px solid ${COLORS.SECONDARY}` : `3px solid ${COLORS.SECONDARY}`,
                             backgroundColor: selectedRoom?.id === room.id ? 'action.selected' : 'background.paper',
                             elevation: 0,
                             borderRadius: 2,
                             transition: 'all 0.2s ease-in-out',
                             '&:hover': {
-                              borderColor: '#E8B86D',
+                              borderColor: COLORS.SECONDARY,
                               backgroundColor: 'action.hover',
                               transform: 'translateY(-2px)',
                               boxShadow: 3,
@@ -461,8 +460,8 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                                 size="small" 
                                 variant="outlined"
                                 sx={{
-                                  borderColor: '#E8B86D',
-                                  color: '#B8860B',
+                                  borderColor: COLORS.SECONDARY,
+                                  color: COLORS.SECONDARY,
                                   fontWeight: 'medium',
                                   fontSize: '0.75rem'
                                 }}
@@ -489,7 +488,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                               </Typography>
                             )}
                             <Typography variant="h6" sx={{
-                              color: '#B8860B',
+                              color: COLORS.SECONDARY,
                               fontWeight: 'bold',
                               fontSize: '1.2rem'
                             }}>
@@ -535,7 +534,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                 {selectedRoom && (
                   <Typography variant="body2" sx={{ 
                     fontWeight: 'medium',
-                    color: '#B8860B'
+                    color: COLORS.SECONDARY
                   }}>
                     ✓ Room {selectedRoom.roomNumber} selected
                   </Typography>
@@ -587,7 +586,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
               borderRadius: 2,
               border: '1px solid',
               borderColor: 'divider',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.08)}`,
             }}>
               <Typography variant="h5" sx={{ 
                 fontWeight: 700,
@@ -608,7 +607,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                   border: '1px solid',
                   borderColor: 'divider',
                   borderRadius: 2,
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                  boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.08)}`,
                 }}>
                   <CardContent sx={{ p: 3 }}>
                     <Box sx={{ 
@@ -657,7 +656,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                   border: '1px solid',
                   borderColor: 'divider',
                   borderRadius: 2,
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                  boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.08)}`,
                 }}>
                   <CardContent sx={{ p: 3 }}>
                     <Box sx={{ 
@@ -717,7 +716,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                   border: '1px solid',
                   borderColor: 'divider',
                   borderRadius: 2,
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                  boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.08)}`,
                 }}>
                   <CardContent sx={{ p: 3 }}>
                     <Box sx={{ 
@@ -758,22 +757,22 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                       justifyContent: 'space-between', 
                       alignItems: 'center',
                       p: 2,
-                      bgcolor: '#E8B86D',
+                      bgcolor: COLORS.SECONDARY,
                       borderRadius: 2,
                       mb: 2,
                     }}>
-                      <Typography variant="h5" sx={{ color: 'white', fontWeight: 700 }}>
+                      <Typography variant="h5" sx={{ color: COLORS.WHITE, fontWeight: 700 }}>
                         {t('dashboard.hotelAdmin.offlineBooking.confirmation.totalAmountTitle')}
                       </Typography>
-                      <Typography variant="h4" sx={{ color: 'white', fontWeight: 700 }}>
+                      <Typography variant="h4" sx={{ color: COLORS.WHITE, fontWeight: 700 }}>
                         {formatCurrency(calculateTotalAmount() || 0)}
                       </Typography>
                     </Box>
                     
                     <Box sx={{
                       p: 2,
-                      bgcolor: 'rgba(232, 184, 109, 0.1)',
-                      color: '#B8860B',
+                      bgcolor: addAlpha(COLORS.SECONDARY, 0.1),
+                      color: COLORS.SECONDARY,
                       borderRadius: 2,
                       textAlign: 'center',
                       border: '1px solid',

@@ -704,7 +704,7 @@ const BookingConfirmationPage: React.FC = () => {
           sx={{ 
             fontSize: isMobile ? 48 : 60, 
             mb: isMobile ? 1.5 : 2, 
-            filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))',
+            filter: `drop-shadow(0 4px 8px ${addAlpha(COLORS.BLACK, 0.2)})`,
           }} 
         />
         <Typography 
@@ -740,7 +740,7 @@ const BookingConfirmationPage: React.FC = () => {
             variant="filled"
             className="print-chip"
             sx={{ 
-              bgcolor: 'rgba(255,255,255,0.2)', 
+              bgcolor: addAlpha(COLORS.WHITE, 0.2), 
               color: 'white', 
               fontWeight: 'bold', 
               fontSize: isMobile ? '1rem' : '1.3rem',
@@ -748,7 +748,7 @@ const BookingConfirmationPage: React.FC = () => {
               py: isMobile ? 1.5 : 2,
               height: 'auto',
               backdropFilter: 'blur(10px)',
-              border: '1px solid rgba(255,255,255,0.3)',
+              border: `1px solid ${addAlpha(COLORS.WHITE, 0.3)}`,
               '& .MuiChip-label': {
                 fontSize: isMobile ? '1rem' : '1.3rem',
                 fontWeight: 'bold',
@@ -1088,7 +1088,7 @@ const BookingConfirmationPage: React.FC = () => {
                 background: `linear-gradient(135deg, ${addAlpha(COLORS.SUCCESS, 0.1)} 0%, ${addAlpha(COLORS.SUCCESS, 0.05)} 100%)`,
                 '&:hover': {
                   transform: isMobile ? 'none' : 'translateY(-2px)',
-                  boxShadow: isMobile ? 'none' : '0 8px 16px rgba(76, 175, 80, 0.2)'
+                  boxShadow: isMobile ? 'none' : `0 8px 16px ${addAlpha(COLORS.SUCCESS, 0.2)}`
                 }
               }}
             >

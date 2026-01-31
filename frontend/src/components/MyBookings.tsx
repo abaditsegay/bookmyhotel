@@ -47,6 +47,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { BookingService } from '../services/BookingService';
 import { BookingResponse, BookingModificationRequest } from '../types/booking';
 import { StandardLoading, StandardError } from './common';
+import { COLORS, addAlpha, getGradient } from '../theme/themeColors';
 
 const MyBookings: React.FC = () => {
   const { user, token } = useAuth();
@@ -254,7 +255,7 @@ const MyBookings: React.FC = () => {
       sx={{
         minHeight: '100vh',
         background: theme.palette.mode === 'light' 
-          ? `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.action.hover} 100%)`
+          ? getGradient('white')
           : theme.palette.background.default,
         pt: 4,
         pb: 8,
@@ -314,10 +315,10 @@ const MyBookings: React.FC = () => {
               py: 1.5,
               fontWeight: 600,
               textTransform: 'none',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.1)}`,
               '&:hover': {
                 transform: 'translateY(-1px)',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                boxShadow: `0 4px 12px ${addAlpha(COLORS.BLACK, 0.15)}`,
               },
             }}
           >
@@ -509,11 +510,11 @@ const MyBookings: React.FC = () => {
                       py: 1.5,
                       fontWeight: 600,
                       textTransform: 'none',
-                      backgroundColor: 'white',
+                      backgroundColor: COLORS.WHITE,
                       '&:hover': {
                         borderWidth: 1.5,
                         transform: 'translateY(-1px)',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                        boxShadow: `0 4px 12px ${addAlpha(COLORS.BLACK, 0.15)}`,
                       },
                     }}
                   >
@@ -532,10 +533,10 @@ const MyBookings: React.FC = () => {
                         py: 1.5,
                         fontWeight: 600,
                         textTransform: 'none',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                        boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.1)}`,
                         '&:hover': {
                           transform: 'translateY(-1px)',
-                          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                          boxShadow: `0 4px 12px ${addAlpha(COLORS.BLACK, 0.15)}`,
                         },
                       }}
                     >
@@ -579,12 +580,12 @@ const MyBookings: React.FC = () => {
                         py: 1.5,
                         fontWeight: 600,
                         textTransform: 'none',
-                        backgroundColor: 'white',
+                        backgroundColor: COLORS.WHITE,
                         '&:hover': {
                           borderWidth: 1.5,
-                          backgroundColor: 'rgba(244, 67, 54, 0.04)',
+                          backgroundColor: addAlpha(COLORS.ERROR, 0.04),
                           transform: 'translateY(-1px)',
-                          boxShadow: '0 4px 12px rgba(244, 67, 54, 0.15)',
+                          boxShadow: `0 4px 12px ${addAlpha(COLORS.ERROR, 0.15)}`,
                         },
                       }}
                     >

@@ -17,7 +17,7 @@ import {
 } from '@mui/icons-material';
 import { RoomTypeAvailability } from '../../types/hotel';
 import { useAuth } from '../../contexts/AuthContext';
-import { COLORS } from '../../theme/themeColors';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 import { getRoomBedInfo } from '../../constants/roomTypes';
 
 interface RoomTypeCardProps {
@@ -79,17 +79,17 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
       sx={{ 
         height: '100%',
         background: isAvailable 
-          ? '#ffffff'
+          ? COLORS.WHITE
           : theme.palette.action.disabledBackground,
-        border: isAvailable ? '2px solid #E8B86D' : `1px solid ${theme.palette.action.disabled}`,
+        border: isAvailable ? `2px solid ${COLORS.SECONDARY}` : `1px solid ${theme.palette.action.disabled}`,
         borderRadius: 2,
-        boxShadow: isAvailable ? '0 4px 12px rgba(232, 184, 109, 0.15)' : theme.shadows[1],
+        boxShadow: isAvailable ? `0 4px 12px ${addAlpha(COLORS.SECONDARY, 0.15)}` : theme.shadows[1],
         transition: 'all 0.3s ease-in-out',
         opacity: isAvailable ? 1 : 0.7,
         '&:hover': {
           transform: isAvailable ? 'translateY(-8px)' : 'none',
-          boxShadow: isAvailable ? '0 8px 20px rgba(232, 184, 109, 0.25)' : theme.shadows[1],
-          borderColor: isAvailable ? '#d4a45a' : theme.palette.action.disabled,
+          boxShadow: isAvailable ? `0 8px 20px ${addAlpha(COLORS.SECONDARY, 0.25)}` : theme.shadows[1],
+          borderColor: isAvailable ? COLORS.SECONDARY_HOVER : theme.palette.action.disabled,
         },
       }}
     >
@@ -204,7 +204,7 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
                 fontWeight: 700,
                 fontSize: isMobile ? '1.1rem' : '1.25rem',
                 lineHeight: 1.2,
-                color: '#2c5282',
+                color: COLORS.PRIMARY,
               }}
             >
               {formatRoomTypeName(roomType.roomType)}
@@ -218,10 +218,10 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
               <Box 
                 sx={{ 
                   textAlign: 'right',
-                  background: 'rgba(232, 184, 109, 0.1)',
+                  background: addAlpha(COLORS.SECONDARY, 0.1),
                   borderRadius: 2,
                   padding: 1,
-                  border: '2px solid #E8B86D',
+                  border: `2px solid ${COLORS.SECONDARY}`,
                 }}
               >
                 <Typography 
@@ -251,7 +251,7 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
         ) : (
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}>
             <Box>
-              <Typography variant="subtitle1" component="h3" gutterBottom sx={{ fontWeight: 700, color: '#2c5282' }}>
+              <Typography variant="subtitle1" component="h3" gutterBottom sx={{ fontWeight: 700, color: COLORS.PRIMARY }}>
                 {formatRoomTypeName(roomType.roomType)}
               </Typography>
             </Box>
@@ -401,14 +401,14 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
                   fontSize: isMobile ? '0.85rem' : '0.95rem',
                   py: isMobile ? 1 : 1.2,
                   minHeight: isMobile ? '44px' : '48px',
-                  backgroundColor: '#2c5282',
-                  color: 'white',
-                  border: '2px solid #E8B86D',
-                  boxShadow: '0 2px 8px rgba(232, 184, 109, 0.2)',
+                  backgroundColor: COLORS.PRIMARY,
+                  color: COLORS.WHITE,
+                  border: `2px solid ${COLORS.SECONDARY}`,
+                  boxShadow: `0 2px 8px ${addAlpha(COLORS.SECONDARY, 0.2)}`,
                   '&:hover': {
-                    backgroundColor: '#1e3a5f',
-                    border: '2px solid #d4a45a',
-                    boxShadow: '0 4px 12px rgba(232, 184, 109, 0.3)',
+                    backgroundColor: COLORS.PRIMARY_HOVER,
+                    border: `2px solid ${COLORS.SECONDARY_HOVER}`,
+                    boxShadow: `0 4px 12px ${addAlpha(COLORS.SECONDARY, 0.3)}`,
                     transform: 'translateY(-1px)',
                   },
                   '&:active': {
@@ -432,14 +432,14 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
                     fontSize: isMobile ? '0.85rem' : '0.95rem',
                     py: isMobile ? 1 : 1.2,
                     minHeight: isMobile ? '44px' : '48px',
-                    backgroundColor: '#2c5282',
-                    color: 'white',
-                    border: '2px solid #E8B86D',
-                    boxShadow: '0 2px 8px rgba(232, 184, 109, 0.2)',
+                    backgroundColor: COLORS.PRIMARY,
+                    color: COLORS.WHITE,
+                    border: `2px solid ${COLORS.SECONDARY}`,
+                    boxShadow: `0 2px 8px ${addAlpha(COLORS.SECONDARY, 0.2)}`,
                     '&:hover': {
-                      backgroundColor: '#1e3a5f',
-                      border: '2px solid #d4a45a',
-                      boxShadow: '0 4px 12px rgba(232, 184, 109, 0.3)',
+                      backgroundColor: COLORS.PRIMARY_HOVER,
+                      border: `2px solid ${COLORS.SECONDARY_HOVER}`,
+                      boxShadow: `0 4px 12px ${addAlpha(COLORS.SECONDARY, 0.3)}`,
                       transform: 'translateY(-1px)',
                     },
                     '&:active': {
@@ -461,14 +461,14 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
                     py: isMobile ? 0.8 : 1,
                     minHeight: isMobile ? '40px' : '42px',
                     backgroundColor: 'transparent',
-                    color: '#2c5282',
-                    border: '2px solid #E8B86D',
+                    color: COLORS.PRIMARY,
+                    border: `2px solid ${COLORS.SECONDARY}`,
                     '&:hover': {
-                      backgroundColor: 'rgba(232, 184, 109, 0.1)',
-                      border: '2px solid #d4a45a',
-                      color: '#1e3a5f',
+                      backgroundColor: addAlpha(COLORS.SECONDARY, 0.1),
+                      border: `2px solid ${COLORS.SECONDARY_HOVER}`,
+                      color: COLORS.PRIMARY_HOVER,
                       transform: 'translateY(-1px)',
-                      boxShadow: '0 4px 12px rgba(232, 184, 109, 0.3)',
+                      boxShadow: `0 4px 12px ${addAlpha(COLORS.SECONDARY, 0.3)}`,
                     },
                     '&:active': {
                       transform: 'translateY(0)',
@@ -493,11 +493,11 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
                 minHeight: isMobile ? '44px' : '48px',
                 backgroundColor: theme.palette.action.disabledBackground,
                 color: theme.palette.text.disabled,
-                border: '2px solid #E8B86D',
+                border: `2px solid ${COLORS.SECONDARY}`,
                 '&.Mui-disabled': {
                   backgroundColor: theme.palette.action.disabledBackground,
                   color: theme.palette.text.disabled,
-                  border: '2px solid #E8B86D',
+                  border: `2px solid ${COLORS.SECONDARY}`,
                 }
               }}
             >

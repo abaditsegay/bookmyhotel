@@ -1,3 +1,5 @@
+import { COLORS } from '../theme/themeColors';
+
 export enum ProductCategory {
   BEVERAGES = 'BEVERAGES',
   SNACKS = 'SNACKS',
@@ -287,11 +289,11 @@ export const ShopOrderUtils = {
   getStatusColor: (status: ShopOrderStatus): string => {
     switch (status) {
       case ShopOrderStatus.PENDING:
-        return '#ff9800'; // Orange
+        return COLORS.WARNING;
       case ShopOrderStatus.PAID:
-        return '#4caf50'; // Green
+        return COLORS.SUCCESS;
       default:
-        return '#757575'; // Grey
+        return COLORS.TEXT_DISABLED;
     }
   },
 

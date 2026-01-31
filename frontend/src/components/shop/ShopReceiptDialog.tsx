@@ -22,6 +22,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { ShopOrder } from '../../types/shop';
 import { getPremiumTableHeadSx } from './premiumStyles';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 
 interface ShopReceiptDialogProps {
   open: boolean;
@@ -138,16 +139,16 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
   const getStatusColor = (status: string) => {
     const friendlyStatus = getReceiptStatus(status, order?.paymentMethod || '');
     switch (friendlyStatus.toUpperCase()) {
-      case 'PAID': return '#16a34a'; // Professional green
-      case 'CHARGED TO ROOM': return '#475569'; // Muted slate
-      case 'PROCESSING': return '#ea580c'; // Professional orange
-      case 'COMPLETED': return '#16a34a'; // Professional green
-      case 'PENDING': return '#ea580c'; // Professional orange
-      case 'CONFIRMED': return '#475569'; // Muted slate
-      case 'PREPARING': return '#475569'; // Muted slate
-      case 'READY': return '#475569'; // Muted slate
-      case 'CANCELLED': return '#dc2626'; // Professional red
-      default: return '#6b7280'; // Professional gray
+      case 'PAID': return COLORS.SUCCESS;
+      case 'CHARGED TO ROOM': return COLORS.SLATE_600;
+      case 'PROCESSING': return COLORS.WARNING;
+      case 'COMPLETED': return COLORS.SUCCESS;
+      case 'PENDING': return COLORS.WARNING;
+      case 'CONFIRMED': return COLORS.SLATE_600;
+      case 'PREPARING': return COLORS.SLATE_600;
+      case 'READY': return COLORS.SLATE_600;
+      case 'CANCELLED': return COLORS.ERROR;
+      default: return COLORS.TEXT_DISABLED;
     }
   };
 
@@ -170,35 +171,35 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
               left: 0;
               top: 0;
               width: 100%;
-              background: white;
+              background: ${COLORS.WHITE};
               padding: 20px;
               font-family: 'Roboto', sans-serif;
             }
             
             .print-header {
-              background: linear-gradient(135deg, #475569 0%, #64748b 100%) !important;
+              background: ${COLORS.GRADIENT_SLATE} !important;
               -webkit-print-color-adjust: exact !important;
               color-adjust: exact !important;
               print-color-adjust: exact !important;
-              color: white !important;
+              color: ${COLORS.WHITE} !important;
               padding: 24px !important;
               margin-bottom: 24px !important;
               border-radius: 8px !important;
             }
             
             .print-card {
-              border: 1px solid #e0e0e0 !important;
+              border: 1px solid ${COLORS.BORDER_LIGHT} !important;
               border-radius: 8px !important;
               margin-bottom: 16px !important;
               padding: 16px !important;
             }
             
             .print-table th {
-              background: linear-gradient(135deg, #475569 0%, #64748b 100%) !important;
+              background: ${COLORS.GRADIENT_SLATE} !important;
               -webkit-print-color-adjust: exact !important;
               color-adjust: exact !important;
               print-color-adjust: exact !important;
-              color: white !important;
+              color: ${COLORS.WHITE} !important;
               font-weight: bold !important;
             }
             
@@ -209,7 +210,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
             
             .print-table th,
             .print-table td {
-              border: 1px solid #e0e0e0 !important;
+              border: 1px solid ${COLORS.BORDER_LIGHT} !important;
               padding: 12px !important;
               text-align: left !important;
             }
@@ -219,7 +220,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
               -webkit-print-color-adjust: exact !important;
               color-adjust: exact !important;
               print-color-adjust: exact !important;
-              color: white !important;
+              color: ${COLORS.WHITE} !important;
               padding: 6px 12px !important;
               border-radius: 12px !important;
               font-weight: bold !important;
@@ -227,7 +228,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
             }
             
             .print-total-row {
-              background-color: #ffffff !important;
+              background-color: ${COLORS.WHITE} !important;
               -webkit-print-color-adjust: exact !important;
               color-adjust: exact !important;
               print-color-adjust: exact !important;
@@ -251,21 +252,21 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
           sx: {
             minHeight: '90vh',
             borderRadius: 2,
-            bgcolor: '#f5f5f5',
+            bgcolor: COLORS.BG_DEFAULT,
           },
         }}
       >
         <DialogContent sx={{ p: 0 }}>
           <Box className="print-content" sx={{ 
-            bgcolor: 'white', 
+            bgcolor: COLORS.WHITE, 
             m: 2, 
             borderRadius: 2,
-            boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+            boxShadow: `0 1px 3px ${addAlpha(COLORS.BLACK, 0.1)}`
           }}>
             {/* Header Section */}
             <Box sx={{ 
               p: 2.5, 
-              borderBottom: '1px solid #e0e0e0',
+              borderBottom: `1px solid ${COLORS.BORDER_LIGHT}`,
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
@@ -273,7 +274,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
             }}>
               {/* Centered Hotel Info */}
               <Box sx={{ textAlign: 'center', width: '100%' }}>
-                <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.25, color: '#212121' }}>
+                <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.25, color: COLORS.TEXT_PRIMARY }}>
                   {displayHotelName}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>
@@ -300,8 +301,8 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                     size="small"
                     onClick={handlePrint} 
                     sx={{ 
-                      border: '1px solid #e0e0e0',
-                      '&:hover': { bgcolor: '#f5f5f5' },
+                      border: `1px solid ${COLORS.BORDER_LIGHT}`,
+                      '&:hover': { bgcolor: COLORS.BG_DEFAULT },
                     }}
                   >
                     <PrintIcon fontSize="small" />
@@ -312,8 +313,8 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                     size="small"
                     onClick={handleDownload} 
                     sx={{ 
-                      border: '1px solid #e0e0e0',
-                      '&:hover': { bgcolor: '#f5f5f5' },
+                      border: `1px solid ${COLORS.BORDER_LIGHT}`,
+                      '&:hover': { bgcolor: COLORS.BG_DEFAULT },
                     }}
                   >
                     <DownloadIcon fontSize="small" />
@@ -329,7 +330,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                 sx={{ 
                   fontWeight: 600, 
                   mb: 2,
-                  color: '#212121',
+                  color: COLORS.TEXT_PRIMARY,
                   borderLeft: (theme) => `4px solid ${theme.palette.primary.main}`,
                   pl: 1.5
                 }}
@@ -339,7 +340,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
               <Grid container spacing={2}>
                 <Grid item xs={6}>
                   <Box sx={{ mb: 1.5 }}>
-                    <Typography variant="body2" sx={{ color: '#666', mb: 0.25, fontSize: '0.8rem' }}>
+                    <Typography variant="body2" sx={{ color: COLORS.TEXT_SECONDARY, mb: 0.25, fontSize: '0.8rem' }}>
                       {t('shopReceipt.name')}:
                     </Typography>
                     <Typography variant="body2" sx={{ fontWeight: 500 }}>
@@ -348,7 +349,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                   </Box>
                   {order.customerEmail && (
                     <Box sx={{ mb: 1.5 }}>
-                      <Typography variant="body2" sx={{ color: '#666', mb: 0.25, fontSize: '0.8rem' }}>
+                      <Typography variant="body2" sx={{ color: COLORS.TEXT_SECONDARY, mb: 0.25, fontSize: '0.8rem' }}>
                         {t('shopReceipt.email')}:
                       </Typography>
                       <Typography variant="body2" sx={{ fontWeight: 500 }}>
@@ -358,7 +359,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                   )}
                   {order.customerPhone && (
                     <Box>
-                      <Typography variant="body2" sx={{ color: '#666', mb: 0.25, fontSize: '0.8rem' }}>
+                      <Typography variant="body2" sx={{ color: COLORS.TEXT_SECONDARY, mb: 0.25, fontSize: '0.8rem' }}>
                         {t('shopReceipt.phone')}:
                       </Typography>
                       <Typography variant="body2" sx={{ fontWeight: 500 }}>
@@ -369,7 +370,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                 </Grid>
                 <Grid item xs={6}>
                   <Box sx={{ mb: 1.5 }}>
-                    <Typography variant="body2" sx={{ color: '#666', mb: 0.25, fontSize: '0.8rem' }}>
+                    <Typography variant="body2" sx={{ color: COLORS.TEXT_SECONDARY, mb: 0.25, fontSize: '0.8rem' }}>
                       {t('shopReceipt.orderDate')}:
                     </Typography>
                     <Typography variant="body2" sx={{ fontWeight: 500 }}>
@@ -377,7 +378,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                     </Typography>
                   </Box>
                   <Box sx={{ mb: 1.5 }}>
-                    <Typography variant="body2" sx={{ color: '#666', mb: 0.25, fontSize: '0.8rem' }}>
+                    <Typography variant="body2" sx={{ color: COLORS.TEXT_SECONDARY, mb: 0.25, fontSize: '0.8rem' }}>
                       {t('shopReceipt.paymentMethod')}:
                     </Typography>
                     <Typography variant="body2" sx={{ fontWeight: 500 }}>
@@ -385,7 +386,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                     </Typography>
                   </Box>
                   <Box>
-                    <Typography variant="body2" sx={{ color: '#666', mb: 0.5 }}>
+                    <Typography variant="body2" sx={{ color: COLORS.TEXT_SECONDARY, mb: 0.5 }}>
                       {t('shopReceipt.delivery')}:
                     </Typography>
                     <Typography variant="body1" sx={{ fontWeight: 500 }}>
@@ -404,7 +405,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                   fontWeight: 600, 
                   mb: 2,
                   fontSize: '0.9rem',
-                  color: '#212121',
+                  color: COLORS.TEXT_PRIMARY,
                   borderLeft: (theme) => `4px solid ${theme.palette.primary.main}`,
                   pl: 2
                 }}
@@ -435,7 +436,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                   {order.items.map((item, index) => (
                     <TableRow 
                       key={item.id}
-                      sx={{ '&:hover': { bgcolor: '#f9f9f9' } }}
+                      sx={{ '&:hover': { bgcolor: COLORS.BG_LIGHT } }}
                     >
                       <TableCell>
                         <Typography variant="body2" sx={{ fontWeight: 500 }}>
@@ -500,12 +501,12 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                   {/* Service Tax Row */}
                   {(order.serviceTaxAmount || 0) > 0 && (
                     <TableRow>
-                      <TableCell colSpan={4} sx={{ borderBottom: '2px solid #e0e0e0', pb: 1.5 }}>
+                      <TableCell colSpan={4} sx={{ borderBottom: `2px solid ${COLORS.BORDER_LIGHT}`, pb: 1.5 }}>
                         <Typography variant="body2" sx={{ fontWeight: 500, fontStyle: 'italic', fontSize: '0.85rem' }}>
                           Service Tax (5.00%)
                         </Typography>
                       </TableCell>
-                      <TableCell align="right" sx={{ borderBottom: '2px solid #e0e0e0', pb: 1.5 }}>
+                      <TableCell align="right" sx={{ borderBottom: `2px solid ${COLORS.BORDER_LIGHT}`, pb: 1.5 }}>
                         <Typography variant="body2" sx={{ fontWeight: 600, fontStyle: 'italic', fontSize: '0.85rem' }}>
                           {formatCurrencyWithDecimals(order.serviceTaxAmount || 0)}
                         </Typography>
@@ -539,7 +540,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                     fontWeight: 600, 
                     mb: 1.5,
                     fontSize: '0.9rem',
-                    color: '#212121',
+                    color: COLORS.TEXT_PRIMARY,
                     borderLeft: (theme) => `4px solid ${theme.palette.primary.main}`,
                     pl: 2
                   }}
@@ -555,9 +556,9 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
             {/* Footer */}
             <Box sx={{ 
               p: 2.5, 
-              borderTop: '1px solid #e0e0e0',
+              borderTop: `1px solid ${COLORS.BORDER_LIGHT}`,
               textAlign: 'center',
-              bgcolor: '#fafafa'
+              bgcolor: COLORS.BG_LIGHT
             }}>
               <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.75, fontSize: '0.9rem' }}>
                 {t('shopReceipt.thankYou')}
@@ -580,7 +581,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
           </Box>
         </DialogContent>
 
-        <DialogActions sx={{ p: 3, bgcolor: '#f5f5f5', justifyContent: 'space-between' }}>
+        <DialogActions sx={{ p: 3, bgcolor: COLORS.BG_DEFAULT, justifyContent: 'space-between' }}>
           <Button 
             onClick={onClose} 
             variant="outlined"
@@ -588,11 +589,11 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
             sx={{ 
               minWidth: 120,
               textTransform: 'none',
-              borderColor: '#f44336',
-              color: '#d32f2f',
+              borderColor: COLORS.ERROR,
+              color: COLORS.ERROR,
               '&:hover': {
-                borderColor: '#d32f2f',
-                bgcolor: 'rgba(244, 67, 54, 0.04)'
+                borderColor: COLORS.ERROR,
+                bgcolor: addAlpha(COLORS.ERROR, 0.04)
               }
             }}
           >
@@ -604,11 +605,11 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
             sx={{ 
               minWidth: 120,
               textTransform: 'none',
-              background: 'linear-gradient(135deg, #1a365d 0%, #0f2744 100%)',
-              boxShadow: '0 4px 15px rgba(26, 54, 93, 0.25)',
+              background: COLORS.GRADIENT_PRIMARY,
+              boxShadow: `0 4px 15px ${addAlpha(COLORS.PRIMARY, 0.25)}`,
               '&:hover': {
-                background: 'linear-gradient(135deg, #2a4a6d 0%, #1a365d 100%)',
-                boxShadow: '0 6px 20px rgba(26, 54, 93, 0.35)',
+                background: `linear-gradient(135deg, ${COLORS.PRIMARY_HOVER} 0%, ${COLORS.PRIMARY} 100%)`,
+                boxShadow: `0 6px 20px ${addAlpha(COLORS.PRIMARY, 0.35)}`,
                 transform: 'translateY(-2px)'
               }
             }}

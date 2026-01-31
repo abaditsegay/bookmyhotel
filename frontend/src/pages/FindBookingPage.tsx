@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { COLORS, getGradient } from '../theme/themeColors';
+import { COLORS, addAlpha, getGradient } from '../theme/themeColors';
 import {
   Container,
   Typography,
@@ -130,7 +130,7 @@ const FindBookingPage: React.FC = () => {
               p: 2,
               background: theme.palette.background.default,
               borderRadius: 0,
-              border: `1px solid rgba(224, 224, 224, 0.3)`,
+              border: `1px solid ${addAlpha(COLORS.BORDER_LIGHT, 0.3)}`,
             }}
           >
             <Typography 
@@ -177,8 +177,8 @@ const FindBookingPage: React.FC = () => {
                   mt: 3,
                   borderRadius: 0,
                   backgroundColor: theme.palette.mode === 'dark' 
-                    ? 'rgba(244, 67, 54, 0.1)' 
-                    : 'rgba(244, 67, 54, 0.04)',
+                    ? addAlpha(COLORS.ERROR, 0.1)
+                    : addAlpha(COLORS.ERROR, 0.04),
                 }}
               >
                 {error}
@@ -224,7 +224,7 @@ const FindBookingPage: React.FC = () => {
                 p: 2,
                 background: theme.palette.background.default,
                 borderRadius: 0,
-                border: `1px solid rgba(224, 224, 224, 0.3)`,
+                border: `1px solid ${addAlpha(COLORS.BORDER_LIGHT, 0.3)}`,
               }}
             >
               <Box>
@@ -272,7 +272,7 @@ const FindBookingPage: React.FC = () => {
                     p: 2,
                     borderRadius: 0,
                     background: theme.palette.background.paper,
-                    border: `1px solid rgba(224, 224, 224, 0.3)`,
+                    border: `1px solid ${addAlpha(COLORS.BORDER_LIGHT, 0.3)}`,
                     boxShadow: 'none',
                   }}
                 >
@@ -289,7 +289,7 @@ const FindBookingPage: React.FC = () => {
                     p: 2,
                     borderRadius: 0,
                     background: theme.palette.background.paper,
-                    border: `1px solid rgba(224, 224, 224, 0.3)`,
+                    border: `1px solid ${addAlpha(COLORS.BORDER_LIGHT, 0.3)}`,
                     boxShadow: 'none',
                   }}
                 >
@@ -306,7 +306,7 @@ const FindBookingPage: React.FC = () => {
                     p: 2,
                     borderRadius: 0,
                     background: theme.palette.background.paper,
-                    border: `1px solid rgba(224, 224, 224, 0.3)`,
+                    border: `1px solid ${addAlpha(COLORS.BORDER_LIGHT, 0.3)}`,
                     boxShadow: 'none',
                   }}
                 >
@@ -329,7 +329,7 @@ const FindBookingPage: React.FC = () => {
                     p: 2,
                     borderRadius: 0,
                     background: theme.palette.background.paper,
-                    border: `1px solid rgba(224, 224, 224, 0.3)`,
+                    border: `1px solid ${addAlpha(COLORS.BORDER_LIGHT, 0.3)}`,
                     boxShadow: 'none',
                   }}
                 >
@@ -346,7 +346,7 @@ const FindBookingPage: React.FC = () => {
                     p: 2,
                     borderRadius: 0,
                     background: theme.palette.background.paper,
-                    border: `1px solid rgba(224, 224, 224, 0.3)`,
+                    border: `1px solid ${addAlpha(COLORS.BORDER_LIGHT, 0.3)}`,
                     boxShadow: 'none',
                   }}
                 >
@@ -370,7 +370,7 @@ const FindBookingPage: React.FC = () => {
                       p: 2,
                       borderRadius: 0,
                       background: theme.palette.background.paper,
-                      border: `1px solid rgba(224, 224, 224, 0.3)`,
+                      border: `1px solid ${addAlpha(COLORS.BORDER_LIGHT, 0.3)}`,
                       boxShadow: 'none',
                     }}
                   >
@@ -421,7 +421,7 @@ const FindBookingPage: React.FC = () => {
               p: 2,
               background: theme.palette.background.default,
               borderRadius: 0,
-              border: `1px solid rgba(224, 224, 224, 0.3)`,
+              border: `1px solid ${addAlpha(COLORS.BORDER_LIGHT, 0.3)}`,
             }}
           >
             <Typography 

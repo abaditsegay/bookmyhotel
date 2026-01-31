@@ -17,7 +17,7 @@ import { useNavigate } from 'react-router-dom';
 import { hotelApiService } from '../services/hotelApi';
 import { HotelSearchResult } from '../types/hotel';
 import { useAuth } from '../contexts/AuthContext';
-import { COLORS } from '../theme/themeColors';
+import { COLORS, addAlpha } from '../theme/themeColors';
 
 interface VerticalHotelAdvertisementBannerProps {
   maxHotels?: number;
@@ -214,7 +214,7 @@ export default function VerticalHotelAdvertisementBanner({ maxHotels = 3 }: Vert
               flexDirection: 'column',
               '&:hover': {
                 transform: 'translateY(-2px)',
-                boxShadow: '0 4px 15px rgba(0,0,0,0.15)',
+                boxShadow: `0 4px 15px ${addAlpha(COLORS.BLACK, 0.15)}`,
               },
             }}
             onClick={() => handleHotelClick(hotel)}

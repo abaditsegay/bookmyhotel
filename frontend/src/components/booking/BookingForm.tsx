@@ -280,10 +280,10 @@ const BookingForm: React.FC<BookingFormProps> = ({
               sx={{ 
                 p: { xs: 2, md: 3 }, 
                 mb: { xs: 2, md: 3 }, 
-                backgroundColor: 'white',
+                backgroundColor: 'background.paper',
                 border: `1px solid ${COLORS.CARD_BORDER}`,
                 borderRadius: 2,
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.08)}`,
               }}
             >
               <Typography 

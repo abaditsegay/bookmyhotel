@@ -358,7 +358,7 @@ const HotelDetailPage: React.FC = () => {
       {/* Hotel Information - Mobile Responsive */}
       <Card 
         sx={{
-          backgroundColor: '#ffffff',
+          backgroundColor: COLORS.WHITE,
           border: `2px solid ${COLORS.PRIMARY}`,
           borderRadius: 2,
           boxShadow: `0 4px 12px ${addAlpha(COLORS.PRIMARY, 0.15)}`,
@@ -376,7 +376,7 @@ const HotelDetailPage: React.FC = () => {
                 gutterBottom 
                 sx={{ 
                   fontWeight: 700, 
-                  color: '#2c5282',
+                  color: COLORS.PRIMARY,
                   lineHeight: 1.2,
                 }}
               >
@@ -443,7 +443,7 @@ const HotelDetailPage: React.FC = () => {
           /* Desktop Layout - Side by Side */
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
             <Box sx={{ flexGrow: 1 }}>
-              <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 700, color: '#2c5282' }}>
+              <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 700, color: COLORS.PRIMARY }}>
                 {hotel.name}
               </Typography>
               
@@ -556,7 +556,7 @@ const HotelDetailPage: React.FC = () => {
           <Box sx={{ 
             mt: 2, 
             p: 1.5, 
-            backgroundColor: '#fafafa', 
+            backgroundColor: COLORS.BG_LIGHT, 
             border: `1px solid ${COLORS.PRIMARY}`, 
             borderRadius: 1 
           }}>
@@ -572,7 +572,7 @@ const HotelDetailPage: React.FC = () => {
       {searchRequest && (
         <Card 
           sx={{
-            backgroundColor: '#ffffff',
+            backgroundColor: COLORS.WHITE,
             border: `2px solid ${COLORS.PRIMARY}`,
             borderRadius: 2,
             boxShadow: `0 4px 12px ${addAlpha(COLORS.PRIMARY, 0.15)}`,
@@ -585,7 +585,7 @@ const HotelDetailPage: React.FC = () => {
                 fontWeight: 700, 
                 mb: isMobile ? 1.5 : 2,
                 fontSize: isMobile ? '1.1rem' : undefined,
-                color: '#2c5282',
+                color: COLORS.PRIMARY,
               }}
             >
               {useRoomTypes ? 

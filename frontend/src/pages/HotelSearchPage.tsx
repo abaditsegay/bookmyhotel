@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { COLORS, getGradient } from '../theme/themeColors';
+import { COLORS, addAlpha, getGradient } from '../theme/themeColors';
 import {
   Typography,
   Box,
@@ -80,7 +80,7 @@ const HotelSearchPage: React.FC = () => {
                   xs: '400px', // Mobile: increased height for better hotel visibility
                   md: '100%' // Desktop: full height
                 },
-                border: '1px solid rgba(224, 224, 224, 0.2)', // Much more subtle border
+                border: `1px solid ${addAlpha(COLORS.BORDER_LIGHT, 0.2)}`, // Much more subtle border
                 borderRadius: 0,
                 display: 'flex',
                 flexDirection: 'column',
@@ -148,7 +148,7 @@ const HotelSearchPage: React.FC = () => {
             mb: isMobile ? 2 : 3,
             p: 2,
             backgroundColor: theme.palette.background.default,
-            border: `1px solid rgba(224, 224, 224, 0.3)`,
+            border: `1px solid ${addAlpha(COLORS.BORDER_LIGHT, 0.3)}`,
           }}>
             <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>
               {t('hotelSearch.title')}
@@ -195,7 +195,7 @@ const HotelSearchPage: React.FC = () => {
             mb: isMobile ? 2 : 3,
             p: 2,
             backgroundColor: theme.palette.background.default,
-            border: `1px solid rgba(224, 224, 224, 0.3)`,
+            border: `1px solid ${addAlpha(COLORS.BORDER_LIGHT, 0.3)}`,
           }}>
             <Typography variant="h5" sx={{ fontWeight: 600, mb: 1, color: 'text.primary' }}>
               {t('hotelSearch.alreadyHaveBooking.title')}

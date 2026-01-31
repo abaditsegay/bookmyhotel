@@ -24,6 +24,7 @@ import OrderCreation from './OrderCreation';
 import LowStockProducts from './LowStockProducts';
 import { StatCardSkeleton } from '../common/SkeletonLoaders';
 import { premiumTabsPaperSx, premiumTabsSx } from './premiumStyles';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -188,14 +189,14 @@ const ShopDashboard: React.FC = () => {
           <Grid item xs={12} sm={6} md={3}>
             <Card 
               sx={{
-                background: 'linear-gradient(135deg, rgba(26, 54, 93, 0.05) 0%, rgba(232, 184, 109, 0.05) 100%)',
+                background: `linear-gradient(135deg, ${addAlpha(COLORS.PRIMARY, 0.05)} 0%, ${addAlpha(COLORS.SECONDARY, 0.05)} 100%)`,
                 backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(26, 54, 93, 0.1)',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                border: `1px solid ${addAlpha(COLORS.PRIMARY, 0.1)}`,
+                boxShadow: `0 4px 12px ${addAlpha(COLORS.BLACK, 0.08)}`,
                 transition: 'all 0.3s ease',
                 '&:hover': {
                   transform: 'translateY(-4px)',
-                  boxShadow: '0 8px 24px rgba(26, 54, 93, 0.15)'
+                  boxShadow: `0 8px 24px ${addAlpha(COLORS.PRIMARY, 0.15)}`
                 }
               }}
             >
@@ -210,7 +211,7 @@ const ShopDashboard: React.FC = () => {
                       fontWeight: 600,
                       textTransform: 'uppercase',
                       letterSpacing: '0.5px',
-                      color: '#1a365d'
+                      color: COLORS.PRIMARY
                     }}
                   >
                     {t('shop.dashboard.stats.totalProducts')}
@@ -220,7 +221,7 @@ const ShopDashboard: React.FC = () => {
                     sx={{ 
                       lineHeight: 1.2,
                       fontWeight: 700,
-                      color: '#1a365d',
+                      color: COLORS.PRIMARY,
                       mb: 0.5
                     }}
                   >
@@ -230,7 +231,7 @@ const ShopDashboard: React.FC = () => {
                     variant="caption" 
                     sx={{ 
                       fontSize: '0.75rem',
-                      color: '#E8B86D',
+                      color: COLORS.SECONDARY,
                       fontWeight: 600
                     }}
                   >
@@ -244,14 +245,14 @@ const ShopDashboard: React.FC = () => {
           <Grid item xs={12} sm={6} md={3}>
             <Card
               sx={{
-                background: 'linear-gradient(135deg, rgba(26, 54, 93, 0.05) 0%, rgba(232, 184, 109, 0.05) 100%)',
+                background: `linear-gradient(135deg, ${addAlpha(COLORS.PRIMARY, 0.05)} 0%, ${addAlpha(COLORS.SECONDARY, 0.05)} 100%)`,
                 backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(26, 54, 93, 0.1)',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                border: `1px solid ${addAlpha(COLORS.PRIMARY, 0.1)}`,
+                boxShadow: `0 4px 12px ${addAlpha(COLORS.BLACK, 0.08)}`,
                 transition: 'all 0.3s ease',
                 '&:hover': {
                   transform: 'translateY(-4px)',
-                  boxShadow: '0 8px 24px rgba(26, 54, 93, 0.15)'
+                  boxShadow: `0 8px 24px ${addAlpha(COLORS.PRIMARY, 0.15)}`
                 }
               }}
             >
@@ -266,7 +267,7 @@ const ShopDashboard: React.FC = () => {
                       fontWeight: 600,
                       textTransform: 'uppercase',
                       letterSpacing: '0.5px',
-                      color: '#1a365d'
+                      color: COLORS.PRIMARY
                     }}
                   >
                     {t('shop.orders.status.pending')} {t('shop.dashboard.tabs.orders')}
@@ -276,7 +277,7 @@ const ShopDashboard: React.FC = () => {
                     sx={{ 
                       lineHeight: 1.2,
                       fontWeight: 700,
-                      color: '#1a365d',
+                      color: COLORS.PRIMARY,
                       mb: 0.5
                     }}
                   >
@@ -286,7 +287,7 @@ const ShopDashboard: React.FC = () => {
                     variant="caption" 
                     sx={{ 
                       fontSize: '0.75rem',
-                      color: '#E8B86D',
+                      color: COLORS.SECONDARY,
                       fontWeight: 600
                     }}
                   >
@@ -300,14 +301,14 @@ const ShopDashboard: React.FC = () => {
           <Grid item xs={12} sm={6} md={3}>
             <Card
               sx={{
-                background: 'linear-gradient(135deg, rgba(232, 184, 109, 0.1) 0%, rgba(26, 54, 93, 0.05) 100%)',
+                background: `linear-gradient(135deg, ${addAlpha(COLORS.SECONDARY, 0.1)} 0%, ${addAlpha(COLORS.PRIMARY, 0.05)} 100%)`,
                 backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(232, 184, 109, 0.2)',
-                boxShadow: '0 4px 12px rgba(232, 184, 109, 0.15)',
+                border: `1px solid ${addAlpha(COLORS.SECONDARY, 0.2)}`,
+                boxShadow: `0 4px 12px ${addAlpha(COLORS.SECONDARY, 0.15)}`,
                 transition: 'all 0.3s ease',
                 '&:hover': {
                   transform: 'translateY(-4px)',
-                  boxShadow: '0 8px 24px rgba(232, 184, 109, 0.25)'
+                  boxShadow: `0 8px 24px ${addAlpha(COLORS.SECONDARY, 0.25)}`
                 }
               }}
             >
@@ -322,7 +323,7 @@ const ShopDashboard: React.FC = () => {
                       fontWeight: 600,
                       textTransform: 'uppercase',
                       letterSpacing: '0.5px',
-                      color: '#1a365d'
+                      color: COLORS.PRIMARY
                     }}
                   >
                     {t('shop.dashboard.stats.revenue')}
@@ -332,7 +333,7 @@ const ShopDashboard: React.FC = () => {
                     sx={{ 
                       lineHeight: 1.2,
                       fontWeight: 700,
-                      background: 'linear-gradient(135deg, #E8B86D 0%, #D4A05D 100%)',
+                      background: COLORS.GRADIENT_SECONDARY,
                       backgroundClip: 'text',
                       WebkitBackgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',
@@ -345,7 +346,7 @@ const ShopDashboard: React.FC = () => {
                     variant="caption" 
                     sx={{ 
                       fontSize: '0.75rem',
-                      color: '#1a365d',
+                      color: COLORS.PRIMARY,
                       fontWeight: 600
                     }}
                   >
@@ -359,14 +360,14 @@ const ShopDashboard: React.FC = () => {
           <Grid item xs={12} sm={6} md={3}>
             <Card
               sx={{
-                background: 'linear-gradient(135deg, rgba(26, 54, 93, 0.05) 0%, rgba(232, 184, 109, 0.05) 100%)',
+                background: `linear-gradient(135deg, ${addAlpha(COLORS.PRIMARY, 0.05)} 0%, ${addAlpha(COLORS.SECONDARY, 0.05)} 100%)`,
                 backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(26, 54, 93, 0.1)',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                border: `1px solid ${addAlpha(COLORS.PRIMARY, 0.1)}`,
+                boxShadow: `0 4px 12px ${addAlpha(COLORS.BLACK, 0.08)}`,
                 transition: 'all 0.3s ease',
                 '&:hover': {
                   transform: 'translateY(-4px)',
-                  boxShadow: '0 8px 24px rgba(26, 54, 93, 0.15)'
+                  boxShadow: `0 8px 24px ${addAlpha(COLORS.PRIMARY, 0.15)}`
                 }
               }}
             >
@@ -381,7 +382,7 @@ const ShopDashboard: React.FC = () => {
                       fontWeight: 600,
                       textTransform: 'uppercase',
                       letterSpacing: '0.5px',
-                      color: '#1a365d'
+                      color: COLORS.PRIMARY
                     }}
                   >
                     Low Stock Products
@@ -391,7 +392,7 @@ const ShopDashboard: React.FC = () => {
                     sx={{ 
                       lineHeight: 1.2,
                       fontWeight: 700,
-                      color: '#ff9800',
+                      color: COLORS.WARNING,
                       mb: 0.5
                     }}
                   >
@@ -401,7 +402,7 @@ const ShopDashboard: React.FC = () => {
                     variant="caption" 
                     sx={{ 
                       fontSize: '0.75rem',
-                      color: '#d32f2f',
+                      color: COLORS.ERROR,
                       fontWeight: 600
                     }}
                   >

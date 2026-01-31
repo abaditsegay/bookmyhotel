@@ -21,6 +21,7 @@ import {
 } from '@mui/icons-material';
 import TokenManager from '../utils/tokenManager';
 import { StandardCard, StandardButton, StandardLoading, StandardError } from './common';
+import { COLORS, addAlpha } from '../theme/themeColors';
 
 interface PaymentStatusProps {
   transactionId: string;
@@ -180,13 +181,13 @@ const PaymentStatusTracker: React.FC<PaymentStatusProps> = ({
     if (provider === 'MBIRR') {
       return { 
         name: 'M-birr', 
-        color: theme.palette.mode === 'dark' ? '#FFB347' : '#FFA500', 
+        color: COLORS.MBIRR_ORANGE, 
         dialCode: '*847#' 
       };
     } else {
       return { 
         name: 'Telebirr', 
-        color: theme.palette.mode === 'dark' ? '#81C784' : '#4CAF50', 
+        color: COLORS.TELEBIRR_GREEN, 
         dialCode: '*127#' 
       };
     }
@@ -301,10 +302,10 @@ const PaymentStatusTracker: React.FC<PaymentStatusProps> = ({
             variant="outlined"
             sx={{
               backgroundColor: theme.palette.mode === 'dark' 
-                ? 'rgba(255, 255, 255, 0.05)' 
+                ? addAlpha(COLORS.WHITE, 0.05) 
                 : 'background.paper',
               borderColor: theme.palette.mode === 'dark' 
-                ? 'rgba(255, 255, 255, 0.1)' 
+                ? addAlpha(COLORS.WHITE, 0.1) 
                 : 'divider'
             }}
           >
@@ -338,10 +339,10 @@ const PaymentStatusTracker: React.FC<PaymentStatusProps> = ({
             variant="outlined"
             sx={{
               backgroundColor: theme.palette.mode === 'dark' 
-                ? 'rgba(255, 255, 255, 0.05)' 
+                ? addAlpha(COLORS.WHITE, 0.05) 
                 : 'background.paper',
               borderColor: theme.palette.mode === 'dark' 
-                ? 'rgba(255, 255, 255, 0.1)' 
+                ? addAlpha(COLORS.WHITE, 0.1) 
                 : 'divider'
             }}
           >
@@ -353,7 +354,7 @@ const PaymentStatusTracker: React.FC<PaymentStatusProps> = ({
                 label={providerInfo.name}
                 sx={{ 
                   bgcolor: providerInfo.color, 
-                  color: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.87)' : 'white',
+                  color: theme.palette.mode === 'dark' ? COLORS.BLACK_ALPHA_87 : COLORS.WHITE,
                   fontWeight: 'bold',
                   mb: 2 
                 }}

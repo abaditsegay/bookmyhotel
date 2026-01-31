@@ -18,6 +18,7 @@ import VerticalHotelAdvertisementBanner from '../components/VerticalHotelAdverti
 import performanceUtils from '../utils/performanceUtils';
 import MuiCard from '../components/ui/MuiCard';
 import { Button } from '../components/ui/MuiButton';
+import { COLORS, addAlpha } from '../theme/themeColors';
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -68,7 +69,7 @@ const HomePage = () => {
                       cursor: 'pointer',
                       ...performanceUtils.getAnimationStyles(enableAnimations),
                       background: (theme) => `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-                      color: 'white',
+                      color: COLORS.WHITE,
                       ...performanceUtils.getHoverStyles(enableAnimations),
                     }}
                     onClick={() => navigate('/hotels/search')}
@@ -92,7 +93,7 @@ const HomePage = () => {
                       cursor: 'pointer',
                       ...performanceUtils.getAnimationStyles(enableAnimations),
                       background: (theme) => `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.dark} 100%)`,
-                      color: 'white',
+                      color: COLORS.WHITE,
                       ...performanceUtils.getHoverStyles(enableAnimations),
                     }}
                     onClick={() => navigate('/find-booking')}
@@ -216,15 +217,15 @@ const HomePage = () => {
                       <Grid item xs={12}>
                         <Box
                           sx={{
-                            backgroundColor: (theme) => `rgba(255, 255, 255, ${0.1})`,
+                            backgroundColor: addAlpha(COLORS.WHITE, 0.1),
                             borderRadius: 1,
                             p: 2,
-                            border: (theme) => `1px solid rgba(255, 255, 255, ${0.3})`,
+                            border: `1px solid ${addAlpha(COLORS.WHITE, 0.3)}`,
                             cursor: 'pointer',
                             ...performanceUtils.getAnimationStyles(enableAnimations),
                             ...(enableAnimations && !performanceUtils.isSlowConnection() ? {
                               '&:hover': {
-                                backgroundColor: (theme) => `rgba(255, 255, 255, ${0.2})`,
+                                backgroundColor: addAlpha(COLORS.WHITE, 0.2),
                               }
                             } : {})
                           }}
@@ -241,15 +242,15 @@ const HomePage = () => {
                       <Grid item xs={6}>
                         <Box
                           sx={{
-                            backgroundColor: (theme) => `rgba(255, 255, 255, ${0.1})`,
+                            backgroundColor: addAlpha(COLORS.WHITE, 0.1),
                             borderRadius: 1,
                             p: 2,
-                            border: (theme) => `1px solid rgba(255, 255, 255, ${0.3})`,
+                            border: `1px solid ${addAlpha(COLORS.WHITE, 0.3)}`,
                             cursor: 'pointer',
                             ...performanceUtils.getAnimationStyles(enableAnimations),
                             ...(enableAnimations && !performanceUtils.isSlowConnection() ? {
                               '&:hover': {
-                                backgroundColor: (theme) => `rgba(255, 255, 255, ${0.2})`,
+                                backgroundColor: addAlpha(COLORS.WHITE, 0.2),
                               }
                             } : {})
                           }}
@@ -266,15 +267,15 @@ const HomePage = () => {
                       <Grid item xs={6}>
                         <Box
                           sx={{
-                            backgroundColor: (theme) => `rgba(255, 255, 255, ${0.1})`,
+                            backgroundColor: addAlpha(COLORS.WHITE, 0.1),
                             borderRadius: 1,
                             p: 2,
-                            border: (theme) => `1px solid rgba(255, 255, 255, ${0.3})`,
+                            border: `1px solid ${addAlpha(COLORS.WHITE, 0.3)}`,
                             cursor: 'pointer',
                             ...performanceUtils.getAnimationStyles(enableAnimations),
                             ...(enableAnimations && !performanceUtils.isSlowConnection() ? {
                               '&:hover': {
-                                backgroundColor: (theme) => `rgba(255, 255, 255, ${0.2})`,
+                                backgroundColor: addAlpha(COLORS.WHITE, 0.2),
                               }
                             } : {})
                           }}
@@ -292,7 +293,7 @@ const HomePage = () => {
                     
                     <Box
                       sx={{
-                        backgroundColor: (theme) => `rgba(255, 255, 255, 0.9)`, // Using 0.9 as it's meant to be more opaque
+                        backgroundColor: addAlpha(COLORS.WHITE, 0.9),
                         color: 'primary.main',
                         borderRadius: 2,
                         p: 2,
@@ -301,7 +302,7 @@ const HomePage = () => {
                         ...performanceUtils.getAnimationStyles(enableAnimations),
                         ...(enableAnimations && !performanceUtils.isSlowConnection() ? {
                           '&:hover': {
-                            backgroundColor: 'white',
+                            backgroundColor: COLORS.WHITE,
                             transform: 'translateY(-1px)',
                           }
                         } : {})
@@ -317,7 +318,7 @@ const HomePage = () => {
                     sx={{ 
                       p: 3,
                       background: (theme) => `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.dark} 100%)`,
-                      color: 'white',
+                      color: COLORS.WHITE,
                       textAlign: 'center',
                       cursor: 'pointer',
                       ...performanceUtils.getAnimationStyles(enableAnimations),

@@ -26,7 +26,7 @@ import {
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { PaymentMethod } from '../../types/shop';
-import { COLORS } from '../../theme/themeColors';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 import { StandardButton } from '../common';
 import { useMockPayment, MockPaymentRequest } from '../../services/mockPaymentGateway';
 
@@ -237,7 +237,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                 }} />
               </Box>
               <Typography variant="h6" sx={{ 
-                color: '#212121',
+                color: COLORS.TEXT_PRIMARY,
                 fontWeight: 600,
                 mb: 0.5,
               }}>
@@ -357,7 +357,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                 }} />
               </Box>
               <Typography variant="h6" sx={{ 
-                color: '#212121',
+                color: COLORS.TEXT_PRIMARY,
                 fontWeight: 600,
                 mb: 0.5,
               }}>
@@ -430,7 +430,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
           <Box sx={{ mt: 2, textAlign: 'center', py: 4 }}>
             <Typography variant="h6" sx={{ 
               fontWeight: 600, 
-              color: '#212121',
+              color: COLORS.TEXT_PRIMARY,
               mb: 2
             }}>
               Cash Payment
@@ -441,7 +441,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
             <Box sx={{
               display: 'inline-block',
               bgcolor: (theme) => theme.palette.primary.light + '20',
-              border: '2px solid #2e7d32',
+              border: `2px solid ${COLORS.SUCCESS}`,
               borderRadius: 2,
               px: 4,
               py: 2,
@@ -479,7 +479,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
             </Box>
             <Typography variant="h6" sx={{ 
               fontWeight: 600, 
-              color: '#212121',
+              color: COLORS.TEXT_PRIMARY,
               mb: 1
             }}>
               {t('shopPayment.payAtFrontDesk')}
@@ -490,7 +490,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
             <Box sx={{
               display: 'inline-block',
               bgcolor: (theme) => theme.palette.primary.light + '20',
-              border: '2px solid #2e7d32',
+              border: `2px solid ${COLORS.SUCCESS}`,
               borderRadius: 2,
               px: 4,
               py: 2,
@@ -525,7 +525,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
           '& .MuiDialog-paper': {
             margin: isMobile ? 0 : theme.spacing(2),
             borderRadius: isMobile ? 0 : 3,
-            background: `linear-gradient(135deg, ${COLORS.BG_SLATE} 0%, #64748b 100%)`,
+            background: `linear-gradient(135deg, ${COLORS.BG_SLATE} 0%, ${COLORS.SLATE_500} 100%)`,
           }
         }}
       >
@@ -537,23 +537,23 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
             width: 100,
             height: 100,
             borderRadius: '50%',
-            backgroundColor: 'rgba(255, 255, 255, 0.15)',
+            backgroundColor: addAlpha(COLORS.WHITE, 0.15),
             backdropFilter: 'blur(10px)',
             mb: 3,
-            border: '3px solid rgba(255, 255, 255, 0.3)',
+            border: `3px solid ${addAlpha(COLORS.WHITE, 0.3)}`,
           }}>
-            <CheckIcon sx={{ fontSize: 48, color: '#ffffff' }} />
+            <CheckIcon sx={{ fontSize: 48, color: COLORS.WHITE }} />
           </Box>
           <Typography variant="h4" sx={{ 
-            color: '#ffffff',
+            color: COLORS.WHITE,
             fontWeight: 700,
             mb: 2,
-            textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+            textShadow: `0 2px 4px ${addAlpha(COLORS.BLACK, 0.3)}`,
           }}>
             {t('shopPayment.paymentSuccessful')}
           </Typography>
           <Typography variant="body1" sx={{ 
-            color: 'rgba(255, 255, 255, 0.9)',
+            color: addAlpha(COLORS.WHITE, 0.9),
             fontSize: '1.2rem',
             mb: 3,
           }}>
@@ -561,21 +561,21 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
           </Typography>
           {paymentReference && (
             <Box sx={{ 
-              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              backgroundColor: addAlpha(COLORS.WHITE, 0.1),
               backdropFilter: 'blur(10px)',
               borderRadius: 2,
               padding: 2,
               mb: 3,
-              border: '1px solid rgba(255, 255, 255, 0.2)',
+              border: `1px solid ${addAlpha(COLORS.WHITE, 0.2)}`,
             }}>
               <Typography variant="body2" sx={{ 
-                color: 'rgba(255, 255, 255, 0.8)',
+                color: addAlpha(COLORS.WHITE, 0.8),
                 mb: 0.5 
               }}>
                 {t('shopPayment.referenceNumber')}
               </Typography>
               <Typography variant="h6" sx={{ 
-                color: '#ffffff',
+                color: COLORS.WHITE,
                 fontWeight: 600,
                 fontFamily: 'monospace',
               }}>
@@ -585,11 +585,11 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
           )}
           <Box sx={{ mt: 3 }}>
             <CircularProgress size={32} sx={{ 
-              color: 'rgba(255, 255, 255, 0.8)',
+              color: addAlpha(COLORS.WHITE, 0.8),
               mb: 2,
             }} />
             <Typography variant="body2" sx={{ 
-              color: 'rgba(255, 255, 255, 0.9)',
+              color: addAlpha(COLORS.WHITE, 0.9),
               fontSize: '1rem',
             }}>
               {t('shopPayment.completingYourOrder')}
@@ -609,20 +609,20 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
       PaperProps={{
         sx: {
           borderRadius: 2,
-          bgcolor: '#f5f5f5',
+          bgcolor: COLORS.BG_DEFAULT,
         },
       }}
     >
       <Box sx={{ 
-        bgcolor: 'white', 
+        bgcolor: COLORS.WHITE, 
         m: 3, 
         borderRadius: 2,
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+        boxShadow: `0 1px 3px ${addAlpha(COLORS.BLACK, 0.1)}`
       }}>
         {/* Header Section */}
         <Box sx={{ 
           p: 3, 
-          borderBottom: '1px solid #e0e0e0',
+          borderBottom: `1px solid ${COLORS.BORDER_LIGHT}`,
           display: 'flex',
           alignItems: 'center',
           gap: 2
@@ -635,14 +635,14 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
             height: 48,
             borderRadius: '50%',
             bgcolor: (theme) => theme.palette.primary.light + '20',
-            border: '2px solid #2e7d32',
+            border: `2px solid ${COLORS.SUCCESS}`,
           }}>
             <PaymentIcon sx={{ color: (theme) => theme.palette.primary.main, fontSize: 28 }} />
           </Box>
           <Box>
             <Typography variant="h5" sx={{ 
               fontWeight: 700,
-              color: '#212121',
+              color: COLORS.TEXT_PRIMARY,
               mb: 0.5,
             }}>
               {t('shopPayment.completePayment')}
@@ -667,9 +667,9 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
           {/* Payment Method Selection */}
           <Typography variant="h6" sx={{ 
             mb: 3,
-            color: '#212121',
+            color: COLORS.TEXT_PRIMARY,
             fontWeight: 600,
-            borderLeft: '4px solid #2e7d32',
+            borderLeft: `4px solid ${COLORS.SUCCESS}`,
             pl: 2
           }}>
             {t('shopPayment.selectPaymentMethod')}
@@ -682,20 +682,20 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                   onClick={() => handlePaymentMethodSelect(method.value)}
                   sx={{
                     cursor: 'pointer',
-                    border: currentPaymentMethod === method.value ? '2px solid #2e7d32' : '1px solid #e0e0e0',
-                    bgcolor: currentPaymentMethod === method.value ? '#e8f5e9' : 'white',
+                    border: currentPaymentMethod === method.value ? `2px solid ${COLORS.SUCCESS}` : `1px solid ${COLORS.BORDER_LIGHT}`,
+                    bgcolor: currentPaymentMethod === method.value ? addAlpha(COLORS.SUCCESS, 0.1) : COLORS.WHITE,
                     boxShadow: 'none',
                     transition: 'all 0.2s',
                     '&:hover': {
-                      borderColor: currentPaymentMethod === method.value ? '#2e7d32' : '#bdbdbd',
-                      bgcolor: currentPaymentMethod === method.value ? '#e8f5e9' : '#f5f5f5',
+                      borderColor: currentPaymentMethod === method.value ? COLORS.SUCCESS : COLORS.SLATE_400,
+                      bgcolor: currentPaymentMethod === method.value ? addAlpha(COLORS.SUCCESS, 0.1) : COLORS.BG_DEFAULT,
                     },
                   }}
                 >
                   <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
                     <Box sx={{ textAlign: 'center' }}>
                       <Box sx={{ 
-                        color: currentPaymentMethod === method.value ? '#2e7d32' : '#616161',
+                        color: currentPaymentMethod === method.value ? COLORS.SUCCESS : COLORS.TEXT_SECONDARY,
                         fontSize: 36,
                         mb: 1,
                         display: 'flex',
@@ -705,7 +705,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                       </Box>
                       <Typography variant="subtitle2" sx={{ 
                         fontWeight: 600,
-                        color: currentPaymentMethod === method.value ? '#2e7d32' : '#212121',
+                        color: currentPaymentMethod === method.value ? COLORS.SUCCESS : COLORS.TEXT_PRIMARY,
                         mb: 0.5,
                       }}>
                         {method.label}
@@ -737,8 +737,8 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
         {/* Footer Actions */}
         <Box sx={{ 
           p: 3, 
-          borderTop: '1px solid #e0e0e0',
-          bgcolor: '#fafafa',
+          borderTop: `1px solid ${COLORS.BORDER_LIGHT}`,
+          bgcolor: COLORS.BG_LIGHT,
           display: 'flex',
           gap: 2,
           justifyContent: 'flex-end'
@@ -750,11 +750,11 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
             sx={{ 
               minWidth: 120,
               textTransform: 'none',
-              borderColor: '#e0e0e0',
-              color: '#616161',
+              borderColor: COLORS.BORDER_LIGHT,
+              color: COLORS.TEXT_SECONDARY,
               '&:hover': {
-                borderColor: '#bdbdbd',
-                bgcolor: '#fafafa'
+                borderColor: COLORS.SLATE_400,
+                bgcolor: COLORS.BG_LIGHT
               }
             }}
           >
@@ -770,11 +770,11 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
               textTransform: 'none',
               bgcolor: (theme) => theme.palette.primary.main,
               '&:hover': {
-                bgcolor: '#1b5e20',
+                bgcolor: theme.palette.primary.dark,
               },
               '&:disabled': {
-                bgcolor: '#ffccbc',
-                color: 'rgba(255, 255, 255, 0.7)',
+                bgcolor: COLORS.BG_WARNING_LIGHT,
+                color: addAlpha(COLORS.WHITE, 0.7),
               }
             }}
           >

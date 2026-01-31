@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getGradient } from '../theme/themeColors';
+import { COLORS, addAlpha, getGradient } from '../theme/themeColors';
 import { 
   Box, 
   Button, 
@@ -318,10 +318,10 @@ const LoginPage: React.FC = () => {
                     fontSize: '1.1rem',
                     fontWeight: 'bold',
                     background: 'primary.main',
-                    boxShadow: '0 4px 15px rgba(25, 118, 210, 0.3)',
+                    boxShadow: `0 4px 15px ${addAlpha(COLORS.PRIMARY, 0.3)}`,
                     '&:hover': {
                       background: 'primary.dark',
-                      boxShadow: '0 6px 20px rgba(25, 118, 210, 0.4)',
+                      boxShadow: `0 6px 20px ${addAlpha(COLORS.PRIMARY, 0.4)}`,
                       transform: 'translateY(-1px)',
                     },
                     '&:active': {
@@ -403,10 +403,10 @@ const LoginPage: React.FC = () => {
                     fontSize: '1.1rem',
                     fontWeight: 'bold',
                     background: 'secondary.main',
-                    boxShadow: '0 4px 15px rgba(156, 39, 176, 0.3)',
+                    boxShadow: `0 4px 15px ${addAlpha(COLORS.SECONDARY, 0.3)}`,
                     '&:hover': {
                       background: 'secondary.dark',
-                      boxShadow: '0 6px 20px rgba(156, 39, 176, 0.4)',
+                      boxShadow: `0 6px 20px ${addAlpha(COLORS.SECONDARY, 0.4)}`,
                       transform: 'translateY(-1px)',
                     },
                     '&:active': {
@@ -566,7 +566,7 @@ const LoginPage: React.FC = () => {
                         ? theme.palette.grey[700] 
                         : theme.palette.background.paper,
                       transform: 'translateY(-2px)',
-                      boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
+                      boxShadow: `0 4px 15px ${addAlpha(COLORS.BLACK, 0.1)}`,
                     },
                   }}
                 >
@@ -626,7 +626,7 @@ const LoginPage: React.FC = () => {
                         ? theme.palette.grey[700] 
                         : theme.palette.background.paper,
                       transform: 'translateY(-2px)',
-                      boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
+                      boxShadow: `0 4px 15px ${addAlpha(COLORS.BLACK, 0.1)}`,
                     },
                   }}
                 >
@@ -663,7 +663,7 @@ const LoginPage: React.FC = () => {
                         ? theme.palette.grey[700] 
                         : theme.palette.background.paper,
                       transform: 'translateY(-2px)',
-                      boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
+                      boxShadow: `0 4px 15px ${addAlpha(COLORS.BLACK, 0.1)}`,
                     },
                   }}
                 >

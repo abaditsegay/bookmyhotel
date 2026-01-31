@@ -52,7 +52,7 @@ import { formatDateForDisplay } from '../../utils/dateUtils';
 import BookingNotificationEvents from '../../utils/bookingNotificationEvents';
 import { TableRowSkeleton } from '../common/SkeletonLoaders';
 import { NoBookings } from '../common/EmptyState';
-import { COLORS } from '../../theme/themeColors';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 import PremiumTextField from '../common/PremiumTextField';
 import PremiumSelect from '../common/PremiumSelect';
 
@@ -83,6 +83,10 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
   const { themeMode } = useCustomTheme();
   const muiTheme = useTheme();
   const navigate = useNavigate();
+  const primaryMain = muiTheme.palette.primary.main;
+  const primaryLight = muiTheme.palette.primary.light;
+  const primaryDark = muiTheme.palette.primary.dark;
+  const dividerColor = muiTheme.palette.divider;
   
   // Memoize InputProps to prevent re-creation on every render
   const searchInputProps = React.useMemo(() => ({
@@ -791,16 +795,16 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
             onClick={exportToCSV}
             disabled={loading || bookings.length === 0}
             sx={{
-              borderColor: '#E8B86D',
-              color: '#B8860B',
+              borderColor: COLORS.SECONDARY,
+              color: COLORS.SECONDARY,
               fontWeight: 600,
               '&:hover': {
-                backgroundColor: 'rgba(232, 184, 109, 0.1)',
-                borderColor: '#B8860B'
+                backgroundColor: addAlpha(COLORS.SECONDARY, 0.1),
+                borderColor: COLORS.SECONDARY
               },
               '&:disabled': {
-                borderColor: '#e0e0e0',
-                color: '#9e9e9e'
+                borderColor: COLORS.BORDER_LIGHT,
+                color: COLORS.TEXT_DISABLED
               }
             }}
           >
@@ -812,16 +816,16 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
             onClick={() => loadBookings()}
             disabled={loading}
             sx={{
-              borderColor: '#E8B86D',
-              color: '#B8860B',
+              borderColor: COLORS.SECONDARY,
+              color: COLORS.SECONDARY,
               fontWeight: 600,
               '&:hover': {
-                backgroundColor: 'rgba(232, 184, 109, 0.1)',
-                borderColor: '#B8860B'
+                backgroundColor: addAlpha(COLORS.SECONDARY, 0.1),
+                borderColor: COLORS.SECONDARY
               },
               '&:disabled': {
-                borderColor: '#e0e0e0',
-                color: '#9e9e9e'
+                borderColor: COLORS.BORDER_LIGHT,
+                color: COLORS.TEXT_DISABLED
               }
             }}
           >
@@ -848,15 +852,15 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
         sx={{ 
           borderRadius: 4,
           boxShadow: themeMode === 'dark' 
-            ? '0 10px 40px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.2)'
-            : '0 10px 40px rgba(37, 99, 235, 0.12), 0 4px 16px rgba(37, 99, 235, 0.08)',
+            ? `0 10px 40px ${addAlpha(COLORS.BLACK, 0.3)}, 0 4px 16px ${addAlpha(COLORS.BLACK, 0.2)}`
+            : `0 10px 40px ${addAlpha(primaryMain, 0.12)}, 0 4px 16px ${addAlpha(primaryMain, 0.08)}`,
           border: themeMode === 'dark' 
-            ? '2px solid rgba(255, 255, 255, 0.1)'
-            : '2px solid #bfdbfe',
+            ? `2px solid ${addAlpha(COLORS.WHITE, 0.1)}`
+            : `2px solid ${addAlpha(primaryMain, 0.25)}`,
           overflow: 'hidden',
           background: themeMode === 'dark'
             ? muiTheme.palette.background.paper
-            : 'linear-gradient(180deg, #ffffff 0%, #f8faff 100%)'
+            : `linear-gradient(180deg, ${COLORS.BG_PAPER} 0%, ${COLORS.BG_LIGHT} 100%)`
         }}
       >
         <TableContainer 
@@ -870,7 +874,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
             <TableHead>
               <TableRow 
                 sx={{
-                  background: 'linear-gradient(135deg, #f5f5f5 0%, #fafafa 50%, #f5f5f5 100%)',
+                  background: `linear-gradient(135deg, ${COLORS.BG_DEFAULT} 0%, ${COLORS.BG_LIGHT} 50%, ${COLORS.BG_DEFAULT} 100%)`,
                   borderBottom: `2px solid ${COLORS.PRIMARY}`,
                   '& .MuiTableCell-head': {
                     color: COLORS.PRIMARY,
@@ -915,25 +919,25 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                       backgroundColor: index % 2 === 0 
                         ? muiTheme.palette.background.paper 
                         : themeMode === 'dark' 
-                          ? 'rgba(255, 255, 255, 0.02)' 
-                          : '#f8faff',
+                          ? addAlpha(COLORS.WHITE, 0.02) 
+                          : addAlpha(primaryMain, 0.04),
                       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                       '&:hover': {
                         backgroundColor: themeMode === 'dark'
-                          ? 'rgba(255, 255, 255, 0.08)'
-                          : '#dbeafe',
+                          ? addAlpha(COLORS.WHITE, 0.08)
+                          : addAlpha(primaryMain, 0.12),
                         transform: 'translateY(-2px)',
                         boxShadow: themeMode === 'dark'
-                          ? '0 8px 25px rgba(0, 0, 0, 0.4), 0 3px 10px rgba(0, 0, 0, 0.3)'
-                          : '0 8px 25px rgba(37, 99, 235, 0.15), 0 3px 10px rgba(37, 99, 235, 0.08)'
+                          ? `0 8px 25px ${addAlpha(COLORS.BLACK, 0.4)}, 0 3px 10px ${addAlpha(COLORS.BLACK, 0.3)}`
+                          : `0 8px 25px ${addAlpha(primaryMain, 0.15)}, 0 3px 10px ${addAlpha(primaryMain, 0.08)}`
                       },
                       '& .MuiTableCell-body': {
                         border: 'none',
                         padding: '18px 16px',
                         fontSize: '1rem',
                         borderBottom: themeMode === 'dark' 
-                          ? '1px solid rgba(255, 255, 255, 0.1)' 
-                          : '1px solid #e1e7ef'
+                          ? `1px solid ${addAlpha(COLORS.WHITE, 0.1)}` 
+                          : `1px solid ${dividerColor}`
                       }
                     }}
                   >
@@ -943,19 +947,19 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                         sx={{ 
                           fontFamily: 'monospace',
                           fontWeight: 700,
-                          color: themeMode === 'dark' ? '#60a5fa' : '#1e40af',
+                          color: themeMode === 'dark' ? primaryLight : primaryDark,
                           backgroundColor: themeMode === 'dark' 
-                            ? 'rgba(96, 165, 250, 0.1)' 
-                            : 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)',
+                            ? addAlpha(primaryMain, 0.1) 
+                            : `linear-gradient(135deg, ${addAlpha(primaryMain, 0.12)} 0%, ${addAlpha(primaryMain, 0.2)} 100%)`,
                           padding: '6px 12px',
                           borderRadius: '8px',
                           display: 'inline-block',
                           border: themeMode === 'dark' 
-                            ? '1px solid rgba(96, 165, 250, 0.3)' 
-                            : '1px solid #93c5fd',
+                            ? `1px solid ${addAlpha(primaryMain, 0.3)}` 
+                            : `1px solid ${addAlpha(primaryMain, 0.35)}`,
                           boxShadow: themeMode === 'dark'
-                            ? '0 2px 4px rgba(0, 0, 0, 0.3)'
-                            : '0 2px 4px rgba(37, 99, 235, 0.1)'
+                            ? `0 2px 4px ${addAlpha(COLORS.BLACK, 0.3)}`
+                            : `0 2px 4px ${addAlpha(primaryMain, 0.1)}`
                         }}
                       >
                         {booking.confirmationNumber}
@@ -967,7 +971,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                           variant="body2" 
                           fontWeight="600"
                           sx={{ 
-                            color: themeMode === 'dark' ? '#60a5fa' : '#1e40af', 
+                            color: themeMode === 'dark' ? primaryLight : primaryDark, 
                             mb: 0.5 
                           }}
                         >
@@ -1071,7 +1075,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                               },
                               '& .MuiOutlinedInput-root': {
                                 height: 40,
-                                backgroundColor: '#fafafa',
+                                backgroundColor: COLORS.BG_LIGHT,
                               },
                             }}
                           >
@@ -1089,9 +1093,9 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                             onClick={handlePaymentStatusCancel}
                             disabled={updatingPaymentStatus}
                             sx={{
-                              color: '#ef4444',
+                              color: muiTheme.palette.error.main,
                               '&:hover': {
-                                backgroundColor: '#fef2f2'
+                                backgroundColor: addAlpha(muiTheme.palette.error.main, 0.1)
                               }
                             }}
                           >
@@ -1121,8 +1125,8 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                                 '&:hover': {
                                   color: muiTheme.palette.primary.main,
                                   backgroundColor: themeMode === 'dark' 
-                                    ? 'rgba(255, 255, 255, 0.08)' 
-                                    : '#f3f4f6'
+                                    ? addAlpha(COLORS.WHITE, 0.08) 
+                                    : muiTheme.palette.action.hover
                                 }
                               }}
                             >
@@ -1143,8 +1147,8 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                           height: '32px',
                           borderRadius: '16px',
                           textTransform: 'capitalize',
-                          boxShadow: '0 2px 8px rgba(37, 99, 235, 0.15)',
-                          border: '1px solid rgba(37, 99, 235, 0.2)',
+                          boxShadow: `0 2px 8px ${addAlpha(primaryMain, 0.15)}`,
+                          border: `1px solid ${addAlpha(primaryMain, 0.2)}`,
                           '& .MuiChip-label': {
                             paddingX: '12px'
                           }
@@ -1159,14 +1163,14 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                               size="small"
                               onClick={() => handleViewBookingDetails(booking)}
                               sx={{
-                                backgroundColor: '#dbeafe',
-                                color: '#1e40af',
-                                border: '1px solid #93c5fd',
+                                backgroundColor: addAlpha(primaryMain, 0.12),
+                                color: primaryDark,
+                                border: `1px solid ${addAlpha(primaryMain, 0.35)}`,
                                 '&:hover': {
-                                  backgroundColor: '#2563eb',
-                                  color: '#ffffff',
+                                  backgroundColor: primaryMain,
+                                  color: COLORS.WHITE,
                                   transform: 'scale(1.15)',
-                                  boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)'
+                                  boxShadow: `0 4px 12px ${addAlpha(primaryMain, 0.3)}`
                                 },
                                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                               }}
@@ -1183,10 +1187,10 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                                     size="small" 
                                     onClick={() => handleBookingAction(booking, 'check-in')}
                                     sx={{
-                                      backgroundColor: '#ecfdf5',
-                                      color: '#10b981',
+                                      backgroundColor: addAlpha(muiTheme.palette.success.main, 0.1),
+                                      color: muiTheme.palette.success.main,
                                       '&:hover': {
-                                        backgroundColor: '#d1fae5',
+                                        backgroundColor: addAlpha(muiTheme.palette.success.main, 0.2),
                                         transform: 'scale(1.1)'
                                       },
                                       transition: 'all 0.2s ease'
@@ -1205,10 +1209,10 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                                       setCheckoutConfirmOpen(true);
                                     }}
                                     sx={{
-                                      backgroundColor: '#fef3c7',
-                                      color: '#f59e0b',
+                                      backgroundColor: addAlpha(muiTheme.palette.warning.main, 0.15),
+                                      color: muiTheme.palette.warning.main,
                                       '&:hover': {
-                                        backgroundColor: '#fde68a',
+                                        backgroundColor: addAlpha(muiTheme.palette.warning.main, 0.25),
                                         transform: 'scale(1.1)'
                                       },
                                       transition: 'all 0.2s ease'
@@ -1223,10 +1227,10 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                                   size="small"
                                   onClick={() => handlePrintReceipt(booking)}
                                   sx={{
-                                    backgroundColor: '#e0e7ff',
-                                    color: '#6366f1',
+                                    backgroundColor: addAlpha(muiTheme.palette.info.main, 0.15),
+                                    color: muiTheme.palette.info.main,
                                     '&:hover': {
-                                      backgroundColor: '#c7d2fe',
+                                      backgroundColor: addAlpha(muiTheme.palette.info.main, 0.25),
                                       transform: 'scale(1.1)'
                                     },
                                     transition: 'all 0.2s ease'
@@ -1273,10 +1277,10 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
             sx={{
               backgroundColor: themeMode === 'dark' 
                 ? muiTheme.palette.background.paper 
-                : '#f8fafc',
+                : COLORS.SLATE_50,
               borderTop: themeMode === 'dark' 
-                ? '1px solid rgba(255, 255, 255, 0.1)' 
-                : '1px solid #e5e7eb',
+                ? `1px solid ${addAlpha(COLORS.WHITE, 0.1)}` 
+                : `1px solid ${COLORS.DIVIDER}`,
               '& .MuiTablePagination-toolbar': {
                 padding: '12px 24px',
                 color: muiTheme.palette.text.primary,
@@ -1290,16 +1294,16 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                 textTransform: 'uppercase'
               },
               '& .MuiTablePagination-select': {
-                backgroundColor: '#fafafa',
-                border: '1px solid #d1d5db',
-                borderLeft: `3px solid ${COLORS.GOLD || '#E8B86D'}`,
+                backgroundColor: COLORS.BG_LIGHT,
+                border: `1px solid ${COLORS.BORDER_DEFAULT}`,
+                borderLeft: `3px solid ${COLORS.SECONDARY}`,
                 borderRadius: '6px',
                 padding: '6px 10px',
                 color: COLORS.PRIMARY,
                 fontWeight: 600,
                 minHeight: 38,
                 '&:hover': {
-                  borderColor: '#c7c7c7'
+                  borderColor: COLORS.BORDER_DEFAULT
                 },
                 '&:focus': {
                   borderColor: COLORS.PRIMARY,
@@ -1307,24 +1311,24 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                 }
               },
               '& .MuiTablePagination-actions button': {
-                color: themeMode === 'dark' ? '#60a5fa' : '#667eea',
+                color: themeMode === 'dark' ? primaryLight : primaryMain,
                 backgroundColor: themeMode === 'dark' 
-                  ? 'rgba(96, 165, 250, 0.1)' 
-                  : '#f0f4ff',
+                  ? addAlpha(primaryMain, 0.1) 
+                  : addAlpha(primaryMain, 0.08),
                 borderRadius: '6px',
                 margin: '0 2px',
                 transition: 'all 0.2s ease',
                 '&:hover': {
                   backgroundColor: themeMode === 'dark' 
-                    ? 'rgba(96, 165, 250, 0.2)' 
-                    : '#e0e7ff',
+                    ? addAlpha(primaryMain, 0.2) 
+                    : addAlpha(primaryMain, 0.15),
                   transform: 'scale(1.05)'
                 },
                 '&.Mui-disabled': {
                   color: muiTheme.palette.text.disabled,
                   backgroundColor: themeMode === 'dark' 
-                    ? 'rgba(255, 255, 255, 0.05)' 
-                    : '#f3f4f6'
+                    ? addAlpha(COLORS.WHITE, 0.05) 
+                    : muiTheme.palette.action.disabledBackground
                 }
               }
             }}

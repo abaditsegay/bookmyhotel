@@ -63,15 +63,15 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
     <Card 
       sx={{ 
         height: '100%',
-        backgroundColor: '#ffffff',
-        border: '2px solid #E8B86D',
+        backgroundColor: COLORS.WHITE,
+        border: `2px solid ${COLORS.SECONDARY}`,
         borderRadius: 2,
-        boxShadow: '0 4px 12px rgba(232, 184, 109, 0.15)',
+        boxShadow: `0 4px 12px ${addAlpha(COLORS.SECONDARY, 0.15)}`,
         transition: 'all 0.3s ease-in-out',
         '&:hover': {
           transform: 'translateY(-8px)',
-          boxShadow: '0 8px 20px rgba(232, 184, 109, 0.25)',
-          borderColor: '#d4a45a',
+          boxShadow: `0 8px 20px ${addAlpha(COLORS.SECONDARY, 0.25)}`,
+          borderColor: COLORS.SECONDARY_HOVER,
         },
       }}
     >
@@ -101,7 +101,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
                 sx={{ 
                   fontWeight: 'bold',
                   fontSize: isSmallMobile ? '0.95rem' : undefined,
-                  color: '#2c5282',
+                  color: COLORS.PRIMARY,
                 }}
               >
                 Room {room.roomNumber}
@@ -123,8 +123,8 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
             <Box sx={{ 
               textAlign: 'center',
               p: 1.5,
-              backgroundColor: 'rgba(232, 184, 109, 0.1)',
-              border: '2px solid #E8B86D',
+              backgroundColor: addAlpha(COLORS.SECONDARY, 0.1),
+              border: `2px solid ${COLORS.SECONDARY}`,
               borderRadius: 1,
             }}>
               <Typography 
@@ -150,7 +150,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
           /* Desktop Layout - Side by Side */
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}>
             <Box>
-              <Typography variant="subtitle1" component="h3" gutterBottom sx={{ fontWeight: 'bold', color: '#2c5282' }}>
+              <Typography variant="subtitle1" component="h3" gutterBottom sx={{ fontWeight: 'bold', color: COLORS.PRIMARY }}>
                 Room {room.roomNumber}
               </Typography>
               <Chip 
@@ -292,14 +292,14 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
                 mb: isMobile ? 0.5 : 1,
                 fontSize: isMobile ? '0.8rem' : '0.875rem',
                 py: isMobile ? 0.8 : 1,
-                backgroundColor: '#2c5282',
-                color: '#ffffff',
-                border: '2px solid #E8B86D',
-                boxShadow: '0 2px 8px rgba(232, 184, 109, 0.2)',
+                backgroundColor: COLORS.PRIMARY,
+                color: COLORS.WHITE,
+                border: `2px solid ${COLORS.SECONDARY}`,
+                boxShadow: `0 2px 8px ${addAlpha(COLORS.SECONDARY, 0.2)}`,
                 '&:hover': {
-                  backgroundColor: '#1e3a5f',
-                  borderColor: '#d4a45a',
-                  boxShadow: '0 4px 12px rgba(232, 184, 109, 0.3)',
+                  backgroundColor: COLORS.PRIMARY_HOVER,
+                  borderColor: COLORS.SECONDARY_HOVER,
+                  boxShadow: `0 4px 12px ${addAlpha(COLORS.SECONDARY, 0.3)}`,
                 },
               }}
             >
@@ -318,14 +318,14 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
                   fontWeight: 700,
                   fontSize: isMobile ? '0.8rem' : '0.875rem',
                   py: isMobile ? 0.8 : 1,
-                  backgroundColor: '#2c5282',
-                  color: '#ffffff',
-                  border: '2px solid #E8B86D',
-                  boxShadow: '0 2px 8px rgba(232, 184, 109, 0.2)',
+                  backgroundColor: COLORS.PRIMARY,
+                  color: COLORS.WHITE,
+                  border: `2px solid ${COLORS.SECONDARY}`,
+                  boxShadow: `0 2px 8px ${addAlpha(COLORS.SECONDARY, 0.2)}`,
                   '&:hover': {
-                    backgroundColor: '#1e3a5f',
-                    borderColor: '#d4a45a',
-                    boxShadow: '0 4px 12px rgba(232, 184, 109, 0.3)',
+                    backgroundColor: COLORS.PRIMARY_HOVER,
+                    borderColor: COLORS.SECONDARY_HOVER,
+                    boxShadow: `0 4px 12px ${addAlpha(COLORS.SECONDARY, 0.3)}`,
                   },
                 }}
               >
@@ -341,13 +341,13 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
                   fontWeight: 700,
                   fontSize: isMobile ? '0.75rem' : '0.8rem',
                   py: isMobile ? 0.6 : 0.8,
-                  borderColor: '#E8B86D',
-                  color: '#2c5282',
-                  border: '2px solid #E8B86D',
+                  borderColor: COLORS.SECONDARY,
+                  color: COLORS.PRIMARY,
+                  border: `2px solid ${COLORS.SECONDARY}`,
                   '&:hover': {
-                    backgroundColor: 'rgba(232, 184, 109, 0.1)',
-                    borderColor: '#d4a45a',
-                    color: '#1e3a5f',
+                    backgroundColor: addAlpha(COLORS.SECONDARY, 0.1),
+                    borderColor: COLORS.SECONDARY_HOVER,
+                    color: COLORS.PRIMARY_HOVER,
                   },
                 }}
               >

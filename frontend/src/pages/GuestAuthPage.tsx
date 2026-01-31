@@ -16,6 +16,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { API_CONFIG } from '../config/apiConfig';
 import { useTheme, alpha } from '@mui/material/styles';
+import { COLORS, addAlpha, getGradient } from '../theme/themeColors';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -244,7 +245,7 @@ const GuestAuthPage: React.FC = () => {
           justifyContent: 'center',
           py: 4,
           background: theme.palette.mode === 'light' 
-            ? 'linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%)'
+            ? getGradient('white')
             : `linear-gradient(135deg, ${alpha(theme.palette.primary.dark, 0.1)} 0%, transparent 100%)`,
         }}
       >
@@ -254,11 +255,11 @@ const GuestAuthPage: React.FC = () => {
             width: '100%', 
             maxWidth: 500,
             boxShadow: theme.palette.mode === 'light' 
-              ? '0 2px 8px rgba(232, 184, 109, 0.1)'
+              ? `0 2px 8px ${addAlpha(COLORS.SECONDARY, 0.1)}`
               : `0 8px 32px -4px ${alpha(theme.palette.primary.main, 0.25)}`,
             border: theme.palette.mode === 'dark' 
               ? `1px solid ${alpha(theme.palette.primary.main, 0.3)}`
-              : '1px solid #E8B86D',
+              : `1px solid ${COLORS.SECONDARY}`,
             borderRadius: 3,
             overflow: 'hidden',
             position: 'relative',
@@ -269,7 +270,7 @@ const GuestAuthPage: React.FC = () => {
               left: 0,
               right: 0,
               height: 4,
-              background: 'linear-gradient(90deg, #E8B86D 0%, #d4a45a 100%)',
+              background: `linear-gradient(90deg, ${COLORS.SECONDARY} 0%, ${COLORS.SECONDARY_HOVER} 100%)`,
               zIndex: 1,
             },
           }}
@@ -282,7 +283,7 @@ const GuestAuthPage: React.FC = () => {
               align="center"
               sx={{
                 fontWeight: 'bold',
-                color: '#2c5282',
+                color: COLORS.PRIMARY,
                 mb: 1,
               }}
             >
@@ -304,10 +305,10 @@ const GuestAuthPage: React.FC = () => {
 
             <Box 
               sx={{ 
-                borderBottom: '2px solid #E8B86D', 
+                borderBottom: `2px solid ${COLORS.SECONDARY}`, 
                 mt: 3,
                 '& .MuiTabs-indicator': {
-                  backgroundColor: '#E8B86D',
+                  backgroundColor: COLORS.SECONDARY,
                   height: 3,
                 },
               }}
@@ -324,12 +325,12 @@ const GuestAuthPage: React.FC = () => {
                     fontSize: '1rem',
                     color: theme.palette.text.secondary,
                     '&:hover': {
-                      color: '#2c5282',
-                      backgroundColor: '#fafafa',
+                      color: COLORS.PRIMARY,
+                      backgroundColor: COLORS.BG_LIGHT,
                     },
                   },
                   '& .Mui-selected': {
-                    color: '#2c5282',
+                    color: COLORS.PRIMARY,
                     fontWeight: 700,
                   },
                 }}
@@ -386,12 +387,12 @@ const GuestAuthPage: React.FC = () => {
                     fontWeight: 600,
                     textTransform: 'none',
                     borderRadius: 2,
-                    backgroundColor: '#2c5282',
-                    border: '2px solid #E8B86D',
-                    color: '#ffffff',
+                    backgroundColor: COLORS.PRIMARY,
+                    border: `2px solid ${COLORS.SECONDARY}`,
+                    color: COLORS.WHITE,
                     '&:hover': {
-                      backgroundColor: '#1e3a5f',
-                      borderColor: '#d4a45a',
+                      backgroundColor: COLORS.PRIMARY_HOVER,
+                      borderColor: COLORS.SECONDARY_HOVER,
                       transform: 'translateY(-1px)',
                     },
                     '&:active': {
@@ -401,7 +402,7 @@ const GuestAuthPage: React.FC = () => {
                     '&:disabled': {
                       background: theme.palette.action.disabledBackground,
                       color: theme.palette.action.disabled,
-                      border: '2px solid rgba(0,0,0,0.12)',
+                      border: `2px solid ${addAlpha(COLORS.BLACK, 0.12)}`,
                     },
                     transition: 'all 0.2s ease',
                   }}
@@ -422,11 +423,11 @@ const GuestAuthPage: React.FC = () => {
                     textTransform: 'none',
                     borderRadius: 2,
                     borderWidth: 2,
-                    borderColor: '#E8B86D',
-                    color: '#2c5282',
+                    borderColor: COLORS.SECONDARY,
+                    color: COLORS.PRIMARY,
                     '&:hover': {
-                      borderColor: '#d4a45a',
-                      backgroundColor: '#fafafa',
+                      borderColor: COLORS.SECONDARY_HOVER,
+                      backgroundColor: COLORS.BG_LIGHT,
                       borderWidth: 2,
                       transform: 'translateY(-1px)',
                     },
@@ -516,12 +517,12 @@ const GuestAuthPage: React.FC = () => {
                     fontWeight: 600,
                     textTransform: 'none',
                     borderRadius: 2,
-                    backgroundColor: '#2c5282',
-                    color: '#ffffff',
-                    border: '2px solid #E8B86D',
+                    backgroundColor: COLORS.PRIMARY,
+                    color: COLORS.WHITE,
+                    border: `2px solid ${COLORS.SECONDARY}`,
                     '&:hover': {
-                      backgroundColor: '#1e3a5f',
-                      borderColor: '#d4a45a',
+                      backgroundColor: COLORS.PRIMARY_HOVER,
+                      borderColor: COLORS.SECONDARY_HOVER,
                       transform: 'translateY(-1px)',
                     },
                     '&:active': {
@@ -531,7 +532,7 @@ const GuestAuthPage: React.FC = () => {
                     '&:disabled': {
                       background: theme.palette.action.disabledBackground,
                       color: theme.palette.action.disabled,
-                      border: '2px solid rgba(0,0,0,0.12)',
+                      border: `2px solid ${addAlpha(COLORS.BLACK, 0.12)}`,
                     },
                     transition: 'all 0.2s ease',
                   }}
@@ -549,14 +550,14 @@ const GuestAuthPage: React.FC = () => {
                   component="button" 
                   onClick={() => setTabValue(1)}
                   sx={{
-                    color: '#2c5282',
+                    color: COLORS.PRIMARY,
                     fontWeight: 600,
                     textDecoration: 'underline',
-                    textDecorationColor: '#E8B86D',
+                    textDecorationColor: COLORS.SECONDARY,
                     transition: 'all 0.2s ease',
                     '&:hover': {
-                      textDecorationColor: '#d4a45a',
-                      color: '#1e3a5f',
+                      textDecorationColor: COLORS.SECONDARY_HOVER,
+                      color: COLORS.PRIMARY_HOVER,
                     },
                   }}
                 >
@@ -567,14 +568,14 @@ const GuestAuthPage: React.FC = () => {
                   component="button" 
                   onClick={() => setTabValue(0)}
                   sx={{
-                    color: '#2c5282',
+                    color: COLORS.PRIMARY,
                     fontWeight: 600,
                     textDecoration: 'underline',
-                    textDecorationColor: '#E8B86D',
+                    textDecorationColor: COLORS.SECONDARY,
                     transition: 'all 0.2s ease',
                     '&:hover': {
-                      textDecorationColor: '#d4a45a',
-                      color: '#1e3a5f',
+                      textDecorationColor: COLORS.SECONDARY_HOVER,
+                      color: COLORS.PRIMARY_HOVER,
                     },
                   }}
                 >
