@@ -25,7 +25,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { Todo, useTodoApi } from '../../services/todoApi';
-import { COLORS } from '../../theme/themeColors';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 
 interface TodosWidgetProps {
   width?: string | number;
@@ -128,10 +128,10 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
   const getPriorityColor = (severity: string) => {
     const normalizedSeverity = severity?.toUpperCase();
     switch (normalizedSeverity) {
-      case 'HIGH': return '#f44336'; // Red
-      case 'MEDIUM': return '#ff9800'; // Orange
-      case 'LOW': return '#4caf50'; // Green
-      default: return '#9e9e9e'; // Gray
+      case 'HIGH': return COLORS.ERROR; // Red
+      case 'MEDIUM': return COLORS.WARNING; // Orange
+      case 'LOW': return COLORS.SUCCESS; // Green
+      default: return COLORS.TEXT_DISABLED; // Gray
     }
   };
 
@@ -159,12 +159,12 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
         height,
         display: 'flex',
         flexDirection: 'column',
-        background: 'linear-gradient(165deg, #ffffff 0%, #fafbfd 60%, #f6f8ff 100%)',
+        background: `linear-gradient(165deg, ${COLORS.WHITE} 0%, ${addAlpha(COLORS.PRIMARY, 0.02)} 60%, ${addAlpha(COLORS.PRIMARY, 0.06)} 100%)`,
         p: 2.5,
         borderRadius: 3,
         overflow: 'hidden',
         border: `1px solid ${alpha(COLORS.PRIMARY, 0.06)}`,
-        boxShadow: '0 10px 22px rgba(26, 54, 93, 0.06)',
+        boxShadow: `0 10px 22px ${addAlpha(COLORS.PRIMARY, 0.06)}`,
       }}
     >
       {/* Header */}
@@ -184,7 +184,7 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
 
       {/* Error display */}
       {error && (
-        <Typography color="error" variant="body2" sx={{ mb: 1, color: '#ef9a9a' }}>
+        <Typography color="error" variant="body2" sx={{ mb: 1, color: addAlpha(COLORS.ERROR, 0.6) }}>
           {error}
         </Typography>
       )}
@@ -205,7 +205,7 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
             width: '100%', 
             mb: 1,
             '& .MuiOutlinedInput-root': {
-              backgroundColor: '#ffffff',
+              backgroundColor: COLORS.WHITE,
               '& fieldset': {
                 borderColor: alpha(COLORS.PRIMARY, 0.12),
               },
@@ -231,7 +231,7 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
             sx={{ 
               minWidth: 100,
               '& .MuiOutlinedInput-root': {
-                backgroundColor: '#ffffff',
+                backgroundColor: COLORS.WHITE,
                 '& fieldset': {
                   borderColor: alpha(COLORS.PRIMARY, 0.12),
                 },
@@ -333,13 +333,13 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
                   borderRadius: 1.5,
                   mb: 1.2,
                   backgroundColor: todo.completed 
-                    ? 'rgba(26, 54, 93, 0.04)'
-                    : 'rgba(26, 54, 93, 0.06)',
+                    ? addAlpha(COLORS.PRIMARY, 0.04)
+                    : addAlpha(COLORS.PRIMARY, 0.06),
                   transition: 'all 0.2s ease',
                   '&:hover': {
                     backgroundColor: todo.completed
-                        ? 'rgba(26, 54, 93, 0.07)'
-                        : 'rgba(26, 54, 93, 0.1)',
+                        ? addAlpha(COLORS.PRIMARY, 0.07)
+                        : addAlpha(COLORS.PRIMARY, 0.1),
                   },
                   cursor: 'pointer'
                 }}
@@ -370,9 +370,9 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
                     todo.id && handleDeleteTodo(todo.id);
                   }}
                   sx={{
-                    color: '#ef9a9a',
+                    color: addAlpha(COLORS.ERROR, 0.6),
                     '&:hover': {
-                      backgroundColor: 'rgba(239, 154, 154, 0.12)',
+                      backgroundColor: addAlpha(COLORS.ERROR, 0.12),
                     },
                   }}
                 >

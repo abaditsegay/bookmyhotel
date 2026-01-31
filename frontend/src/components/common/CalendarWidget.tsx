@@ -14,7 +14,7 @@ import {
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
-import { COLORS } from '../../theme/themeColors';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 
 interface CalendarEvent {
   id: string;
@@ -194,9 +194,9 @@ const CalendarWidget: React.FC = () => {
         overflow: 'hidden',
         position: 'relative',
         zIndex: 'auto',
-        background: 'linear-gradient(140deg, #ffffff 0%, #f7f9ff 55%, #f1f5ff 100%)',
+        background: `linear-gradient(140deg, ${COLORS.WHITE} 0%, ${addAlpha(COLORS.PRIMARY, 0.06)} 55%, ${addAlpha(COLORS.PRIMARY, 0.12)} 100%)`,
         border: `1px solid ${alpha(COLORS.PRIMARY, 0.08)}`,
-        boxShadow: '0 10px 22px rgba(26, 54, 93, 0.08)',
+        boxShadow: `0 10px 22px ${addAlpha(COLORS.PRIMARY, 0.08)}`,
       }}
     >
       {/* Month Navigation Header */}
@@ -262,7 +262,7 @@ const CalendarWidget: React.FC = () => {
       <Box
         sx={{
           display: 'flex',
-            backgroundColor: '#f8fafc',
+            backgroundColor: COLORS.SLATE_50,
             borderBottom: `1px solid ${alpha(COLORS.PRIMARY, 0.08)}`,
         }}
       >

@@ -1,6 +1,7 @@
 import React from 'react';
 import { TextField, TextFieldProps } from '@mui/material';
 import { designSystem } from '../../theme/designSystem';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 
 interface StandardTextFieldProps extends Omit<TextFieldProps, 'size'> {
   fieldSize?: 'small' | 'medium';
@@ -73,20 +74,20 @@ const StandardTextField: React.FC<StandardTextFieldProps> = ({
           
           // Default state
           '& fieldset': {
-            borderColor: 'rgba(0, 0, 0, 0.12)',
+            borderColor: addAlpha(COLORS.BLACK, 0.12),
             borderWidth: '1px',
           },
           
           // Hover state
           '&:hover fieldset': {
-            borderColor: 'rgba(0, 0, 0, 0.25)',
+            borderColor: addAlpha(COLORS.BLACK, 0.25),
             borderWidth: '1px',
           },
           
           // Focus state
           '&.Mui-focused fieldset': {
             borderWidth: '2px',
-            boxShadow: '0 0 0 1px rgba(25, 118, 210, 0.2)',
+            boxShadow: `0 0 0 1px ${addAlpha(COLORS.CONFIRMED, 0.2)}`,
           },
           
           // Error state
@@ -110,10 +111,10 @@ const StandardTextField: React.FC<StandardTextFieldProps> = ({
         // Standard variant styling  
         '& .MuiInput-root': {
           '&:before': {
-            borderBottomColor: 'rgba(0, 0, 0, 0.12)',
+            borderBottomColor: addAlpha(COLORS.BLACK, 0.12),
           },
           '&:hover:before': {
-            borderBottomColor: 'rgba(0, 0, 0, 0.25)',
+            borderBottomColor: addAlpha(COLORS.BLACK, 0.25),
           },
         },
         

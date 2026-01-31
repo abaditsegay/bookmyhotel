@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { ThemeProvider as MuiThemeProvider, createTheme } from '@mui/material/styles';
 import extendedTheme from '../theme/theme';
+import { darkTheme } from '../theme/themes';
 
 export type ThemeMode = 'light' | 'dark';
 
@@ -49,12 +50,12 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
       mode: themeMode,
       ...(themeMode === 'dark' && {
         background: {
-          default: '#121212',
-          paper: '#1e1e1e',
+          default: darkTheme.palette.background.default,
+          paper: darkTheme.palette.background.paper,
         },
         text: {
-          primary: '#ffffff',
-          secondary: '#b3b3b3',
+          primary: darkTheme.palette.text.primary,
+          secondary: darkTheme.palette.text.secondary,
         },
       }),
     },

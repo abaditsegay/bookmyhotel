@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { COLORS } from '../../theme/themeColors';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 import {
   Box,
   Grid,
@@ -494,7 +494,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
         border: '1px solid',
         borderColor: 'divider',
         borderRadius: 3,
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)'
+        boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.08)}`
       }}>
         <CardContent sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
           <Box sx={{ 
@@ -504,11 +504,11 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
             mb: 3,
             gap: { xs: 2, sm: 0 },
             pb: 2,
-            borderBottom: '2px solid #E8B86D'
+            borderBottom: `2px solid ${COLORS.SECONDARY}`
           }}>
             <Typography 
               variant={isMobile ? "h6" : "h5"}
-              sx={{ mb: { xs: 1, sm: 0 }, fontWeight: 700, color: '#333' }}
+              sx={{ mb: { xs: 1, sm: 0 }, fontWeight: 700, color: COLORS.TEXT_PRIMARY }}
             >
               {isHousekeepingStaff() ? 'My Tasks' : 'All Tasks'} ({filteredTasks.length} of {tasks.length} tasks)
             </Typography>
@@ -527,11 +527,11 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                     disabled={loading}
                     size={isMobile ? "small" : "medium"}
                     sx={{
-                      backgroundColor: '#E8B86D',
-                      color: 'white',
+                      backgroundColor: COLORS.SECONDARY,
+                      color: COLORS.WHITE,
                       fontWeight: 600,
                       '&:hover': {
-                        backgroundColor: '#B8860B'
+                        backgroundColor: COLORS.SECONDARY_HOVER
                       }
                     }}
                   >
@@ -543,12 +543,12 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                     disabled={loading}
                     size={isMobile ? "small" : "medium"}
                     sx={{
-                      borderColor: '#E8B86D',
-                      color: '#B8860B',
+                      borderColor: COLORS.SECONDARY,
+                      color: COLORS.SECONDARY,
                       fontWeight: 600,
                       '&:hover': {
-                        borderColor: '#B8860B',
-                        backgroundColor: 'rgba(232, 184, 109, 0.08)'
+                        borderColor: COLORS.SECONDARY_HOVER,
+                        backgroundColor: addAlpha(COLORS.SECONDARY, 0.08)
                       }
                     }}
                   >
@@ -562,11 +562,11 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                 size={isMobile ? "small" : "medium"}
                 startIcon={<RefreshIcon />}
                 sx={{
-                  borderColor: '#e0e0e0',
-                  color: '#666',
+                  borderColor: COLORS.BORDER_LIGHT,
+                  color: COLORS.TEXT_SECONDARY,
                   '&:hover': {
-                    borderColor: '#E8B86D',
-                    backgroundColor: 'rgba(232, 184, 109, 0.08)'
+                    borderColor: COLORS.SECONDARY,
+                    backgroundColor: addAlpha(COLORS.SECONDARY, 0.08)
                   }
                 }}
               >
@@ -584,7 +584,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
               flexWrap: 'wrap', 
               alignItems: 'center',
               p: 2.5,
-              backgroundColor: '#fafafa',
+              backgroundColor: COLORS.BG_LIGHT,
               borderRadius: 2,
               border: '1px solid',
               borderColor: 'divider'
@@ -646,14 +646,14 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                   setFilterStatus('all');
                 }}
                 sx={{
-                  borderColor: '#e0e0e0',
-                  color: '#666',
+                  borderColor: COLORS.BORDER_LIGHT,
+                  color: COLORS.TEXT_SECONDARY,
                   fontWeight: 600,
                   px: 2,
                   '&:hover': {
-                    borderColor: '#E8B86D',
-                    backgroundColor: 'rgba(232, 184, 109, 0.08)',
-                    color: '#B8860B'
+                    borderColor: COLORS.SECONDARY,
+                    backgroundColor: addAlpha(COLORS.SECONDARY, 0.08),
+                    color: COLORS.SECONDARY
                   }
                 }}
               >
@@ -784,7 +784,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                     <TableHead>
                       <TableRow
                         sx={{
-                          background: 'linear-gradient(135deg, #f5f5f5 0%, #fafafa 50%, #f5f5f5 100%)',
+                          background: `linear-gradient(135deg, ${COLORS.BG_DEFAULT} 0%, ${COLORS.BG_LIGHT} 50%, ${COLORS.BG_DEFAULT} 100%)`,
                           borderBottom: `2px solid ${COLORS.PRIMARY}`,
                           '& .MuiTableCell-head': {
                             color: COLORS.PRIMARY,
@@ -957,18 +957,18 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
         PaperProps={{
           sx: {
             borderRadius: 3,
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)'
+            boxShadow: `0 8px 32px ${addAlpha(COLORS.BLACK, 0.12)}`
           }
         }}
       >
         <DialogTitle sx={{ 
-          borderBottom: '2px solid #E8B86D',
+          borderBottom: `2px solid ${COLORS.SECONDARY}`,
           pb: 2,
-          background: 'linear-gradient(135deg, #fafafa 0%, #ffffff 100%)'
+          background: `linear-gradient(135deg, ${COLORS.BG_LIGHT} 0%, ${COLORS.WHITE} 100%)`
         }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <AssignmentIcon sx={{ fontSize: 28, color: '#B8860B' }} />
-            <Typography variant="h5" sx={{ fontWeight: 700, color: '#333' }}>
+            <AssignmentIcon sx={{ fontSize: 28, color: COLORS.SECONDARY }} />
+            <Typography variant="h5" sx={{ fontWeight: 700, color: COLORS.TEXT_PRIMARY }}>
               {isViewOnlyMode 
                 ? 'Task Details'
                 : isHousekeepingStaff() 
@@ -983,7 +983,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
             <Box>
               {/* Task Title */}
               <Box sx={{ mb: 3 }}>
-                <Typography variant="h6" sx={{ fontWeight: 700, color: '#333', mb: 2 }}>
+                <Typography variant="h6" sx={{ fontWeight: 700, color: COLORS.TEXT_PRIMARY, mb: 2 }}>
                   {selectedTask.title}
                 </Typography>
                 <Divider sx={{ mb: 2 }} />
@@ -1022,10 +1022,10 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                         sx={{ 
                           fontWeight: 600,
                           width: 'fit-content',
-                          backgroundColor: selectedTask.status.toLowerCase() === 'completed' ? '#4caf50' :
-                                         selectedTask.status.toLowerCase() === 'in_progress' ? '#2196f3' :
-                                         selectedTask.status.toLowerCase() === 'pending' ? '#ff9800' : '#666',
-                          color: 'white'
+                          backgroundColor: selectedTask.status.toLowerCase() === 'completed' ? COLORS.SUCCESS :
+                                         selectedTask.status.toLowerCase() === 'in_progress' ? COLORS.CONFIRMED :
+                                         selectedTask.status.toLowerCase() === 'pending' ? COLORS.WARNING : COLORS.TEXT_SECONDARY,
+                          color: COLORS.WHITE
                         }}
                       />
                     </Box>
@@ -1165,11 +1165,11 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
             }}
             variant="outlined"
             sx={{
-              borderColor: '#e0e0e0',
-              color: '#666',
+              borderColor: COLORS.BORDER_LIGHT,
+              color: COLORS.TEXT_SECONDARY,
               '&:hover': {
-                borderColor: '#E8B86D',
-                backgroundColor: 'rgba(232, 184, 109, 0.08)'
+                borderColor: COLORS.SECONDARY,
+                backgroundColor: addAlpha(COLORS.SECONDARY, 0.08)
               }
             }}
           >
@@ -1185,12 +1185,12 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                   variant="contained"
                   startIcon={<PlayArrowIcon />}
                   sx={{
-                    backgroundColor: '#2196f3',
-                    color: 'white',
+                    backgroundColor: COLORS.CONFIRMED,
+                    color: COLORS.WHITE,
                     fontWeight: 600,
                     px: 3,
                     '&:hover': {
-                      backgroundColor: '#1976d2'
+                      backgroundColor: COLORS.INFO
                     }
                   }}
                 >
@@ -1203,12 +1203,12 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                   variant="contained"
                   startIcon={<CheckCircleIcon />}
                   sx={{
-                    backgroundColor: '#4caf50',
-                    color: 'white',
+                    backgroundColor: COLORS.SUCCESS,
+                    color: COLORS.WHITE,
                     fontWeight: 600,
                     px: 3,
                     '&:hover': {
-                      backgroundColor: '#388e3c'
+                      backgroundColor: addAlpha(COLORS.SUCCESS, 0.9)
                     }
                   }}
                 >
@@ -1259,18 +1259,18 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
         PaperProps={{
           sx: {
             borderRadius: 3,
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)'
+            boxShadow: `0 8px 32px ${addAlpha(COLORS.BLACK, 0.12)}`
           }
         }}
       >
         <DialogTitle sx={{ 
-          borderBottom: '2px solid #E8B86D',
+          borderBottom: `2px solid ${COLORS.SECONDARY}`,
           pb: 2,
-          background: 'linear-gradient(135deg, #fafafa 0%, #ffffff 100%)'
+          background: `linear-gradient(135deg, ${COLORS.BG_LIGHT} 0%, ${COLORS.WHITE} 100%)`
         }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <AddTaskIcon sx={{ fontSize: 28, color: '#B8860B' }} />
-            <Typography variant="h5" sx={{ fontWeight: 700, color: '#333' }}>
+            <AddTaskIcon sx={{ fontSize: 28, color: COLORS.SECONDARY }} />
+            <Typography variant="h5" sx={{ fontWeight: 700, color: COLORS.TEXT_PRIMARY }}>
               Create New Housekeeping Task
             </Typography>
           </Box>
@@ -1440,11 +1440,11 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
             onClick={() => setAddTaskDialog(false)}
             variant="outlined"
             sx={{
-              borderColor: '#e0e0e0',
-              color: '#666',
+              borderColor: COLORS.BORDER_LIGHT,
+              color: COLORS.TEXT_SECONDARY,
               '&:hover': {
-                borderColor: '#E8B86D',
-                backgroundColor: 'rgba(232, 184, 109, 0.08)'
+                borderColor: COLORS.SECONDARY,
+                backgroundColor: addAlpha(COLORS.SECONDARY, 0.08)
               }
             }}
           >
@@ -1456,16 +1456,16 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
             disabled={loading || !newTask.title.trim() || !newTask.description.trim() || !newTask.dueDate || !newTask.roomNumber?.trim()}
             startIcon={<AddTaskIcon />}
             sx={{
-              backgroundColor: '#E8B86D',
-              color: 'white',
+              backgroundColor: COLORS.SECONDARY,
+              color: COLORS.WHITE,
               fontWeight: 600,
               px: 3,
               '&:hover': {
-                backgroundColor: '#B8860B'
+                backgroundColor: COLORS.SECONDARY_HOVER
               },
               '&:disabled': {
-                backgroundColor: '#e0e0e0',
-                color: '#999'
+                backgroundColor: COLORS.BORDER_LIGHT,
+                color: COLORS.TEXT_DISABLED
               }
             }}
           >
@@ -1484,18 +1484,18 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
         PaperProps={{
           sx: {
             borderRadius: 3,
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)'
+            boxShadow: `0 8px 32px ${addAlpha(COLORS.BLACK, 0.12)}`
           }
         }}
       >
         <DialogTitle sx={{ 
-          borderBottom: '2px solid #E8B86D',
+          borderBottom: `2px solid ${COLORS.SECONDARY}`,
           pb: 2,
-          background: 'linear-gradient(135deg, #fafafa 0%, #ffffff 100%)'
+          background: `linear-gradient(135deg, ${COLORS.BG_LIGHT} 0%, ${COLORS.WHITE} 100%)`
         }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <PersonAddIcon sx={{ fontSize: 28, color: '#B8860B' }} />
-            <Typography variant="h5" sx={{ fontWeight: 700, color: '#333' }}>
+            <PersonAddIcon sx={{ fontSize: 28, color: COLORS.SECONDARY }} />
+            <Typography variant="h5" sx={{ fontWeight: 700, color: COLORS.TEXT_PRIMARY }}>
               Assign Task to Staff Member
             </Typography>
           </Box>
@@ -1504,15 +1504,15 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
           <Card 
             elevation={0}
             sx={{ 
-              backgroundColor: '#fafafa',
+              backgroundColor: COLORS.BG_LIGHT,
               border: '1px solid',
               borderColor: 'divider',
-              borderLeft: '4px solid #E8B86D',
+              borderLeft: `4px solid ${COLORS.SECONDARY}`,
               borderRadius: 2,
               p: 2.5
             }}
           >
-            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#333', mb: 2, textTransform: 'uppercase', fontSize: '0.75rem' }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: COLORS.TEXT_PRIMARY, mb: 2, textTransform: 'uppercase', fontSize: '0.75rem' }}>
               Select Staff Member
             </Typography>
             <PremiumSelect
@@ -1533,7 +1533,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                     setAssignDialog(false);
                     setAddStaffDialog(true);
                   }}>
-                    <Box sx={{ color: '#B8860B', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ color: COLORS.SECONDARY, fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 1 }}>
                       <PersonAddIcon fontSize="small" />
                       Create New Staff Member
                     </Box>
@@ -1557,11 +1557,11 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
             onClick={() => setAssignDialog(false)}
             variant="outlined"
             sx={{
-              borderColor: '#e0e0e0',
-              color: '#666',
+              borderColor: COLORS.BORDER_LIGHT,
+              color: COLORS.TEXT_SECONDARY,
               '&:hover': {
-                borderColor: '#E8B86D',
-                backgroundColor: 'rgba(232, 184, 109, 0.08)'
+                borderColor: COLORS.SECONDARY,
+                backgroundColor: addAlpha(COLORS.SECONDARY, 0.08)
               }
             }}
           >
@@ -1572,16 +1572,16 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
             variant="contained"
             disabled={!selectedStaffId}
             sx={{
-              backgroundColor: '#E8B86D',
-              color: 'white',
+              backgroundColor: COLORS.SECONDARY,
+              color: COLORS.WHITE,
               fontWeight: 600,
               px: 3,
               '&:hover': {
-                backgroundColor: '#B8860B'
+                backgroundColor: COLORS.SECONDARY_HOVER
               },
               '&:disabled': {
-                backgroundColor: '#e0e0e0',
-                color: '#999'
+                backgroundColor: COLORS.BORDER_LIGHT,
+                color: COLORS.TEXT_DISABLED
               }
             }}
           >
@@ -1600,18 +1600,18 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
         PaperProps={{
           sx: {
             borderRadius: 3,
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)'
+            boxShadow: `0 8px 32px ${addAlpha(COLORS.BLACK, 0.12)}`
           }
         }}
       >
         <DialogTitle sx={{ 
-          borderBottom: '2px solid #E8B86D',
+          borderBottom: `2px solid ${COLORS.SECONDARY}`,
           pb: 2,
-          background: 'linear-gradient(135deg, #fafafa 0%, #ffffff 100%)'
+          background: `linear-gradient(135deg, ${COLORS.BG_LIGHT} 0%, ${COLORS.WHITE} 100%)`
         }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <PersonAddIcon sx={{ fontSize: 28, color: '#B8860B' }} />
-            <Typography variant="h5" sx={{ fontWeight: 700, color: '#333' }}>
+            <PersonAddIcon sx={{ fontSize: 28, color: COLORS.SECONDARY }} />
+            <Typography variant="h5" sx={{ fontWeight: 700, color: COLORS.TEXT_PRIMARY }}>
               Add Housekeeping Staff Member
             </Typography>
           </Box>
@@ -1708,11 +1708,11 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
             onClick={() => setAddStaffDialog(false)}
             variant="outlined"
             sx={{
-              borderColor: '#e0e0e0',
-              color: '#666',
+              borderColor: COLORS.BORDER_LIGHT,
+              color: COLORS.TEXT_SECONDARY,
               '&:hover': {
-                borderColor: '#E8B86D',
-                backgroundColor: 'rgba(232, 184, 109, 0.08)'
+                borderColor: COLORS.SECONDARY,
+                backgroundColor: addAlpha(COLORS.SECONDARY, 0.08)
               }
             }}
           >
@@ -1724,16 +1724,16 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
             disabled={loading || !newStaff.email.trim() || !newStaff.firstName.trim() || !newStaff.lastName.trim() || !newStaff.employeeId.trim()}
             startIcon={<PersonAddIcon />}
             sx={{
-              backgroundColor: '#E8B86D',
-              color: 'white',
+              backgroundColor: COLORS.SECONDARY,
+              color: COLORS.WHITE,
               fontWeight: 600,
               px: 3,
               '&:hover': {
-                backgroundColor: '#B8860B'
+                backgroundColor: COLORS.SECONDARY_HOVER
               },
               '&:disabled': {
-                backgroundColor: '#e0e0e0',
-                color: '#999'
+                backgroundColor: COLORS.BORDER_LIGHT,
+                color: COLORS.TEXT_DISABLED
               }
             }}
           >

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, CardProps, useTheme } from '@mui/material';
 import { designSystem } from '../../theme/designSystem';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 
 interface StandardCardProps extends Omit<CardProps, 'variant'> {
   cardVariant?: 'default' | 'outlined' | 'elevated' | 'gradient' | 'glass';
@@ -73,13 +74,13 @@ const StandardCard: React.FC<StandardCardProps> = ({
         };
       case 'glass':
         return {
-          background: 'rgba(255, 255, 255, 0.85)',
+          background: addAlpha(COLORS.WHITE, 0.85),
           backdropFilter: 'blur(10px)',
-          border: `1px solid rgba(255, 255, 255, 0.2)`,
+          border: `1px solid ${addAlpha(COLORS.WHITE, 0.2)}`,
           boxShadow: designSystem.shadows.md,
           transition: 'all 0.2s ease',
           '&:hover': {
-            background: 'rgba(255, 255, 255, 0.95)',
+            background: addAlpha(COLORS.WHITE, 0.95),
             boxShadow: designSystem.shadows.lg,
           },
         };

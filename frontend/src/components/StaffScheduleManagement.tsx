@@ -43,7 +43,7 @@ import {
   Add as AddIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
-import { COLORS } from '../theme/themeColors';
+import { COLORS, addAlpha } from '../theme/themeColors';
 import PremiumTextField from './common/PremiumTextField';
 import PremiumSelect from './common/PremiumSelect';
 import PremiumDatePicker from './common/PremiumDatePicker';
@@ -570,12 +570,12 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
         border: '1px solid',
         borderColor: 'divider',
         borderRadius: 3,
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)'
+        boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.08)}`
       }}>
         <Box display="flex" alignItems="center" justifyContent="space-between" mb={3} pb={2} borderBottom={`2px solid ${COLORS.PRIMARY}`}>
           <Box display="flex" alignItems="center">
             <ScheduleIcon sx={{ mr: 1.5, color: COLORS.PRIMARY, fontSize: 28 }} />
-            <Typography variant="h5" component="h2" sx={{ fontWeight: 700, color: '#333' }}>
+            <Typography variant="h5" component="h2" sx={{ fontWeight: 700, color: COLORS.TEXT_PRIMARY }}>
               Staff Schedules
             </Typography>
           </Box>
@@ -609,7 +609,7 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
                 fontWeight: 600,
                 '&:hover': {
                   borderColor: COLORS.PRIMARY_HOVER,
-                  backgroundColor: 'rgba(26, 54, 93, 0.08)'
+                  backgroundColor: addAlpha(COLORS.PRIMARY, 0.08)
                 }
               }}
             >
@@ -620,7 +620,7 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
         
         <Box sx={{ 
           p: 2.5,
-          backgroundColor: '#fafafa',
+          backgroundColor: COLORS.BG_LIGHT,
           borderRadius: 2,
           border: '1px solid',
           borderColor: 'divider',
@@ -705,12 +705,12 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
                 fullWidth
                 startIcon={<ClearIcon />}
                 sx={{
-                  borderColor: '#e0e0e0',
-                  color: '#666',
+                  borderColor: COLORS.BORDER_LIGHT,
+                  color: COLORS.TEXT_SECONDARY,
                   fontWeight: 600,
                   '&:hover': {
                     borderColor: COLORS.PRIMARY,
-                    backgroundColor: 'rgba(26, 54, 93, 0.08)',
+                    backgroundColor: addAlpha(COLORS.PRIMARY, 0.08),
                     color: COLORS.PRIMARY
                   }
                 }}
@@ -726,9 +726,9 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
       <Paper 
         elevation={1}
         sx={{
-          border: '1px solid #e0e0e0',
+          border: `1px solid ${COLORS.BORDER_LIGHT}`,
           borderRadius: 3,
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+          boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.08)}`,
           overflow: 'hidden'
         }}
       >
@@ -737,7 +737,7 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
             <TableHead>
               <TableRow
                 sx={{
-                  background: 'linear-gradient(135deg, #f5f5f5 0%, #fafafa 50%, #f5f5f5 100%)',
+                    background: `linear-gradient(135deg, ${COLORS.BG_DEFAULT} 0%, ${COLORS.BG_LIGHT} 50%, ${COLORS.BG_DEFAULT} 100%)`,
                   borderBottom: `2px solid ${COLORS.PRIMARY}`,
                   '& .MuiTableCell-head': {
                     color: COLORS.PRIMARY,
@@ -827,7 +827,7 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
                           sx={{
                             color: COLORS.PRIMARY,
                             '&:hover': {
-                              backgroundColor: 'rgba(26, 54, 93, 0.08)',
+                              backgroundColor: addAlpha(COLORS.PRIMARY, 0.08),
                               color: COLORS.PRIMARY_HOVER
                             }
                           }}
@@ -840,10 +840,10 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
                           size="small"
                           onClick={() => handleDelete(schedule.id)}
                           sx={{
-                            color: '#666',
+                            color: COLORS.TEXT_SECONDARY,
                             '&:hover': {
-                              backgroundColor: 'rgba(211, 47, 47, 0.08)',
-                              color: '#d32f2f'
+                              backgroundColor: addAlpha(COLORS.ERROR, 0.08),
+                              color: COLORS.ERROR
                             }
                           }}
                         >
@@ -897,18 +897,18 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}
             sx={{
-              borderTop: '1px solid #e0e0e0',
+              borderTop: `1px solid ${COLORS.BORDER_LIGHT}`,
               '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
-                color: '#666',
+                color: COLORS.TEXT_SECONDARY,
                 fontWeight: 500,
               },
               '& .MuiIconButton-root': {
                   color: COLORS.PRIMARY,
                 '&:hover': {
-                    backgroundColor: 'rgba(26, 54, 93, 0.08)',
+                    backgroundColor: addAlpha(COLORS.PRIMARY, 0.08),
                 },
                 '&.Mui-disabled': {
-                  color: '#d0d0d0',
+                  color: COLORS.TEXT_DISABLED,
                 }
               }
             }}
@@ -926,8 +926,8 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
           elevation: 0,
           sx: { 
             borderRadius: 3,
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
-            border: '1px solid #e0e0e0'
+            boxShadow: `0 8px 32px ${addAlpha(COLORS.BLACK, 0.12)}`,
+            border: `1px solid ${COLORS.BORDER_LIGHT}`
           }
         }}
       >
@@ -935,12 +935,12 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
           sx={{ 
             pb: 2,
             borderBottom: `2px solid ${COLORS.PRIMARY}`,
-            background: 'linear-gradient(135deg, rgba(26, 54, 93, 0.08) 0%, rgba(255, 255, 255, 0.95) 100%)',
+            background: `linear-gradient(135deg, ${addAlpha(COLORS.PRIMARY, 0.08)} 0%, ${addAlpha(COLORS.WHITE, 0.95)} 100%)`,
           }}
         >
           <Box display="flex" alignItems="center" gap={1.5}>
             <ScheduleIcon sx={{ fontSize: 28, color: COLORS.PRIMARY }} />
-            <Typography variant="h5" fontWeight={700} color="#333">
+            <Typography variant="h5" fontWeight={700} color={COLORS.TEXT_PRIMARY}>
               {editingSchedule ? 'Edit Schedule' : 'Create New Schedule'}
             </Typography>
           </Box>
@@ -1126,12 +1126,12 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
               onClick={() => setShowModal(false)}
               variant="outlined"
               sx={{
-                borderColor: '#e0e0e0',
-                color: '#666',
+                borderColor: COLORS.BORDER_LIGHT,
+                color: COLORS.TEXT_SECONDARY,
                 fontWeight: 600,
                 '&:hover': {
                   borderColor: COLORS.PRIMARY,
-                  backgroundColor: 'rgba(26, 54, 93, 0.08)',
+                  backgroundColor: addAlpha(COLORS.PRIMARY, 0.08),
                   color: COLORS.PRIMARY
                 }
               }}
@@ -1167,8 +1167,8 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
           elevation: 0,
           sx: { 
             borderRadius: 3,
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
-            border: '1px solid #e0e0e0'
+            boxShadow: `0 8px 32px ${addAlpha(COLORS.BLACK, 0.12)}`,
+            border: `1px solid ${COLORS.BORDER_LIGHT}`
           }
         }}
       >
@@ -1176,12 +1176,12 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
           sx={{ 
             pb: 2,
             borderBottom: `2px solid ${COLORS.PRIMARY}`,
-            background: 'linear-gradient(135deg, rgba(26, 54, 93, 0.08) 0%, rgba(255, 255, 255, 0.95) 100%)',
+            background: `linear-gradient(135deg, ${addAlpha(COLORS.PRIMARY, 0.08)} 0%, ${addAlpha(COLORS.WHITE, 0.95)} 100%)`,
           }}
         >
           <Box display="flex" alignItems="center" gap={1.5}>
             <UploadIcon sx={{ fontSize: 28, color: COLORS.PRIMARY }} />
-            <Typography variant="h5" fontWeight={700} color="#333">
+            <Typography variant="h5" fontWeight={700} color={COLORS.TEXT_PRIMARY}>
               Upload Schedule File
             </Typography>
           </Box>

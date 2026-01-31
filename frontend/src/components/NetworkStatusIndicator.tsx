@@ -39,7 +39,7 @@ import {
 } from '@mui/icons-material';
 import { useNetworkStatus } from '../hooks/useNetworkStatus';
 import { useAuth } from '../contexts/AuthContext';
-import { COLORS } from '../theme/themeColors';
+import { COLORS, addAlpha } from '../theme/themeColors';
 
 interface NetworkStatusIndicatorProps {
   variant?: 'detailed' | 'minimal';
@@ -142,25 +142,25 @@ export const NetworkStatusIndicator: React.FC<NetworkStatusIndicatorProps> = ({
             onClick={handleSync}
             disabled={!isOnline || isSyncing}
             style={{
-              backgroundColor: !isOnline ? '#ff9800' : COLORS.SUCCESS,
-              color: !isOnline ? '#000000' : '#ffffff',
+              backgroundColor: !isOnline ? COLORS.WARNING : COLORS.SUCCESS,
+              color: !isOnline ? COLORS.BLACK : COLORS.WHITE,
               fontWeight: 'bold',
-              border: `2px solid ${!isOnline ? '#e65100' : COLORS.CHECKED_IN}`,
+              border: `2px solid ${!isOnline ? addAlpha(COLORS.WARNING, 0.85) : COLORS.CHECKED_IN}`,
             }}
             sx={{
               '& .MuiChip-icon': {
-                color: !isOnline ? '#000000 !important' : '#ffffff !important',
+                color: !isOnline ? `${COLORS.BLACK} !important` : `${COLORS.WHITE} !important`,
               },
               '& .MuiChip-label': {
-                color: !isOnline ? '#000000 !important' : '#ffffff !important',
+                color: !isOnline ? `${COLORS.BLACK} !important` : `${COLORS.WHITE} !important`,
                 fontWeight: 'bold !important',
               },
               '&:hover': {
-                backgroundColor: !isOnline ? '#f57c00 !important' : `${COLORS.PRIMARY_HOVER} !important`,
+                backgroundColor: !isOnline ? `${addAlpha(COLORS.WARNING, 0.85)} !important` : `${COLORS.PRIMARY_HOVER} !important`,
               },
               '&.Mui-disabled': {
-                backgroundColor: !isOnline ? '#ff9800 !important' : `${COLORS.SUCCESS} !important`,
-                color: !isOnline ? '#000000 !important' : '#ffffff !important',
+                backgroundColor: !isOnline ? `${COLORS.WARNING} !important` : `${COLORS.SUCCESS} !important`,
+                color: !isOnline ? `${COLORS.BLACK} !important` : `${COLORS.WHITE} !important`,
                 opacity: '0.9 !important',
               }
             }}
@@ -266,9 +266,9 @@ export const NetworkStatusIndicator: React.FC<NetworkStatusIndicatorProps> = ({
               sx={{ 
                 flex: 1, 
                 maxWidth: 200,
-                backgroundColor: 'rgba(255,255,255,0.3)',
+                backgroundColor: addAlpha(COLORS.WHITE, 0.3),
                 '& .MuiLinearProgress-bar': {
-                  backgroundColor: 'rgba(255,255,255,0.8)'
+                  backgroundColor: addAlpha(COLORS.WHITE, 0.8)
                 }
               }} 
             />

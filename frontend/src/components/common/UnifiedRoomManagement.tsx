@@ -48,7 +48,7 @@ import * as frontDeskApi from '../../services/frontDeskApi';
 import { ROOM_TYPES, getRoomTypeLabel } from '../../constants/roomTypes';
 import PremiumTextField from './PremiumTextField';
 import PremiumSelect from './PremiumSelect';
-import { COLORS } from '../../theme/themeColors';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 
 // Import hotel admin specific components conditionally
 let RoomTypePricing: any = null;
@@ -383,19 +383,19 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
               sx={{ 
                 minWidth: 250,
                 '& .MuiOutlinedInput-root': {
-                  backgroundColor: '#fafafa',
-                  borderLeft: '2px solid #E8B86D',
+                  backgroundColor: COLORS.BG_LIGHT,
+                  borderLeft: `2px solid ${COLORS.SECONDARY}`,
                   transition: 'all 0.3s ease',
                   '&:hover': {
-                    backgroundColor: 'rgba(232, 184, 109, 0.04)',
+                    backgroundColor: addAlpha(COLORS.SECONDARY, 0.04),
                     '& fieldset': {
-                      borderColor: '#E8B86D',
+                      borderColor: COLORS.SECONDARY,
                     },
                   },
                   '&.Mui-focused': {
-                    backgroundColor: '#fffef8',
+                    backgroundColor: addAlpha(COLORS.SECONDARY, 0.08),
                     '& fieldset': {
-                      borderColor: '#E8B86D',
+                      borderColor: COLORS.SECONDARY,
                       borderWidth: '2px',
                     },
                   },
@@ -406,19 +406,19 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
             <FormControl sx={{ 
               minWidth: 200,
               '& .MuiOutlinedInput-root': {
-                backgroundColor: '#fafafa',
-                borderLeft: '2px solid #E8B86D',
+                backgroundColor: COLORS.BG_LIGHT,
+                borderLeft: `2px solid ${COLORS.SECONDARY}`,
                 transition: 'all 0.3s ease',
                 '&:hover': {
-                  backgroundColor: 'rgba(232, 184, 109, 0.04)',
+                  backgroundColor: addAlpha(COLORS.SECONDARY, 0.04),
                   '& fieldset': {
-                    borderColor: '#E8B86D',
+                    borderColor: COLORS.SECONDARY,
                   },
                 },
                 '&.Mui-focused': {
-                  backgroundColor: '#fffef8',
+                  backgroundColor: addAlpha(COLORS.SECONDARY, 0.08),
                   '& fieldset': {
-                    borderColor: '#E8B86D',
+                    borderColor: COLORS.SECONDARY,
                     borderWidth: '2px',
                   },
                 },
@@ -446,19 +446,19 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
             <FormControl sx={{ 
               minWidth: 200,
               '& .MuiOutlinedInput-root': {
-                backgroundColor: '#fafafa',
-                borderLeft: '2px solid #E8B86D',
+                backgroundColor: COLORS.BG_LIGHT,
+                borderLeft: `2px solid ${COLORS.SECONDARY}`,
                 transition: 'all 0.3s ease',
                 '&:hover': {
-                  backgroundColor: 'rgba(232, 184, 109, 0.04)',
+                  backgroundColor: addAlpha(COLORS.SECONDARY, 0.04),
                   '& fieldset': {
-                    borderColor: '#E8B86D',
+                    borderColor: COLORS.SECONDARY,
                   },
                 },
                 '&.Mui-focused': {
-                  backgroundColor: '#fffef8',
+                  backgroundColor: addAlpha(COLORS.SECONDARY, 0.08),
                   '& fieldset': {
-                    borderColor: '#E8B86D',
+                    borderColor: COLORS.SECONDARY,
                     borderWidth: '2px',
                   },
                 },
@@ -508,8 +508,8 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
               <TableHead>
                 <TableRow
                   sx={{
-                    background: 'linear-gradient(135deg, #f5f5f5 0%, #fafafa 50%, #f5f5f5 100%)',
-                    borderBottom: '2px solid #E8B86D',
+                    background: `linear-gradient(135deg, ${COLORS.BG_DEFAULT} 0%, ${COLORS.BG_LIGHT} 50%, ${COLORS.BG_DEFAULT} 100%)`,
+                    borderBottom: `2px solid ${COLORS.SECONDARY}`,
                     '& .MuiTableCell-head': {
                       color: COLORS.PRIMARY,
                       fontWeight: 700,

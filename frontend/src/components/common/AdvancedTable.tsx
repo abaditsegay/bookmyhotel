@@ -23,7 +23,7 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import { designSystem } from '../../theme/designSystem';
-import { COLORS } from '../../theme/themeColors';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 
 export type SortDirection = 'asc' | 'desc';
 
@@ -256,7 +256,7 @@ const AdvancedTable: React.FC<AdvancedTableProps> = ({
                     fontWeight: 700,
                     color: COLORS.PRIMARY,
                     letterSpacing: '0.4px',
-                    background: 'linear-gradient(135deg, rgba(26, 54, 93, 0.06) 0%, rgba(26, 54, 93, 0.12) 100%)',
+                    background: `linear-gradient(135deg, ${addAlpha(COLORS.PRIMARY, 0.06)} 0%, ${addAlpha(COLORS.PRIMARY, 0.12)} 100%)`,
                     borderBottom: `2px solid ${COLORS.PRIMARY}`,
                   }}
                 >
@@ -284,7 +284,7 @@ const AdvancedTable: React.FC<AdvancedTableProps> = ({
                   sx={{ 
                     fontWeight: 700,
                     color: COLORS.PRIMARY,
-                    background: 'linear-gradient(135deg, rgba(26, 54, 93, 0.06) 0%, rgba(26, 54, 93, 0.12) 100%)',
+                    background: `linear-gradient(135deg, ${addAlpha(COLORS.PRIMARY, 0.06)} 0%, ${addAlpha(COLORS.PRIMARY, 0.12)} 100%)`,
                     borderBottom: `2px solid ${COLORS.PRIMARY}`,
                   }}
                 >

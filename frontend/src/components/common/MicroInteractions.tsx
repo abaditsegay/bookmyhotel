@@ -7,6 +7,7 @@ import {
   Typography,
 } from '@mui/material';
 import { designSystem } from '../../theme/designSystem';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 
 // Enhanced micro-interaction animations
 const rippleAnimation = keyframes`
@@ -31,13 +32,13 @@ const floatAnimation = keyframes`
 
 const pulseGlow = keyframes`
   0% {
-    box-shadow: 0 0 0 0 rgba(33, 150, 243, 0.4);
+    box-shadow: 0 0 0 0 ${addAlpha(COLORS.CONFIRMED, 0.4)};
   }
   70% {
-    box-shadow: 0 0 0 10px rgba(33, 150, 243, 0);
+    box-shadow: 0 0 0 10px ${addAlpha(COLORS.CONFIRMED, 0)};
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(33, 150, 243, 0);
+    box-shadow: 0 0 0 0 ${addAlpha(COLORS.CONFIRMED, 0)};
   }
 `;
 
@@ -149,7 +150,7 @@ const InteractiveCard: React.FC<InteractiveCardProps> = ({
       height: ${size}px;
       left: ${x}px;
       top: ${y}px;
-      background: rgba(33, 150, 243, 0.3);
+      background: ${addAlpha(COLORS.CONFIRMED, 0.3)};
       border-radius: 50%;
       pointer-events: none;
       animation: ${rippleAnimation} 0.6s ease-out;

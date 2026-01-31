@@ -12,6 +12,7 @@ import {
   ExpandMore as ExpandMoreIcon 
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 
 interface LanguageSwitcherProps {
   variant?: 'button' | 'menu';
@@ -77,11 +78,11 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
             justifyContent: 'space-between',
             // Dynamic styling based on color prop
             ...(color === 'white' && {
-              color: 'white',
-              borderColor: 'rgba(255, 255, 255, 0.5)',
+              color: COLORS.WHITE,
+              borderColor: addAlpha(COLORS.WHITE, 0.5),
               '&:hover': {
-                borderColor: 'white',
-                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                borderColor: COLORS.WHITE,
+                backgroundColor: addAlpha(COLORS.WHITE, 0.1),
               }
             }),
             ...(color === 'inherit' && {

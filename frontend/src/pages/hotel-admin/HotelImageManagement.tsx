@@ -28,6 +28,7 @@ import {
   Image as ImageIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 import { hotelAdminApi, HotelImageUploadRequest, HotelImageResponse } from '../../services/hotelAdminApi';
 import { ROOM_TYPE_VALUES } from '../../constants/roomTypes';
 
@@ -328,7 +329,7 @@ const HotelImageManagement: React.FC = () => {
           borderColor: 'divider',
           borderRadius: 2,
           '&:before': { display: 'none' },
-          boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+          boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.08)}`,
         }}
       >
         <AccordionSummary 
@@ -366,7 +367,7 @@ const HotelImageManagement: React.FC = () => {
                   transition: 'all 0.3s ease',
                   '&:hover': {
                     borderColor: 'primary.main',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                    boxShadow: `0 4px 12px ${addAlpha(COLORS.BLACK, 0.1)}`,
                   },
                 }}
               >
@@ -431,8 +432,8 @@ const HotelImageManagement: React.FC = () => {
                               bottom: 0,
                               left: 0,
                               right: 0,
-                              bgcolor: 'rgba(0,0,0,0.6)',
-                              color: 'white',
+                              bgcolor: addAlpha(COLORS.BLACK, 0.6),
+                              color: COLORS.WHITE,
                               p: 1,
                             }}
                           >
@@ -460,7 +461,7 @@ const HotelImageManagement: React.FC = () => {
                       fontWeight: 600,
                       '&.Mui-disabled': {
                         color: 'text.disabled',
-                        backgroundColor: 'rgba(0, 0, 0, 0.12)',
+                          backgroundColor: addAlpha(COLORS.BLACK, 0.12),
                       }
                     }}
                   >
@@ -516,7 +517,7 @@ const HotelImageManagement: React.FC = () => {
                               borderColor: 'divider',
                               transition: 'all 0.3s ease',
                               '&:hover': {
-                                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                                boxShadow: `0 4px 12px ${addAlpha(COLORS.BLACK, 0.15)}`,
                                 transform: 'translateY(-2px)',
                               },
                             }}
@@ -537,12 +538,12 @@ const HotelImageManagement: React.FC = () => {
                             <ImageListItemBar
                               subtitle={image.altText || image.fileName}
                               sx={{
-                                background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 70%, rgba(0,0,0,0) 100%)',
+                                background: `linear-gradient(to top, ${addAlpha(COLORS.BLACK, 0.7)} 0%, ${addAlpha(COLORS.BLACK, 0.3)} 70%, ${addAlpha(COLORS.BLACK, 0)} 100%)`,
                               }}
                               actionIcon={
                                 <IconButton
                                   sx={{ 
-                                    color: 'white',
+                                    color: COLORS.WHITE,
                                     '&:hover': {
                                       color: 'error.light',
                                     },
@@ -576,7 +577,7 @@ const HotelImageManagement: React.FC = () => {
               borderColor: 'divider',
               borderRadius: 2,
               '&:before': { display: 'none' },
-              boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+              boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.08)}`,
             }}
           >
             <AccordionSummary 
@@ -613,7 +614,7 @@ const HotelImageManagement: React.FC = () => {
                       transition: 'all 0.3s ease',
                       '&:hover': {
                         borderColor: 'primary.main',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                        boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.08)}`,
                       },
                     }}
                   >
@@ -675,8 +676,8 @@ const HotelImageManagement: React.FC = () => {
                                   bottom: 0,
                                   left: 0,
                                   right: 0,
-                                  bgcolor: 'rgba(0,0,0,0.6)',
-                                  color: 'white',
+                                  bgcolor: addAlpha(COLORS.BLACK, 0.6),
+                                  color: COLORS.WHITE,
                                   p: 1,
                                 }}
                               >
@@ -707,7 +708,7 @@ const HotelImageManagement: React.FC = () => {
                           fontWeight: 600,
                           '&.Mui-disabled': {
                             color: 'text.disabled',
-                            backgroundColor: 'rgba(0, 0, 0, 0.12)',
+                            backgroundColor: addAlpha(COLORS.BLACK, 0.12),
                           }
                         }}
                       >
@@ -763,7 +764,7 @@ const HotelImageManagement: React.FC = () => {
                                   borderColor: 'divider',
                                   transition: 'all 0.3s ease',
                                   '&:hover': {
-                                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                                    boxShadow: `0 4px 12px ${addAlpha(COLORS.BLACK, 0.15)}`,
                                     transform: 'translateY(-2px)',
                                   },
                                 }}
@@ -784,12 +785,12 @@ const HotelImageManagement: React.FC = () => {
                                 <ImageListItemBar
                                   subtitle={image.altText || image.fileName}
                                   sx={{
-                                    background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 70%, rgba(0,0,0,0) 100%)',
+                                    background: `linear-gradient(to top, ${addAlpha(COLORS.BLACK, 0.7)} 0%, ${addAlpha(COLORS.BLACK, 0.3)} 70%, ${addAlpha(COLORS.BLACK, 0)} 100%)`,
                                   }}
                                   actionIcon={
                                     <IconButton
                                       sx={{ 
-                                        color: 'white',
+                                        color: COLORS.WHITE,
                                         '&:hover': {
                                           color: 'error.light',
                                         },
@@ -853,7 +854,7 @@ const HotelImageManagement: React.FC = () => {
                   maxHeight: '250px',
                   objectFit: 'contain',
                   borderRadius: '8px',
-                  border: '1px solid rgba(0,0,0,0.1)',
+                  border: `1px solid ${addAlpha(COLORS.BLACK, 0.1)}`,
                 }}
               />
               <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>

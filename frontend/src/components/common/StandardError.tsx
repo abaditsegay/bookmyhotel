@@ -8,6 +8,7 @@ import {
   Refresh as RefreshIcon 
 } from '@mui/icons-material';
 import { designSystem } from '../../theme/designSystem';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 
 interface StandardErrorProps {
   /**
@@ -139,7 +140,7 @@ const StandardError: React.FC<StandardErrorProps> = ({
                 borderRadius: `${designSystem.spacing.xs}px`,
                 transition: 'all 0.2s ease-in-out',
                 '&:hover': {
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  backgroundColor: addAlpha(COLORS.WHITE, 0.1),
                 },
               }}
             >

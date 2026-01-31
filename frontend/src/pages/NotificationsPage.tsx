@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { COLORS, getGradient } from '../theme/themeColors';
+import { COLORS, addAlpha, getGradient } from '../theme/themeColors';
 import PremiumTextField from '../components/common/PremiumTextField';
 import {
   Box,
@@ -168,7 +168,7 @@ const NotificationsPage: React.FC = () => {
           <TableRow
             sx={{
               background: getGradient('slate'),
-              boxShadow: '0 4px 12px rgba(100, 116, 139, 0.15)',
+              boxShadow: `0 4px 12px ${addAlpha(COLORS.SLATE_500, 0.15)}`,
               '& .MuiTableCell-head': {
                 color: COLORS.WHITE,
                 fontWeight: 600,
@@ -178,7 +178,7 @@ const NotificationsPage: React.FC = () => {
                 border: 'none',
                 padding: '20px 16px',
                 position: 'relative',
-                textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                textShadow: `0 1px 2px ${addAlpha(COLORS.BLACK, 0.1)}`,
                 '&::after': {
                   content: '""',
                   position: 'absolute',
@@ -209,11 +209,11 @@ const NotificationsPage: React.FC = () => {
               key={notification.id}
               sx={{ 
                 '&:last-child td, &:last-child th': { border: 0 },
-                backgroundColor: notification.status === 'UNREAD' ? 'rgba(33, 150, 243, 0.1)' : 'inherit',
+                backgroundColor: notification.status === 'UNREAD' ? addAlpha(COLORS.CONFIRMED, 0.1) : 'inherit',
                 opacity: notification.status === 'ARCHIVED' ? 0.6 : 1,
                 cursor: 'pointer',
                 transition: 'background-color 0.2s',
-                '&:hover': { backgroundColor: notification.status === 'UNREAD' ? 'rgba(33, 150, 243, 0.15)' : 'action.hover' }
+                '&:hover': { backgroundColor: notification.status === 'UNREAD' ? addAlpha(COLORS.CONFIRMED, 0.15) : 'action.hover' }
               }}
               onClick={() => openDetails(notification)}
             >
@@ -648,7 +648,7 @@ const NotificationsPage: React.FC = () => {
                             <TableRow
                               sx={{
                                 background: getGradient('slate'),
-                                boxShadow: '0 4px 12px rgba(100, 116, 139, 0.15)',
+                                boxShadow: `0 4px 12px ${addAlpha(COLORS.SLATE_500, 0.15)}`,
                                 '& .MuiTableCell-head': {
                                   color: COLORS.WHITE,
                                   fontWeight: 600,
@@ -658,7 +658,7 @@ const NotificationsPage: React.FC = () => {
                                   border: 'none',
                                   padding: '20px 16px',
                                   position: 'relative',
-                                  textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                                  textShadow: `0 1px 2px ${addAlpha(COLORS.BLACK, 0.1)}`,
                                   '&::after': {
                                     content: '""',
                                     position: 'absolute',

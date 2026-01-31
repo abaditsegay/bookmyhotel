@@ -1,3 +1,4 @@
+import { COLORS, addAlpha } from '../../theme/themeColors';
 import React from 'react';
 import { 
   AppBar, 
@@ -149,8 +150,8 @@ export const SystemWideNavbar: React.FC = () => {
             size="small"
             variant="outlined"
             sx={{ 
-              color: 'white', 
-              borderColor: 'rgba(255, 255, 255, 0.5)',
+              color: COLORS.WHITE, 
+              borderColor: addAlpha(COLORS.WHITE, 0.5),
               fontSize: '0.75rem',
               fontWeight: 500,
             }}
@@ -166,8 +167,8 @@ export const SystemWideNavbar: React.FC = () => {
               onClick={() => navigate('/system/hotels')}
               sx={{ 
                 fontSize: '0.8rem',
-                color: 'white',
-                '&:hover': { color: 'white' }
+                color: COLORS.WHITE,
+                '&:hover': { color: COLORS.WHITE }
               }}
             >
               Hotels
@@ -178,8 +179,8 @@ export const SystemWideNavbar: React.FC = () => {
               onClick={() => navigate('/system/users')}
               sx={{ 
                 fontSize: '0.8rem',
-                color: 'white',
-                '&:hover': { color: 'white' }
+                color: COLORS.WHITE,
+                '&:hover': { color: COLORS.WHITE }
               }}
             >
               Users
@@ -190,8 +191,8 @@ export const SystemWideNavbar: React.FC = () => {
               onClick={handleSystemSettings}
               sx={{ 
                 fontSize: '0.8rem',
-                color: 'white',
-                '&:hover': { color: 'white' }
+                color: COLORS.WHITE,
+                '&:hover': { color: COLORS.WHITE }
               }}
             >
               Settings
@@ -208,8 +209,8 @@ export const SystemWideNavbar: React.FC = () => {
               onClick={() => navigate('/search')}
               sx={{ 
                 fontSize: '0.8rem',
-                color: 'white',
-                '&:hover': { color: 'white' }
+                color: COLORS.WHITE,
+                '&:hover': { color: COLORS.WHITE }
               }}
             >
               Search Hotels

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, CircularProgress, Typography, Fade } from '@mui/material';
 import { designSystem } from '../../theme/designSystem';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 
 interface StandardLoadingProps {
   /**
@@ -86,7 +87,7 @@ const StandardLoading: React.FC<StandardLoadingProps> = ({
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+          backgroundColor: addAlpha(COLORS.WHITE, 0.9),
           zIndex: 1000,
           backdropFilter: 'blur(2px)',
         }),

@@ -33,6 +33,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../hooks/useNotifications';
 import NetworkStatusIndicator from '../NetworkStatusIndicator';
 import LanguageSelector from '../common/LanguageSelector';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
@@ -226,7 +227,7 @@ const Navbar: React.FC = () => {
             fontSize: '0.8rem', // Smaller font size
             fontWeight: item.label === 'Shop' ? 700 : user ? 'bold' : 'normal', // Bold for Shop and authenticated users
             textTransform: 'none', // Disable all caps
-            color: item.label === 'Shop' ? '#ffffff' : getTextColor(),
+            color: item.label === 'Shop' ? COLORS.WHITE : getTextColor(),
             backgroundColor: item.label === 'Shop' 
               ? theme.palette.success.main
               : item.path && isActivePath(item.path) 
@@ -236,7 +237,7 @@ const Navbar: React.FC = () => {
               backgroundColor: item.label === 'Shop' 
                 ? theme.palette.success.dark
                 : getHoverBackground(),
-              color: item.label === 'Shop' ? '#ffffff' : getTextColor(),
+              color: item.label === 'Shop' ? COLORS.WHITE : getTextColor(),
             },
             // Ensure proper stacking and boundaries
             position: 'relative',
@@ -307,7 +308,7 @@ const Navbar: React.FC = () => {
           >
             <ListItemIcon sx={{ 
               color: item.label === 'Shop' 
-                ? '#ffffff'
+                ? COLORS.WHITE
                 : item.path && isActivePath(item.path) ? theme.palette.primary.main : 'inherit' 
             }}>
               {item.icon}
@@ -318,7 +319,7 @@ const Navbar: React.FC = () => {
                 '& .MuiListItemText-primary': {
                   fontWeight: item.label === 'Shop' ? 700 : item.path && isActivePath(item.path) ? 600 : 400,
                   color: item.label === 'Shop' 
-                    ? '#ffffff'
+                    ? COLORS.WHITE
                     : item.path && isActivePath(item.path) ? theme.palette.primary.main : 'inherit',
                 }
               }}
@@ -405,23 +406,23 @@ const Navbar: React.FC = () => {
   // Helper function to get hover background based on authentication state
   const getHoverBackground = () => {
     // Use white overlay for all users with the blue background
-    return 'rgba(255, 255, 255, 0.1)';
+    return addAlpha(COLORS.WHITE, 0.1);
   };
 
   // Helper function to get active background based on authentication state
   const getActiveBackground = () => {
     // Use white overlay for all users with the blue background
-    return 'rgba(255, 255, 255, 0.2)';
+    return addAlpha(COLORS.WHITE, 0.2);
   };
 
   // Helper function to get text color based on authentication state
   const getTextColor = () => {
     // For both authenticated users and guests with dark backgrounds, use white text
     if (user) {
-      return 'white'; // White text on navy blue background
+      return COLORS.WHITE; // White text on navy blue background
     }
     // For guest booking with blue background, use white text
-    return 'white';
+    return COLORS.WHITE;
   };
 
   // Helper function to get navbar background based on authentication state
@@ -507,7 +508,7 @@ const Navbar: React.FC = () => {
                   variant="h6"
                   sx={{
                     fontWeight: 600,
-                    color: 'white',
+                    color: COLORS.WHITE,
                     fontSize: { xs: '1.1rem', md: '1.25rem' },
                     letterSpacing: '0.02em',
                   }}
@@ -532,10 +533,10 @@ const Navbar: React.FC = () => {
                   fontWeight: 900,
                   fontFamily: '"Pacifico", "Lobster", cursive',
                   fontStyle: 'italic',
-                  color: 'yellow',
+                  color: COLORS.GOLD,
                   textAlign: 'center',
                   fontSize: { md: '2rem', lg: '2.5rem' },
-                  textShadow: '3px 3px 6px rgba(0, 0, 0, 0.4)',
+                  textShadow: `3px 3px 6px ${addAlpha(COLORS.BLACK, 0.4)}`,
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
@@ -561,7 +562,7 @@ const Navbar: React.FC = () => {
                 variant="h5"
                 sx={{
                   fontWeight: 600,
-                  color: 'white',
+                  color: COLORS.WHITE,
                   fontSize: { xs: '1rem', md: '1.5rem' },
                   letterSpacing: '0.02em',
                   textAlign: 'center',
@@ -576,13 +577,13 @@ const Navbar: React.FC = () => {
                     fontSize: '1.25em',
                     fontStyle: 'italic',
                     letterSpacing: '0.05em',
-                    textShadow: `2px 2px 4px rgba(0, 0, 0, 0.5), 0 0 1px ${theme.palette.warning.main}`,
+                    textShadow: `2px 2px 4px ${addAlpha(COLORS.BLACK, 0.5)}, 0 0 1px ${theme.palette.warning.main}`,
                     WebkitTextStroke: `0.5px ${theme.palette.warning.main}`,
                   }}
                 >
                   Shegeroom
                 </Box>{' '}
-                <Box component="span" sx={{ color: 'white' }}>
+                <Box component="span" sx={{ color: COLORS.WHITE }}>
                   Hotel Reservation Management
                 </Box>
               </Typography>
@@ -613,8 +614,8 @@ const Navbar: React.FC = () => {
                   variant="outlined"
                   data-testid="user-role"
                   sx={{ 
-                    color: user ? 'white' : 'white', 
-                    borderColor: user ? 'rgba(255, 255, 255, 0.7)' : 'rgba(255, 255, 255, 0.5)',
+                    color: COLORS.WHITE, 
+                    borderColor: user ? addAlpha(COLORS.WHITE, 0.7) : addAlpha(COLORS.WHITE, 0.5),
                     fontSize: '0.75rem',
                     fontWeight: 500,
                     display: { xs: 'none', sm: 'flex' }, // Hide on mobile to save space

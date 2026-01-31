@@ -3,6 +3,7 @@
 
 import { createTheme, ThemeOptions } from '@mui/material/styles';
 import { designSystem, animations } from './designSystem';
+import { COLORS, addAlpha } from './themeColors';
 
 const themeOptions: ThemeOptions = {
   palette: {
@@ -97,22 +98,22 @@ const themeOptions: ThemeOptions = {
           transition: `all ${animations.duration.standard}ms ${animations.easing.easeInOut}`
         },
         contained: {
-          background: 'linear-gradient(135deg, #1a365d 0%, #0f2744 100%)',
-          boxShadow: '0 4px 15px rgba(26, 54, 93, 0.25)',
+          background: `linear-gradient(135deg, ${COLORS.PRIMARY} 0%, ${COLORS.PRIMARY_PRESSED} 100%)`,
+          boxShadow: `0 4px 15px ${addAlpha(COLORS.PRIMARY, 0.25)}`,
           '&:hover': {
-            background: 'linear-gradient(135deg, #2a4a6d 0%, #1a365d 100%)',
-            boxShadow: '0 6px 20px rgba(26, 54, 93, 0.35)',
+            background: `linear-gradient(135deg, ${COLORS.PRIMARY_HOVER} 0%, ${COLORS.PRIMARY} 100%)`,
+            boxShadow: `0 6px 20px ${addAlpha(COLORS.PRIMARY, 0.35)}`,
             transform: 'translateY(-2px)'
           },
           '&:active': {
             transform: 'translateY(0)',
-            boxShadow: '0 2px 8px rgba(26, 54, 93, 0.25)'
+            boxShadow: `0 2px 8px ${addAlpha(COLORS.PRIMARY, 0.25)}`
           },
           '&.Mui-disabled': {
-            background: '#f5f5f5',
-            color: '#999',
+            background: COLORS.BG_DEFAULT,
+            color: COLORS.TEXT_DISABLED,
             boxShadow: 'none',
-            border: '2px solid #E8B86D',
+            border: `2px solid ${COLORS.SECONDARY}`,
           }
         },
         outlined: {
@@ -120,13 +121,13 @@ const themeOptions: ThemeOptions = {
           borderColor: designSystem.colors.primary.main,
           '&:hover': {
             borderWidth: '2px',
-            backgroundColor: 'rgba(26, 54, 93, 0.04)',
+            backgroundColor: addAlpha(COLORS.PRIMARY, 0.04),
             transform: 'translateY(-1px)'
           }
         },
         text: {
           '&:hover': {
-            backgroundColor: 'rgba(26, 54, 93, 0.04)'
+            backgroundColor: addAlpha(COLORS.PRIMARY, 0.04)
           }
         }
       }
@@ -138,10 +139,10 @@ const themeOptions: ThemeOptions = {
         root: {
           borderRadius: designSystem.borderRadius.xl,
           border: 'none',
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+          boxShadow: `0 4px 20px ${addAlpha(COLORS.BLACK, 0.08)}`,
           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           '&:hover': {
-            boxShadow: '0 8px 30px rgba(0, 0, 0, 0.12)',
+            boxShadow: `0 8px 30px ${addAlpha(COLORS.BLACK, 0.12)}`,
             transform: 'translateY(-4px)'
           }
         }
@@ -154,10 +155,10 @@ const themeOptions: ThemeOptions = {
         root: {
           '& .MuiOutlinedInput-root': {
             borderRadius: designSystem.borderRadius.md,
-            backgroundColor: '#FFFFFF',
+            backgroundColor: COLORS.WHITE,
             transition: `all ${animations.duration.standard}ms ${animations.easing.easeInOut}`,
             '& fieldset': {
-              borderColor: '#E0E0E0',
+              borderColor: COLORS.BORDER_LIGHT,
               borderWidth: '1.5px'
             },
             '&:hover fieldset': {
@@ -167,7 +168,7 @@ const themeOptions: ThemeOptions = {
             '&.Mui-focused fieldset': {
               borderColor: designSystem.colors.primary.main,
               borderWidth: '2px',
-              boxShadow: '0 0 0 3px rgba(26, 54, 93, 0.1)'
+              boxShadow: `0 0 0 3px ${addAlpha(COLORS.PRIMARY, 0.1)}`
             }
           },
           '& .MuiInputLabel-root.Mui-focused': {
@@ -183,10 +184,10 @@ const themeOptions: ThemeOptions = {
         root: {
           '& .MuiOutlinedInput-root': {
             borderRadius: designSystem.borderRadius.md,
-            backgroundColor: '#FFFFFF',
+            backgroundColor: COLORS.WHITE,
             transition: `all ${animations.duration.standard}ms ${animations.easing.easeInOut}`,
             '& fieldset': {
-              borderColor: '#E0E0E0',
+              borderColor: COLORS.BORDER_LIGHT,
               borderWidth: '1.5px'
             },
             '&:hover fieldset': {
@@ -196,7 +197,7 @@ const themeOptions: ThemeOptions = {
             '&.Mui-focused fieldset': {
               borderColor: designSystem.colors.primary.main,
               borderWidth: '2px',
-              boxShadow: '0 0 0 3px rgba(26, 54, 93, 0.1)'
+              boxShadow: `0 0 0 3px ${addAlpha(COLORS.PRIMARY, 0.1)}`
             }
           },
           '& .MuiInputLabel-root.Mui-focused': {
@@ -211,8 +212,8 @@ const themeOptions: ThemeOptions = {
       styleOverrides: {
         paper: {
           borderRadius: designSystem.borderRadius.xl,
-          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.25)',
-          backgroundColor: '#FFFFFF'
+          boxShadow: `0 20px 60px ${addAlpha(COLORS.BLACK, 0.25)}`,
+          backgroundColor: COLORS.WHITE
         }
       }
     },

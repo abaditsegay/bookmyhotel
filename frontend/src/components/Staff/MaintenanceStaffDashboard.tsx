@@ -36,6 +36,7 @@ import {
   Schedule as ScheduleIcon,
   Warning as WarningIcon
 } from '@mui/icons-material';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 import { staffApi } from '../../services/staffApi';
 import { MaintenanceTask } from '../../types/operations';
 
@@ -287,10 +288,10 @@ const MaintenanceStaffDashboard: React.FC = () => {
                   <TableHead>
                     <TableRow
                       sx={{
-                        background: 'linear-gradient(135deg, #64748b 0%, #475569 50%, #334155 100%)',
-                        boxShadow: '0 4px 12px rgba(100, 116, 139, 0.15)',
+                        background: COLORS.GRADIENT_SLATE,
+                        boxShadow: `0 4px 12px ${addAlpha(COLORS.SLATE_500, 0.15)}`,
                         '& .MuiTableCell-head': {
-                          color: '#ffffff',
+                          color: COLORS.WHITE,
                           fontWeight: 600,
                           fontSize: '0.95rem',
                           letterSpacing: '0.5px',
@@ -298,7 +299,7 @@ const MaintenanceStaffDashboard: React.FC = () => {
                           border: 'none',
                           padding: '20px 16px',
                           position: 'relative',
-                          textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                          textShadow: `0 1px 2px ${addAlpha(COLORS.BLACK, 0.1)}`,
                           '&::after': {
                             content: '""',
                             position: 'absolute',
@@ -306,7 +307,7 @@ const MaintenanceStaffDashboard: React.FC = () => {
                             left: 0,
                             right: 0,
                             height: '3px',
-                            background: 'linear-gradient(90deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.6) 100%)'
+                            background: `linear-gradient(90deg, ${addAlpha(COLORS.WHITE, 0.6)} 0%, ${addAlpha(COLORS.WHITE, 0.8)} 50%, ${addAlpha(COLORS.WHITE, 0.6)} 100%)`
                           }
                         }
                       }}

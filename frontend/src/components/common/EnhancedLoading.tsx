@@ -9,6 +9,7 @@ import {
   keyframes,
 } from '@mui/material';
 import { designSystem } from '../../theme/designSystem';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 
 // Pulse animation for enhanced loading
 const pulseAnimation = keyframes`
@@ -83,7 +84,7 @@ const EnhancedLoading: React.FC<EnhancedLoadingProps> = ({
       left: 0,
       right: 0,
       bottom: 0,
-      backgroundColor: 'rgba(255, 255, 255, 0.9)',
+      backgroundColor: addAlpha(COLORS.WHITE, 0.9),
       backdropFilter: 'blur(4px)',
       zIndex: 1000,
     }),

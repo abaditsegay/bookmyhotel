@@ -34,6 +34,7 @@ import {
 import { hotelAdminApi } from '../../services/hotelAdminApi';
 import { useAuth } from '../../contexts/AuthContext';
 import { formatCurrency } from '../../utils/currencyUtils';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 
 interface RoomData {
   roomNumber: string;
@@ -415,7 +416,7 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: 'rgba(255, 255, 255, 0.8)',
+            backgroundColor: addAlpha(COLORS.WHITE, 0.8),
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
@@ -745,10 +746,10 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
               <TableHead>
                 <TableRow
                   sx={{
-                    background: 'linear-gradient(135deg, #64748b 0%, #475569 50%, #334155 100%)',
-                    boxShadow: '0 4px 12px rgba(100, 116, 139, 0.15)',
+                    background: COLORS.GRADIENT_SLATE,
+                    boxShadow: `0 4px 12px ${addAlpha(COLORS.SLATE_500, 0.15)}`,
                     '& .MuiTableCell-head': {
-                      color: '#ffffff',
+                      color: COLORS.WHITE,
                       fontWeight: 600,
                       fontSize: '0.95rem',
                       letterSpacing: '0.5px',
@@ -756,7 +757,7 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
                       border: 'none',
                       padding: '20px 16px',
                       position: 'relative',
-                      textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                      textShadow: `0 1px 2px ${addAlpha(COLORS.BLACK, 0.1)}`,
                       '&::after': {
                         content: '""',
                         position: 'absolute',
@@ -764,7 +765,7 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
                         left: 0,
                         right: 0,
                         height: '3px',
-                        background: 'linear-gradient(90deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.6) 100%)'
+                        background: `linear-gradient(90deg, ${addAlpha(COLORS.WHITE, 0.6)} 0%, ${addAlpha(COLORS.WHITE, 0.8)} 50%, ${addAlpha(COLORS.WHITE, 0.6)} 100%)`
                       }
                     }
                   }}
@@ -824,10 +825,10 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
               <TableHead>
                 <TableRow
                   sx={{
-                    background: 'linear-gradient(135deg, #64748b 0%, #475569 50%, #334155 100%)',
-                    boxShadow: '0 4px 12px rgba(100, 116, 139, 0.15)',
+                    background: COLORS.GRADIENT_SLATE,
+                    boxShadow: `0 4px 12px ${addAlpha(COLORS.SLATE_500, 0.15)}`,
                     '& .MuiTableCell-head': {
-                      color: '#ffffff',
+                      color: COLORS.WHITE,
                       fontWeight: 600,
                       fontSize: '0.95rem',
                       letterSpacing: '0.5px',
@@ -835,7 +836,7 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
                       border: 'none',
                       padding: '20px 16px',
                       position: 'relative',
-                      textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                      textShadow: `0 1px 2px ${addAlpha(COLORS.BLACK, 0.1)}`,
                       '&::after': {
                         content: '""',
                         position: 'absolute',
@@ -843,7 +844,7 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
                         left: 0,
                         right: 0,
                         height: '3px',
-                        background: 'linear-gradient(90deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.6) 100%)'
+                        background: `linear-gradient(90deg, ${addAlpha(COLORS.WHITE, 0.6)} 0%, ${addAlpha(COLORS.WHITE, 0.8)} 50%, ${addAlpha(COLORS.WHITE, 0.6)} 100%)`
                       }
                     }
                   }}
@@ -881,8 +882,8 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
         PaperProps={{
           sx: {
             borderRadius: 3,
-            background: 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)',
-            color: 'white',
+            background: `linear-gradient(135deg, ${COLORS.SUCCESS} 0%, ${addAlpha(COLORS.SUCCESS, 0.85)} 100%)`,
+            color: COLORS.WHITE,
             textAlign: 'center',
             animation: 'slideIn 0.5s ease-out',
             '@keyframes slideIn': {
@@ -906,7 +907,7 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
                 width: 80,
                 height: 80,
                 borderRadius: '50%',
-                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                backgroundColor: addAlpha(COLORS.WHITE, 0.2),
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -924,7 +925,7 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
                 },
               }}
             >
-              <SuccessIcon sx={{ fontSize: 48, color: 'white' }} />
+              <SuccessIcon sx={{ fontSize: 48, color: COLORS.WHITE }} />
             </Box>
 
             {/* Success Message */}
@@ -940,7 +941,7 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
               
               <Box sx={{ display: 'flex', justifyContent: 'space-around', mb: 2 }}>
                 <Box sx={{ textAlign: 'center' }}>
-                  <Typography variant="h3" sx={{ fontWeight: 'bold', color: 'rgba(255, 255, 255, 0.9)' }}>
+                  <Typography variant="h3" sx={{ fontWeight: 'bold', color: addAlpha(COLORS.WHITE, 0.9) }}>
                     {importStats.successful}
                   </Typography>
                   <Typography variant="body2">
@@ -950,7 +951,7 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
                 
                 {importStats.failed > 0 && (
                   <Box sx={{ textAlign: 'center' }}>
-                    <Typography variant="h3" sx={{ fontWeight: 'bold', color: 'rgba(255, 255, 255, 0.7)' }}>
+                    <Typography variant="h3" sx={{ fontWeight: 'bold', color: addAlpha(COLORS.WHITE, 0.7) }}>
                       {importStats.failed}
                     </Typography>
                     <Typography variant="body2">
@@ -968,9 +969,9 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
                   sx={{
                     height: 8,
                     borderRadius: 4,
-                    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                    backgroundColor: addAlpha(COLORS.WHITE, 0.3),
                     '& .MuiLinearProgress-bar': {
-                      backgroundColor: 'white',
+                      backgroundColor: COLORS.WHITE,
                       borderRadius: 4,
                       animation: 'progressFill 1s ease-out 0.5s both',
                       '@keyframes progressFill': {
@@ -992,7 +993,7 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
 
               {/* Show errors if any */}
               {importStats.errors.length > 0 && (
-                <Box sx={{ mt: 2, p: 2, backgroundColor: 'rgba(255, 255, 255, 0.1)', borderRadius: 2 }}>
+                <Box sx={{ mt: 2, p: 2, backgroundColor: addAlpha(COLORS.WHITE, 0.1), borderRadius: 2 }}>
                   <Typography variant="body2" sx={{ mb: 1, fontWeight: 'bold' }}>
                     Import Warnings:
                   </Typography>
@@ -1023,10 +1024,10 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
               }
             }}
             sx={{
-              backgroundColor: 'rgba(255, 255, 255, 0.2)',
-              color: 'white',
+              backgroundColor: addAlpha(COLORS.WHITE, 0.2),
+              color: COLORS.WHITE,
               '&:hover': {
-                backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                backgroundColor: addAlpha(COLORS.WHITE, 0.3),
               },
               px: 4,
               py: 1.5,

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { COLORS, getGradient } from '../../theme/themeColors';
+import { COLORS, getGradient, addAlpha } from '../../theme/themeColors';
 import {
   Paper,
   Table,
@@ -378,8 +378,8 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
               <TableHead>
                 <TableRow
                   sx={{
-                    background: 'linear-gradient(135deg, #f5f5f5 0%, #fafafa 50%, #f5f5f5 100%)',
-                    borderBottom: '2px solid #E8B86D',
+                    background: `linear-gradient(135deg, ${COLORS.BG_DEFAULT} 0%, ${COLORS.BG_LIGHT} 50%, ${COLORS.BG_DEFAULT} 100%)`,
+                    borderBottom: `2px solid ${COLORS.SECONDARY}`,
                     '& .MuiTableCell-head': {
                       color: COLORS.PRIMARY,
                       fontWeight: 700,
