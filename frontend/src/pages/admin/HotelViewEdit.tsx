@@ -8,9 +8,6 @@ import {
   Paper,
   Grid,
   TextField,
-  FormControl,
-  InputLabel,
-  Select,
   MenuItem,
   Chip,
   Divider,
@@ -52,11 +49,12 @@ import {
   AttachMoney as CurrencyIcon,
   Public as PublicIcon,
 } from '@mui/icons-material';
-import { COLORS } from '../../theme/themeColors';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 import { useAuthenticatedApi } from '../../hooks/useAuthenticatedApi';
 import { useTenant } from '../../contexts/TenantContext';
 import PremiumDisplayField from '../../components/common/PremiumDisplayField';
 import PremiumTextField from '../../components/common/PremiumTextField';
+import PremiumSelect from '../../components/common/PremiumSelect';
 
 interface HotelData {
   id: number;
@@ -241,9 +239,10 @@ const HotelViewEdit: React.FC = () => {
   };
 
   const statusInfo = getStatusInfo(currentHotel?.status || 'ACTIVE');
+  const heroPattern = `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='${COLORS.WHITE.replace('#', '%23')}' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`;
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'COLORS.BG_DEFAULT' }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: COLORS.BG_DEFAULT }}>
       <Container maxWidth="xl" sx={{ py: 4 }}>
         {/* Enhanced Header with Hero Section */}
         <Paper 
@@ -253,7 +252,7 @@ const HotelViewEdit: React.FC = () => {
             borderRadius: 3,
             p: 4,
             mb: 4,
-            color: 'white',
+            color: COLORS.WHITE,
             position: 'relative',
             overflow: 'hidden'
           }}
@@ -266,7 +265,7 @@ const HotelViewEdit: React.FC = () => {
               right: 0,
               bottom: 0,
               left: 0,
-              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+              backgroundImage: heroPattern,
               opacity: 0.3
             }}
           />
@@ -278,8 +277,8 @@ const HotelViewEdit: React.FC = () => {
                   onClick={handleBackToAdmin} 
                   sx={{ 
                     mr: 2, 
-                    color: 'white',
-                    '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' }
+                    color: COLORS.WHITE,
+                    '&:hover': { bgcolor: addAlpha(COLORS.WHITE, 0.1) }
                   }}
                 >
                   <ArrowBackIcon />
@@ -288,7 +287,7 @@ const HotelViewEdit: React.FC = () => {
                   sx={{ 
                     width: 64, 
                     height: 64, 
-                    bgcolor: 'rgba(255,255,255,0.2)', 
+                    bgcolor: addAlpha(COLORS.WHITE, 0.2), 
                     mr: 3 
                   }}
                 >
@@ -307,9 +306,9 @@ const HotelViewEdit: React.FC = () => {
                       icon={statusInfo.icon}
                       label={currentHotel?.status || 'ACTIVE'}
                       sx={{
-                        color: 'white',
-                        bgcolor: 'rgba(255,255,255,0.2)',
-                        '& .MuiChip-icon': { color: 'white' }
+                        color: COLORS.WHITE,
+                        bgcolor: addAlpha(COLORS.WHITE, 0.2),
+                        '& .MuiChip-icon': { color: COLORS.WHITE }
                       }}
                     />
                     {currentHotel?.city && (
@@ -333,11 +332,11 @@ const HotelViewEdit: React.FC = () => {
                       onClick={handleCancelEdit}
                       disabled={saving}
                       sx={{
-                        color: 'white',
-                        borderColor: 'rgba(255,255,255,0.5)',
+                        color: COLORS.WHITE,
+                        borderColor: addAlpha(COLORS.WHITE, 0.5),
                         '&:hover': { 
-                          borderColor: 'white',
-                          bgcolor: 'rgba(255,255,255,0.1)'
+                          borderColor: COLORS.WHITE,
+                          bgcolor: addAlpha(COLORS.WHITE, 0.1)
                         }
                       }}
                     >
@@ -349,9 +348,9 @@ const HotelViewEdit: React.FC = () => {
                       onClick={handleSave}
                       disabled={saving}
                       sx={{
-                        bgcolor: 'white',
+                        bgcolor: COLORS.WHITE,
                         color: 'primary.main',
-                        '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' }
+                        '&:hover': { bgcolor: addAlpha(COLORS.WHITE, 0.9) }
                       }}
                     >
                       {saving ? 'Saving...' : 'Save Changes'}
@@ -363,9 +362,9 @@ const HotelViewEdit: React.FC = () => {
                     startIcon={<EditIcon />}
                     onClick={handleEdit}
                     sx={{
-                      bgcolor: 'white',
+                      bgcolor: COLORS.WHITE,
                       color: 'primary.main',
-                      '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' }
+                      '&:hover': { bgcolor: addAlpha(COLORS.WHITE, 0.9) }
                     }}
                   >
                     Edit Hotel
@@ -431,7 +430,7 @@ const HotelViewEdit: React.FC = () => {
             {/* Main Content Area */}
             <Grid item xs={12} lg={8}>
               {/* Basic Information Card */}
-              <Card elevation={0} sx={{ mb: 4, border: '1px solid COLORS.BG_INFO_LIGHT', borderRadius: 3 }}>
+              <Card elevation={0} sx={{ mb: 4, border: `1px solid ${COLORS.BG_INFO_LIGHT}`, borderRadius: 3 }}>
                 <CardContent sx={{ p: 4 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                     <Avatar sx={{ bgcolor: 'primary.main', mr: 2 }}>
@@ -661,44 +660,39 @@ const HotelViewEdit: React.FC = () => {
                     </Typography>
                   </Box>
                   
-                  <FormControl 
-                    fullWidth 
-                    disabled={!isEditing} 
-                    variant={isEditing ? 'outlined' : 'filled'}
+                  <PremiumSelect
+                    fullWidth
+                    label="Hotel Status"
+                    value={currentHotel.status || 'ACTIVE'}
+                    onChange={(e) => handleInputChange('status', e.target.value)}
+                    disabled={!isEditing}
                     sx={{ mb: 3 }}
                   >
-                    <InputLabel>Hotel Status</InputLabel>
-                    <Select
-                      value={currentHotel.status || 'ACTIVE'}
-                      onChange={(e) => handleInputChange('status', e.target.value)}
-                      label="Hotel Status"
-                    >
-                      <MenuItem value="ACTIVE">
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          <VerifiedIcon sx={{ mr: 1, color: 'success.main' }} />
-                          Active
-                        </Box>
-                      </MenuItem>
-                      <MenuItem value="PENDING">
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          <PendingIcon sx={{ mr: 1, color: 'warning.main' }} />
-                          Pending
-                        </Box>
-                      </MenuItem>
-                      <MenuItem value="INACTIVE">
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          <InactiveIcon sx={{ mr: 1, color: 'text.secondary' }} />
-                          Inactive
-                        </Box>
-                      </MenuItem>
-                      <MenuItem value="SUSPENDED">
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          <SuspendedIcon sx={{ mr: 1, color: 'error.main' }} />
-                          Suspended
-                        </Box>
-                      </MenuItem>
-                    </Select>
-                  </FormControl>
+                    <MenuItem value="ACTIVE">
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <VerifiedIcon sx={{ mr: 1, color: 'success.main' }} />
+                        Active
+                      </Box>
+                    </MenuItem>
+                    <MenuItem value="PENDING">
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <PendingIcon sx={{ mr: 1, color: 'warning.main' }} />
+                        Pending
+                      </Box>
+                    </MenuItem>
+                    <MenuItem value="INACTIVE">
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <InactiveIcon sx={{ mr: 1, color: 'text.secondary' }} />
+                        Inactive
+                      </Box>
+                    </MenuItem>
+                    <MenuItem value="SUSPENDED">
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <SuspendedIcon sx={{ mr: 1, color: 'error.main' }} />
+                        Suspended
+                      </Box>
+                    </MenuItem>
+                  </PremiumSelect>
 
                   <Box sx={{ textAlign: 'center' }}>
                     <Chip

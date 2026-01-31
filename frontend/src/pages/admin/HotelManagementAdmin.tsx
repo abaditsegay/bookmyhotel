@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_CONFIG } from '../../config/apiConfig';
-import { COLORS } from '../../theme/themeColors';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 import {
   Typography,
   Box,
@@ -23,9 +23,6 @@ import {
   DialogActions,
   Alert,
   CircularProgress,
-  FormControl,
-  InputLabel,
-  Select,
   MenuItem,
   IconButton,
   Tabs,
@@ -50,6 +47,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { adminApiService, HotelDTO, UpdateHotelRequest, TenantDTO, ApproveRegistrationRequest, HotelRegistrationResponse } from '../../services/adminApi';
 import PremiumTextField from '../../components/common/PremiumTextField';
 import PremiumDisplayField from '../../components/common/PremiumDisplayField';
+import PremiumSelect from '../../components/common/PremiumSelect';
 import HotelEditDialog from '../../components/hotel/HotelEditDialog';
 
 interface Hotel extends HotelDTO {}
@@ -768,18 +766,16 @@ const HotelManagementAdmin: React.FC = () => {
                   />
                 </Grid>
                 <Grid item xs={12} md={3}>
-                  <FormControl fullWidth>
-                    <InputLabel>Status</InputLabel>
-                    <Select
-                      value={statusFilter}
-                      label="Status"
-                      onChange={(e) => setStatusFilter(e.target.value)}
-                    >
-                      <MenuItem value="all">All Hotels</MenuItem>
-                      <MenuItem value="active">Active Only</MenuItem>
-                      <MenuItem value="inactive">Inactive Only</MenuItem>
-                    </Select>
-                  </FormControl>
+                  <PremiumSelect
+                    fullWidth
+                    label="Status"
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                  >
+                    <MenuItem value="all">All Hotels</MenuItem>
+                    <MenuItem value="active">Active Only</MenuItem>
+                    <MenuItem value="inactive">Inactive Only</MenuItem>
+                  </PremiumSelect>
                 </Grid>
               </Grid>
             </Paper>
@@ -790,7 +786,7 @@ const HotelManagementAdmin: React.FC = () => {
                 <TableHead>
                   <TableRow
                     sx={{
-                      background: 'linear-gradient(135deg, rgba(26, 54, 93, 0.08) 0%, rgba(26, 54, 93, 0.16) 100%)',
+                      background: `linear-gradient(135deg, ${addAlpha(COLORS.PRIMARY, 0.08)} 0%, ${addAlpha(COLORS.PRIMARY, 0.16)} 100%)`,
                       borderBottom: `2px solid ${COLORS.PRIMARY}`,
                       '& .MuiTableCell-head': {
                         color: COLORS.PRIMARY,
@@ -981,7 +977,7 @@ const HotelManagementAdmin: React.FC = () => {
                 <TableHead>
                   <TableRow
                     sx={{
-                      background: 'linear-gradient(135deg, rgba(26, 54, 93, 0.08) 0%, rgba(26, 54, 93, 0.16) 100%)',
+                      background: `linear-gradient(135deg, ${addAlpha(COLORS.PRIMARY, 0.08)} 0%, ${addAlpha(COLORS.PRIMARY, 0.16)} 100%)`,
                       borderBottom: `2px solid ${COLORS.PRIMARY}`,
                       '& .MuiTableCell-head': {
                         color: COLORS.PRIMARY,
@@ -1033,11 +1029,11 @@ const HotelManagementAdmin: React.FC = () => {
                           startIcon={<ReviewIcon />}
                           onClick={() => viewRegistration(registration)}
                           sx={{
-                            borderColor: '#2c5282',
-                            color: '#2c5282',
+                            borderColor: COLORS.PRIMARY,
+                            color: COLORS.PRIMARY,
                             '&:hover': {
-                              borderColor: '#1e3a5f',
-                              backgroundColor: '#f0f4f8'
+                              borderColor: COLORS.PRIMARY_PRESSED,
+                              backgroundColor: COLORS.SLATE_50
                             }
                           }}
                         >
@@ -1133,13 +1129,13 @@ const HotelManagementAdmin: React.FC = () => {
               {/* Phone Numbers Section with grouped styling */}
               <Grid item xs={12}>
                 <Box sx={{ 
-                  border: '1px solid #e3f2fd', 
+                  border: `1px solid ${COLORS.BG_INFO_LIGHT}`, 
                   borderRadius: 2, 
                   p: 2, 
-                  backgroundColor: 'COLORS.BG_INFO_LIGHT',
+                  backgroundColor: COLORS.BG_INFO_LIGHT,
                   mt: 1
                 }}>
-                  <Typography variant="subtitle1" sx={{ mb: 2, color: 'COLORS.PRIMARY', fontWeight: 600 }}>
+                  <Typography variant="subtitle1" sx={{ mb: 2, color: COLORS.PRIMARY, fontWeight: 600 }}>
                     Phone Numbers
                   </Typography>
                   <Grid container spacing={2}>
@@ -1264,10 +1260,10 @@ const HotelManagementAdmin: React.FC = () => {
         <Dialog open={registrationViewDialogOpen} onClose={() => setRegistrationViewDialogOpen(false)} maxWidth="md" fullWidth>
           <DialogTitle
             sx={{
-              borderBottom: '2px solid #E8B86D',
+              borderBottom: `2px solid ${COLORS.SECONDARY}`,
               pb: 2,
               fontWeight: 600,
-              color: '#2c5282'
+              color: COLORS.PRIMARY
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -1298,15 +1294,15 @@ const HotelManagementAdmin: React.FC = () => {
                     />
                   ) : (
                     <Box>
-                      <Typography variant="caption" sx={{ color: '#666', mb: 0.5, display: 'block', fontSize: '0.75rem' }}>
+                      <Typography variant="caption" sx={{ color: COLORS.TEXT_SECONDARY, mb: 0.5, display: 'block', fontSize: '0.75rem' }}>
                         Hotel Name
                       </Typography>
                       <Box sx={{
                         p: 1.5,
-                        border: '1px solid #e0e0e0',
+                        border: `1px solid ${COLORS.BORDER_LIGHT}`,
                         borderRadius: 1,
-                        backgroundColor: '#fafafa',
-                        borderLeft: '3px solid #E8B86D'
+                        backgroundColor: COLORS.BG_LIGHT,
+                        borderLeft: `3px solid ${COLORS.SECONDARY}`
                       }}>
                         <Typography variant="body1" sx={{ fontWeight: 500 }}>
                           {selectedRegistration.hotelName}
@@ -1327,15 +1323,15 @@ const HotelManagementAdmin: React.FC = () => {
                     />
                   ) : (
                     <Box>
-                      <Typography variant="caption" sx={{ color: '#666', mb: 0.5, display: 'block', fontSize: '0.75rem' }}>
+                      <Typography variant="caption" sx={{ color: COLORS.TEXT_SECONDARY, mb: 0.5, display: 'block', fontSize: '0.75rem' }}>
                         Contact Person
                       </Typography>
                       <Box sx={{
                         p: 1.5,
-                        border: '1px solid #e0e0e0',
+                        border: `1px solid ${COLORS.BORDER_LIGHT}`,
                         borderRadius: 1,
-                        backgroundColor: '#fafafa',
-                        borderLeft: '3px solid #E8B86D'
+                        backgroundColor: COLORS.BG_LIGHT,
+                        borderLeft: `3px solid ${COLORS.SECONDARY}`
                       }}>
                         <Typography variant="body1" sx={{ fontWeight: 500 }}>
                           {selectedRegistration.contactPerson}
@@ -1357,15 +1353,15 @@ const HotelManagementAdmin: React.FC = () => {
                     />
                   ) : (
                     <Box>
-                      <Typography variant="caption" sx={{ color: '#666', mb: 0.5, display: 'block', fontSize: '0.75rem' }}>
+                      <Typography variant="caption" sx={{ color: COLORS.TEXT_SECONDARY, mb: 0.5, display: 'block', fontSize: '0.75rem' }}>
                         Description
                       </Typography>
                       <Box sx={{
                         p: 1.5,
-                        border: '1px solid #e0e0e0',
+                        border: `1px solid ${COLORS.BORDER_LIGHT}`,
                         borderRadius: 1,
-                        backgroundColor: '#fafafa',
-                        borderLeft: '3px solid #E8B86D',
+                        backgroundColor: COLORS.BG_LIGHT,
+                        borderLeft: `3px solid ${COLORS.SECONDARY}`,
                         minHeight: '80px'
                       }}>
                         <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
@@ -1387,15 +1383,15 @@ const HotelManagementAdmin: React.FC = () => {
                     />
                   ) : (
                     <Box>
-                      <Typography variant="caption" sx={{ color: '#666', mb: 0.5, display: 'block', fontSize: '0.75rem' }}>
+                      <Typography variant="caption" sx={{ color: COLORS.TEXT_SECONDARY, mb: 0.5, display: 'block', fontSize: '0.75rem' }}>
                         Address
                       </Typography>
                       <Box sx={{
                         p: 1.5,
-                        border: '1px solid #e0e0e0',
+                        border: `1px solid ${COLORS.BORDER_LIGHT}`,
                         borderRadius: 1,
-                        backgroundColor: '#fafafa',
-                        borderLeft: '3px solid #E8B86D'
+                        backgroundColor: COLORS.BG_LIGHT,
+                        borderLeft: `3px solid ${COLORS.SECONDARY}`
                       }}>
                         <Typography variant="body1" sx={{ fontWeight: 500 }}>
                           {selectedRegistration.address}
@@ -1601,7 +1597,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
             )}
           </DialogContent>
-          <DialogActions sx={{ px: 3, py: 2, borderTop: '1px solid #e0e0e0' }}>
+          <DialogActions sx={{ px: 3, py: 2, borderTop: `1px solid ${COLORS.BORDER_LIGHT}` }}>
             {registrationEditMode ? (
               <>
                 <Button onClick={handleCancelRegistrationEdit}>Cancel</Button>
@@ -1617,7 +1613,7 @@ const HotelManagementAdmin: React.FC = () => {
               <>
                 <Button 
                   onClick={() => setRegistrationViewDialogOpen(false)}
-                  sx={{ color: '#666' }}
+                  sx={{ color: COLORS.TEXT_SECONDARY }}
                 >
                   Close
                 </Button>
@@ -1629,10 +1625,10 @@ const HotelManagementAdmin: React.FC = () => {
                       startIcon={<RejectIcon />}
                       onClick={() => openRejectionDialog(selectedRegistration)}
                       sx={{
-                        borderColor: '#d32f2f',
+                        borderColor: COLORS.ERROR,
                         '&:hover': {
-                          backgroundColor: '#ffebee',
-                          borderColor: '#c62828'
+                          backgroundColor: COLORS.BG_ERROR_LIGHT,
+                          borderColor: COLORS.ERROR
                         }
                       }}
                     >
@@ -1644,9 +1640,9 @@ const HotelManagementAdmin: React.FC = () => {
                       startIcon={<ApproveIcon />}
                       onClick={() => openApprovalDialog(selectedRegistration)}
                       sx={{
-                        backgroundColor: '#2e7d32',
+                        backgroundColor: (theme) => theme.palette.success.main,
                         '&:hover': {
-                          backgroundColor: '#1b5e20'
+                          backgroundColor: (theme) => theme.palette.success.dark
                         }
                       }}
                     >
@@ -1838,10 +1834,10 @@ const HotelManagementAdmin: React.FC = () => {
         >
           <DialogTitle
             sx={{
-              borderBottom: '2px solid #E8B86D',
+              borderBottom: `2px solid ${COLORS.SECONDARY}`,
               pb: 2,
               fontWeight: 600,
-              color: '#2c5282'
+              color: COLORS.PRIMARY
             }}
           >
             Approve Hotel Registration
@@ -1853,27 +1849,27 @@ const HotelManagementAdmin: React.FC = () => {
             </DialogContentText>
             <Grid container spacing={2}>
               <Grid item xs={12}>
-                <FormControl fullWidth required>
-                  <InputLabel>Tenant</InputLabel>
-                  <Select
-                    value={tenantId}
-                    onChange={(e) => setTenantId(e.target.value)}
-                    disabled={tenantsLoading}
-                  >
-                    {tenantsLoading ? (
-                      <MenuItem disabled>
-                        <CircularProgress size={20} sx={{ mr: 1 }} />
-                        Loading tenants...
+                <PremiumSelect
+                  fullWidth
+                  required
+                  label="Tenant"
+                  value={tenantId}
+                  onChange={(e) => setTenantId(e.target.value)}
+                  disabled={tenantsLoading}
+                >
+                  {tenantsLoading ? (
+                    <MenuItem disabled>
+                      <CircularProgress size={20} sx={{ mr: 1 }} />
+                      Loading tenants...
+                    </MenuItem>
+                  ) : (
+                    tenants.map((tenant) => (
+                      <MenuItem key={tenant.id} value={tenant.id}>
+                        {tenant.name} ({tenant.tenantId})
                       </MenuItem>
-                    ) : (
-                      tenants.map((tenant) => (
-                        <MenuItem key={tenant.id} value={tenant.id}>
-                          {tenant.name} ({tenant.tenantId})
-                        </MenuItem>
-                      ))
-                    )}
-                  </Select>
-                </FormControl>
+                    ))
+                  )}
+                </PremiumSelect>
               </Grid>
               <Grid item xs={12}>
                 <PremiumTextField
@@ -1897,13 +1893,13 @@ const HotelManagementAdmin: React.FC = () => {
               variant="contained"
               disabled={!tenantId.trim()}
               sx={{
-                backgroundColor: COLORS.PRIMARY,
+                  backgroundColor: COLORS.PRIMARY,
                 '&:hover': {
                   backgroundColor: COLORS.PRIMARY,
                   filter: 'brightness(0.9)'
                 },
                 '&:disabled': {
-                  backgroundColor: 'rgba(0, 0, 0, 0.12)'
+                    backgroundColor: addAlpha(COLORS.BLACK, 0.12)
                 }
               }}
             >
@@ -1921,10 +1917,10 @@ const HotelManagementAdmin: React.FC = () => {
         >
           <DialogTitle
             sx={{
-              borderBottom: '2px solid #E8B86D',
+              borderBottom: `2px solid ${COLORS.SECONDARY}`,
               pb: 2,
               fontWeight: 600,
-              color: '#2c5282'
+              color: COLORS.PRIMARY
             }}
           >
             Reject Hotel Registration

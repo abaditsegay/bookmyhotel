@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { COLORS, getGradient } from '../../theme/themeColors';
+import { COLORS, addAlpha, getGradient } from '../../theme/themeColors';
 import {
   Container,
   Typography,
@@ -256,7 +256,7 @@ const HotelRegistrationAdmin: React.FC = () => {
                   border: 'none',
                   padding: '20px 16px',
                   position: 'relative',
-                  textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                  textShadow: `0 1px 2px ${addAlpha(COLORS.BLACK, 0.1)}`,
                   '&::after': {
                     content: '""',
                     position: 'absolute',
@@ -264,7 +264,7 @@ const HotelRegistrationAdmin: React.FC = () => {
                     left: 0,
                     right: 0,
                     height: '3px',
-                    background: 'linear-gradient(90deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.6) 100%)'
+                    background: `linear-gradient(90deg, ${addAlpha(COLORS.WHITE, 0.6)} 0%, ${addAlpha(COLORS.WHITE, 0.8)} 50%, ${addAlpha(COLORS.WHITE, 0.6)} 100%)`
                   }
                 }
               }}

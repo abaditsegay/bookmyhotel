@@ -20,6 +20,7 @@ import {
   CircularProgress,
   LinearProgress
 } from '@mui/material';
+import { alpha, useTheme as useMuiTheme } from '@mui/material/styles';
 import { useTheme } from '../../contexts/ThemeContext';
 
 // Interface definitions
@@ -108,6 +109,44 @@ interface ProcessMonitoringDashboardProps {
 
 const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({ hotelId }) => {
   const { themeMode } = useTheme();
+  const muiTheme = useMuiTheme();
+  const isDark = themeMode === 'dark';
+  const palette = muiTheme.palette;
+  const textPrimary = palette.text.primary;
+  const textSecondary = palette.text.secondary;
+  const pageGradient = isDark
+    ? `linear-gradient(135deg, ${palette.grey[800]} 0%, ${palette.grey[900]} 100%)`
+    : `linear-gradient(135deg, ${palette.background.default} 0%, ${palette.background.paper} 100%)`;
+  const headerSurface = alpha(isDark ? palette.grey[900] : palette.common.white, isDark ? 0.8 : 0.9);
+  const headerBorder = `1px solid ${alpha(palette.divider, 0.6)}`;
+  const primaryMain = palette.primary.main;
+  const primaryLight = palette.primary.light;
+  const primaryDark = palette.primary.dark;
+  const successMain = palette.success.main;
+  const successLight = palette.success.light;
+  const successDark = palette.success.dark;
+  const errorMain = palette.error.main;
+  const errorLight = palette.error.light;
+  const errorDark = palette.error.dark;
+  const warningMain = palette.warning.main;
+  const warningDark = palette.warning.dark;
+  const infoMain = palette.info.main;
+  const infoLight = palette.info.light;
+  const secondaryMain = palette.secondary.main;
+  const secondaryDark = palette.secondary.dark;
+  const headerTextGradient = `linear-gradient(135deg, ${isDark ? primaryLight : primaryDark} 0%, ${primaryMain} 100%)`;
+  const panelSurface = alpha(isDark ? palette.grey[700] : palette.common.white, isDark ? 0.6 : 0.8);
+  const panelBorder = `1px solid ${alpha(palette.divider, isDark ? 0.5 : 0.6)}`;
+  const progressTrack = alpha(palette.divider, isDark ? 0.3 : 0.5);
+  const getMetricCardStyle = (baseColor: string) => ({
+    background: `linear-gradient(135deg, ${alpha(baseColor, isDark ? 0.2 : 0.12)} 0%, ${alpha(baseColor, isDark ? 0.3 : 0.2)} 100%)`,
+    border: `1px solid ${alpha(baseColor, isDark ? 0.3 : 0.25)}`,
+    transition: 'all 0.3s ease',
+    '&:hover': {
+      transform: 'translateY(-2px)',
+      boxShadow: `0 8px 30px ${alpha(baseColor, isDark ? 0.2 : 0.15)}`
+    }
+  });
   const [systemMetrics, setSystemMetrics] = useState<SystemMetrics | null>(null);
   const [appHealth, setAppHealth] = useState<AppHealth | null>(null);
   const [userActivity, setUserActivity] = useState<UserActivity | null>(null);
@@ -278,7 +317,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
         <Typography
           variant="h6"
           sx={{
-            color: themeMode === 'dark' ? '#e2e8f0' : '#374151',
+            color: textPrimary,
             fontWeight: 500
           }}
         >
@@ -287,7 +326,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
         <Typography
           variant="body2"
           sx={{
-            color: themeMode === 'dark' ? '#94a3b8' : '#64748b',
+            color: textSecondary,
             mt: 1
           }}
         >
@@ -311,9 +350,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
     <Box
       sx={{
         minHeight: '100vh',
-        background: themeMode === 'dark'
-          ? 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)'
-          : 'linear-gradient(135deg, #ffffff 0%, #ffffff 100%)',
+        background: pageGradient,
         transition: 'all 0.3s ease',
         p: { xs: 2, sm: 3 },
         '@keyframes pulse': {
@@ -329,11 +366,9 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
         sx={{
           p: 3,
           mb: 3,
-          background: themeMode === 'dark'
-            ? 'rgba(30, 41, 59, 0.8)'
-            : 'rgba(255, 255, 255, 0.9)',
+          background: headerSurface,
           backdropFilter: 'blur(10px)',
-          border: themeMode === 'dark' ? '1px solid rgba(71, 85, 105, 0.3)' : '1px solid rgba(226, 232, 240, 0.3)'
+          border: headerBorder
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -342,7 +377,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
               sx={{
                 p: 2,
                 borderRadius: 2,
-                background: themeMode === 'dark' ? 'rgba(59, 130, 246, 0.2)' : 'rgba(59, 130, 246, 0.1)',
+                background: alpha(primaryMain, isDark ? 0.2 : 0.1),
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -357,9 +392,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                 variant="h4"
                 sx={{
                   fontWeight: 700,
-                  background: themeMode === 'dark'
-                    ? 'linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%)'
-                    : 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                  background: headerTextGradient,
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   backgroundClip: 'text',
@@ -371,7 +404,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
                 <Typography
                   variant="body2"
-                  sx={{ color: themeMode === 'dark' ? '#94a3b8' : '#64748b' }}
+                  sx={{ color: textSecondary }}
                 >
                   Real-time system health and performance metrics
                 </Typography>
@@ -393,8 +426,8 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
               sx={{
                 minWidth: 120,
                 '&:hover': {
-                  borderColor: themeMode === 'dark' ? '#60a5fa' : '#2563eb',
-                  backgroundColor: themeMode === 'dark' ? 'rgba(96, 165, 250, 0.1)' : 'rgba(37, 99, 235, 0.1)'
+                  borderColor: isDark ? primaryLight : primaryMain,
+                  backgroundColor: alpha(primaryMain, isDark ? 0.1 : 0.08)
                 }
               }}
             >
@@ -429,17 +462,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
         <Grid item xs={12} md={3}>
           <Card
             elevation={3}
-            sx={{
-              background: themeMode === 'dark'
-                ? 'linear-gradient(135deg, rgba(30, 58, 138, 0.2) 0%, rgba(30, 64, 175, 0.3) 100%)'
-                : 'linear-gradient(135deg, rgba(219, 234, 254, 0.8) 0%, rgba(191, 219, 254, 0.9) 100%)',
-              border: themeMode === 'dark' ? '1px solid rgba(59, 130, 246, 0.3)' : '1px solid rgba(147, 197, 253, 0.5)',
-              transition: 'all 0.3s ease',
-              '&:hover': {
-                transform: 'translateY(-2px)',
-                boxShadow: themeMode === 'dark' ? '0 8px 30px rgba(59, 130, 246, 0.2)' : '0 8px 30px rgba(59, 130, 246, 0.15)'
-              }
-            }}
+            sx={getMetricCardStyle(primaryMain)}
           >
             <CardContent sx={{ p: 3 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -447,7 +470,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                   variant="subtitle2"
                   sx={{
                     fontWeight: 600,
-                    color: themeMode === 'dark' ? '#cbd5e1' : '#374151'
+                    color: textPrimary
                   }}
                 >
                   CPU Usage
@@ -456,7 +479,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                   sx={{
                     p: 1,
                     borderRadius: 1,
-                    background: themeMode === 'dark' ? '#2563eb' : '#3b82f6',
+                    background: isDark ? primaryDark : primaryMain,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -470,7 +493,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                 variant="h4"
                 sx={{
                   fontWeight: 'bold',
-                  color: themeMode === 'dark' ? '#60a5fa' : '#1d4ed8',
+                  color: isDark ? primaryLight : primaryDark,
                   mb: 1
                 }}
               >
@@ -479,7 +502,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
               <Typography
                 variant="caption"
                 sx={{
-                  color: themeMode === 'dark' ? '#93c5fd' : '#2563eb'
+                  color: isDark ? alpha(primaryLight, 0.9) : primaryMain
                 }}
               >
                 {systemMetrics?.cpu?.cores || 4} cores available
@@ -491,17 +514,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
         <Grid item xs={12} md={3}>
           <Card
             elevation={3}
-            sx={{
-              background: themeMode === 'dark'
-                ? 'linear-gradient(135deg, rgba(21, 128, 61, 0.2) 0%, rgba(22, 101, 52, 0.3) 100%)'
-                : 'linear-gradient(135deg, rgba(236, 253, 245, 0.8) 0%, rgba(209, 250, 229, 0.9) 100%)',
-              border: themeMode === 'dark' ? '1px solid rgba(34, 197, 94, 0.3)' : '1px solid rgba(134, 239, 172, 0.5)',
-              transition: 'all 0.3s ease',
-              '&:hover': {
-                transform: 'translateY(-2px)',
-                boxShadow: themeMode === 'dark' ? '0 8px 30px rgba(34, 197, 94, 0.2)' : '0 8px 30px rgba(34, 197, 94, 0.15)'
-              }
-            }}
+            sx={getMetricCardStyle(successMain)}
           >
             <CardContent sx={{ p: 3 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -509,7 +522,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                   variant="subtitle2"
                   sx={{
                     fontWeight: 600,
-                    color: themeMode === 'dark' ? '#cbd5e1' : '#374151'
+                    color: textPrimary
                   }}
                 >
                   Memory Usage
@@ -518,7 +531,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                   sx={{
                     p: 1,
                     borderRadius: 1,
-                    background: themeMode === 'dark' ? '#16a34a' : '#22c55e',
+                    background: isDark ? successDark : successMain,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -532,7 +545,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                 variant="h4"
                 sx={{
                   fontWeight: 'bold',
-                  color: themeMode === 'dark' ? '#4ade80' : '#15803d',
+                  color: isDark ? successLight : successDark,
                   mb: 1
                 }}
               >
@@ -541,7 +554,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
               <Typography
                 variant="caption"
                 sx={{
-                  color: themeMode === 'dark' ? '#86efac' : '#16a34a'
+                  color: isDark ? alpha(successLight, 0.9) : successMain
                 }}
               >
                 {formatBytes((systemMetrics?.memory?.used || 0) * 1024 * 1024)} used
@@ -553,17 +566,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
         <Grid item xs={12} md={3}>
           <Card
             elevation={3}
-            sx={{
-              background: themeMode === 'dark'
-                ? 'linear-gradient(135deg, rgba(153, 27, 27, 0.2) 0%, rgba(127, 29, 29, 0.3) 100%)'
-                : 'linear-gradient(135deg, rgba(254, 242, 242, 0.8) 0%, rgba(254, 226, 226, 0.9) 100%)',
-              border: themeMode === 'dark' ? '1px solid rgba(239, 68, 68, 0.3)' : '1px solid rgba(252, 165, 165, 0.5)',
-              transition: 'all 0.3s ease',
-              '&:hover': {
-                transform: 'translateY(-2px)',
-                boxShadow: themeMode === 'dark' ? '0 8px 30px rgba(239, 68, 68, 0.2)' : '0 8px 30px rgba(239, 68, 68, 0.15)'
-              }
-            }}
+            sx={getMetricCardStyle(errorMain)}
           >
             <CardContent sx={{ p: 3 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -571,7 +574,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                   variant="subtitle2"
                   sx={{
                     fontWeight: 600,
-                    color: themeMode === 'dark' ? '#cbd5e1' : '#374151'
+                    color: textPrimary
                   }}
                 >
                   API Error Rate
@@ -580,7 +583,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                   sx={{
                     p: 1,
                     borderRadius: 1,
-                    background: themeMode === 'dark' ? '#dc2626' : '#ef4444',
+                    background: isDark ? errorDark : errorMain,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -594,7 +597,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                 variant="h4"
                 sx={{
                   fontWeight: 'bold',
-                  color: themeMode === 'dark' ? '#f87171' : '#b91c1c',
+                  color: isDark ? errorLight : errorDark,
                   mb: 1
                 }}
               >
@@ -603,7 +606,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
               <Typography
                 variant="caption"
                 sx={{
-                  color: themeMode === 'dark' ? '#fca5a5' : '#dc2626'
+                  color: isDark ? alpha(errorLight, 0.9) : errorMain
                 }}
               >
                 {apiMetrics?.totalRequests || 0} total requests
@@ -615,17 +618,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
         <Grid item xs={12} md={3}>
           <Card
             elevation={3}
-            sx={{
-              background: themeMode === 'dark'
-                ? 'linear-gradient(135deg, rgba(6, 78, 59, 0.2) 0%, rgba(5, 150, 105, 0.3) 100%)'
-                : 'linear-gradient(135deg, rgba(236, 253, 245, 0.8) 0%, rgba(167, 243, 208, 0.9) 100%)',
-              border: themeMode === 'dark' ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(110, 231, 183, 0.5)',
-              transition: 'all 0.3s ease',
-              '&:hover': {
-                transform: 'translateY(-2px)',
-                boxShadow: themeMode === 'dark' ? '0 8px 30px rgba(16, 185, 129, 0.2)' : '0 8px 30px rgba(16, 185, 129, 0.15)'
-              }
-            }}
+            sx={getMetricCardStyle(successMain)}
           >
             <CardContent sx={{ p: 3 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -633,7 +626,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                   variant="subtitle2"
                   sx={{
                     fontWeight: 600,
-                    color: themeMode === 'dark' ? '#cbd5e1' : '#374151'
+                    color: textPrimary
                   }}
                 >
                   Active Users
@@ -642,7 +635,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                   sx={{
                     p: 1,
                     borderRadius: 1,
-                    background: themeMode === 'dark' ? '#059669' : '#10b981',
+                    background: isDark ? successDark : successMain,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -656,7 +649,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                 variant="h4"
                 sx={{
                   fontWeight: 'bold',
-                  color: themeMode === 'dark' ? '#34d399' : '#047857',
+                  color: isDark ? successLight : successDark,
                   mb: 1
                 }}
               >
@@ -665,7 +658,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
               <Typography
                 variant="caption"
                 sx={{
-                  color: themeMode === 'dark' ? '#6ee7b7' : '#059669'
+                  color: isDark ? alpha(successLight, 0.9) : successMain
                 }}
               >
                 {userActivity?.sessionsActive || 0} active sessions
@@ -679,13 +672,9 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
       <Paper
         elevation={2}
         sx={{
-          background: themeMode === 'dark'
-            ? 'rgba(30, 41, 59, 0.8)'
-            : 'rgba(255, 255, 255, 0.9)',
+          background: headerSurface,
           backdropFilter: 'blur(10px)',
-          border: themeMode === 'dark'
-            ? '1px solid rgba(71, 85, 105, 0.3)'
-            : '1px solid rgba(226, 232, 240, 0.3)'
+          border: headerBorder
         }}
       >
         <Box sx={{ p: 3 }}>
@@ -702,13 +691,13 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                 textTransform: 'none',
                 fontWeight: 600,
                 fontSize: '0.875rem',
-                color: themeMode === 'dark' ? '#94a3b8' : '#64748b',
+                color: textSecondary,
                 '&.Mui-selected': {
-                  color: themeMode === 'dark' ? '#f8fafc' : '#0f172a'
+                  color: textPrimary
                 }
               },
               '& .MuiTabs-indicator': {
-                backgroundColor: themeMode === 'dark' ? '#60a5fa' : '#2563eb',
+                backgroundColor: isDark ? primaryLight : primaryMain,
                 height: 3,
                 borderRadius: 1.5
               }
@@ -728,12 +717,8 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                   <Card
                     elevation={1}
                     sx={{
-                      background: themeMode === 'dark'
-                        ? 'rgba(51, 65, 85, 0.6)'
-                        : 'rgba(248, 250, 252, 0.8)',
-                      border: themeMode === 'dark'
-                        ? '1px solid rgba(71, 85, 105, 0.3)'
-                        : '1px solid rgba(226, 232, 240, 0.5)'
+                      background: panelSurface,
+                      border: panelBorder
                     }}
                   >
                     <CardContent sx={{ p: 3 }}>
@@ -742,7 +727,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                           variant="h6"
                           sx={{
                             fontWeight: 600,
-                            color: themeMode === 'dark' ? '#f1f5f9' : '#1e293b'
+                            color: textPrimary
                           }}
                         >
                           Application Status
@@ -768,7 +753,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                             variant="body2"
                             sx={{
                               fontWeight: 500,
-                              color: themeMode === 'dark' ? '#10b981' : '#059669'
+                              color: isDark ? successLight : successDark,
                             }}
                           >
                             {formatUptime(appHealth?.uptime || 0)}
@@ -803,7 +788,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                         sx={{
                           fontWeight: 600,
                           mb: 2,
-                          color: themeMode === 'dark' ? '#cbd5e1' : '#374151'
+                          color: textPrimary
                         }}
                       >
                         Service Health
@@ -820,7 +805,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                                 justifyContent: 'space-between',
                                 py: 1,
                                 borderBottom: index < appHealth.services.length - 1
-                                  ? `1px solid ${themeMode === 'dark' ? 'rgba(71, 85, 105, 0.3)' : 'rgba(226, 232, 240, 0.5)'}`
+                                  ? `1px solid ${alpha(palette.divider, isDark ? 0.5 : 0.6)}`
                                   : 'none'
                               }}
                             >
@@ -830,7 +815,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                 <Typography
                                   variant="caption"
-                                  sx={{ color: themeMode === 'dark' ? '#94a3b8' : '#64748b' }}
+                                  sx={{ color: textSecondary }}
                                 >
                                   {service.responseTime}ms
                                 </Typography>
@@ -853,12 +838,8 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                   <Card
                     elevation={1}
                     sx={{
-                      background: themeMode === 'dark'
-                        ? 'rgba(51, 65, 85, 0.6)'
-                        : 'rgba(248, 250, 252, 0.8)',
-                      border: themeMode === 'dark'
-                        ? '1px solid rgba(71, 85, 105, 0.3)'
-                        : '1px solid rgba(226, 232, 240, 0.5)'
+                      background: panelSurface,
+                      border: panelBorder
                     }}
                   >
                     <CardContent sx={{ p: 3 }}>
@@ -867,7 +848,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                         sx={{
                           fontWeight: 600,
                           mb: 3,
-                          color: themeMode === 'dark' ? '#f1f5f9' : '#1e293b'
+                          color: textPrimary
                         }}
                       >
                         System Resources
@@ -883,13 +864,13 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                           sx={{
                             height: 8,
                             borderRadius: 4,
-                            backgroundColor: themeMode === 'dark' ? 'rgba(71, 85, 105, 0.3)' : 'rgba(226, 232, 240, 0.5)',
+                            backgroundColor: progressTrack,
                             '& .MuiLinearProgress-bar': {
                               backgroundColor: systemMetrics?.cpu.usage && systemMetrics.cpu.usage > 80
-                                ? '#ef4444'
+                                ? errorMain
                                 : systemMetrics?.cpu.usage && systemMetrics.cpu.usage > 60
-                                  ? '#f59e0b'
-                                  : '#10b981'
+                                  ? warningMain
+                                  : successMain
                             }
                           }}
                         />
@@ -905,13 +886,13 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                           sx={{
                             height: 8,
                             borderRadius: 4,
-                            backgroundColor: themeMode === 'dark' ? 'rgba(71, 85, 105, 0.3)' : 'rgba(226, 232, 240, 0.5)',
+                            backgroundColor: progressTrack,
                             '& .MuiLinearProgress-bar': {
                               backgroundColor: systemMetrics?.memory.usage && systemMetrics.memory.usage > 80
-                                ? '#ef4444'
+                                ? errorMain
                                 : systemMetrics?.memory.usage && systemMetrics.memory.usage > 60
-                                  ? '#f59e0b'
-                                  : '#10b981'
+                                  ? warningMain
+                                  : successMain
                             }
                           }}
                         />
@@ -927,13 +908,13 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                           sx={{
                             height: 8,
                             borderRadius: 4,
-                            backgroundColor: themeMode === 'dark' ? 'rgba(71, 85, 105, 0.3)' : 'rgba(226, 232, 240, 0.5)',
+                            backgroundColor: progressTrack,
                             '& .MuiLinearProgress-bar': {
                               backgroundColor: systemMetrics?.disk.usage && systemMetrics.disk.usage > 80
-                                ? '#ef4444'
+                                ? errorMain
                                 : systemMetrics?.disk.usage && systemMetrics.disk.usage > 60
-                                  ? '#f59e0b'
-                                  : '#10b981'
+                                  ? warningMain
+                                  : successMain
                             }
                           }}
                         />
@@ -953,12 +934,8 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                   <Card
                     elevation={1}
                     sx={{
-                      background: themeMode === 'dark'
-                        ? 'rgba(51, 65, 85, 0.6)'
-                        : 'rgba(248, 250, 252, 0.8)',
-                      border: themeMode === 'dark'
-                        ? '1px solid rgba(71, 85, 105, 0.3)'
-                        : '1px solid rgba(226, 232, 240, 0.5)'
+                      background: panelSurface,
+                      border: panelBorder
                     }}
                   >
                     <CardContent sx={{ p: 3 }}>
@@ -967,7 +944,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                         sx={{
                           fontWeight: 600,
                           mb: 3,
-                          color: themeMode === 'dark' ? '#f1f5f9' : '#1e293b'
+                          color: textPrimary
                         }}
                       >
                         API Performance
@@ -980,7 +957,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                               variant="h4"
                               sx={{
                                 fontWeight: 'bold',
-                                color: themeMode === 'dark' ? '#10b981' : '#059669',
+                                color: isDark ? successMain : successDark,
                                 mb: 1
                               }}
                             >
@@ -988,7 +965,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                             </Typography>
                             <Typography
                               variant="caption"
-                              sx={{ color: themeMode === 'dark' ? '#94a3b8' : '#64748b' }}
+                              sx={{ color: textSecondary }}
                             >
                               Total Requests
                             </Typography>
@@ -1000,7 +977,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                               variant="h4"
                               sx={{
                                 fontWeight: 'bold',
-                                color: themeMode === 'dark' ? '#f59e0b' : '#d97706',
+                                color: isDark ? warningMain : warningDark,
                                 mb: 1
                               }}
                             >
@@ -1008,7 +985,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                             </Typography>
                             <Typography
                               variant="caption"
-                              sx={{ color: themeMode === 'dark' ? '#94a3b8' : '#64748b' }}
+                              sx={{ color: textSecondary }}
                             >
                               Avg Response Time
                             </Typography>
@@ -1023,12 +1000,8 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                   <Card
                     elevation={1}
                     sx={{
-                      background: themeMode === 'dark'
-                        ? 'rgba(51, 65, 85, 0.6)'
-                        : 'rgba(248, 250, 252, 0.8)',
-                      border: themeMode === 'dark'
-                        ? '1px solid rgba(71, 85, 105, 0.3)'
-                        : '1px solid rgba(226, 232, 240, 0.5)'
+                      background: panelSurface,
+                      border: panelBorder
                     }}
                   >
                     <CardContent sx={{ p: 3 }}>
@@ -1037,7 +1010,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                         sx={{
                           fontWeight: 600,
                           mb: 3,
-                          color: themeMode === 'dark' ? '#f1f5f9' : '#1e293b'
+                          color: textPrimary
                         }}
                       >
                         Top Endpoints
@@ -1052,7 +1025,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                             justifyContent: 'space-between',
                             py: 1,
                             borderBottom: index < (apiMetrics.topEndpoints?.length || 0) - 1
-                              ? `1px solid ${themeMode === 'dark' ? 'rgba(71, 85, 105, 0.3)' : 'rgba(226, 232, 240, 0.5)'}`
+                              ? `1px solid ${alpha(palette.divider, isDark ? 0.5 : 0.6)}`
                               : 'none'
                           }}
                         >
@@ -1062,7 +1035,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                             </Typography>
                             <Typography
                               variant="caption"
-                              sx={{ color: themeMode === 'dark' ? '#94a3b8' : '#64748b' }}
+                              sx={{ color: textSecondary }}
                             >
                               {endpoint.method}
                             </Typography>
@@ -1073,7 +1046,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                             </Typography>
                             <Typography
                               variant="caption"
-                              sx={{ color: themeMode === 'dark' ? '#94a3b8' : '#64748b' }}
+                              sx={{ color: textSecondary }}
                             >
                               {endpoint.avgResponseTime}ms
                             </Typography>
@@ -1095,12 +1068,8 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                   <Card
                     elevation={1}
                     sx={{
-                      background: themeMode === 'dark'
-                        ? 'rgba(51, 65, 85, 0.6)'
-                        : 'rgba(248, 250, 252, 0.8)',
-                      border: themeMode === 'dark'
-                        ? '1px solid rgba(71, 85, 105, 0.3)'
-                        : '1px solid rgba(226, 232, 240, 0.5)'
+                      background: panelSurface,
+                      border: panelBorder
                     }}
                   >
                     <CardContent sx={{ p: 3 }}>
@@ -1109,7 +1078,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                         sx={{
                           fontWeight: 600,
                           mb: 3,
-                          color: themeMode === 'dark' ? '#f1f5f9' : '#1e293b'
+                          color: textPrimary
                         }}
                       >
                         User Activity Overview
@@ -1122,7 +1091,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                               variant="h4"
                               sx={{
                                 fontWeight: 'bold',
-                                color: themeMode === 'dark' ? '#60a5fa' : '#2563eb',
+                                color: isDark ? primaryLight : primaryMain,
                                 mb: 1
                               }}
                             >
@@ -1130,7 +1099,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                             </Typography>
                             <Typography
                               variant="caption"
-                              sx={{ color: themeMode === 'dark' ? '#94a3b8' : '#64748b' }}
+                              sx={{ color: textSecondary }}
                             >
                               Total Users
                             </Typography>
@@ -1142,7 +1111,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                               variant="h4"
                               sx={{
                                 fontWeight: 'bold',
-                                color: themeMode === 'dark' ? '#10b981' : '#059669',
+                                color: isDark ? successMain : successDark,
                                 mb: 1
                               }}
                             >
@@ -1150,7 +1119,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                             </Typography>
                             <Typography
                               variant="caption"
-                              sx={{ color: themeMode === 'dark' ? '#94a3b8' : '#64748b' }}
+                              sx={{ color: textSecondary }}
                             >
                               Active Users
                             </Typography>
@@ -1162,7 +1131,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                               variant="h4"
                               sx={{
                                 fontWeight: 'bold',
-                                color: themeMode === 'dark' ? '#f59e0b' : '#d97706',
+                                color: isDark ? warningMain : warningDark,
                                 mb: 1
                               }}
                             >
@@ -1170,7 +1139,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                             </Typography>
                             <Typography
                               variant="caption"
-                              sx={{ color: themeMode === 'dark' ? '#94a3b8' : '#64748b' }}
+                              sx={{ color: textSecondary }}
                             >
                               New Registrations
                             </Typography>
@@ -1182,7 +1151,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                               variant="h4"
                               sx={{
                                 fontWeight: 'bold',
-                                color: themeMode === 'dark' ? '#ef4444' : '#dc2626',
+                                color: isDark ? errorMain : errorDark,
                                 mb: 1
                               }}
                             >
@@ -1190,7 +1159,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                             </Typography>
                             <Typography
                               variant="caption"
-                              sx={{ color: themeMode === 'dark' ? '#94a3b8' : '#64748b' }}
+                              sx={{ color: textSecondary }}
                             >
                               Failed Logins
                             </Typography>
@@ -1204,12 +1173,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                 <Grid item xs={12} md={6}>
                   <Card
                     elevation={1}
-                    sx={{
-                      background: themeMode === 'dark'
-                        ? 'linear-gradient(135deg, rgba(88, 28, 135, 0.2) 0%, rgba(124, 58, 237, 0.3) 100%)'
-                        : 'linear-gradient(135deg, rgba(245, 243, 255, 0.8) 0%, rgba(224, 231, 255, 0.9) 100%)',
-                      border: themeMode === 'dark' ? '1px solid rgba(139, 92, 246, 0.3)' : '1px solid rgba(196, 181, 253, 0.5)'
-                    }}
+                    sx={getMetricCardStyle(secondaryMain)}
                   >
                     <CardContent sx={{ p: 3 }}>
                       <Typography
@@ -1217,7 +1181,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                         sx={{
                           fontWeight: 600,
                           mb: 3,
-                          color: themeMode === 'dark' ? '#a855f7' : '#5b21b6'
+                          color: isDark ? secondaryMain : secondaryDark
                         }}
                       >
                         Authentication Analytics
@@ -1262,12 +1226,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                 <Grid item xs={12} md={6}>
                   <Card
                     elevation={1}
-                    sx={{
-                      background: themeMode === 'dark'
-                        ? 'linear-gradient(135deg, rgba(30, 58, 138, 0.2) 0%, rgba(30, 64, 175, 0.3) 100%)'
-                        : 'linear-gradient(135deg, rgba(219, 234, 254, 0.8) 0%, rgba(191, 219, 254, 0.9) 100%)',
-                      border: themeMode === 'dark' ? '1px solid rgba(59, 130, 246, 0.3)' : '1px solid rgba(147, 197, 253, 0.5)'
-                    }}
+                    sx={getMetricCardStyle(primaryMain)}
                   >
                     <CardContent sx={{ p: 3 }}>
                       <Typography
@@ -1275,7 +1234,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                         sx={{
                           fontWeight: 600,
                           mb: 3,
-                          color: themeMode === 'dark' ? '#60a5fa' : '#1e40af'
+                          color: isDark ? primaryLight : primaryDark
                         }}
                       >
                         Session Management
@@ -1322,12 +1281,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                 <Grid item xs={12} md={3}>
                   <Card
                     elevation={1}
-                    sx={{
-                      background: themeMode === 'dark'
-                        ? 'linear-gradient(135deg, rgba(220, 38, 127, 0.2) 0%, rgba(219, 39, 119, 0.3) 100%)'
-                        : 'linear-gradient(135deg, rgba(251, 207, 232, 0.8) 0%, rgba(251, 207, 232, 0.9) 100%)',
-                      border: themeMode === 'dark' ? '1px solid rgba(236, 72, 153, 0.3)' : '1px solid rgba(236, 72, 153, 0.5)'
-                    }}
+                    sx={getMetricCardStyle(secondaryMain)}
                   >
                     <CardContent sx={{ p: 3 }}>
                       <Typography
@@ -1335,7 +1289,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                         sx={{
                           fontWeight: 600,
                           mb: 2,
-                          color: themeMode === 'dark' ? '#f472b6' : '#be185d'
+                          color: isDark ? secondaryMain : secondaryDark
                         }}
                       >
                         Connection Pool
@@ -1356,12 +1310,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                 <Grid item xs={12} md={3}>
                   <Card
                     elevation={1}
-                    sx={{
-                      background: themeMode === 'dark'
-                        ? 'linear-gradient(135deg, rgba(5, 150, 105, 0.2) 0%, rgba(16, 185, 129, 0.3) 100%)'
-                        : 'linear-gradient(135deg, rgba(167, 243, 208, 0.8) 0%, rgba(167, 243, 208, 0.9) 100%)',
-                      border: themeMode === 'dark' ? '1px solid rgba(34, 197, 94, 0.3)' : '1px solid rgba(34, 197, 94, 0.5)'
-                    }}
+                    sx={getMetricCardStyle(successMain)}
                   >
                     <CardContent sx={{ p: 3 }}>
                       <Typography
@@ -1369,7 +1318,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                         sx={{
                           fontWeight: 600,
                           mb: 2,
-                          color: themeMode === 'dark' ? '#4ade80' : '#047857'
+                          color: isDark ? successLight : successDark
                         }}
                       >
                         Query Performance
@@ -1390,12 +1339,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                 <Grid item xs={12} md={3}>
                   <Card
                     elevation={1}
-                    sx={{
-                      background: themeMode === 'dark'
-                        ? 'linear-gradient(135deg, rgba(249, 115, 22, 0.2) 0%, rgba(251, 146, 60, 0.3) 100%)'
-                        : 'linear-gradient(135deg, rgba(254, 215, 170, 0.8) 0%, rgba(253, 186, 116, 0.9) 100%)',
-                      border: themeMode === 'dark' ? '1px solid rgba(249, 115, 22, 0.3)' : '1px solid rgba(249, 115, 22, 0.5)'
-                    }}
+                    sx={getMetricCardStyle(warningMain)}
                   >
                     <CardContent sx={{ p: 3 }}>
                       <Typography
@@ -1403,7 +1347,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                         sx={{
                           fontWeight: 600,
                           mb: 2,
-                          color: themeMode === 'dark' ? '#fb923c' : '#c2410c'
+                          color: isDark ? warningMain : warningDark
                         }}
                       >
                         Database Size
@@ -1424,12 +1368,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                 <Grid item xs={12} md={3}>
                   <Card
                     elevation={1}
-                    sx={{
-                      background: themeMode === 'dark'
-                        ? 'linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(124, 58, 237, 0.3) 100%)'
-                        : 'linear-gradient(135deg, rgba(221, 214, 254, 0.8) 0%, rgba(196, 181, 253, 0.9) 100%)',
-                      border: themeMode === 'dark' ? '1px solid rgba(139, 92, 246, 0.3)' : '1px solid rgba(139, 92, 246, 0.5)'
-                    }}
+                    sx={getMetricCardStyle(infoMain)}
                   >
                     <CardContent sx={{ p: 3 }}>
                       <Typography
@@ -1437,7 +1376,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                         sx={{
                           fontWeight: 600,
                           mb: 2,
-                          color: themeMode === 'dark' ? '#a855f7' : '#6b21a8'
+                          color: isDark ? infoLight : infoMain
                         }}
                       >
                         Health Status
@@ -1464,7 +1403,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                         sx={{
                           fontWeight: 600,
                           mb: 3,
-                          color: themeMode === 'dark' ? '#e5e7eb' : '#374151'
+                          color: textPrimary
                         }}
                       >
                         Recent Database Operations
@@ -1535,14 +1474,14 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                 variant="h6"
                 sx={{
                   mb: 2,
-                  color: themeMode === 'dark' ? '#f1f5f9' : '#1e293b'
+                  color: textPrimary
                 }}
               >
                 Performance Metrics Coming Soon
               </Typography>
               <Typography
                 variant="body2"
-                sx={{ color: themeMode === 'dark' ? '#94a3b8' : '#64748b' }}
+                sx={{ color: textSecondary }}
               >
                 Detailed performance analytics and optimization suggestions will be available here.
               </Typography>
@@ -1556,7 +1495,7 @@ const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({
                 variant="h6"
                 sx={{
                   mb: 2,
-                  color: themeMode === 'dark' ? '#f1f5f9' : '#1e293b'
+                  color: textPrimary
                 }}
               >
                 System Alerts

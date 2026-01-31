@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { COLORS, getGradient } from '../../theme/themeColors';
+import { COLORS, addAlpha, getGradient } from '../../theme/themeColors';
 import {
   Typography,
   Button,
@@ -19,9 +19,6 @@ import {
   TextField,
   InputAdornment,
   TablePagination,
-  FormControl,
-  InputLabel,
-  Select,
   MenuItem,
   CircularProgress,
 } from '@mui/material';
@@ -38,6 +35,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { adminApiService, UserManagementResponse, HotelDTO, PagedResponse } from '../../services/adminApi';
 import PremiumTextField from '../../components/common/PremiumTextField';
+import PremiumSelect from '../../components/common/PremiumSelect';
 
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -294,19 +292,18 @@ const AdminDashboard: React.FC = () => {
                 }}
                 sx={{ minWidth: 250 }}
               />
-              <FormControl size="small" sx={{ minWidth: 150 }}>
-                <InputLabel>Status</InputLabel>
-                <Select
-                  value={hotelStatusFilter}
-                  onChange={(e) => setHotelStatusFilter(e.target.value)}
-                  label="Status"
-                >
-                  <MenuItem value="">All Status</MenuItem>
-                  <MenuItem value="Active">Active</MenuItem>
-                  <MenuItem value="Pending">Pending</MenuItem>
-                  <MenuItem value="Inactive">Inactive</MenuItem>
-                </Select>
-              </FormControl>
+              <PremiumSelect
+                label="Status"
+                value={hotelStatusFilter}
+                onChange={(e) => setHotelStatusFilter(e.target.value)}
+                fullWidth={false}
+                sx={{ minWidth: 150 }}
+              >
+                <MenuItem value="">All Status</MenuItem>
+                <MenuItem value="Active">Active</MenuItem>
+                <MenuItem value="Pending">Pending</MenuItem>
+                <MenuItem value="Inactive">Inactive</MenuItem>
+              </PremiumSelect>
             </Box>
 
             {/* Hotels Table */}
@@ -316,7 +313,7 @@ const AdminDashboard: React.FC = () => {
                   <TableRow 
                     sx={{
                       background: getGradient('slate'),
-                      boxShadow: '0 4px 12px rgba(100, 116, 139, 0.15)',
+                      boxShadow: `0 4px 12px ${addAlpha(COLORS.SLATE_500, 0.15)}`,
                       '& .MuiTableCell-head': {
                         color: COLORS.WHITE,
                         fontWeight: 600,
@@ -326,7 +323,7 @@ const AdminDashboard: React.FC = () => {
                         border: 'none',
                         padding: '20px 16px',
                         position: 'relative',
-                        textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                        textShadow: `0 1px 2px ${addAlpha(COLORS.BLACK, 0.1)}`,
                         '&::after': {
                           content: '""',
                           position: 'absolute',
@@ -393,7 +390,7 @@ const AdminDashboard: React.FC = () => {
                           size="small"
                           sx={{ 
                             backgroundColor: COLORS.PRIMARY,
-                            color: 'white'
+                            color: COLORS.WHITE
                           }}
                         />
                       </TableCell>
@@ -477,33 +474,31 @@ const AdminDashboard: React.FC = () => {
                 }}
                 sx={{ minWidth: 250 }}
               />
-              <FormControl size="small" sx={{ minWidth: 150 }}>
-                <InputLabel>Role</InputLabel>
-                <Select
-                  value={userRoleFilter}
-                  onChange={(e) => setUserRoleFilter(e.target.value)}
-                  label="Role"
-                >
-                  <MenuItem value="">All Roles</MenuItem>
-                  <MenuItem value="ADMIN">Admin</MenuItem>
-                  <MenuItem value="HOTEL_MANAGER">Hotel Manager</MenuItem>
-                  <MenuItem value="HOTEL_STAFF">Hotel Staff</MenuItem>
-                  <MenuItem value="GUEST">Guest</MenuItem>
-                </Select>
-              </FormControl>
-              <FormControl size="small" sx={{ minWidth: 150 }}>
-                <InputLabel>Status</InputLabel>
-                <Select
-                  value={userStatusFilter}
-                  onChange={(e) => setUserStatusFilter(e.target.value)}
-                  label="Status"
-                >
-                  <MenuItem value="">All Status</MenuItem>
-                  <MenuItem value="Active">Active</MenuItem>
-                  <MenuItem value="Pending">Pending</MenuItem>
-                  <MenuItem value="Inactive">Inactive</MenuItem>
-                </Select>
-              </FormControl>
+              <PremiumSelect
+                label="Role"
+                value={userRoleFilter}
+                onChange={(e) => setUserRoleFilter(e.target.value)}
+                fullWidth={false}
+                sx={{ minWidth: 150 }}
+              >
+                <MenuItem value="">All Roles</MenuItem>
+                <MenuItem value="ADMIN">Admin</MenuItem>
+                <MenuItem value="HOTEL_MANAGER">Hotel Manager</MenuItem>
+                <MenuItem value="HOTEL_STAFF">Hotel Staff</MenuItem>
+                <MenuItem value="GUEST">Guest</MenuItem>
+              </PremiumSelect>
+              <PremiumSelect
+                label="Status"
+                value={userStatusFilter}
+                onChange={(e) => setUserStatusFilter(e.target.value)}
+                fullWidth={false}
+                sx={{ minWidth: 150 }}
+              >
+                <MenuItem value="">All Status</MenuItem>
+                <MenuItem value="Active">Active</MenuItem>
+                <MenuItem value="Pending">Pending</MenuItem>
+                <MenuItem value="Inactive">Inactive</MenuItem>
+              </PremiumSelect>
             </Box>
 
             {/* Users Table */}
@@ -513,7 +508,7 @@ const AdminDashboard: React.FC = () => {
                   <TableRow 
                     sx={{
                       background: getGradient('slate'),
-                      boxShadow: '0 4px 12px rgba(100, 116, 139, 0.15)',
+                      boxShadow: `0 4px 12px ${addAlpha(COLORS.SLATE_500, 0.15)}`,
                       '& .MuiTableCell-head': {
                         color: COLORS.WHITE,
                         fontWeight: 600,
@@ -523,7 +518,7 @@ const AdminDashboard: React.FC = () => {
                         border: 'none',
                         padding: '20px 16px',
                         position: 'relative',
-                        textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                        textShadow: `0 1px 2px ${addAlpha(COLORS.BLACK, 0.1)}`,
                         '&::after': {
                           content: '""',
                           position: 'absolute',

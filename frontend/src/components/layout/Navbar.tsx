@@ -224,19 +224,19 @@ const Navbar: React.FC = () => {
             mx: 0.5,
             borderRadius: 2,
             fontSize: '0.8rem', // Smaller font size
-            fontWeight: user ? 'bold' : 'normal', // Bold for authenticated users
+            fontWeight: item.label === 'Shop' ? 700 : user ? 'bold' : 'normal', // Bold for Shop and authenticated users
             textTransform: 'none', // Disable all caps
-            color: item.label === 'Shop' ? theme.palette.text.primary : getTextColor(),
+            color: item.label === 'Shop' ? '#ffffff' : getTextColor(),
             backgroundColor: item.label === 'Shop' 
-              ? theme.palette.warning.main
+              ? theme.palette.success.main
               : item.path && isActivePath(item.path) 
                 ? getActiveBackground()
                 : 'transparent',
             '&:hover': {
               backgroundColor: item.label === 'Shop' 
-                ? theme.palette.warning.dark
+                ? theme.palette.success.dark
                 : getHoverBackground(),
-              color: item.label === 'Shop' ? theme.palette.text.primary : getTextColor(),
+              color: item.label === 'Shop' ? '#ffffff' : getTextColor(),
             },
             // Ensure proper stacking and boundaries
             position: 'relative',
@@ -294,20 +294,20 @@ const Navbar: React.FC = () => {
             sx={{
               cursor: 'pointer',
               backgroundColor: item.label === 'Shop' 
-                ? theme.palette.warning.main
+                ? theme.palette.success.main
                 : item.path && isActivePath(item.path) 
                   ? theme.palette.action.selected 
                   : 'transparent',
               '&:hover': {
                 backgroundColor: item.label === 'Shop' 
-                  ? theme.palette.warning.dark
+                  ? theme.palette.success.dark
                   : theme.palette.action.hover,
               },
             }}
           >
             <ListItemIcon sx={{ 
               color: item.label === 'Shop' 
-                ? theme.palette.text.primary
+                ? '#ffffff'
                 : item.path && isActivePath(item.path) ? theme.palette.primary.main : 'inherit' 
             }}>
               {item.icon}
@@ -316,9 +316,9 @@ const Navbar: React.FC = () => {
               primary={item.label}
               sx={{ 
                 '& .MuiListItemText-primary': {
-                  fontWeight: item.path && isActivePath(item.path) ? 600 : 400,
+                  fontWeight: item.label === 'Shop' ? 700 : item.path && isActivePath(item.path) ? 600 : 400,
                   color: item.label === 'Shop' 
-                    ? theme.palette.text.primary
+                    ? '#ffffff'
                     : item.path && isActivePath(item.path) ? theme.palette.primary.main : 'inherit',
                 }
               }}
