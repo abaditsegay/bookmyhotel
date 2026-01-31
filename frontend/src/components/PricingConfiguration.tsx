@@ -60,10 +60,10 @@ const convertConfigForDisplay = (backendConfig: any): PricingConfiguration => {
     cancellationFeeRate: smartToPercentage(backendConfig.cancellationFeeRate || 0),
     modificationFeeRate: smartToPercentage(backendConfig.modificationFeeRate || 0),
     noShowPenaltyRate: smartToPercentage(backendConfig.noShowPenaltyRate || 0),
-    refundPolicy7PlusDays: smartToPercentage(backendConfig.refundPolicy7PlusDays || 1.0),
-    refundPolicy3To7Days: smartToPercentage(backendConfig.refundPolicy3To7Days || 0.5),
-    refundPolicy1To2Days: smartToPercentage(backendConfig.refundPolicy1To2Days || 0.25),
-    refundPolicySameDay: smartToPercentage(backendConfig.refundPolicySameDay || 0)
+    refundPolicy7PlusDays: smartToPercentage(backendConfig.refundPolicy7PlusDays ?? 1.0),
+    refundPolicy3To7Days: smartToPercentage(backendConfig.refundPolicy3To7Days ?? 0.5),
+    refundPolicy1To2Days: smartToPercentage(backendConfig.refundPolicy1To2Days ?? 0.25),
+    refundPolicySameDay: smartToPercentage(backendConfig.refundPolicySameDay ?? 0)
   };
 };
 
@@ -79,10 +79,10 @@ const convertConfigForBackend = (displayConfig: PricingConfiguration): any => {
     cancellationFeeRate: toDecimal(displayConfig.cancellationFeeRate),
     modificationFeeRate: toDecimal(displayConfig.modificationFeeRate),
     noShowPenaltyRate: toDecimal(displayConfig.noShowPenaltyRate),
-    refundPolicy7PlusDays: toDecimal(displayConfig.refundPolicy7PlusDays || 100),
-    refundPolicy3To7Days: toDecimal(displayConfig.refundPolicy3To7Days || 50),
-    refundPolicy1To2Days: toDecimal(displayConfig.refundPolicy1To2Days || 25),
-    refundPolicySameDay: toDecimal(displayConfig.refundPolicySameDay || 0)
+    refundPolicy7PlusDays: toDecimal(displayConfig.refundPolicy7PlusDays ?? 100),
+    refundPolicy3To7Days: toDecimal(displayConfig.refundPolicy3To7Days ?? 50),
+    refundPolicy1To2Days: toDecimal(displayConfig.refundPolicy1To2Days ?? 25),
+    refundPolicySameDay: toDecimal(displayConfig.refundPolicySameDay ?? 0)
   };
 };
 
@@ -256,29 +256,31 @@ const PricingConfigurationComponent: React.FC = () => {
     } : null);
   };
 
+  const formatPercent = (value: number, precision = 0) => `${Number(value).toFixed(precision)}%`;
+
   const fieldDefinitions: Array<{ key: keyof PricingConfiguration; label: string; format?: (value: any) => string }> = [
     { key: 'pricingStrategy', label: 'Pricing Strategy' },
     { key: 'currencyCode', label: 'Currency Code' },
     { key: 'taxInclusivePricing', label: 'Tax Inclusive Pricing', format: (value) => (value ? 'Enabled' : 'Disabled') },
     { key: 'dynamicPricingEnabled', label: 'Dynamic Pricing', format: (value) => (value ? 'Enabled' : 'Disabled') },
-    { key: 'vatRate', label: 'VAT Rate', format: (value) => `${Math.round(value)}%` },
-    { key: 'serviceTaxRate', label: 'Service Tax Rate', format: (value) => `${Math.round(value)}%` },
-    { key: 'cityTaxRate', label: 'City Tax Rate', format: (value) => `${Math.round(value)}%` },
+    { key: 'vatRate', label: 'VAT Rate', format: (value) => formatPercent(value, 1) },
+    { key: 'serviceTaxRate', label: 'Service Tax Rate', format: (value) => formatPercent(value, 1) },
+    { key: 'cityTaxRate', label: 'City Tax Rate', format: (value) => formatPercent(value, 1) },
     { key: 'peakSeasonMultiplier', label: 'Peak Season Multiplier', format: (value) => `${Number(value).toFixed(2)}x` },
     { key: 'offSeasonMultiplier', label: 'Off Season Multiplier', format: (value) => `${Number(value).toFixed(2)}x` },
     { key: 'minimumStayNights', label: 'Minimum Stay (Nights)' },
     { key: 'minimumAdvanceBookingHours', label: 'Minimum Advance Booking (Hours)' },
     { key: 'maximumAdvanceBookingDays', label: 'Maximum Advance Booking (Days)' },
     { key: 'earlyBookingDaysThreshold', label: 'Early Booking Threshold (Days)' },
-    { key: 'earlyBookingDiscountRate', label: 'Early Booking Discount', format: (value) => `${Math.round(value)}%` },
-    { key: 'loyaltyDiscountRate', label: 'Loyalty Discount', format: (value) => `${Math.round(value)}%` },
-    { key: 'cancellationFeeRate', label: 'Cancellation Fee', format: (value) => `${Math.round(value)}%` },
-    { key: 'modificationFeeRate', label: 'Modification Fee', format: (value) => `${Math.round(value)}%` },
-    { key: 'noShowPenaltyRate', label: 'No-show Penalty', format: (value) => `${Math.round(value)}%` },
-    { key: 'refundPolicy7PlusDays', label: 'Refund Policy (7+ days)', format: (value) => `${Math.round(value)}%` },
-    { key: 'refundPolicy3To7Days', label: 'Refund Policy (3-7 days)', format: (value) => `${Math.round(value)}%` },
-    { key: 'refundPolicy1To2Days', label: 'Refund Policy (1-2 days)', format: (value) => `${Math.round(value)}%` },
-    { key: 'refundPolicySameDay', label: 'Refund Policy (Same day)', format: (value) => `${Math.round(value)}%` },
+    { key: 'earlyBookingDiscountRate', label: 'Early Booking Discount', format: (value) => formatPercent(value, 1) },
+    { key: 'loyaltyDiscountRate', label: 'Loyalty Discount', format: (value) => formatPercent(value, 1) },
+    { key: 'cancellationFeeRate', label: 'Cancellation Fee', format: (value) => formatPercent(value, 1) },
+    { key: 'modificationFeeRate', label: 'Modification Fee', format: (value) => formatPercent(value, 1) },
+    { key: 'noShowPenaltyRate', label: 'No-show Penalty', format: (value) => formatPercent(value, 1) },
+    { key: 'refundPolicy7PlusDays', label: 'Refund Policy (7+ days)', format: (value) => formatPercent(value, 0) },
+    { key: 'refundPolicy3To7Days', label: 'Refund Policy (3-7 days)', format: (value) => formatPercent(value, 0) },
+    { key: 'refundPolicy1To2Days', label: 'Refund Policy (1-2 days)', format: (value) => formatPercent(value, 0) },
+    { key: 'refundPolicySameDay', label: 'Refund Policy (Same day)', format: (value) => formatPercent(value, 0) },
     { key: 'notes', label: 'Notes' },
   ];
 
@@ -984,10 +986,10 @@ const PricingConfigurationComponent: React.FC = () => {
                     fullWidth
                     label={t('dashboard.hotelAdmin.pricingConfiguration.cancellationRefundPolicies.refund7PlusDays')}
                     type="number"
-                    value={config.refundPolicy7PlusDays || 100}
+                    value={config.refundPolicy7PlusDays ?? 100}
                     onChange={(e) => handleInputChange('refundPolicy7PlusDays', parseFloat(e.target.value) || 0)}
                     inputProps={{ min: 0, max: 100, step: 1 }}
-                    helperText={t('dashboard.hotelAdmin.pricingConfiguration.cancellationRefundPolicies.refundHelper7Plus', { value: config.refundPolicy7PlusDays || 100 })}
+                    helperText={t('dashboard.hotelAdmin.pricingConfiguration.cancellationRefundPolicies.refundHelper7Plus', { value: config.refundPolicy7PlusDays ?? 100 })}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
@@ -995,10 +997,10 @@ const PricingConfigurationComponent: React.FC = () => {
                     fullWidth
                     label={t('dashboard.hotelAdmin.pricingConfiguration.cancellationRefundPolicies.refund3To7Days')}
                     type="number"
-                    value={config.refundPolicy3To7Days || 50}
+                    value={config.refundPolicy3To7Days ?? 50}
                     onChange={(e) => handleInputChange('refundPolicy3To7Days', parseFloat(e.target.value) || 0)}
                     inputProps={{ min: 0, max: 100, step: 1 }}
-                    helperText={t('dashboard.hotelAdmin.pricingConfiguration.cancellationRefundPolicies.refundHelper3To7', { value: config.refundPolicy3To7Days || 50 })}
+                    helperText={t('dashboard.hotelAdmin.pricingConfiguration.cancellationRefundPolicies.refundHelper3To7', { value: config.refundPolicy3To7Days ?? 50 })}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
@@ -1006,10 +1008,10 @@ const PricingConfigurationComponent: React.FC = () => {
                     fullWidth
                     label={t('dashboard.hotelAdmin.pricingConfiguration.cancellationRefundPolicies.refund1To2Days')}
                     type="number"
-                    value={config.refundPolicy1To2Days || 25}
+                    value={config.refundPolicy1To2Days ?? 25}
                     onChange={(e) => handleInputChange('refundPolicy1To2Days', parseFloat(e.target.value) || 0)}
                     inputProps={{ min: 0, max: 100, step: 1 }}
-                    helperText={t('dashboard.hotelAdmin.pricingConfiguration.cancellationRefundPolicies.refundHelper1To2', { value: config.refundPolicy1To2Days || 25 })}
+                    helperText={t('dashboard.hotelAdmin.pricingConfiguration.cancellationRefundPolicies.refundHelper1To2', { value: config.refundPolicy1To2Days ?? 25 })}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
@@ -1017,10 +1019,10 @@ const PricingConfigurationComponent: React.FC = () => {
                     fullWidth
                     label={t('dashboard.hotelAdmin.pricingConfiguration.cancellationRefundPolicies.refundSameDay')}
                     type="number"
-                    value={config.refundPolicySameDay || 0}
+                    value={config.refundPolicySameDay ?? 0}
                     onChange={(e) => handleInputChange('refundPolicySameDay', parseFloat(e.target.value) || 0)}
                     inputProps={{ min: 0, max: 100, step: 1 }}
-                    helperText={t('dashboard.hotelAdmin.pricingConfiguration.cancellationRefundPolicies.refundHelperSameDay', { value: config.refundPolicySameDay || 0 })}
+                    helperText={t('dashboard.hotelAdmin.pricingConfiguration.cancellationRefundPolicies.refundHelperSameDay', { value: config.refundPolicySameDay ?? 0 })}
                   />
                 </Grid>
               </Grid>
