@@ -16,7 +16,12 @@ import {
   Card,
   CardContent,
   useTheme,
-  alpha
+  alpha,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Divider,
 } from '@mui/material';
 import PremiumTextField from './common/PremiumTextField';
 import PremiumSelect from './common/PremiumSelect';
@@ -117,10 +122,13 @@ const PricingConfigurationComponent: React.FC = () => {
   const { t } = useTranslation();
   const theme = useTheme();
   const [config, setConfig] = useState<PricingConfiguration | null>(null);
+  const [originalConfig, setOriginalConfig] = useState<PricingConfiguration | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingChanges, setPendingChanges] = useState<Array<{ key: keyof PricingConfiguration; label: string; oldValue: string; newValue: string }>>([]);
 
   // Fetch current configuration
   const fetchConfiguration = useCallback(async () => {
@@ -172,7 +180,9 @@ const PricingConfigurationComponent: React.FC = () => {
       if (response.ok) {
         const configData = await response.json();
         // Convert backend decimal values to percentage for display
-        setConfig(convertConfigForDisplay(configData));
+        const displayConfig = convertConfigForDisplay(configData);
+        setConfig(displayConfig);
+        setOriginalConfig(displayConfig);
       } else {
         throw new Error('Failed to fetch pricing configuration');
       }
@@ -181,6 +191,7 @@ const PricingConfigurationComponent: React.FC = () => {
       setError('Failed to load pricing configuration');
       // Set default configuration if fetch fails
       setConfig(defaultConfig);
+      setOriginalConfig(defaultConfig);
     } finally {
       setLoading(false);
     }
@@ -219,7 +230,9 @@ const PricingConfigurationComponent: React.FC = () => {
       if (response.ok) {
         const savedConfig = await response.json();
         // Convert backend decimal values to percentage for display
-        setConfig(convertConfigForDisplay(savedConfig));
+        const displayConfig = convertConfigForDisplay(savedConfig);
+        setConfig(displayConfig);
+        setOriginalConfig(displayConfig);
         setSuccess('Pricing configuration saved successfully!');
         setTimeout(() => setSuccess(null), 5000);
       } else {
@@ -241,6 +254,68 @@ const PricingConfigurationComponent: React.FC = () => {
       ...prev,
       [field]: value
     } : null);
+  };
+
+  const fieldDefinitions: Array<{ key: keyof PricingConfiguration; label: string; format?: (value: any) => string }> = [
+    { key: 'pricingStrategy', label: 'Pricing Strategy' },
+    { key: 'currencyCode', label: 'Currency Code' },
+    { key: 'taxInclusivePricing', label: 'Tax Inclusive Pricing', format: (value) => (value ? 'Enabled' : 'Disabled') },
+    { key: 'dynamicPricingEnabled', label: 'Dynamic Pricing', format: (value) => (value ? 'Enabled' : 'Disabled') },
+    { key: 'vatRate', label: 'VAT Rate', format: (value) => `${Math.round(value)}%` },
+    { key: 'serviceTaxRate', label: 'Service Tax Rate', format: (value) => `${Math.round(value)}%` },
+    { key: 'cityTaxRate', label: 'City Tax Rate', format: (value) => `${Math.round(value)}%` },
+    { key: 'peakSeasonMultiplier', label: 'Peak Season Multiplier', format: (value) => `${Number(value).toFixed(2)}x` },
+    { key: 'offSeasonMultiplier', label: 'Off Season Multiplier', format: (value) => `${Number(value).toFixed(2)}x` },
+    { key: 'minimumStayNights', label: 'Minimum Stay (Nights)' },
+    { key: 'minimumAdvanceBookingHours', label: 'Minimum Advance Booking (Hours)' },
+    { key: 'maximumAdvanceBookingDays', label: 'Maximum Advance Booking (Days)' },
+    { key: 'earlyBookingDaysThreshold', label: 'Early Booking Threshold (Days)' },
+    { key: 'earlyBookingDiscountRate', label: 'Early Booking Discount', format: (value) => `${Math.round(value)}%` },
+    { key: 'loyaltyDiscountRate', label: 'Loyalty Discount', format: (value) => `${Math.round(value)}%` },
+    { key: 'cancellationFeeRate', label: 'Cancellation Fee', format: (value) => `${Math.round(value)}%` },
+    { key: 'modificationFeeRate', label: 'Modification Fee', format: (value) => `${Math.round(value)}%` },
+    { key: 'noShowPenaltyRate', label: 'No-show Penalty', format: (value) => `${Math.round(value)}%` },
+    { key: 'refundPolicy7PlusDays', label: 'Refund Policy (7+ days)', format: (value) => `${Math.round(value)}%` },
+    { key: 'refundPolicy3To7Days', label: 'Refund Policy (3-7 days)', format: (value) => `${Math.round(value)}%` },
+    { key: 'refundPolicy1To2Days', label: 'Refund Policy (1-2 days)', format: (value) => `${Math.round(value)}%` },
+    { key: 'refundPolicySameDay', label: 'Refund Policy (Same day)', format: (value) => `${Math.round(value)}%` },
+    { key: 'notes', label: 'Notes' },
+  ];
+
+  const formatValue = (key: keyof PricingConfiguration, value: any, format?: (value: any) => string) => {
+    if (value === null || value === undefined) return '—';
+    if (format) return format(value);
+    if (typeof value === 'boolean') return value ? 'Enabled' : 'Disabled';
+    return String(value);
+  };
+
+  const getChangedFields = () => {
+    if (!config || !originalConfig) return [];
+
+    return fieldDefinitions
+      .filter(({ key }) => !Object.is(config[key], originalConfig[key]))
+      .map(({ key, label, format }) => ({
+        key,
+        label,
+        oldValue: formatValue(key, originalConfig[key], format),
+        newValue: formatValue(key, config[key], format),
+      }));
+  };
+
+  const handleSaveClick = () => {
+    const changes = getChangedFields();
+    if (changes.length === 0) {
+      setSuccess('No changes to save.');
+      setTimeout(() => setSuccess(null), 3000);
+      return;
+    }
+    setPendingChanges(changes);
+    setConfirmOpen(true);
+  };
+
+  const handleConfirmSave = async () => {
+    setConfirmOpen(false);
+    await saveConfiguration();
   };
 
   // Helper functions to calculate dynamic percentages (now working with percentage values)
@@ -315,7 +390,7 @@ const PricingConfigurationComponent: React.FC = () => {
         <Button
           variant="contained"
           startIcon={saving ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
-          onClick={saveConfiguration}
+          onClick={handleSaveClick}
           disabled={saving}
           sx={{ 
             background: getGradient('primary'),
@@ -345,6 +420,41 @@ const PricingConfigurationComponent: React.FC = () => {
           {saving ? t('dashboard.hotelAdmin.pricingConfiguration.actions.saving') : t('dashboard.hotelAdmin.pricingConfiguration.actions.saveChanges')}
         </Button>
       </Box>
+
+      <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Confirm Pricing & Tax Changes</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" sx={{ mb: 2 }}>
+            Review the changes below before saving.
+          </Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {pendingChanges.map((change) => (
+              <Box key={change.key}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                  {change.label}
+                </Typography>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Old: {change.oldValue}
+                  </Typography>
+                  <Typography variant="body2" color="text.primary" sx={{ fontWeight: 600 }}>
+                    New: {change.newValue}
+                  </Typography>
+                </Box>
+                <Divider sx={{ mt: 1 }} />
+              </Box>
+            ))}
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmOpen(false)} variant="outlined">
+            Cancel
+          </Button>
+          <Button onClick={handleConfirmSave} variant="contained" disabled={saving}>
+            {saving ? 'Saving...' : 'Confirm Save'}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {error && (
         <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
