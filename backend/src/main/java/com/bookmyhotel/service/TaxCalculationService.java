@@ -120,7 +120,7 @@ public class TaxCalculationService {
         BigDecimal serviceTaxAmount = subtotal.multiply(serviceTaxRate)
                 .setScale(PRICE_SCALE, PRICE_ROUNDING);
         BigDecimal cityTaxAmount = subtotal.multiply(cityTaxRate)
-            .setScale(PRICE_SCALE, PRICE_ROUNDING);
+                .setScale(PRICE_SCALE, PRICE_ROUNDING);
 
         return new TaxBreakdown(vatAmount, serviceTaxAmount, cityTaxAmount);
     }

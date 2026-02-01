@@ -326,7 +326,7 @@
                     <tr class="highlight-row" th:if="${booking.totalAmount != null and booking.totalAmount > 0}">
                         <td><strong>Total Amount</strong></td>
                         <td>
-                            <strong>ETB <span th:text="${#numbers.formatDecimal(booking.totalAmount, 1, 'COMMA', 2, 'POINT')}">0.00</span></strong>
+                            <strong>ETB <span th:text="${#numbers.formatDecimal((totalWithTax != null ? totalWithTax : booking.totalAmount), 1, 'COMMA', 2, 'POINT')}">0.00</span></strong>
                         </td>
                     </tr>
                 </table>

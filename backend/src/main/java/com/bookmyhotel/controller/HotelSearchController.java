@@ -145,7 +145,7 @@ public class HotelSearchController {
 
     /**
      * Get tax rate for a hotel - PUBLIC ENDPOINT
-    * Returns the total tax rate (VAT + Service Tax + City Tax) with breakdown
+     * Returns the total tax rate (VAT + Service Tax + City Tax) with breakdown
      */
     @GetMapping("/{hotelId}/tax-rate")
     public ResponseEntity<Map<String, Object>> getHotelTaxRate(@PathVariable Long hotelId) {

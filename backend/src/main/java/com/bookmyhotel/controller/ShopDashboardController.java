@@ -46,18 +46,17 @@ public class ShopDashboardController {
             OrderStatistics orderStats = shopOrderService.getOrderStatistics(hotelId);
 
             ShopDashboardStats dashboardStats = new ShopDashboardStats(
-                inventorySummary.getTotalProducts(),
-                inventorySummary.getActiveProducts(),
-                inventorySummary.getLowStockProducts(),
-                inventorySummary.getOutOfStockProducts(),
-                orderStats.getTotalOrders(),
-                orderStats.getUnpaidOrders(),
-                orderStats.getPaidOrders(),
-                orderStats.getTotalRevenue() != null ? orderStats.getTotalRevenue() : BigDecimal.ZERO,
-                orderStats.getTodayOrders(),
-                orderStats.getTodayRevenue() != null ? orderStats.getTodayRevenue() : BigDecimal.ZERO,
-                orderStats.getMonthlyRevenue() != null ? orderStats.getMonthlyRevenue() : BigDecimal.ZERO
-            );
+                    inventorySummary.getTotalProducts(),
+                    inventorySummary.getActiveProducts(),
+                    inventorySummary.getLowStockProducts(),
+                    inventorySummary.getOutOfStockProducts(),
+                    orderStats.getTotalOrders(),
+                    orderStats.getUnpaidOrders(),
+                    orderStats.getPaidOrders(),
+                    orderStats.getTotalRevenue() != null ? orderStats.getTotalRevenue() : BigDecimal.ZERO,
+                    orderStats.getTodayOrders(),
+                    orderStats.getTodayRevenue() != null ? orderStats.getTodayRevenue() : BigDecimal.ZERO,
+                    orderStats.getMonthlyRevenue() != null ? orderStats.getMonthlyRevenue() : BigDecimal.ZERO);
 
             return ResponseEntity.ok(dashboardStats);
         } catch (Exception e) {
@@ -79,14 +78,14 @@ public class ShopDashboardController {
         try {
             Pageable pageable = PageRequest.of(page, size);
             List<ProductResponse> lowStockProducts = productService.getLowStockProducts(hotelId);
-            
+
             // Convert list to page for consistent API response
             int start = Math.min((int) pageable.getOffset(), lowStockProducts.size());
             int end = Math.min((start + pageable.getPageSize()), lowStockProducts.size());
             List<ProductResponse> pageContent = lowStockProducts.subList(start, end);
-            
+
             Page<ProductResponse> productPage = new org.springframework.data.domain.PageImpl<>(
-                pageContent, pageable, lowStockProducts.size());
+                    pageContent, pageable, lowStockProducts.size());
 
             return ResponseEntity.ok(productPage);
         } catch (Exception e) {
@@ -111,9 +110,9 @@ public class ShopDashboardController {
         private BigDecimal monthlyRevenue;
 
         public ShopDashboardStats(long totalProducts, long activeProducts, long lowStockProducts,
-                                long outOfStockProducts, long totalOrders, long pendingOrders,
-                                long completedOrders, BigDecimal totalRevenue, long todayOrders,
-                                BigDecimal todayRevenue, BigDecimal monthlyRevenue) {
+                long outOfStockProducts, long totalOrders, long pendingOrders,
+                long completedOrders, BigDecimal totalRevenue, long todayOrders,
+                BigDecimal todayRevenue, BigDecimal monthlyRevenue) {
             this.totalProducts = totalProducts;
             this.activeProducts = activeProducts;
             this.lowStockProducts = lowStockProducts;

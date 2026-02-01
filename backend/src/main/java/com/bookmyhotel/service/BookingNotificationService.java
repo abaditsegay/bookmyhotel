@@ -194,10 +194,10 @@ public class BookingNotificationService {
             BigDecimal pricePerNight = booking.getPricePerNight();
             Long hotelId = booking.getHotelId();
 
-                if (pricePerNight != null && hotelId != null && nights > 0) {
+            if (pricePerNight != null && hotelId != null && nights > 0) {
                 // Calculate subtotal (price per night × number of nights)
                 BigDecimal subtotal = pricePerNight.multiply(BigDecimal.valueOf(nights))
-                    .setScale(2, RoundingMode.HALF_UP);
+                        .setScale(2, RoundingMode.HALF_UP);
 
                 TaxBreakdown taxes = taxCalculationService.calculateTaxes(hotelId, subtotal);
 
@@ -211,27 +211,27 @@ public class BookingNotificationService {
 
                 // Calculate total with tax
                 BigDecimal totalWithTax = subtotal.add(taxes.getTotalTax())
-                    .setScale(2, RoundingMode.HALF_UP);
+                        .setScale(2, RoundingMode.HALF_UP);
 
                 // Add to template data
                 templateData.put("subtotal", subtotal);
                 templateData.put("vatRate", vatRate);
                 templateData.put("vatRatePercentage",
-                    vatRate.multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP));
+                        vatRate.multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP));
                 templateData.put("vatAmount", vatAmount);
                 templateData.put("serviceTaxRate", serviceTaxRate);
                 templateData.put("serviceTaxRatePercentage",
-                    serviceTaxRate.multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP));
+                        serviceTaxRate.multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP));
                 templateData.put("serviceTaxAmount", serviceTaxAmount);
                 templateData.put("cityTaxRate", cityTaxRate);
                 templateData.put("cityTaxRatePercentage",
-                    cityTaxRate.multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP));
+                        cityTaxRate.multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP));
                 templateData.put("cityTaxAmount", cityTaxAmount);
                 templateData.put("totalWithTax", totalWithTax);
                 templateData.put("hasTaxBreakdown", true);
-                } else {
+            } else {
                 templateData.put("hasTaxBreakdown", false);
-                }
+            }
         } catch (Exception e) {
             logger.warn("Failed to calculate tax breakdown for booking modification email: {}", e.getMessage());
             templateData.put("hasTaxBreakdown", false);
@@ -278,10 +278,10 @@ public class BookingNotificationService {
             BigDecimal pricePerNight = booking.getPricePerNight();
             Long hotelId = booking.getHotelId();
 
-                if (pricePerNight != null && hotelId != null && nights > 0) {
+            if (pricePerNight != null && hotelId != null && nights > 0) {
                 // Calculate subtotal (price per night × number of nights)
                 BigDecimal subtotal = pricePerNight.multiply(BigDecimal.valueOf(nights))
-                    .setScale(2, RoundingMode.HALF_UP);
+                        .setScale(2, RoundingMode.HALF_UP);
 
                 TaxBreakdown taxes = taxCalculationService.calculateTaxes(hotelId, subtotal);
 
@@ -295,27 +295,27 @@ public class BookingNotificationService {
 
                 // Calculate total with tax
                 BigDecimal totalWithTax = subtotal.add(taxes.getTotalTax())
-                    .setScale(2, RoundingMode.HALF_UP);
+                        .setScale(2, RoundingMode.HALF_UP);
 
                 // Add to template data
                 templateData.put("subtotal", subtotal);
                 templateData.put("vatRate", vatRate);
                 templateData.put("vatRatePercentage",
-                    vatRate.multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP));
+                        vatRate.multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP));
                 templateData.put("vatAmount", vatAmount);
                 templateData.put("serviceTaxRate", serviceTaxRate);
                 templateData.put("serviceTaxRatePercentage",
-                    serviceTaxRate.multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP));
+                        serviceTaxRate.multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP));
                 templateData.put("serviceTaxAmount", serviceTaxAmount);
                 templateData.put("cityTaxRate", cityTaxRate);
                 templateData.put("cityTaxRatePercentage",
-                    cityTaxRate.multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP));
+                        cityTaxRate.multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP));
                 templateData.put("cityTaxAmount", cityTaxAmount);
                 templateData.put("totalWithTax", totalWithTax);
                 templateData.put("hasTaxBreakdown", true);
-                } else {
+            } else {
                 templateData.put("hasTaxBreakdown", false);
-                }
+            }
         } catch (Exception e) {
             logger.warn("Failed to calculate tax breakdown for cancellation email: {}", e.getMessage());
             templateData.put("hasTaxBreakdown", false);

@@ -400,7 +400,7 @@
             </div>
             <div class="date-row">
                 <span>Total Amount</span>
-                <span th:text="'ETB ' + ${#numbers.formatDecimal(booking.totalAmount, 1, 'COMMA', 2, 'POINT')}"></span>
+                <span th:text="'ETB ' + ${#numbers.formatDecimal((totalWithTax != null ? totalWithTax : booking.totalAmount), 1, 'COMMA', 2, 'POINT')}"></span>
             </div>
         </div>
 

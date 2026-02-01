@@ -279,12 +279,12 @@ public class CheckoutReceiptService {
             BigDecimal subtotal = receipt.getTotalRoomCharges().add(receipt.getTotalAdditionalCharges())
                     .setScale(2, RoundingMode.HALF_UP);
 
-                TaxBreakdown taxes = taxCalculationService.calculateTaxesWithRates(subtotal, vatRate, serviceTaxRate,
+            TaxBreakdown taxes = taxCalculationService.calculateTaxesWithRates(subtotal, vatRate, serviceTaxRate,
                     cityTaxRate);
 
-                BigDecimal vatAmount = taxes.getVatAmount();
-                BigDecimal serviceTaxAmount = taxes.getServiceTaxAmount();
-                BigDecimal cityTaxAmount = taxes.getCityTaxAmount();
+            BigDecimal vatAmount = taxes.getVatAmount();
+            BigDecimal serviceTaxAmount = taxes.getServiceTaxAmount();
+            BigDecimal cityTaxAmount = taxes.getCityTaxAmount();
 
             // Add VAT as separate line item
             if (vatAmount.compareTo(BigDecimal.ZERO) > 0) {
@@ -313,18 +313,18 @@ public class CheckoutReceiptService {
                         hotelId, serviceTaxPercentage, subtotal, serviceTaxAmount);
             }
 
-                if (cityTaxAmount.compareTo(BigDecimal.ZERO) > 0) {
+            if (cityTaxAmount.compareTo(BigDecimal.ZERO) > 0) {
                 BigDecimal cityTaxPercentage = cityTaxRate.multiply(BigDecimal.valueOf(100));
                 String cityTaxDescription = String.format("City Tax (%.2f%%)",
-                    cityTaxPercentage.doubleValue());
+                        cityTaxPercentage.doubleValue());
 
                 ReceiptChargeItem cityTaxItem = new ReceiptChargeItem(
-                    cityTaxDescription, cityTaxAmount, "TAX");
+                        cityTaxDescription, cityTaxAmount, "TAX");
                 taxesAndFees.add(cityTaxItem);
 
                 logger.debug("Applied City Tax for hotel {}: {}% on subtotal {} = {}",
-                    hotelId, cityTaxPercentage, subtotal, cityTaxAmount);
-                }
+                        hotelId, cityTaxPercentage, subtotal, cityTaxAmount);
+            }
 
         } catch (Exception e) {
             logger.warn("Failed to calculate taxes for hotel {}: {}. Using zero tax.",

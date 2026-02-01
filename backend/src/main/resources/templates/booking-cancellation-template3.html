@@ -467,7 +467,7 @@
                     </div>
                     <div class="info-row">
                         <span class="info-label">Total Amount</span>
-                        <span class="info-value amount-cancelled" th:text="'ETB ' + ${#numbers.formatDecimal(booking.totalAmount, 1, 'COMMA', 2, 'POINT')}">ETB 5,400</span>
+                        <span class="info-value amount-cancelled" th:text="'ETB ' + ${#numbers.formatDecimal((totalWithTax != null ? totalWithTax : booking.totalAmount), 1, 'COMMA', 2, 'POINT')}">ETB 5,400</span>
                     </div>
                 </div>
             </div>

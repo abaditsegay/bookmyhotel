@@ -457,8 +457,8 @@ public class HotelPricingConfigService {
         }
 
         if (config.getCityTaxRate() != null &&
-            (config.getCityTaxRate().compareTo(BigDecimal.ZERO) < 0 ||
-                config.getCityTaxRate().compareTo(BigDecimal.ONE) > 0)) {
+                (config.getCityTaxRate().compareTo(BigDecimal.ZERO) < 0 ||
+                        config.getCityTaxRate().compareTo(BigDecimal.ONE) > 0)) {
             return false;
         }
 

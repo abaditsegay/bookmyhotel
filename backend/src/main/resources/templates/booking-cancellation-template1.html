@@ -316,7 +316,7 @@
         <table th:unless="${hasTaxBreakdown}">
             <tr>
                 <td>Original Total Amount</td>
-                <td th:text="'ETB ' + ${#numbers.formatDecimal(booking.totalAmount, 1, 'COMMA', 2, 'POINT')}"></td>
+                <td th:text="'ETB ' + ${#numbers.formatDecimal((totalWithTax != null ? totalWithTax : booking.totalAmount), 1, 'COMMA', 2, 'POINT')}"></td>
             </tr>
         </table>
 
