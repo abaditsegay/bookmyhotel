@@ -7,39 +7,35 @@ import {
   TextField,
   Grid,
   Chip,
-  IconButton,
   Divider,
-  Card,
-  CardContent,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Alert,
-  Snackbar,
-  CircularProgress,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemButton,
-  SelectChangeEvent,
-} from '@mui/material';
-import {
-  ArrowBack as ArrowBackIcon,
-  Edit as EditIcon,
-  Save as SaveIcon,
-  Cancel as CancelIcon,
-  Room as RoomIcon,
-} from '@mui/icons-material';
-import { COLORS } from '../../theme/themeColors';
-import { useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
-import PremiumTextField from '../../components/common/PremiumTextField';
-import PremiumSelect from '../../components/common/PremiumSelect';
-import { useAuth } from '../../contexts/AuthContext';
+            <Button
+              variant="outlined"
+              startIcon={<CancelIcon />}
+              onClick={handleCancelAndClose}
+              color="error"
+            >
+              Cancel
+            </Button>
+            {!isEditing ? (
+              <Button
+                variant="outlined"
+                startIcon={<EditIcon />}
+                onClick={handleEdit}
+                disabled={!booking || !canModifyBooking(booking.status)}
+                title={booking && !canModifyBooking(booking.status) ? `Cannot edit booking with status: ${booking.status}` : undefined}
+              >
+                Edit
+              </Button>
+            ) : (
+              <Button
+                variant="contained"
+                startIcon={<SaveIcon />}
+                onClick={handleSaveAndClose}
+                disabled={priceCalculating}
+              >
+                {priceCalculating ? 'Saving...' : 'Save'}
+              </Button>
+            )}
 import { hotelAdminApi, RoomResponse } from '../../services/hotelAdminApi';
 import { ROOM_TYPE_VALUES } from '../../constants/roomTypes';
 
@@ -162,13 +158,18 @@ const BookingViewEdit: React.FC = () => {
     setEditedBooking(booking ? { ...booking } : null);
   };
 
-  const handleSave = async () => {
-    if (!editedBooking || !booking || !token) return;
+  const handleCancelAndClose = () => {
+    handleCancel();
+    handleBack();
+  };
+
+  const handleSave = async (): Promise<boolean> => {
+    if (!editedBooking || !booking || !token) return false;
 
     // Check if booking can be modified based on its status
     if (!canModifyBooking(booking.status)) {
       setError(`Cannot modify booking with status: ${booking.status}. Only confirmed, pending, or checked-in bookings can be modified.`);
-      return;
+      return false;
     }
 
     try {
@@ -296,11 +297,20 @@ const BookingViewEdit: React.FC = () => {
       }
       
       setIsEditing(false);
+      return true;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update booking');
       // console.error('Error updating booking:', err);
+      return false;
     } finally {
       setPriceCalculating(false);
+    }
+  };
+
+  const handleSaveAndClose = async () => {
+    const saved = await handleSave();
+    if (saved) {
+      handleBack();
     }
   };
 
@@ -520,56 +530,55 @@ const BookingViewEdit: React.FC = () => {
 
   if (loading) {
     return (
-      <Container maxWidth="lg">
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-          <CircularProgress size={60} />
-          <Typography variant="h6" sx={{ ml: 2 }}>
-            Loading booking details...
-          </Typography>
-        </Box>
-      </Container>
+      <Dialog open onClose={handleBack} maxWidth="lg" fullWidth scroll="paper">
+        <DialogContent dividers>
+          <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+            <CircularProgress size={60} />
+            <Typography variant="h6" sx={{ ml: 2 }}>
+              Loading booking details...
+            </Typography>
+          </Box>
+        </DialogContent>
+      </Dialog>
     );
   }
 
   if (error) {
     return (
-      <Container maxWidth="lg">
-        <Box sx={{ mt: 4 }}>
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-          <IconButton onClick={handleBack} sx={{ mr: 1 }}>
-            <ArrowBackIcon />
-          </IconButton>
-        </Box>
-      </Container>
+      <Dialog open onClose={handleBack} maxWidth="lg" fullWidth scroll="paper">
+        <DialogContent dividers>
+          <Box sx={{ mt: 2 }}>
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          </Box>
+        </DialogContent>
+      </Dialog>
     );
   }
 
   if (!currentBooking) {
     return (
-      <Container maxWidth="lg">
-        <Box sx={{ mt: 4 }}>
-          <Alert severity="info" sx={{ mb: 2 }}>
-            Booking not found
-          </Alert>
-          <IconButton onClick={handleBack} sx={{ mr: 1 }}>
-            <ArrowBackIcon />
-          </IconButton>
-        </Box>
-      </Container>
+      <Dialog open onClose={handleBack} maxWidth="lg" fullWidth scroll="paper">
+        <DialogContent dividers>
+          <Box sx={{ mt: 2 }}>
+            <Alert severity="info" sx={{ mb: 2 }}>
+              Booking not found
+            </Alert>
+          </Box>
+        </DialogContent>
+      </Dialog>
     );
   }
 
   return (
-    <Container maxWidth="lg">
-      <Box sx={{ mt: 4, mb: 4 }}>
+    <Dialog open onClose={handleBack} maxWidth="lg" fullWidth scroll="paper">
+      <DialogContent dividers sx={{ p: 0 }}>
+        <Container maxWidth="lg" sx={{ py: 4 }}>
+          <Box sx={{ mb: 2 }}>
         {/* Header */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <IconButton onClick={handleBack} sx={{ mr: 1 }}>
-              <ArrowBackIcon />
-            </IconButton>
             <Typography variant="h4" component="h1" sx={{
               color: COLORS.PRIMARY,
               fontWeight: 600
@@ -591,7 +600,7 @@ const BookingViewEdit: React.FC = () => {
               </Button>
             ) : (
               <>
-                <Button
+                  onClick={handleCancelAndClose}
                   variant="outlined"
                   startIcon={<CancelIcon />}
                   onClick={handleCancel}
@@ -975,8 +984,10 @@ const BookingViewEdit: React.FC = () => {
             {error}
           </Alert>
         </Snackbar>
-      </Box>
-    </Container>
+          </Box>
+        </Container>
+      </DialogContent>
+    </Dialog>
   );
 };
 

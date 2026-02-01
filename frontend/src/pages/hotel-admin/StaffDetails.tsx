@@ -6,7 +6,6 @@ import {
   Button,
   Grid,
   Chip,
-  IconButton,
   Divider,
   Card,
   CardContent,
@@ -17,9 +16,10 @@ import {
   Switch,
   Checkbox,
   FormGroup,
+  Dialog,
+  DialogContent,
 } from '@mui/material';
 import {
-  ArrowBack as ArrowBackIcon,
   Edit as EditIcon,
   Save as SaveIcon,
   Cancel as CancelIcon,
@@ -96,8 +96,13 @@ const StaffDetails: React.FC = () => {
     setEditedStaff(staff ? { ...staff } : null);
   };
 
-  const handleSave = async () => {
-    if (!editedStaff || !token) return;
+  const handleCancelAndClose = () => {
+    handleCancel();
+    handleBack();
+  };
+
+  const handleSave = async (): Promise<boolean> => {
+    if (!editedStaff || !token) return false;
 
     try {
       const result = await hotelAdminApi.updateStaff(token, editedStaff.id, {
@@ -113,12 +118,22 @@ const StaffDetails: React.FC = () => {
         setEditedStaff({ ...result.data });
         setIsEditing(false);
         setSuccess('Staff updated successfully');
+        return true;
       } else {
         setError(result.message || 'Failed to update staff');
+        return false;
       }
     } catch (err) {
       setError('Failed to update staff');
       // console.error('Error updating staff:', err);
+      return false;
+    }
+  };
+
+  const handleSaveAndClose = async () => {
+    const saved = await handleSave();
+    if (saved) {
+      handleBack();
     }
   };
 
@@ -185,62 +200,68 @@ const StaffDetails: React.FC = () => {
 
   if (loading) {
     return (
-      <Container maxWidth="lg">
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-          <CircularProgress size={60} />
-          <Typography variant="h6" sx={{ ml: 2 }}>
-            Loading staff details...
-          </Typography>
-        </Box>
-      </Container>
+      <Dialog open onClose={handleBack} maxWidth="lg" fullWidth scroll="paper">
+        <DialogContent dividers>
+          <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+            <CircularProgress size={60} />
+            <Typography variant="h6" sx={{ ml: 2 }}>
+              Loading staff details...
+            </Typography>
+          </Box>
+        </DialogContent>
+      </Dialog>
     );
   }
 
   if (error) {
     return (
-      <Container maxWidth="lg">
-        <Box sx={{ mt: 4 }}>
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-          <IconButton onClick={handleBack} sx={{ mr: 1 }}>
-            <ArrowBackIcon />
-          </IconButton>
-        </Box>
-      </Container>
+      <Dialog open onClose={handleBack} maxWidth="lg" fullWidth scroll="paper">
+        <DialogContent dividers>
+          <Box sx={{ mt: 2 }}>
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          </Box>
+        </DialogContent>
+      </Dialog>
     );
   }
 
   if (!currentStaff) {
     return (
-      <Container maxWidth="lg">
-        <Box sx={{ mt: 4 }}>
-          <Alert severity="info" sx={{ mb: 2 }}>
-            Staff member not found
-          </Alert>
-          <IconButton onClick={handleBack} sx={{ mr: 1 }}>
-            <ArrowBackIcon />
-          </IconButton>
-        </Box>
-      </Container>
+      <Dialog open onClose={handleBack} maxWidth="lg" fullWidth scroll="paper">
+        <DialogContent dividers>
+          <Box sx={{ mt: 2 }}>
+            <Alert severity="info" sx={{ mb: 2 }}>
+              Staff member not found
+            </Alert>
+          </Box>
+        </DialogContent>
+      </Dialog>
     );
   }
 
   return (
-    <Container maxWidth="lg">
-      <Box sx={{ mt: 4, mb: 4 }}>
+    <Dialog open onClose={handleBack} maxWidth="lg" fullWidth scroll="paper">
+      <DialogContent dividers sx={{ p: 0 }}>
+        <Container maxWidth="lg" sx={{ py: 4 }}>
+          <Box>
         {/* Header */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <IconButton onClick={handleBack} sx={{ mr: 1 }}>
-              <ArrowBackIcon />
-            </IconButton>
             <Typography variant="h4" component="h1">
               Staff Details
             </Typography>
           </Box>
           
           <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button
+              variant="outlined"
+              startIcon={<CancelIcon />}
+              onClick={handleCancelAndClose}
+            >
+              Cancel
+            </Button>
             {!isEditing ? (
               <Button
                 variant="outlined"
@@ -250,22 +271,13 @@ const StaffDetails: React.FC = () => {
                 Edit
               </Button>
             ) : (
-              <>
-                <Button
-                  variant="outlined"
-                  startIcon={<CancelIcon />}
-                  onClick={handleCancel}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="contained"
-                  startIcon={<SaveIcon />}
-                  onClick={handleSave}
-                >
-                  Save
-                </Button>
-              </>
+              <Button
+                variant="contained"
+                startIcon={<SaveIcon />}
+                onClick={handleSaveAndClose}
+              >
+                Save
+              </Button>
             )}
           </Box>
         </Box>
@@ -492,8 +504,10 @@ const StaffDetails: React.FC = () => {
             {error}
           </Alert>
         </Snackbar>
-      </Box>
-    </Container>
+          </Box>
+        </Container>
+      </DialogContent>
+    </Dialog>
   );
 };
 

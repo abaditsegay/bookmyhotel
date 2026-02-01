@@ -6,7 +6,6 @@ import {
   Button,
   Grid,
   Chip,
-  IconButton,
   Divider,
   Card,
   CardContent,
@@ -14,9 +13,10 @@ import {
   Alert,
   Snackbar,
   CircularProgress,
+  Dialog,
+  DialogContent,
 } from '@mui/material';
 import {
-  ArrowBack as ArrowBackIcon,
   Edit as EditIcon,
   Save as SaveIcon,
   Cancel as CancelIcon,
@@ -135,8 +135,13 @@ const FrontDeskBookingDetails: React.FC = () => {
     setEditedBooking(booking ? { ...booking } : null);
   };
 
-  const handleSave = async () => {
-    if (!editedBooking || !token) return;
+  const handleCancelAndClose = () => {
+    handleCancel();
+    handleBack();
+  };
+
+  const handleSave = async (): Promise<boolean> => {
+    if (!editedBooking || !token) return false;
 
     try {
       let hasUpdates = false;
@@ -210,9 +215,18 @@ const FrontDeskBookingDetails: React.FC = () => {
       if (!hasUpdates) {
         setSuccess('Booking updated successfully');
       }
+      return true;
     } catch (err) {
       setError('Failed to update booking');
       // console.error('Error updating booking:', err);
+      return false;
+    }
+  };
+
+  const handleSaveAndClose = async () => {
+    const saved = await handleSave();
+    if (saved) {
+      handleBack();
     }
   };
 
@@ -276,68 +290,68 @@ const FrontDeskBookingDetails: React.FC = () => {
 
   if (loading) {
     return (
-      <Container maxWidth="lg">
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-          <CircularProgress size={60} />
-          <Typography variant="h6" sx={{ ml: 2 }}>
-            Loading booking details...
-          </Typography>
-        </Box>
-      </Container>
+      <Dialog open onClose={handleBack} maxWidth="lg" fullWidth scroll="paper">
+        <DialogContent dividers>
+          <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+            <CircularProgress size={60} />
+            <Typography variant="h6" sx={{ ml: 2 }}>
+              Loading booking details...
+            </Typography>
+          </Box>
+        </DialogContent>
+      </Dialog>
     );
   }
 
   if (error) {
     return (
-      <Container maxWidth="lg">
-        <Box sx={{ mt: 4 }}>
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-          <IconButton
-            onClick={handleBack}
-            aria-label="back to dashboard"
-          >
-            <ArrowBackIcon />
-          </IconButton>
-        </Box>
-      </Container>
+      <Dialog open onClose={handleBack} maxWidth="lg" fullWidth scroll="paper">
+        <DialogContent dividers>
+          <Box sx={{ mt: 2 }}>
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          </Box>
+        </DialogContent>
+      </Dialog>
     );
   }
 
   if (!currentBooking) {
     return (
-      <Container maxWidth="lg">
-        <Box sx={{ mt: 4 }}>
-          <Alert severity="info" sx={{ mb: 2 }}>
-            Booking not found
-          </Alert>
-          <IconButton
-            onClick={handleBack}
-            aria-label="back to dashboard"
-          >
-            <ArrowBackIcon />
-          </IconButton>
-        </Box>
-      </Container>
+      <Dialog open onClose={handleBack} maxWidth="lg" fullWidth scroll="paper">
+        <DialogContent dividers>
+          <Box sx={{ mt: 2 }}>
+            <Alert severity="info" sx={{ mb: 2 }}>
+              Booking not found
+            </Alert>
+          </Box>
+        </DialogContent>
+      </Dialog>
     );
   }
 
   return (
-    <Container maxWidth="lg">
-      <Box sx={{ mt: 4, mb: 4 }}>
+    <Dialog open onClose={handleBack} maxWidth="lg" fullWidth scroll="paper">
+      <DialogContent dividers sx={{ p: 0 }}>
+        <Container maxWidth="lg" sx={{ py: 4 }}>
+          <Box>
         {/* Header */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <IconButton onClick={handleBack} sx={{ mr: 1 }}>
-              <ArrowBackIcon />
-            </IconButton>
             <Typography variant="h4" component="h1">
               Booking Details
             </Typography>
           </Box>
           
           <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button
+              variant="outlined"
+              startIcon={<CancelIcon />}
+              onClick={handleCancelAndClose}
+            >
+              Cancel
+            </Button>
             {!isEditing ? (
               <Button
                 variant="outlined"
@@ -348,22 +362,13 @@ const FrontDeskBookingDetails: React.FC = () => {
                 Edit
               </Button>
             ) : (
-              <>
-                <Button
-                  variant="outlined"
-                  startIcon={<CancelIcon />}
-                  onClick={handleCancel}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="contained"
-                  startIcon={<SaveIcon />}
-                  onClick={handleSave}
-                >
-                  Save
-                </Button>
-              </>
+              <Button
+                variant="contained"
+                startIcon={<SaveIcon />}
+                onClick={handleSaveAndClose}
+              >
+                Save
+              </Button>
             )}
           </Box>
         </Box>
@@ -642,8 +647,10 @@ const FrontDeskBookingDetails: React.FC = () => {
             {error}
           </Alert>
         </Snackbar>
-      </Box>
-    </Container>
+          </Box>
+        </Container>
+      </DialogContent>
+    </Dialog>
   );
 };
 

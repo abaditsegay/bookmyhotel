@@ -6,7 +6,6 @@ import {
   Button,
   Grid,
   Chip,
-  IconButton,
   Divider,
   Card,
   CardContent,
@@ -24,7 +23,6 @@ import {
   ListItemButton,
 } from '@mui/material';
 import {
-  ArrowBack as ArrowBackIcon,
   Edit as EditIcon,
   Save as SaveIcon,
   Cancel as CancelIcon,
@@ -211,6 +209,11 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
     setOriginalPricing(null);
   };
 
+  const handleCancelAndClose = () => {
+    handleCancel();
+    handleBack();
+  };
+
   // Helper function to check if a booking can be modified
   const canModifyBooking = (status: string) => {
     // Only allow modifications for certain statuses
@@ -220,13 +223,13 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
     return modifiableStatuses.includes(normalizedStatus);
   };
 
-  const handleSave = async () => {
-    if (!editedBooking || !booking || !token) return;
+  const handleSave = async (): Promise<boolean> => {
+    if (!editedBooking || !booking || !token) return false;
 
     // Check if booking can be modified based on its status
     if (!canModifyBooking(booking.status)) {
       showErrorDialog(t('booking.details.errors.cannotModifyStatus', { status: booking.status }));
-      return;
+      return false;
     }
 
     try {
@@ -243,11 +246,20 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
       setOriginalPricing(null);
       
       setIsEditing(false);
+      return true;
     } catch (err) {
       showErrorDialog(err instanceof Error ? err.message : t('booking.details.errors.failedToUpdate'));
       // console.error('Error updating booking:', err);
+      return false;
     } finally {
       setPriceCalculating(false);
+    }
+  };
+
+  const handleSaveAndClose = async () => {
+    const saved = await handleSave();
+    if (saved) {
+      handleBack();
     }
   };
 
@@ -734,70 +746,69 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
 
   if (loading) {
     return (
-      <Container maxWidth="lg">
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-          <CircularProgress size={60} />
-          <Typography variant="h6" sx={{ ml: 2 }}>
-            {t('booking.details.loading')}
-          </Typography>
-        </Box>
-      </Container>
+      <Dialog open onClose={handleBack} maxWidth="lg" fullWidth scroll="paper">
+        <DialogContent dividers>
+          <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+            <CircularProgress size={60} />
+            <Typography variant="h6" sx={{ ml: 2 }}>
+              {t('booking.details.loading')}
+            </Typography>
+          </Box>
+        </DialogContent>
+      </Dialog>
     );
   }
 
   if (error) {
     return (
-      <Container maxWidth="lg">
-        <Box sx={{ mt: 4 }}>
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-          <IconButton onClick={handleBack} sx={{ mr: 1 }}>
-            <ArrowBackIcon />
-          </IconButton>
-        </Box>
-      </Container>
+      <Dialog open onClose={handleBack} maxWidth="lg" fullWidth scroll="paper">
+        <DialogContent dividers>
+          <Box sx={{ mt: 2 }}>
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          </Box>
+        </DialogContent>
+      </Dialog>
     );
   }
 
   if (!currentBooking) {
     return (
-      <Container maxWidth="lg">
-        <Box sx={{ mt: 4 }}>
-          <Alert severity="info" sx={{ mb: 2 }}>
-            {t('booking.details.bookingNotFound')}
-          </Alert>
-          <IconButton onClick={handleBack} sx={{ mr: 1 }}>
-            <ArrowBackIcon />
-          </IconButton>
-        </Box>
-      </Container>
+      <Dialog open onClose={handleBack} maxWidth="lg" fullWidth scroll="paper">
+        <DialogContent dividers>
+          <Box sx={{ mt: 2 }}>
+            <Alert severity="info" sx={{ mb: 2 }}>
+              {t('booking.details.bookingNotFound')}
+            </Alert>
+          </Box>
+        </DialogContent>
+      </Dialog>
     );
   }
 
   return (
-    <Container maxWidth="lg">
-      <Box sx={{ mt: 4, mb: 4 }}>
+    <Dialog open onClose={handleBack} maxWidth="lg" fullWidth scroll="paper">
+      <DialogContent dividers sx={{ p: 0 }}>
+        <Container maxWidth="lg" sx={{ py: 4 }}>
+          <Box sx={{ mb: 2 }}>
         {/* Header */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <IconButton 
-              onClick={handleBack} 
-              sx={{ 
-                mr: 1,
-                '&:hover': {
-                  backgroundColor: 'action.hover'
-                }
-              }}
-            >
-              <ArrowBackIcon />
-            </IconButton>
             <Typography variant="h4" component="h1" sx={{ color: COLORS.TEXT_PRIMARY, fontWeight: 600 }}>
               {pageTitle}
             </Typography>
           </Box>
           
           <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button
+              variant="outlined"
+              startIcon={<CancelIcon />}
+              onClick={handleCancelAndClose}
+              color="error"
+            >
+              {t('booking.details.cancel')}
+            </Button>
             {!isEditing ? (
               <Button
                 variant="contained"
@@ -809,25 +820,15 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                 {t('booking.details.edit')}
               </Button>
             ) : (
-              <>
-                <Button
-                  variant="outlined"
-                  startIcon={<CancelIcon />}
-                  onClick={handleCancel}
-                  color="error"
-                >
-                  {t('booking.details.cancel')}
-                </Button>
-                <Button
-                  variant="contained"
-                  startIcon={<SaveIcon />}
-                  onClick={handleSave}
-                  disabled={priceCalculating}
-                  color="primary"
-                >
-                  {priceCalculating ? t('booking.details.saving') : t('booking.details.save')}
-                </Button>
-              </>
+              <Button
+                variant="contained"
+                startIcon={<SaveIcon />}
+                onClick={handleSaveAndClose}
+                disabled={priceCalculating}
+                color="primary"
+              >
+                {priceCalculating ? t('booking.details.saving') : t('booking.details.save')}
+              </Button>
             )}
           </Box>
         </Box>
@@ -1339,6 +1340,8 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
         </Snackbar>
       </Box>
     </Container>
+    </DialogContent>
+  </Dialog>
   );
 };
 

@@ -4,7 +4,6 @@ import {
   Typography,
   Box,
   Grid,
-  IconButton,
   Divider,
   Card,
   CardContent,
@@ -14,9 +13,10 @@ import {
   CircularProgress,
   FormControlLabel,
   Switch,
+  Dialog,
+  DialogContent,
 } from '@mui/material';
 import {
-  ArrowBack as ArrowBackIcon,
   Edit as EditIcon,
   Save as SaveIcon,
   Cancel as CancelIcon,
@@ -94,8 +94,13 @@ const RoomViewEdit: React.FC = () => {
     setEditedRoom(room ? { ...room } : null);
   };
 
-  const handleSave = async () => {
-    if (!editedRoom || !token) return;
+  const handleCancelAndClose = () => {
+    handleCancel();
+    handleBack();
+  };
+
+  const handleSave = async (): Promise<boolean> => {
+    if (!editedRoom || !token) return false;
 
     try {
       const result = await hotelAdminApi.updateRoom(token, editedRoom.id, {
@@ -111,12 +116,22 @@ const RoomViewEdit: React.FC = () => {
         setEditedRoom({ ...result.data });
         setIsEditing(false);
         setSuccess(t('rooms.details.success.roomUpdated'));
+        return true;
       } else {
         setError(result.message || t('rooms.details.errors.failedToUpdate'));
+        return false;
       }
     } catch (err) {
       setError(t('rooms.details.errors.failedToUpdate'));
       // console.error('Error updating room:', err);
+      return false;
+    }
+  };
+
+  const handleSaveAndClose = async () => {
+    const saved = await handleSave();
+    if (saved) {
+      handleBack();
     }
   };
 
@@ -162,62 +177,76 @@ const RoomViewEdit: React.FC = () => {
 
   if (loading) {
     return (
-      <Container maxWidth="lg">
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-          <CircularProgress size={60} />
-          <Typography variant="h6" sx={{ ml: 2 }}>
-            Loading room details...
-          </Typography>
-        </Box>
-      </Container>
+      <Dialog open onClose={handleBack} maxWidth="lg" fullWidth scroll="paper">
+        <DialogContent dividers>
+          <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+            <CircularProgress size={60} />
+            <Typography variant="h6" sx={{ ml: 2 }}>
+              Loading room details...
+            </Typography>
+          </Box>
+        </DialogContent>
+      </Dialog>
     );
   }
 
   if (error) {
     return (
-      <Container maxWidth="lg">
-        <Box sx={{ mt: 4 }}>
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-          <IconButton onClick={handleBack} sx={{ mr: 1 }}>
-            <ArrowBackIcon />
-          </IconButton>
-        </Box>
-      </Container>
+      <Dialog open onClose={handleBack} maxWidth="lg" fullWidth scroll="paper">
+        <DialogContent dividers>
+          <Box sx={{ mt: 2 }}>
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          </Box>
+        </DialogContent>
+      </Dialog>
     );
   }
 
   if (!currentRoom) {
     return (
-      <Container maxWidth="lg">
-        <Box sx={{ mt: 4 }}>
-          <Alert severity="info" sx={{ mb: 2 }}>
-            Room not found
-          </Alert>
-          <IconButton onClick={handleBack} sx={{ mr: 1 }}>
-            <ArrowBackIcon />
-          </IconButton>
-        </Box>
-      </Container>
+      <Dialog open onClose={handleBack} maxWidth="lg" fullWidth scroll="paper">
+        <DialogContent dividers>
+          <Box sx={{ mt: 2 }}>
+            <Alert severity="info" sx={{ mb: 2 }}>
+              Room not found
+            </Alert>
+          </Box>
+        </DialogContent>
+      </Dialog>
     );
   }
 
   return (
-    <Container maxWidth="lg">
-      <Box sx={{ mt: 4, mb: 4 }}>
+    <Dialog open onClose={handleBack} maxWidth="lg" fullWidth scroll="paper">
+      <DialogContent dividers sx={{ p: 0 }}>
+        <Container maxWidth="lg" sx={{ py: 4 }}>
+          <Box sx={{ mb: 2 }}>
         {/* Header */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <IconButton onClick={handleBack} sx={{ mr: 1 }}>
-              <ArrowBackIcon />
-            </IconButton>
             <Typography variant="h4" component="h1">
               {t('rooms.details.title')}
             </Typography>
           </Box>
           
           <Box sx={{ display: 'flex', gap: 1 }}>
+            <StandardButton
+              variant="outlined"
+              startIcon={<CancelIcon />}
+              onClick={handleCancelAndClose}
+              sx={{
+                borderColor: addAlpha(COLORS.SECONDARY, 0.6),
+                color: COLORS.PRIMARY,
+                '&:hover': {
+                  borderColor: COLORS.SECONDARY,
+                  bgcolor: addAlpha(COLORS.SECONDARY, 0.08),
+                },
+              }}
+            >
+              {t('rooms.details.cancel')}
+            </StandardButton>
             {!isEditing ? (
               <StandardButton
                 variant="outlined"
@@ -235,37 +264,20 @@ const RoomViewEdit: React.FC = () => {
                 {t('rooms.details.edit')}
               </StandardButton>
             ) : (
-              <>
-                <StandardButton
-                  variant="outlined"
-                  startIcon={<CancelIcon />}
-                  onClick={handleCancel}
-                  sx={{
-                    borderColor: addAlpha(COLORS.SECONDARY, 0.6),
-                    color: COLORS.PRIMARY,
-                    '&:hover': {
-                      borderColor: COLORS.SECONDARY,
-                      bgcolor: addAlpha(COLORS.SECONDARY, 0.08),
-                    },
-                  }}
-                >
-                  {t('rooms.details.cancel')}
-                </StandardButton>
-                <StandardButton
-                  variant="contained"
-                  startIcon={<SaveIcon />}
-                  onClick={handleSave}
-                  gradient
-                  sx={{
-                    background: COLORS.GRADIENT_SECONDARY,
-                    '&:hover': {
-                      background: COLORS.GRADIENT_WARM,
-                    },
-                  }}
-                >
-                  {t('rooms.details.save')}
-                </StandardButton>
-              </>
+              <StandardButton
+                variant="contained"
+                startIcon={<SaveIcon />}
+                onClick={handleSaveAndClose}
+                gradient
+                sx={{
+                  background: COLORS.GRADIENT_SECONDARY,
+                  '&:hover': {
+                    background: COLORS.GRADIENT_WARM,
+                  },
+                }}
+              >
+                {t('rooms.details.save')}
+              </StandardButton>
             )}
           </Box>
         </Box>
@@ -487,8 +499,10 @@ const RoomViewEdit: React.FC = () => {
             {error}
           </Alert>
         </Snackbar>
-      </Box>
-    </Container>
+          </Box>
+        </Container>
+      </DialogContent>
+    </Dialog>
   );
 };
 
