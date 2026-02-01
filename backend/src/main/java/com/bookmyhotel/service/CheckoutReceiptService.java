@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.bookmyhotel.dto.ConsolidatedReceiptResponse;
 import com.bookmyhotel.dto.ConsolidatedReceiptResponse.ReceiptChargeItem;
 import com.bookmyhotel.dto.ConsolidatedReceiptResponse.ReceiptPaymentItem;
+import com.bookmyhotel.dto.TaxBreakdown;
 import com.bookmyhotel.dto.RoomChargeResponse;
 import com.bookmyhotel.entity.Hotel;
 import com.bookmyhotel.entity.Reservation;
@@ -57,6 +58,9 @@ public class CheckoutReceiptService {
 
     @Autowired
     private HotelPricingConfigService hotelPricingConfigService;
+
+    @Autowired
+    private TaxCalculationService taxCalculationService;
 
     @Autowired
     private MicrosoftGraphEmailService microsoftGraphEmailService;
@@ -259,16 +263,28 @@ public class CheckoutReceiptService {
             Long hotelId = reservation.getHotel().getId();
             BigDecimal vatRate = hotelPricingConfigService.getVatRate(hotelId);
             BigDecimal serviceTaxRate = hotelPricingConfigService.getServiceTaxRate(hotelId);
+            BigDecimal cityTaxRate = hotelPricingConfigService.getCityTaxRate(hotelId);
+
+            if (vatRate == null) {
+                vatRate = BigDecimal.ZERO;
+            }
+            if (serviceTaxRate == null) {
+                serviceTaxRate = BigDecimal.ZERO;
+            }
+            if (cityTaxRate == null) {
+                cityTaxRate = BigDecimal.ZERO;
+            }
 
             // Calculate subtotal (room charges + additional charges, excluding taxes)
             BigDecimal subtotal = receipt.getTotalRoomCharges().add(receipt.getTotalAdditionalCharges())
                     .setScale(2, RoundingMode.HALF_UP);
 
-            // Calculate VAT amount
-            BigDecimal vatAmount = subtotal.multiply(vatRate).setScale(2, RoundingMode.HALF_UP);
+                TaxBreakdown taxes = taxCalculationService.calculateTaxesWithRates(subtotal, vatRate, serviceTaxRate,
+                    cityTaxRate);
 
-            // Calculate Service Tax amount
-            BigDecimal serviceTaxAmount = subtotal.multiply(serviceTaxRate).setScale(2, RoundingMode.HALF_UP);
+                BigDecimal vatAmount = taxes.getVatAmount();
+                BigDecimal serviceTaxAmount = taxes.getServiceTaxAmount();
+                BigDecimal cityTaxAmount = taxes.getCityTaxAmount();
 
             // Add VAT as separate line item
             if (vatAmount.compareTo(BigDecimal.ZERO) > 0) {
@@ -296,6 +312,19 @@ public class CheckoutReceiptService {
                 logger.debug("Applied Service Tax for hotel {}: {}% on subtotal {} = {}",
                         hotelId, serviceTaxPercentage, subtotal, serviceTaxAmount);
             }
+
+                if (cityTaxAmount.compareTo(BigDecimal.ZERO) > 0) {
+                BigDecimal cityTaxPercentage = cityTaxRate.multiply(BigDecimal.valueOf(100));
+                String cityTaxDescription = String.format("City Tax (%.2f%%)",
+                    cityTaxPercentage.doubleValue());
+
+                ReceiptChargeItem cityTaxItem = new ReceiptChargeItem(
+                    cityTaxDescription, cityTaxAmount, "TAX");
+                taxesAndFees.add(cityTaxItem);
+
+                logger.debug("Applied City Tax for hotel {}: {}% on subtotal {} = {}",
+                    hotelId, cityTaxPercentage, subtotal, cityTaxAmount);
+                }
 
         } catch (Exception e) {
             logger.warn("Failed to calculate taxes for hotel {}: {}. Using zero tax.",

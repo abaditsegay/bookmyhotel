@@ -17,6 +17,7 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 import com.bookmyhotel.dto.BookingResponse;
+import com.bookmyhotel.dto.TaxBreakdown;
 
 /**
  * Email service using OAuth2 Microsoft Graph API
@@ -30,7 +31,7 @@ public class EmailService {
     private final MicrosoftGraphEmailService microsoftGraphEmailService;
     private final TemplateEngine templateEngine;
     private final BookingTokenService bookingTokenService;
-    private final HotelPricingConfigService hotelPricingConfigService;
+    private final TaxCalculationService taxCalculationService;
 
     @Value("${app.email.from}")
     private String fromEmail;
@@ -55,11 +56,11 @@ public class EmailService {
     public EmailService(MicrosoftGraphEmailService microsoftGraphEmailService,
             @Qualifier("emailTemplateEngine") TemplateEngine templateEngine,
             BookingTokenService bookingTokenService,
-            HotelPricingConfigService hotelPricingConfigService) {
+            TaxCalculationService taxCalculationService) {
         this.microsoftGraphEmailService = microsoftGraphEmailService;
         this.templateEngine = templateEngine;
         this.bookingTokenService = bookingTokenService;
-        this.hotelPricingConfigService = hotelPricingConfigService;
+        this.taxCalculationService = taxCalculationService;
     }
 
     /**
@@ -265,36 +266,44 @@ public class EmailService {
 
         // Calculate tax breakdown if hotel ID is available
         if (booking.getHotelId() != null) {
-            try {
-                BigDecimal vatRate = hotelPricingConfigService.getVatRate(booking.getHotelId());
-                BigDecimal serviceTaxRate = hotelPricingConfigService.getServiceTaxRate(booking.getHotelId());
-
+                try {
                 // Calculate subtotal (price per night * nights)
                 BigDecimal subtotal = booking.getPricePerNight().multiply(BigDecimal.valueOf(nights));
 
-                // Calculate tax amounts
-                BigDecimal vatAmount = subtotal.multiply(vatRate).setScale(2, RoundingMode.HALF_UP);
-                BigDecimal serviceTaxAmount = subtotal.multiply(serviceTaxRate).setScale(2, RoundingMode.HALF_UP);
-                BigDecimal totalWithTax = subtotal.add(vatAmount).add(serviceTaxAmount).setScale(2,
-                        RoundingMode.HALF_UP);
+                TaxBreakdown taxes = taxCalculationService.calculateTaxes(booking.getHotelId(), subtotal);
+
+                BigDecimal vatAmount = taxes.getVatAmount();
+                BigDecimal serviceTaxAmount = taxes.getServiceTaxAmount();
+                BigDecimal cityTaxAmount = taxes.getCityTaxAmount();
+
+                BigDecimal vatRate = calculateRate(vatAmount, subtotal);
+                BigDecimal serviceTaxRate = calculateRate(serviceTaxAmount, subtotal);
+                BigDecimal cityTaxRate = calculateRate(cityTaxAmount, subtotal);
+
+                BigDecimal totalWithTax = subtotal.add(taxes.getTotalTax()).setScale(2, RoundingMode.HALF_UP);
 
                 // Add to template data
                 templateData.put("subtotal", subtotal);
                 templateData.put("vatRate", vatRate);
                 templateData.put("vatRatePercentage",
-                        vatRate.multiply(new BigDecimal("100")).setScale(2, RoundingMode.HALF_UP));
+                    vatRate.multiply(new BigDecimal("100")).setScale(2, RoundingMode.HALF_UP));
                 templateData.put("vatAmount", vatAmount);
                 templateData.put("serviceTaxRate", serviceTaxRate);
                 templateData.put("serviceTaxRatePercentage",
-                        serviceTaxRate.multiply(new BigDecimal("100")).setScale(2, RoundingMode.HALF_UP));
+                    serviceTaxRate.multiply(new BigDecimal("100")).setScale(2, RoundingMode.HALF_UP));
                 templateData.put("serviceTaxAmount", serviceTaxAmount);
+                templateData.put("cityTaxRate", cityTaxRate);
+                templateData.put("cityTaxRatePercentage",
+                    cityTaxRate.multiply(new BigDecimal("100")).setScale(2, RoundingMode.HALF_UP));
+                templateData.put("cityTaxAmount", cityTaxAmount);
                 templateData.put("totalWithTax", totalWithTax);
                 templateData.put("hasTaxBreakdown", true);
 
-                logger.debug("Tax breakdown calculated for hotel {}: subtotal={}, VAT={}%, service tax={}%",
-                        booking.getHotelId(), subtotal, vatRate.multiply(new BigDecimal("100")),
-                        serviceTaxRate.multiply(new BigDecimal("100")));
-            } catch (Exception e) {
+                logger.debug("Tax breakdown calculated for hotel {}: subtotal={}, VAT={}%, service tax={}%, city tax={}%",
+                    booking.getHotelId(), subtotal, vatRate.multiply(new BigDecimal("100")),
+                    serviceTaxRate.multiply(new BigDecimal("100")),
+                    cityTaxRate.multiply(new BigDecimal("100")));
+                } catch (Exception e) {
                 logger.warn("Failed to calculate tax breakdown for hotel {}: {}", booking.getHotelId(), e.getMessage());
                 templateData.put("hasTaxBreakdown", false);
             }
@@ -398,5 +407,15 @@ public class EmailService {
             default:
                 return "manage your booking";
         }
+    }
+
+    private BigDecimal calculateRate(BigDecimal amount, BigDecimal subtotal) {
+        if (subtotal == null || subtotal.compareTo(BigDecimal.ZERO) <= 0) {
+            return BigDecimal.ZERO;
+        }
+        if (amount == null) {
+            return BigDecimal.ZERO;
+        }
+        return amount.divide(subtotal, 4, RoundingMode.HALF_UP);
     }
 }

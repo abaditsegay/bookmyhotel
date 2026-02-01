@@ -235,8 +235,9 @@ public class HotelPricingConfigService {
 
         BigDecimal vatRate = config.getVatRate();
         BigDecimal serviceRate = config.getServiceTaxRate();
+        BigDecimal cityRate = config.getCityTaxRate();
 
-        BigDecimal totalRate = vatRate.add(serviceRate).setScale(4, RoundingMode.HALF_UP);
+        BigDecimal totalRate = vatRate.add(serviceRate).add(cityRate).setScale(4, RoundingMode.HALF_UP);
         logger.debug("Total tax rate for hotel {}: {}% (VAT: {}%, Service: {}%)",
                 hotelId, totalRate.multiply(new BigDecimal("100")),
                 config.getVatRate().multiply(new BigDecimal("100")),
@@ -267,6 +268,18 @@ public class HotelPricingConfigService {
     public BigDecimal getServiceTaxRate(Long hotelId) {
         HotelPricingConfig config = getOrCreateActiveConfiguration(hotelId);
         return config.getServiceTaxRate();
+    }
+
+    /**
+     * Get the city tax rate for a hotel
+     * 
+     * @param hotelId the hotel ID
+     * @return the city tax rate as a decimal
+     */
+    @Transactional(readOnly = true)
+    public BigDecimal getCityTaxRate(Long hotelId) {
+        HotelPricingConfig config = getOrCreateActiveConfiguration(hotelId);
+        return config.getCityTaxRate();
     }
 
     /**
@@ -440,6 +453,12 @@ public class HotelPricingConfigService {
         if (config.getServiceTaxRate() != null &&
                 (config.getServiceTaxRate().compareTo(BigDecimal.ZERO) < 0 ||
                         config.getServiceTaxRate().compareTo(BigDecimal.ONE) > 0)) {
+            return false;
+        }
+
+        if (config.getCityTaxRate() != null &&
+            (config.getCityTaxRate().compareTo(BigDecimal.ZERO) < 0 ||
+                config.getCityTaxRate().compareTo(BigDecimal.ONE) > 0)) {
             return false;
         }
 

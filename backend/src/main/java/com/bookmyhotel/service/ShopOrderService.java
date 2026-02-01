@@ -1,7 +1,6 @@
 package com.bookmyhotel.service;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.bookmyhotel.dto.ShopOrderItemResponse;
 import com.bookmyhotel.dto.ShopOrderRequest;
 import com.bookmyhotel.dto.ShopOrderResponse;
+import com.bookmyhotel.dto.TaxBreakdown;
 import com.bookmyhotel.entity.Hotel;
 import com.bookmyhotel.entity.OrderStatus;
 import com.bookmyhotel.entity.PaymentMethod;
@@ -60,6 +60,9 @@ public class ShopOrderService {
 
     @Autowired
     private HotelPricingConfigService hotelPricingConfigService;
+
+    @Autowired
+    private TaxCalculationService taxCalculationService;
 
     /**
      * Simple method to demonstrate shop order functionality
@@ -211,38 +214,36 @@ public class ShopOrderService {
 
         // Calculate taxes separately
         BigDecimal subtotal = totalAmount;
-        BigDecimal vatRate = hotelPricingConfigService.getVatRate(hotelId);
-        BigDecimal serviceTaxRate = hotelPricingConfigService.getServiceTaxRate(hotelId);
-
-        BigDecimal vatAmount = subtotal.multiply(vatRate).setScale(2, RoundingMode.HALF_UP);
-        BigDecimal serviceTaxAmount = subtotal.multiply(serviceTaxRate).setScale(2, RoundingMode.HALF_UP);
-        BigDecimal totalTax = vatAmount.add(serviceTaxAmount);
+        TaxBreakdown taxes = taxCalculationService.calculateTaxes(hotelId, subtotal);
 
         // Set tax amounts
-        order.setVatAmount(vatAmount);
-        order.setServiceTaxAmount(serviceTaxAmount);
-        order.setTaxAmount(totalTax);
+        order.setVatAmount(taxes.getVatAmount());
+        order.setServiceTaxAmount(taxes.getServiceTaxAmount());
+        order.setTaxAmount(taxes.getTotalTax());
 
-        // Calculate final total (subtotal + taxes)
-        totalAmount = subtotal.add(totalTax);
-
-        order.setTotalAmount(totalAmount);
+        // Store tax-exclusive total
+        order.setTotalAmount(subtotal);
         order.setOrderItems(orderItems);
 
         // Save the order
         ShopOrder savedOrder = shopOrderRepository.save(order);
 
         // **IMPORTANT: Decrement stock quantities for all ordered products**
+        List<Product> productsToUpdate = new ArrayList<>();
         for (ShopOrderItem orderItem : savedOrder.getOrderItems()) {
             Product product = orderItem.getProduct();
-            int newStockQuantity = product.getStockQuantity() - orderItem.getQuantity();
+            int oldStockQuantity = product.getStockQuantity();
+            int newStockQuantity = oldStockQuantity - orderItem.getQuantity();
             product.setStockQuantity(newStockQuantity);
-            productRepository.save(product);
+            productsToUpdate.add(product);
 
             logger.debug("Stock decremented for product '{}' (ID: {}). Old stock: {}, New stock: {}",
                     product.getName(), product.getId(),
-                    (product.getStockQuantity() + orderItem.getQuantity()),
+                    oldStockQuantity,
                     newStockQuantity);
+        }
+        if (!productsToUpdate.isEmpty()) {
+            productRepository.saveAll(productsToUpdate);
         }
 
         // If payment method is ROOM_CHARGE and order is linked to a reservation,

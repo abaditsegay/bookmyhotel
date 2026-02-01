@@ -48,6 +48,7 @@ import * as frontDeskApi from '../../services/frontDeskApi';
 import { ROOM_TYPES, getRoomTypeLabel } from '../../constants/roomTypes';
 import PremiumTextField from './PremiumTextField';
 import PremiumSelect from './PremiumSelect';
+import StandardButton from './StandardButton';
 import { COLORS, addAlpha } from '../../theme/themeColors';
 
 // Import hotel admin specific components conditionally
@@ -681,35 +682,44 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
 
       {/* Edit Room Dialog */}
       <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>{t(`${translationPrefix}.editRoom.title`)}</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700, color: COLORS.PRIMARY }}>
+          {t(`${translationPrefix}.editRoom.title`)}
+        </DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 2 }}>
             <Typography variant="body1" sx={{ mb: 2 }}>
               {t(`${translationPrefix}.editRoom.roomNumber`)}: {editingRoom.roomNumber}
             </Typography>
-            <FormControl fullWidth sx={{ mb: 2 }}>
-              <InputLabel>{t(`${translationPrefix}.editRoom.status`)}</InputLabel>
-              <Select
-                value={editingRoom.status || ''}
-                label={t(`${translationPrefix}.editRoom.status`)}
-                onChange={(e) => setEditingRoom({ ...editingRoom, status: e.target.value })}
-              >
-                {ROOM_STATUS_OPTIONS.map((status) => (
-                  <MenuItem key={status.value} value={status.value}>
-                    <Chip
-                      label={status.label}
-                      color={status.color}
-                      size="small"
-                    />
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            <PremiumSelect
+              fullWidth
+              label={t(`${translationPrefix}.editRoom.status`)}
+              value={editingRoom.status || ''}
+              onChange={(e) => setEditingRoom({ ...editingRoom, status: e.target.value })}
+              sx={{ mb: 2 }}
+            >
+              {ROOM_STATUS_OPTIONS.map((status) => (
+                <MenuItem key={status.value} value={status.value}>
+                  <Chip
+                    label={status.label}
+                    color={status.color}
+                    size="small"
+                  />
+                </MenuItem>
+              ))}
+            </PremiumSelect>
             <FormControlLabel
               control={
                 <Switch
                   checked={editingRoom.isAvailable || false}
                   onChange={(e) => setEditingRoom({ ...editingRoom, isAvailable: e.target.checked })}
+                  sx={{
+                    '& .MuiSwitch-switchBase.Mui-checked': {
+                      color: COLORS.SECONDARY,
+                    },
+                    '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                      backgroundColor: COLORS.SECONDARY,
+                    },
+                  }}
                 />
               }
               label={t(`${translationPrefix}.editRoom.available`)}
@@ -717,10 +727,21 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setEditDialogOpen(false)}>
+          <StandardButton
+            variant="outlined"
+            onClick={() => setEditDialogOpen(false)}
+            sx={{
+              borderColor: addAlpha(COLORS.SECONDARY, 0.6),
+              color: COLORS.PRIMARY,
+              '&:hover': {
+                borderColor: COLORS.SECONDARY,
+                bgcolor: addAlpha(COLORS.SECONDARY, 0.08),
+              },
+            }}
+          >
             {t(`${translationPrefix}.editRoom.cancel`)}
-          </Button>
-          <Button
+          </StandardButton>
+          <StandardButton
             variant="contained"
             onClick={async () => {
               if (editingRoom.id && editingRoom.status) {
@@ -731,9 +752,16 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
                 setEditDialogOpen(false);
               }
             }}
+            gradient
+            sx={{
+              background: COLORS.GRADIENT_SECONDARY,
+              '&:hover': {
+                background: COLORS.GRADIENT_WARM,
+              },
+            }}
           >
             {t(`${translationPrefix}.editRoom.save`)}
-          </Button>
+          </StandardButton>
         </DialogActions>
       </Dialog>
     </Box>

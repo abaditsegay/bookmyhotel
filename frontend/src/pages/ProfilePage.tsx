@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box,
-  Card,
   CardContent,
   Container,
-  TextField,
   Typography,
-  Button,
   Avatar,
   Grid,
   Divider,
@@ -24,6 +21,9 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import ThemeToggle from '../components/common/ThemeToggle';
+import StandardCard from '../components/common/StandardCard';
+import StandardButton from '../components/common/StandardButton';
+import PremiumTextField from '../components/common/PremiumTextField';
 import { COLORS, addAlpha } from '../theme/themeColors';
 
 const ProfilePage: React.FC = () => {
@@ -163,7 +163,7 @@ const ProfilePage: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: 4 }}>
       <Typography 
         variant="h4" 
         component="h1" 
@@ -193,7 +193,7 @@ const ProfilePage: React.FC = () => {
       <Grid container spacing={3}>
         {/* Profile Overview Card */}
         <Grid item xs={12} md={4}>
-          <Card sx={{ textAlign: 'center', p: 3, height: 'fit-content' }}>
+          <StandardCard cardVariant="elevated" sx={{ textAlign: 'center', p: 3, height: 'fit-content' }}>
             <Avatar
               sx={{
                 width: 120,
@@ -228,7 +228,7 @@ const ProfilePage: React.FC = () => {
                user?.role === 'HOUSEKEEPING' ? 'Housekeeping' : 'Guest'}
             </Typography>
             {!isEditing && (
-              <Button
+              <StandardButton
                 variant="contained"
                 startIcon={<EditIcon />}
                 onClick={handleEdit}
@@ -242,14 +242,14 @@ const ProfilePage: React.FC = () => {
                 }}
               >
                 Edit Profile
-              </Button>
+              </StandardButton>
             )}
-          </Card>
+          </StandardCard>
         </Grid>
 
         {/* Profile Details Card */}
         <Grid item xs={12} md={8}>
-          <Card>
+          <StandardCard cardVariant="elevated">
             <CardContent sx={{ p: 3 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                 <Typography variant="h6" sx={{ fontWeight: 'bold', color: COLORS.PRIMARY }}>
@@ -257,15 +257,15 @@ const ProfilePage: React.FC = () => {
                 </Typography>
                 {isEditing && (
                   <Box>
-                    <Button
+                    <StandardButton
                       variant="outlined"
                       startIcon={<CancelIcon />}
                       onClick={handleCancel}
                       sx={{ mr: 1 }}
                     >
                       Cancel
-                    </Button>
-                    <Button
+                    </StandardButton>
+                    <StandardButton
                       variant="contained"
                       startIcon={<SaveIcon />}
                       onClick={handleSave}
@@ -278,14 +278,14 @@ const ProfilePage: React.FC = () => {
                       }}
                     >
                       Save Changes
-                    </Button>
+                    </StandardButton>
                   </Box>
                 )}
               </Box>
 
               <Grid container spacing={3}>
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label="First Name"
                     value={formData.firstName}
@@ -295,7 +295,7 @@ const ProfilePage: React.FC = () => {
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label="Last Name"
                     value={formData.lastName}
@@ -305,7 +305,7 @@ const ProfilePage: React.FC = () => {
                   />
                 </Grid>
                 <Grid item xs={12}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label="Email"
                     type="email"
@@ -316,7 +316,7 @@ const ProfilePage: React.FC = () => {
                   />
                 </Grid>
                 <Grid item xs={12}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label="Phone Number"
                     value={formData.phone}
@@ -341,7 +341,7 @@ const ProfilePage: React.FC = () => {
                   </Typography>
                   <Grid container spacing={3}>
                     <Grid item xs={12}>
-                      <TextField
+                      <PremiumTextField
                         fullWidth
                         label="Current Password"
                         type={showPassword ? 'text' : 'password'}
@@ -359,7 +359,7 @@ const ProfilePage: React.FC = () => {
                       />
                     </Grid>
                     <Grid item xs={12} sm={6}>
-                      <TextField
+                      <PremiumTextField
                         fullWidth
                         label="New Password"
                         type={showPassword ? 'text' : 'password'}
@@ -369,7 +369,7 @@ const ProfilePage: React.FC = () => {
                       />
                     </Grid>
                     <Grid item xs={12} sm={6}>
-                      <TextField
+                      <PremiumTextField
                         fullWidth
                         label="Confirm New Password"
                         type={showPassword ? 'text' : 'password'}
@@ -381,12 +381,12 @@ const ProfilePage: React.FC = () => {
                 </>
               )}
             </CardContent>
-          </Card>
+          </StandardCard>
         </Grid>
       </Grid>
 
       {/* Account Information Card */}
-      <Card sx={{ mt: 3 }}>
+      <StandardCard cardVariant="outlined" sx={{ mt: 3 }}>
         <CardContent sx={{ p: 3 }}>
           <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', color: COLORS.PRIMARY }}>
             Account Information
@@ -444,10 +444,10 @@ const ProfilePage: React.FC = () => {
             </Grid>
           </Grid>
         </CardContent>
-      </Card>
+      </StandardCard>
 
       {/* Preferences Card */}
-      <Card sx={{ mt: 3 }}>
+      <StandardCard cardVariant="outlined" sx={{ mt: 3 }}>
         <CardContent sx={{ p: 3 }}>
           <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', color: COLORS.PRIMARY }}>
             Preferences
@@ -466,7 +466,7 @@ const ProfilePage: React.FC = () => {
             </Grid>
           </Grid>
         </CardContent>
-      </Card>
+      </StandardCard>
     </Container>
   );
 };

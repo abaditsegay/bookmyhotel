@@ -371,8 +371,8 @@ public class HotelAdminService {
 
         Pageable pageable = PageRequest.of(page, size);
 
-        // Get all rooms for this hotel using hotel ID instead of hotel entity
-        List<Room> allRooms = roomRepository.findByHotelId(hotel.getId());
+        // Get all rooms for this hotel with reservations for current guest display
+        List<Room> allRooms = roomRepository.findByHotelIdWithReservationsOrderByRoomNumber(hotel.getId());
         // System.err.println("🔍 Found " + allRooms.size() + " total rooms for hotel
         // ID: " + hotel.getId());
 

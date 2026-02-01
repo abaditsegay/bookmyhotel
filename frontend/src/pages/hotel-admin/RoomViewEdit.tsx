@@ -3,17 +3,11 @@ import {
   Container,
   Typography,
   Box,
-  Button,
-  TextField,
   Grid,
-  Chip,
   IconButton,
   Divider,
   Card,
   CardContent,
-  FormControl,
-  InputLabel,
-  Select,
   MenuItem,
   Alert,
   Snackbar,
@@ -33,6 +27,10 @@ import { useAuth } from '../../contexts/AuthContext';
 import { hotelAdminApi, RoomResponse } from '../../services/hotelAdminApi';
 import { ROOM_TYPES } from '../../constants/roomTypes';
 import PremiumDisplayField from '../../components/common/PremiumDisplayField';
+import PremiumTextField from '../../components/common/PremiumTextField';
+import PremiumSelect from '../../components/common/PremiumSelect';
+import StandardButton from '../../components/common/StandardButton';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 
 const RoomViewEdit: React.FC = () => {
   const { t } = useTranslation();
@@ -221,29 +219,52 @@ const RoomViewEdit: React.FC = () => {
           
           <Box sx={{ display: 'flex', gap: 1 }}>
             {!isEditing ? (
-              <Button
+              <StandardButton
                 variant="outlined"
                 startIcon={<EditIcon />}
                 onClick={handleEdit}
+                sx={{
+                  borderColor: addAlpha(COLORS.SECONDARY, 0.6),
+                  color: COLORS.PRIMARY,
+                  '&:hover': {
+                    borderColor: COLORS.SECONDARY,
+                    bgcolor: addAlpha(COLORS.SECONDARY, 0.08),
+                  },
+                }}
               >
                 {t('rooms.details.edit')}
-              </Button>
+              </StandardButton>
             ) : (
               <>
-                <Button
+                <StandardButton
                   variant="outlined"
                   startIcon={<CancelIcon />}
                   onClick={handleCancel}
+                  sx={{
+                    borderColor: addAlpha(COLORS.SECONDARY, 0.6),
+                    color: COLORS.PRIMARY,
+                    '&:hover': {
+                      borderColor: COLORS.SECONDARY,
+                      bgcolor: addAlpha(COLORS.SECONDARY, 0.08),
+                    },
+                  }}
                 >
                   {t('rooms.details.cancel')}
-                </Button>
-                <Button
+                </StandardButton>
+                <StandardButton
                   variant="contained"
                   startIcon={<SaveIcon />}
                   onClick={handleSave}
+                  gradient
+                  sx={{
+                    background: COLORS.GRADIENT_SECONDARY,
+                    '&:hover': {
+                      background: COLORS.GRADIENT_WARM,
+                    },
+                  }}
                 >
                   {t('rooms.details.save')}
-                </Button>
+                </StandardButton>
               </>
             )}
           </Box>
@@ -272,26 +293,24 @@ const RoomViewEdit: React.FC = () => {
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     {isEditing ? (
-                      <FormControl fullWidth>
-                        <InputLabel>{t('rooms.details.roomType')}</InputLabel>
-                        <Select
-                          value={currentRoom?.roomType || ''}
-                          onChange={(e) => handleFieldChange('roomType', e.target.value)}
-                        >
-                          {ROOM_TYPES.map((roomType) => (
-                            <MenuItem key={roomType.value} value={roomType.value}>
-                              {roomType.value}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
+                      <PremiumSelect
+                        fullWidth
+                        label={t('rooms.details.roomType')}
+                        value={currentRoom?.roomType || ''}
+                        onChange={(e) => handleFieldChange('roomType', e.target.value)}
+                      >
+                        {ROOM_TYPES.map((roomType) => (
+                          <MenuItem key={roomType.value} value={roomType.value}>
+                            {roomType.value}
+                          </MenuItem>
+                        ))}
+                      </PremiumSelect>
                     ) : (
-                      <TextField
+                      <PremiumTextField
                         fullWidth
                         label={t('rooms.details.roomType')}
                         value={currentRoom?.roomType || ''}
                         disabled
-                        variant="filled"
                       />
                     )}
                   </Grid>
@@ -341,17 +360,35 @@ const RoomViewEdit: React.FC = () => {
                         {t('rooms.details.availabilityStatus')}
                       </Typography>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Chip
-                          label={currentRoom?.isAvailable ? t('rooms.details.available') : t('rooms.details.unavailable')}
-                          color={currentRoom?.isAvailable ? 'success' : 'error'}
-                          variant="filled"
-                        />
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            fontWeight: 600,
+                            color: currentRoom?.isAvailable ? COLORS.SUCCESS : COLORS.ERROR,
+                            bgcolor: currentRoom?.isAvailable
+                              ? addAlpha(COLORS.SUCCESS, 0.12)
+                              : addAlpha(COLORS.ERROR, 0.12),
+                            px: 1.5,
+                            py: 0.5,
+                            borderRadius: 2,
+                          }}
+                        >
+                          {currentRoom?.isAvailable ? t('rooms.details.available') : t('rooms.details.unavailable')}
+                        </Typography>
                         <FormControlLabel
                           control={
                             <Switch
                               checked={currentRoom?.isAvailable || false}
                               onChange={handleStatusToggle}
                               disabled={isEditing}
+                              sx={{
+                                '& .MuiSwitch-switchBase.Mui-checked': {
+                                  color: COLORS.SECONDARY,
+                                },
+                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                  backgroundColor: COLORS.SECONDARY,
+                                },
+                              }}
                             />
                           }
                           label={currentRoom?.isAvailable ? t('rooms.details.available') : t('rooms.details.unavailable')}
@@ -360,12 +397,11 @@ const RoomViewEdit: React.FC = () => {
                     </Box>
                   </Grid>
                   <Grid item xs={12}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label={t('rooms.details.currentRate')}
                       value={currentRoom ? formatCurrency(currentRoom.pricePerNight) : ''}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                 </Grid>
@@ -384,7 +420,7 @@ const RoomViewEdit: React.FC = () => {
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label={t('rooms.details.roomDescription')}
                       multiline
@@ -392,7 +428,6 @@ const RoomViewEdit: React.FC = () => {
                       value={currentRoom?.description || ''}
                       onChange={(e) => handleFieldChange('description', e.target.value)}
                       disabled={!isEditing}
-                      variant={isEditing ? 'outlined' : 'filled'}
                     />
                   </Grid>
                 </Grid>
@@ -411,21 +446,19 @@ const RoomViewEdit: React.FC = () => {
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label={t('rooms.details.hotelName')}
                       value={currentRoom?.hotelName || ''}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label={t('rooms.details.hotelId')}
                       value={currentRoom?.hotelId || ''}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                 </Grid>

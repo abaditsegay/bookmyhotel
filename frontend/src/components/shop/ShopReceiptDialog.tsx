@@ -105,6 +105,20 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
     })}`;
   };
 
+  const subtotalAmount = order.totalAmount || 0;
+  const vatAmount = order.vatAmount || 0;
+  const serviceTaxAmount = order.serviceTaxAmount || 0;
+  const taxAmount = order.taxAmount != null ? order.taxAmount : vatAmount + serviceTaxAmount;
+  const cityTaxAmount = Math.max(0, taxAmount - vatAmount - serviceTaxAmount);
+  const totalWithTax = subtotalAmount + taxAmount;
+
+  const calculateRatePercent = (amount: number) => {
+    if (subtotalAmount <= 0) {
+      return 0;
+    }
+    return (amount / subtotalAmount) * 100;
+  };
+
   const handlePrint = () => {
     window.print();
   };
@@ -483,32 +497,48 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                   ))}
 
                   {/* VAT Row */}
-                  {(order.vatAmount || 0) > 0 && (
+                  {vatAmount > 0 && (
                     <TableRow>
                       <TableCell colSpan={4} sx={{ pt: 2, borderBottom: 'none' }}>
                         <Typography variant="body2" sx={{ fontWeight: 500, fontStyle: 'italic', fontSize: '0.85rem' }}>
-                          VAT (15.00%)
+                          VAT ({calculateRatePercent(vatAmount).toFixed(2)}%)
                         </Typography>
                       </TableCell>
                       <TableCell align="right" sx={{ pt: 2, borderBottom: 'none' }}>
                         <Typography variant="body2" sx={{ fontWeight: 600, fontStyle: 'italic', fontSize: '0.85rem' }}>
-                          {formatCurrencyWithDecimals(order.vatAmount || 0)}
+                          {formatCurrencyWithDecimals(vatAmount)}
                         </Typography>
                       </TableCell>
                     </TableRow>
                   )}
 
                   {/* Service Tax Row */}
-                  {(order.serviceTaxAmount || 0) > 0 && (
+                  {serviceTaxAmount > 0 && (
                     <TableRow>
                       <TableCell colSpan={4} sx={{ borderBottom: `2px solid ${COLORS.BORDER_LIGHT}`, pb: 1.5 }}>
                         <Typography variant="body2" sx={{ fontWeight: 500, fontStyle: 'italic', fontSize: '0.85rem' }}>
-                          Service Tax (5.00%)
+                          Service Tax ({calculateRatePercent(serviceTaxAmount).toFixed(2)}%)
                         </Typography>
                       </TableCell>
                       <TableCell align="right" sx={{ borderBottom: `2px solid ${COLORS.BORDER_LIGHT}`, pb: 1.5 }}>
                         <Typography variant="body2" sx={{ fontWeight: 600, fontStyle: 'italic', fontSize: '0.85rem' }}>
-                          {formatCurrencyWithDecimals(order.serviceTaxAmount || 0)}
+                          {formatCurrencyWithDecimals(serviceTaxAmount)}
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  )}
+
+                  {/* City Tax Row */}
+                  {cityTaxAmount > 0 && (
+                    <TableRow>
+                      <TableCell colSpan={4} sx={{ borderBottom: `2px solid ${COLORS.BORDER_LIGHT}`, pb: 1.5 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 500, fontStyle: 'italic', fontSize: '0.85rem' }}>
+                          City Tax ({calculateRatePercent(cityTaxAmount).toFixed(2)}%)
+                        </Typography>
+                      </TableCell>
+                      <TableCell align="right" sx={{ borderBottom: `2px solid ${COLORS.BORDER_LIGHT}`, pb: 1.5 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 600, fontStyle: 'italic', fontSize: '0.85rem' }}>
+                          {formatCurrencyWithDecimals(cityTaxAmount)}
                         </Typography>
                       </TableCell>
                     </TableRow>
@@ -523,7 +553,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
                     </TableCell>
                     <TableCell align="right" sx={{ borderBottom: 'none', pt: 1.5 }}>
                       <Typography variant="subtitle1" sx={{ fontWeight: 700, fontSize: '1rem' }}>
-                        {formatCurrencyWithDecimals(order.totalAmount)}
+                        {formatCurrencyWithDecimals(totalWithTax)}
                       </Typography>
                     </TableCell>
                   </TableRow>

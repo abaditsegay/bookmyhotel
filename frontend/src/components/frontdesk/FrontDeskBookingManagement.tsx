@@ -393,16 +393,11 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
                       }}
                     >
                       <TableCell>
-                        <Typography 
-                          variant="body2" 
-                          sx={{ 
-                            fontFamily: 'monospace',
+                        <Typography
+                          variant="body2"
+                          sx={{
                             fontWeight: 600,
-                            color: '#667eea',
-                            backgroundColor: '#f0f4ff',
-                            padding: '4px 8px',
-                            borderRadius: '6px',
-                            display: 'inline-block'
+                            color: '#1f2937'
                           }}
                         >
                           {booking.confirmationNumber}

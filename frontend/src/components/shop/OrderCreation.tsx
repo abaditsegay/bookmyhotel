@@ -14,7 +14,10 @@ import {
   TableHead,
   TableRow,
   IconButton,
-  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
   FormControl,
   InputLabel,
   Select,
@@ -44,6 +47,7 @@ import ShopReceiptDialog from './ShopReceiptDialog';
 import PaymentDialog from './PaymentDialog';
 import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
 import { COLORS, addAlpha } from '../../theme/themeColors';
+import { buildApiUrl } from '../../config/apiConfig';
 import { getPremiumTableHeadSx } from './premiumStyles';
 
 interface OrderItem {
@@ -74,6 +78,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
   const [isDelivery, setIsDelivery] = useState(false);
   const [deliveryType, setDeliveryType] = useState<DeliveryType>(DeliveryType.PICKUP);
   const [deliveryAddress, setDeliveryAddress] = useState('');
+  const [errorDialogOpen, setErrorDialogOpen] = useState(false);
 
   // Receipt dialog state
   const [receiptDialogOpen, setReceiptDialogOpen] = useState(false);
@@ -85,13 +90,21 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
   const [paymentCompleted, setPaymentCompleted] = useState(false);
   const [completedPaymentMethod, setCompletedPaymentMethod] = useState<PaymentMethod | null>(null);
   const [paymentReference, setPaymentReference] = useState<string | null>(null);
+  const [vatRate, setVatRate] = useState(0);
+  const [serviceTaxRate, setServiceTaxRate] = useState(0);
+  const [cityTaxRate, setCityTaxRate] = useState(0);
 
   // Get hotel ID from context (adjust based on your auth context)
   const hotelId = user?.hotelId ? parseInt(user.hotelId) : null; // No fallback - should be from user context
 
+  const showError = (message: string) => {
+    setError(message);
+    setErrorDialogOpen(true);
+  };
+
   useEffect(() => {
     if (!hotelId) {
-      setError('Hotel ID not available. Please ensure you are logged in as a hotel user.');
+      showError('Hotel ID not available. Please ensure you are logged in as a hotel user.');
       return;
     }
     
@@ -109,19 +122,48 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
         setProducts(data.content.filter(p => p.isActive)); // Only filter by isActive, keep all stock levels
         setError(null);
       } catch (err) {
-        setError(err instanceof Error ? err.message : t('shop.orders.creation.failedToLoadProducts'));
+        showError(err instanceof Error ? err.message : t('shop.orders.creation.failedToLoadProducts'));
       }
     };
     
     loadData();
   }, [hotelId, token, user?.tenantId, t]);
 
+  useEffect(() => {
+    if (!hotelId) {
+      return;
+    }
+
+    const loadTaxRates = async () => {
+      try {
+        const response = await fetch(buildApiUrl(`/hotels/${hotelId}/tax-rate`), {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setVatRate(data.vatRate || 0);
+          setServiceTaxRate(data.serviceTaxRate || 0);
+          setCityTaxRate(data.cityTaxRate || 0);
+        } else {
+          setVatRate(0);
+          setServiceTaxRate(0);
+          setCityTaxRate(0);
+        }
+      } catch (error) {
+        setVatRate(0);
+        setServiceTaxRate(0);
+        setCityTaxRate(0);
+      }
+    };
+
+    loadTaxRates();
+  }, [hotelId, token]);
+
   const addProductToOrder = (product: Product) => {
     // Prevent adding out-of-stock products
     if (product.stockQuantity === 0) {
-      setError(t('shop.products.messages.outOfStockError', { productName: product.name }));
-      // Clear error after 3 seconds
-      setTimeout(() => setError(null), 3000);
+      showError(t('shop.products.messages.outOfStockError', { productName: product.name }));
       return;
     }
 
@@ -155,14 +197,28 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
     return orderItems.reduce((total, item) => total + (item.product.price * item.quantity), 0);
   };
 
+  const roundCurrency = (value: number) => Math.round((value + Number.EPSILON) * 100) / 100;
+
+  const getSubtotal = () => roundCurrency(calculateTotal());
+
+  const getVatAmount = () => roundCurrency(getSubtotal() * vatRate);
+
+  const getServiceTaxAmount = () => roundCurrency(getSubtotal() * serviceTaxRate);
+
+  const getCityTaxAmount = () => roundCurrency(getSubtotal() * cityTaxRate);
+
+  const getTotalTax = () => roundCurrency(getVatAmount() + getServiceTaxAmount() + getCityTaxAmount());
+
+  const getGrandTotal = () => roundCurrency(getSubtotal() + getTotalTax());
+
   const handleCreateOrder = async () => {
     if (orderItems.length === 0) {
-      setError(t('shop.orders.creation.cartIsEmpty'));
+      showError(t('shop.orders.creation.cartIsEmpty'));
       return;
     }
     
     if (!hotelId) {
-      setError('Hotel ID not available. Please ensure you are logged in as a hotel user.');
+      showError('Hotel ID not available. Please ensure you are logged in as a hotel user.');
       return;
     }
 
@@ -231,7 +287,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
       setPaymentReference(null);
       
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('shop.orders.creation.failedToCreateOrder'));
+      showError(err instanceof Error ? err.message : t('shop.orders.creation.failedToCreateOrder'));
     } finally {
       setLoading(false);
     }
@@ -290,7 +346,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
         });
       } catch (error) {
         // console.error('Error completing sale after payment:', error);
-        setError('Payment successful, but there was an error completing the sale. Please try again.');
+        showError('Payment successful, but there was an error completing the sale. Please try again.');
       }
     } else {
       // Fallback: if no created order, just navigate with payment success message
@@ -402,12 +458,32 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
 
   return (
     <Box>
-      {/* Error Alert */}
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
-          {error}
-        </Alert>
-      )}
+      <Dialog
+        open={errorDialogOpen && Boolean(error)}
+        onClose={() => setErrorDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ color: 'error.main', fontWeight: 700 }}>
+          Unable to Complete Action
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary">
+            {error}
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={() => {
+              setErrorDialogOpen(false);
+            }}
+          >
+            OK
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Grid container spacing={3}>
         {/* Product Selection */}
@@ -883,8 +959,51 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                     )}
                   </Typography>
                 </Box>
-              )}              {/* Total */}
+              )}
+
+              {/* Total */}
               <Divider sx={{ mb: 2, borderColor: addAlpha(COLORS.PRIMARY, 0.2) }} />
+              <Box sx={{ mb: 2 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.75 }}>
+                  <Typography variant="body2" color="text.secondary">{t('shop.orders.creation.subtotal')}</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {formatCurrencyWithDecimals(getSubtotal())}
+                  </Typography>
+                </Box>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.75 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    {t('shop.orders.creation.vat')} ({(vatRate * 100).toFixed(2)}%)
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {formatCurrencyWithDecimals(getVatAmount())}
+                  </Typography>
+                </Box>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.75 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    {t('shop.orders.creation.serviceTax')} ({(serviceTaxRate * 100).toFixed(2)}%)
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {formatCurrencyWithDecimals(getServiceTaxAmount())}
+                  </Typography>
+                </Box>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.75 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    {t('shop.orders.creation.cityTax')} ({(cityTaxRate * 100).toFixed(2)}%)
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {formatCurrencyWithDecimals(getCityTaxAmount())}
+                  </Typography>
+                </Box>
+                <Divider sx={{ my: 1, borderColor: addAlpha(COLORS.PRIMARY, 0.15) }} />
+                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600, color: COLORS.TEXT_PRIMARY }}>
+                    {t('shop.orders.creation.taxTotal')}
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600, color: COLORS.TEXT_PRIMARY }}>
+                    {formatCurrencyWithDecimals(getTotalTax())}
+                  </Typography>
+                </Box>
+              </Box>
               <Box sx={{ 
                 display: 'flex', 
                 justifyContent: 'space-between', 
@@ -895,7 +1014,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                 background: `linear-gradient(135deg, ${addAlpha(COLORS.PRIMARY, 0.08)} 0%, ${addAlpha(COLORS.SECONDARY, 0.06)} 100%)`,
                 border: `1px solid ${addAlpha(COLORS.PRIMARY, 0.2)}`
               }}>
-                <Typography variant="h6" sx={{ fontWeight: 700, color: COLORS.PRIMARY }}>{t('shop.orders.creation.total')}</Typography>
+                <Typography variant="h6" sx={{ fontWeight: 700, color: COLORS.PRIMARY }}>{t('shop.orders.creation.grandTotal')}</Typography>
                 <Typography 
                   variant="h5" 
                   sx={{
@@ -906,7 +1025,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                     WebkitTextFillColor: 'transparent'
                   }}
                 >
-                  ETB {calculateTotal()?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  {formatCurrencyWithDecimals(getGrandTotal())}
                 </Typography>
               </Box>
 
@@ -973,7 +1092,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
         open={paymentDialogOpen}
         onClose={handlePaymentDialogClose}
         onPaymentComplete={handlePaymentComplete}
-        totalAmount={createdOrder?.totalAmount || calculateTotal()}
+        totalAmount={createdOrder ? (createdOrder.totalAmount + (createdOrder.taxAmount || 0)) : getGrandTotal()}
         selectedPaymentMethod={paymentMethod}
         showSuccess={paymentSuccess}
       />

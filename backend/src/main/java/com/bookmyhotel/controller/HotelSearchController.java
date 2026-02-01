@@ -145,7 +145,7 @@ public class HotelSearchController {
 
     /**
      * Get tax rate for a hotel - PUBLIC ENDPOINT
-     * Returns the total tax rate (VAT + Service Tax) with breakdown
+    * Returns the total tax rate (VAT + Service Tax + City Tax) with breakdown
      */
     @GetMapping("/{hotelId}/tax-rate")
     public ResponseEntity<Map<String, Object>> getHotelTaxRate(@PathVariable Long hotelId) {
@@ -153,6 +153,17 @@ public class HotelSearchController {
             BigDecimal totalTaxRate = hotelPricingConfigService.getTotalTaxRate(hotelId);
             BigDecimal vatRate = hotelPricingConfigService.getVatRate(hotelId);
             BigDecimal serviceTaxRate = hotelPricingConfigService.getServiceTaxRate(hotelId);
+            BigDecimal cityTaxRate = hotelPricingConfigService.getCityTaxRate(hotelId);
+
+            if (vatRate == null) {
+                vatRate = BigDecimal.ZERO;
+            }
+            if (serviceTaxRate == null) {
+                serviceTaxRate = BigDecimal.ZERO;
+            }
+            if (cityTaxRate == null) {
+                cityTaxRate = BigDecimal.ZERO;
+            }
 
             Map<String, Object> response = new HashMap<>();
             response.put("hotelId", hotelId);
@@ -170,6 +181,11 @@ public class HotelSearchController {
             response.put("serviceTaxRate", serviceTaxRate); // As decimal (e.g., 0.05 for 5%)
             response.put("serviceTaxRatePercentage", serviceTaxRate.multiply(new BigDecimal("100"))); // As percentage
                                                                                                       // (e.g., 5.00)
+
+            // City tax breakdown
+            response.put("cityTaxRate", cityTaxRate); // As decimal (e.g., 0.02 for 2%)
+            response.put("cityTaxRatePercentage", cityTaxRate.multiply(new BigDecimal("100"))); // As percentage
+                                                                                                // (e.g., 2.00)
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {

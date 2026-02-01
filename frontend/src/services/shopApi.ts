@@ -47,7 +47,22 @@ class ShopApiService {
   private async handleResponse<T>(response: Response): Promise<T> {
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`API Error: ${response.status} - ${errorText}`);
+      let friendlyMessage = 'Request failed. Please check your input and try again.';
+
+      try {
+        const errorJson = JSON.parse(errorText);
+        friendlyMessage =
+          errorJson.details ||
+          errorJson.message ||
+          errorJson.userFriendlyMessage ||
+          friendlyMessage;
+      } catch (error) {
+        if (errorText && errorText.trim().length > 0) {
+          friendlyMessage = errorText;
+        }
+      }
+
+      throw new Error(friendlyMessage);
     }
     return response.json();
   }

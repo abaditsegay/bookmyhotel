@@ -1,5 +1,7 @@
 import React from 'react';
-import { Box, Typography, TextField, TextFieldProps } from '@mui/material';
+import { Box, Typography } from '@mui/material';
+import PremiumTextField from './PremiumTextField';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 
 interface PremiumDisplayFieldProps {
   label: string;
@@ -33,7 +35,7 @@ const PremiumDisplayField: React.FC<PremiumDisplayFieldProps> = ({
 }) => {
   if (isEditMode) {
     return (
-      <TextField
+      <PremiumTextField
         label={label}
         fullWidth
         value={value || ''}
@@ -43,15 +45,6 @@ const PremiumDisplayField: React.FC<PremiumDisplayFieldProps> = ({
         multiline={multiline}
         rows={multiline ? rows : undefined}
         placeholder={placeholder}
-        sx={{
-          '& .MuiOutlinedInput-root': {
-            '&:hover fieldset': { borderColor: '#E8B86D' },
-            '&.Mui-focused fieldset': { borderColor: '#E8B86D', borderWidth: 2 }
-          },
-          '& .MuiInputLabel-root.Mui-focused': {
-            color: '#1a365d'
-          }
-        }}
       />
     );
   }
@@ -60,12 +53,12 @@ const PremiumDisplayField: React.FC<PremiumDisplayFieldProps> = ({
     <Box>
       <Typography 
         variant="caption" 
-        sx={{ 
-          color: '#666', 
-          mb: 0.5, 
-          display: 'block', 
+        sx={{
+          color: COLORS.TEXT_SECONDARY,
+          mb: 0.5,
+          display: 'block',
           fontSize: '0.75rem',
-          fontWeight: 500,
+          fontWeight: 600,
           textTransform: 'uppercase',
           letterSpacing: '0.5px'
         }}
@@ -74,15 +67,15 @@ const PremiumDisplayField: React.FC<PremiumDisplayFieldProps> = ({
       </Typography>
       <Box sx={{
         p: 1.5,
-        border: '1px solid #e0e0e0',
+        border: `1px solid ${COLORS.BORDER_LIGHT}`,
         borderRadius: 1,
-        backgroundColor: '#fafafa',
-        borderLeft: '3px solid #E8B86D',
+        backgroundColor: COLORS.BG_LIGHT,
+        borderLeft: `3px solid ${COLORS.SECONDARY}`,
         minHeight: minHeight || (multiline ? '80px' : 'auto'),
         transition: 'all 0.2s ease',
         '&:hover': {
-          borderColor: '#d0d0d0',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+          borderColor: COLORS.BORDER_DEFAULT,
+          boxShadow: `0 2px 4px ${addAlpha(COLORS.BLACK, 0.08)}`
         }
       }}>
         <Typography 
@@ -90,7 +83,7 @@ const PremiumDisplayField: React.FC<PremiumDisplayFieldProps> = ({
           sx={{ 
             fontWeight: multiline ? 400 : 500,
             whiteSpace: multiline ? 'pre-wrap' : 'normal',
-            color: value ? '#212121' : '#999'
+            color: value ? COLORS.TEXT_PRIMARY : COLORS.TEXT_DISABLED
           }}
         >
           {value || 'Not provided'}

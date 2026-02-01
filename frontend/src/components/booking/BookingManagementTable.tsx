@@ -942,24 +942,11 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                     }}
                   >
                     <TableCell>
-                      <Typography 
-                        variant="body2" 
-                        sx={{ 
-                          fontFamily: 'monospace',
-                          fontWeight: 700,
-                          color: themeMode === 'dark' ? primaryLight : primaryDark,
-                          backgroundColor: themeMode === 'dark' 
-                            ? addAlpha(primaryMain, 0.1) 
-                            : `linear-gradient(135deg, ${addAlpha(primaryMain, 0.12)} 0%, ${addAlpha(primaryMain, 0.2)} 100%)`,
-                          padding: '6px 12px',
-                          borderRadius: '8px',
-                          display: 'inline-block',
-                          border: themeMode === 'dark' 
-                            ? `1px solid ${addAlpha(primaryMain, 0.3)}` 
-                            : `1px solid ${addAlpha(primaryMain, 0.35)}`,
-                          boxShadow: themeMode === 'dark'
-                            ? `0 2px 4px ${addAlpha(COLORS.BLACK, 0.3)}`
-                            : `0 2px 4px ${addAlpha(primaryMain, 0.1)}`
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontWeight: 600,
+                          color: muiTheme.palette.text.primary
                         }}
                       >
                         {booking.confirmationNumber}

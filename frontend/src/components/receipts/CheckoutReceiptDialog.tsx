@@ -842,22 +842,30 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                 </TableRow>
 
                 {/* Shop/Additional charges */}
-                {receipt.additionalCharges && receipt.additionalCharges.length > 0 && receipt.additionalCharges.map((charge: any, index: number) => (
-                  <TableRow key={index}>
-                    <TableCell sx={{ border: `1px solid ${COLORS.BORDER_LIGHT}` }}>
-                      {charge.description}
-                    </TableCell>
-                    <TableCell align="center" sx={{ border: `1px solid ${COLORS.BORDER_LIGHT}` }}>
-                      {charge.quantity || 1}
-                    </TableCell>
-                    <TableCell align="right" sx={{ border: `1px solid ${COLORS.BORDER_LIGHT}` }}>
-                      {formatCurrency(charge.unitPrice || charge.amount)}
-                    </TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 600, border: `1px solid ${COLORS.BORDER_LIGHT}` }}>
-                      {formatCurrency(charge.amount)}
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {receipt.additionalCharges && receipt.additionalCharges.length > 0 && receipt.additionalCharges.map((charge: any, index: number) => {
+                  const quantity = charge.quantity || 1;
+                  const unitPrice = (charge.unitPrice && charge.unitPrice > 0)
+                    ? charge.unitPrice
+                    : (charge.amount || 0) / quantity;
+                  const total = unitPrice * quantity;
+
+                  return (
+                    <TableRow key={index}>
+                      <TableCell sx={{ border: `1px solid ${COLORS.BORDER_LIGHT}` }}>
+                        {charge.description}
+                      </TableCell>
+                      <TableCell align="center" sx={{ border: `1px solid ${COLORS.BORDER_LIGHT}` }}>
+                        {quantity}
+                      </TableCell>
+                      <TableCell align="right" sx={{ border: `1px solid ${COLORS.BORDER_LIGHT}` }}>
+                        {formatCurrency(unitPrice)}
+                      </TableCell>
+                      <TableCell align="right" sx={{ fontWeight: 600, border: `1px solid ${COLORS.BORDER_LIGHT}` }}>
+                        {formatCurrency(total)}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
 
                 {/* Taxes and fees */}
                 {receipt.taxesAndFees && receipt.taxesAndFees.length > 0 && receipt.taxesAndFees.map((tax: any, index: number) => (

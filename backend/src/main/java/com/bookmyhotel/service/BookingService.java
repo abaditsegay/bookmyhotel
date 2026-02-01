@@ -1426,8 +1426,8 @@ public class BookingService {
                 long oldNights = ChronoUnit.DAYS.between(reservation.getCheckInDate(), reservation.getCheckOutDate());
                 long newNights = ChronoUnit.DAYS.between(newCheckIn, newCheckOut);
 
-                BigDecimal oldTotal = calculateTotalAmountWithTaxes(reservation, oldNights);
-                BigDecimal newTotal = calculateTotalAmountWithTaxes(reservation, newNights);
+                BigDecimal oldTotal = calculateSubtotalAmount(reservation, oldNights);
+                BigDecimal newTotal = calculateSubtotalAmount(reservation, newNights);
                 BigDecimal priceDifference = newTotal.subtract(oldTotal);
 
                 // Validate calculation results
@@ -2373,9 +2373,9 @@ public class BookingService {
     }
 
     /**
-     * Calculate total amount including taxes and fees for a given number of nights
+     * Calculate subtotal amount (tax-exclusive) for a given number of nights
      */
-    private BigDecimal calculateTotalAmountWithTaxes(Reservation reservation, long nights) {
+    private BigDecimal calculateSubtotalAmount(Reservation reservation, long nights) {
         if (reservation == null || nights <= 0) {
             return BigDecimal.ZERO;
         }
@@ -2391,66 +2391,13 @@ public class BookingService {
             return BigDecimal.ZERO;
         }
 
-        // Get hotel ID from reservation
-        Long hotelId = null;
-        if (reservation.getRoom() != null) {
-            hotelId = reservation.getRoom().getHotel().getId();
-        } else if (reservation.getHotel() != null) {
-            hotelId = reservation.getHotel().getId();
-        }
-
-        if (hotelId == null) {
-            logger.warn("Cannot determine hotel ID for reservation {}, using default rates", reservation.getId());
-            // Fallback to default Ethiopian rates if hotel cannot be determined
-            return calculateWithDefaultRates(pricePerNight, nights);
-        }
-
-        // Base amount
         BigDecimal baseAmount = pricePerNight.multiply(BigDecimal.valueOf(nights))
                 .setScale(2, RoundingMode.HALF_UP);
 
-        // Get hotel-specific tax rates from configuration
-        BigDecimal vatRate = hotelPricingConfigService.getVatRate(hotelId);
-        BigDecimal taxAmount = baseAmount.multiply(vatRate).setScale(2, RoundingMode.HALF_UP);
+        logger.debug("Calculated subtotal amount for reservation {} for {} nights: base={}",
+                reservation.getId(), nights, baseAmount);
 
-        // Get hotel-specific service fee rate
-        BigDecimal serviceFeeRate = hotelPricingConfigService.getServiceTaxRate(hotelId);
-        BigDecimal serviceFee = baseAmount.multiply(serviceFeeRate).setScale(2, RoundingMode.HALF_UP);
-
-        BigDecimal totalAmount = baseAmount.add(taxAmount).add(serviceFee)
-                .setScale(2, RoundingMode.HALF_UP);
-
-        logger.debug(
-                "Calculated total amount for hotel {} for {} nights: base={}, VAT={}%, tax={}, service={}%, serviceFee={}, total={}",
-                hotelId, nights, baseAmount, vatRate.multiply(new BigDecimal("100")), taxAmount,
-                serviceFeeRate.multiply(new BigDecimal("100")), serviceFee, totalAmount);
-
-        return totalAmount;
-    }
-
-    /**
-     * Fallback calculation with default Ethiopian rates when hotel configuration is
-     * unavailable
-     */
-    private BigDecimal calculateWithDefaultRates(BigDecimal pricePerNight, long nights) {
-        BigDecimal baseAmount = pricePerNight.multiply(BigDecimal.valueOf(nights))
-                .setScale(2, RoundingMode.HALF_UP);
-
-        // Ethiopian standard VAT rate: 15%
-        BigDecimal defaultVatRate = new BigDecimal("0.15");
-        BigDecimal taxAmount = baseAmount.multiply(defaultVatRate).setScale(2, RoundingMode.HALF_UP);
-
-        // Standard service fee: 5%
-        BigDecimal defaultServiceRate = new BigDecimal("0.05");
-        BigDecimal serviceFee = baseAmount.multiply(defaultServiceRate).setScale(2, RoundingMode.HALF_UP);
-
-        BigDecimal totalAmount = baseAmount.add(taxAmount).add(serviceFee)
-                .setScale(2, RoundingMode.HALF_UP);
-
-        logger.debug("Using default rates for {} nights: base={}, VAT=15%, tax={}, service=5%, serviceFee={}, total={}",
-                nights, baseAmount, taxAmount, serviceFee, totalAmount);
-
-        return totalAmount;
+        return baseAmount;
     }
 
     /**

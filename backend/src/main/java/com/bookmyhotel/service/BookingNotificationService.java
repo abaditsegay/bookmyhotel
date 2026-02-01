@@ -18,6 +18,7 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 import com.bookmyhotel.dto.BookingResponse;
+import com.bookmyhotel.dto.TaxBreakdown;
 
 /**
  * Service for handling booking-related email notifications
@@ -38,7 +39,7 @@ public class BookingNotificationService {
     private BookingTokenService bookingTokenService;
 
     @Autowired
-    private HotelPricingConfigService hotelPricingConfigService;
+    private TaxCalculationService taxCalculationService;
 
     @Value("${app.name:BookMyHotel}")
     private String appName;
@@ -193,38 +194,44 @@ public class BookingNotificationService {
             BigDecimal pricePerNight = booking.getPricePerNight();
             Long hotelId = booking.getHotelId();
 
-            if (pricePerNight != null && hotelId != null && nights > 0) {
-                // Get tax rates from pricing config
-                BigDecimal vatRate = hotelPricingConfigService.getVatRate(hotelId);
-                BigDecimal serviceTaxRate = hotelPricingConfigService.getServiceTaxRate(hotelId);
-
+                if (pricePerNight != null && hotelId != null && nights > 0) {
                 // Calculate subtotal (price per night × number of nights)
                 BigDecimal subtotal = pricePerNight.multiply(BigDecimal.valueOf(nights))
-                        .setScale(2, RoundingMode.HALF_UP);
+                    .setScale(2, RoundingMode.HALF_UP);
 
-                // Calculate tax amounts
-                BigDecimal vatAmount = subtotal.multiply(vatRate).setScale(2, RoundingMode.HALF_UP);
-                BigDecimal serviceTaxAmount = subtotal.multiply(serviceTaxRate).setScale(2, RoundingMode.HALF_UP);
+                TaxBreakdown taxes = taxCalculationService.calculateTaxes(hotelId, subtotal);
+
+                BigDecimal vatAmount = taxes.getVatAmount();
+                BigDecimal serviceTaxAmount = taxes.getServiceTaxAmount();
+                BigDecimal cityTaxAmount = taxes.getCityTaxAmount();
+
+                BigDecimal vatRate = calculateRate(vatAmount, subtotal);
+                BigDecimal serviceTaxRate = calculateRate(serviceTaxAmount, subtotal);
+                BigDecimal cityTaxRate = calculateRate(cityTaxAmount, subtotal);
 
                 // Calculate total with tax
-                BigDecimal totalWithTax = subtotal.add(vatAmount).add(serviceTaxAmount)
-                        .setScale(2, RoundingMode.HALF_UP);
+                BigDecimal totalWithTax = subtotal.add(taxes.getTotalTax())
+                    .setScale(2, RoundingMode.HALF_UP);
 
                 // Add to template data
                 templateData.put("subtotal", subtotal);
                 templateData.put("vatRate", vatRate);
                 templateData.put("vatRatePercentage",
-                        vatRate.multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP));
+                    vatRate.multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP));
                 templateData.put("vatAmount", vatAmount);
                 templateData.put("serviceTaxRate", serviceTaxRate);
                 templateData.put("serviceTaxRatePercentage",
-                        serviceTaxRate.multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP));
+                    serviceTaxRate.multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP));
                 templateData.put("serviceTaxAmount", serviceTaxAmount);
+                templateData.put("cityTaxRate", cityTaxRate);
+                templateData.put("cityTaxRatePercentage",
+                    cityTaxRate.multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP));
+                templateData.put("cityTaxAmount", cityTaxAmount);
                 templateData.put("totalWithTax", totalWithTax);
                 templateData.put("hasTaxBreakdown", true);
-            } else {
+                } else {
                 templateData.put("hasTaxBreakdown", false);
-            }
+                }
         } catch (Exception e) {
             logger.warn("Failed to calculate tax breakdown for booking modification email: {}", e.getMessage());
             templateData.put("hasTaxBreakdown", false);
@@ -271,38 +278,44 @@ public class BookingNotificationService {
             BigDecimal pricePerNight = booking.getPricePerNight();
             Long hotelId = booking.getHotelId();
 
-            if (pricePerNight != null && hotelId != null && nights > 0) {
-                // Get tax rates from pricing config
-                BigDecimal vatRate = hotelPricingConfigService.getVatRate(hotelId);
-                BigDecimal serviceTaxRate = hotelPricingConfigService.getServiceTaxRate(hotelId);
-
+                if (pricePerNight != null && hotelId != null && nights > 0) {
                 // Calculate subtotal (price per night × number of nights)
                 BigDecimal subtotal = pricePerNight.multiply(BigDecimal.valueOf(nights))
-                        .setScale(2, RoundingMode.HALF_UP);
+                    .setScale(2, RoundingMode.HALF_UP);
 
-                // Calculate tax amounts
-                BigDecimal vatAmount = subtotal.multiply(vatRate).setScale(2, RoundingMode.HALF_UP);
-                BigDecimal serviceTaxAmount = subtotal.multiply(serviceTaxRate).setScale(2, RoundingMode.HALF_UP);
+                TaxBreakdown taxes = taxCalculationService.calculateTaxes(hotelId, subtotal);
+
+                BigDecimal vatAmount = taxes.getVatAmount();
+                BigDecimal serviceTaxAmount = taxes.getServiceTaxAmount();
+                BigDecimal cityTaxAmount = taxes.getCityTaxAmount();
+
+                BigDecimal vatRate = calculateRate(vatAmount, subtotal);
+                BigDecimal serviceTaxRate = calculateRate(serviceTaxAmount, subtotal);
+                BigDecimal cityTaxRate = calculateRate(cityTaxAmount, subtotal);
 
                 // Calculate total with tax
-                BigDecimal totalWithTax = subtotal.add(vatAmount).add(serviceTaxAmount)
-                        .setScale(2, RoundingMode.HALF_UP);
+                BigDecimal totalWithTax = subtotal.add(taxes.getTotalTax())
+                    .setScale(2, RoundingMode.HALF_UP);
 
                 // Add to template data
                 templateData.put("subtotal", subtotal);
                 templateData.put("vatRate", vatRate);
                 templateData.put("vatRatePercentage",
-                        vatRate.multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP));
+                    vatRate.multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP));
                 templateData.put("vatAmount", vatAmount);
                 templateData.put("serviceTaxRate", serviceTaxRate);
                 templateData.put("serviceTaxRatePercentage",
-                        serviceTaxRate.multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP));
+                    serviceTaxRate.multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP));
                 templateData.put("serviceTaxAmount", serviceTaxAmount);
+                templateData.put("cityTaxRate", cityTaxRate);
+                templateData.put("cityTaxRatePercentage",
+                    cityTaxRate.multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP));
+                templateData.put("cityTaxAmount", cityTaxAmount);
                 templateData.put("totalWithTax", totalWithTax);
                 templateData.put("hasTaxBreakdown", true);
-            } else {
+                } else {
                 templateData.put("hasTaxBreakdown", false);
-            }
+                }
         } catch (Exception e) {
             logger.warn("Failed to calculate tax breakdown for cancellation email: {}", e.getMessage());
             templateData.put("hasTaxBreakdown", false);
@@ -342,6 +355,16 @@ public class BookingNotificationService {
             }
         }
         return null;
+    }
+
+    private BigDecimal calculateRate(BigDecimal amount, BigDecimal subtotal) {
+        if (subtotal == null || subtotal.compareTo(BigDecimal.ZERO) <= 0) {
+            return BigDecimal.ZERO;
+        }
+        if (amount == null) {
+            return BigDecimal.ZERO;
+        }
+        return amount.divide(subtotal, 4, RoundingMode.HALF_UP);
     }
 
     /**

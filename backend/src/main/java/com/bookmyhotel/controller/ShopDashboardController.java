@@ -53,15 +53,16 @@ public class ShopDashboardController {
                 orderStats.getTotalOrders(),
                 orderStats.getUnpaidOrders(),
                 orderStats.getPaidOrders(),
-                orderStats.getTotalRevenue() != null ? orderStats.getTotalRevenue().doubleValue() : 0.0,
+                orderStats.getTotalRevenue() != null ? orderStats.getTotalRevenue() : BigDecimal.ZERO,
                 orderStats.getTodayOrders(),
-                orderStats.getTodayRevenue() != null ? orderStats.getTodayRevenue().doubleValue() : 0.0,
-                orderStats.getMonthlyRevenue() != null ? orderStats.getMonthlyRevenue().doubleValue() : 0.0
+                orderStats.getTodayRevenue() != null ? orderStats.getTodayRevenue() : BigDecimal.ZERO,
+                orderStats.getMonthlyRevenue() != null ? orderStats.getMonthlyRevenue() : BigDecimal.ZERO
             );
 
             return ResponseEntity.ok(dashboardStats);
         } catch (Exception e) {
-            ShopDashboardStats emptyStats = new ShopDashboardStats(0, 0, 0, 0, 0, 0, 0, 0.0, 0, 0.0, 0.0);
+            ShopDashboardStats emptyStats = new ShopDashboardStats(0, 0, 0, 0, 0, 0, 0, BigDecimal.ZERO, 0,
+                    BigDecimal.ZERO, BigDecimal.ZERO);
             return ResponseEntity.ok(emptyStats);
         }
     }
@@ -104,15 +105,15 @@ public class ShopDashboardController {
         private long totalOrders;
         private long pendingOrders;
         private long completedOrders;
-        private double totalRevenue;
+        private BigDecimal totalRevenue;
         private long todayOrders;
-        private double todayRevenue;
-        private double monthlyRevenue;
+        private BigDecimal todayRevenue;
+        private BigDecimal monthlyRevenue;
 
         public ShopDashboardStats(long totalProducts, long activeProducts, long lowStockProducts,
                                 long outOfStockProducts, long totalOrders, long pendingOrders,
-                                long completedOrders, double totalRevenue, long todayOrders,
-                                double todayRevenue, double monthlyRevenue) {
+                                long completedOrders, BigDecimal totalRevenue, long todayOrders,
+                                BigDecimal todayRevenue, BigDecimal monthlyRevenue) {
             this.totalProducts = totalProducts;
             this.activeProducts = activeProducts;
             this.lowStockProducts = lowStockProducts;
@@ -154,7 +155,7 @@ public class ShopDashboardController {
             return completedOrders;
         }
 
-        public double getTotalRevenue() {
+        public BigDecimal getTotalRevenue() {
             return totalRevenue;
         }
 
@@ -162,11 +163,11 @@ public class ShopDashboardController {
             return todayOrders;
         }
 
-        public double getTodayRevenue() {
+        public BigDecimal getTodayRevenue() {
             return todayRevenue;
         }
 
-        public double getMonthlyRevenue() {
+        public BigDecimal getMonthlyRevenue() {
             return monthlyRevenue;
         }
     }
