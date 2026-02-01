@@ -204,7 +204,6 @@ export class OfflineStorageService {
         const db = (event.target as IDBOpenDBRequest).result;
         const transaction = (event.target as IDBOpenDBRequest).transaction!;
         const oldVersion = event.oldVersion;
-        const newVersion = event.newVersion || 2;
 
         // console.log(`🔄 Upgrading IndexedDB from version ${oldVersion} to ${newVersion}`);
         
@@ -629,12 +628,6 @@ export class OfflineStorageService {
       if (this.isReady()) {
         const allBookings = await this.getOfflineBookings();
         // console.log('🔍 DEBUG: Total bookings in DB:', allBookings.length);
-        
-        const pendingBookings = await this.getPendingSyncBookings();
-        // console.log('🔍 DEBUG: Pending sync bookings:', pendingBookings.length);
-        
-        const stats = await this.getStorageStats();
-        // console.log('🔍 DEBUG: Storage stats:', stats);
         
         // Log individual booking details
         allBookings.forEach((booking, index) => {
@@ -1615,23 +1608,10 @@ export type { OfflineBooking, RoomAvailability, GuestInfo };
   // console.log('🏨 Room Caching Debug Information:');
   
   // Check authentication
-  const authToken = localStorage.getItem('auth_token');
   const authUser = localStorage.getItem('auth_user');
   
   // console.log('🔑 Authentication Status:');
-  // console.log('- auth_token exists:', !!authToken);
   // console.log('- auth_user exists:', !!authUser);
-  
-  if (authUser) {
-    try {
-      const user = JSON.parse(authUser);
-      // console.log('- Hotel ID:', user.hotelId);
-      // console.log('- Tenant ID:', user.tenantId);
-      // console.log('- Email:', user.email);
-    } catch (e) {
-      // console.error('Failed to parse auth_user:', e);
-    }
-  }
   
   // Check cached rooms
   try {

@@ -79,8 +79,6 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
     }
   };
 
-  const receiptStatus = getReceiptStatus(order.status, order.paymentMethod || '');
-
   // Helper function to safely format dates
   const formatDate = (dateString: string) => {
     try {

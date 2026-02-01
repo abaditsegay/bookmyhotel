@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { COLORS, getGradient, addAlpha } from '../../theme/themeColors';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 import {
   Paper,
   Table,
@@ -11,7 +11,6 @@ import {
   TablePagination,
   IconButton,
   Button,
-  TextField,
   InputAdornment,
   Box,
   Typography,
@@ -159,8 +158,6 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
         // Extract pagination info directly from response data
         const totalElements = response.data.totalElements || 0;
         const totalPages = response.data.totalPages || 0;
-        const currentPage = response.data.number || 0;
-        
         // console.log('🔄 Setting Total Elements to:', totalElements);
         // console.log('🔄 Total Pages:', totalPages);
         // console.log('🔄 Current page from response:', currentPage, 'Local page state:', page);

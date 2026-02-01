@@ -26,7 +26,6 @@ import {
   TableHead,
   TableRow,
   Paper,
-  TextField,
   InputAdornment,
   IconButton,
   TablePagination

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { COLORS, addAlpha, getGradient } from '../../theme/themeColors';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 import {
   Container,
   Typography,

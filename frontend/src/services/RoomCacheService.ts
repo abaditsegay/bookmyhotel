@@ -103,7 +103,6 @@ export class RoomCacheService {
       // console.log(`✅ RoomCacheService: Successfully cached ${cachedRooms.length} rooms for hotel ${hotelId}`);
       
       // Verify the data was actually saved
-      const savedRooms = await this.offlineStorage.getCachedRooms(hotelId);
       // console.log(`🔍 RoomCacheService: Verification - found ${savedRooms.length} saved rooms in IndexedDB`);
       
       return cachedRooms;

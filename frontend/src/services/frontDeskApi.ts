@@ -796,8 +796,7 @@ export const frontDeskApiService = {
           errorMessage = errorData.message || errorMessage;
         } catch (parseError) {
           // If response isn't JSON, it might be HTML error page
-          const errorText = await response.text();
-          // console.error('Non-JSON error response:', errorText);
+          // console.error('Non-JSON error response');
           errorMessage = `Server error (${response.status}): ${response.statusText}`;
         }
         throw new Error(errorMessage);

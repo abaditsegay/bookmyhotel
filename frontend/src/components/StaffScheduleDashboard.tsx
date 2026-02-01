@@ -22,7 +22,6 @@ import {
   People as UsersIcon
 } from '@mui/icons-material';
 import axiosInstance from '../utils/axiosConfig';
-import { COLORS, getGradient, getInteractiveColor } from '../theme/themeColors';
 
 interface StaffSchedule {
   id: number;

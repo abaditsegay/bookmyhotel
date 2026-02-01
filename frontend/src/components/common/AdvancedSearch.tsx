@@ -96,17 +96,6 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
     onClear?.();
   };
 
-  const handleAddFilter = (filter: SearchFilter) => {
-    const existingIndex = activeFilters.findIndex(f => f.id === filter.id);
-    if (existingIndex >= 0) {
-      const newFilters = [...activeFilters];
-      newFilters[existingIndex] = filter;
-      setActiveFilters(newFilters);
-    } else {
-      setActiveFilters([...activeFilters, filter]);
-    }
-  };
-
   const handleRemoveFilter = (filterId: string) => {
     setActiveFilters(activeFilters.filter(f => f.id !== filterId));
   };

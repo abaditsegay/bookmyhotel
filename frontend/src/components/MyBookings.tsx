@@ -52,7 +52,6 @@ import { COLORS, addAlpha, getGradient } from '../theme/themeColors';
 const MyBookings: React.FC = () => {
   const { user, token } = useAuth();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [bookings, setBookings] = useState<BookingResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

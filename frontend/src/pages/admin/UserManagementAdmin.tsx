@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { COLORS, getGradient } from '../../theme/themeColors';
+import { COLORS } from '../../theme/themeColors';
 import {
   Box,
   Paper,
@@ -16,14 +16,10 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField,
   IconButton,
   Chip,
   Alert,
   CircularProgress,
-  FormControl,
-  InputLabel,
-  Select,
   MenuItem,
   Grid,
   Tooltip,

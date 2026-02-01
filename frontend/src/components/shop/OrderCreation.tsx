@@ -5,7 +5,6 @@ import {
   Card,
   CardContent,
   Typography,
-  TextField,
   Grid,
   Table,
   TableBody,
@@ -27,7 +26,6 @@ import {
   Divider,
   Switch,
   FormControlLabel,
-  useTheme
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -63,7 +61,6 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
   const navigate = useNavigate();
   const { user, token } = useAuth();
   const { t } = useTranslation();
-  const theme = useTheme();
   const [products, setProducts] = useState<Product[]>([]);
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [loading, setLoading] = useState(false);

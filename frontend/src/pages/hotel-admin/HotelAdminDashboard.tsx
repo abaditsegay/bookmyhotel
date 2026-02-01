@@ -339,7 +339,7 @@ const HotelAdminDashboard: React.FC = () => {
       // console.log('🏨 Hotel Admin Dashboard: Preloading room data for hotel', hotelId);
       
       // Force refresh to get latest room data and cache it
-      const rooms = await roomCacheService.getRooms(hotelId, true);
+      await roomCacheService.getRooms(hotelId, true);
       // console.log('📊 Hotel Admin Dashboard: Retrieved rooms:', rooms.length, 'rooms');
       // console.log('🔍 Hotel Admin Dashboard: Sample room data:', rooms.slice(0, 2));
       

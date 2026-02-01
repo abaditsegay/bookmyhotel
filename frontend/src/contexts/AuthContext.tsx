@@ -303,9 +303,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
         
         await offlineStorage.saveStaffSession(staffSession, password);
         
-        // Verify session was saved
-        const savedSession = await offlineStorage.getActiveStaffSession();
-        
         // Cache room data immediately after successful login for hotel staff
         const userRoles = Array.isArray(loginData.roles) ? loginData.roles : [loginData.roles];
         const isHotelStaff = userRoles.some((role: string) => ['HOTEL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'OPERATIONS_SUPERVISOR'].includes(role));

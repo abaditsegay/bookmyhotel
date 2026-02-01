@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { COLORS, getGradient } from '../../theme/themeColors';
+import { COLORS } from '../../theme/themeColors';
 import {
   Paper,
   Table,
@@ -11,7 +11,6 @@ import {
   TablePagination,
   IconButton,
   Button,
-  TextField,
   InputAdornment,
   Box,
   Typography,
@@ -22,9 +21,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  FormControl,
-  InputLabel,
-  Select,
   MenuItem,
   Grid,
   Avatar,

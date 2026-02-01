@@ -97,24 +97,6 @@ const ShopDashboard: React.FC = () => {
       const stats = await shopApiService.getDashboardStats(hotelId);
       // console.info('Dashboard stats loaded successfully:', stats);
 
-      // Additional validation of stats
-      const hasValidStats = stats && (
-        stats.totalProducts > 0 || 
-        stats.totalOrders > 0 || 
-        stats.totalRevenue > 0
-      );
-      
-      // console.info('Stats validation:', {
-      //   hasStats: !!stats,
-      //   hasValidStats,
-      //   statsKeys: stats ? Object.keys(stats) : [],
-      //   sampleValues: stats ? {
-      //     totalProducts: stats.totalProducts,
-      //     totalOrders: stats.totalOrders,
-      //     totalRevenue: stats.totalRevenue
-      //   } : null
-      // });
-
       setDashboardStats(stats);
       setError(null);
     } catch (err) {

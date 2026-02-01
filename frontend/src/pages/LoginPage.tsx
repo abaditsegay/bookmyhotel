@@ -63,7 +63,7 @@ const LoginPage: React.FC = () => {
       const dashboardPath = getDashboardPath();
       navigate(dashboardPath, { replace: true });
     }
-  }, [isAuthenticated, user, isInitializing, redirectTo, bookingData, navigate]);
+  }, [isAuthenticated, user, isInitializing, redirectTo, bookingData, navigate, getDashboardPath]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

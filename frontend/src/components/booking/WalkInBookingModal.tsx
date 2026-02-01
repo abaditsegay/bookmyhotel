@@ -5,7 +5,6 @@ import {
   DialogContent,
   DialogActions,
   Button,
-  TextField,
   Grid,
   Typography,
   Box,
@@ -161,8 +160,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
             const hotelData = await response.json();
             setHotelId(hotelData.id);
           } else {
-            const errorText = await response.text();
-            // console.error('Failed to fetch hotel information:', response.status, errorText);
+            // console.error('Failed to fetch hotel information:', response.status);
             throw new Error(`Failed to fetch hotel information: ${response.status}`);
           }
         } catch (hotelError) {

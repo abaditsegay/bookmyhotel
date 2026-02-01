@@ -34,7 +34,7 @@ import {
   Info as InfoIcon
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
-import { getGradient, getInteractiveColor, getFormColor, COLORS } from '../theme/themeColors';
+import { getGradient, getInteractiveColor, COLORS } from '../theme/themeColors';
 
 // Utility functions for converting between percentage (0-100) and decimal (0.0-1.0) values
 const toDecimal = (percentage: number): number => {

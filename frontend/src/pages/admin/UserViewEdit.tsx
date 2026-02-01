@@ -7,7 +7,6 @@ import {
   Box,
   Paper,
   Grid,
-  TextField,
   FormControl,
   InputLabel,
   Select,
@@ -30,8 +29,6 @@ import {
   Edit as EditIcon,
   Save as SaveIcon,
   Cancel as CancelIcon,
-  Phone as PhoneIcon,
-  Email as EmailIcon,
   Person as PersonIcon,
   Badge as BadgeIcon,
 } from '@mui/icons-material';

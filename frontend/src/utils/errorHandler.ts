@@ -3,14 +3,6 @@
  * Provides consistent user-friendly error messages across the application
  */
 
-interface ApiError {
-  message: string;
-  isServiceError?: boolean;
-  isNetworkError?: boolean;
-  statusCode?: number;
-  response?: any;
-}
-
 /**
  * Extract user-friendly error message from any error type
  * Handles HTML error responses, network errors, and API errors

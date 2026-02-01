@@ -3,7 +3,6 @@ import {
   Box,
   Typography,
   Paper,
-  Tooltip,
   useTheme,
   alpha,
   IconButton,
@@ -38,19 +37,6 @@ const CalendarWidget: React.FC = () => {
   const hasAccess = user?.roles && 
     !user.roles.includes('CUSTOMER') && 
     !user.roles.includes('GUEST');
-
-  // Get event type color based on theme
-  const getEventTypeColor = (type: CalendarEvent['type']) => {
-    switch (type) {
-      case 'booking': return theme.palette.primary.main;
-      case 'checkin': return theme.palette.primary.dark;
-      case 'checkout': return theme.palette.primary.light;
-      case 'maintenance': return theme.palette.primary.main;
-      case 'meeting': return theme.palette.primary.dark;
-      case 'reminder': return theme.palette.primary.light;
-      default: return theme.palette.primary.light;
-    }
-  };
 
   // Calendar navigation
   const navigateMonth = (direction: 'prev' | 'next') => {
@@ -154,16 +140,6 @@ const CalendarWidget: React.FC = () => {
     }
 
     return days;
-  };
-
-  // Check if date has events
-  const getEventsForDate = (date: Date) => {
-    return events.filter(event => {
-      const eventDate = new Date(event.date);
-      return eventDate.getDate() === date.getDate() &&
-             eventDate.getMonth() === date.getMonth() &&
-             eventDate.getFullYear() === date.getFullYear();
-    });
   };
 
   // Check if date is today

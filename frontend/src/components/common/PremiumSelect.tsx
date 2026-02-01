@@ -1,5 +1,5 @@
 import React from 'react';
-import { FormControl, InputLabel, Select, SelectProps, FormControlProps, SelectChangeEvent, SxProps, Theme } from '@mui/material';
+import { FormControl, InputLabel, Select, FormControlProps, SelectChangeEvent, SxProps, Theme } from '@mui/material';
 import { COLORS } from '../../theme/themeColors';
 
 interface PremiumSelectProps {
