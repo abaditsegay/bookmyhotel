@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { normalizeEthiopianPhone } from '../../utils/phoneUtils';
 import {
   Container,
   Typography,
@@ -134,7 +135,7 @@ const HotelRegistrationForm: React.FC = () => {
         address: formData.address,
         city: formData.city,
         country: formData.country,
-        phone: formData.phone,
+        phone: normalizeEthiopianPhone(formData.phone),
         email: formData.email,
         tenantId: tenantId,
       };

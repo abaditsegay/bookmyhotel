@@ -225,6 +225,8 @@ public class HotelSearchService {
         result.setCountry(hotel.getCountry());
         result.setPhone(hotel.getPhone());
         result.setEmail(hotel.getEmail());
+        result.setMobilePaymentPhone(hotel.getMobilePaymentPhone());
+        result.setMobilePaymentPhone2(hotel.getMobilePaymentPhone2());
 
         // Get hotel images
         try {

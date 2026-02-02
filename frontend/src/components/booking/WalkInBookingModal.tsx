@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { formatEthiopianPhone, normalizeEthiopianPhone } from '../../utils/phoneUtils';
 import {
   Dialog,
   DialogTitle,
@@ -880,7 +881,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                           {t('walkInBooking.confirmation.phoneNumber')}
                         </Typography>
                         <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                          {guestInfo.phone}
+                          {formatEthiopianPhone(guestInfo.phone)}
                         </Typography>
                       </Box>
                     </Box>

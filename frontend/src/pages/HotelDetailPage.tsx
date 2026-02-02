@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { formatEthiopianPhone } from '../utils/phoneUtils';
 import {
   Container,
   Typography,
@@ -509,7 +510,7 @@ const HotelDetailPage: React.FC = () => {
                   color="text.secondary"
                   sx={{ fontSize: '0.85rem' }}
                 >
-                  {hotel.phone}
+                  {formatEthiopianPhone(hotel.phone)}
                 </Typography>
               </Box>
             )}
@@ -536,7 +537,7 @@ const HotelDetailPage: React.FC = () => {
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <PhoneIcon sx={{ fontSize: 18, mr: 1, color: 'text.secondary' }} />
                 <Typography variant="body2" color="text.secondary">
-                  {hotel.phone}
+                  {formatEthiopianPhone(hotel.phone)}
                 </Typography>
               </Box>
             )}

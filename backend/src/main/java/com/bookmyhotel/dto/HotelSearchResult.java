@@ -16,6 +16,8 @@ public class HotelSearchResult {
     private String country;
     private String phone;
     private String email;
+    private String mobilePaymentPhone;
+    private String mobilePaymentPhone2;
     private List<AvailableRoomDto> availableRooms; // Keep for backward compatibility
     private List<RoomTypeAvailabilityDto> roomTypeAvailability; // New room type approach
     private BigDecimal minPrice;
@@ -98,6 +100,22 @@ public class HotelSearchResult {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getMobilePaymentPhone() {
+        return mobilePaymentPhone;
+    }
+
+    public void setMobilePaymentPhone(String mobilePaymentPhone) {
+        this.mobilePaymentPhone = mobilePaymentPhone;
+    }
+
+    public String getMobilePaymentPhone2() {
+        return mobilePaymentPhone2;
+    }
+
+    public void setMobilePaymentPhone2(String mobilePaymentPhone2) {
+        this.mobilePaymentPhone2 = mobilePaymentPhone2;
     }
 
     public List<AvailableRoomDto> getAvailableRooms() {

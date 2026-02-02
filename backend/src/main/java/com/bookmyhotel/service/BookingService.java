@@ -1869,16 +1869,28 @@ public class BookingService {
                 }
 
                 // Check room availability for new dates
-                if (!isRoomAvailableForModification(reservation.getRoom().getId(), newCheckIn, newCheckOut,
-                        reservation.getId())) {
-                    return new BookingModificationResponse(false, "Room is not available for the new dates");
+                // Only check if a specific room is assigned; for room-type bookings, skip this check
+                if (reservation.getRoom() != null) {
+                    if (!isRoomAvailableForModification(reservation.getRoom().getId(), newCheckIn, newCheckOut,
+                            reservation.getId())) {
+                        return new BookingModificationResponse(false, "Room is not available for the new dates");
+                    }
                 }
 
                 // Calculate price difference
                 long oldNights = ChronoUnit.DAYS.between(reservation.getCheckInDate(), reservation.getCheckOutDate());
                 long newNights = ChronoUnit.DAYS.between(newCheckIn, newCheckOut);
-                BigDecimal priceDifference = reservation.getRoom().getPricePerNight()
-                        .multiply(BigDecimal.valueOf(newNights - oldNights));
+                
+                // Get price per night - either from assigned room or use existing price
+                BigDecimal pricePerNight;
+                if (reservation.getRoom() != null) {
+                    pricePerNight = reservation.getRoom().getPricePerNight();
+                } else {
+                    // For room-type bookings without assigned room, use the existing rate
+                    pricePerNight = reservation.getTotalAmount().divide(BigDecimal.valueOf(oldNights), 2, RoundingMode.HALF_UP);
+                }
+                
+                BigDecimal priceDifference = pricePerNight.multiply(BigDecimal.valueOf(newNights - oldNights));
 
                 // Accumulate date price difference to total
                 totalPriceDifference = totalPriceDifference.add(priceDifference);
@@ -1888,8 +1900,7 @@ public class BookingService {
                 // Update dates
                 reservation.setCheckInDate(newCheckIn);
                 reservation.setCheckOutDate(newCheckOut);
-                reservation.setTotalAmount(
-                        reservation.getRoom().getPricePerNight().multiply(BigDecimal.valueOf(newNights)));
+                reservation.setTotalAmount(pricePerNight.multiply(BigDecimal.valueOf(newNights)));
             }
 
             // Handle room changes by room type
@@ -1909,7 +1920,15 @@ public class BookingService {
 
                 // Calculate price difference for room upgrade/downgrade
                 long nights = ChronoUnit.DAYS.between(reservation.getCheckInDate(), reservation.getCheckOutDate());
-                BigDecimal oldRoomTotal = reservation.getRoom().getPricePerNight().multiply(BigDecimal.valueOf(nights));
+                
+                // Get old room price - use existing total if no room assigned
+                BigDecimal oldRoomTotal;
+                if (reservation.getRoom() != null) {
+                    oldRoomTotal = reservation.getRoom().getPricePerNight().multiply(BigDecimal.valueOf(nights));
+                } else {
+                    oldRoomTotal = reservation.getTotalAmount();
+                }
+                
                 BigDecimal newRoomTotal = newRoom.getPricePerNight().multiply(BigDecimal.valueOf(nights));
                 BigDecimal roomPriceDifference = newRoomTotal.subtract(oldRoomTotal);
 
@@ -2190,8 +2209,8 @@ public class BookingService {
                 return new BookingModificationResponse(false,
                         "No rooms of type " + request.getNewRoomType() + " are available for the new dates");
             }
-        } else {
-            // Check if current room is available for new dates
+        } else if (reservation.getRoom() != null) {
+            // Check if current room is available for new dates (only if room is assigned)
             if (!isRoomAvailableForModification(reservation.getRoom().getId(), newCheckIn, newCheckOut,
                     reservation.getId())) {
                 return new BookingModificationResponse(false, "Current room is not available for the new dates");
@@ -2669,5 +2688,13 @@ public class BookingService {
             logger.error("Error during auto-expiration of PENDING bookings", e);
             // Don't rethrow - scheduled job should continue running
         }
+    }
+
+    /**
+     * Get user by email for authorization checks
+     */
+    public User getUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
     }
 }

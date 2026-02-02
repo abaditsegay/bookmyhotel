@@ -28,6 +28,7 @@ import com.bookmyhotel.dto.BookingModificationRequest;
 import com.bookmyhotel.dto.BookingModificationResponse;
 import com.bookmyhotel.dto.BookingRequest;
 import com.bookmyhotel.dto.BookingResponse;
+import com.bookmyhotel.entity.User;
 import com.bookmyhotel.exception.ResourceNotFoundException;
 import com.bookmyhotel.service.BookingService;
 
@@ -105,10 +106,38 @@ public class BookingController {
     }
 
     /**
-     * Get user bookings
+     * Get user bookings (authenticated users can only access their own bookings unless they're admin)
      */
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<BookingResponse>> getUserBookings(@PathVariable Long userId) {
+    public ResponseEntity<List<BookingResponse>> getUserBookings(
+            @PathVariable Long userId,
+            Authentication authentication) {
+        
+        // Security check: users can only access their own bookings unless they're admin/hotel admin
+        if (authentication != null) {
+            String username = authentication.getName();
+            boolean isAdmin = authentication.getAuthorities().stream()
+                    .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN") || 
+                                     auth.getAuthority().equals("ROLE_SYSTEM_ADMIN") ||
+                                     auth.getAuthority().equals("ROLE_HOTEL_ADMIN"));
+            
+            // If not admin, verify they're requesting their own bookings
+            if (!isAdmin) {
+                // Get the user from the authentication to compare with the requested userId
+                // The username is the email, so we need to verify this matches the user
+                try {
+                    User authenticatedUser = bookingService.getUserByEmail(username);
+                    if (!authenticatedUser.getId().equals(userId)) {
+                        logger.warn("User {} attempted to access bookings for user {}", authenticatedUser.getId(), userId);
+                        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+                    }
+                } catch (Exception e) {
+                    logger.error("Error verifying user authorization: {}", e.getMessage());
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+                }
+            }
+        }
+        
         List<BookingResponse> bookings = bookingService.getUserBookings(userId);
         return ResponseEntity.ok(bookings);
     }
@@ -209,11 +238,27 @@ public class BookingController {
     }
 
     /**
-     * Modify an existing booking (for guests)
+     * Modify an existing booking (for guests without authentication)
+     * Requires both confirmation number and guest email for security
      */
     @PutMapping("/modify")
     public ResponseEntity<BookingModificationResponse> modifyBooking(
             @Valid @RequestBody BookingModificationRequest request) {
+
+        // Validate required fields for guest modification
+        if (request.getConfirmationNumber() == null || request.getConfirmationNumber().trim().isEmpty()) {
+            BookingModificationResponse errorResponse = new BookingModificationResponse();
+            errorResponse.setSuccess(false);
+            errorResponse.setMessage("Confirmation number is required for guest booking modifications");
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+        
+        if (request.getGuestEmail() == null || request.getGuestEmail().trim().isEmpty()) {
+            BookingModificationResponse errorResponse = new BookingModificationResponse();
+            errorResponse.setSuccess(false);
+            errorResponse.setMessage("Guest email is required for guest booking modifications");
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
 
         BookingModificationResponse response = bookingService.modifyBooking(request);
 

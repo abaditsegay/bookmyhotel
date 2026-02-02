@@ -498,7 +498,7 @@ const UserManagementAdmin: React.FC = () => {
                     {user.firstName} {user.lastName}
                   </TableCell>
                   <TableCell>{user.email}</TableCell>
-                  <TableCell>{user.phone}</TableCell>
+                  <TableCell>{user.phone ? formatEthiopianPhone(user.phone) : ''}</TableCell>
                   <TableCell>
                     <Chip
                       label={user.roles.length > 0 ? user.roles[0].replace('_', ' ') : 'No Role'}
@@ -880,7 +880,7 @@ const UserManagementAdmin: React.FC = () => {
                 <PremiumTextField
                   fullWidth
                   label="Phone"
-                  value={selectedUser.phone || ''}
+                  value={selectedUser.phone ? formatEthiopianPhone(selectedUser.phone) : ''}
                   disabled
                 />
               </Grid>

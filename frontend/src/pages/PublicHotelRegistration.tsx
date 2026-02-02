@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { normalizeEthiopianPhone } from '../utils/phoneUtils';
 import { useNavigate } from 'react-router-dom';
 import {
   Container,
@@ -61,9 +62,9 @@ const PublicHotelRegistration: React.FC = () => {
           address: registrationForm.address,
           city: registrationForm.city,
           country: registrationForm.country,
-          phone: registrationForm.phone,
-          mobilePaymentPhone: registrationForm.mobilePaymentPhone,
-          mobilePaymentPhone2: registrationForm.mobilePaymentPhone2,
+          phone: normalizeEthiopianPhone(registrationForm.phone),
+          mobilePaymentPhone: normalizeEthiopianPhone(registrationForm.mobilePaymentPhone),
+          mobilePaymentPhone2: normalizeEthiopianPhone(registrationForm.mobilePaymentPhone2),
           contactEmail: registrationForm.contactEmail,
           contactPerson: registrationForm.contactPerson,
           licenseNumber: registrationForm.licenseNumber,

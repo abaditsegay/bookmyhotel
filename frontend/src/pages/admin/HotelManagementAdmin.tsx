@@ -48,6 +48,7 @@ import { adminApiService, HotelDTO, UpdateHotelRequest, TenantDTO, ApproveRegist
 import PremiumTextField from '../../components/common/PremiumTextField';
 import PremiumDisplayField from '../../components/common/PremiumDisplayField';
 import PremiumSelect from '../../components/common/PremiumSelect';
+import { formatEthiopianPhone, normalizeEthiopianPhone } from '../../utils/phoneUtils';
 import HotelEditDialog from '../../components/hotel/HotelEditDialog';
 
 interface Hotel extends HotelDTO {}
@@ -318,9 +319,9 @@ const HotelManagementAdmin: React.FC = () => {
           address: registrationForm.address,
           city: registrationForm.city,
           country: registrationForm.country,
-          phone: registrationForm.phone,
-          mobilePaymentPhone: registrationForm.mobilePaymentPhone,
-          mobilePaymentPhone2: registrationForm.mobilePaymentPhone2,
+          phone: normalizeEthiopianPhone(registrationForm.phone),
+          mobilePaymentPhone: normalizeEthiopianPhone(registrationForm.mobilePaymentPhone),
+          mobilePaymentPhone2: normalizeEthiopianPhone(registrationForm.mobilePaymentPhone2),
           contactEmail: registrationForm.contactEmail,
           contactPerson: registrationForm.contactPerson,
           licenseNumber: registrationForm.licenseNumber,
@@ -849,7 +850,7 @@ const HotelManagementAdmin: React.FC = () => {
                           <TableCell>
                             <Typography variant="body2">{hotel.email}</Typography>
                             <Typography variant="caption" color="text.secondary">
-                              {hotel.phone}
+                              {formatEthiopianPhone(hotel.phone)}
                             </Typography>
                           </TableCell>
                           <TableCell>

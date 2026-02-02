@@ -124,6 +124,11 @@ public class SecurityConfig {
 
                                                 // User endpoints (authenticated users only)
                                                 .requestMatchers("/api/users/**").authenticated()
+                                                
+                                                // Booking endpoints for authenticated users
+                                                .requestMatchers("/api/bookings/user/**").authenticated()
+                                                .requestMatchers("/api/bookings/{reservationId}/modify").authenticated()
+                                                .requestMatchers("/api/bookings/{reservationId}/cancel").authenticated()
 
                                                 // Hotel management endpoints (authenticated hotel staff)
                                                 .requestMatchers("/managemyhotel/api/**").authenticated()

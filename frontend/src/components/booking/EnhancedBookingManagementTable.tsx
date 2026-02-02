@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { formatEthiopianPhone } from '../../utils/phoneUtils';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -427,7 +428,7 @@ const EnhancedBookingManagementTable: React.FC<EnhancedBookingManagementTablePro
                     Guest Information
                   </Typography>
                   <Typography variant="body2" sx={{ mb: 1 }}>
-                    <strong>Phone:</strong> {booking.guestPhone || 'Not provided'}
+                    <strong>Phone:</strong> {booking.guestPhone ? formatEthiopianPhone(booking.guestPhone) : 'Not provided'}
                   </Typography>
                   <Typography variant="body2" sx={{ mb: 1 }}>
                     <strong>Booking Date:</strong> {booking.bookingDate ? formatDateForDisplay(booking.bookingDate) : 'N/A'}

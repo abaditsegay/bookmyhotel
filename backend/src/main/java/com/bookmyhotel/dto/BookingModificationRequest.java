@@ -8,13 +8,14 @@ import jakarta.validation.constraints.NotNull;
  */
 public class BookingModificationRequest {
 
-    // Confirmation number is optional for token-based modifications
-    // It will be set by the controller from the token data
-    @NotNull(message = "Confirmation number is required")
+    // Confirmation number is optional for authenticated user modifications and token-based modifications
+    // For authenticated users: reservationId is used instead
+    // For token-based: It will be set by the controller from the token data
+    // Only required for guest modifications via /bookings/modify endpoint
     private String confirmationNumber;
 
-    // Guest email is optional for token-based modifications
-    // It will be set by the controller from the token data
+    // Guest email is optional for token-based and authenticated modifications
+    // It will be set by the controller from the token data or auth context
     private String guestEmail;
 
     // Optional fields for modification

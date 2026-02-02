@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { formatEthiopianPhone } from '../../utils/phoneUtils';
 import {
   Box,
   Grid,
@@ -851,7 +852,7 @@ const HotelAdminDashboard: React.FC = () => {
                                 color: hotel?.phone ? theme.palette.text.primary : theme.palette.text.secondary,
                                 fontStyle: hotel?.phone ? 'normal' : 'italic'
                               }}>
-                                {hotel?.phone || t('dashboard.hotelAdmin.contact.phoneNotSet')}
+                                {hotel?.phone ? formatEthiopianPhone(hotel.phone) : t('dashboard.hotelAdmin.contact.phoneNotSet')}
                               </Typography>
                             </Box>
                             
@@ -864,7 +865,7 @@ const HotelAdminDashboard: React.FC = () => {
                                 color: hotel?.mobilePaymentPhone ? theme.palette.text.primary : theme.palette.text.secondary,
                                 fontStyle: hotel?.mobilePaymentPhone ? 'normal' : 'italic'
                               }}>
-                                {hotel?.mobilePaymentPhone || t('dashboard.hotelAdmin.contact.paymentPhoneNotSet')}
+                                {hotel?.mobilePaymentPhone ? formatEthiopianPhone(hotel.mobilePaymentPhone) : t('dashboard.hotelAdmin.contact.paymentPhoneNotSet')}
                               </Typography>
                             </Box>
                             
@@ -877,7 +878,7 @@ const HotelAdminDashboard: React.FC = () => {
                                 color: hotel?.mobilePaymentPhone2 ? theme.palette.text.primary : theme.palette.text.secondary,
                                 fontStyle: hotel?.mobilePaymentPhone2 ? 'normal' : 'italic'
                               }}>
-                                {hotel?.mobilePaymentPhone2 || t('dashboard.hotelAdmin.contact.secondaryPaymentPhoneNotSet')}
+                                {hotel?.mobilePaymentPhone2 ? formatEthiopianPhone(hotel.mobilePaymentPhone2) : t('dashboard.hotelAdmin.contact.secondaryPaymentPhoneNotSet')}
                               </Typography>
                             </Box>
                             

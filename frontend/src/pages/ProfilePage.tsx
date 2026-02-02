@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { formatEthiopianPhone, normalizeEthiopianPhone } from '../utils/phoneUtils';
 import {
   Box,
   CardContent,
@@ -115,7 +116,7 @@ const ProfilePage: React.FC = () => {
         firstName: formData.firstName.trim(),
         lastName: formData.lastName.trim(),
         email: formData.email.trim(),
-        phone: formData.phone.trim(),
+        phone: normalizeEthiopianPhone(formData.phone.trim()),
       };
 
       // Update profile using the context function

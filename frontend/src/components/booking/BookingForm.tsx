@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { normalizeEthiopianPhone } from '../../utils/phoneUtils';
 import {
   Dialog,
   DialogTitle,
@@ -178,7 +179,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
       specialRequests: formValidation.values.specialRequests?.trim() || undefined,
       guestName: formValidation.values.guestName.trim(),
       guestEmail: formValidation.values.guestEmail.trim(),
-      guestPhone: formValidation.values.guestPhone?.trim() || undefined,
+      guestPhone: formValidation.values.guestPhone?.trim() ? normalizeEthiopianPhone(formValidation.values.guestPhone.trim()) : undefined,
     };
 
     await bookingOperation.execute(

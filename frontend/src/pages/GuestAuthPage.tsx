@@ -11,6 +11,7 @@ import {
   Tab,
   Link,
 } from '@mui/material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 import PremiumTextField from '../components/common/PremiumTextField';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -53,11 +54,14 @@ const GuestAuthPage: React.FC = () => {
   // Login form state
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
 
   // Registration form state
   const [registerEmail, setRegisterEmail] = useState('');
   const [registerPassword, setRegisterPassword] = useState('');
+  const [showRegisterPassword, setShowRegisterPassword] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
@@ -368,12 +372,28 @@ const GuestAuthPage: React.FC = () => {
                 <PremiumTextField
                   fullWidth
                   label="Password"
-                  type="password"
+                  type={showLoginPassword ? 'text' : 'password'}
                   value={loginPassword}
                   onChange={(e) => setLoginPassword(e.target.value)}
                   margin="normal"
                   required
                   autoComplete="current-password"
+                  InputProps={{
+                    endAdornment: (
+                      <Box
+                        onClick={() => setShowLoginPassword(!showLoginPassword)}
+                        sx={{
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          color: 'text.secondary',
+                          '&:hover': { color: 'primary.main' },
+                        }}
+                      >
+                        {showLoginPassword ? <VisibilityOff /> : <Visibility />}
+                      </Box>
+                    ),
+                  }}
                 />
                 <Button
                   type="submit"
@@ -488,22 +508,54 @@ const GuestAuthPage: React.FC = () => {
                 <PremiumTextField
                   fullWidth
                   label="Password"
-                  type="password"
+                  type={showRegisterPassword ? 'text' : 'password'}
                   value={registerPassword}
                   onChange={(e) => setRegisterPassword(e.target.value)}
                   margin="normal"
                   required
                   autoComplete="new-password"
+                  InputProps={{
+                    endAdornment: (
+                      <Box
+                        onClick={() => setShowRegisterPassword(!showRegisterPassword)}
+                        sx={{
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          color: 'text.secondary',
+                          '&:hover': { color: 'primary.main' },
+                        }}
+                      >
+                        {showRegisterPassword ? <VisibilityOff /> : <Visibility />}
+                      </Box>
+                    ),
+                  }}
                 />
                 <PremiumTextField
                   fullWidth
                   label="Confirm Password"
-                  type="password"
+                  type={showConfirmPassword ? 'text' : 'password'}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   margin="normal"
                   required
                   autoComplete="new-password"
+                  InputProps={{
+                    endAdornment: (
+                      <Box
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        sx={{
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          color: 'text.secondary',
+                          '&:hover': { color: 'primary.main' },
+                        }}
+                      >
+                        {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                      </Box>
+                    ),
+                  }}
                 />
                 <Button
                   type="submit"

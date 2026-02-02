@@ -54,6 +54,7 @@ import { buildApiUrl } from '../config/apiConfig';
 import { extractBookingErrorMessage } from '../utils/errorHandling';
 import PremiumTextField from '../components/common/PremiumTextField';
 import PremiumDatePicker from '../components/common/PremiumDatePicker';
+import { formatEthiopianPhone, normalizeEthiopianPhone } from '../utils/phoneUtils';
 
 interface BookingPageState {
   room?: AvailableRoom;
@@ -86,6 +87,17 @@ const BookingPage: React.FC = () => {
   
   // Get data from navigation state
   const bookingData = location.state as BookingPageState;
+  
+  // Debug: Log booking data on component mount
+  useEffect(() => {
+    console.log('🏨 BookingPage mounted with data:', {
+      hasBookingData: !!bookingData,
+      hotelId: bookingData?.hotelId,
+      hotelName: bookingData?.hotelName,
+      room: bookingData?.room,
+      roomType: bookingData?.roomType
+    });
+  }, []);
   
   // Form state - pre-populate with user data if available
   const [checkInDate, setCheckInDate] = useState<Date | null>(
@@ -183,18 +195,38 @@ const BookingPage: React.FC = () => {
 
   // Fetch hotel data for mobile payment phone numbers
   useEffect(() => {
+    console.log('🔍 Checking if should fetch hotel data:', {
+      hasBookingData: !!bookingData,
+      hotelId: bookingData?.hotelId
+    });
+    
     const fetchHotelData = async () => {
       if (bookingData?.hotelId) {
+        console.log('🌐 Fetching hotel data for ID:', bookingData.hotelId);
         try {
           // Use public hotel API to get hotel details
-          const response = await fetch(`/api/public/hotels/${bookingData.hotelId}`);
+          const url = buildApiUrl(`/hotels/${bookingData.hotelId}`);
+          console.log('📍 Fetching URL:', url);
+          const response = await fetch(url);
+          console.log('📡 API response status:', response.status);
+          
           if (response.ok) {
             const hotel = await response.json();
+            console.log('📞 Hotel data received:', {
+              name: hotel.name,
+              mobilePaymentPhone: hotel.mobilePaymentPhone,
+              mobilePaymentPhone2: hotel.mobilePaymentPhone2,
+              phone: hotel.phone
+            });
             setHotelData(hotel);
+          } else {
+            console.error('❌ API response not ok:', response.status);
           }
         } catch (error) {
-          // console.error('Error fetching hotel data:', error);
+          console.error('❌ Error fetching hotel data:', error);
         }
+      } else {
+        console.log('⚠️ No hotelId in bookingData, skipping hotel fetch');
       }
     };
     
@@ -1329,7 +1361,7 @@ const BookingPage: React.FC = () => {
                               fontFamily: 'monospace',
                               letterSpacing: 1,
                             }}>
-                              {hotelData?.mobilePaymentPhone || '+251-911-123-456'}
+                              {formatEthiopianPhone(hotelData?.mobilePaymentPhone) || 'Not available'}
                             </Typography>
                           </Box>
                           {hotelData?.mobilePaymentPhone2 && (
@@ -1344,7 +1376,7 @@ const BookingPage: React.FC = () => {
                                 fontFamily: 'monospace',
                                 letterSpacing: 1,
                               }}>
-                                {hotelData.mobilePaymentPhone2} ({t('booking.page.alternative')})
+                                {formatEthiopianPhone(hotelData.mobilePaymentPhone2)} ({t('booking.page.alternative')})
                               </Typography>
                             </Box>
                           )}

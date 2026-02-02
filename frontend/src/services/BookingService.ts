@@ -85,7 +85,12 @@ export class BookingService {
   }
 
   static formatDate(dateString: string): string {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    // Handle date strings without creating timezone issues
+    // Parse as local date to avoid timezone conversion
+    const [year, month, day] = dateString.split('T')[0].split('-');
+    const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    
+    return date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -103,8 +108,11 @@ export class BookingService {
   }
 
   static calculateStayDuration(checkIn: string, checkOut: string): number {
-    const checkInDate = new Date(checkIn);
-    const checkOutDate = new Date(checkOut);
+    // Parse as local dates to avoid timezone issues
+    const [year1, month1, day1] = checkIn.split('T')[0].split('-');
+    const [year2, month2, day2] = checkOut.split('T')[0].split('-');
+    const checkInDate = new Date(parseInt(year1), parseInt(month1) - 1, parseInt(day1));
+    const checkOutDate = new Date(parseInt(year2), parseInt(month2) - 1, parseInt(day2));
     const diffTime = Math.abs(checkOutDate.getTime() - checkInDate.getTime());
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   }

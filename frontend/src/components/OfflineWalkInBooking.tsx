@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { normalizeEthiopianPhone } from '../utils/phoneUtils';
 import {
   Typography,
   Box,
@@ -1145,7 +1146,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
         hotelId: resolvedHotelId,
         guestName: `${guestInfo.firstName} ${guestInfo.lastName}`,
         guestEmail: guestInfo.email,
-        guestPhone: guestInfo.phone,
+        guestPhone: normalizeEthiopianPhone(guestInfo.phone),
         roomType: selectedRoom.roomType,
         roomId: selectedRoom.id,
         roomNumber: selectedRoom.roomNumber,
