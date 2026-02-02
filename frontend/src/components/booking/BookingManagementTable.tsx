@@ -284,7 +284,6 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
             totalElements = result.data.totalElements || 0;
           }
           
-          // console.log('BookingManagementTable: Setting bookings:', content.length, 'items, total:', totalElements);
           setBookings(content);
           setTotalElements(totalElements);
         } else {
@@ -461,8 +460,6 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
 
   // Handle successful check-in
   const handleCheckInSuccess = (updatedBooking: Booking) => {
-    // console.log('🔥 handleCheckInSuccess called with:', updatedBooking);
-    
     // Update the booking in the local state
     setBookings(prev => prev.map(b => 
       b.reservationId === updatedBooking.reservationId 
@@ -470,12 +467,13 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
         : b
     ));
     
-    // Trigger notification refresh after check-in
-    BookingNotificationEvents.afterUpdate();
+    // Don't trigger notification refresh here - it causes an unwanted backend refresh
+    // that overwrites our optimistic UI update with stale data
+    // BookingNotificationEvents.afterUpdate();
     
     setSnackbar({
       open: true,
-      message: `Guest ${updatedBooking.guestName} has been successfully checked in!`,
+      message: `Guest ${updatedBooking.guestName} has been successfully checked in to room ${updatedBooking.roomNumber || 'TBA'}!`,
       severity: 'success'
     });
     
@@ -483,8 +481,9 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
     setCheckInDialogOpen(false);
     setBookingForCheckIn(null);
     
-    // Refresh bookings to get updated data
-    loadBookings();
+    // Don't auto-refresh - state update above is sufficient and immediate
+    // Auto-refresh gets stale data before backend commits the change
+    // User can manually refresh if needed using the Refresh button
   };
 
   // Handle print receipt for any booking (unified for both modes)
@@ -914,7 +913,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
               ) : (
                 bookings.map((booking, index) => (
                   <TableRow 
-                    key={booking.reservationId}
+                    key={`${booking.reservationId}-${booking.roomNumber}-${booking.status}`}
                     sx={{
                       backgroundColor: index % 2 === 0 
                         ? muiTheme.palette.background.paper 

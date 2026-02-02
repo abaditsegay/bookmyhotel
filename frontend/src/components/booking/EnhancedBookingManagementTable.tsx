@@ -502,13 +502,39 @@ const EnhancedBookingManagementTable: React.FC<EnhancedBookingManagementTablePro
             setSelectedBooking(null);
           }}
           booking={selectedBooking}
-          onCheckInSuccess={() => {
-            fetchBookings();
+          onCheckInSuccess={(updatedBooking) => {
+            console.log('🔥 EnhancedBookingTable: onCheckInSuccess called with:', {
+              reservationId: updatedBooking.reservationId,
+              roomNumber: updatedBooking.roomNumber,
+              roomType: updatedBooking.roomType,
+              status: updatedBooking.status
+            });
+            
+            // Update the booking in the local state immediately
+            setBookings(prev => prev.map(b => 
+              b.reservationId === updatedBooking.reservationId 
+                ? { ...b, ...updatedBooking, status: 'CHECKED_IN' } 
+                : b
+            ));
+            
+            // Trigger notification refresh
+            BookingNotificationEvents.afterUpdate();
+            
             setSnackbar({
               open: true,
-              message: 'Guest checked in successfully',
+              message: `Guest ${updatedBooking.guestName} checked in successfully to room ${updatedBooking.roomNumber || 'TBA'}!`,
               severity: 'success'
             });
+            
+            // Close dialog
+            setCheckInDialogOpen(false);
+            setSelectedBooking(null);
+            
+            // Refresh from backend after a short delay
+            setTimeout(() => {
+              console.log('🔄 EnhancedBookingTable: Refreshing bookings from backend...');
+              fetchBookings();
+            }, 500);
           }}
         />
       )}

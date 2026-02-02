@@ -379,7 +379,18 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
       );
 
       if (result.success && result.data) {
-        onCheckInSuccess(result.data);
+        // Find the room object to get complete room details
+        const assignedRoom = availableRooms.find(room => room.id === roomId);
+        
+        // Ensure the updated booking includes the current room number and type
+        const updatedBooking = {
+          ...result.data,
+          roomNumber: currentRoomNumber || assignedRoom?.roomNumber || result.data.roomNumber,
+          roomType: currentRoomType || assignedRoom?.roomType || result.data.roomType,
+          assignedRoom: currentRoomNumber // Add this for display purposes
+        };
+        
+        onCheckInSuccess(updatedBooking);
         onClose();
       } else {
         setError(result.message || 'Failed to check-in guest');
