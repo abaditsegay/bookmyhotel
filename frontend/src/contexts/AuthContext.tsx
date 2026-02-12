@@ -86,10 +86,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
     
     // Set up API client session expiration callback
     apiClient.setSessionExpiredCallback(() => {
-      setSessionExpired(true);
       setUser(null);
       setToken(null);
-      setError('Your session has expired. Please log in again.');
       
       // Stop room cache periodic refresh
       roomCacheService.stopPeriodicRefresh();

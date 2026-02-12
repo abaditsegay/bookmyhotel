@@ -1,5 +1,5 @@
 import React, { lazy, Suspense } from 'react';
-import { Typography, Box, Dialog, DialogTitle, DialogContent, DialogActions, Button, CircularProgress } from '@mui/material';
+import { Typography, Box, CircularProgress } from '@mui/material';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { SnackbarProvider } from 'notistack';
 import './i18n'; // Initialize i18n
@@ -188,7 +188,7 @@ const PlaceholderPage: React.FC<{ title: string; message: string }> = ({ title, 
 );
 
 function App() {
-  const { isAuthenticated, sessionExpired, clearSessionExpired } = useAuth();
+  const { isAuthenticated } = useAuth();
   const location = useLocation();
   
 
@@ -215,38 +215,8 @@ function App() {
                            location.pathname.startsWith('/hotels/search') ||
                            location.pathname === '/home';
 
-  const handleSessionExpiredClose = () => {
-    clearSessionExpired();
-  };
-  
   return (
     <>
-      {/* Session Expired Dialog */}
-      <Dialog
-        open={sessionExpired}
-        onClose={handleSessionExpiredClose}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>Session Expired</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Your session has expired. Please log in again to continue.
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button 
-            onClick={handleSessionExpiredClose} 
-            color="primary" 
-            variant="contained"
-            fullWidth
-          >
-            OK
-          </Button>
-        </DialogActions>
-      </Dialog>
-      
-      {/* Main App Content */}
       <SnackbarProvider 
         maxSnack={3}
         anchorOrigin={{
