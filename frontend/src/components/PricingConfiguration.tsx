@@ -45,7 +45,7 @@ const toDecimal = (percentage: number): number => {
 const smartToPercentage = (value: number): number => {
   // If value is already in percentage range (>1), return as is
   // If value is in decimal range (0-1), convert to percentage
-  return value > 1 ? value : value * 100;
+  return value > 1 ? value : Math.round(value * 100);
 };
 
 // Convert backend values to percentage for display

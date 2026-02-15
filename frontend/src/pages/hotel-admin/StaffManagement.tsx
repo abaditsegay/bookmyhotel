@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { formatEthiopianPhone } from '../../utils/phoneUtils';
 import { COLORS } from '../../theme/themeColors';
 import {
   Paper,
@@ -417,7 +416,7 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
                         </Typography>
                       </TableCell>
                       <TableCell>{member.email}</TableCell>
-                      <TableCell>{member.phone ? formatEthiopianPhone(member.phone) : 'N/A'}</TableCell>
+                      <TableCell>{member.phone || 'N/A'}</TableCell>
                       <TableCell>
                         <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
                           {member.roles.map(role => (

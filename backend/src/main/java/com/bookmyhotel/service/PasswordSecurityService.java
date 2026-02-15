@@ -97,23 +97,24 @@ public class PasswordSecurityService {
         // Check against common weak passwords - DISABLED for less restrictive policy
         // String lowerPassword = password.toLowerCase();
         // for (String weakPassword : COMMON_WEAK_PASSWORDS) {
-        //     if (lowerPassword.contains(weakPassword)) {
-        //         errors.add("Password contains common weak patterns and is not secure");
-        //         isValid = false;
-        //         break;
-        //     }
+        // if (lowerPassword.contains(weakPassword)) {
+        // errors.add("Password contains common weak patterns and is not secure");
+        // isValid = false;
+        // break;
+        // }
         // }
 
         // Check for repeating characters - DISABLED for less restrictive policy
         // if (hasRepeatingCharacters(password, 4)) {
-        //     errors.add("Password cannot have more than 3 consecutive identical characters");
-        //     isValid = false;
+        // errors.add("Password cannot have more than 3 consecutive identical
+        // characters");
+        // isValid = false;
         // }
 
         // Check for sequential patterns - DISABLED for less restrictive policy
         // if (hasSequentialPattern(password)) {
-        //     errors.add("Password cannot contain sequential patterns (like 123, abc)");
-        //     isValid = false;
+        // errors.add("Password cannot contain sequential patterns (like 123, abc)");
+        // isValid = false;
         // }
 
         return new PasswordValidationResult(isValid, errors);

@@ -8,7 +8,8 @@ import jakarta.validation.constraints.NotNull;
  */
 public class BookingModificationRequest {
 
-    // Confirmation number is optional for authenticated user modifications and token-based modifications
+    // Confirmation number is optional for authenticated user modifications and
+    // token-based modifications
     // For authenticated users: reservationId is used instead
     // For token-based: It will be set by the controller from the token data
     // Only required for guest modifications via /bookings/modify endpoint

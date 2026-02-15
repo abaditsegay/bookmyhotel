@@ -13,6 +13,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.bookmyhotel.config.CacheConfig;
 import com.bookmyhotel.dto.HotelSearchRequest;
 import com.bookmyhotel.dto.HotelSearchResult;
 import com.bookmyhotel.dto.RoomTypeAvailabilityDto;
@@ -22,7 +23,6 @@ import com.bookmyhotel.entity.RoomType;
 import com.bookmyhotel.entity.RoomTypePricing;
 import com.bookmyhotel.repository.HotelRepository;
 import com.bookmyhotel.repository.RoomRepository;
-import com.bookmyhotel.config.CacheConfig;
 
 /**
  * Hotel search service

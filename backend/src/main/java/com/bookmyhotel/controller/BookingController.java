@@ -30,6 +30,7 @@ import com.bookmyhotel.dto.BookingRequest;
 import com.bookmyhotel.dto.BookingResponse;
 import com.bookmyhotel.entity.User;
 import com.bookmyhotel.exception.ResourceNotFoundException;
+import com.bookmyhotel.repository.UserRepository;
 import com.bookmyhotel.service.BookingService;
 
 import jakarta.validation.Valid;
@@ -46,6 +47,9 @@ public class BookingController {
 
     @Autowired
     private BookingService bookingService;
+
+    @Autowired
+    private UserRepository userRepository;
 
     /**
      * Create a new booking by room type (the only booking method)
@@ -106,29 +110,33 @@ public class BookingController {
     }
 
     /**
-     * Get user bookings (authenticated users can only access their own bookings unless they're admin)
+     * Get user bookings (authenticated users can only access their own bookings
+     * unless they're admin)
      */
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<BookingResponse>> getUserBookings(
             @PathVariable Long userId,
             Authentication authentication) {
-        
-        // Security check: users can only access their own bookings unless they're admin/hotel admin
+
+        // Security check: users can only access their own bookings unless they're
+        // admin/hotel admin
         if (authentication != null) {
             String username = authentication.getName();
             boolean isAdmin = authentication.getAuthorities().stream()
-                    .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN") || 
-                                     auth.getAuthority().equals("ROLE_SYSTEM_ADMIN") ||
-                                     auth.getAuthority().equals("ROLE_HOTEL_ADMIN"));
-            
+                    .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN") ||
+                            auth.getAuthority().equals("ROLE_SYSTEM_ADMIN") ||
+                            auth.getAuthority().equals("ROLE_HOTEL_ADMIN"));
+
             // If not admin, verify they're requesting their own bookings
             if (!isAdmin) {
                 // Get the user from the authentication to compare with the requested userId
                 // The username is the email, so we need to verify this matches the user
                 try {
-                    User authenticatedUser = bookingService.getUserByEmail(username);
+                    User authenticatedUser = userRepository.findByEmail(username)
+                            .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + username));
                     if (!authenticatedUser.getId().equals(userId)) {
-                        logger.warn("User {} attempted to access bookings for user {}", authenticatedUser.getId(), userId);
+                        logger.warn("User {} attempted to access bookings for user {}", authenticatedUser.getId(),
+                                userId);
                         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
                     }
                 } catch (Exception e) {
@@ -137,7 +145,7 @@ public class BookingController {
                 }
             }
         }
-        
+
         List<BookingResponse> bookings = bookingService.getUserBookings(userId);
         return ResponseEntity.ok(bookings);
     }
@@ -252,7 +260,7 @@ public class BookingController {
             errorResponse.setMessage("Confirmation number is required for guest booking modifications");
             return ResponseEntity.badRequest().body(errorResponse);
         }
-        
+
         if (request.getGuestEmail() == null || request.getGuestEmail().trim().isEmpty()) {
             BookingModificationResponse errorResponse = new BookingModificationResponse();
             errorResponse.setSuccess(false);

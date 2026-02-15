@@ -15,8 +15,6 @@ import {
   Stack,
 } from '@mui/material';
 import {
-  Visibility,
-  VisibilityOff,
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
@@ -31,7 +29,6 @@ const LoginPage: React.FC = () => {
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -40,9 +37,7 @@ const LoginPage: React.FC = () => {
   // Registration form state
   const [registerEmail, setRegisterEmail] = useState('');
   const [registerPassword, setRegisterPassword] = useState('');
-  const [showRegisterPassword, setShowRegisterPassword] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
@@ -301,29 +296,13 @@ const LoginPage: React.FC = () => {
                 <PremiumTextField
                   fullWidth
                   label={t('auth.login.passwordLabel')}
-                  type={showPassword ? 'text' : 'password'}
+                  type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   margin="normal"
                   required
                   autoComplete="current-password"
                   inputProps={{ 'data-testid': 'password-input' }}
-                  InputProps={{
-                    endAdornment: (
-                      <Box
-                        onClick={() => setShowPassword(!showPassword)}
-                        sx={{
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          color: 'text.secondary',
-                          '&:hover': { color: 'primary.main' },
-                        }}
-                      >
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
-                      </Box>
-                    ),
-                  }}
                 />
                 <Button
                   type="submit"
@@ -394,54 +373,22 @@ const LoginPage: React.FC = () => {
                 <PremiumTextField
                   fullWidth
                   label={t('auth.login.passwordLabel')}
-                  type={showRegisterPassword ? 'text' : 'password'}
+                  type="password"
                   value={registerPassword}
                   onChange={(e) => setRegisterPassword(e.target.value)}
                   margin="normal"
                   required
                   autoComplete="new-password"
-                  InputProps={{
-                    endAdornment: (
-                      <Box
-                        onClick={() => setShowRegisterPassword(!showRegisterPassword)}
-                        sx={{
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          color: 'text.secondary',
-                          '&:hover': { color: 'primary.main' },
-                        }}
-                      >
-                        {showRegisterPassword ? <VisibilityOff /> : <Visibility />}
-                      </Box>
-                    ),
-                  }}
                 />
                 <PremiumTextField
                   fullWidth
                   label={t('auth.login.confirmPasswordLabel')}
-                  type={showConfirmPassword ? 'text' : 'password'}
+                  type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   margin="normal"
                   required
                   autoComplete="new-password"
-                  InputProps={{
-                    endAdornment: (
-                      <Box
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        sx={{
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          color: 'text.secondary',
-                          '&:hover': { color: 'primary.main' },
-                        }}
-                      >
-                        {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-                      </Box>
-                    ),
-                  }}
                 />
                 <Button
                   type="submit"

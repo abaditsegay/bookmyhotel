@@ -332,7 +332,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                     ${receipt.guestPhone ? `
                     <div class="info-item">
                       <div class="info-label">Phone:</div>
-                      <div class="info-value">${formatEthiopianPhone(receipt.guestPhone)}</div>
+                      <div class="info-value">${receipt.guestPhone}</div>
                     </div>
                     ` : ''}
                   </div>
@@ -677,7 +677,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                     Phone:
                   </Typography>
                   <Typography variant="body2" sx={{ fontWeight: 500, mt: 0.5 }}>
-                    {receipt.guestPhone ? formatEthiopianPhone(receipt.guestPhone) : 'N/A'}
+                    {receipt.guestPhone || 'N/A'}
                   </Typography>
                 </Box>
               </Grid>

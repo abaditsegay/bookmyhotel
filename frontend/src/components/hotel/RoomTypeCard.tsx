@@ -31,6 +31,9 @@ const getFallbackRoomImage = (roomType: string): string => {
   const images = {
     SINGLE: 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=400&h=250&fit=crop&crop=center', // Modern single bedroom with workspace
     DOUBLE: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop&crop=center', // Modern hotel room with two beds and desk area
+    STANDARD: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop&crop=center', // Standard room (same as double)
+    FAMILY: 'https://images.unsplash.com/photo-1566195992011-5f6b21e539aa?w=400&h=250&fit=crop&crop=center', // Family room with multiple beds
+    ACCESSIBLE: 'https://images.unsplash.com/photo-1631049035182-249067d7618e?w=400&h=250&fit=crop&crop=center', // Accessible room
     SUITE: 'https://images.unsplash.com/photo-1582719508461-905c673771fd?w=400&h=250&fit=crop&crop=center', // Luxury suite with living area
     DELUXE: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop&crop=center', // Deluxe room with premium finishes
     PRESIDENTIAL: 'https://images.unsplash.com/photo-1591088398332-8a7791972843?w=400&h=250&fit=crop&crop=center', // Presidential suite with panoramic views
@@ -54,6 +57,9 @@ const getRoomAmenities = (roomType: string): string[] => {
   const typeAmenities = {
     SINGLE: [...baseAmenities, 'Work Desk'],
     DOUBLE: [...baseAmenities, 'Mini Bar', 'Safe'],
+    STANDARD: [...baseAmenities, 'Mini Bar', 'Safe'],
+    FAMILY: [...baseAmenities, 'Extra Space', 'Multiple Beds', 'Kids Welcome'],
+    ACCESSIBLE: [...baseAmenities, 'Wheelchair Accessible', 'Roll-in Shower', 'Grab Bars'],
     SUITE: [...baseAmenities, 'Living Area', 'Kitchenette', 'Balcony'],
     DELUXE: [...baseAmenities, 'Premium Bedding', 'City View', 'Mini Bar'],
     PRESIDENTIAL: [...baseAmenities, 'Butler Service', 'Private Terrace', 'Jacuzzi', 'Premium Amenities'],
