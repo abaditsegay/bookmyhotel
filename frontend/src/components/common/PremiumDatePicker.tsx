@@ -75,13 +75,13 @@ const PremiumDatePicker: React.FC<DatePickerProps<Date>> = (props) => {
 
   if (calendarType === 'ethiopian') {
     return (
-      <EthDatePicker {...commonProps} />
+      <EthDatePicker key="eth" {...commonProps} />
     );
   }
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <DatePicker {...commonProps} />
+      <DatePicker key="greg" {...commonProps} />
     </LocalizationProvider>
   );
 };

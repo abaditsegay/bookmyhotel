@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Frontend Deployment Script for AWS Lightsail
-# This script builds and deploys the React frontend to Lightsail VM at /var/www/bookmyhotel
+# This script builds and deploys the React frontend to Lightsail VM at /var/www/bookmystay
 
 set -e
 
@@ -9,7 +9,7 @@ set -e
 SERVER_IP="${1:-44.204.49.94}"
 SSH_KEY="${2:-$HOME/.ssh/bookmyhotel-aws}"
 BACKEND_API_URL="${3}"
-DEPLOY_PATH="/var/www/bookmyhotel"
+DEPLOY_PATH="/var/www/bookmystay"
 REMOTE_USER="ubuntu"
 
 # Colors for output
@@ -81,31 +81,31 @@ set -e
 echo "📦 Extracting build files..."
 
 # Backup existing frontend (optional)
-if [ -d /var/www/bookmyhotel ] && [ "$(ls -A /var/www/bookmyhotel 2>/dev/null)" ]; then
+if [ -d /var/www/bookmystay ] && [ "$(ls -A /var/www/bookmystay 2>/dev/null)" ]; then
     BACKUP_DIR="/tmp/frontend-backup-$(date +%Y%m%d-%H%M%S)"
     sudo mkdir -p "$BACKUP_DIR"
-    sudo cp -r /var/www/bookmyhotel/* "$BACKUP_DIR/" 2>/dev/null || true
+    sudo cp -r /var/www/bookmystay/* "$BACKUP_DIR/" 2>/dev/null || true
     echo "✓ Backup created: $BACKUP_DIR"
 fi
 
 # Create directory if it doesn't exist
-sudo mkdir -p /var/www/bookmyhotel
+sudo mkdir -p /var/www/bookmystay
 
 # Remove old frontend files
-sudo rm -rf /var/www/bookmyhotel/*
+sudo rm -rf /var/www/bookmystay/*
 
 # Extract new build
 cd /tmp
-sudo tar -xzf frontend-build.tar.gz -C /var/www/bookmyhotel/
+sudo tar -xzf frontend-build.tar.gz -C /var/www/bookmystay/
 
 # Set proper permissions
-sudo chown -R www-data:www-data /var/www/bookmyhotel
-sudo chmod -R 755 /var/www/bookmyhotel
+sudo chown -R www-data:www-data /var/www/bookmystay
+sudo chmod -R 755 /var/www/bookmystay
 
 # Clean up
 rm -f /tmp/frontend-build.tar.gz
 
-echo "✓ Files deployed to /var/www/bookmyhotel"
+echo "✓ Files deployed to /var/www/bookmystay"
 
 # Test nginx configuration
 if sudo nginx -t 2>/dev/null; then
@@ -123,8 +123,8 @@ echo ""
 echo "═══════════════════════════════════════"
 echo "  Deployment Information"
 echo "═══════════════════════════════════════"
-echo "Deployed files: $(sudo ls /var/www/bookmyhotel | wc -l) items"
-echo "Total size: $(sudo du -sh /var/www/bookmyhotel | cut -f1)"
+echo "Deployed files: $(sudo ls /var/www/bookmystay | wc -l) items"
+echo "Total size: $(sudo du -sh /var/www/bookmystay | cut -f1)"
 echo "Nginx status: $(sudo systemctl is-active nginx)"
 echo ""
 EOF

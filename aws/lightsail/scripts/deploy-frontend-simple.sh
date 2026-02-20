@@ -42,18 +42,18 @@ ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no ubuntu@"$SERVER_IP" << 'EOF'
 set -e
 
 # Remove old frontend files if they exist
-sudo rm -rf /var/www/bookmyhotel/*
+sudo rm -rf /var/www/bookmystay/*
 
 # Create directory if it doesn't exist
-sudo mkdir -p /var/www/bookmyhotel
+sudo mkdir -p /var/www/bookmystay
 
 # Extract new build
 cd /tmp
-tar -xzf frontend-build.tar.gz -C /var/www/bookmyhotel/
+tar -xzf frontend-build.tar.gz -C /var/www/bookmystay/
 
 # Set proper permissions
-sudo chown -R www-data:www-data /var/www/bookmyhotel
-sudo chmod -R 755 /var/www/bookmyhotel
+sudo chown -R www-data:www-data /var/www/bookmystay
+sudo chmod -R 755 /var/www/bookmystay
 
 # Configure nginx for React SPA
 sudo tee /etc/nginx/sites-available/default > /dev/null << 'NGINX_EOF'
@@ -72,7 +72,7 @@ server {
 
     # Frontend React SPA
     location / {
-        root /var/www/bookmyhotel;
+        root /var/www/bookmystay;
         index index.html;
         try_files $uri $uri/ /index.html;
         

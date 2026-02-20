@@ -6,7 +6,6 @@ import {
   Select, MenuItem, SelectChangeEvent,
 } from '@mui/material';
 import { CalendarMonth, ChevronLeft, ChevronRight } from '@mui/icons-material';
-import { useCalendarStore } from '../../contexts/store';
 import { gregorianToEthiopian, ethiopianToGregorian } from '../../utils/ethiopianCalendar';
 import { useTranslation } from 'react-i18next';
 
@@ -226,14 +225,9 @@ const EthCalendarPopover: React.FC<CalendarPopoverProps> = ({
    ══════════════════════════════════════ */
 
 export function EthDatePicker(props: DatePickerProps<Date>) {
-  const { calendarType } = useCalendarStore();
   const { i18n } = useTranslation();
   const [open, setOpen] = useState(false);
   const anchorRef = useRef<HTMLDivElement>(null);
-
-  if (calendarType === 'gregorian') {
-    return <DatePicker {...props} />;
-  }
 
   const lang = i18n.language === 'am' ? 'am' : 'en';
   const tfProps = (props.slotProps?.textField ?? {}) as any;
@@ -485,14 +479,9 @@ const EthCalendarTimePopover: React.FC<DateTimePopoverProps> = ({
    ══════════════════════════════════════ */
 
 export function EthDateTimePicker(props: DateTimePickerProps<Date>) {
-  const { calendarType } = useCalendarStore();
   const { i18n } = useTranslation();
   const [open, setOpen] = useState(false);
   const anchorRef = useRef<HTMLDivElement>(null);
-
-  if (calendarType === 'gregorian') {
-    return <DateTimePicker {...props} />;
-  }
 
   const lang = i18n.language === 'am' ? 'am' : 'en';
   const tfProps = (props.slotProps?.textField ?? {}) as any;

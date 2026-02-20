@@ -14,14 +14,14 @@ export const useCalendarStore = create<CalendarState>()(
       calendarType: 'ethiopian',
       setCalendarType: (calendarType) => set({ calendarType }),
     }),
-    { name: 'calendar-storage' }
+    { name: 'calendar-v2' }
   )
 );
 
 /** Read calendar preference without React hooks (for utility functions). */
 export function getCalendarType(): CalendarType {
   try {
-    const raw = localStorage.getItem('calendar-storage');
+    const raw = localStorage.getItem('calendar-v2');
     if (raw) {
       const parsed = JSON.parse(raw);
       return parsed?.state?.calendarType || 'ethiopian';

@@ -11,6 +11,7 @@ import {
   useMediaQuery,
 } from '@mui/material';
 import { formatEthiopianDate } from '../../utils/ethiopianCalendar';
+import { useCalendarStore } from '../../contexts/store';
 import { useTranslation } from 'react-i18next';
 import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
 import { COLORS } from '../../theme/themeColors';
@@ -44,6 +45,15 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
   const { t } = useTranslation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const { calendarType } = useCalendarStore();
+
+  const formatDate = (date: Date | null): string => {
+    if (!date) return '';
+    if (calendarType === 'gregorian') {
+      return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    }
+    return formatEthiopianDate(date);
+  };
 
   // Calculate pricing breakdown
   const subtotal = (roomData.pricePerNight || 0) * nights;
@@ -149,7 +159,7 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
                   fontSize: { xs: '0.8rem', md: '0.875rem' },
                 }}
               >
-                {checkInDate ? formatEthiopianDate(checkInDate) : ''}
+                {formatDate(checkInDate)}
               </Typography>
             </Box>
             <Box sx={{ 
@@ -172,7 +182,7 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
                   fontSize: { xs: '0.8rem', md: '0.875rem' },
                 }}
               >
-                {checkOutDate ? formatEthiopianDate(checkOutDate) : ''}
+                {formatDate(checkOutDate)}
               </Typography>
             </Box>
             <Box sx={{ 
