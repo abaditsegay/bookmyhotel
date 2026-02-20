@@ -9,7 +9,7 @@ set -e
 SERVER_IP="44.204.49.94"
 SSH_KEY="~/.ssh/bookmyhotel-aws"
 SERVER_USER="ubuntu"
-REMOTE_PATH="/opt/bookmyhotel"
+REMOTE_PATH="/var/www/bookmyhotel"
 LOCAL_FRONTEND_DIR="/Users/samuel/Projects2/bookmyhotel/frontend"
 
 # Colors for output
@@ -89,15 +89,15 @@ print_status "Build directory verified: $BUILD_DIR"
 # Step 4: Create remote directories
 print_step "📁 Creating remote directories..."
 ssh -i "$SSH_KEY" "$SERVER_USER@$SERVER_IP" "
-    sudo mkdir -p $REMOTE_PATH/frontend
-    sudo chown -R ubuntu:ubuntu $REMOTE_PATH/frontend
+    sudo mkdir -p $REMOTE_PATH
+    sudo chown -R ubuntu:ubuntu $REMOTE_PATH
 "
 
 # Step 5: Deploy frontend build using rsync
 print_step "🚀 Deploying frontend build using rsync..."
 rsync -avz --delete -e "ssh -i $SSH_KEY" \
     "$BUILD_DIR/" \
-    "$SERVER_USER@$SERVER_IP:$REMOTE_PATH/frontend/"
+    "$SERVER_USER@$SERVER_IP:$REMOTE_PATH/"
 
 print_status "✅ Frontend files deployed successfully"
 
@@ -109,11 +109,11 @@ echo ""
 echo "📋 Deployment Details:"
 echo "  • Build Type: Production (NODE_ENV=production)"
 echo "  • Server: $SERVER_IP"
-echo "  • Remote Path: $REMOTE_PATH/frontend/"
+echo "  • Remote Path: $REMOTE_PATH/"
 echo "  • Build Tool: npm run build"
 echo ""
 echo "🔧 Management Commands:"
-echo "  • Check Files: ssh -i $SSH_KEY $SERVER_USER@$SERVER_IP 'ls -la $REMOTE_PATH/frontend/'"
+echo "  • Check Files: ssh -i $SSH_KEY $SERVER_USER@$SERVER_IP 'ls -la $REMOTE_PATH/'"
 echo "  • Connect to Server: ssh -i $SSH_KEY $SERVER_USER@$SERVER_IP"
 echo ""
 echo -e "${BLUE}📝 Note: Frontend deployed using rsync with --delete flag for clean updates${NC}"

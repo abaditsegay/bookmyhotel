@@ -118,6 +118,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         }
 
-        filterChain.doFilter(request, response);
+        try {
+            filterChain.doFilter(request, response);
+        } finally {
+            HotelContext.clear();
+            TenantContext.clear();
+        }
     }
 }

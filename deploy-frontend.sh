@@ -2,14 +2,14 @@
 
 # Frontend Deployment Script for AWS Lightsail
 # Server: 44.204.49.94
-# Deploy path: /var/www/html
+# Deploy path: /var/www/bookmyhotel
 
 set -e
 
 # Configuration
 SERVER_IP="44.204.49.94"
 SSH_KEY="$HOME/.ssh/bookmyhotel-aws"
-DEPLOY_PATH="/opt/bookmyhotel/frontend"
+DEPLOY_PATH="/var/www/bookmyhotel"
 REMOTE_USER="ubuntu"
 
 # Colors for output
@@ -120,30 +120,31 @@ deploy_on_server() {
 set -e
 
 echo "📦 Extracting build files..."
-
+# Create directory if it doesn't exist
+sudo mkdir -p /var/www/bookmyhotel
 # Backup existing frontend (optional)
-if [ -d /opt/bookmyhotel/frontend ] && [ "$(ls -A /opt/bookmyhotel/frontend)" ]; then
+if [ -d /var/www/bookmyhotel ] && [ "$(ls -A /var/www/bookmyhotel)" ]; then
     BACKUP_DIR="/tmp/frontend-backup-$(date +%Y%m%d-%H%M%S)"
     sudo mkdir -p "$BACKUP_DIR"
-    sudo cp -r /opt/bookmyhotel/frontend/* "$BACKUP_DIR/" 2>/dev/null || true
+    sudo cp -r /var/www/bookmyhotel/* "$BACKUP_DIR/" 2>/dev/null || true
     echo "✓ Backup created: $BACKUP_DIR"
 fi
 
 # Remove old frontend files
-sudo rm -rf /opt/bookmyhotel/frontend/*
+sudo rm -rf /var/www/bookmyhotel/*
 
 # Extract new build
 cd /tmp
-sudo tar -xzf frontend-build.tar.gz -C /opt/bookmyhotel/frontend/
+sudo tar -xzf frontend-build.tar.gz -C /var/www/bookmyhotel/
 
 # Set proper permissions
-sudo chown -R www-data:www-data /opt/bookmyhotel/frontend
-sudo chmod -R 755 /opt/bookmyhotel/frontend
+sudo chown -R www-data:www-data /var/www/bookmyhotel
+sudo chmod -R 755 /var/www/bookmyhotel
 
 # Clean up
 rm -f /tmp/frontend-build.tar.gz
 
-echo "✓ Files deployed to /opt/bookmyhotel/frontend"
+echo "✓ Files deployed to /var/www/bookmyhotel"
 
 # Test nginx configuration
 if sudo nginx -t 2>/dev/null; then
@@ -161,8 +162,8 @@ echo ""
 echo "═══════════════════════════════════════"
 echo "  Deployment Information"
 echo "═══════════════════════════════════════"
-echo "Deployed files: $(sudo ls /opt/bookmyhotel/frontend | wc -l) items"
-echo "Total size: $(sudo du -sh /opt/bookmyhotel/frontend | cut -f1)"
+echo "Deployed files: $(sudo ls /var/www/bookmyhotel | wc -l) items"
+echo "Total size: $(sudo du -sh /var/www/bookmyhotel | cut -f1)"
 echo "Nginx status: $(sudo systemctl is-active nginx)"
 echo ""
 EOF
@@ -216,7 +217,7 @@ main() {
     echo ""
     print_info "To check deployment:"
     print_info "  ssh -i $SSH_KEY $REMOTE_USER@$SERVER_IP"
-    print_info "  ls -la /opt/bookmyhotel/frontend"
+    print_info "  ls -la /var/www/bookmyhotel"
     echo ""
 }
 

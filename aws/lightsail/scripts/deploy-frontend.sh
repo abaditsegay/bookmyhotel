@@ -1,15 +1,16 @@
 #!/bin/bash
 
-# Frontend Deployment Script for AWS S3 + CloudFront
-# This script builds and deploys the React frontend to S3 with CloudFront distribution
+# Frontend Deployment Script for AWS Lightsail
+# This script builds and deploys the React frontend to Lightsail VM at /var/www/bookmyhotel
 
 set -e
 
 # Configuration
-BUCKET_NAME="${1:-bookmyhotel-frontend-prod}"
-CLOUDFRONT_DISTRIBUTION_ID="$2"
-LIGHTSAIL_BACKEND_IP="$3"
-REGION="${AWS_DEFAULT_REGION:-us-east-1}"
+SERVER_IP="${1:-44.204.49.94}"
+SSH_KEY="${2:-$HOME/.ssh/bookmyhotel-aws}"
+BACKEND_API_URL="${3}"
+DEPLOY_PATH="/var/www/bookmyhotel"
+REMOTE_USER="ubuntu"
 
 # Colors for output
 RED='\033[0;31m'
@@ -29,166 +30,120 @@ print_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
-# Check if AWS CLI is installed
-if ! command -v aws &> /dev/null; then
-    print_error "AWS CLI is not installed. Please install it first:"
-    print_error "https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html"
+# Check prerequisites
+if [ ! -f "$SSH_KEY" ]; then
+    print_error "SSH key not found: $SSH_KEY"
+    print_error "Usage: $0 <server_ip> <ssh_key_path> [backend_api_url]"
     exit 1
 fi
 
-# Check AWS credentials
-if ! aws sts get-caller-identity &>/dev/null; then
-    print_error "AWS credentials not configured. Run: aws configure"
+if ! command -v npm &> /dev/null; then
+    print_error "npm not found. Please install Node.js and npm"
     exit 1
 fi
 
-print_status "Starting frontend deployment..."
+if ! ssh -i "$SSH_KEY" -o ConnectTimeout=5 -o StrictHostKeyChecking=no "$REMOTE_USER@$SERVER_IP" "echo 'connected'" &>/dev/null; then
+    print_error "Cannot connect to server: $SERVER_IP"
+    exit 1
+fiNavigate to frontend directory
+print_status "Navigating to frontend directory..."
+cd "$(dirname "$0")/../../../frontend"
 
-# Step 1: Update API configuration for production
-print_status "Updating API configuration for production..."
-cd "$(dirname "$0")/../../frontend"
-
-if [ -n "$LIGHTSAIL_BACKEND_IP" ]; then
-    # Update API base URL in config
-    cat > src/config/apiConfig.ts << EOF
-// API Configuration for production deployment
-const isDevelopment = () => process.env.NODE_ENV === 'development';
-
-export const API_CONFIG = {
-  BASE_URL: isDevelopment() 
-    ? 'http://localhost:8080' 
-    : 'http://${LIGHTSAIL_BACKEND_IP}',
-  SERVER_URL: isDevelopment() 
-    ? 'http://localhost:8080' 
-    : 'http://${LIGHTSAIL_BACKEND_IP}'
-};
-
-export const API_ENDPOINTS = {
-  // Authentication
-  AUTH: {
-    LOGIN: '/api/auth/login',
-    REGISTER: '/api/auth/register',
-    REFRESH: '/api/auth/refresh',
-    LOGOUT: '/api/auth/logout'
-  },
-  
-  // System Management
-  SYSTEM: {
-    DASHBOARD: '/api/system/dashboard',
-    TENANTS: '/api/system/tenants',
-    USERS: '/api/system/users',
-    HOTELS: '/api/system/hotels'
-  },
-  
-  // Booking Management
-  BOOKINGS: {
-    LIST: '/api/bookings',
-    CREATE: '/api/bookings',
-    UPDATE: '/api/bookings',
-    DELETE: '/api/bookings'
-  },
-  
-  // Hotel Management
-  HOTELS: {
-    LIST: '/api/hotels',
-    ROOMS: '/api/hotels/{hotelId}/rooms',
-    PRODUCTS: '/api/hotels/{hotelId}/products'
-  },
-  
-  // Todo Management
-  TODOS: {
-    LIST: '/api/todos',
-    CREATE: '/api/todos',
-    UPDATE: '/api/todos/{id}',
-    DELETE: '/api/todos/{id}'
-  }
-};
-
-export const buildApiUrl = (endpoint: string, params: Record<string, string> = {}): string => {
-  let url = API_CONFIG.BASE_URL + endpoint;
-  
-  // Replace path parameters
-  Object.keys(params).forEach(key => {
-    url = url.replace(\`{\${key}}\`, params[key]);
-  });
-  
-  return url;
-};
-EOF
-fi
-
-# Step 2: Install dependencies and build
+# Step 2: Install dependencies
 print_status "Installing dependencies..."
-if ! npm ci; then
-    print_warning "npm ci failed, trying npm install..."
-    npm install
+if ! npm install --legacy-peer-deps; then
+    print_error "npm install failed"
+    exit 1
 fi
 
+# Step 3: Build React application
 print_status "Building React application for production..."
 if ! npm run build; then
-    print_error "React build failed"
+    print_error "Build failed"
     exit 1
 fi
 
-# Step 3: Create S3 bucket (if it doesn't exist)
-print_status "Checking S3 bucket: $BUCKET_NAME"
-if ! aws s3 ls "s3://$BUCKET_NAME" &>/dev/null; then
-    print_status "Creating S3 bucket: $BUCKET_NAME"
-    if [ "$REGION" = "us-east-1" ]; then
-        aws s3 mb "s3://$BUCKET_NAME"
-    else
-        aws s3 mb "s3://$BUCKET_NAME" --region "$REGION"
-    fi
-    
-    # Configure bucket for static website hosting
-    aws s3 website "s3://$BUCKET_NAME" --index-document index.html --error-document error.html
-    
-    # Set bucket policy for public read
-    cat > /tmp/bucket-policy.json << EOF
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Sid": "PublicReadGetObject",
-            "Effect": "Allow",
-            "Principal": "*",
-            "Action": "s3:GetObject",
-            "Resource": "arn:aws:s3:::$BUCKET_NAME/*"
-        }
-    ]
-}
-EOF
-    
-    aws s3api put-bucket-policy --bucket "$BUCKET_NAME" --policy file:///tmp/bucket-policy.json
-    rm /tmp/bucket-policy.json
+# Step 4: Create deployment package
+print_status "Creating deployment package..."
+cd build
+tar --no-xattrs -czf ../frontend-build.tar.gz *
+cd ..
+
+# Step 5: Upload to server
+print_status "Uploading package to $SERVER_IP..."
+scp -i "$SSH_KEY" -o StrictHostKeyChecking=no frontend-build.tar.gz "$REMOTE_USER@$SERVER_IP:/tmp/"
+
+# Step 6: Deploy on server
+print_status "Deploying on server..."
+ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no "$REMOTE_USER@$SERVER_IP" << 'EOF'
+set -e
+
+echo "📦 Extracting build files..."
+
+# Backup existing frontend (optional)
+if [ -d /var/www/bookmyhotel ] && [ "$(ls -A /var/www/bookmyhotel 2>/dev/null)" ]; then
+    BACKUP_DIR="/tmp/frontend-backup-$(date +%Y%m%d-%H%M%S)"
+    sudo mkdir -p "$BACKUP_DIR"
+    sudo cp -r /var/www/bookmyhotel/* "$BACKUP_DIR/" 2>/dev/null || true
+    echo "✓ Backup created: $BACKUP_DIR"
 fi
 
-# Step 4: Upload build files to S3
-print_status "Uploading files to S3..."
-aws s3 sync build/ "s3://$BUCKET_NAME" --delete --cache-control "public, max-age=31536000" --exclude "*.html"
-aws s3 sync build/ "s3://$BUCKET_NAME" --delete --cache-control "public, max-age=0, must-revalidate" --include "*.html"
+# Create directory if it doesn't exist
+sudo mkdir -p /var/www/bookmyhotel
 
-# Step 5: Invalidate CloudFront distribution (if provided)
-if [ -n "$CLOUDFRONT_DISTRIBUTION_ID" ]; then
-    print_status "Invalidating CloudFront distribution: $CLOUDFRONT_DISTRIBUTION_ID"
-    aws cloudfront create-invalidation --distribution-id "$CLOUDFRONT_DISTRIBUTION_ID" --paths "/*" > /dev/null
-    print_status "CloudFront invalidation initiated"
+# Remove old frontend files
+sudo rm -rf /var/www/bookmyhotel/*
+
+# Extract new build
+cd /tmp
+sudo tar -xzf frontend-build.tar.gz -C /var/www/bookmyhotel/
+
+# Set proper permissions
+sudo chown -R www-data:www-data /var/www/bookmyhotel
+sudo chmod -R 755 /var/www/bookmyhotel
+
+# Clean up
+rm -f /tmp/frontend-build.tar.gz
+
+echo "✓ Files deployed to /var/www/bookmyhotel"
+
+# Test nginx configuration
+if sudo nginx -t 2>/dev/null; then
+    echo "✓ Nginx configuration valid"
+    
+    # Reload nginx
+    sudo systemctl reload nginx
+    echo "✓ Nginx reloaded"
 else
-    print_warning "No CloudFront distribution ID provided. Cache may not be updated immediately."
+    echo "⚠ Warning: Nginx configuration test failed"
 fi
 
-# Step 6: Display deployment information
+# Display deployment info
+echo ""
+echo "═══════════════════════════════════════"
+echo "  Deployment Information"
+echo "═══════════════════════════════════════"
+echo "Deployed files: $(sudo ls /var/www/bookmyhotel | wc -l) items"
+echo "Total size: $(sudo du -sh /var/www/bookmyhotel | cut -f1)"
+echo "Nginx status: $(sudo systemctl is-active nginx)"
+echo ""
+EOF
+
+# Step 7: Cleanup local files
+print_status "Cleaning up local files..."
+rm -f frontend-build.tar.gz
+
+# Step 8: Display deployment information
 print_status "🎉 Frontend deployment completed successfully!"
 print_status ""
-print_status "S3 Bucket: s3://$BUCKET_NAME"
-print_status "Website URL: http://$BUCKET_NAME.s3-website-$REGION.amazonaws.com"
-
-if [ -n "$CLOUDFRONT_DISTRIBUTION_ID" ]; then
-    print_status "CloudFront URL: https://$CLOUDFRONT_DISTRIBUTION_ID.cloudfront.net"
-fi
-
+print_status "Deployment Details:"
+print_status "  Server: $SERVER_IP"
+print_status "  Deploy Path: $DEPLOY_PATH"
+print_status "  Access: http://$SERVER_IP"
 print_status ""
-print_status "Next steps:"
+print_status "To check deployment:"
+print_status "  ssh -i $SSH_KEY $REMOTE_USER@$SERVER_IP"
+print_status "  ls -la $DEPLOY_PATH
 print_status "1. Set up CloudFront distribution for HTTPS and global CDN"
 print_status "2. Configure custom domain name (optional)"
 print_status "3. Update CORS settings in backend if needed"
