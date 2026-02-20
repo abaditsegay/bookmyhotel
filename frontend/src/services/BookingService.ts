@@ -1,5 +1,6 @@
 import { BookingResponse } from '../types/booking';
 import { API_CONFIG } from '../config/apiConfig';
+import { formatEthiopianDate, formatEthiopianDateTime } from '../utils/ethiopianCalendar';
 
 const API_BASE_URL = API_CONFIG.BASE_URL;
 
@@ -85,26 +86,18 @@ export class BookingService {
   }
 
   static formatDate(dateString: string): string {
+    if (!dateString) return '';
     // Handle date strings without creating timezone issues
     // Parse as local date to avoid timezone conversion
     const [year, month, day] = dateString.split('T')[0].split('-');
     const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
     
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
+    return formatEthiopianDate(date);
   }
 
   static formatDateTime(dateTimeString: string): string {
-    return new Date(dateTimeString).toLocaleString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    if (!dateTimeString) return '';
+    return formatEthiopianDateTime(new Date(dateTimeString));
   }
 
   static calculateStayDuration(checkIn: string, checkOut: string): number {

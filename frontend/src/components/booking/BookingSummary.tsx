@@ -10,7 +10,7 @@ import {
   useTheme,
   useMediaQuery,
 } from '@mui/material';
-import { format } from 'date-fns';
+import { formatEthiopianDate } from '../../utils/ethiopianCalendar';
 import { useTranslation } from 'react-i18next';
 import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
 import { COLORS } from '../../theme/themeColors';
@@ -149,7 +149,7 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
                   fontSize: { xs: '0.8rem', md: '0.875rem' },
                 }}
               >
-                {checkInDate ? format(checkInDate, 'MMM dd, yyyy') : ''}
+                {checkInDate ? formatEthiopianDate(checkInDate) : ''}
               </Typography>
             </Box>
             <Box sx={{ 
@@ -172,7 +172,7 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
                   fontSize: { xs: '0.8rem', md: '0.875rem' },
                 }}
               >
-                {checkOutDate ? format(checkOutDate, 'MMM dd, yyyy') : ''}
+                {checkOutDate ? formatEthiopianDate(checkOutDate) : ''}
               </Typography>
             </Box>
             <Box sx={{ 

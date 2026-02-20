@@ -18,13 +18,14 @@ import {
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import dayjs, { Dayjs } from 'dayjs';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { addDays, format, differenceInDays } from 'date-fns';
 import { BookingRequest, AvailableRoom } from '../../types/hotel';
 import { LoadingSpinner } from '../common/LoadingComponents';
 import { ValidatedInput, ValidationSummary, ValidationStatus } from '../common/ValidationComponents';
 import { useAsyncOperation } from '../../hooks/useLoading';
 import { useFormValidation } from '../../hooks/useFormValidation';
+import PremiumDatePicker from '../common/PremiumDatePicker';
 import NumberStepper from '../common/NumberStepper';
 import { COLORS, addAlpha } from '../../theme/themeColors';
 import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
@@ -66,11 +67,11 @@ const BookingForm: React.FC<BookingFormProps> = ({
     }
   }, [open]);
   
-  const [checkInDate, setCheckInDate] = useState<Dayjs | null>(
-    defaultCheckIn ? dayjs(defaultCheckIn) : dayjs()
+  const [checkInDate, setCheckInDate] = useState<Date | null>(
+    defaultCheckIn ? defaultCheckIn : new Date()
   );
-  const [checkOutDate, setCheckOutDate] = useState<Dayjs | null>(
-    defaultCheckOut ? dayjs(defaultCheckOut) : dayjs().add(1, 'day')
+  const [checkOutDate, setCheckOutDate] = useState<Date | null>(
+    defaultCheckOut ? defaultCheckOut : addDays(new Date(), 1)
   );
   const [error, setError] = useState('');
   const bookingOperation = useAsyncOperation();
@@ -146,7 +147,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
 
   const calculateTotalAmount = () => {
     if (!room || !checkInDate || !checkOutDate) return 0;
-    const nights = checkOutDate.diff(checkInDate, 'day');
+    const nights = differenceInDays(checkOutDate, checkInDate);
     return room.pricePerNight * nights;
   };
 
@@ -173,8 +174,8 @@ const BookingForm: React.FC<BookingFormProps> = ({
 
     const bookingRequest: BookingRequest = {
       roomId: room.id,
-      checkInDate: checkInDate.format('YYYY-MM-DD'),
-      checkOutDate: checkOutDate.format('YYYY-MM-DD'),
+      checkInDate: format(checkInDate, 'yyyy-MM-dd'),
+      checkOutDate: format(checkOutDate, 'yyyy-MM-dd'),
       guests: formValidation.values.guests,
       specialRequests: formValidation.values.specialRequests?.trim() || undefined,
       guestName: formValidation.values.guestName.trim(),
@@ -198,11 +199,11 @@ const BookingForm: React.FC<BookingFormProps> = ({
 
   const totalAmount = calculateTotalAmount();
   const nights = checkInDate && checkOutDate 
-    ? checkOutDate.diff(checkInDate, 'day')
+    ? differenceInDays(checkOutDate, checkInDate)
     : 0;
 
   return (
-    <LocalizationProvider dateAdapter={AdapterDayjs}>
+    <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Dialog 
         open={open} 
         onClose={onClose} 
@@ -366,11 +367,11 @@ const BookingForm: React.FC<BookingFormProps> = ({
             <Grid container spacing={{ xs: 2, md: 3 }}>
               {/* Dates and Guests */}
               <Grid item xs={12} sm={4}>
-                <DatePicker
+                <PremiumDatePicker
                   label="Check-in Date"
                   value={checkInDate}
                   onChange={setCheckInDate}
-                  minDate={dayjs()}
+                  minDate={new Date()}
                   slotProps={{
                     textField: {
                       fullWidth: true,
@@ -382,11 +383,11 @@ const BookingForm: React.FC<BookingFormProps> = ({
               </Grid>
 
               <Grid item xs={12} sm={4}>
-                <DatePicker
+                <PremiumDatePicker
                   label="Check-out Date"
                   value={checkOutDate}
                   onChange={setCheckOutDate}
-                  minDate={checkInDate || dayjs()}
+                  minDate={checkInDate || new Date()}
                   slotProps={{
                     textField: {
                       fullWidth: true,

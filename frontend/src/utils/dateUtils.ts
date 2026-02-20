@@ -3,6 +3,7 @@
  * Since all dates come from date pickers, these focus on formatting and calculation
  */
 import dayjs, { Dayjs } from 'dayjs';
+import { formatEthiopianDate, formatEthiopianDateTime } from './ethiopianCalendar';
 
 /**
  * Formats a date string for HTML date input (YYYY-MM-DD format)
@@ -68,7 +69,7 @@ export const formatDateForDisplay = (dateString: string): string => {
   const [year, month, day] = dateOnly.split('-');
   const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
   
-  return date.toLocaleDateString();
+  return formatEthiopianDate(date);
 };
 
 /**
@@ -140,7 +141,7 @@ export const formatDateTimeForDisplay = (dateString: string): string => {
   const date = new Date(dateString);
   if (isNaN(date.getTime())) return '';
   
-  return date.toLocaleString();
+  return formatEthiopianDateTime(date);
 };
 
 /**

@@ -8,36 +8,33 @@ import {
   Grid,
   Chip,
   Divider,
-            <Button
-              variant="outlined"
-              startIcon={<CancelIcon />}
-              onClick={handleCancelAndClose}
-              color="error"
-            >
-              Cancel
-            </Button>
-            {!isEditing ? (
-              <Button
-                variant="outlined"
-                startIcon={<EditIcon />}
-                onClick={handleEdit}
-                disabled={!booking || !canModifyBooking(booking.status)}
-                title={booking && !canModifyBooking(booking.status) ? `Cannot edit booking with status: ${booking.status}` : undefined}
-              >
-                Edit
-              </Button>
-            ) : (
-              <Button
-                variant="contained"
-                startIcon={<SaveIcon />}
-                onClick={handleSaveAndClose}
-                disabled={priceCalculating}
-              >
-                {priceCalculating ? 'Saving...' : 'Save'}
-              </Button>
-            )}
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  CircularProgress,
+  Alert,
+  Snackbar,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+  SelectChangeEvent,
+  MenuItem,
+  Card,
+  CardContent
+} from '@mui/material';
+import { useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import { hotelAdminApi, RoomResponse } from '../../services/hotelAdminApi';
 import { ROOM_TYPE_VALUES } from '../../constants/roomTypes';
+import { COLORS } from '../../theme/themeColors';
+import EditIcon from '@mui/icons-material/Edit';
+import SaveIcon from '@mui/icons-material/Save';
+import CancelIcon from '@mui/icons-material/Cancel';
+import RoomIcon from '@mui/icons-material/MeetingRoom';
+import PremiumTextField from '../../components/common/PremiumTextField';
+import PremiumSelect from '../../components/common/PremiumSelect';
 
 // Map BookingResponse from API to display format
 interface BookingData {
@@ -600,10 +597,11 @@ const BookingViewEdit: React.FC = () => {
               </Button>
             ) : (
               <>
-                  onClick={handleCancelAndClose}
+                <Button
                   variant="outlined"
                   startIcon={<CancelIcon />}
-                  onClick={handleCancel}
+                  onClick={handleCancelAndClose}
+                  color="error"
                 >
                   Cancel
                 </Button>
@@ -611,8 +609,9 @@ const BookingViewEdit: React.FC = () => {
                   variant="contained"
                   startIcon={<SaveIcon />}
                   onClick={handleSave}
+                  disabled={priceCalculating}
                 >
-                  Save
+                  {priceCalculating ? 'Saving...' : 'Save'}
                 </Button>
               </>
             )}

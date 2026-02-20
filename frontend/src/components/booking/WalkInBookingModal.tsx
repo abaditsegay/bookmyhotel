@@ -23,6 +23,7 @@ import {
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { formatEthiopianDate } from '../../utils/ethiopianCalendar';
 import { format, addDays } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
@@ -33,6 +34,7 @@ import { frontDeskApiService } from '../../services/frontDeskApi';
 import { formatCurrency, formatCurrencyWithDecimals } from '../../utils/currencyUtils';
 import { API_CONFIG, buildApiUrl } from '../../config/apiConfig';
 import PremiumTextField from '../common/PremiumTextField';
+import PremiumDatePicker from '../common/PremiumDatePicker';
 import NumberStepper from '../common/NumberStepper';
 import { COLORS, addAlpha } from '../../theme/themeColors';
 import { extractBookingErrorMessage } from '../../utils/errorHandling';
@@ -588,92 +590,88 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                 
                 <Grid container spacing={3}>
                   <Grid item xs={12} sm={4}>
-                    <LocalizationProvider dateAdapter={AdapterDateFns}>
-                      <DatePicker
-                        label={t('walkInBooking.stayDetails.checkInDate')}
-                        value={checkInDate}
-                        onChange={(newValue) => newValue && setCheckInDate(newValue)}
-                        minDate={new Date()}
-                        slotProps={{ 
-                          textField: { 
-                            fullWidth: true,
-                            sx: {
-                              '& .MuiInputBase-root': {
-                                backgroundColor: COLORS.BG_LIGHT,
-                                borderRadius: 2,
-                                borderLeft: `2px solid ${COLORS.SECONDARY}`,
-                                transition: 'all 0.3s ease',
-                              },
-                              '& .MuiOutlinedInput-root': {
-                                '&:hover': {
-                                  backgroundColor: addAlpha(COLORS.SECONDARY, 0.04),
-                                  '& fieldset': {
-                                    borderColor: COLORS.SECONDARY,
-                                  },
-                                },
-                                '&.Mui-focused': {
-                                  backgroundColor: addAlpha(COLORS.SECONDARY, 0.08),
-                                  '& fieldset': {
-                                    borderColor: COLORS.SECONDARY,
-                                    borderWidth: '2px',
-                                  },
+                    <PremiumDatePicker
+                      label={t('walkInBooking.stayDetails.checkInDate')}
+                      value={checkInDate}
+                      onChange={(newValue) => newValue && setCheckInDate(newValue)}
+                      minDate={new Date()}
+                      slotProps={{ 
+                        textField: { 
+                          fullWidth: true,
+                          sx: {
+                            '& .MuiInputBase-root': {
+                              backgroundColor: COLORS.BG_LIGHT,
+                              borderRadius: 2,
+                              borderLeft: `2px solid ${COLORS.SECONDARY}`,
+                              transition: 'all 0.3s ease',
+                            },
+                            '& .MuiOutlinedInput-root': {
+                              '&:hover': {
+                                backgroundColor: addAlpha(COLORS.SECONDARY, 0.04),
+                                '& fieldset': {
+                                  borderColor: COLORS.SECONDARY,
                                 },
                               },
-                              '& .MuiInputLabel-root': {
-                                '&.Mui-focused': {
-                                  color: COLORS.PRIMARY,
-                                  fontWeight: 700,
+                              '&.Mui-focused': {
+                                backgroundColor: addAlpha(COLORS.SECONDARY, 0.08),
+                                '& fieldset': {
+                                  borderColor: COLORS.SECONDARY,
+                                  borderWidth: '2px',
                                 },
                               },
-                            }
-                          } 
-                        }}
-                      />
-                    </LocalizationProvider>
+                            },
+                            '& .MuiInputLabel-root': {
+                              '&.Mui-focused': {
+                                color: COLORS.PRIMARY,
+                                fontWeight: 700,
+                              },
+                            },
+                          }
+                        } 
+                      }}
+                    />
                   </Grid>
                   <Grid item xs={12} sm={4}>
-                    <LocalizationProvider dateAdapter={AdapterDateFns}>
-                      <DatePicker
-                        label={t('walkInBooking.stayDetails.checkOutDate')}
-                        value={checkOutDate}
-                        onChange={(newValue) => newValue && setCheckOutDate(newValue)}
-                        minDate={addDays(checkInDate, 1)}
-                        slotProps={{ 
-                          textField: { 
-                            fullWidth: true,
-                            sx: {
-                              '& .MuiInputBase-root': {
-                                backgroundColor: COLORS.BG_LIGHT,
-                                borderRadius: 2,
-                                borderLeft: `2px solid ${COLORS.SECONDARY}`,
-                                transition: 'all 0.3s ease',
-                              },
-                              '& .MuiOutlinedInput-root': {
-                                '&:hover': {
-                                  backgroundColor: addAlpha(COLORS.SECONDARY, 0.04),
-                                  '& fieldset': {
-                                    borderColor: COLORS.SECONDARY,
-                                  },
-                                },
-                                '&.Mui-focused': {
-                                  backgroundColor: addAlpha(COLORS.SECONDARY, 0.08),
-                                  '& fieldset': {
-                                    borderColor: COLORS.SECONDARY,
-                                    borderWidth: '2px',
-                                  },
+                    <PremiumDatePicker
+                      label={t('walkInBooking.stayDetails.checkOutDate')}
+                      value={checkOutDate}
+                      onChange={(newValue) => newValue && setCheckOutDate(newValue)}
+                      minDate={addDays(checkInDate, 1)}
+                      slotProps={{ 
+                        textField: { 
+                          fullWidth: true,
+                          sx: {
+                            '& .MuiInputBase-root': {
+                              backgroundColor: COLORS.BG_LIGHT,
+                              borderRadius: 2,
+                              borderLeft: `2px solid ${COLORS.SECONDARY}`,
+                              transition: 'all 0.3s ease',
+                            },
+                            '& .MuiOutlinedInput-root': {
+                              '&:hover': {
+                                backgroundColor: addAlpha(COLORS.SECONDARY, 0.04),
+                                '& fieldset': {
+                                  borderColor: COLORS.SECONDARY,
                                 },
                               },
-                              '& .MuiInputLabel-root': {
-                                '&.Mui-focused': {
-                                  color: COLORS.PRIMARY,
-                                  fontWeight: 700,
+                              '&.Mui-focused': {
+                                backgroundColor: addAlpha(COLORS.SECONDARY, 0.08),
+                                '& fieldset': {
+                                  borderColor: COLORS.SECONDARY,
+                                  borderWidth: '2px',
                                 },
                               },
-                            }
-                          } 
-                        }}
-                      />
-                    </LocalizationProvider>
+                            },
+                            '& .MuiInputLabel-root': {
+                              '&.Mui-focused': {
+                                color: COLORS.PRIMARY,
+                                fontWeight: 700,
+                              },
+                            },
+                          }
+                        } 
+                      }}
+                    />
                   </Grid>
                   <Grid item xs={12} sm={4}>
                     <NumberStepper
@@ -699,8 +697,8 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
             </Typography>
             <Typography variant="body2" sx={{ color: theme.palette.text.secondary }} gutterBottom>
               {t('walkInBooking.roomSelection.description', { 
-                checkIn: format(checkInDate, 'MMM dd, yyyy'),
-                checkOut: format(checkOutDate, 'MMM dd, yyyy'),
+                checkIn: formatEthiopianDate(checkInDate),
+                checkOut: formatEthiopianDate(checkOutDate),
                 guests: guests,
                 guestsPlural: guests !== 1 ? 's' : ''
               })}
@@ -718,8 +716,8 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                 {t('walkInBooking.roomSelection.noRoomsAvailable', {
                   guests: guests,
                   guestsPlural: guests !== 1 ? 's' : '',
-                  checkIn: format(checkInDate, 'MMM dd'),
-                  checkOut: format(checkOutDate, 'MMM dd')
+                  checkIn: formatEthiopianDate(checkInDate),
+                  checkOut: formatEthiopianDate(checkOutDate)
                 })}
               </Alert>
             ) : (

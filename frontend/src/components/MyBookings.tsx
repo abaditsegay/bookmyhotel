@@ -41,8 +41,9 @@ import {
 } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import dayjs, { Dayjs } from 'dayjs';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { addDays, format } from 'date-fns';
+import PremiumDatePicker from './common/PremiumDatePicker';
 import { useAuth } from '../contexts/AuthContext';
 import { BookingService } from '../services/BookingService';
 import { BookingResponse, BookingModificationRequest } from '../types/booking';
@@ -62,8 +63,8 @@ const MyBookings: React.FC = () => {
   const [modifying, setModifying] = useState(false);
   
   // Modify booking form state
-  const [newCheckInDate, setNewCheckInDate] = useState<Dayjs | null>(null);
-  const [newCheckOutDate, setNewCheckOutDate] = useState<Dayjs | null>(null);
+  const [newCheckInDate, setNewCheckInDate] = useState<Date | null>(null);
+  const [newCheckOutDate, setNewCheckOutDate] = useState<Date | null>(null);
   const [newRoomType, setNewRoomType] = useState('');
   const [newSpecialRequests, setNewSpecialRequests] = useState('');
 
@@ -118,10 +119,10 @@ const MyBookings: React.FC = () => {
       const modificationRequest: BookingModificationRequest = {};
       
       if (newCheckInDate) {
-        modificationRequest.newCheckInDate = newCheckInDate.format('YYYY-MM-DD');
+        modificationRequest.newCheckInDate = format(newCheckInDate, 'yyyy-MM-dd');
       }
       if (newCheckOutDate) {
-        modificationRequest.newCheckOutDate = newCheckOutDate.format('YYYY-MM-DD');
+        modificationRequest.newCheckOutDate = format(newCheckOutDate, 'yyyy-MM-dd');
       }
       if (newRoomType && newRoomType !== selectedBooking.roomType) {
         modificationRequest.newRoomType = newRoomType;
@@ -155,8 +156,8 @@ const MyBookings: React.FC = () => {
 
   const openModifyDialog = (booking: BookingResponse) => {
     setSelectedBooking(booking);
-    setNewCheckInDate(dayjs(booking.checkInDate));
-    setNewCheckOutDate(dayjs(booking.checkOutDate));
+    setNewCheckInDate(new Date(booking.checkInDate));
+    setNewCheckOutDate(new Date(booking.checkOutDate));
     setNewRoomType(booking.roomType);
     setNewSpecialRequests(booking.specialRequests || '');
     setModifyDialogOpen(true);
@@ -655,14 +656,14 @@ const MyBookings: React.FC = () => {
                 Current Booking: {selectedBooking.hotelName} - {selectedBooking.confirmationNumber}
               </Typography>
 
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <Grid container spacing={3}>
                   <Grid item xs={12} md={6}>
-                    <DatePicker
+                    <PremiumDatePicker
                       label="New Check-in Date"
                       value={newCheckInDate}
                       onChange={(date) => setNewCheckInDate(date)}
-                      minDate={dayjs()}
+                      minDate={new Date()}
                       slotProps={{
                         textField: {
                           fullWidth: true,
@@ -672,11 +673,11 @@ const MyBookings: React.FC = () => {
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
-                    <DatePicker
+                    <PremiumDatePicker
                       label="New Check-out Date"
                       value={newCheckOutDate}
                       onChange={(date) => setNewCheckOutDate(date)}
-                      minDate={newCheckInDate ? newCheckInDate.add(1, 'day') : dayjs().add(1, 'day')}
+                      minDate={newCheckInDate ? addDays(newCheckInDate, 1) : addDays(new Date(), 1)}
                       slotProps={{
                         textField: {
                           fullWidth: true,

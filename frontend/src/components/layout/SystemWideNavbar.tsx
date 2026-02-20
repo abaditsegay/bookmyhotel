@@ -34,6 +34,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useTenant } from '../../contexts/TenantContext';
 import { useNavigate } from 'react-router-dom';
 import LanguageSelector from '../common/LanguageSelector';
+import CalendarSelector from '../common/CalendarSelector';
 
 /**
  * Navigation bar for system-wide users (CUSTOMER and ADMIN roles)
@@ -117,6 +118,9 @@ export const SystemWideNavbar: React.FC = () => {
           
           {/* Language Selector - After mobile menu */}
           <LanguageSelector variant="icon" size="medium" />
+          
+          {/* Calendar Selector - Next to Language Selector */}
+          <CalendarSelector variant="icon" size="medium" />
           
           {/* Logo and App Name */}
           <AdminPanelSettings sx={{ ml: 2, mr: 2 }} />

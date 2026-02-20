@@ -33,6 +33,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../hooks/useNotifications';
 import NetworkStatusIndicator from '../NetworkStatusIndicator';
 import LanguageSelector from '../common/LanguageSelector';
+import CalendarSelector from '../common/CalendarSelector';
 import { COLORS, addAlpha } from '../../theme/themeColors';
 
 const Navbar: React.FC = () => {
@@ -478,6 +479,9 @@ const Navbar: React.FC = () => {
             
             {/* Language Selector - After mobile menu */}
             <LanguageSelector variant="icon" size="small" />
+            
+            {/* Calendar Selector - Next to Language Selector */}
+            <CalendarSelector variant="icon" size="small" />
             
             {/* Dashboard Link - Only for logged-in users */}
             {user && (
