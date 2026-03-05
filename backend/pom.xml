@@ -94,11 +94,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-cache</artifactId>
         </dependency>
-        <!-- Redis for production caching (used by application-production.properties) -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-redis</artifactId>
-        </dependency>
         <!-- Logstash JSON encoder for structured logging in production logback-spring.xml -->
         <dependency>
             <groupId>net.logstash.logback</groupId>
