@@ -266,6 +266,8 @@ function App() {
           <Route path="/demo/error-boundary" element={<ErrorBoundaryDemo />} />
         )}
         <Route path="/register-hotel" element={<PublicHotelRegistration />} />
+        {/* Business onboarding — shared by system admin, not linked from public nav */}
+        <Route path="/business-onboarding" element={<PublicHotelRegistration />} />
         <Route path="/register-hotel-admin" element={
           <PlaceholderPage 
             title="Admin Hotel Registration" 

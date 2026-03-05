@@ -25,7 +25,10 @@ import {
   MenuItem,
   Accordion,
   AccordionSummary,
-  AccordionDetails
+  AccordionDetails,
+  IconButton,
+  Tooltip,
+  Chip,
 } from '@mui/material';
 import {
   Dashboard,
@@ -38,7 +41,10 @@ import {
   Refresh,
   BarChart as BarChartIcon,
   Description as ApiIcon,
-  Search as SearchIcon
+  Search as SearchIcon,
+  ContentCopy,
+  OpenInNew,
+  Link as LinkIcon,
 } from '@mui/icons-material';
 import { MetricCard, BarChart, DonutChart } from '../components/common/DataVisualization';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
@@ -92,6 +98,7 @@ export const SystemDashboardPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState(0);
   const [apiSearchQuery, setApiSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [onboardingUrlCopied, setOnboardingUrlCopied] = useState(false);
 
   // Get all API endpoints from our organized documentation
   const allEndpoints = getAllEndpoints();
@@ -469,6 +476,70 @@ export const SystemDashboardPage: React.FC = () => {
             </Grid>
           ))}
         </Grid>
+
+        {/* Business Onboarding URL — System Admin Only */}
+        {isSystemAdmin && (
+          <Paper
+            sx={{
+              p: 3,
+              my: 3,
+              border: `2px solid ${COLORS.PRIMARY}`,
+              borderRadius: 2,
+              background: `linear-gradient(135deg, ${COLORS.PRIMARY}08 0%, ${COLORS.SECONDARY}08 100%)`,
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+              <LinkIcon sx={{ mr: 1, color: COLORS.PRIMARY }} />
+              <Typography variant="h6" fontWeight="bold" color="primary">
+                Business Onboarding URL
+              </Typography>
+              <Chip
+                label="Admin Only"
+                size="small"
+                sx={{ ml: 1.5, bgcolor: COLORS.PRIMARY, color: '#fff', fontSize: '0.7rem' }}
+              />
+            </Box>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              Share this link with a business to let them submit their hotel registration application.
+              The page is not accessible from public navigation.
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+              <PremiumTextField
+                fullWidth
+                size="small"
+                value={`${window.location.origin}/business-onboarding`}
+                label=""
+                onChange={() => {}}
+                InputProps={{
+                  readOnly: true,
+                  sx: { fontFamily: 'monospace', fontSize: '0.875rem', bgcolor: 'background.paper' },
+                }}
+              />
+              <Tooltip title={onboardingUrlCopied ? 'Copied!' : 'Copy URL'}>
+                <IconButton
+                  onClick={() => {
+                    navigator.clipboard.writeText(`${window.location.origin}/business-onboarding`);
+                    setOnboardingUrlCopied(true);
+                    setTimeout(() => setOnboardingUrlCopied(false), 2500);
+                  }}
+                  color={onboardingUrlCopied ? 'success' : 'primary'}
+                  sx={{ flexShrink: 0 }}
+                >
+                  <ContentCopy />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Open in new tab">
+                <IconButton
+                  onClick={() => window.open(`${window.location.origin}/business-onboarding`, '_blank')}
+                  color="primary"
+                  sx={{ flexShrink: 0 }}
+                >
+                  <OpenInNew />
+                </IconButton>
+              </Tooltip>
+            </Box>
+          </Paper>
+        )}
 
         {/* System Status and Information */}
         <Grid container spacing={3}>
