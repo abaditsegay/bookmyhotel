@@ -111,7 +111,7 @@ const bookingColumns: TableColumn[] = [
   { id: 'checkIn', label: 'Check In', sortable: true },
   { id: 'checkOut', label: 'Check Out', sortable: true },
   { id: 'status', label: 'Status', sortable: true },
-  { id: 'amount', label: 'Amount', sortable: true, format: (value: any) => `$${value.toFixed(2)}` },
+  { id: 'amount', label: 'Amount', sortable: true, format: (value: any) => `ETB ${value.toFixed(2)}` },
 ];
 
 const revenueData = [

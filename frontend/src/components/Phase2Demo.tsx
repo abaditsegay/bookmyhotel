@@ -320,7 +320,7 @@ const Phase2Demo: React.FC = () => {
                   </Typography>
                   <Box sx={{ textAlign: 'center', mb: 2 }}>
                     <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
-                      <AnimatedCounter value={counter} prefix="$" suffix="" decimals={0} />
+                      <AnimatedCounter value={counter} prefix="ETB " suffix="" decimals={0} />
                     </Typography>
                   </Box>
                   <StandardButton

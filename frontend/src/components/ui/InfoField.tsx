@@ -40,7 +40,7 @@ const InfoField: React.FC<InfoFieldProps> = ({
   label,
   value,
   currency = false,
-  currencySymbol = '$',
+  currencySymbol = 'ETB ',
   percentage = false,
   chip = false,
   chipColor = 'primary',

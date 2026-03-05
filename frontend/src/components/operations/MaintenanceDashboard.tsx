@@ -1063,10 +1063,10 @@ const MaintenanceDashboard: React.FC = () => {
                       type="number"
                       value={editTaskData.estimatedCost || 0}
                       onChange={(e) => setEditTaskData({...editTaskData, estimatedCost: parseFloat(e.target.value) || 0})}
-                      InputProps={{ startAdornment: '$' }}
+                      InputProps={{ startAdornment: 'ETB ' }}
                     />
                   ) : (
-                    <Typography>${selectedTask.estimatedCost?.toFixed(2) || '0.00'}</Typography>
+                    <Typography>ETB {selectedTask.estimatedCost?.toFixed(2) || '0.00'}</Typography>
                   )}
                 </Box>
                 <Box>

@@ -129,7 +129,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
             mb: 1,
           }}
         >
-          <AnimatedCounter value={value} prefix={format === 'currency' ? '$' : ''} suffix={format === 'percentage' ? '%' : ''} />
+          <AnimatedCounter value={value} prefix={format === 'currency' ? 'ETB ' : ''} suffix={format === 'percentage' ? '%' : ''} />
         </Typography>
 
         {trend && trendValue !== undefined && (
