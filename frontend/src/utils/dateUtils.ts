@@ -68,7 +68,8 @@ export const formatDateForDisplay = (dateString: string): string => {
   // Always create date using local timezone to avoid off-by-one issues
   const [year, month, day] = dateOnly.split('-');
   const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-  
+
+  // formatEthiopianDate checks getCalendarType() and getLang() internally
   return formatEthiopianDate(date);
 };
 
@@ -137,11 +138,22 @@ export const getDefaultBookingDates = () => {
  */
 export const formatDateTimeForDisplay = (dateString: string): string => {
   if (!dateString) return '';
-  
+
   const date = new Date(dateString);
   if (isNaN(date.getTime())) return '';
-  
+
+  // formatEthiopianDateTime checks getCalendarType() and getLang() internally
   return formatEthiopianDateTime(date);
+};
+
+/**
+ * Format a Date object for display respecting the active calendar preference (EC or GC).
+ * Use this when you have a JS Date object to display (not a date string).
+ */
+export const formatDateCalendarAware = (date: Date | null | undefined): string => {
+  if (!date || isNaN(date.getTime())) return '';
+  // formatEthiopianDate checks getCalendarType() and getLang() internally
+  return formatEthiopianDate(date);
 };
 
 /**

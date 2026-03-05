@@ -69,69 +69,6 @@ const HotelSearchPage: React.FC = () => {
         px: isMobile ? 1 : 3,
       }}
     >
-        {/* Left Advertisement Pane - Responsive: side pane on desktop, bottom section on mobile */}
-        {/* 
-        {!isOperationsUser && (
-          <Box sx={{ gridArea: 'leftAd' }}>
-            <StandardCard 
-              elevation={1}
-              sx={{ 
-                height: {
-                  xs: '400px', // Mobile: increased height for better hotel visibility
-                  md: '100%' // Desktop: full height
-                },
-                border: `1px solid ${addAlpha(COLORS.BORDER_LIGHT, 0.2)}`, // Much more subtle border
-                borderRadius: 0,
-                display: 'flex',
-                flexDirection: 'column',
-                overflow: 'hidden',
-                transition: 'all 0.3s ease',
-                '&:hover': {
-                  boxShadow: 3, // Reduced shadow
-                  transform: 'translateY(-1px)', // Reduced transform
-                }
-              }}
-            >
-              <Box sx={{ 
-                p: 3, 
-                background: getGradient('purple'),
-                color: 'white',
-                borderBottom: `1px solid ${COLORS.BORDER_LIGHT}` 
-              }}>
-                <Typography variant="h6" gutterBottom sx={{ textAlign: 'center', mb: 0, fontWeight: 'bold' }}>
-                  🎉 Special Deals
-                </Typography>
-              </Box>
-              <Box sx={{ 
-                flex: 1, 
-                overflowY: 'auto',
-                overflowX: 'hidden',
-                // Enhanced scrollbar styling for modern look
-                '&::-webkit-scrollbar': {
-                  width: {
-                    xs: '8px', // Wider scrollbar on mobile for easier touch interaction
-                    md: '6px'
-                  }
-                },
-                '&::-webkit-scrollbar-track': {
-                  background: theme.palette.background.paper,
-                  borderRadius: '0px',
-                },
-                '&::-webkit-scrollbar-thumb': {
-                  background: getGradient('purple'),
-                  borderRadius: '0px',
-                  '&:hover': {
-                    background: getGradient('purple'),
-                  }
-                }
-              }}>
-                <VerticalHotelAdvertisementBanner maxHotels={6} />
-              </Box>
-            </StandardCard>
-          </Box>
-        )}
-        */}
-
       {/* Main Search Form Section */}
       <StandardCard 
         elevation={0}

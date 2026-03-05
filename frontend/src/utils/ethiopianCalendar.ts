@@ -18,17 +18,43 @@ import { getCalendarType } from '../contexts/store';
 import i18n from '../i18n';
 export { useCalendarStore } from '../contexts/store';
 
+// ── Ethiopian calendar month names ──────────────────────────────
 const ETH_MONTHS_AM = [
   'መስከረም', 'ጥቅምት', 'ህዳር', 'ታህሳስ', 'ጥር',
   'የካቲት', 'መጋቢት', 'ሚያዝያ', 'ግንቦት', 'ሰኔ',
   'ሐምሌ', 'ነሐሴ', 'ጳጉሜ',
 ];
-
 const ETH_MONTHS_EN = [
   'Meskerem', 'Tikimt', 'Hidar', 'Tahsas', 'Tir',
   'Yekatit', 'Megabit', 'Miazia', 'Ginbot', 'Sene',
   'Hamle', 'Nehase', 'Pagume',
 ];
+/** Ethiopian month names transliterated for Oromo speakers */
+const ETH_MONTHS_OM = [
+  'Masqaram', 'Xiqimt', 'Hidar', 'Tahsas', 'Xir',
+  'Yakatit', 'Magabit', 'Miyaziya', 'Ginbot', 'Sane',
+  'Hamle', 'Nahase', 'Pagume',
+];
+
+// ── Gregorian month names (localized) ───────────────────────────
+const GREG_MONTHS_EN = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+];
+const GREG_MONTHS_AM = [
+  'ጃንዋሪ', 'ፌብሩዋሪ', 'ማርች', 'ኤፕሪል', 'ሜይ', 'ጁን',
+  'ጁላይ', 'ኦገስት', 'ሴፕቴምበር', 'ኦክቶበር', 'ኖቬምበር', 'ዲሴምበር',
+];
+/** Standard Oromo (Afaan Oromoo) Gregorian month names */
+const GREG_MONTHS_OM = [
+  'Amajjii', 'Guraandhala', 'Bitooteessa', 'Ebla', 'Caamsaa', 'Waxabajjii',
+  'Adooleessa', 'Hagayya', 'Fulbaana', 'Onkololeessa', 'Sadaasa', 'Muddee',
+];
+
+// ── Gregorian day names (localized) ─────────────────────────────
+const GREG_DAYS_EN = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const GREG_DAYS_AM = ['እሑድ', 'ሰኞ', 'ማክሰኞ', 'ረቡዕ', 'ሐሙስ', 'ዓርብ', 'ቅዳሜ'];
+const GREG_DAYS_OM = ['Dilbata', 'Wiixata', 'Qibxata', 'Roobii', 'Kamiisa', 'Jimaata', 'Sanbata'];
 
 // Ethiopian epoch: Meskerem 1, Year 1 in Julian Day Number
 const ETHIOPIAN_EPOCH = 1724221;
@@ -132,58 +158,69 @@ export function ethiopianToGregorian(
  * - 6 PM = 12:00 evening
  * - 12 AM = 6:00 night
  */
-function toEthiopianHour(gregHour: number): { hour: number; period: string; periodAm: string } {
+/**
+ * Convert a Gregorian hour (0-23) to Ethiopian time.
+ * Ethiopian day has two 12-hour periods (offset +6 from Gregorian):
+ *   Morning (ጠዋት / tewat): Gregorian 6 AM – 5:59 PM  → Eth 12–11
+ *   Evening (ማታ  / mata):  Gregorian 6 PM – 5:59 AM  → Eth 12–11
+ */
+function toEthiopianHour(gregHour: number): {
+  hour: number;
+  /** Amharic period label */
+  periodAm: string;
+  /** English period label */
+  period: string;
+  /** Oromo period label */
+  periodOm: string;
+} {
   const ethHour = (gregHour + 6) % 12 || 12;
-
-  let period: string;
-  let periodAm: string;
-
-  if (gregHour >= 6 && gregHour < 12) {
-    period = 'morning';
-    periodAm = 'ጠዋት';
-  } else if (gregHour >= 12 && gregHour < 18) {
-    period = 'afternoon';
-    periodAm = 'ከሰዓት';
-  } else if (gregHour >= 18) {
-    period = 'evening';
-    periodAm = 'ምሽት';
-  } else {
-    period = 'night';
-    periodAm = 'ሌሊት';
-  }
-
-  return { hour: ethHour, period, periodAm };
+  const isMorning = gregHour >= 6 && gregHour < 18;
+  return {
+    hour:     ethHour,
+    periodAm: isMorning ? 'ጠዋት'               : 'ማታ',
+    period:   isMorning ? 'morning'            : 'evening',
+    periodOm: isMorning ? 'waaree dura'        : 'galgala',
+  };
 }
 
-// --- Gregorian Formatting Helpers ---
+// --- Gregorian Formatting Helpers (locale-aware) ---
 
-const GREG_MONTHS = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
-];
+function gregAmpm(lang: 'en' | 'am' | 'om', isAM: boolean): string {
+  if (lang === 'am') return isAM ? 'ጥ.ቀ' : 'ድ.ቀ';   // ጥዋ ቀን / ድሕረ ቀን
+  if (lang === 'om') return isAM ? 'W.D' : 'W.B';    // Waaree Dura / Waaree Booda
+  return isAM ? 'AM' : 'PM';
+}
 
-const GREG_DAYS = [
-  'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday',
-];
+function gregMonths(lang: 'en' | 'am' | 'om'): string[] {
+  if (lang === 'am') return GREG_MONTHS_AM;
+  if (lang === 'om') return GREG_MONTHS_OM;
+  return GREG_MONTHS_EN;
+}
 
-function formatGregTime(date: Date): string {
+function gregDays(lang: 'en' | 'am' | 'om'): string[] {
+  if (lang === 'am') return GREG_DAYS_AM;
+  if (lang === 'om') return GREG_DAYS_OM;
+  return GREG_DAYS_EN;
+}
+
+function formatGregTime(date: Date, lang: 'en' | 'am' | 'om' = 'en'): string {
   let h = date.getHours();
   const m = date.getMinutes().toString().padStart(2, '0');
-  const ampm = h >= 12 ? 'PM' : 'AM';
+  const isAM = h < 12;
   h = h % 12 || 12;
-  return `${h}:${m} ${ampm}`;
+  return `${h}:${m} ${gregAmpm(lang, isAM)}`;
 }
 
-function formatGregDate(date: Date): string {
-  return `${GREG_MONTHS[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+function formatGregDate(date: Date, lang: 'en' | 'am' | 'om' = 'en'): string {
+  return `${gregMonths(lang)[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
 }
 
-function formatGregDateTime(date: Date): string {
-  return `${formatGregDate(date)} ${formatGregTime(date)}`;
+function formatGregDateTime(date: Date, lang: 'en' | 'am' | 'om' = 'en'): string {
+  return `${formatGregDate(date, lang)} ${formatGregTime(date, lang)}`;
 }
 
-function formatGregDateLong(date: Date): string {
-  return `${GREG_DAYS[date.getDay()]}, ${formatGregDate(date)}`;
+function formatGregDateLong(date: Date, lang: 'en' | 'am' | 'om' = 'en'): string {
+  return `${gregDays(lang)[date.getDay()]}, ${formatGregDate(date, lang)}`;
 }
 
 // --- Public Formatting Functions ---
@@ -202,22 +239,25 @@ function parseDateValue(value: any): Date | null {
   return isNaN(d.getTime()) ? null : d;
 }
 
-/** Get current UI language */
-function getLang(): 'en' | 'am' {
-  return (i18n.language || 'en').startsWith('am') ? 'am' : 'en';
+/** Get current UI language — supports en, am (Amharic), om (Oromo) */
+function getLang(): 'en' | 'am' | 'om' {
+  const lng = (i18n.language || 'en').toLowerCase();
+  if (lng.startsWith('am')) return 'am';
+  if (lng.startsWith('om')) return 'om';
+  return 'en';
 }
 
 /**
  * Format a date/time value. Uses Ethiopian or Gregorian based on user preference.
  * Language auto-detected from i18n.
  */
-export function formatEthiopianDateTime(value: any, lang?: 'en' | 'am'): string {
+export function formatEthiopianDateTime(value: any, lang?: 'en' | 'am' | 'om'): string {
   const l = lang ?? getLang();
   const date = parseDateValue(value);
   if (!date) return '-';
 
   if (getCalendarType() === 'gregorian') {
-    return formatGregDateTime(date);
+    return formatGregDateTime(date, l);
   }
 
   const [eY, eM, eD] = gregorianToEthiopian(
@@ -226,10 +266,14 @@ export function formatEthiopianDateTime(value: any, lang?: 'en' | 'am'): string 
     date.getDate()
   );
 
-  const monthName = l === 'am' ? ETH_MONTHS_AM[eM - 1] : ETH_MONTHS_EN[eM - 1];
-  const { hour, periodAm, period } = toEthiopianHour(date.getHours());
+  const ethMonths = l === 'am' ? ETH_MONTHS_AM : l === 'om' ? ETH_MONTHS_OM : ETH_MONTHS_EN;
+  const monthName = ethMonths[eM - 1];
+  const { hour, periodAm, period, periodOm } = toEthiopianHour(date.getHours());
   const minutes = date.getMinutes().toString().padStart(2, '0');
-  const periodLabel = l === 'am' ? periodAm : period;
+  const periodLabel =
+    l === 'am' ? periodAm :
+    l === 'om' ? `${periodOm} (${periodAm})` :
+    `${period} (${periodAm})`;
 
   return `${monthName} ${eD}, ${eY} ${hour}:${minutes} ${periodLabel}`;
 }
@@ -239,13 +283,13 @@ export function formatEthiopianDateTime(value: any, lang?: 'en' | 'am'): string 
  * Example (Ethiopian): "Tir 29, 2018"
  * Example (Gregorian): "February 6, 2026"
  */
-export function formatEthiopianDate(value: any, lang?: 'en' | 'am'): string {
+export function formatEthiopianDate(value: any, lang?: 'en' | 'am' | 'om'): string {
   const l = lang ?? getLang();
   const date = parseDateValue(value);
   if (!date) return '-';
 
   if (getCalendarType() === 'gregorian') {
-    return formatGregDate(date);
+    return formatGregDate(date, l);
   }
 
   const [eY, eM, eD] = gregorianToEthiopian(
@@ -254,8 +298,8 @@ export function formatEthiopianDate(value: any, lang?: 'en' | 'am'): string {
     date.getDate()
   );
 
-  const monthName = l === 'am' ? ETH_MONTHS_AM[eM - 1] : ETH_MONTHS_EN[eM - 1];
-  return `${monthName} ${eD}, ${eY}`;
+  const ethMonths = l === 'am' ? ETH_MONTHS_AM : l === 'om' ? ETH_MONTHS_OM : ETH_MONTHS_EN;
+  return `${ethMonths[eM - 1]} ${eD}, ${eY}`;
 }
 
 /**
@@ -263,18 +307,24 @@ export function formatEthiopianDate(value: any, lang?: 'en' | 'am'): string {
  * Example (Ethiopian): "1:30 ጠዋት"
  * Example (Gregorian): "7:30 AM"
  */
-export function formatEthiopianTime(value: any, lang?: 'en' | 'am'): string {
+export function formatEthiopianTime(value: any, lang?: 'en' | 'am' | 'om'): string {
   const l = lang ?? getLang();
   const date = parseDateValue(value);
   if (!date) return '-';
 
   if (getCalendarType() === 'gregorian') {
-    return formatGregTime(date);
+    return formatGregTime(date, l);
   }
 
-  const { hour, periodAm, period } = toEthiopianHour(date.getHours());
+  const { hour, periodAm, period, periodOm } = toEthiopianHour(date.getHours());
   const minutes = date.getMinutes().toString().padStart(2, '0');
-  const periodLabel = l === 'am' ? periodAm : period;
+  // am → Amharic only:  "1:30 ጠዋት"
+  // en → bilingual:     "1:30 morning (ጠዋት)"
+  // om → bilingual:     "1:30 waaree dura (ጠዋት)"
+  const periodLabel =
+    l === 'am' ? periodAm :
+    l === 'om' ? `${periodOm} (${periodAm})` :
+    `${period} (${periodAm})`;
 
   return `${hour}:${minutes} ${periodLabel}`;
 }
@@ -284,13 +334,13 @@ export function formatEthiopianTime(value: any, lang?: 'en' | 'am'): string {
  * Example (Ethiopian): "Wednesday, Tir 29, 2018"
  * Example (Gregorian): "Friday, February 6, 2026"
  */
-export function formatEthiopianDateLong(value: any, lang?: 'en' | 'am'): string {
+export function formatEthiopianDateLong(value: any, lang?: 'en' | 'am' | 'om'): string {
   const l = lang ?? getLang();
   const date = parseDateValue(value);
   if (!date) return '-';
 
   if (getCalendarType() === 'gregorian') {
-    return formatGregDateLong(date);
+    return formatGregDateLong(date, l);
   }
 
   const [eY, eM, eD] = gregorianToEthiopian(
@@ -299,12 +349,13 @@ export function formatEthiopianDateLong(value: any, lang?: 'en' | 'am'): string 
     date.getDate()
   );
 
-  const monthName = l === 'am' ? ETH_MONTHS_AM[eM - 1] : ETH_MONTHS_EN[eM - 1];
-
-  const dayNames = l === 'am'
-    ? ['እሑድ', 'ሰኞ', 'ማክሰኞ', 'ረቡዕ', 'ሐሙስ', 'ዓርብ', 'ቅዳሜ']
-    : ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
+  const ethMonths = l === 'am' ? ETH_MONTHS_AM : l === 'om' ? ETH_MONTHS_OM : ETH_MONTHS_EN;
+  const monthName = ethMonths[eM - 1];
+  // Ethiopian day names (same spellings across all 3 languages in practice)
+  const dayNames =
+    l === 'am' ? GREG_DAYS_AM :
+    l === 'om' ? GREG_DAYS_OM :
+    GREG_DAYS_EN;
   const dayOfWeek = dayNames[date.getDay()];
 
   return `${dayOfWeek}, ${monthName} ${eD}, ${eY}`;

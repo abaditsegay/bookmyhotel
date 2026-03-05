@@ -24,11 +24,31 @@ const ETH_DAYS_AM = ['እ', 'ሰ', 'ማ', 'ረ', 'ሐ', 'ዓ', 'ቅ'];
 const ETH_DAYS_EN = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
 const ETH_PERIODS_AM: Record<string, string> = {
-  morning: 'ጠዋት', afternoon: 'ከሰዓት', evening: 'ምሽት', night: 'ሌሊት',
+  morning: 'ጠዋት', evening: 'ማታ',
 };
 const ETH_PERIODS_EN: Record<string, string> = {
-  morning: 'morning', afternoon: 'afternoon', evening: 'evening', night: 'night',
+  morning: 'morning (ጠዋት)', evening: 'evening (ማታ)',
 };
+const ETH_PERIODS_OM: Record<string, string> = {
+  morning: 'waaree dura (ጠዋት)', evening: 'galgala (ማታ)',
+};
+
+function getLangCode(language: string): 'en' | 'am' | 'om' {
+  if (language.startsWith('am')) return 'am';
+  if (language.startsWith('om')) return 'om';
+  return 'en';
+}
+
+function getEthPeriods(lang: 'en' | 'am' | 'om'): Record<string, string> {
+  if (lang === 'am') return ETH_PERIODS_AM;
+  if (lang === 'om') return ETH_PERIODS_OM;
+  return ETH_PERIODS_EN;
+}
+
+function getEthMonths(lang: 'en' | 'am' | 'om'): string[] {
+  if (lang === 'am') return ETH_MONTHS_AM;
+  return ETH_MONTHS_EN; // Oromo uses the same short English transliterations in the picker
+}
 
 /* ── helpers ── */
 function daysInEthMonth(month: number, year: number): number {
@@ -50,26 +70,22 @@ function gregToEth(d: Date): [number, number, number] {
   return gregorianToEthiopian(d.getFullYear(), d.getMonth() + 1, d.getDate());
 }
 
-function formatEthDisplay(d: Date | null, lang: string): string {
+function formatEthDisplay(d: Date | null, lang: 'en' | 'am' | 'om'): string {
   if (!d || isNaN(d.getTime())) return '';
   const [eY, eM, eD] = gregToEth(d);
-  const months = lang === 'am' ? ETH_MONTHS_AM : ETH_MONTHS_EN;
+  const months = getEthMonths(lang);
   return `${months[eM - 1]} ${eD}, ${eY}`;
 }
 
-function formatEthDateTimeDisplay(d: Date | null, lang: string): string {
+function formatEthDateTimeDisplay(d: Date | null, lang: 'en' | 'am' | 'om'): string {
   if (!d || isNaN(d.getTime())) return '';
   const [eY, eM, eD] = gregToEth(d);
-  const months = lang === 'am' ? ETH_MONTHS_AM : ETH_MONTHS_EN;
-  const periods = lang === 'am' ? ETH_PERIODS_AM : ETH_PERIODS_EN;
+  const months = getEthMonths(lang);
+  const periods = getEthPeriods(lang);
   const h = d.getHours();
   const m = d.getMinutes().toString().padStart(2, '0');
   const ethH = (h + 6) % 12 || 12;
-  let periodKey: string;
-  if (h >= 6 && h < 12) periodKey = 'morning';
-  else if (h >= 12 && h < 18) periodKey = 'afternoon';
-  else if (h >= 18) periodKey = 'evening';
-  else periodKey = 'night';
+  const periodKey = (h >= 6 && h < 18) ? 'morning' : 'evening';
   return `${months[eM - 1]} ${eD}, ${eY}  ${ethH}:${m} ${periods[periodKey]}`;
 }
 
@@ -90,8 +106,8 @@ const EthCalendarPopover: React.FC<CalendarPopoverProps> = ({
   value, onChange, onClose, anchorEl, open, minDate,
 }) => {
   const { i18n } = useTranslation();
-  const lang = i18n.language === 'am' ? 'am' : 'en';
-  const months = lang === 'am' ? ETH_MONTHS_AM : ETH_MONTHS_EN;
+  const lang = getLangCode(i18n.language);
+  const months = getEthMonths(lang);
   const dayLabels = lang === 'am' ? ETH_DAYS_AM : ETH_DAYS_EN;
   const today = new Date();
   const [todayEY, todayEM] = gregToEth(today);
@@ -229,7 +245,7 @@ export function EthDatePicker(props: DatePickerProps<Date>) {
   const [open, setOpen] = useState(false);
   const anchorRef = useRef<HTMLDivElement>(null);
 
-  const lang = i18n.language === 'am' ? 'am' : 'en';
+  const lang = getLangCode(i18n.language);
   const tfProps = (props.slotProps?.textField ?? {}) as any;
 
   return (
@@ -273,29 +289,23 @@ interface TimeSelectProps {
 
 const EthTimeSelect: React.FC<TimeSelectProps & { lang?: string }> = ({ value, onChange, lang: langProp }) => {
   const { i18n } = useTranslation();
-  const lang = langProp ?? (i18n.language === 'am' ? 'am' : 'en');
-  const periodMap = lang === 'am' ? ETH_PERIODS_AM : ETH_PERIODS_EN;
+  const lang: 'en' | 'am' | 'om' = getLangCode(langProp ?? i18n.language);
+  const periodMap = getEthPeriods(lang);
   const h = value ? value.getHours() : 0;
   const m = value ? value.getMinutes() : 0;
 
   const ethH = (h + 6) % 12 || 12;
-  let periodKey: string;
-  if (h >= 6 && h < 12) periodKey = 'morning';
-  else if (h >= 12 && h < 18) periodKey = 'afternoon';
-  else if (h >= 18) periodKey = 'evening';
-  else periodKey = 'night';
+  // Ethiopian day: morning (ጠዋት) 6AM-5:59PM | evening (ማታ) 6PM-5:59AM
+  const periodKey = (h >= 6 && h < 18) ? 'morning' : 'evening';
   const period = periodMap[periodKey];
 
   const setTime = (newEthH: number, newPeriodDisplay: string, newMin: number) => {
     const h12 = newEthH === 12 ? 0 : newEthH;
     // Reverse-lookup the canonical key from the display label
     const key = Object.entries(periodMap).find(([, v]) => v === newPeriodDisplay)?.[0] ?? 'morning';
-    let gregH: number;
-    if (key === 'morning') gregH = h12 + 6;
-    else if (key === 'afternoon') gregH = h12 + 12;
-    else if (key === 'evening') gregH = h12 + 18;
-    else gregH = h12;
-    gregH = gregH % 24;
+    // morning: Eth 1–12 = Greg 7AM–6PM (offset +6)
+    // evening: Eth 1–12 = Greg 7PM–6AM (offset +18)
+    const gregH = key === 'morning' ? (h12 + 6) % 24 : (h12 + 18) % 24;
 
     const d = value ? new Date(value.getTime()) : new Date();
     d.setHours(gregH, newMin, 0, 0);
@@ -344,8 +354,8 @@ const EthCalendarTimePopover: React.FC<DateTimePopoverProps> = ({
   value, onChange, onClose, anchorEl, open,
 }) => {
   const { i18n } = useTranslation();
-  const lang = i18n.language === 'am' ? 'am' : 'en';
-  const months = lang === 'am' ? ETH_MONTHS_AM : ETH_MONTHS_EN;
+  const lang = getLangCode(i18n.language);
+  const months = getEthMonths(lang);
   const dayLabels = lang === 'am' ? ETH_DAYS_AM : ETH_DAYS_EN;
   const today = new Date();
   const [todayEY, todayEM] = gregToEth(today);
@@ -466,7 +476,7 @@ const EthCalendarTimePopover: React.FC<DateTimePopoverProps> = ({
 
       <Box sx={{ borderTop: 1, borderColor: 'divider', pt: 1, mt: 1 }}>
         <Typography variant="caption" color="text.secondary" align="center" display="block" sx={{ mb: 0.5 }}>
-          {lang === 'am' ? 'ሰዓት' : 'Time'}
+          {lang === 'am' ? 'ሰዓት' : lang === 'om' ? "Sa'aatii" : 'Time'}
         </Typography>
         <EthTimeSelect value={localValue} onChange={handleTimeChange} lang={lang} />
       </Box>
@@ -483,7 +493,7 @@ export function EthDateTimePicker(props: DateTimePickerProps<Date>) {
   const [open, setOpen] = useState(false);
   const anchorRef = useRef<HTMLDivElement>(null);
 
-  const lang = i18n.language === 'am' ? 'am' : 'en';
+  const lang = getLangCode(i18n.language);
   const tfProps = (props.slotProps?.textField ?? {}) as any;
 
   return (

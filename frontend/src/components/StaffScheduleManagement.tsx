@@ -41,6 +41,9 @@ import { COLORS, addAlpha } from '../theme/themeColors';
 import PremiumTextField from './common/PremiumTextField';
 import PremiumSelect from './common/PremiumSelect';
 import PremiumDatePicker from './common/PremiumDatePicker';
+import { useTranslation } from 'react-i18next';
+import { formatDateForDisplay } from '../utils/dateUtils';
+import { formatEthiopianTime } from '../utils/ethiopianCalendar';
 
 /**
  * Create authenticated fetch request headers
@@ -98,6 +101,7 @@ interface User {
 const StaffScheduleManagement: React.FC = () => {
   const theme = useTheme();
   const { token, user } = useAuth();
+  const { t } = useTranslation();
   const [schedules, setSchedules] = useState<StaffSchedule[]>([]);
   const [hotels, setHotels] = useState<Hotel[]>([]);
   const [staff, setStaff] = useState<User[]>([]);
@@ -432,14 +436,11 @@ const StaffScheduleManagement: React.FC = () => {
   };
 
   const formatTime = (time: string) => {
-    return new Date(`2000-01-01T${time}`).toLocaleTimeString([], { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
+    return formatEthiopianTime(new Date(`2000-01-01T${time}`));
   };
 
   const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString();
+    return formatDateForDisplay(date);
   };
 
   const clearFilters = () => {
@@ -778,7 +779,7 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
                   </TableCell>
                   <TableCell>
                     <Chip 
-                      label={schedule.shiftType.replace('_', ' ')} 
+                      label={t(`staff.management.shiftTypes.${schedule.shiftType}`, schedule.shiftType.replace('_', ' '))}
                       size="small" 
                       variant="outlined"
                       color="info"
@@ -1036,17 +1037,21 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
               </Grid>
               
               <Grid item xs={12} md={4}>
-                <PremiumTextField
-                  fullWidth
-                  type="date"
+                <PremiumDatePicker
                   label="Date"
-                  value={formData.scheduleDate}
-                  onChange={(e) => setFormData({...formData, scheduleDate: e.target.value})}
-                  InputLabelProps={{ shrink: true }}
-                  inputProps={{ 
-                    min: new Date().toISOString().split('T')[0] // Prevent past dates
+                  value={formData.scheduleDate ? new Date(formData.scheduleDate + 'T12:00:00') : null}
+                  onChange={(date) => {
+                    if (date) {
+                      const year = date.getFullYear();
+                      const month = String(date.getMonth() + 1).padStart(2, '0');
+                      const day = String(date.getDate()).padStart(2, '0');
+                      setFormData({ ...formData, scheduleDate: `${year}-${month}-${day}` });
+                    } else {
+                      setFormData({ ...formData, scheduleDate: '' });
+                    }
                   }}
-                  required
+                  minDate={new Date()}
+                  slotProps={{ textField: { fullWidth: true, required: true } }}
                 />
               </Grid>
               
@@ -1078,12 +1083,14 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
                 <PremiumSelect
                   fullWidth
                   value={formData.shiftType}
-                  label="Shift Type"
+                  label={t('staff.management.shiftType')}
                   onChange={(e) => setFormData({...formData, shiftType: e.target.value})}
                   required
                 >
                   {shiftTypes.map(type => (
-                    <MenuItem key={type} value={type}>{type.replace('_', ' ')}</MenuItem>
+                    <MenuItem key={type} value={type}>
+                      {t(`staff.management.shiftTypes.${type}`, type.replace('_', ' '))}
+                    </MenuItem>
                   ))}
                 </PremiumSelect>
               </Grid>

@@ -29,7 +29,7 @@ import PremiumDatePicker from './common/PremiumDatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { format, addDays } from 'date-fns';
-import { formatEthiopianDate } from '../utils/ethiopianCalendar';
+import { formatDateCalendarAware } from '../utils/dateUtils';
 import { useAuth } from '../contexts/AuthContext';
 import { useTenant } from '../contexts/TenantContext';
 import { useTranslation } from 'react-i18next';
@@ -381,7 +381,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                 {t('dashboard.hotelAdmin.offlineBooking.bookingDetails.availableRoomsTitle')}
               </Typography>
               <Typography variant="body2" color="text.secondary" gutterBottom>
-                {formatEthiopianDate(checkInDate)} - {formatEthiopianDate(checkOutDate)} • {guests} Guest{guests !== 1 ? 's' : ''}
+                {formatDateCalendarAware(checkInDate)} - {formatDateCalendarAware(checkOutDate)} • {guests} Guest{guests !== 1 ? 's' : ''}
               </Typography>
             </Box>
 
@@ -420,8 +420,8 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                   {t('dashboard.hotelAdmin.offlineBooking.validationErrors.noRoomsAvailable', {
                     guests,
                     plural: guests !== 1 ? 's' : '',
-                    checkIn: formatEthiopianDate(checkInDate),
-                    checkOut: formatEthiopianDate(checkOutDate)
+                    checkIn: formatDateCalendarAware(checkInDate),
+                    checkOut: formatDateCalendarAware(checkOutDate)
                   })}
                 </Alert>
               ) : (
@@ -685,7 +685,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                           {t('dashboard.hotelAdmin.offlineBooking.confirmation.checkInLabel')} - {t('dashboard.hotelAdmin.offlineBooking.confirmation.checkOutLabel')}
                         </Typography>
                         <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                          {formatEthiopianDate(checkInDate)} - {formatEthiopianDate(checkOutDate)}
+                          {formatDateCalendarAware(checkInDate)} - {formatDateCalendarAware(checkOutDate)}
                         </Typography>
                       </Box>
                       <Box sx={{ mb: 1.5 }}>

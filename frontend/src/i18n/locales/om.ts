@@ -1286,9 +1286,20 @@ export const omTranslations = {
       // Sagantaa
       schedule: "Sagantaa",
       shift: "Shaayiftii",
+      shiftType: "Gosa Shaayiftii",
       morningShift: "Shaayiftii Ganama",
       afternoonShift: "Shaayiftii Galgala",
       nightShift: "Shaayiftii Halkan",
+
+      // Maqaalee Gosa Shaayiftii
+      shiftTypes: {
+        MORNING: "Ganama",
+        AFTERNOON: "Waaree Booda",
+        EVENING: "Galgala",
+        NIGHT: "Halkan",
+        FULL_DAY: "Guyyaa Guutuu",
+        SPLIT_SHIFT: "Shaayiftii Qooddame",
+      },
       
       workingHours: "Sa'aatii Hojii",
       startTime: "Yeroo Jalqaba",

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { COLORS, addAlpha, getGradient } from '../theme/themeColors';
+import { COLORS, addAlpha } from '../theme/themeColors';
 import {
   Container,
   Typography,
@@ -190,7 +190,7 @@ const SearchResultsPage: React.FC = () => {
   };
 
   const handleBackToSearch = () => {
-    navigate('/', { 
+    navigate('/hotels/search', { 
       state: { 
         searchRequest: searchRequest 
       } 
@@ -215,7 +215,7 @@ const SearchResultsPage: React.FC = () => {
       <Box
         sx={{
           minHeight: '100vh',
-          background: getGradient('white'),
+          backgroundColor: theme.palette.background.default,
         }}
       >
         <Container maxWidth="lg" sx={{ py: isMobile ? 2 : 4, px: isMobile ? 1 : 3 }}>
@@ -254,7 +254,7 @@ const SearchResultsPage: React.FC = () => {
     <Box
       sx={{
         minHeight: '100vh',
-        background: getGradient('white'),
+        backgroundColor: theme.palette.background.default,
       }}
     >
       <Container 
@@ -329,9 +329,7 @@ const SearchResultsPage: React.FC = () => {
           >
             <Button 
               variant="outlined"
-              onClick={() => {
-                // console.log('Open filters')
-              }}
+              onClick={handleBackToSearch}
               sx={{ 
                 borderRadius: 2,
                 textTransform: 'none',
@@ -348,30 +346,7 @@ const SearchResultsPage: React.FC = () => {
                 },
               }}
             >
-              Filter Results
-            </Button>
-            <Button 
-              variant="outlined"
-              onClick={() => {
-                // console.log('Open sort options')
-              }}
-              sx={{ 
-                borderRadius: 2,
-                textTransform: 'none',
-                fontWeight: 600,
-                borderColor: COLORS.SECONDARY,
-                borderWidth: '2px',
-                color: COLORS.PRIMARY,
-                backgroundColor: COLORS.BG_LIGHT,
-                '&:hover': {
-                  borderColor: COLORS.SECONDARY_HOVER,
-                  backgroundColor: COLORS.BG_DEFAULT,
-                  borderWidth: '2px',
-                  transform: 'translateY(-1px)',
-                },
-              }}
-            >
-              Sort By Price
+              Modify Search
             </Button>
           </Stack>
         </CardContent>

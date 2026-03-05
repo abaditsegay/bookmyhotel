@@ -22,6 +22,9 @@ import {
   People as UsersIcon
 } from '@mui/icons-material';
 import axiosInstance from '../utils/axiosConfig';
+import { useTranslation } from 'react-i18next';
+import { formatDateForDisplay } from '../utils/dateUtils';
+import { formatEthiopianTime } from '../utils/ethiopianCalendar';
 
 interface StaffSchedule {
   id: number;
@@ -50,6 +53,7 @@ interface ScheduleStats {
 }
 
 const StaffScheduleDashboard: React.FC = () => {
+  const { t } = useTranslation();
   const [schedules, setSchedules] = useState<StaffSchedule[]>([]);
   const [stats, setStats] = useState<ScheduleStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -119,7 +123,7 @@ const StaffScheduleDashboard: React.FC = () => {
   const getDateRange = () => {
     const start = getStartDate();
     const end = getEndDate();
-    return `${new Date(start).toLocaleDateString()} - ${new Date(end).toLocaleDateString()}`;
+    return `${formatDateForDisplay(start)} - ${formatDateForDisplay(end)}`;
   };
 
   const getDaysInRange = () => {
@@ -164,10 +168,7 @@ const StaffScheduleDashboard: React.FC = () => {
   };
 
   const formatTime = (time: string) => {
-    return new Date(`2000-01-01T${time}`).toLocaleTimeString([], { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
+    return formatEthiopianTime(new Date(`2000-01-01T${time}`));
   };
 
   if (loading) {
@@ -376,7 +377,7 @@ const StaffScheduleDashboard: React.FC = () => {
                                 </Typography>
                               </Box>
                               <Typography variant="caption" color="text.secondary">
-                                {schedule.shiftType.replace('_', ' ')}
+                                {t(`staff.management.shiftTypes.${schedule.shiftType}`, schedule.shiftType.replace('_', ' '))}
                               </Typography>
                               {schedule.notes && (
                                 <Typography 

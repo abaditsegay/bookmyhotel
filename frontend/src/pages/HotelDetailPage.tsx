@@ -11,9 +11,9 @@ import {
   Breadcrumbs,
   Link,
   IconButton,
+  Button,
   Grid,
   CardMedia,
-  Rating,
   useMediaQuery,
   useTheme,
   Stack,
@@ -255,9 +255,6 @@ const HotelDetailPage: React.FC = () => {
     hotel.roomTypeAvailability?.some(rt => rt.availableCount > 0) || false : 
     hotel.availableRooms && hotel.availableRooms.length > 0;
 
-  // Mock rating (in a real app, this would come from the backend)
-  const hotelRating = 4.2 + (hotel.id % 10) / 10;
-
   return (
     <Container 
       maxWidth="lg" 
@@ -351,8 +348,6 @@ const HotelDetailPage: React.FC = () => {
           borderRadius: 2, 
           mb: isMobile ? 2 : 3,
           objectFit: 'cover',
-          border: `3px solid ${COLORS.PRIMARY}`,
-          boxShadow: `0 4px 16px ${addAlpha(COLORS.PRIMARY, 0.2)}`,
         }}
       />
 
@@ -384,20 +379,7 @@ const HotelDetailPage: React.FC = () => {
                 {hotel.name}
               </Typography>
               
-              <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.5, flexWrap: 'wrap' }}>
-                <Rating 
-                  value={hotelRating} 
-                  precision={0.1} 
-                  size={isSmallMobile ? "small" : "medium"} 
-                  readOnly 
-                />
-                <Typography 
-                  variant="body2" 
-                  sx={{ fontWeight: 600 }}
-                >
-                  {hotelRating.toFixed(1)}
-                </Typography>
-              </Stack>
+
               
               <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 1.5 }}>
                 <LocationIcon sx={{ fontSize: 18, mr: 1, color: 'text.secondary', mt: 0.25 }} />
@@ -448,12 +430,7 @@ const HotelDetailPage: React.FC = () => {
                 {hotel.name}
               </Typography>
               
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
-                <Rating value={hotelRating} precision={0.1} size="medium" readOnly />
-                <Typography variant="body1" sx={{ ml: 1, fontWeight: 600 }}>
-                  {hotelRating.toFixed(1)}
-                </Typography>
-              </Box>
+
               
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
                 <LocationIcon sx={{ fontSize: 20, mr: 1, color: 'text.secondary' }} />
@@ -711,22 +688,13 @@ const HotelDetailPage: React.FC = () => {
             To see available rooms and make a booking, please use our hotel search.
           </Typography>
           <Box sx={{ mt: 3 }}>
-            <IconButton 
+            <Button
+              variant="contained"
               onClick={() => navigate('/hotels/search')}
-              sx={{ 
-                bgcolor: theme.palette.background.paper,
-                border: `1px solid ${theme.palette.divider}`,
-                borderRadius: 2,
-                color: 'text.primary',
-                '&:hover': {
-                  bgcolor: theme.palette.action.hover,
-                  borderColor: theme.palette.action.disabled,
-                },
-              }}
               size="large"
             >
               Search Hotels
-            </IconButton>
+            </Button>
           </Box>
           </CardContent>
         </Card>

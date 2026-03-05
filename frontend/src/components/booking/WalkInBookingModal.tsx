@@ -20,10 +20,7 @@ import {
   CircularProgress,
   useTheme,
 } from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { formatEthiopianDate } from '../../utils/ethiopianCalendar';
+import { formatDateCalendarAware } from '../../utils/dateUtils';
 import { format, addDays } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
@@ -697,8 +694,8 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
             </Typography>
             <Typography variant="body2" sx={{ color: theme.palette.text.secondary }} gutterBottom>
               {t('walkInBooking.roomSelection.description', { 
-                checkIn: formatEthiopianDate(checkInDate),
-                checkOut: formatEthiopianDate(checkOutDate),
+                checkIn: formatDateCalendarAware(checkInDate),
+                checkOut: formatDateCalendarAware(checkOutDate),
                 guests: guests,
                 guestsPlural: guests !== 1 ? 's' : ''
               })}
@@ -716,8 +713,8 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                 {t('walkInBooking.roomSelection.noRoomsAvailable', {
                   guests: guests,
                   guestsPlural: guests !== 1 ? 's' : '',
-                  checkIn: formatEthiopianDate(checkInDate),
-                  checkOut: formatEthiopianDate(checkOutDate)
+                  checkIn: formatDateCalendarAware(checkInDate),
+                  checkOut: formatDateCalendarAware(checkOutDate)
                 })}
               </Alert>
             ) : (

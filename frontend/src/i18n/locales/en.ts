@@ -1292,9 +1292,20 @@ export const enTranslations = {
       // Schedule
       schedule: "Schedule",
       shift: "Shift",
+      shiftType: "Shift Type",
       morningShift: "Morning Shift",
       afternoonShift: "Afternoon Shift",
       nightShift: "Night Shift",
+
+      // Shift type enum labels
+      shiftTypes: {
+        MORNING: "Morning",
+        AFTERNOON: "Afternoon",
+        EVENING: "Evening",
+        NIGHT: "Night",
+        FULL_DAY: "Full Day",
+        SPLIT_SHIFT: "Split Shift",
+      },
       
       workingHours: "Working Hours",
       startTime: "Start Time",

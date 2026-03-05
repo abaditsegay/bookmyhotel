@@ -1174,9 +1174,20 @@ export const amTranslations = {
       // Schedule
       schedule: "መርሃ ግብር",
       shift: "ዘለት",
+      shiftType: "የዘለት ዓይነት",
       morningShift: "የጥዋት ዘለት",
       afternoonShift: "የከሰዓት ዘለት",
       nightShift: "የሌሊት ዘለት",
+
+      // የዘለት ዓይነት መለኮቻዎች
+      shiftTypes: {
+        MORNING: "ጠዋት",
+        AFTERNOON: "ከሰዓት",
+        EVENING: "ምሽት",
+        NIGHT: "ሌሊት",
+        FULL_DAY: "ሙሉ ቀን",
+        SPLIT_SHIFT: "የተከፈለ ዘለት",
+      },
       
       workingHours: "የሥራ ሰዓቶች",
       startTime: "የመጀመሪያ ሰዓት",
