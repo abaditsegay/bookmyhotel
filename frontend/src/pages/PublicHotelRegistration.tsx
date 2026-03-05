@@ -11,6 +11,7 @@ import {
   Grid
 } from '@mui/material';
 import PremiumTextField from '../components/common/PremiumTextField';
+import { API_CONFIG } from '../config/apiConfig';
 
 const PublicHotelRegistration: React.FC = () => {
   const navigate = useNavigate();
@@ -51,7 +52,7 @@ const PublicHotelRegistration: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      const response = await fetch('/api/public/hotel-registration/submit', {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/public/hotel-registration/submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -98,9 +99,6 @@ const PublicHotelRegistration: React.FC = () => {
           checkOutTime: '11:00'
         });
         setSuccess('Hotel registration submitted successfully! We will review your application and contact you soon.');
-        setTimeout(() => {
-          navigate('/');
-        }, 3000);
       } else {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.message || 'Failed to submit registration');
