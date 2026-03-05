@@ -27,7 +27,6 @@ import java.util.ArrayList;
  */
 @RestController
 @RequestMapping("/api/supervisor")
-@CrossOrigin(origins = "*", maxAge = 3600)
 @PreAuthorize("hasRole('OPERATIONS_SUPERVISOR')")
 public class SupervisorController {
 

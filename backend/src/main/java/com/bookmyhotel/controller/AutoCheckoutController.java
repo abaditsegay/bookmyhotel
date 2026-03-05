@@ -15,7 +15,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/admin")
 @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('SYSTEM_ADMIN')")
-@CrossOrigin(origins = "*", maxAge = 3600)
 public class AutoCheckoutController {
 
     @Autowired

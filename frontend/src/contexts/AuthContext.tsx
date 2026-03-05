@@ -482,17 +482,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
 
   const getDashboardPath = (): string => {
     if (!user) {
-      console.log('[getDashboardPath] No user found, redirecting to hotel search');
       return '/hotels/search';
     }
-
-    console.log('[getDashboardPath] User object:', {
-      email: user.email,
-      role: user.role,
-      roles: user.roles,
-      tenantId: user.tenantId,
-      hotelId: user.hotelId
-    });
 
     // Normalize roles array - handle various backend formats
     const normalizedRoles: string[] = [];
@@ -519,46 +510,35 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
       }
     }
 
-    console.log('[getDashboardPath] Normalized roles:', normalizedRoles);
-
     // Check normalized roles
     if (normalizedRoles.length > 0) {
       // System-wide users
       if (normalizedRoles.includes('SYSTEM_ADMIN') || (normalizedRoles.includes('ADMIN') && !user.tenantId)) {
-        console.log('[getDashboardPath] Redirecting to /system-dashboard');
         return '/system-dashboard';
       }
       
       // Tenant-bound users - priority order
       if (normalizedRoles.includes('HOTEL_ADMIN')) {
-        console.log('[getDashboardPath] Redirecting to /hotel-admin/dashboard');
         return '/hotel-admin/dashboard';
       }
       
       if (normalizedRoles.includes('ADMIN') && user.tenantId) {
-        console.log('[getDashboardPath] Redirecting to /admin/dashboard');
         return '/admin/dashboard';
       }
       
       if (normalizedRoles.includes('FRONTDESK')) {
-        console.log('[getDashboardPath] Redirecting to /frontdesk/dashboard');
         return '/frontdesk/dashboard';
       }
       
       if (normalizedRoles.includes('OPERATIONS_SUPERVISOR')) {
-        console.log('[getDashboardPath] Redirecting to /operations/dashboard');
         return '/operations/dashboard';
       }
       
       if (normalizedRoles.includes('HOUSEKEEPING') || normalizedRoles.includes('MAINTENANCE')) {
-        console.log('[getDashboardPath] Redirecting to /staff/dashboard');
         return '/staff/dashboard';
       }
     }
     
-    // Default fallback
-    console.log('[getDashboardPath] No matching role found, redirecting to hotel search');
-    console.log('[getDashboardPath] User roles were:', user.roles, 'User role was:', user.role);
     return '/hotels/search';
   };
 

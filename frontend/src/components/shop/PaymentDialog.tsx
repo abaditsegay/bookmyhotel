@@ -69,14 +69,14 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   // Note: paymentSuccess is now controlled externally via showSuccess prop
 
-  // Card payment fields with pre-filled test data
-  const [cardNumber, setCardNumber] = useState('4111 1111 1111 1111');
-  const [cardExpiry, setCardExpiry] = useState('12/27');
-  const [cardCvv, setCardCvv] = useState('123');
-  const [cardName, setCardName] = useState('John Doe');
+  // Card payment fields
+  const [cardNumber, setCardNumber] = useState('');
+  const [cardExpiry, setCardExpiry] = useState('');
+  const [cardCvv, setCardCvv] = useState('');
+  const [cardName, setCardName] = useState('');
 
-  // Mobile money fields with pre-filled test data
-  const [phoneNumber, setPhoneNumber] = useState('+251911123456');
+  // Mobile money fields
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [mobileProvider, setMobileProvider] = useState('M-Pesa');
 
   const paymentMethods: PaymentMethodOption[] = [
@@ -110,15 +110,6 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
     setCurrentPaymentMethod(method);
     setError(null);
     setPaymentSuccess(false);
-    
-    // Pre-fill with test data for the selected payment method
-    const testData = mockPayment.fillTestData(method);
-    if (testData.cardNumber) setCardNumber(testData.cardNumber);
-    if (testData.cardExpiry) setCardExpiry(testData.cardExpiry);
-    if (testData.cardCvv) setCardCvv(testData.cardCvv);
-    if (testData.cardName) setCardName(testData.cardName);
-    if (testData.phoneNumber) setPhoneNumber(testData.phoneNumber);
-    if (testData.provider) setMobileProvider(testData.provider);
   };
 
   const validatePaymentDetails = (): boolean => {

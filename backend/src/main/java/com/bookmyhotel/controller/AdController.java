@@ -23,7 +23,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/ads")
 @Tag(name = "Advertisements", description = "Advertisement management operations")
-@CrossOrigin(origins = "*", maxAge = 3600)
 public class AdController {
 
         @Autowired

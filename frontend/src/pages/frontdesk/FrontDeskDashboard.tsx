@@ -342,7 +342,6 @@ const FrontDeskDashboard: React.FC = () => {
             handleRefresh();
           }}
           onWalkInRequest={() => {
-            console.log('Walk-in booking requested from BookingManagementTable'); // Debug log
             setWalkInModalOpen(true);
           }}
         />
@@ -393,7 +392,6 @@ const FrontDeskDashboard: React.FC = () => {
         key={walkInModalOpen ? 'modal-open' : 'modal-closed'} // Force re-render
         open={walkInModalOpen}
         onClose={() => {
-          console.log('Closing walk-in modal'); // Debug log
           setWalkInModalOpen(false);
         }}
         onSuccess={handleWalkInSuccess}

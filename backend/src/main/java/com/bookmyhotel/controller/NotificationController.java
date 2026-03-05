@@ -14,7 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -38,7 +37,6 @@ import com.bookmyhotel.service.BookingChangeNotificationService.NotificationStat
  */
 @RestController
 @RequestMapping("/api/notifications")
-@CrossOrigin(origins = { "http://localhost:3000", "https://yourdomain.com" })
 public class NotificationController {
 
     private static final Logger logger = LoggerFactory.getLogger(NotificationController.class);

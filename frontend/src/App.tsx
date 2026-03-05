@@ -62,10 +62,7 @@ const RoleDashboardDebug = lazy(() => import('./pages/RoleDashboardDebug'));
 const BookingManagementPage = lazy(() => import('./pages/BookingManagementPage'));
 const GuestBookingManagementPage = lazy(() => import('./pages/GuestBookingManagementPage'));
 
-// Demo & Staff components
-const DesignSystemDemo = lazy(() => import('./components/DesignSystemDemo'));
-const Phase2Demo = lazy(() => import('./components/Phase2Demo'));
-const Phase3Demo = lazy(() => import('./components/demo/Phase3Demo'));
+// Staff components
 const StaffScheduleManagement = lazy(() => import('./components/StaffScheduleManagement'));
 const StaffScheduleDashboard = lazy(() => import('./components/StaffScheduleDashboard'));
 const ErrorBoundaryDemo = lazy(() => import('./components/demo').then(m => ({ default: m.ErrorBoundaryDemo })));
@@ -264,13 +261,10 @@ function App() {
         } />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/guest-auth" element={<GuestAuthPage />} />
-        {/* Development Demo Routes */}
+        {/* Development Demo Routes - only available in development mode */}
         {process.env.NODE_ENV === 'development' && (
           <Route path="/demo/error-boundary" element={<ErrorBoundaryDemo />} />
         )}
-        <Route path="/demo/design-system" element={<DesignSystemDemo />} />
-        <Route path="/demo/phase2" element={<Phase2Demo />} />
-        <Route path="/demo/phase3" element={<Phase3Demo />} />
         <Route path="/register-hotel" element={<PublicHotelRegistration />} />
         <Route path="/register-hotel-admin" element={
           <PlaceholderPage 

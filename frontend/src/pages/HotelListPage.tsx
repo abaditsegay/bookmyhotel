@@ -206,7 +206,7 @@ const HotelListPage: React.FC = () => {
               </Typography>
               
               <Button 
-                onClick={() => console.log('Open sort options')}
+                onClick={() => {}}
                 sx={{ 
                   py: 1,
                   px: 2.5,

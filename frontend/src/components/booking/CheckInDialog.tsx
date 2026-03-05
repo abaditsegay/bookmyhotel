@@ -360,7 +360,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
             }
           }
         } catch (fetchError) {
-          console.error('Error reloading room details:', fetchError);
+          // Room detail reload failed; proceed with available room info
         }
       }
       

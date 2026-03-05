@@ -20,7 +20,6 @@ import com.bookmyhotel.tenant.TenantContext;
  */
 @RestController
 @RequestMapping("/api/hotels-mgmt")
-@CrossOrigin(origins = "*")
 public class HotelManagementController {
 
     private static final Logger logger = LoggerFactory.getLogger(HotelManagementController.class);
