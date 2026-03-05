@@ -409,6 +409,76 @@ export const SystemDashboardPage: React.FC = () => {
       {/* Tab Panels */}
       <TabPanel value={activeTab} index={0}>
         {/* Overview Tab - Original Dashboard Content */}
+
+        {/* Business Onboarding URL — share with businesses to submit hotel registration */}
+        <Paper
+          sx={{
+            p: 3,
+            mb: 4,
+            border: `2px solid ${COLORS.PRIMARY}`,
+            borderRadius: 2,
+            background: `linear-gradient(135deg, ${COLORS.PRIMARY}08 0%, ${COLORS.SECONDARY}08 100%)`,
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+            <LinkIcon sx={{ mr: 1, color: COLORS.PRIMARY }} />
+            <Typography variant="h6" fontWeight="bold" color="primary">
+              Business Onboarding URL
+            </Typography>
+            <Chip
+              label="Share with new businesses"
+              size="small"
+              sx={{ ml: 1.5, bgcolor: COLORS.PRIMARY, color: '#fff', fontSize: '0.7rem' }}
+            />
+          </Box>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Share this link with a business to let them submit their hotel registration application.
+            The page is not linked from public navigation.
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+            <Box
+              component="input"
+              readOnly
+              value={`${window.location.origin}/business-onboarding`}
+              sx={{
+                flex: 1,
+                p: '10px 14px',
+                fontFamily: 'monospace',
+                fontSize: '0.875rem',
+                border: '1px solid',
+                borderColor: 'divider',
+                borderRadius: 1,
+                bgcolor: 'background.paper',
+                color: 'text.primary',
+                outline: 'none',
+                cursor: 'text',
+              }}
+            />
+            <Tooltip title={onboardingUrlCopied ? 'Copied!' : 'Copy URL'}>
+              <IconButton
+                onClick={() => {
+                  navigator.clipboard.writeText(`${window.location.origin}/business-onboarding`);
+                  setOnboardingUrlCopied(true);
+                  setTimeout(() => setOnboardingUrlCopied(false), 2500);
+                }}
+                color={onboardingUrlCopied ? 'success' : 'primary'}
+                sx={{ flexShrink: 0 }}
+              >
+                <ContentCopy />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Open in new tab">
+              <IconButton
+                onClick={() => window.open(`${window.location.origin}/business-onboarding`, '_blank')}
+                color="primary"
+                sx={{ flexShrink: 0 }}
+              >
+                <OpenInNew />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        </Paper>
+
         <Grid container spacing={3} sx={{ mb: 4 }} data-testid="stats-cards">
           {quickActions.map((action, index) => (
             <Grid item xs={12} sm={6} md={3} key={index}>
@@ -476,70 +546,6 @@ export const SystemDashboardPage: React.FC = () => {
             </Grid>
           ))}
         </Grid>
-
-        {/* Business Onboarding URL — System Admin Only */}
-        {isSystemAdmin && (
-          <Paper
-            sx={{
-              p: 3,
-              my: 3,
-              border: `2px solid ${COLORS.PRIMARY}`,
-              borderRadius: 2,
-              background: `linear-gradient(135deg, ${COLORS.PRIMARY}08 0%, ${COLORS.SECONDARY}08 100%)`,
-            }}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-              <LinkIcon sx={{ mr: 1, color: COLORS.PRIMARY }} />
-              <Typography variant="h6" fontWeight="bold" color="primary">
-                Business Onboarding URL
-              </Typography>
-              <Chip
-                label="Admin Only"
-                size="small"
-                sx={{ ml: 1.5, bgcolor: COLORS.PRIMARY, color: '#fff', fontSize: '0.7rem' }}
-              />
-            </Box>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Share this link with a business to let them submit their hotel registration application.
-              The page is not accessible from public navigation.
-            </Typography>
-            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-              <PremiumTextField
-                fullWidth
-                size="small"
-                value={`${window.location.origin}/business-onboarding`}
-                label=""
-                onChange={() => {}}
-                InputProps={{
-                  readOnly: true,
-                  sx: { fontFamily: 'monospace', fontSize: '0.875rem', bgcolor: 'background.paper' },
-                }}
-              />
-              <Tooltip title={onboardingUrlCopied ? 'Copied!' : 'Copy URL'}>
-                <IconButton
-                  onClick={() => {
-                    navigator.clipboard.writeText(`${window.location.origin}/business-onboarding`);
-                    setOnboardingUrlCopied(true);
-                    setTimeout(() => setOnboardingUrlCopied(false), 2500);
-                  }}
-                  color={onboardingUrlCopied ? 'success' : 'primary'}
-                  sx={{ flexShrink: 0 }}
-                >
-                  <ContentCopy />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Open in new tab">
-                <IconButton
-                  onClick={() => window.open(`${window.location.origin}/business-onboarding`, '_blank')}
-                  color="primary"
-                  sx={{ flexShrink: 0 }}
-                >
-                  <OpenInNew />
-                </IconButton>
-              </Tooltip>
-            </Box>
-          </Paper>
-        )}
 
         {/* System Status and Information */}
         <Grid container spacing={3}>
