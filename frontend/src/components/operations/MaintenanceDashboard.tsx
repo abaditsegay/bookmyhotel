@@ -1117,7 +1117,7 @@ const MaintenanceDashboard: React.FC = () => {
               {selectedTask.actualCost && (
                 <Box sx={{ mt: 2 }}>
                   <Typography variant="subtitle2" color="text.secondary">Actual Cost</Typography>
-                  <Typography>${selectedTask.actualCost.toFixed(2)}</Typography>
+                  <Typography>ETB {selectedTask.actualCost.toFixed(2)}</Typography>
                 </Box>
               )}
             </Box>

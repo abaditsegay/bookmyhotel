@@ -1107,7 +1107,7 @@ const HotelAdminDashboard: React.FC = () => {
                     }}>
                       <CardContent sx={{ textAlign: 'center', py: 2 }}>
                         <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1, color: COLORS.SUCCESS }}>
-                          ${reportsData.bookingStats?.currentYearRevenue?.toLocaleString() || '0'}
+                          ETB {reportsData.bookingStats?.currentYearRevenue?.toLocaleString() || '0'}
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 1, fontWeight: 600 }}>
                           {t('dashboard.hotelAdmin.reports.yearRevenue')}

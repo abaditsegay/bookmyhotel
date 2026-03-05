@@ -313,7 +313,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <Typography variant="body2" sx={{ mb: 0.5, fontWeight: 500 }}>
-                    <strong>Price per night:</strong> ${room.pricePerNight}
+                    <strong>Price per night:</strong> ETB {room.pricePerNight}
                   </Typography>
                   {nights > 0 && (
                     <>
