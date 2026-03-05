@@ -179,7 +179,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
         roles: cachedSession.roles || [cachedSession.role],
         hotelId: cachedSession.hotelId?.toString(),
         hotelName: cachedSession.hotelName,
-        tenantId: cachedSession.tenantId || 'development',
+        tenantId: cachedSession.tenantId || null,
         isActive: true,
         createdAt: '',
         lastLogin: cachedSession.lastActivity

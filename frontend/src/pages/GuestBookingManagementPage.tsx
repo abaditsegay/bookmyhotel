@@ -206,7 +206,11 @@ const GuestBookingManagementPage: React.FC = () => {
     const originalNights = Math.ceil(originalDiffTime / (1000 * 60 * 60 * 24));
     
     // Each room type has its own fixed price per night
-    const originalPricePerNight = booking.pricePerNight || 0;
+    // If the original booking has no price data, we cannot calculate modifications
+    const roomTypeChanged = modData.newRoomType !== booking.roomType;
+    const hasNewRoomPrice = roomTypeChanged && roomTypePrices.has(modData.newRoomType);
+    if (!booking.pricePerNight && !hasNewRoomPrice) return null;
+    const originalPricePerNight = booking.pricePerNight ?? 0;
     
     // Use the tax rates from backend (already fetched)
     const taxRate = hotelTaxRate;
@@ -218,9 +222,6 @@ const GuestBookingManagementPage: React.FC = () => {
     const originalVatAmount = originalSubtotal * vatRate;
     const originalServiceTaxAmount = originalSubtotal * serviceTaxRate;
     const originalTaxAmount = originalVatAmount + originalServiceTaxAmount;
-    
-    // Check if room type changed
-    const roomTypeChanged = modData.newRoomType !== booking.roomType;
     
     let newPricePerNight = originalPricePerNight;
     
@@ -1033,7 +1034,14 @@ const GuestBookingManagementPage: React.FC = () => {
                   </Typography>
                 </Box>
                 {(() => {
-                  const subtotal = (booking.pricePerNight || 0) * nights;
+                  if (!booking.pricePerNight) {
+                    return (
+                      <Typography color="error" sx={{ py: 2, textAlign: 'center' }}>
+                        Price information is unavailable for this booking. Please contact support.
+                      </Typography>
+                    );
+                  }
+                  const subtotal = booking.pricePerNight * nights;
                   const vatAmount = subtotal * (hotelVatRate || 0);
                   const serviceTaxAmount = subtotal * (hotelServiceTaxRate || 0);
                   const total = subtotal + vatAmount + serviceTaxAmount;

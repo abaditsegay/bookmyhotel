@@ -32,7 +32,7 @@ const StaffDashboardPage: React.FC = () => {
           
           if (role) {
             const mockUser = {
-              id: payload.sub || 1,
+              id: payload.sub,
               username: payload.username || 'staff_user',
               role: role,
               staffType: role === 'HOUSEKEEPING' ? 'HOUSEKEEPING' : 

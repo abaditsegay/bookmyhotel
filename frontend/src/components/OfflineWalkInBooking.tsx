@@ -147,11 +147,12 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
           setCachedRooms(freshRooms);
           // console.log(`✨ Fetched and cached ${freshRooms.length} fresh rooms`);
         } catch (fetchError) {
-          // console.warn('Failed to fetch fresh room data:', fetchError);
+          setError('Unable to load room data from server. Please check your connection and try again.');
         }
       }
     } catch (error) {
       // console.error('Failed to load cached rooms:', error);
+      setError('Failed to load room data. Please check your connection and try again.');
       setRoomsLoaded(true); // Still mark as loaded to prevent infinite loading
     }
   }, [hotelId, token, user?.hotelId]);

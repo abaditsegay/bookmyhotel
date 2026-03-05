@@ -159,7 +159,7 @@ public class StaffScheduleController {
      * Get schedules by hotel and date range
      */
     @GetMapping("/hotel/{hotelId}")
-    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONTDESK', 'OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("@hotelSecurity.canAccessHotel(#hotelId)")
     public ResponseEntity<List<StaffScheduleResponse>> getSchedulesByHotelAndDateRange(
             @PathVariable Long hotelId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
@@ -189,7 +189,7 @@ public class StaffScheduleController {
      * Get schedules by department and date range
      */
     @GetMapping("/hotel/{hotelId}/department/{department}")
-    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONTDESK', 'OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("@hotelSecurity.canAccessHotel(#hotelId)")
     public ResponseEntity<List<StaffScheduleResponse>> getSchedulesByDepartmentAndDateRange(
             @PathVariable Long hotelId,
             @PathVariable Department department,

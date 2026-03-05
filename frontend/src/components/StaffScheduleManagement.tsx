@@ -171,23 +171,23 @@ const StaffScheduleManagement: React.FC = () => {
           fetch(buildApiUrl('/staff-schedules'), {
             method: 'GET',
             headers: getAuthHeaders(token),
-          }).then(res => res.ok ? res.json() : []).catch(err => {
-            // console.warn('Failed to fetch schedules:', err);
-            return [];
+          }).then(res => {
+            if (!res.ok) throw new Error(`Failed to fetch schedules: ${res.status} ${res.statusText}`);
+            return res.json();
           }),
           fetch(buildApiUrl('/hotels-mgmt/list'), {
             method: 'GET',
             headers: getAuthHeaders(token),
-          }).then(res => res.ok ? res.json() : []).catch(err => {
-            // console.warn('Failed to fetch hotels:', err);
-            return [];
+          }).then(res => {
+            if (!res.ok) throw new Error(`Failed to fetch hotels: ${res.status} ${res.statusText}`);
+            return res.json();
           }),
           fetch(buildApiUrl('/staff-schedules/staff'), {
             method: 'GET',
             headers: getAuthHeaders(token),
-          }).then(res => res.ok ? res.json() : []).catch(err => {
-            // console.error('Failed to fetch staff:', err);
-            return [];
+          }).then(res => {
+            if (!res.ok) throw new Error(`Failed to fetch staff members: ${res.status} ${res.statusText}`);
+            return res.json();
           })
         ]);
         

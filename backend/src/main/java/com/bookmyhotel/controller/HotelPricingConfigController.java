@@ -51,7 +51,7 @@ public class HotelPricingConfigController {
      * @return the active configuration or 404 if none found
      */
     @GetMapping("/hotel/{hotelId}/active")
-    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('SYSTEM_ADMIN')")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN') or @hotelSecurity.canAccessHotel(#hotelId)")
     public ResponseEntity<HotelPricingConfig> getActiveConfiguration(@PathVariable Long hotelId) {
         try {
             logger.info("Fetching active pricing configuration for hotel: {}", hotelId);
@@ -78,7 +78,7 @@ public class HotelPricingConfigController {
      * @return the active configuration (created if necessary)
      */
     @GetMapping("/hotel/{hotelId}/active-or-create")
-    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('SYSTEM_ADMIN')")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN') or @hotelSecurity.canAccessHotel(#hotelId)")
     public ResponseEntity<HotelPricingConfig> getOrCreateActiveConfiguration(@PathVariable Long hotelId) {
         try {
             logger.info("Fetching or creating active pricing configuration for hotel: {}", hotelId);
@@ -102,7 +102,7 @@ public class HotelPricingConfigController {
      * @return list of all configurations for the hotel
      */
     @GetMapping("/hotel/{hotelId}/all")
-    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('SYSTEM_ADMIN')")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN') or @hotelSecurity.canAccessHotel(#hotelId)")
     public ResponseEntity<List<HotelPricingConfig>> getAllConfigurations(@PathVariable Long hotelId) {
         try {
             logger.info("Fetching all pricing configurations for hotel: {}", hotelId);
@@ -124,7 +124,7 @@ public class HotelPricingConfigController {
      * @return the created configuration
      */
     @PostMapping("/hotel/{hotelId}")
-    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('SYSTEM_ADMIN')")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN') or @hotelSecurity.canAccessHotel(#hotelId)")
     public ResponseEntity<HotelPricingConfig> createConfiguration(
             @PathVariable Long hotelId,
             @Valid @RequestBody HotelPricingConfig config) {
@@ -217,7 +217,7 @@ public class HotelPricingConfigController {
      * @return the created default configuration
      */
     @PostMapping("/hotel/{hotelId}/create-default")
-    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('SYSTEM_ADMIN')")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN') or @hotelSecurity.canAccessHotel(#hotelId)")
     public ResponseEntity<HotelPricingConfig> createDefaultConfiguration(@PathVariable Long hotelId) {
         try {
             logger.info("Creating default pricing configuration for hotel: {}", hotelId);
@@ -292,7 +292,7 @@ public class HotelPricingConfigController {
      * @return the newly activated configuration
      */
     @PostMapping("/hotel/{hotelId}/replace-active")
-    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('SYSTEM_ADMIN')")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN') or @hotelSecurity.canAccessHotel(#hotelId)")
     public ResponseEntity<HotelPricingConfig> replaceActiveConfiguration(
             @PathVariable Long hotelId,
             @Valid @RequestBody HotelPricingConfig newConfig) {
@@ -329,7 +329,7 @@ public class HotelPricingConfigController {
      * @return pricing multipliers object
      */
     @GetMapping("/hotel/{hotelId}/multipliers")
-    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('SYSTEM_ADMIN')")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN') or @hotelSecurity.canAccessHotel(#hotelId)")
     public ResponseEntity<PricingMultipliers> getPricingMultipliers(@PathVariable Long hotelId) {
         try {
             logger.info("Fetching pricing multipliers for hotel: {}", hotelId);

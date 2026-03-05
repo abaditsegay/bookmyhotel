@@ -106,6 +106,7 @@ public class HousekeepingController {
     }
 
     @GetMapping("/tasks/hotel/{hotelId}")
+    @PreAuthorize("@hotelSecurity.canAccessHotel(#hotelId)")
     public ResponseEntity<List<HousekeepingTaskDTO>> getTasksByHotel(@PathVariable Long hotelId) {
         String tenantId = TenantContext.getTenantId();
         // Get tasks directly by hotel ID (tasks now store hotel ID directly)

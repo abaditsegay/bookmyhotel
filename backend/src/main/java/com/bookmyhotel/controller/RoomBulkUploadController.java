@@ -35,7 +35,7 @@ public class RoomBulkUploadController {
             @ApiResponse(responseCode = "403", description = "Access denied")
     })
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('SUPER_ADMIN')")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN') or @hotelSecurity.canAccessHotel(#hotelId)")
     public ResponseEntity<Map<String, Object>> uploadRoomsCsv(
             @Parameter(description = "Hotel ID", required = true) @PathVariable Long hotelId,
 
@@ -63,7 +63,7 @@ public class RoomBulkUploadController {
             @ApiResponse(responseCode = "403", description = "Access denied")
     })
     @PostMapping(value = "/validate", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('SUPER_ADMIN')")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN') or @hotelSecurity.canAccessHotel(#hotelId)")
     public ResponseEntity<Map<String, Object>> validateCsv(
             @Parameter(description = "Hotel ID", required = true) @PathVariable Long hotelId,
 

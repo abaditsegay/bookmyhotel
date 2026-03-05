@@ -136,7 +136,7 @@ const PricingConfigurationComponent: React.FC = () => {
 
     // Default configuration values - Fixed pricing without tax (values in percentage for display)
     const defaultConfig: PricingConfiguration = {
-      hotelId: typeof user?.hotelId === 'string' ? parseInt(user.hotelId) : (user?.hotelId || 1),
+      hotelId: typeof user.hotelId === 'string' ? parseInt(user.hotelId) : (user.hotelId as number),
       pricingStrategy: 'FIXED',
       vatRate: 15, // 15% VAT (Ethiopian standard) - displayed as percentage
       serviceTaxRate: 5, // 5% service tax - displayed as percentage

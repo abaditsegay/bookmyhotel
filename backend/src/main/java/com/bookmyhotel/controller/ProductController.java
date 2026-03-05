@@ -37,7 +37,7 @@ public class ProductController {
      * POST /api/hotels/{hotelId}/shop/products
      */
     @PostMapping
-    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('SYSTEM_ADMIN')")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN') or @hotelSecurity.canAccessHotel(#hotelId)")
     public ResponseEntity<ProductResponse> createProduct(
             @PathVariable Long hotelId,
             @Valid @RequestBody ProductRequest request) {
@@ -51,7 +51,7 @@ public class ProductController {
      * PUT /api/hotels/{hotelId}/shop/products/{productId}
      */
     @PutMapping("/{productId}")
-    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('SYSTEM_ADMIN')")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN') or @hotelSecurity.canAccessHotel(#hotelId)")
     public ResponseEntity<ProductResponse> updateProduct(
             @PathVariable Long hotelId,
             @PathVariable Long productId,
@@ -186,7 +186,7 @@ public class ProductController {
      * DELETE /api/hotels/{hotelId}/shop/products/{productId}
      */
     @DeleteMapping("/{productId}")
-    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('SYSTEM_ADMIN')")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN') or @hotelSecurity.canAccessHotel(#hotelId)")
     public ResponseEntity<Void> deleteProduct(
             @PathVariable Long hotelId,
             @PathVariable Long productId) {

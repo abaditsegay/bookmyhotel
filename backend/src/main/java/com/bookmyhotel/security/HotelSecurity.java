@@ -68,17 +68,21 @@ public class HotelSecurity {
             }
         }
 
-        // Operations supervisors can access hotels they're assigned to
-        if (authentication.getAuthorities().stream()
-                .anyMatch(auth -> "ROLE_OPERATIONS_SUPERVISOR".equals(auth.getAuthority()))) {
-
+        // All other hotel-bound roles (FRONTDESK, HOUSEKEEPING, MAINTENANCE,
+        // OPERATIONS_SUPERVISOR) can only access their assigned hotel
+        boolean isHotelBoundRole = authentication.getAuthorities().stream()
+                .anyMatch(auth -> "ROLE_OPERATIONS_SUPERVISOR".equals(auth.getAuthority())
+                        || "ROLE_FRONTDESK".equals(auth.getAuthority())
+                        || "ROLE_HOUSEKEEPING".equals(auth.getAuthority())
+                        || "ROLE_MAINTENANCE".equals(auth.getAuthority()));
+        if (isHotelBoundRole) {
             Object principal = authentication.getPrincipal();
             if (principal instanceof User) {
                 User user = (User) principal;
                 Long userHotelId = user.getHotel() != null ? user.getHotel().getId() : null;
-
-                // Allow access if the requested hotel matches the user's assigned hotel
-                return hotelId != null && hotelId.equals(userHotelId);
+                boolean canAccess = hotelId != null && hotelId.equals(userHotelId);
+                logger.debug("🔍 HotelSecurity: Hotel-bound role access result for hotel {}: {}", hotelId, canAccess);
+                return canAccess;
             }
         }
 

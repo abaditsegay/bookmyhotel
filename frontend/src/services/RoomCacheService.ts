@@ -127,11 +127,12 @@ export class RoomCacheService {
             // console.log('🔄 Fetching fresh room data from API...');
             return await this.fetchAndCacheRooms(hotelId);
           } catch (error) {
-            // console.warn('Failed to fetch room data from API, using cached data if available:', error);
+            // If stale cache is available, fall back to it
             if (cachedRooms.length > 0) {
               return cachedRooms;
             }
-            return [];
+            // No cache and API failed — propagate the error so callers can show it
+            throw error;
           }
         } else {
           // console.log('📶 Offline - using cached rooms or empty array');
@@ -156,8 +157,8 @@ export class RoomCacheService {
       // console.log(`📦 Using cached rooms for hotel ${hotelId}: ${cachedRooms.length} rooms`);
       return cachedRooms;
     } catch (error) {
-      // console.error('Failed to get rooms:', error);
-      return [];
+      // Rethrow so callers can show a proper error message
+      throw error;
     }
   }
 

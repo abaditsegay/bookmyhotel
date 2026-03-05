@@ -48,7 +48,7 @@ public class HotelImageController {
         @ApiResponse(responseCode = "415", description = "Unsupported media type")
     })
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('SYSTEM_ADMIN')")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN') or @hotelSecurity.canAccessHotel(#hotelId)")
     public ResponseEntity<Map<String, Object>> uploadHotelImage(
             @Parameter(description = "Hotel ID") @PathVariable Long hotelId,
             @Parameter(description = "Image file") @RequestParam("file") MultipartFile file,
@@ -93,7 +93,7 @@ public class HotelImageController {
         @ApiResponse(responseCode = "415", description = "Unsupported media type")
     })
     @PostMapping(value = "/room-types/{roomTypeId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('SYSTEM_ADMIN')")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN') or @hotelSecurity.canAccessHotel(#hotelId)")
     public ResponseEntity<Map<String, Object>> uploadRoomTypeImage(
             @Parameter(description = "Hotel ID") @PathVariable Long hotelId,
             @Parameter(description = "Room Type ID") @PathVariable Long roomTypeId,
@@ -217,7 +217,7 @@ public class HotelImageController {
     @Operation(summary = "Delete image", description = "Soft delete an image")
     @ApiResponse(responseCode = "200", description = "Image deleted successfully")
     @DeleteMapping("/{imageId}")
-    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('SYSTEM_ADMIN')")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN') or @hotelSecurity.canAccessHotel(#hotelId)")
     public ResponseEntity<Map<String, Object>> deleteImage(
             @Parameter(description = "Hotel ID") @PathVariable Long hotelId,
             @Parameter(description = "Image ID") @PathVariable Long imageId) {
@@ -244,7 +244,7 @@ public class HotelImageController {
     @Operation(summary = "Update image display order", description = "Update the display order of an image")
     @ApiResponse(responseCode = "200", description = "Display order updated successfully")
     @PatchMapping("/{imageId}/display-order")
-    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('SYSTEM_ADMIN')")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN') or @hotelSecurity.canAccessHotel(#hotelId)")
     public ResponseEntity<Map<String, Object>> updateDisplayOrder(
             @Parameter(description = "Hotel ID") @PathVariable Long hotelId,
             @Parameter(description = "Image ID") @PathVariable Long imageId,
@@ -272,7 +272,7 @@ public class HotelImageController {
     @Operation(summary = "Update image alt text", description = "Update the alt text of an image")
     @ApiResponse(responseCode = "200", description = "Alt text updated successfully")
     @PatchMapping("/{imageId}/alt-text")
-    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('SYSTEM_ADMIN')")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN') or @hotelSecurity.canAccessHotel(#hotelId)")
     public ResponseEntity<Map<String, Object>> updateAltText(
             @Parameter(description = "Hotel ID") @PathVariable Long hotelId,
             @Parameter(description = "Image ID") @PathVariable Long imageId,
